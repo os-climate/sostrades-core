@@ -45,6 +45,8 @@ class DesignVarDiscipline(SoSWrapp):
     WRITE_XVECT = 'write_xvect'
     LOG_DVAR = 'log_designvar'
     EXPORT_XVECT = 'export_xvect'
+    OUT_TYPE = 'out_type'
+    OUT_NAME = 'out_name'
     OUT_TYPES = ['float', 'array', 'dataframe']
     VARIABLES = "variable"
     VALUES = "value"
@@ -53,15 +55,22 @@ class DesignVarDiscipline(SoSWrapp):
     TYPE = "type"
     ENABLE_VARIABLE_BOOL = "enable_variable"
     LIST_ACTIVATED_ELEM = "activated_elem"
+    INDEX = DesignVar.INDEX
+    INDEX_NAME = DesignVar.INDEX_NAME
+    DATAFRAME_FILL = DesignVar.DATAFRAME_FILL
+    COLUMNS_NAMES = DesignVar.COLUMNS_NAMES
+    DATAFRAME_FILL_POSSIBLE_VALUES = DesignVar.DATAFRAME_FILL_POSSIBLE_VALUES
+    DESIGN_VAR_DESCRIPTOR = DesignVar.DESIGN_VAR_DESCRIPTOR
+    DESIGN_SPACE = DesignVar.DESIGN_SPACE
     DESC_IN = {
-        'design_var_descriptor': {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
-        'design_space': {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
-                                                                       VALUES: ('multiple', None, True),
-                                                                       LOWER_BOUND: ('multiple', None, True),
-                                                                       UPPER_BOUND: ('multiple', None, True),
-                                                                       ENABLE_VARIABLE_BOOL: ('bool', None, True),
-                                                                       LIST_ACTIVATED_ELEM: ('list', None, True), },
-                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
+        DESIGN_VAR_DESCRIPTOR: {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
+        DESIGN_SPACE: {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
+                                                                     VALUES: ('multiple', None, True),
+                                                                     LOWER_BOUND: ('multiple', None, True),
+                                                                     UPPER_BOUND: ('multiple', None, True),
+                                                                     ENABLE_VARIABLE_BOOL: ('bool', None, True),
+                                                                     LIST_ACTIVATED_ELEM: ('list', None, True), },
+                       'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
         WRITE_XVECT: {'type': 'bool', 'default': False, 'user_level': 3},
         LOG_DVAR: {'type': 'bool', 'default': False, 'user_level': 3},
     }
@@ -79,15 +88,15 @@ class DesignVarDiscipline(SoSWrapp):
 
         # loops over the output descriptor to add dynamic inputs and outputs from the loaded usecase.
         # The structure of the output descriptor dict is checked prior its use
-        if 'design_var_descriptor' in inputs_dict.keys():
-            design_var_descriptor = inputs_dict['design_var_descriptor']
+        if self.DESIGN_VAR_DESCRIPTOR in inputs_dict.keys():
+            design_var_descriptor = inputs_dict[self.DESIGN_VAR_DESCRIPTOR]
             if design_var_descriptor is not None:
                 if self._check_descriptor(design_var_descriptor):
                     for key in design_var_descriptor.keys():
                         dynamic_inputs[key] = {'type': 'array',
                                                'visibility': SoSWrapp.SHARED_VISIBILITY,
                                                'namespace': design_var_descriptor[key]['namespace_in']}
-                        dynamic_outputs[design_var_descriptor[key]['out_name']] = {
+                        dynamic_outputs[design_var_descriptor[key][self.OUT_NAME]] = {
                             'type': design_var_descriptor[key]['out_type'],
                             'visibility': SoSWrapp.SHARED_VISIBILITY,
                             'namespace': design_var_descriptor[key]['namespace_out']}
@@ -112,7 +121,7 @@ class DesignVarDiscipline(SoSWrapp):
 
         # retrieve the design space and update values with current iteration
         # values
-        dspace_in = self.get_sosdisc_inputs('design_space')
+        dspace_in = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         dspace_out = dspace_in.copy(deep=True)
         dict_diff = {}
         dict_current = {}
@@ -155,11 +164,11 @@ class DesignVarDiscipline(SoSWrapp):
 
     def compute_sos_jacobian(self):
 
-        design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
+        design_var_descriptor = self.get_sosdisc_inputs(self.DESIGN_VAR_DESCRIPTOR)
 
         for key in design_var_descriptor.keys():
-            out_type = design_var_descriptor[key]['out_type']
-            out_name = design_var_descriptor[key]['out_name']
+            out_type = design_var_descriptor[key][self.OUT_TYPE]
+            out_name = design_var_descriptor[key][self.OUT_NAME]
             if out_type == 'array':
                 self.set_partial_derivative(
                     out_name, key, self.design.bspline_dict[key]['b_array'])
@@ -182,51 +191,88 @@ class DesignVarDiscipline(SoSWrapp):
         test = True
 
         for key in design_var_descriptor.keys():
-            needed_keys = ['out_type', 'namespace_in',
-                           'out_name', 'namespace_out']
+            needed_keys = [self.OUT_TYPE, 'namespace_in',
+                           self.OUT_NAME, 'namespace_out']
             messages = [f'Supported output types are {self.OUT_TYPES}.',
                         'Please set the input namespace.',
                         'Please set output_name.',
                         'Please set the output namespace.',
                         ]
+            dvar_descriptor_key = design_var_descriptor[key]
             for n_key in needed_keys:
-                if n_key not in design_var_descriptor[key].keys():
+                if n_key not in dvar_descriptor_key.keys():
                     test = False
                     raise (ValueError(
-                        f'Discipline {self.name} design_var_descriptor[{key}] is missing "{n_key}" element. {messages[needed_keys.index(n_key)]}'))
+                        f'Discipline {self.sos_name} design_var_descriptor[{key}] is missing "{n_key}" element. {messages[needed_keys.index(n_key)]}'))
                 else:
-                    out_type = design_var_descriptor[key]['out_type']
+                    out_type = dvar_descriptor_key[self.OUT_TYPE]
                     if out_type == 'float':
                         continue
                     elif out_type == 'array':
-                        array_needs = ['index', 'index_name']
+                        array_needs = [self.INDEX, self.INDEX_NAME]
                         array_mess = [
                             f'Please set an index describing the length of the output array of {key} (index is also used for post proc representations).',
                             f'Please set an index name describing for the output array of {key} (index_name is also used for post proc representations).',
                         ]
                         for k in array_needs:
-                            if k not in design_var_descriptor[key].keys():
+                            if k not in dvar_descriptor_key.keys():
                                 test = False
                                 raise (
                                     ValueError(
-                                        f'Discipline {self.name} design_var_descriptor[{key}] is missing "{k}" element. {array_mess[array_needs.index(k)]}'))
+                                        f'Discipline {self.sos_name} design_var_descriptor[{key}] is missing "{k}" element. {array_mess[array_needs.index(k)]}'))
                     elif out_type == 'dataframe':
-                        dataframe_needs = ['index', 'index_name', 'key']
+                        if self.DATAFRAME_FILL in dvar_descriptor_key:
+                            dataframe_fill = dvar_descriptor_key[self.DATAFRAME_FILL]
+                            if dataframe_fill not in self.DATAFRAME_FILL_POSSIBLE_VALUES:
+                                raise (
+                                    ValueError(
+                                        f'Discipline {self.sos_name} design_var_descriptor[{self.DATAFRAME_FILL}] is not in {self.DATAFRAME_FILL_POSSIBLE_VALUES}'))
+
+                        else:
+                            dataframe_fill = self.DATAFRAME_FILL_POSSIBLE_VALUES[0]
+                        dataframe_needs = [self.INDEX, 'key']
                         dataframe_mess = [
                             f'Please set an index to the output dataframe of {key} (index is also used for post proc representations).',
                             f'Please set an index name to the output dataframe of {key} (index_name is also used for post proc representations).',
                             f'Please set a "key" name to the output dataframe of {key} (name of the column in which the output will be written).',
                         ]
                         for k in dataframe_needs:
-                            if k not in design_var_descriptor[key].keys():
+                            if k not in dvar_descriptor_key.keys():
                                 test = False
                                 raise (
                                     ValueError(
-                                        f'Discipline {self.name} design_var_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
+                                        f'Discipline {self.sos_name} design_var_descriptor[{key}] is missing "{k}" element. {dataframe_mess[dataframe_needs.index(k)]}'))
+
+                        if dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[0]:
+                            if self.INDEX_NAME not in dvar_descriptor_key.keys():
+                                test = False
+                                raise (
+                                    ValueError(
+                                        f'Discipline {self.sos_name} design_var_descriptor[{self.INDEX_NAME}] is missing. Please set an index name to the output dataframe of {key} (index_name is also used for post proc representations).'))
+
+
+                        elif dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[1]:
+                            if 'key' not in dvar_descriptor_key.keys():
+                                test = False
+                                raise (
+                                    ValueError(
+                                        f'Discipline {self.sos_name} design_var_descriptor[key] is missing with option {self.DATAFRAME_FILL_POSSIBLE_VALUES[1]}'))
+
+                            if self.COLUMNS_NAMES not in dvar_descriptor_key.keys():
+                                test = False
+                                raise (
+                                    ValueError(
+                                        f'Discipline {self.sos_name} design_var_descriptor[{self.COLUMNS_NAMES}] is missing with option {self.DATAFRAME_FILL_POSSIBLE_VALUES[1]}'))
+                            if len(dvar_descriptor_key[self.COLUMNS_NAMES]) != 2:
+                                test = False
+                                raise (
+                                    ValueError(
+                                        f'Discipline {self.sos_name} design_var_descriptor[{self.COLUMNS_NAMES}] must be of length 2, the column name for keys and the one for the value'))
+
                     else:
                         test = False
                         raise (ValueError(
-                            f'Discipline {self.name} design_var_descriptor[{key}] out_type is not supported. Supported out_types are {self.OUT_TYPES}'))
+                            f'Discipline {self.sos_name} design_var_descriptor[{key}] out_type is not supported. Supported out_types are {self.OUT_TYPES}'))
 
         return test
 
@@ -263,7 +309,7 @@ class DesignVarDiscipline(SoSWrapp):
             init_xvect = False
 
         if 'BSpline' in charts:
-            list_dv = self.get_sosdisc_inputs('design_var_descriptor')
+            list_dv = self.get_sosdisc_inputs(self.DESIGN_VAR_DESCRIPTOR)
             for parameter in list_dv.keys():
                 new_chart = self.get_chart_BSpline(parameter, init_xvect)
                 if new_chart is not None:
@@ -281,7 +327,7 @@ class DesignVarDiscipline(SoSWrapp):
         Output: InstantiatedPlotlyNativeChart
         """
 
-        design_space = self.get_sosdisc_inputs('design_space')
+        design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         pts = self.get_sosdisc_inputs(parameter)
         ctrl_pts = list(pts)
         starting_pts = list(
@@ -294,11 +340,11 @@ class DesignVarDiscipline(SoSWrapp):
                                                     == parameter, 'value'].to_list()[0][i])
         eval_pts = None
 
-        design_var_descriptor = self.get_sosdisc_inputs('design_var_descriptor')
-        out_name = design_var_descriptor[parameter]['out_name']
-        out_type = design_var_descriptor[parameter]['out_type']
-        index = design_var_descriptor[parameter]['index']
-        index_name = design_var_descriptor[parameter]['index_name']
+        design_var_descriptor = self.get_sosdisc_inputs(self.DESIGN_VAR_DESCRIPTOR)
+        out_name = design_var_descriptor[parameter][self.OUT_NAME]
+        out_type = design_var_descriptor[parameter][self.OUT_TYPE]
+        index = design_var_descriptor[parameter][self.INDEX]
+        index_name = design_var_descriptor[parameter][self.INDEX_NAME]
 
         if out_type == 'array':
             eval_pts = self.get_sosdisc_outputs(out_name)

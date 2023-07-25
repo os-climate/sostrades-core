@@ -165,3 +165,11 @@ class SoSBuilder:
         self.__associated_namespaces_dict = {}
 
         self.__args['associated_namespaces'] = self.associated_namespaces
+
+    def update_associated_namespaces_with_extra_name(self, extra_name, after_name=None):
+        namespace_object_list = [self.__ee.ns_manager.all_ns_dict[ns_id] for ns_id in self.associated_namespaces]
+        new_associated_namespaces = self.__ee.ns_manager.update_namespace_list_with_extra_ns(extra_name,
+                                                                                             after_name=after_name,
+                                                                                             namespace_list=namespace_object_list)
+        self.delete_all_associated_namespaces()
+        self.associate_namespaces(new_associated_namespaces)
