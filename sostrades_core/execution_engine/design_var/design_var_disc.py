@@ -55,7 +55,7 @@ class DesignVarDiscipline(SoSWrapp):
     LIST_ACTIVATED_ELEM = "activated_elem"
     DESC_IN = {
         'design_var_descriptor': {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
-        'design_space': {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
+        'design_space': {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, True),
                                                                        VALUES: ('multiple', None, True),
                                                                        LOWER_BOUND: ('multiple', None, True),
                                                                        UPPER_BOUND: ('multiple', None, True),
