@@ -209,7 +209,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
     DESC_IN = {'algo': {'type': 'string', 'structuring': True},
                'design_space': {'type': 'dataframe', 'structuring': True,
-                                'dataframe_descriptor': {VARIABLES: ('string', None, False),
+                                'dataframe_descriptor': {VARIABLES: ('string', None, True),
                                                          VALUES: ('multiple', None, True),
                                                          LOWER_BOUND: ('multiple', None, True),
                                                          UPPER_BOUND: ('multiple', None, True),

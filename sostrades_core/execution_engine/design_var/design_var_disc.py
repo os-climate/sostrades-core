@@ -64,13 +64,14 @@ class DesignVarDiscipline(SoSWrapp):
     DESIGN_SPACE = DesignVar.DESIGN_SPACE
     DESC_IN = {
         DESIGN_VAR_DESCRIPTOR: {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
-        DESIGN_SPACE: {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
+        DESIGN_SPACE: {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, True),
                                                                      VALUES: ('multiple', None, True),
                                                                      LOWER_BOUND: ('multiple', None, True),
                                                                      UPPER_BOUND: ('multiple', None, True),
                                                                      ENABLE_VARIABLE_BOOL: ('bool', None, True),
                                                                      LIST_ACTIVATED_ELEM: ('list', None, True), },
                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
+
         WRITE_XVECT: {'type': 'bool', 'default': False, 'user_level': 3},
         LOG_DVAR: {'type': 'bool', 'default': False, 'user_level': 3},
     }
