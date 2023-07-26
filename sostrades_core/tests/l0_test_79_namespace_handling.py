@@ -15,6 +15,7 @@ limitations under the License.
 '''
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 from copy import deepcopy
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -78,12 +79,13 @@ class TestNamespaceHandling(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         self.assertListEqual(exec_eng.root_process.proxy_disciplines[0].associated_namespaces, [
-                             'ns_protected__EE.Disc7'])
+            'ns_protected__EE.Disc7'])
         self.assertListEqual(exec_eng.root_process.proxy_disciplines[1].associated_namespaces, [
-                             'ns_protected__EE.Disc72'])
+            'ns_protected__EE.Disc72'])
 
         self.assertTrue(exec_eng.dm.get_data('EE.Disc7.h', 'ns_reference'),
-                        exec_eng.ns_manager.all_ns_dict[exec_eng.root_process.proxy_disciplines[0].associated_namespaces[0]])
+                        exec_eng.ns_manager.all_ns_dict[
+                            exec_eng.root_process.proxy_disciplines[0].associated_namespaces[0]])
         exec_eng.execute()
 
     def test_02_same_sub_process_inside_a_process(self):
@@ -217,6 +219,57 @@ class TestNamespaceHandling(unittest.TestCase):
 
         exec_eng.display_treeview_nodes()
         exec_eng.execute()
+
+    def test_05_update_associated_ns_with_extra_ns(self):
+
+        exec_eng = ExecutionEngine(self.name)
+
+        ns_7 = exec_eng.ns_manager.add_ns('ns_protected', f'{self.name}.Disc7')
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
+        disc7_builder = exec_eng.factory.get_builder_from_module(
+            'Disc7', mod_list)
+        disc7_builder.associate_namespaces(ns_7)
+
+        ns_72 = exec_eng.ns_manager.add_ns(
+            'ns_protected', f'{self.name}.Disc72')
+        disc7_builder2 = exec_eng.factory.get_builder_from_module(
+            'Disc72', mod_list)
+        disc7_builder2.associate_namespaces(ns_72)
+
+        builder_list = [disc7_builder, disc7_builder2]
+
+        self.assertListEqual(disc7_builder.associated_namespaces, ['ns_protected__EE.Disc7'])
+        self.assertListEqual(disc7_builder2.associated_namespaces, ['ns_protected__EE.Disc72'])
+        self.assertEqual(exec_eng.ns_manager.all_ns_dict[disc7_builder.associated_namespaces[0]].value,
+                         f'{self.name}.Disc7')
+        # update namespaces which are associated in builder_list
+        extra_name = 'extra_name'
+        for builder in builder_list:
+            builder.update_associated_namespaces_with_extra_name(extra_name, after_name=self.name)
+        self.assertListEqual(disc7_builder.associated_namespaces, [f'ns_protected__EE.{extra_name}.Disc7'])
+        self.assertListEqual(disc7_builder2.associated_namespaces, [f'ns_protected__EE.{extra_name}.Disc72'])
+        self.assertEqual(exec_eng.ns_manager.all_ns_dict[disc7_builder.associated_namespaces[0]].value,
+                         f'{self.name}.{extra_name}.Disc7')
+        self.assertFalse('ns_protected__EE.Disc7' in exec_eng.ns_manager.all_ns_dict)
+        exec_eng.factory.set_builders_to_coupling_builder(builder_list
+                                                          )
+        exec_eng.configure()
+
+        # # additional test to verify that values_in are used
+        # values_dict = {}
+        # values_dict['EE.Disc7.h'] = array([8., 9.])
+        # values_dict['EE.Disc72.h'] = array([82., 92.])
+        # exec_eng.load_study_from_input_dict(values_dict)
+        #
+        # self.assertListEqual(exec_eng.root_process.proxy_disciplines[0].associated_namespaces, [
+        #     'ns_protected__EE.Disc7'])
+        # self.assertListEqual(exec_eng.root_process.proxy_disciplines[1].associated_namespaces, [
+        #     'ns_protected__EE.Disc72'])
+        #
+        # self.assertTrue(exec_eng.dm.get_data('EE.Disc7.h', 'ns_reference'),
+        #                 exec_eng.ns_manager.all_ns_dict[
+        #                     exec_eng.root_process.proxy_disciplines[0].associated_namespaces[0]])
+        # exec_eng.execute()
 
 
 if '__main__' == __name__:
