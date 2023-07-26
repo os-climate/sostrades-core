@@ -106,7 +106,7 @@ class TestDesignVar(AbstractJacobianUnittest):
             df.columns == [self.design_var_descriptor['x_in']['index_name'], self.design_var_descriptor['x_in']['key']])
         assert (df['value'].values == self.values_dict[f'{self.ns}.x_in']).all()
 
-    def test_02_check_execute_default_dataframe_fill(self):
+    def test_02_check_execute_dataframe_fill_one_column_for_key(self):
         '''
 
         Test the class with the method 'one column for key, one for value'
@@ -141,7 +141,10 @@ class TestDesignVar(AbstractJacobianUnittest):
         self.ee.execute()
 
         disc = self.ee.dm.get_disciplines_with_name(f'{self.ns}.DesignVar')[0]
-
+        filter = disc.get_chart_filter_list()
+        graph_list = disc.get_post_processing_list(filter)
+        # for graph in graph_list:
+        #     graph.to_plotly().show()
         # checks output type is well created for dataframes (most commonly used)
         df = disc.get_sosdisc_outputs('x')
         assert isinstance(df, pd.DataFrame)
