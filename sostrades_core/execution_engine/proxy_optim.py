@@ -530,6 +530,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         instanciated_charts = []
         # Overload default value with chart filter
         # Overload default value with chart filter
+        chart_list = []
         select_all = False
         if chart_filters is not None:
             for chart_filter in chart_filters:
