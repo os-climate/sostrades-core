@@ -343,8 +343,17 @@ class DesignVarDiscipline(SoSWrapp):
             eval_pts = self.get_sosdisc_outputs(out_name)
 
         elif out_type == 'dataframe':
+            df = self.get_sosdisc_outputs(out_name)
+            if self.DATAFRAME_FILL in design_var_descriptor[parameter]:
+                dataframe_fill = design_var_descriptor[parameter][self.DATAFRAME_FILL]
+            else:
+                dataframe_fill = self.DATAFRAME_FILL_POSSIBLE_VALUES[0]
             col_name = design_var_descriptor[parameter]['key']
-            eval_pts = self.get_sosdisc_outputs(out_name)[col_name].values
+            if dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[0]:
+                eval_pts = df[col_name].values
+            elif dataframe_fill == self.DATAFRAME_FILL_POSSIBLE_VALUES[1]:
+                column_names = design_var_descriptor[parameter][self.COLUMNS_NAMES]
+                eval_pts = df[df[column_names[0]] == col_name][column_names[1]].values
 
         if eval_pts is None:
             print('eval pts not found in sos_disc_outputs')
