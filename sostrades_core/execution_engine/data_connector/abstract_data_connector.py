@@ -16,7 +16,6 @@ limitations under the License.
 
 import abc
 
-
 class AbstractDataConnector(abc.ABC):
     """ 
     Abstract class to inherit in order to build specific data connector
@@ -66,6 +65,24 @@ class AbstractDataConnector(abc.ABC):
         """
         Abstract method to overload in order set request into the connector data structure
         """
+
+    def get_data_from_loaded_db(self, loaded_data, var_name):
+        """
+        get data from loaded data for given variable 
+        :param loaded_data: data from which we should extract value 
+        :type dict, dataframe
+        :param var_name: name of variable name to get the value
+        :type string
+        """
+        # if data is a dictionnary get data if variable in dictionnary, else return None
+        if isinstance(loaded_data, dict):
+            if var_name in loaded_data:
+                return loaded_data[var_name]
+            else:
+                return None 
+        else:
+            return None
+
 
     def get_connector_mode(self, connector_info):
         """
