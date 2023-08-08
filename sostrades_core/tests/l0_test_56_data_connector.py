@@ -313,6 +313,48 @@ class TestDataConnector(unittest.TestCase):
         assert b_dm == b_db
         assert a_dm != a_db
 
+    def test_08_trino_two_db(self):
+        '''
+        Test Trino with two different databases data connector for local and shared namespaces
+        '''
+        study_name = 'usecase'
+        exec_eng = ExecutionEngine(study_name)
+        factory = exec_eng.factory
+        self.repo = 'sostrades_core.sos_processes.test'
+        self.proc_name = 'test_disc1_two_ns_db_trino'
+        builder_proc = factory.get_builder_from_process(repo=self.repo,
+                                                        mod_id=self.proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder_proc)
+
+        exec_eng.configure()
+
+        disc_dict = {f'{study_name}.x': 2.,
+                     f'{study_name}.a': 2.,
+                     f'{study_name}.Disc1.b': 2.}
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.configure()
+        exec_eng.execute()
+        dm = exec_eng.dm
+        x_dm = dm.get_value(f'{study_name}.x')
+        b_dm = dm.get_value(f'{study_name}.Disc1.b')
+        a_dm = dm.get_value(f'{study_name}.a')
+
+        a_db_1 = 3.2
+        a_db_2 = 0.
+        b_db = 0.
+        x_db = 1.
+
+        # in process, ns_a (for variable x) is related to database, ns_b (for variable a) is not. Local namespace is linked to database
+        # assert that value in dm is from database for variables x and b but not for a
+
+        assert x_dm == x_db
+        assert b_dm == b_db
+        assert a_dm != a_db_1
+        assert a_dm != a_db_2
+
+
+
     def _test_10_data_commons_extraction(self):
         '''
         Test the extraction of tables in data commons with mysql request
