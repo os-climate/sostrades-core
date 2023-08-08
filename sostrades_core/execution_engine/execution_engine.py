@@ -189,9 +189,9 @@ class ExecutionEngine:
         if self.ns_manager.database_infos is not None : 
             if self.ns_manager.database_conf_path is not None:
                 loaded_data = {}
+                connector_dict = {}
                 with open(self.ns_manager.database_conf_path , 'r') as openfile:
                     conf_data = json.load(openfile)
-
                 # create connectors and pull data for shared namespaces
                 if 'shared_ns' in self.ns_manager.database_infos:
                     for ns_id, database_info in self.ns_manager.database_infos['shared_ns'].items():
@@ -206,8 +206,8 @@ class ExecutionEngine:
                                                                                             conf_data[database_label]['connection_data'])
                             # load data using connector
                             database_data = connector.load_data(ns.database_infos['database_query'])
-                            # store data for later use
-                            ns_id = ns.get_ns_id()
+                            # store data and connector for later use
+                            connector_dict[ns_id] = connector 
                             self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
                             loaded_data[ns_id] = database_data 
 
@@ -220,26 +220,31 @@ class ExecutionEngine:
                         ns = self.ns_manager.get_local_namespace(disc)
                         ns.database_infos = db_info
                         database_label = ns.database_infos['database_label']
-                        data_in = disc.get_data_in()
                         self.logger.info(f"Loading data in database for local variables of discipline {disc_id}")
                         # create local namespace connector 
                         connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'], database_label, 
                                                                                         conf_data[database_label]['connection_data'])
-                        # load data 
+                        # load data using connecotr
                         database_data = connector.load_data(ns.database_infos['database_query'])
                         ns_id = ns.get_ns_id()
+                        connector_dict[ns_id] = connector 
                         self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
                         loaded_data[ns_id] = database_data   
 
-                
+                # TODO must be refactored to not loop on all variables 
                 for var_id, dict_val in self.dm.data_dict.items():
+                    # loop on all variable, get associated namespace and get data from loaded database using correct method
                     var_name = dict_val[ProxyDiscipline.VAR_NAME]
                     ns_var = dict_val[ProxyDiscipline.NS_REFERENCE]
                     ns_id = ns_var.get_ns_id()
-                    if ns_id in loaded_data:
-                        if var_name in loaded_data[ns_id]: 
-                            dict_val[ProxyDiscipline.VALUE] = loaded_data[ns_id][var_name]
-
+                    if ns_id in loaded_data and ns_id in connector_dict:
+                        # get variable value from loaded database with the used connector
+                        loaded_value = connector_dict[ns_id].get_data_from_loaded_db(loaded_data[ns_id], var_name)
+                        if loaded_value is not None:
+                            # log variable name as from database
+                            self.logger.info(f"Loading variable {var_name} from database")
+                            # set value got from database in data dict
+                            dict_val[ProxyDiscipline.VALUE] = loaded_value
             else: 
                 self.logger.warning("Database activated but no path is set, database can't be loaded")
 
