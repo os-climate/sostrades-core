@@ -24,7 +24,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
-from os.path import dirname, isdir
+from os.path import dirname, isdir, join
 from os import listdir, makedirs, environ
 import logging
 
@@ -182,7 +182,7 @@ def multiple_run(usecase, force_run=False) -> tuple[Union[BaseStudyManager, None
     # So check that environment variable before using de default location
 
     # Default variable location
-    base_dir = f'{gettempdir()}/references'
+    base_dir = f'{gettempdir()}/SOS_TRADES_REFERENCES'
 
     if environ.get('SOS_TRADES_REFERENCES_SPECIFIC_FOLDER') is not None:
         base_dir = environ['SOS_TRADES_REFERENCES_SPECIFIC_FOLDER']
@@ -252,7 +252,8 @@ def multiple_configure(usecase):
     imported_module = import_module(usecase)
     uc = getattr(imported_module, 'Study')()
     # First step : Dump data to a temp folder
-    uc.set_dump_directory(gettempdir())
+    init_dump_dir = join(gettempdir(),'SOS_TRADES_REFERENCES')
+    uc.set_dump_directory(init_dump_dir)
     uc.load_data()
     dump_dir = uc.dump_directory
     uc.dump_data(dump_dir)
@@ -273,7 +274,7 @@ def multiple_configure(usecase):
     study_2.execution_engine.configure()
     # Deepcopy dm
     dm_dict_2 = deepcopy(study_2.execution_engine.get_anonimated_data_dict())
-    study_2.set_dump_directory(dump_dir=dump_dir)
+    study_2.set_dump_directory(dump_dir=init_dump_dir)
 
     delete_keys_from_dict(dm_dict_1), delete_keys_from_dict(dm_dict_2)
 

@@ -21,6 +21,7 @@ from os.path import join, dirname, basename
 from pathlib import Path
 from os import makedirs
 from time import sleep
+from tempfile import gettempdir
 from io import BytesIO, StringIO
 from shutil import rmtree, make_archive
 
@@ -76,9 +77,7 @@ class DataSerializer:
         if root_dir is not None:
             self.dm_db_root_dir = root_dir
         else:
-            import sostrades_core
-            self.dm_db_root_dir = join(
-                dirname(dirname(sostrades_core.__file__)), 'DM_dB')
+            self.dm_db_root_dir = join(gettempdir(), 'DM_dB')
 
         self.study_filename = study_filename
         self.dm_val_file = None
