@@ -19,7 +19,7 @@ from sostrades_core.execution_engine.data_connector.abstract_data_connector impo
 import trino
 import re
 import copy
-
+from pandas import DataFrame, Series
 
 class TrinoDataConnector(AbstractDataConnector):
     """
@@ -28,6 +28,10 @@ class TrinoDataConnector(AbstractDataConnector):
 
     data_connection_list = ['hostname',
                             'port', 'username', 'catalog', 'schema']
+
+    VARNAME = 'varname'
+    VALUE = 'value'
+
 
     NAME = 'TRINO'
 
@@ -74,6 +78,16 @@ class TrinoDataConnector(AbstractDataConnector):
         self.catalog = data_connection_info['catalog']
         self.schema = data_connection_info['schema']
 
+        # create trino connector 
+        self.trino_connection = trino.dbapi.connect(
+            host=self.hostname,
+            port=self.port,
+            user=self.username,
+            catalog=self.catalog,
+            schema=self.schema,
+            http_scheme='https')
+
+
     def load_data(self, connection_data):
         """
         Method to load a data from Trino regarding input information
@@ -81,34 +95,23 @@ class TrinoDataConnector(AbstractDataConnector):
         :param: connection_data_dict, contains the necessary information to connect to Trino API with request
         :type: dict
 
+        :param: convert to df
+        :type
         """
-
-        self._extract_connection_info(connection_data)
-
-        # Connect to Trino api
-        trino_connection = trino.dbapi.connect(
-            host=self.hostname,
-            port=self.port,
-            user=self.username,
-            catalog=self.catalog,
-            schema=self.schema,
-            http_scheme='http')
 
         # Get the data from dremio
         table = connection_data[self.CONNECTOR_TABLE]
-        condition = connection_data[self.CONNECTOR_CONDITION]
+        #condition = connection_data[self.CONNECTOR_CONDITION]
         sql = f'SELECT * FROM {table}'
 
-        if condition:
-            sql = f'{sql} WHERE {condition}'
-
-        connection_cursor = trino_connection.cursor()
+        connection_cursor = self.trino_connection.cursor()
         connection_cursor.execute(sql)
         rows = connection_cursor.fetchall()
 
         self.__update_table_column(connection_cursor, table)
-
-        return self.__map_data_with_table_column(rows, table)
+        mapped_values = self.__map_data_with_table_column(rows, table)
+        df_value = DataFrame(mapped_values)
+        return df_value
 
     def write_data(self, connection_data):
 
@@ -211,6 +214,25 @@ class TrinoDataConnector(AbstractDataConnector):
             else:
                 dictionary_to_update[key] = value
 
+
+    def get_data_from_loaded_db(self, loaded_data, var_name):
+        """
+        Overload existing method to get data from loaded data for given variable 
+        :param loaded_data: data from which we should extract value 
+        :type dict, dataframe
+        :param var_name: name of variable name to get the value
+        :type string
+        """
+        # if loaded data is a dataframe, and structure is the same as expected, get data
+        if isinstance(loaded_data, DataFrame):
+            if Series([TrinoDataConnector.VARNAME, TrinoDataConnector.VALUE]).isin(loaded_data.columns).all():
+                if var_name in loaded_data[TrinoDataConnector.VARNAME].values:
+                    return loaded_data.loc[loaded_data[TrinoDataConnector.VARNAME] == var_name, TrinoDataConnector.VALUE].iloc[0]
+                else:
+                    return None
+        # if not return None
+        else:
+            return None
 
 if __name__ == '__main__':
 
