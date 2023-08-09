@@ -23,7 +23,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Disc1 Process',
+        'label': 'Process test of trino connector',
         'description': '',
         'category': '',
         'version': '',
