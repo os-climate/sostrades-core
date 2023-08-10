@@ -50,7 +50,7 @@ class TrinoDataConnector(AbstractDataConnector):
 
     def __init__(self, data_connection_info=None):
         """
-        Constructor for Dremio data connector
+        Constructor for Trino data connector
 
         :param data_connection_info: contains necessary data for connection
         :type data_connection_info: dict
@@ -99,7 +99,7 @@ class TrinoDataConnector(AbstractDataConnector):
         :type
         """
 
-        # Get the data from dremio
+        # Get the data from trino
         table = connection_data[self.CONNECTOR_TABLE]
         #condition = connection_data[self.CONNECTOR_CONDITION]
         sql = f'SELECT * FROM {table}'
