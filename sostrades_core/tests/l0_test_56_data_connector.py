@@ -317,6 +317,8 @@ class TestDataConnector(unittest.TestCase):
         '''
         Test Trino with two different databases data connector for local and shared namespaces
         '''
+
+        # initialize classes, import process        
         study_name = 'usecase'
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
@@ -329,25 +331,33 @@ class TestDataConnector(unittest.TestCase):
 
         exec_eng.configure()
 
+        # set values for input variables
         disc_dict = {f'{study_name}.x': 2.,
                      f'{study_name}.a': 2.,
                      f'{study_name}.Disc1.b': 2.}
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.configure()
+
+        # execute usecase
         exec_eng.execute()
+        # get dm and get values from dm 
         dm = exec_eng.dm
         x_dm = dm.get_value(f'{study_name}.x')
         b_dm = dm.get_value(f'{study_name}.Disc1.b')
         a_dm = dm.get_value(f'{study_name}.a')
 
+
+        # in process, ns_a (for variable x) is related to database, ns_b (for variable a) is not. Local namespace is linked to database
+        # assert that value in dm is from database for variables x and b but not for a. Check of values is done after the execution because values from database are
+        # defined during "prepare_execution" step of execution_engine.
+
+        # values from the databases for test
         a_db_1 = 3.2
         a_db_2 = 0.
         b_db = 0.
         x_db = 1.
 
-        # in process, ns_a (for variable x) is related to database, ns_b (for variable a) is not. Local namespace is linked to database
-        # assert that value in dm is from database for variables x and b but not for a
-
+        # assert value in dm is from database disca for x variable and discb for b
         assert x_dm == x_db
         assert b_dm == b_db
         assert a_dm != a_db_1
