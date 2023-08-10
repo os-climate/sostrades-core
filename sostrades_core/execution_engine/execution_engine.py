@@ -185,11 +185,38 @@ class ExecutionEngine:
         Mehtod called in prepare_execution
         Checks if a namespace is related to a database, create connector, load data and fill dm with the collected data
         """
+        
+        def load_data_for_ns_with_connector(namespace, database_info):
+            """
+            Load data for given namespace using associated connector
+            :param namespace: Namespace for which data is retrieved from the database
+            :type: Namespace
+            :param database_infos: database informations 
+            :type: dict  
+            :return connector: create connector
+            :type AbstractDataConnector
+            :return database_data: loaded data from database
+            :type dict, pandas.DataFrame
+            """
+
+            # set namespace database infos
+            namespace.database_infos = database_info
+            database_label = database_info['database_label']
+            # create (or get if already exists) connector 
+            connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'], database_label, 
+                                                                            conf_data[database_label]['connection_data'])
+            # load data using created connector
+            database_data = connector.load_data(namespace.database_infos['database_query'])
+            self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
+
+            return connector, database_data
+
         # if database is activated
         if self.ns_manager.database_infos is not None : 
             if self.ns_manager.database_conf_path is not None:
                 loaded_data = {}
                 connector_dict = {}
+                # load configuration file of databases
                 with open(self.ns_manager.database_conf_path , 'r') as openfile:
                     conf_data = json.load(openfile)
                 # create connectors and pull data for shared namespaces
@@ -197,38 +224,27 @@ class ExecutionEngine:
                     for ns_id, database_info in self.ns_manager.database_infos['shared_ns'].items():
                         # check if ns_id if all_ns_dict
                         if ns_id in self.ns_manager.all_ns_dict:
-                            # get ns
+                            # get namespace using namespace id
                             ns = self.ns_manager.all_ns_dict[ns_id]
-                            ns.database_infos = database_info
-
-                            database_label = ns.database_infos['database_label']
-                            connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'], database_label, 
-                                                                                            conf_data[database_label]['connection_data'])
-                            # load data using connector
-                            database_data = connector.load_data(ns.database_infos['database_query'])
+                            # get data for shared namespace
+                            self.logger.info(f"Loading data in database for shared namespace {ns_id}")
+                            connector, database_data = load_data_for_ns_with_connector(ns, database_info)
                             # store data and connector for later use
                             connector_dict[ns_id] = connector 
-                            self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
                             loaded_data[ns_id] = database_data 
 
                 # create connectors and pull data for local namespaces
                 if 'local_ns' in self.ns_manager.database_infos:
-                    for disc_id, db_info in self.ns_manager.database_infos['local_ns'].items():
+                    for disc_id, database_info in self.ns_manager.database_infos['local_ns'].items():
                         # discipline name is unique
                         disc = self.dm.get_disciplines_with_name(disc_id)[0]
                         # get local ns of discipline 
                         ns = self.ns_manager.get_local_namespace(disc)
-                        ns.database_infos = db_info
-                        database_label = ns.database_infos['database_label']
                         self.logger.info(f"Loading data in database for local variables of discipline {disc_id}")
-                        # create local namespace connector 
-                        connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'], database_label, 
-                                                                                        conf_data[database_label]['connection_data'])
-                        # load data using connecotr
-                        database_data = connector.load_data(ns.database_infos['database_query'])
+                        # get data for local namespace
+                        connector, database_data = load_data_for_ns_with_connector(ns, database_info)
                         ns_id = ns.get_ns_id()
                         connector_dict[ns_id] = connector 
-                        self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
                         loaded_data[ns_id] = database_data   
 
                 # TODO must be refactored to not loop on all variables 
