@@ -353,7 +353,6 @@ class FunctionManager:
 
         return self.functions[variable_name][self.VALUE]
 
-
     @staticmethod
     def scale_function(val, val_range):
         """
