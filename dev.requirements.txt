@@ -48,7 +48,7 @@ defusedxml==0.7.1
     # via python3-saml
 dill==0.3.7
     # via openturns
-dnspython==2.4.2
+dnspython==1.16.0
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   eventlet
@@ -59,7 +59,7 @@ ecos==2.0.12
     # via cvxpy
 et-xmlfile==1.1.0
     # via openpyxl
-eventlet==0.33.3
+eventlet==0.30.2
     # via -r ./sostrades-webapi/requirements.in
 fastjsonschema==2.15.1 ; python_version >= "3"
     # via -r ./gemseo/requirements.txt
