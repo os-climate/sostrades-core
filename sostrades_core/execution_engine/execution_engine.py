@@ -193,6 +193,10 @@ class ExecutionEngine:
             :type: Namespace
             :param database_infos: database informations 
             :type: dict  
+            :return connector: create connector
+            :type AbstractDataConnector
+            :return database_data: loaded data from database
+            :type dict, pandas.DataFrame
             """
 
             # set namespace database infos
