@@ -352,3 +352,24 @@ class FunctionManager:
     def compute_dobjective_dweight(self, variable_name):
 
         return self.functions[variable_name][self.VALUE]
+
+    @staticmethod
+    def scale_function(val, val_range):
+        """
+        Scale a function in a range.
+        :param val: value to scale
+        :param val_range: range for the function as [ideal, anti-ideal] (so ideal > anti-ideal for maximisation)
+        :return: scaled function with 0 corresponding to ideal value and 1 to anti-ideal
+        """
+        # TODO: consider using a positive interval and adding a maximisation flag in the sake of clarity
+        return np.array([(val - val_range[0]) / (val_range[1] - val_range[0])])
+
+    @staticmethod
+    def unscale_function(val_sc, val_range):
+        """
+        Unscale a function in a range.
+        :param val_sc: scaled function with 0 corresponding to ideal value and 1 to anti-ideal
+        :param val_range: range for the function as [ideal, anti-ideal] (so ideal > anti-ideal for maximisation)
+        :return: function in original unit
+        """
+        return val_range[0] + val_sc * (val_range[1] - val_range[0])
