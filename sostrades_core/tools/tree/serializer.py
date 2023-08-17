@@ -102,7 +102,7 @@ class DataSerializer:
         ''' prepare folder that will store local study DM files '''
         db_dir = self.dm_db_root_dir
         if not Path(db_dir).is_dir():
-            if Path.exists(db_dir):
+            if Path(db_dir).is_file():
                 # sometimes the folder is a file (!) so we remove it
                 try:
                     remove(db_dir)
