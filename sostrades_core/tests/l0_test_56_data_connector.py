@@ -146,6 +146,7 @@ class TestDataConnector(unittest.TestCase):
 
         self.process2 = self.exec_eng2.root_process
 
+        self.error_message_assert_database = "Value from datamanager is different from the used database, check the configuration file of database access and/or used database/dm"
     def tearDown(self):
         if Path(self.file_to_del).is_file():
             remove(self.file_to_del)
@@ -309,9 +310,7 @@ class TestDataConnector(unittest.TestCase):
         # in process, ns_a (for variable x) is related to database, ns_b (for variable a) is not. Local namespace is linked to database
         # assert that value in dm is from database for variables x and b but not for a
 
-        assert x_dm == x_db
-        assert b_dm == b_db
-        assert a_dm != a_db
+        assert x_dm == x_db and b_dm == b_db and a_dm != a_db , self.error_message_assert_database
 
     def test_08_trino_two_db(self):
         '''
@@ -358,10 +357,7 @@ class TestDataConnector(unittest.TestCase):
         x_db = 1.
 
         # assert value in dm is from database disca for x variable and discb for b
-        assert x_dm == x_db
-        assert b_dm == b_db
-        assert a_dm != a_db_1
-        assert a_dm != a_db_2
+        assert x_dm == x_db and b_dm == b_db and a_dm != a_db_1 and a_dm != a_db_2 , self.error_message_assert_database
 
 
 
