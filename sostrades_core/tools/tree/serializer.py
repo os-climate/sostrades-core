@@ -19,7 +19,7 @@ Data manager pickle (de)serializer
 '''
 from os.path import join, dirname, basename
 from pathlib import Path
-from os import makedirs
+from os import makedirs, remove
 from time import sleep
 from tempfile import gettempdir
 from io import BytesIO, StringIO
@@ -102,7 +102,14 @@ class DataSerializer:
         ''' prepare folder that will store local study DM files '''
         db_dir = self.dm_db_root_dir
         if not Path(db_dir).is_dir():
-            makedirs(db_dir)
+            if Path(db_dir).is_file():
+                # sometimes the folder is a file (!) so we remove it
+                try:
+                    remove(db_dir)
+                except OSError as e:
+                    print("Error DM_db should not be a file and could not be deleted: %s : %s" % (db_dir, e.strerror))
+            # we set the option exists_ok=True so that if the folder already exists it doen't raise an error
+            makedirs(db_dir, exist_ok=True)
         else:
             Warning(f'Folder storing data already exists {db_dir}')
 
