@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=./sostrades-core/dev.requirements.txt ./GreenProductPortfolio/requirements.in ./gemseo/requirements.txt ./pcaf/requirements.in ./sostrades-core/requirements.in ./sostrades-ontology/requirements.in ./sostrades-webapi/requirements.in ./witness-core/requirements.in ./witness-energy/requirements.in
 #
-alembic==1.11.2
+alembic==1.11.3
     # via flask-migrate
 attrs==23.1.0
     # via dremio-client
@@ -34,7 +34,7 @@ cma==2.7.0
     #   pymoo
 confuse==2.0.1
     # via dremio-client
-coverage==7.2.7
+coverage==7.3.0
     # via nose2
 custom-inherit==2.4.0
     # via -r ./gemseo/requirements.txt
@@ -234,11 +234,11 @@ pathspec==0.11.2
     # via black
 pdfo==1.0 ; python_version >= "3"
     # via -r ./gemseo/requirements.txt
-petsc==3.12.3 ; platform_system != "Windows"
+petsc==3.19.4 ; platform_system != "Windows"
     # via
     #   -r ./sostrades-core/requirements.in
     #   petsc4py
-petsc4py==3.12.0 ; platform_system != "Windows"
+petsc4py==3.19.4 ; platform_system != "Windows"
     # via
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-core/requirements.in
@@ -399,7 +399,7 @@ sympy==1.4
     #   -r ./sostrades-core/requirements.in
 table-logger @ git+https://github.com/AleksTk/table-logger.git@refs/pull/11/head
     # via -r ./sostrades-ontology/requirements.in
-tenacity==8.2.2
+tenacity==8.2.3
     # via plotly
 textdistance==4.2.0
     # via -r ./sostrades-ontology/requirements.in
