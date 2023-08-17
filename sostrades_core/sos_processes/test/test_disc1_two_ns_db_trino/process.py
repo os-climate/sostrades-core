@@ -37,9 +37,12 @@ class ProcessBuilder(BaseProcessBuilder):
                      }
         db2_info = {'database_label': 'db2', 'database_query': {'connector_table': 'discb'}
                      }
+        # associate namespace to database
         database_infos = {'shared_ns' : {f'ns_a__{self.ee.study_name}' : db1_infos}, 'local_ns': {f'{self.ee.study_name}.Disc1' : db2_info}}
         self.ee.ns_manager.add_ns_def(ns_info = {'ns_a': self.ee.study_name, 'ns_b': self.ee.study_name})
-        db_conf_path = os.environ['SOS_TRADES_MONGODB_CONFIGURATION']
+
+        # get configuration path file
+        db_conf_path = os.environ.get('SOS_TRADES_MONGODB_CONFIGURATION', None)
 
         self.ee.ns_manager.set_database_conf_path(db_conf_path)
         self.ee.ns_manager.set_db_infos_to_ns(database_infos)

@@ -479,7 +479,7 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         if data_integrity_passed:
             if not study_2.ee.factory.contains_mdo:
                 post_processing_passed, error_msg_post_processing = test_post_processing_study(
-                    study=study_2, force_run=force_run)
+                    study=study_2, force_run=True)
                 test_passed = post_processing_passed
                 info_msg += error_msg_post_processing
 
