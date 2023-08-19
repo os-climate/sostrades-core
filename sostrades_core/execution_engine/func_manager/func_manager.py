@@ -365,13 +365,13 @@ class FunctionManager:
         return np.array([(val - val_range[0]) / (val_range[1] - val_range[0])])
 
     @staticmethod
-    def scale_function_derivative(val_range):
+    def scale_function_derivative(val_range) -> float:
         """
         Derivative of the scale function
         :param val_range: range for the function as [ideal, anti-ideal] (so ideal > anti-ideal for maximisation)
         :return: derivative of the scaled function with 0 corresponding to ideal value and 1 to anti-ideal
         """
-        return np.array([1. / (val_range[1] - val_range[0])])
+        return 1. / (val_range[1] - val_range[0])
 
     @staticmethod
     def unscale_function(val_sc, val_range):
