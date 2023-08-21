@@ -382,14 +382,3 @@ class FunctionManager:
         :return: function in original unit
         """
         return val_range[0] + val_sc * (val_range[1] - val_range[0])
-
-    @staticmethod
-    def compute_increments(vect):
-        """
-        computes the vector of increments between the successive components of a vector
-        param: vect : numpy array or dataframe Series
-        """
-        increments = np.zeros(len(vect))
-        increments[1:len(vect)] = np.array(vect[1:]) - np.array(vect[0:-1])
-
-        return increments
