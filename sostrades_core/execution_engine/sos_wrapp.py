@@ -72,7 +72,6 @@ class SoSWrapp(object):
     # column_editable)}
     DATAFRAME_DESCRIPTOR = 'dataframe_descriptor'
     DYNAMIC_DATAFRAME_COLUMNS = 'dynamic_dataframe_columns'
-
     DATAFRAME_EDITION_LOCKED = 'dataframe_edition_locked'
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
     IO_TYPE_IN = 'in'
@@ -579,7 +578,7 @@ class SoSWrapp(object):
             else:
                 key_type = self.DESC_OUT[key]['type']
             value = self.get_sosdisc_outputs(key)
-        self.DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
+
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
             lines_nb = len(value)

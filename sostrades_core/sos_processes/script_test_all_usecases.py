@@ -427,7 +427,9 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
             study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
         except Exception as e:
-            raise Exception(f'\nERROR during first run of usecase {study.study_full_path}: {e}')
+            error_msg_post_processing += f'\nERROR while computing post processing for usecase {study.study_full_path}:\n {e}'
+            post_processing_test_passed = False
+            return post_processing_test_passed, error_msg_post_processing
     else:
         logging.info(f'{study.study_full_path} is configured not to run, skipping run for post processing test.')
 
@@ -463,6 +465,8 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
     - if not MDO : test integrity of data after computing post-processings
     - if not MDO and not MDA : test double run
 
+    If force run is true : run MDA with strong coupling and MDOs
+
     """
     logging.disable(logging.INFO)
     info_msg = ""
@@ -477,15 +481,15 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         test_passed = data_integrity_passed
 
         if data_integrity_passed:
-            if not study_2.ee.factory.contains_mdo:
+            if not study_2.ee.factory.contains_mdo or force_run:
                 post_processing_passed, error_msg_post_processing = test_post_processing_study(
-                    study=study_2, force_run=force_run)
+                    study=study_2, force_run=True)
                 test_passed = post_processing_passed
                 info_msg += error_msg_post_processing
 
                 if post_processing_passed:
-                    if not study_2.ee.factory.contains_mda_with_strong_couplings:
-                        run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
+                    if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
+                        run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=True)
                         test_passed = run_test_passed
                         info_msg += error_msg_run
                     else:
