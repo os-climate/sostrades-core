@@ -510,8 +510,9 @@ class SoSWrapp(object):
             y_column = None
 
         # in the particular case of design_var_disc, the design_var dataframe can be filled in 2 different ways
-        # it's properties can be recovered from the self.design object
+        # its properties can be recovered from the self.design object (which does not exist for other disc)
         if hasattr(self, 'design') and self.design.design_var_descriptor is not None and \
+                self.DATAFRAME_FILL in self.design.design_var_descriptor[x_key].keys() and \
                 self.design.design_var_descriptor[x_key][self.DATAFRAME_FILL] == self.ONE_COLUMN_FOR_KEY:
             dataframefillmethod = self.design.design_var_descriptor[x_key][self.DATAFRAME_FILL]
             lines_nb_y, index_y_column = self.get_boundary_jac_for_design_var_columns(
@@ -579,7 +580,7 @@ class SoSWrapp(object):
     def get_boundary_jac_for_design_var_columns(self, ykey, column, io_type, xkey, dataframefillmethod):
         '''
         particular case of the design_var discipline where the design var dataframe has been filled following the
-        'one column for one key' method. In this case, all the name for the assets xkey are in the first column
+        'one column for key, one for value' method. In this case, all the name for the assets xkey are in the first column
         of the column names and their value in the 2nd column of column names of the dataframe value
 
         The method finds the number of design var per asset and the index of occurence of the asset in the list of asset for a given

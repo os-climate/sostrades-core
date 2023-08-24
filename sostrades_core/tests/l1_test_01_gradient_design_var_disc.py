@@ -12,7 +12,7 @@ class GradiantAssetDiscTestCase(AbstractJacobianUnittest):
     """
     AssetDisc gradients test class
     """
-    AbstractJacobianUnittest.DUMP_JACOBIAN = True
+    #AbstractJacobianUnittest.DUMP_JACOBIAN = True
     np.random.seed(42)
 
     def analytic_grad_entry(self):
@@ -36,8 +36,7 @@ class GradiantAssetDiscTestCase(AbstractJacobianUnittest):
 
         self.design_var_descriptor = {'x_in': {'out_name': 'x',
                                                'type': 'array',
-                                               'out_type': 'dataframe',
-                                               'key': 'value',
+                                               'out_type': 'array',
                                                'index': np.arange(0, 4, 1),
                                                'index_name': 'test',
                                                'namespace_in': 'ns_public',
@@ -94,7 +93,6 @@ class GradiantAssetDiscTestCase(AbstractJacobianUnittest):
                             inputs=[f'{self.ns}.x_in', f'{self.ns}.z_in'],
                             outputs=[f'{self.ns}.x', f'{self.ns}.z']
                             )
-        print()
 
     def test_02_analytic_gradient_dataframe_fill_one_column_for_key(self):
         """Test gradient with design var dataframe description 'one column for key, one column for value' """
@@ -112,12 +110,16 @@ class GradiantAssetDiscTestCase(AbstractJacobianUnittest):
                                                },
                                       'z_in': {'out_name': 'z',
                                                'type': 'array',
-                                               'out_type': 'array',
+                                               'out_type': 'dataframe',
+                                               'key': 'value',
                                                'index': np.arange(0, 10, 1),
-                                               'index_name': 'index',
+                                               'index_name': 'years',
                                                'namespace_in': 'ns_public',
-                                               'namespace_out': 'ns_public'
-                                               }
+                                               'namespace_out': 'ns_public',
+                                               DesignVarDiscipline.DATAFRAME_FILL:
+                                                   DesignVarDiscipline.DATAFRAME_FILL_POSSIBLE_VALUES[1],
+                                               DesignVarDiscipline.COLUMNS_NAMES: ['name', 'sharevalue']
+                                               },
                                       }
         self.values_dict[
             f'{self.ns}.DesignVar.design_var_descriptor'] = self.design_var_descriptor
@@ -133,7 +135,6 @@ class GradiantAssetDiscTestCase(AbstractJacobianUnittest):
                             derr_approx='complex_step',
                             threshold=1e-5,
                             local_data=disc.local_data,
-                            inputs=[f'{self.ns}.x_in'],
-                            outputs=[f'{self.ns}.x']
+                            inputs=[f'{self.ns}.x_in', f'{self.ns}.z_in'],
+                            outputs=[f'{self.ns}.x', f'{self.ns}.z']
                             )
-        #print()
