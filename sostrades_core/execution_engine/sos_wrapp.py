@@ -18,6 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import logging
 from sostrades_core.tools.base_functions.compute_len import compute_len
+from sostrades_core.execution_engine.design_var.design_var import DesignVar
 from numpy import zeros, array, ndarray, complex128
 from functools import wraps
 
@@ -74,6 +75,9 @@ class SoSWrapp(object):
     DYNAMIC_DATAFRAME_COLUMNS = 'dynamic_dataframe_columns'
     DATAFRAME_EDITION_LOCKED = 'dataframe_edition_locked'
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
+    DATAFRAME_FILL = DesignVar.DATAFRAME_FILL
+    ONE_COLUMN_FOR_KEY = DesignVar.ONE_COLUMN_FOR_KEY
+    COLUMNS_NAMES = DesignVar.COLUMNS_NAMES
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
@@ -490,15 +494,6 @@ class SoSWrapp(object):
         Set the derivative of the column y_key by the column x_key inside the jacobian of GEMS self.jac
         y_key_column = 'y_key, column_name'
         '''
-        if len(y_key_column) == 2:
-            y_key, y_column = y_key_column
-        else:
-            y_key = y_key_column[0]
-            y_column = None
-
-        lines_nb_y, index_y_column = self.get_boundary_jac_for_columns(
-            y_key, y_column, self.IO_TYPE_OUT)
-
         if len(x_key_column) == 2:
             x_key, x_column = x_key_column
         else:
@@ -507,6 +502,23 @@ class SoSWrapp(object):
 
         lines_nb_x, index_x_column = self.get_boundary_jac_for_columns(
             x_key, x_column, self.IO_TYPE_IN)
+
+        if len(y_key_column) == 2:
+            y_key, y_column = y_key_column
+        else:
+            y_key = y_key_column[0]
+            y_column = None
+
+        # in the particular case of design_var_disc, the design_var dataframe can be filled in 2 different ways
+        # it's properties can be recovered from the self.design object
+        if hasattr(self, 'design') and self.design.design_var_descriptor is not None and \
+                self.design.design_var_descriptor[x_key][self.DATAFRAME_FILL] == self.ONE_COLUMN_FOR_KEY:
+            dataframefillmethod = self.design.design_var_descriptor[x_key][self.DATAFRAME_FILL]
+            lines_nb_y, index_y_column = self.get_boundary_jac_for_design_var_columns(
+                y_key, y_column, self.IO_TYPE_OUT, x_key, dataframefillmethod)
+        else:
+            lines_nb_y, index_y_column = self.get_boundary_jac_for_columns(
+                y_key, y_column, self.IO_TYPE_OUT)
 
         # Convert keys in namespaced keys in the jacobian matrix for GEMS
         y_key_full = self.attributes['output_full_name_map'][y_key]
@@ -563,6 +575,34 @@ class SoSWrapp(object):
 
         return expected_shape
 
+    #TODO: see if should generalize the get_boundary_jac method with *args, **kwargs
+    def get_boundary_jac_for_design_var_columns(self, ykey, column, io_type, xkey, dataframefillmethod):
+        '''
+        particular case of the design_var discipline where the design var dataframe has been filled following the
+        'one column for one key' method. In this case, all the name for the assets xkey are in the first column
+        of the column names and their value in the 2nd column of column names of the dataframe value
+
+        The method finds the number of design var per asset and the index of occurence of the asset in the list of asset for a given
+        techno
+        '''
+        if ykey not in self.DESC_OUT:
+            key_type = self.inst_desc_out[ykey]['type']
+        else:
+            key_type = self.DESC_OUT[ykey]['type']
+        value = self.get_sosdisc_outputs(ykey)
+
+        if dataframefillmethod == self.ONE_COLUMN_FOR_KEY:
+            column_name_for_asset_name = self.design.design_var_descriptor[xkey][self.COLUMNS_NAMES][0]
+            list_assets = list(value[column_name_for_asset_name].unique())
+            if len(list_assets) < 1:
+                raise ValueError(f'No asset found in get_sosdisc_outputs({ykey})')
+            lines_nb = int(len(value) / len(list_assets))
+            index_column = list_assets.index(column)
+        else:
+            raise NotImplementedError
+
+        return lines_nb, index_column
+
     def get_boundary_jac_for_columns(self, key, column, io_type):
         if io_type == self.IO_TYPE_IN:
             # var_full_name = self.attributes['input_full_name_map'][key]
@@ -581,9 +621,11 @@ class SoSWrapp(object):
 
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
+            # for standard dataframe fill, there is one column of value per asset in the dataframe value
             lines_nb = len(value)
             index_column = [column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS].index(
                 column)
+
         elif key_type == 'array' or key_type == 'float':
             lines_nb = None
             index_column = None

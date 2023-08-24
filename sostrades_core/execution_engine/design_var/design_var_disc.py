@@ -182,14 +182,11 @@ class DesignVarDiscipline(SoSWrapp):
                 self.set_partial_derivative(
                     out_name, key, self.design.bspline_dict[key]['b_array'])
             elif out_type == 'dataframe':
-                if self.DATAFRAME_FILL in design_var_descriptor[key] and design_var_descriptor[key][
-                    self.DATAFRAME_FILL] == self.DATAFRAME_FILL_POSSIBLE_VALUES[1]:
-                    pass
-                    # TODO compute the gradients !!!
-                else:
-                    col_name = design_var_descriptor[key]['key']
-                    self.set_partial_derivative_for_other_types(
-                        (out_name, col_name), (key,), self.design.bspline_dict[key]['b_array'])
+                asset_name = design_var_descriptor[key]['key']
+                # specific processing occurs in the partial derivative computation depending on the way the
+                # dataframe was filled
+                self.set_partial_derivative_for_other_types(
+                        (out_name, asset_name), (key,), self.design.bspline_dict[key]['b_array'])
             elif out_type == 'float':
                 self.set_partial_derivative(out_name, key, np.array([1.]))
             else:
