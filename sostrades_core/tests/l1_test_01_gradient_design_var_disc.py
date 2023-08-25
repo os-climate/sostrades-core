@@ -12,7 +12,7 @@ class GradiantAssetDiscTestCase(AbstractJacobianUnittest):
     """
     AssetDisc gradients test class
     """
-    # AbstractJacobianUnittest.DUMP_JACOBIAN = True
+    AbstractJacobianUnittest.DUMP_JACOBIAN = True
     np.random.seed(42)
 
     def analytic_grad_entry(self):
@@ -131,6 +131,122 @@ class GradiantAssetDiscTestCase(AbstractJacobianUnittest):
 
         self.check_jacobian(location=dirname(__file__),
                             filename=f'jacobian_{self.study_name}_dataframe_fill_one_column_for_key.pkl',
+                            discipline=disc,
+                            step=1e-16,
+                            derr_approx='complex_step',
+                            threshold=1e-5,
+                            local_data=disc.local_data,
+                            inputs=[f'{self.ns}.x_in', f'{self.ns}.z_in'],
+                            outputs=[f'{self.ns}.x']
+                            )
+
+    def test_03_analytic_gradient_dataframe_fill_one_column_for_key_with1_deactivated_element(self):
+        """Test gradient with design var dataframe description 'one column for key, one column for value' """
+        self.design_var_descriptor = {'x_in': {'out_name': 'x',
+                                               'type': 'array',
+                                               'out_type': 'dataframe',
+                                               'key': 'x_in',
+                                               'index': np.arange(0, 4, 1),
+                                               'index_name': 'years',
+                                               'namespace_in': 'ns_public',
+                                               'namespace_out': 'ns_public',
+                                               DesignVarDiscipline.DATAFRAME_FILL:
+                                                   DesignVarDiscipline.DATAFRAME_FILL_POSSIBLE_VALUES[1],
+                                               DesignVarDiscipline.COLUMNS_NAMES: ['name', 'sharevalue']},
+                                      'z_in': {'out_name': 'x',
+                                               'type': 'array',
+                                               'out_type': 'dataframe',
+                                               'key': 'z_in',
+                                               'index': np.arange(0, 4, 1),
+                                               'index_name': 'years',
+                                               'namespace_in': 'ns_public',
+                                               'namespace_out': 'ns_public',
+                                               DesignVarDiscipline.DATAFRAME_FILL:
+                                                   DesignVarDiscipline.DATAFRAME_FILL_POSSIBLE_VALUES[1],
+                                               DesignVarDiscipline.COLUMNS_NAMES: ['name', 'sharevalue']}
+                                      }
+
+        self.values_dict[
+            f'{self.ns}.DesignVar.design_var_descriptor'] = self.design_var_descriptor
+
+        dspace_dict = {'variable': ['x_in', 'z_in'],
+                       'value': [[1., 1., 3., 2.], [5., 2., 2., 1.]],
+                       'lower_bnd': [[0., 0., 0., 0.], [-10., 0., -10., -10.]],
+                       'upper_bnd': [[10., 10., 10., 10.], [10., 10., 10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[False, True, True, True], [False, True, True, True]]}
+        self.dspace = pd.DataFrame(dspace_dict)
+        self.values_dict[
+            f'{self.ns}.design_space'] = self.dspace
+
+        self.values_dict[f'{self.ns}.x_in'] = np.array([1., 3., 2.])
+        self.values_dict[f'{self.ns}.z_in'] = np.array([2., 2., 1.])
+        self.ee.load_study_from_input_dict(self.values_dict)
+        self.ee.configure()
+        self.ee.execute()
+
+        disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+
+        self.check_jacobian(location=dirname(__file__),
+                            filename=f'jacobian_{self.study_name}_dataframe_fill_one_column_for_key_1element_deactivated.pkl',
+                            discipline=disc,
+                            step=1e-16,
+                            derr_approx='complex_step',
+                            threshold=1e-5,
+                            local_data=disc.local_data,
+                            inputs=[f'{self.ns}.x_in', f'{self.ns}.z_in'],
+                            outputs=[f'{self.ns}.x']
+                            )
+
+    def test_04_analytic_gradient_dataframe_fill_one_column_for_key_with2_deactivated_element(self):
+        """Test gradient with design var dataframe description 'one column for key, one column for value' """
+        self.design_var_descriptor = {'x_in': {'out_name': 'x',
+                                               'type': 'array',
+                                               'out_type': 'dataframe',
+                                               'key': 'x_in',
+                                               'index': np.arange(0, 4, 1),
+                                               'index_name': 'years',
+                                               'namespace_in': 'ns_public',
+                                               'namespace_out': 'ns_public',
+                                               DesignVarDiscipline.DATAFRAME_FILL:
+                                                   DesignVarDiscipline.DATAFRAME_FILL_POSSIBLE_VALUES[1],
+                                               DesignVarDiscipline.COLUMNS_NAMES: ['name', 'sharevalue']},
+                                      'z_in': {'out_name': 'x',
+                                               'type': 'array',
+                                               'out_type': 'dataframe',
+                                               'key': 'z_in',
+                                               'index': np.arange(0, 4, 1),
+                                               'index_name': 'years',
+                                               'namespace_in': 'ns_public',
+                                               'namespace_out': 'ns_public',
+                                               DesignVarDiscipline.DATAFRAME_FILL:
+                                                   DesignVarDiscipline.DATAFRAME_FILL_POSSIBLE_VALUES[1],
+                                               DesignVarDiscipline.COLUMNS_NAMES: ['name', 'sharevalue']}
+                                      }
+
+        self.values_dict[
+            f'{self.ns}.DesignVar.design_var_descriptor'] = self.design_var_descriptor
+
+        dspace_dict = {'variable': ['x_in', 'z_in'],
+                       'value': [[1., 1., 3., 2.], [5., 2., 2., 1.]],
+                       'lower_bnd': [[0., 0., 0., 0.], [-10., 0., -10., -10.]],
+                       'upper_bnd': [[10., 10., 10., 10.], [10., 10., 10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[False, True, False, True], [False, True, False, True]]}
+        self.dspace = pd.DataFrame(dspace_dict)
+        self.values_dict[
+            f'{self.ns}.design_space'] = self.dspace
+
+        self.values_dict[f'{self.ns}.x_in'] = np.array([1., 2.])
+        self.values_dict[f'{self.ns}.z_in'] = np.array([2., 1.])
+        self.ee.load_study_from_input_dict(self.values_dict)
+        self.ee.configure()
+        self.ee.execute()
+
+        disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+
+        self.check_jacobian(location=dirname(__file__),
+                            filename=f'jacobian_{self.study_name}_dataframe_fill_one_column_for_key_2element_deactivated.pkl',
                             discipline=disc,
                             step=1e-16,
                             derr_approx='complex_step',

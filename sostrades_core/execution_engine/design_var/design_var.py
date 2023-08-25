@@ -106,22 +106,28 @@ class DesignVar(object):
                                       == elem, self.ACTIVATED_ELEM_LIST].to_list()[0]
 
         elem_input_value = list(inputs_dict[elem])
-        if sum(l_activated) != len(elem_input_value):
+        input_length = len(elem_input_value)
+        if sum(l_activated) != input_length:
             self.logger.error(
                 f'The size of the input element {elem} is not coherent with the design space and its activated elements : {sum(l_activated)} activated elements and elem of length {len(elem_input_value)}')
 
         final_value = []
         # TODO compute the gradient for each case
-        gradient = np.identity(len(l_activated))
+        gradient = []
+        identity = np.identity(input_length).tolist()
         # We fill deactivated elements with the last element activated in the array
         if self.FILL_ACTIVATED_ELEMENTS in self.design_var_descriptor[elem] and self.design_var_descriptor[elem][
             self.FILL_ACTIVATED_ELEMENTS] == self.LAST_ELEMENT_ACTIVATED:
 
             for activated_bool in l_activated:
                 if activated_bool:
+                    gradient.append(identity.pop(0))
                     final_value.append(elem_input_value.pop(0))
                 else:
                     final_value.append(final_value[-1])
+                    # TODO gradient is not null but depend on last value
+                    # need to fix it
+                    gradient.append([0.] * input_length)
         # by default we use initial value to fill the deactivated elements
         else:
             initial_value = self.dspace.loc[self.dspace[self.VARIABLES]
@@ -130,9 +136,11 @@ class DesignVar(object):
             for i, activated_bool in enumerate(l_activated):
                 if activated_bool:
                     final_value.append(elem_input_value.pop(0))
+                    gradient.append(identity.pop(0))
                 else:
                     final_value.append(initial_value[i])
-        return np.array(final_value), gradient
+                    gradient.append([0.] * input_length)
+        return np.array(final_value), np.array(gradient)
 
     def build_output_with_design_var_descriptor(self, elem, final_value):
 
