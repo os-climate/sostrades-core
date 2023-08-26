@@ -6,7 +6,7 @@
 SoSTradesCore is the Python package containing the core of the execution engine of System of Systems Trades
 
 ## Packages installation
-pip install -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org 
 
 A dedicated version of GEMSEO is required, for now:
 https://gitlab.com/sostrades/gemseo

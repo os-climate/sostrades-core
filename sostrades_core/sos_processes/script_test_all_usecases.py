@@ -161,9 +161,9 @@ def get_all_usecases(processes_repo: str) -> list[str]:
 
 
 def multiple_run(usecase, force_run=False) -> tuple[Union[BaseStudyManager, None],
-                                                    Union[BaseStudyManager, None],
-                                                    Union[dict, None],
-                                                    Union[dict, None]]:
+Union[BaseStudyManager, None],
+Union[dict, None],
+Union[dict, None]]:
     """
         Run twice a usecase and return the two treeviews from the runs
         :params: usecase, usecase to run twice
@@ -252,7 +252,7 @@ def multiple_configure(usecase):
     imported_module = import_module(usecase)
     uc = getattr(imported_module, 'Study')()
     # First step : Dump data to a temp folder
-    init_dump_dir = join(gettempdir(),'SOS_TRADES_REFERENCES')
+    init_dump_dir = join(gettempdir(), 'SOS_TRADES_REFERENCES')
     uc.set_dump_directory(init_dump_dir)
     uc.load_data()
     dump_dir = uc.dump_directory
@@ -260,7 +260,8 @@ def multiple_configure(usecase):
 
     logging.info("---- FIRST CONFIGURE ----")
     # First run : Load Data in a new BaseStudyManager and run study
-    study_1 = BaseStudyManager(repository_name=uc.repository_name, process_name=uc.process_name, study_name=uc.study_name)
+    study_1 = BaseStudyManager(repository_name=uc.repository_name, process_name=uc.process_name,
+                               study_name=uc.study_name)
     study_1.load_data(from_path=dump_dir)
     study_1.execution_engine.configure()
     # Deepcopy dm
@@ -269,7 +270,8 @@ def multiple_configure(usecase):
 
     # Second run : Load Data in a new BaseStudyManager and run study
     logging.info("---- SECOND CONFIGURE ----")
-    study_2 = BaseStudyManager(repository_name=uc.repository_name, process_name=uc.process_name, study_name=uc.study_name)
+    study_2 = BaseStudyManager(repository_name=uc.repository_name, process_name=uc.process_name,
+                               study_name=uc.study_name)
     study_2.load_data(from_path=dump_dir)
     study_2.execution_engine.configure()
     # Deepcopy dm
@@ -309,10 +311,10 @@ def test_compare_dm(dm_1: dict, dm_2: dict, usecase: str, msg: str) -> tuple[boo
 
 
 def test_double_configuration(usecase: str) -> tuple[Union[BaseStudyManager, None],
-                                                     Union[BaseStudyManager, None],
-                                                     Union[dict, None],
-                                                     Union[dict, None],
-                                                     bool, str]:
+Union[BaseStudyManager, None],
+Union[dict, None],
+Union[dict, None],
+bool, str]:
     """
     Double configuration of a usecase
     Returns:
@@ -331,7 +333,7 @@ def test_double_configuration(usecase: str) -> tuple[Union[BaseStudyManager, Non
         return study_1, study_2, dm_1, dm_2, double_config_passed, error_msg_compare
 
     double_config_passed, error_msg_compare = test_compare_dm(dm_1=dm_1, dm_2=dm_2, usecase=usecase,
-                                                             msg='following double configuration of')
+                                                              msg='following double configuration of')
     return study_1, study_2, dm_1, dm_2, double_config_passed, error_msg_compare
 
 
@@ -355,7 +357,7 @@ def test_data_integrity(study: BaseStudyManager) -> tuple[bool, str]:
     return data_integrity_passed, error_msg_data_integrity
 
 
-def test_double_run(study: BaseStudyManager, force_run: bool=False) -> tuple[bool, str]:
+def test_double_run(study: BaseStudyManager, force_run: bool = False) -> tuple[bool, str]:
     """
     Test double run of a study
 
@@ -370,7 +372,7 @@ def test_double_run(study: BaseStudyManager, force_run: bool=False) -> tuple[boo
     error_msg_run = ''
     run_test_passed = True
 
-    if not(study.run_usecase or force_run):
+    if not (study.run_usecase or force_run):
         logging.info(f'{study.study_full_path} is configured not to run, skipping double run.')
         return run_test_passed, error_msg_run
 
@@ -378,7 +380,6 @@ def test_double_run(study: BaseStudyManager, force_run: bool=False) -> tuple[boo
     dm_1 = deepcopy(
         study.execution_engine.get_anonimated_data_dict())
     study.dump_data()
-
 
     # Second run : Load Data in a new BaseStudyManager and run study
     logging.info("---- SECOND RUN ----")
@@ -409,7 +410,8 @@ def test_double_run(study: BaseStudyManager, force_run: bool=False) -> tuple[boo
         for key in unwanted_keys:
             data_dict.pop(key)
 
-    clean_keys(dm_1); clean_keys(dm_2)
+    clean_keys(dm_1);
+    clean_keys(dm_2)
 
     run_test_passed, error_msg_run = test_compare_dm(dm_1=dm_1, dm_2=dm_2, usecase=study_2.study_full_path,
                                                      msg='after double run of')
@@ -427,7 +429,7 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
             study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
         except Exception as e:
-            error_msg_post_processing += f'\nERROR while computing post processing for usecase {study.study_full_path}:\n {e}'
+            error_msg_post_processing += f'\nERROR while computing the usecase {study.study_full_path}:\n {e}'
             post_processing_test_passed = False
             return post_processing_test_passed, error_msg_post_processing
     else:
@@ -457,7 +459,8 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
     return post_processing_test_passed, error_msg_post_processing
 
 
-def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = None, force_run: bool = False) -> tuple[bool, str]:
+def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = None, force_run: bool = False) -> tuple[
+    bool, str]:
     """
     Tests a usecase
     - test double configuration
