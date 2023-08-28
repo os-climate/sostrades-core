@@ -356,13 +356,13 @@ class FunctionManager:
     @staticmethod
     def scale_function(val, val_range):
         """
-        Scale a function in a range.
+        Scale a function in a range [a, b] that is mapped to [0, 1]. It can be a<b or a>b.
         :param val: value to scale
         :param val_range: range for the function as [ideal, anti-ideal] (so ideal > anti-ideal for maximisation)
         :return: scaled function with 0 corresponding to ideal value and 1 to anti-ideal
         """
         # TODO: consider using a positive interval and adding a maximisation flag in the sake of clarity
-        return np.array([(val - val_range[0]) / (val_range[1] - val_range[0])])
+        return np.array([(val - val_range[0]) / (val_range[1] - val_range[0])]).reshape((-1,)) # NB: funcmanager demands arrays of shape (N, )
 
     @staticmethod
     def scale_function_derivative(val_range) -> float:
