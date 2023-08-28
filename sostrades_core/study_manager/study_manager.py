@@ -128,8 +128,8 @@ class StudyManager(BaseStudyManager):
         """
         pass
 
-    def test(self):
-        test_passed, error_msg = processed_test_one_usecase(usecase=self.study_full_path)
+    def test(self, force_run: bool = False):
+        test_passed, error_msg = processed_test_one_usecase(usecase=self.study_full_path, force_run=force_run)
         if not test_passed:
             raise Exception(f"Test not passed {error_msg}")
         else:

@@ -62,6 +62,7 @@ class DesignVarDiscipline(SoSWrapp):
     DATAFRAME_FILL_POSSIBLE_VALUES = DesignVar.DATAFRAME_FILL_POSSIBLE_VALUES
     DESIGN_VAR_DESCRIPTOR = DesignVar.DESIGN_VAR_DESCRIPTOR
     DESIGN_SPACE = DesignVar.DESIGN_SPACE
+    FILL_ACTIVATED_ELEMENTS = DesignVar.FILL_ACTIVATED_ELEMENTS
     DESC_IN = {
         DESIGN_VAR_DESCRIPTOR: {'type': 'dict', 'editable': True, 'structuring': True, 'user_level': 3},
         DESIGN_SPACE: {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, True),
@@ -94,6 +95,13 @@ class DesignVarDiscipline(SoSWrapp):
             if design_var_descriptor is not None:
                 if self._check_descriptor(design_var_descriptor):
                     for key in design_var_descriptor.keys():
+                        # if we are using the dataframe fill method 'one column for key, one for value',
+                        # a string column is created and should not be taken into account for gradients or MDA computations
+                        # We need to modify the DEFAULT_EXCLUDED_COLUMNS of the Discipline woth the column name for the key column
+                        if self.DATAFRAME_FILL in design_var_descriptor[key] and design_var_descriptor[key][
+                            self.DATAFRAME_FILL] == self.DATAFRAME_FILL_POSSIBLE_VALUES[1]:
+                            self.DEFAULT_EXCLUDED_COLUMNS = SoSWrapp.DEFAULT_EXCLUDED_COLUMNS + [self.COLUMNS_NAMES[0]]
+
                         dynamic_inputs[key] = {'type': 'array',
                                                'visibility': SoSWrapp.SHARED_VISIBILITY,
                                                'namespace': design_var_descriptor[key]['namespace_in']}
@@ -111,7 +119,7 @@ class DesignVarDiscipline(SoSWrapp):
     def init_execution(self):
         super().init_execution()
         inputs_dict = self.get_sosdisc_inputs()
-        self.design = DesignVar(inputs_dict)
+        self.design = DesignVar(inputs_dict, self.logger)
         self.dict_last_ite = None
 
     def run(self):
@@ -174,9 +182,11 @@ class DesignVarDiscipline(SoSWrapp):
                 self.set_partial_derivative(
                     out_name, key, self.design.bspline_dict[key]['b_array'])
             elif out_type == 'dataframe':
-                col_name = design_var_descriptor[key]['key']
+                asset_name = design_var_descriptor[key]['key']
+                # specific processing occurs in the partial derivative computation depending on the way the
+                # dataframe was filled
                 self.set_partial_derivative_for_other_types(
-                    (out_name, col_name), (key,), self.design.bspline_dict[key]['b_array'])
+                        (out_name, asset_name), (key,), self.design.bspline_dict[key]['b_array'])
             elif out_type == 'float':
                 self.set_partial_derivative(out_name, key, np.array([1.]))
             else:
