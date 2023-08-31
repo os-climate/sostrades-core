@@ -228,20 +228,27 @@ class CheckDataIntegrity():
             df_descriptor_well_defined = True
             for key in dataframe_descriptor:
                 # Check column data well described
-                if len(dataframe_descriptor[key]) != 3:
+                if not (3 <= len(dataframe_descriptor[key]) <= 4):
                     check_integrity_msg_df_descriptor = 'Partial dataframe descriptor set up'
                     self.__add_msg_to_check_integrity_msg_list(
                         check_integrity_msg_df_descriptor)
                     df_descriptor_well_defined = False
                 # Check column type authorised
                 # The empty string means the type cannot be defined : example values in design space depends on the chosen variable
-                elif dataframe_descriptor[key][0] not in self.VAR_TYPE_MAP.keys() and dataframe_descriptor[key][
-                    0] not in ['multiple']:
+                elif dataframe_descriptor[key][0] not in self.VAR_TYPE_MAP.keys() and dataframe_descriptor[key][0] not in ['multiple']:
                     check_integrity_msg_df_descriptor = f'Dataframe descriptor has a column type ' \
                                                         f'{dataframe_descriptor[key][0]} not in allowed type {list(self.VAR_TYPE_MAP.keys())}'
                     df_descriptor_well_defined = False
                     self.__add_msg_to_check_integrity_msg_list(
                         check_integrity_msg_df_descriptor)
+                if len(dataframe_descriptor[key]) == 4:
+                    type_boolean = self.VAR_TYPE_MAP['bool']
+                    if type(dataframe_descriptor[key][3]) != type_boolean:
+                        check_integrity_msg_df_descriptor = f'Dataframe descriptor has a column type ' \
+                                                            f'{dataframe_descriptor[key][3]} not a {type_boolean}'
+                        df_descriptor_well_defined = False
+                        self.__add_msg_to_check_integrity_msg_list(
+                            check_integrity_msg_df_descriptor)
 
             if df_descriptor_well_defined:
                 for key in self.variable_value.columns:
