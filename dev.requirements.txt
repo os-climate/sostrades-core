@@ -22,7 +22,7 @@ chaospy==4.3.7
     # via -r ./sostrades-core/requirements.in
 charset-normalizer==3.2.0
     # via requests
-click==8.1.6
+click==8.1.7
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   black
@@ -59,7 +59,7 @@ ecos==2.0.12
     # via cvxpy
 et-xmlfile==1.1.0
     # via openpyxl
-eventlet==0.30.2
+eventlet==0.33.3
     # via -r ./sostrades-webapi/requirements.in
 fastjsonschema==2.15.1 ; python_version >= "3"
     # via -r ./gemseo/requirements.txt
@@ -133,7 +133,7 @@ joblib==1.3.2
     # via scikit-learn
 jsonpickle==1.4.1
     # via -r ./sostrades-ontology/requirements.in
-kiwisolver==1.4.4
+kiwisolver==1.4.5
     # via matplotlib
 kubernetes==11.0.0
     # via -r ./sostrades-webapi/requirements.in
@@ -426,7 +426,7 @@ urllib3==1.26.16
     #   google-auth
     #   kubernetes
     #   requests
-websocket-client==1.6.1
+websocket-client==1.6.2
     # via kubernetes
 werkzeug==2.0.3
     # via
