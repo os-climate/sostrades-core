@@ -68,8 +68,8 @@ class DesignVar(object):
             # check output length and compute BSpline only if necessary
             # remark: float do not require any BSpline usage
             output_length = len(self.design_var_descriptor[elem][self.INDEX])
-
-            if not all(l_activated):
+            deactivated_elem_flag = not all(l_activated)
+            if deactivated_elem_flag:
                 final_value, gradient = self.rebuild_input_array_with_activated_elements(inputs_dict, elem)
             else:
                 final_value = inputs_dict[elem]
@@ -79,19 +79,21 @@ class DesignVar(object):
                 self.bspline_dict[elem] = {
                     'bspline': None, 'eval_t': final_value, 'b_array': gradient}
             else:
-                self.create_array_with_bspline(elem, final_value, output_length)
+                self.create_array_with_bspline(elem, final_value, output_length,
+                                               deactivated_elem_flag)
 
             # loop over design_var_descriptor to build output
             self.build_output_with_design_var_descriptor(elem, final_value)
 
-    def create_array_with_bspline(self, elem, final_value, output_length):
+    def create_array_with_bspline(self, elem, final_value, output_length, deactivated_elem_flag):
 
         list_t = np.linspace(0.0, 1.0, output_length)
         bspline = BSpline(n_poles=len(final_value))
         bspline.set_ctrl_pts(final_value)
         eval_t, b_array = bspline.eval_list_t(list_t)
         b_array = bspline.update_b_array(b_array)
-
+        if deactivated_elem_flag:
+            b_array = self.update_gradient_with_deactivated_elements_first_value(b_array)
         self.bspline_dict[elem] = {
             'bspline': bspline, 'eval_t': eval_t, 'b_array': b_array}
 
@@ -114,14 +116,14 @@ class DesignVar(object):
         final_value = []
         # TODO compute the gradient for each case
         gradient = []
-        identity = np.identity(input_length).tolist()
+        initial_gradient = np.identity(input_length).tolist()
         # We fill deactivated elements with the last element activated in the array
         if self.FILL_ACTIVATED_ELEMENTS in self.design_var_descriptor[elem] and self.design_var_descriptor[elem][
             self.FILL_ACTIVATED_ELEMENTS] == self.LAST_ELEMENT_ACTIVATED:
 
             for activated_bool in l_activated:
                 if activated_bool:
-                    gradient.append(identity.pop(0))
+                    gradient.append(initial_gradient.pop(0))
                     final_value.append(elem_input_value.pop(0))
                 else:
                     final_value.append(final_value[-1])
@@ -136,11 +138,17 @@ class DesignVar(object):
             for i, activated_bool in enumerate(l_activated):
                 if activated_bool:
                     final_value.append(elem_input_value.pop(0))
-                    gradient.append(identity.pop(0))
+                    gradient.append(initial_gradient.pop(0))
                 else:
                     final_value.append(initial_value[i])
                     gradient.append([0.] * input_length)
         return np.array(final_value), np.array(gradient)
+
+    def update_gradient_with_deactivated_elements_first_value(self, initial_gradient):
+        ### TO DO generalize it with other deactivated elements
+
+        result = np.delete(initial_gradient, 0, axis=1)
+        return result
 
     def build_output_with_design_var_descriptor(self, elem, final_value):
 
