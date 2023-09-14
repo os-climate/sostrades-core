@@ -111,8 +111,7 @@ class DataSerializer:
                     print("Error DM_db should not be a file and could not be deleted: %s : %s" % (db_dir, e.strerror))
             # we set the option exists_ok=True so that if the folder already exists it doen't raise an error
             makedirs(db_dir, exist_ok=True)
-        else:
-            warnings.warn(f'Folder storing data already exists {db_dir}', UserWarning)
+        
 
     def is_structured_data_type(self, data):
         return isinstance(data, ndarray) \
