@@ -1365,9 +1365,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.assertIn("Fitness function", filters[0].filter_values)
         self.assertIn("Design variables", filters[0].filter_values)
 
+        for graph in graph_list:
+            graph.to_plotly().show()
 
-        # for graph in graph_list:
-        #     graph.to_plotly().show()
 
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()
