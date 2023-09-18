@@ -20,7 +20,6 @@ from sostrades_core.tools.post_processing.post_processing_factory import PostPro
 """
 mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 """
-
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
 from importlib import import_module
@@ -429,7 +428,10 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
             study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
         except Exception as e:
-            error_msg_post_processing += f'\nERROR while computing the usecase {study.study_full_path}:\n {e}'
+
+
+            error_msg_post_processing += f'\nERROR while computing the usecase {study.study_full_path}:\n' \
+                                         f'\n {traceback.format_exc()}'
             post_processing_test_passed = False
             return post_processing_test_passed, error_msg_post_processing
     else:
