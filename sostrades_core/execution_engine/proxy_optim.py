@@ -600,27 +600,18 @@ class ProxyOptim(ProxyDriverEvaluator):
             instanciated_charts.append(new_chart)
 
         if select_all or 'Design variables' in chart_list:
-            dict_variables_history = post_processing_mdo_data["variables"]
-            min_y, max_y = inf, - inf
-            all_series = []
-            for variable_name, history in dict_variables_history.items():
-
-                iterations = list(range(len(history)))
-                min_value, max_value = history.min(), history.max()
-                if max_value > max_y: max_y = max_value
-                if min_value < min_y: min_y = min_value
-                for series in to_series(varname=variable_name, x=iterations, y=history):
-                    all_series.append(series)
-
-            chart_name = 'Design variables evolution'
-            new_chart = TwoAxesInstanciatedChart('Iterations', 'Design variables',
-                                                 [min(iterations), max(iterations)], [
-                                                     min_y - (max_y - min_y) * 0.1
-                                                     , max_y + (max_y - min_y) * 0.1],
-                                                 chart_name)
-            for series in all_series:
-                new_chart.series.append(series)
-            instanciated_charts.append(new_chart)
+            for variable_name, history_values_variable in post_processing_mdo_data['variables'].items():
+                dim_var = history_values_variable.shape[1]
+                shortened_var_name = '.'.join(variable_name.split('.')[2:])
+                chart_name = f"Design var '{shortened_var_name}' evolution"
+                iterations = list(range(history_values_variable.shape[0]))
+                new_chart = TwoAxesInstanciatedChart('Iterations', "Value", chart_name=chart_name)
+                for i in range(dim_var):
+                    new_series = InstanciatedSeries(
+                        iterations, list(history_values_variable[:, i]),
+                        f"{shortened_var_name}[{i}]", 'lines', True)
+                    new_chart.add_series(new_series)
+                instanciated_charts.append(new_chart)
 
         if len(post_processing_mdo_data["constraints"]) > 0 and (select_all or 'Constraints variables' in chart_list):
             dict_variables_history = post_processing_mdo_data["constraints"]
