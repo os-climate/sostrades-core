@@ -873,13 +873,19 @@ class FunctionManagerDisc(SoSWrapp):
                                                                          parameters_df.loc[obj_list],
                                                                          name=chart)
                 elif chart == 'ineq_constraints':
-                    new_chart = self.get_chart_parameters_mod_iterations(optim_output_df,
-                                                                         parameters_df.loc[ineq_list],
-                                                                         name=chart)
+                    is_ineq_constraints = 'ineq_constraint' in func_df.loc[
+                        func_df['weight'] != 0., 'ftype'].values.tolist()
+                    if is_ineq_constraints:
+                        new_chart = self.get_chart_parameters_mod_iterations(optim_output_df,
+                                                                             parameters_df.loc[ineq_list],
+                                                                             name=chart)
                 elif chart == 'eq_constraints':
-                    new_chart = self.get_chart_parameters_mod_iterations(optim_output_df,
-                                                                         parameters_df.loc[eq_list],
-                                                                         name=chart)
+                    is_eq_constraints = 'eq_constraint' in func_df.loc[
+                        func_df['weight'] != 0., 'ftype'].values.tolist()
+                    if is_eq_constraints:
+                        new_chart = self.get_chart_parameters_mod_iterations(optim_output_df,
+                                                                             parameters_df.loc[eq_list],
+                                                                             name=chart)
                 if new_chart is not None:
                     instanciated_charts.append(new_chart)
         return instanciated_charts

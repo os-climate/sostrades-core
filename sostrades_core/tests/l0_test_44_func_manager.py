@@ -701,3 +701,7 @@ class TestFuncManager(unittest.TestCase):
         optim_output_df = self.ee.dm.get_value(
             f'{self.name}.{optim_name}.SellarCoupling.FunctionManager.{FunctionManagerDisc.OPTIM_OUTPUT_DF}')
         self.assertEqual(optim_iter + 1, len(optim_output_df))
+        # get charts
+        func_disc = self.ee.dm.get_disciplines_with_name(f'{self.name}.{optim_name}.SellarCoupling.FunctionManager')[0]
+        filter = func_disc.get_chart_filter_list()
+        graph_list = func_disc.get_post_processing_list(filter)
