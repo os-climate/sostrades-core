@@ -42,9 +42,9 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
 
-#if platform.system() != 'Windows':
+# if platform.system() != 'Windows':
 #    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-#- TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
+# - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
 MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
 ksp_lib_petsc = MyFakeKSPLib()
 
@@ -905,7 +905,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if select_all or 'Residuals History' in chart_list:
             sub_mda_class = self.get_sosdisc_inputs('sub_mda_class')
             if post_processing_mda_data is not None and sub_mda_class in post_processing_mda_data.columns:
-                residuals_through_iterations = np.asarray(list(map(lambda x: [x[0]], post_processing_mda_data[sub_mda_class])))
+                residuals_through_iterations = np.asarray(
+                    list(map(lambda x: [x[0]], post_processing_mda_data[sub_mda_class])))
                 iterations = list(range(len(residuals_through_iterations)))
                 min_y, max_y = inf, - inf
                 min_value, max_value = residuals_through_iterations.min(), residuals_through_iterations.max()
