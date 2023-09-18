@@ -672,7 +672,7 @@ class TestFuncManager(unittest.TestCase):
                      ],
             step=1e-15, derr_approx='complex_step')
 
-    def _test_12_test_nuimber_iteration_output_optim_df(self):
+    def test_12_test_number_iteration_output_optim_df(self):
         self.name = 'Test12'
         self.ee = ExecutionEngine(self.name)
 
@@ -700,4 +700,4 @@ class TestFuncManager(unittest.TestCase):
         optim_name = "SellarOptimScenario"
         optim_output_df = self.ee.dm.get_value(
             f'{self.name}.{optim_name}.SellarCoupling.FunctionManager.{FunctionManagerDisc.OPTIM_OUTPUT_DF}')
-        self.assertEqual(optim_iter, len(optim_output_df))
+        self.assertEqual(optim_iter + 1, len(optim_output_df))

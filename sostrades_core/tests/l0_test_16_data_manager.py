@@ -167,8 +167,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.group_mda_disciplines': init_dict('bool'),
                     ns_2 + '.propagate_cache_to_children': init_dict('bool'),
                     ns_2 + '.tolerance_gs': init_dict('float'),
-                    ns_2 + '.relax_factor': init_dict('float'),
-                    ns_2 + '.authorize_self_coupled_disciplines': init_dict('bool'), }
+                    ns_2 + '.relax_factor': init_dict('float'), }
 
         val_dict = {'default': None, 'type': 'string', 'unit': None,
                     'possible_values': None, 'range': None, 'user_level': 1,

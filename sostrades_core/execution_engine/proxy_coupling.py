@@ -92,7 +92,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     SECANT_ACCELERATION = "secant"
     M2D_ACCELERATION = "m2d"
     RESIDUALS_HISTORY = "residuals_history"
-    AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
+    # AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
 
     # get list of available linear solvers from LinearSolversFactory
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
@@ -194,11 +194,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'group_mda_disciplines': {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
                                   ProxyDiscipline.DEFAULT: False, ProxyDiscipline.USER_LEVEL: 3,
                                   ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
-        AUTHORIZE_SELF_COUPLED_DISCIPLINES: {ProxyDiscipline.TYPE: 'bool',
-                                             ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                                             ProxyDiscipline.DEFAULT: False,
-                                             ProxyDiscipline.USER_LEVEL: 3,
-                                             ProxyDiscipline.STRUCTURING: True}
+        # AUTHORIZE_SELF_COUPLED_DISCIPLINES: {ProxyDiscipline.TYPE: 'bool',
+        #                                      ProxyDiscipline.POSSIBLE_VALUES: [True, False],
+        #                                      ProxyDiscipline.DEFAULT: False,
+        #                                      ProxyDiscipline.USER_LEVEL: 3,
+        #                                      ProxyDiscipline.STRUCTURING: True}
     }
 
     DESC_OUT = {
@@ -814,7 +814,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
                         #                     and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
-                        and self.get_sosdisc_inputs(self.AUTHORIZE_SELF_COUPLED_DISCIPLINES)
+                        # and self.get_sosdisc_inputs(self.AUTHORIZE_SELF_COUPLED_DISCIPLINES) #Deactivate AUTHORIZE_SELF_COUPLED_DISCIPLINES which is not correctly implemented regarding strong couplings
+                        # option that is never used in SoSTrades applications for now
                 ):
                     # - MDA detection
                     # in this case, mda i/o is the union of all i/o (different from MDOChain)
