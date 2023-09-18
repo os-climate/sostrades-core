@@ -326,7 +326,7 @@ bool, str]:
         study_1, study_2, dm_1, dm_2 = multiple_configure(usecase=usecase)
     except Exception as e:
         double_config_passed = False
-        error_msg_compare += f'\nERROR while Configuring twice {usecase}:\n {e}'
+        error_msg_compare += f'\nERROR while Configuring twice {usecase}:\n {traceback.format_exc()}'
         error_msg_compare += '\n---------------------------------------------------------\n'
         study_1, study_2, dm_1, dm_2 = None, None, None, None
         return study_1, study_2, dm_1, dm_2, double_config_passed, error_msg_compare
