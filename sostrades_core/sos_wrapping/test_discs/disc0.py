@@ -18,10 +18,9 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class Disc0(SoSWrapp):
-
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc0',
+        'label': 'Disc0',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -45,7 +44,6 @@ class Disc0(SoSWrapp):
     }
 
     def run(self):
-
         r = self.get_sosdisc_inputs('r')
         mod = self.get_sosdisc_inputs('mod')
         a, x = divmod(r, mod)

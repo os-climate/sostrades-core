@@ -19,10 +19,9 @@ from sostrades_core.execution_engine.data_connector.dremio_data_connector import
 
 
 class Disc1_data_connector_dremio(SoSWrapp):
-
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc1_data_connector_dremio',
+        'label': 'Disc1_data_connector_dremio',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
