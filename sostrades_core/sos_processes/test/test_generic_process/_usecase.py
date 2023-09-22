@@ -26,11 +26,11 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         dict_values = {
-            'usecase.repository': 'sostrades_core',
-            'usecase.discipline': 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1',
-            'usecase.x': 3,
-            'usecase.Disc.a': 1,
-            'usecase.Disc.b': 5,
+            f'{self.study_name}.repository': 'sostrades_core',
+            f'{self.study_name}.discipline': 'Disc1',
+            f'{self.study_name}.x': 3,
+            f'{self.study_name}.Disc.a': 1,
+            f'{self.study_name}.Disc.b': 5,
         }
         return dict_values
 

@@ -18,10 +18,9 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class Disc1(SoSWrapp):
-
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc1_all_types',
+        'label': 'Disc1_all_types',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -57,7 +56,7 @@ class Disc1(SoSWrapp):
         for name_i, x_i in x_dict.items():
             y_dict[name_i] = a * x_i + b
 
-        dict_values = {'indicator': a * b, 'y': a * 
-                       x + b, 'y_dict': y_dict}
+        dict_values = {'indicator': a * b, 'y': a *
+                                                x + b, 'y_dict': y_dict}
 
         self.store_sos_outputs_values(dict_values)

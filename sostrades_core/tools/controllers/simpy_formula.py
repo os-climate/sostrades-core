@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-
 import numpy
 from sympy import sympify, lambdify, Symbol, factor
 # from sympy.core.compatibility import StringIO
@@ -26,6 +25,7 @@ from sympy.parsing.sympy_parser import parse_expr, standard_transformations
 from tokenize import NAME, OP
 
 DOT_CHAR = '_00d00_'
+
 
 # def my_stringify_expr(s, local_dict, global_dict, transformations):
 #     """
@@ -107,7 +107,6 @@ def my_transformation(tokens, local_dict, global_dict):
 
 
 class SympyFormula():
-
     """
     Class for mathematical interpretation of functions and their differential forms based on Sympy
     """
@@ -164,10 +163,12 @@ class SympyFormula():
         @param simplify_expr : if True the expression will be simplified using "simpl_func" sympy function
         @param simpl_func: the simplification function
         """
+
         def mapped_func(atom): return self.differentiate_expr_partial(
             atom, simplify_expr, simpl_func)
 
         def reduced_func(x, y): return x + "+" + y
+
         return reduce(reduced_func, map(mapped_func, self.__fexpr_symbs))
 
     def get_symbols(self, sympy_expr, replace_dots=True):
@@ -175,7 +176,7 @@ class SympyFormula():
         Accessor for the atomic elements of the expression in the Sympy sense
         @param sympy_expr : the sympy expression
         """
-        # return map(lambda s:s.replace('.','§'), sympy_expr.atoms(Symbol))
+
         return sympy_expr.atoms(Symbol)
 
     # Private methods
@@ -195,7 +196,7 @@ class SympyFormula():
         Initilizes sympy expressions
         """
         self.__fexpr_sympy = parse_expr(self.__fexpr, transformations=(
-            my_transformation, ) + standard_transformations)
+                                                                          my_transformation,) + standard_transformations)
         self.__fexpr_symbs = self.get_symbols(self.__fexpr_sympy)
         self.__sympy_function = lambdify(
             self.__fexpr_symbs, self.__fexpr_sympy, "numpy", dummify=False)
@@ -270,10 +271,10 @@ class SympyFormula():
         Evaluates the expression for given values and gradients
         @param var_dict  : the dictionary of values and gradients
         """
-#         new_var_dict = dict()
-#         for k,v in var_dict.items():
-#             new_var_dict[k.replace('.',DOT_CHAR)]=v
-#         var_dict = new_var_dict
+        #         new_var_dict = dict()
+        #         for k,v in var_dict.items():
+        #             new_var_dict[k.replace('.',DOT_CHAR)]=v
+        #         var_dict = new_var_dict
 
         sympy_args = self.str_to_sympy_argslist(var_dict, self.__fexpr_symbs)
         self.__value = self.__sympy_function(*sympy_args)
