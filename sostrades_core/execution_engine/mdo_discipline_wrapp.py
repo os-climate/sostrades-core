@@ -43,7 +43,7 @@ class MDODisciplineWrapp(object):
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
     '''
 
-    def __init__(self, name:str, logger:logging.Logger, wrapper=None, wrapping_mode: str = 'SoSTrades'):
+    def __init__(self, name: str, logger: logging.Logger, wrapper=None, wrapping_mode: str = 'SoSTrades'):
         '''
         Constructor.
 
@@ -189,7 +189,7 @@ class MDODisciplineWrapp(object):
                 name=proxy.get_disc_full_name(),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
                 **proxy._get_numerical_inputs(),
-                authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs(proxy.AUTHORIZE_SELF_COUPLED_DISCIPLINES),
+                # authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs(proxy.AUTHORIZE_SELF_COUPLED_DISCIPLINES),
                 logger=self.logger.getChild("SoSMDAChain")
             )
 
@@ -208,9 +208,9 @@ class MDODisciplineWrapp(object):
             mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs(
                 SoSMDODiscipline.LINEARIZATION_MODE)
 
-            # set other additional options (SoSTrades)
-            mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(
-                'authorize_self_coupled_disciplines')
+            # # set other additional options (SoSTrades)
+            # mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(
+            #     'authorize_self_coupled_disciplines')
 
             #             self._init_grammar_with_keys(proxy)
             # self._update_all_default_values(input_data) # TODO: check why/if it is really needed
@@ -233,7 +233,8 @@ class MDODisciplineWrapp(object):
             # Pass as arguments to __init__ parameters needed for MDOScenario
             # creation
             mdo_discipline = SoSMDOScenario(
-                sub_mdo_disciplines, proxy.sos_name, proxy.formulation, proxy.objective_name, proxy.design_space, logger=self.logger.getChild("SoSMDOScenario"),
+                sub_mdo_disciplines, proxy.sos_name, proxy.formulation, proxy.objective_name, proxy.design_space,
+                logger=self.logger.getChild("SoSMDOScenario"),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE, reduced_dm=reduced_dm)
             # Set parameters for SoSMDOScenario
             mdo_discipline.eval_mode = proxy.eval_mode
@@ -269,7 +270,7 @@ class MDODisciplineWrapp(object):
         update GEMSEO grammar with sostrades 
         # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
         '''
-        #- retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain
+        # - retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain
         # (e.g., numerical inputs mainly)
         # TODO: [to discuss] ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
         #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)

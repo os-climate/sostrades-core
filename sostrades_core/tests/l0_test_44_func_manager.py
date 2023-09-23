@@ -23,8 +23,9 @@ from sostrades_core.execution_engine.func_manager.func_manager_disc import Funct
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from numpy import arange
 import pandas as pd
-import matplotlib.pyplot as plt
 import logging
+
+from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import Study
 
 
 class TestFuncManager(unittest.TestCase):
@@ -119,8 +120,8 @@ class TestFuncManager(unittest.TestCase):
         self.assertGreater(
             self.func_manager.aggregated_functions[EQ_CONSTRAINT], 0.)
 
-        res = 100. * (self.func_manager.aggregated_functions[OBJECTIVE] + 
-                      self.func_manager.aggregated_functions[INEQ_CONSTRAINT] + 
+        res = 100. * (self.func_manager.aggregated_functions[OBJECTIVE] +
+                      self.func_manager.aggregated_functions[INEQ_CONSTRAINT] +
                       self.func_manager.aggregated_functions[EQ_CONSTRAINT])
 
         self.assertEqual(self.func_manager.mod_obj, res)
@@ -223,13 +224,13 @@ class TestFuncManager(unittest.TestCase):
         self.assertGreater(outputs[INEQ_CONSTRAINT][0], 0.)
         self.assertGreater(outputs[EQ_CONSTRAINT][0], 0.)
 
-        res = 100. * (outputs[OBJECTIVE][0] + 
-                      outputs[INEQ_CONSTRAINT][0] + 
+        res = 100. * (outputs[OBJECTIVE][0] +
+                      outputs[INEQ_CONSTRAINT][0] +
                       outputs[EQ_CONSTRAINT][0])
 
         self.assertEqual(outputs[OBJECTIVE_LAGR][0], res)
-        del(ee)
-        del(self)
+        del (ee)
+        del (self)
 
     def test_07_jacobian_func_manager_disc(self):
         OBJECTIVE = self.func_manager.OBJECTIVE
@@ -309,8 +310,8 @@ class TestFuncManager(unittest.TestCase):
         self.assertGreater(outputs[INEQ_CONSTRAINT][0], 0.)
         self.assertGreater(outputs[EQ_CONSTRAINT][0], 0.)
 
-        res = 100. * (outputs[OBJECTIVE][0] + 
-                      outputs[INEQ_CONSTRAINT][0] + 
+        res = 100. * (outputs[OBJECTIVE][0] +
+                      outputs[INEQ_CONSTRAINT][0] +
                       outputs[EQ_CONSTRAINT][0])
 
         self.assertEqual(outputs[OBJECTIVE_LAGR][0], res)
@@ -319,7 +320,9 @@ class TestFuncManager(unittest.TestCase):
 
         assert disc_techno.check_jacobian(
             input_data=disc_techno.local_data,
-            threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1', 'FuncManagerTest.FunctionManager.cst2', 'FuncManagerTest.FunctionManager.cst3', 'FuncManagerTest.FunctionManager.obj1', 'FuncManagerTest.FunctionManager.obj2'],
+            threshold=1e-5, inputs=['FuncManagerTest.FunctionManager.cst1', 'FuncManagerTest.FunctionManager.cst2',
+                                    'FuncManagerTest.FunctionManager.cst3', 'FuncManagerTest.FunctionManager.obj1',
+                                    'FuncManagerTest.FunctionManager.obj2'],
             outputs=['FuncManagerTest.FunctionManager.objective_lagrangian'], derr_approx='complex_step')
 
     def test_08_jacobian_func_manager_disc2(self):
@@ -393,8 +396,8 @@ class TestFuncManager(unittest.TestCase):
         self.assertAlmostEqual(outputs[OBJECTIVE][0], 0.8 * o1 + 0.2 * o2)
         self.assertGreater(outputs[INEQ_CONSTRAINT][0], 0.)
 
-        res = 100. * (outputs[OBJECTIVE][0] + 
-                      outputs[INEQ_CONSTRAINT][0] + 
+        res = 100. * (outputs[OBJECTIVE][0] +
+                      outputs[INEQ_CONSTRAINT][0] +
                       outputs[EQ_CONSTRAINT][0])
 
         self.assertEqual(outputs[OBJECTIVE_LAGR][0], res)
@@ -543,8 +546,8 @@ class TestFuncManager(unittest.TestCase):
         o1 = obj1['obj1_values'].to_numpy().sum()
         o2 = obj2['obj2_values'].to_numpy().sum()
 
-        res = 100. * (outputs[OBJECTIVE][0] + 
-                      outputs[INEQ_CONSTRAINT][0] + 
+        res = 100. * (outputs[OBJECTIVE][0] +
+                      outputs[INEQ_CONSTRAINT][0] +
                       outputs[EQ_CONSTRAINT][0])
 
         disc_techno = ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
@@ -622,8 +625,8 @@ class TestFuncManager(unittest.TestCase):
         values_dict[prefix + 'eqcst_lintoquad_array'] = eqcst_lintoquad_array
         values_dict[prefix + 'obj1'] = obj1
         values_dict[prefix + 'obj2'] = obj2
-        values_dict[prefix+ 'aggr_mod_eq'] = 'sum'
-        values_dict[prefix+ 'aggr_mod_ineq'] = 'smooth_max'
+        values_dict[prefix + 'aggr_mod_eq'] = 'sum'
+        values_dict[prefix + 'aggr_mod_ineq'] = 'smooth_max'
 
         ee.load_study_from_input_dict(values_dict)
 
@@ -646,8 +649,8 @@ class TestFuncManager(unittest.TestCase):
         o1 = obj1['obj1_values'].to_numpy().sum()
         o2 = obj2['obj2_values'].to_numpy().sum()
 
-        res = 100. * (outputs[OBJECTIVE][0] + 
-                      outputs[INEQ_CONSTRAINT][0] + 
+        res = 100. * (outputs[OBJECTIVE][0] +
+                      outputs[INEQ_CONSTRAINT][0] +
                       outputs[EQ_CONSTRAINT][0])
 
         disc_techno = ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
@@ -667,5 +670,38 @@ class TestFuncManager(unittest.TestCase):
                      'FuncManagerTest.FunctionManager.eq_constraint',
                      'FuncManagerTest.FunctionManager.ineq_constraint',
                      ],
-            step = 1e-15, derr_approx='complex_step')
+            step=1e-15, derr_approx='complex_step')
 
+    def test_12_test_number_iteration_output_optim_df(self):
+        self.name = 'Test12'
+        self.ee = ExecutionEngine(self.name)
+
+        builder = self.ee.factory.get_builder_from_process('sostrades_core.sos_processes.test',
+                                                           'test_sellar_opt_w_func_manager'
+                                                           )
+        self.ee.factory.set_builders_to_coupling_builder(builder)
+        self.ee.configure()
+
+        usecase = Study(execution_engine=self.ee)
+        usecase.study_name = self.name
+
+        values_dict = usecase.setup_usecase()
+        full_values_dict = {}
+        for dict_v in values_dict:
+            full_values_dict.update(dict_v)
+
+        self.ee.load_study_from_input_dict(full_values_dict)
+
+        self.ee.execute()
+
+        proxy_optim = self.ee.root_process.proxy_disciplines[0]
+        formulation = proxy_optim.mdo_discipline_wrapp.mdo_discipline.formulation
+        optim_iter = formulation.opt_problem.current_iter
+        optim_name = "SellarOptimScenario"
+        optim_output_df = self.ee.dm.get_value(
+            f'{self.name}.{optim_name}.SellarCoupling.FunctionManager.{FunctionManagerDisc.OPTIM_OUTPUT_DF}')
+        self.assertEqual(optim_iter + 1, len(optim_output_df))
+        # get charts
+        func_disc = self.ee.dm.get_disciplines_with_name(f'{self.name}.{optim_name}.SellarCoupling.FunctionManager')[0]
+        filter = func_disc.get_chart_filter_list()
+        graph_list = func_disc.get_post_processing_list(filter)

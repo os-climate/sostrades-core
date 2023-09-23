@@ -14,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
+    TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.execution_engine.data_connector.mock_connector import MockConnector
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
 
 class Disc1(SoSWrapp):
-
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc1_data_connector',
+        'label': 'Disc1_data_connector',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -53,16 +53,15 @@ class Disc1(SoSWrapp):
         'y': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac',
               SoSWrapp.CONNECTOR_DATA: data_connection_dict}
     }
-    
+
     # get a connector_data with all information
     connector_data = ConnectorFactory.set_connector_request(
         DESC_OUT['y'][SoSWrapp.CONNECTOR_DATA], dremio_path)
     # update the meta_data with the new connection information
     # { var_name : {meta_dat_to_update : meta_data_value}}
-#     proxy.update_meta_data_out(
-#         {'y': {self.CONNECTOR_DATA: connector_data}})
+    #     proxy.update_meta_data_out(
+    #         {'y': {self.CONNECTOR_DATA: connector_data}})
     DESC_OUT['y'][SoSWrapp.CONNECTOR_DATA] = connector_data
-            
 
     def run(self):
         x = self.get_sosdisc_inputs('x')
