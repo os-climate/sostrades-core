@@ -89,7 +89,7 @@ class FunctionManagerDisc(SoSWrapp):
                                                   AGGR_TYPE: ('string', None, True),
                                                   PARENT: ('string', None, True),
                                                   # index of the dataframe
-                                                  INDEX: ('int', None, True),
+                                                  # INDEX: ('int', None, True),
                                                   NAMESPACE_VARIABLE: ('string', None, True),
                                                   },  # col name of the dataframe
                          'dataframe_edition_locked': False,
