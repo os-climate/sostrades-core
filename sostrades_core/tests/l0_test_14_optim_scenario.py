@@ -1366,7 +1366,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.assertIn("Design variables", filters[0].filter_values)
 
         for graph in graph_list:
-            graph.to_plotly().show()
+            #graph.to_plotly().show()
+            pass
 
 
 if '__main__' == __name__:
