@@ -12,7 +12,7 @@ class GradiantAssetDiscTestCase(AbstractJacobianUnittest):
     """
     AssetDisc gradients test class
     """
-    AbstractJacobianUnittest.DUMP_JACOBIAN = True
+    # AbstractJacobianUnittest.DUMP_JACOBIAN = True
     np.random.seed(42)
 
     def analytic_grad_entry(self):
