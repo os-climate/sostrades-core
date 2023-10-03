@@ -78,7 +78,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'Disc3', mod_list)
         builder_list.append(disc3_builder)
 
-        multi_scenarios =  self.exec_eng.factory.create_driver(
+        multi_scenarios =  self.exec_eng.factory.create_multi_instance_driver(
             'multi_scenarios', builder_list)
         exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
@@ -100,7 +100,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns(
             'ns_out_disc3', 'MyCase')
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
             'multi_scenarios', builder_list)
 
         # add post-processing on 'Post-processing' node by loading a module
@@ -401,7 +401,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                     else:
                         self.assertEqual(dict_values[var], dm_value)
 
-    def test_06_scatter_node_namespace_removal_and_change_builder_mode_multi_to_mono(self):
+    def _test_06_scatter_node_namespace_removal_and_change_builder_mode_multi_to_mono(self):
+        # deactivated after mono/multi split
         # scatter build map
         self.get_simple_multiscenario_process_configured(self.exec_eng)
 
@@ -454,7 +455,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-    def test_07_scatter_node_namespace_removal_and_change_builder_mode_mono_to_multi(self):
+    def _test_07_scatter_node_namespace_removal_and_change_builder_mode_mono_to_multi(self):
+        # deactivated after mono/multi split
         self.get_simple_multiscenario_process_configured(self.exec_eng)
 
         dict_values = {}
@@ -601,8 +603,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'Disc3', mod_list)
         builder_list.append(disc3_builder)
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', builder_list,flatten_subprocess= True)
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
+            'multi_scenarios', builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)

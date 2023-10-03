@@ -28,7 +28,9 @@ class SoSBuilder:
     '''
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
     SPECIFIC_PROXYS = ['ProxyCoupling', 'ProxyDisciplineGather', 'ProxyOptim', 'ArchiBuilder',
-                       'ProxyDriverEvaluator', 'SelectorDiscipline', ]
+                       'ProxyDriverEvaluator', #FIXME: to remove
+                       'ProxyMonoInstanceDriver', 'ProxyMultiInstanceDriver',
+                       'SelectorDiscipline', ]
 
     def __init__(self, disc_name, ee, cls, is_executable=True):
         '''

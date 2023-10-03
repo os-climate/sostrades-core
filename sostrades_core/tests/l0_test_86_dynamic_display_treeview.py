@@ -176,7 +176,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             'Disc2', mod_list)
 
         self.exec_eng.ns_manager.add_ns_def(my_namespace)
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_mono_instance_driver(
             'multi_scenarios', [disc1_builder, disc2_builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
@@ -234,7 +234,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 #             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
 #         self.exec_eng.ns_manager.add_display_ns_to_builder(
 #             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
             'multi_scenarios', [disc1_builder, disc2_builder])
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
@@ -273,7 +273,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
                        f'\t|_ Disc1']
 
         exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes() #FIXME: ask for help
 
     def test_05_display_on_multi_instance_evaluator_hide_coupling(self):
 
@@ -298,7 +298,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
             'multi_scenarios', [disc1_builder, disc2_builder], display_options={'hide_coupling_in_driver': True})
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')

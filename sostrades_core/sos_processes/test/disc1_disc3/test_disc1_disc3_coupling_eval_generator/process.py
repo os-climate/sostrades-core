@@ -37,7 +37,7 @@ class ProcessBuilder(BaseProcessBuilder):
             repo=repo, mod_id=sub_proc)
 
         # driver builder
-        eval_driver = self.ee.factory.create_driver(
+        eval_driver = self.ee.factory.create_mono_instance_driver(
             'Eval', coupling_builder
         )
         #======================================================================

@@ -30,30 +30,10 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
 
-        if 1 == 1:  # It is as it should be: the else part should be removed
-            # Select the nested subprocess
-            repo = 'sostrades_core.sos_processes.test.disc1_disc3'
-            sub_proc = 'test_disc1_disc3_eval_simple'
-            eval_driver = self.ee.factory.get_builder_from_process(
-                repo=repo, mod_id=sub_proc)
-        else:
-            # Select the nested subprocess
-            repo = 'sostrades_core.sos_processes.test.disc1_disc3'
-            sub_proc = 'test_disc1_disc3_list'
-            coupling_builder = self.ee.factory.get_builder_from_process(
-                repo=repo, mod_id=sub_proc)
-
-            # driver builder
-            eval_driver = self.ee.factory.create_driver(
-                'Eval', coupling_builder
-            )
-            # shift nested subprocess namespaces
-            # no need to shift
-
-            # driver namespaces
-            self.ee.ns_manager.add_ns(
-                'ns_sampling', f'{self.ee.study_name}.Eval')
-            self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
+        repo = 'sostrades_core.sos_processes.test.disc1_disc3'
+        sub_proc = 'test_disc1_disc3_eval_simple'
+        eval_driver = self.ee.factory.get_builder_from_process(
+            repo=repo, mod_id=sub_proc)
 
         # add sample generator builder
         mod_generator = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'

@@ -55,7 +55,7 @@ class TestBuildScatter(unittest.TestCase):
 
         with self.assertRaises(Exception) as cm:
             self.exec_eng0 = ExecutionEngine(self.namespace)
-            scatter_list = self.exec_eng0.factory.create_driver(
+            scatter_list = self.exec_eng0.factory.create_multi_instance_driver(
                 driver_name, builder_list, display_options=['group_scenarios_under_disciplines'])
             self.exec_eng0.factory.set_builders_to_coupling_builder(scatter_list)
 
@@ -66,7 +66,7 @@ class TestBuildScatter(unittest.TestCase):
 
         with self.assertRaises(Exception) as cm:
             self.exec_eng00 = ExecutionEngine(self.namespace)
-            scatter_list = self.exec_eng00.factory.create_driver(
+            scatter_list = self.exec_eng00.factory.create_multi_instance_driver(
                 driver_name, builder_list, display_options={'wrong_option': True})
             self.exec_eng00.factory.set_builders_to_coupling_builder(scatter_list)
 
@@ -75,7 +75,7 @@ class TestBuildScatter(unittest.TestCase):
         error_message = f"Display options should be in the possible list : ['hide_under_coupling', 'hide_coupling_in_driver', 'group_scenarios_under_disciplines', 'autogather']"
         self.assertEqual(str(cm.exception), error_message)
 
-        scatter_list = self.exec_eng.factory.create_driver(
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(
             driver_name, builder_list, display_options={'group_scenarios_under_disciplines': True})
 
         self.exec_eng.factory.set_builders_to_coupling_builder(scatter_list)
@@ -153,7 +153,7 @@ class TestBuildScatter(unittest.TestCase):
         dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
-        scatter_list = self.exec_eng.factory.create_driver(
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(
             driver_name, builder_list, display_options={'group_scenarios_under_disciplines': True,
                                                         'autogather': True})
 
@@ -259,7 +259,7 @@ class TestBuildScatter(unittest.TestCase):
         dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
-        scatter_list = self.exec_eng.factory.create_driver(
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(
             driver_name, builder_list, display_options={'group_scenarios_under_disciplines': False,
                                                         'autogather': True})
 
@@ -359,7 +359,7 @@ class TestBuildScatter(unittest.TestCase):
         dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
-        scatter_list = self.exec_eng.factory.create_driver(
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(
             driver_name, builder_list, display_options={'group_scenarios_under_disciplines': False,
                                                         'autogather': True})
 
