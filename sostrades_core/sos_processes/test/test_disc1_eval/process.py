@@ -39,7 +39,7 @@ class ProcessBuilder(BaseProcessBuilder):
             },
         )
 
-        eval_builder = self.ee.factory.create_driver(
+        eval_builder = self.ee.factory.create_mono_instance_driver(
             'Eval', builder_list
         )
 

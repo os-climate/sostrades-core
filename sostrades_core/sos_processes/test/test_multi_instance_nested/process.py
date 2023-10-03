@@ -37,7 +37,7 @@ class ProcessBuilder(BaseProcessBuilder):
         builder_disc1 = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                                  mod_id='test_disc1_scenario')
         # create an inner ms driver for disc1 only in builder_list
-        builder_list = self.ee.factory.create_driver(
+        builder_list = self.ee.factory.create_multi_instance_driver(
             'inner_ms', builder_disc1)
         # get builder for disc3 and append to builder_list
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
@@ -51,7 +51,7 @@ class ProcessBuilder(BaseProcessBuilder):
             'ns_out_disc3', f'{self.ee.study_name}')
 
         # create an outer ms driver
-        multi_scenarios = self.ee.factory.create_driver(
+        multi_scenarios = self.ee.factory.create_multi_instance_driver(
             'outer_ms', builder_list)
         # multi_scenarios[0].associate_namespaces(ns_eval_outer)
         return multi_scenarios

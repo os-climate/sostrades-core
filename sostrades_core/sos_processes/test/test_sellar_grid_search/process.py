@@ -44,8 +44,8 @@ class ProcessBuilder(BaseProcessBuilder):
                                                          'ns_eval': f'{self.ee.study_name}.Eval'}
                                                 )
         # evaluator builder
-        eval_builder = self.ee.factory.create_driver(
-            'Eval', builder_list, flatten_subprocess=False)
+        eval_builder = self.ee.factory.create_mono_instance_driver(
+            'Eval', builder_list)
 
         # sample generator builder
         mod_sg = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
