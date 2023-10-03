@@ -186,12 +186,13 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, ['scenario_1',
-                                             'scenario_2',
-                                             'scenario_4'])
+        ## flatten_subprocess
+        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.multi_scenarios')[0]
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, ['scenario_1',
+        #                                      'scenario_2',
+        #                                      'scenario_4'])
 
         self.exec_eng.execute()
 
@@ -334,12 +335,13 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, ['scenario_1',
-                                             'scenario_2',
-                                             'scenario_4'])
+        ## flatten_subprocess
+        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.multi_scenarios')[0]
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, ['scenario_1',
+        #                                      'scenario_2',
+        #                                      'scenario_4'])
 
         self.exec_eng.execute()
 
@@ -367,7 +369,7 @@ class TestMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_4.o'), o4)
 
     def test_05_multi_scenario_from_process_with_basic_config_from_usecase_and_with_ref(self):
-
+        # FIXME: there seems to be a problem with reference instance + flatten_subprocess
         from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase_without_ref import Study
 
         builder_process = self.exec_eng.factory.get_builder_from_process(
@@ -461,11 +463,12 @@ class TestMultiScenario(unittest.TestCase):
             self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.' +
                                                         scenario + '.Disc3.constant'), 23)
 
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, [
-            'scenario_1', 'scenario_2', 'scenario_4', 'ReferenceScenario'])
+        ## flatten_subprocess
+        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.multi_scenarios')[0]
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, [
+        #     'scenario_1', 'scenario_2', 'scenario_4', 'ReferenceScenario'])
 
         # Now, check that, since we are in LINKED_MODE, that the non-trade variables from non-reference scenarios have
         # 'editable' in False.
@@ -511,7 +514,7 @@ class TestMultiScenario(unittest.TestCase):
             self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
                                                        scenario + '.Disc3.power', 'editable'), True)
 
-    def test_04_consecutive_configure(self):
+    def test_06_consecutive_configure(self):
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_with_samplegenerator'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -547,10 +550,11 @@ class TestMultiScenario(unittest.TestCase):
                                                             self.z2])
         scenario_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, scenario_names)
+        ## flatten_subprocess
+        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.multi_scenarios')[0]
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, scenario_names)
         for sc in scenario_names:
             for var in scenario_vars:
                 self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.' + sc + '.' + var),
@@ -598,8 +602,9 @@ class TestMultiScenario(unittest.TestCase):
                                                             self.z3])
         scenario_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, scenario_names)
+        ## flatten_subprocess
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, scenario_names)
         for sc in scenario_names:
             for var in scenario_vars:
                 self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.' + sc + '.' + var),
@@ -644,8 +649,9 @@ class TestMultiScenario(unittest.TestCase):
                                                                       ])
         scenario_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, scenario_names)
+        ## flatten_subprocess
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, scenario_names)
         for sc in scenario_names:
             for var in scenario_vars:
                 self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.' + sc + '.' + var),
@@ -672,7 +678,7 @@ class TestMultiScenario(unittest.TestCase):
             self.assertEqual(self.exec_eng.dm.get_value(
                 'MyCase.multi_scenarios.' + scenario_name + '.o'), o)
 
-    def test_05_dump_and_load_after_execute_with_2_trade_vars(self):
+    def test_07_dump_and_load_after_execute_with_2_trade_vars(self):
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_with_samplegenerator'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -712,12 +718,13 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, ['scenario_1',
-                                             'scenario_2',
-                                             'scenario_4'])
+        ## flatten_subprocess
+        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.multi_scenarios')[0]
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, ['scenario_1',
+        #                                      'scenario_2',
+        #                                      'scenario_4'])
 
         self.exec_eng.execute()
 

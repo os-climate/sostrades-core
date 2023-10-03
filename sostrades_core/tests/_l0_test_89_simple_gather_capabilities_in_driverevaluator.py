@@ -30,6 +30,7 @@ from tempfile import gettempdir
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
+# FIXME: tests are not active because WIP on gather capabilities
 
 class UnitTestHandler(Handler):
     """
