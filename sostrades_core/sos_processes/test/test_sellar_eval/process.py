@@ -47,7 +47,7 @@ class ProcessBuilder(BaseProcessBuilder):
                 'ns_eval': f'{self.ee.study_name}.Eval',
             },
         )
-        eval_builder = self.ee.factory.create_driver(
+        eval_builder = self.ee.factory.create_mono_instance_driver(
             'Eval', builder_list
         )
 

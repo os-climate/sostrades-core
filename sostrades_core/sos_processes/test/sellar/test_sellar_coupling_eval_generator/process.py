@@ -41,13 +41,8 @@ class ProcessBuilder(BaseProcessBuilder):
             repo=repo, mod_id=sub_proc)
 
         # driver builder
-        flatten_subprocess = False
-        if flatten_subprocess:
-            eval_driver = self.ee.factory.create_driver(
-                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
-        else:
-            eval_driver = self.ee.factory.create_driver(
-                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
+        eval_driver = self.ee.factory.create_mono_instance_driver(
+            'Eval', coupling_builder)
 
         #======================================================================
         # shift nested subprocess namespaces: multi instances

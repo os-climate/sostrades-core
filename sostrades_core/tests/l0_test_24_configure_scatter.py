@@ -41,7 +41,7 @@ class TestScatterDiscipline(unittest.TestCase):
 
         self.ms_name = 'multiscenarios'
         # create scatter builder with map and coupling process
-        scatter_list = self.ee.factory.create_driver(
+        scatter_list = self.ee.factory.create_multi_instance_driver(
             self.ms_name, cls_list)
 
         # set scatter builder to root process
@@ -67,8 +67,8 @@ class TestScatterDiscipline(unittest.TestCase):
         disciplines_list.append(f'{self.name}.{self.ms_name}')
 
         for aircraft in list_aircraft:
-            disciplines_list.append(
-                f'{self.name}.{self.ms_name}.{aircraft}')
+            # disciplines_list.append(
+            #     f'{self.name}.{self.ms_name}.{aircraft}') # flatten_subprocess
             disciplines_list.append(
                 f'{self.name}.{self.ms_name}.{aircraft}.Disc1')
             disciplines_list.append(

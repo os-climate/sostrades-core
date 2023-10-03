@@ -825,14 +825,14 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             builder_name = namespace
             driver_name = f'{builder_name}.driver'
 
+        # TODO: check it is OK to always go multi-instance
+        # FIXME: issue with the treeviews...
         if isinstance(builder, list):
-
-            builder_scatter = self.ee.factory.create_driver(driver_name, builder)
+            builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, builder)
         else:
             builder.set_disc_name(builder.sos_name.split('.')[-1])
-            builder_scatter = self.ee.factory.create_driver(driver_name, [builder],
-                                                            display_options={'hide_under_coupling': True},
-                                                            flatten_subprocess=True)
+            builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, [builder],
+                                                            display_options={'hide_under_coupling': True})
         if namespace == self.sos_name:
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], self.get_disc_full_name())

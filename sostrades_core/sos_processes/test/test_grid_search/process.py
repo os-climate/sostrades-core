@@ -49,7 +49,7 @@ class ProcessBuilder(BaseProcessBuilder):
         #     'Multipliers', mod_mp)
 
         # evaluator builder
-        eval_builder = self.ee.factory.create_driver(
-            'Eval', [disc1_builder], flatten_subprocess=False)
+        eval_builder = self.ee.factory.create_mono_instance_driver(
+            'Eval', [disc1_builder])
 
         return eval_builder + [sg_builder]

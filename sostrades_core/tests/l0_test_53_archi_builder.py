@@ -541,7 +541,7 @@ class TestArchiBuilder(unittest.TestCase):
             'MyCase.Business.Tomato.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['B737'])
 
     def test_07_architecture_multi_level(self):
-
+        # FIXME: driver node is not being hidden ?
         self.repo_business = 'business_case.sos_wrapping.'
         vb_builder_name = 'Business'
 
@@ -715,7 +715,7 @@ class TestArchiBuilder(unittest.TestCase):
             self.assertEqual(disc.status, 'DONE')
 
     def test_09_build_scatter_architecture_at_architecture_node(self):
-
+        # FIXME: driver node is not being hidden ?
         vb_builder_name = 'Business'
 
         sub_architecture_df = pd.DataFrame(

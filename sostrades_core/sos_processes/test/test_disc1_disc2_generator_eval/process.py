@@ -35,7 +35,7 @@ class ProcessBuilder(BaseProcessBuilder):
         builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name,
                                                                     'ns_eval': f'{self.ee.study_name}'})
 
-        doe_eval_builder = self.ee.factory.create_driver('Eval', builder_list,
+        doe_eval_builder = self.ee.factory.create_mono_instance_driver('Eval', builder_list,
                                                                            with_sample_generator=True)
 
         return doe_eval_builder

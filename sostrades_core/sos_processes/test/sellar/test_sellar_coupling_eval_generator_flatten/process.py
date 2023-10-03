@@ -39,14 +39,8 @@ class ProcessBuilder(BaseProcessBuilder):
         coupling_builder = self.ee.factory.get_builder_from_process(
             repo=repo, mod_id=sub_proc)
 
-        # driver builder
-        flatten_subprocess = True
-        if flatten_subprocess:
-            eval_driver = self.ee.factory.create_driver(
-                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
-        else:
-            eval_driver = self.ee.factory.create_driver(
-                'Eval', coupling_builder, flatten_subprocess=flatten_subprocess)
+        eval_driver = self.ee.factory.create_multi_instance_driver(
+            'Eval', coupling_builder)
 
         # driver namespaces
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')

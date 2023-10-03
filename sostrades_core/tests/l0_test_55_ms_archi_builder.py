@@ -52,7 +52,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
             'multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
@@ -142,6 +142,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
     def test_02_multi_scenario_of_architecture(self):
+        # FIXME: ask for help <- problem with treeview display in flatten
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
@@ -154,7 +155,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
             'multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
@@ -233,7 +234,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
             'multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
@@ -310,6 +311,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
     def test_04_very_simple_multi_scenario_with_scatter_architecture(self):
+        # FIXME: ask for help <- problem with treeview display in flatten
         vb_builder_name = 'Business'
 
         subarchitecture_df = pd.DataFrame(
@@ -330,7 +332,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
             'multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(

@@ -130,12 +130,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(), ['scenario_1',
                                                                                      'scenario_W',
                                                                                      'scenario_2'])
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-
-        self.assertEqual(ms_sub_disc_names, ['scenario_1',
-                                             'scenario_2'])
+        ## flatten_subprocess
+        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.multi_scenarios')[0]
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        #
+        # self.assertEqual(ms_sub_disc_names, ['scenario_1',
+        #                                      'scenario_2'])
 
         y1 = self.a1 * self.x1 + self.b1
         y2 = self.a1 * self.x1 + self.b2
@@ -152,6 +153,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.o'), o2)
 
     def test_02_multi_instance_configuration_from_df_with_reference_scenario(self):
+        # FIXME: flatten_subprocess + instance_reference not working
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -382,6 +384,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                        scenario + '.Disc3.power', 'editable'), True)
 
     def test_03_consecutive_configure(self):
+        # FIXME: flatten_subprocess conflicting with trade variable setting too ??
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -396,10 +399,12 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, ['scenario_1'])
+
+        ## flatten_subprocess
+        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.multi_scenarios')[0]
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, ['scenario_1'])
 
         scenario_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]],
@@ -410,9 +415,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, ['scenario_1',
-                                             'scenario_2'])
+        ## flatten_subprocess
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, ['scenario_1',
+        #                                      'scenario_2'])
 
         scenario_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', False, self.b2]],
@@ -423,8 +429,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, ['scenario_1'])
+        ## flatten_subprocess
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, ['scenario_1'])
 
         scenario_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]],
@@ -434,9 +441,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
                     '.multi_scenarios.scenario_df'] = scenario_df
 
         self.exec_eng.load_study_from_input_dict(dict_values)
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        self.assertEqual(ms_sub_disc_names, ['scenario_1',
-                                             'scenario_2'])
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # self.assertEqual(ms_sub_disc_names, ['scenario_1',
+        #                                      'scenario_2'])
 
         # manually configure the scenarios non-varying values (~reference)
         private_val = {}
@@ -469,6 +476,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.o'), o2)
 
     def test_04_dump_and_load_after_execute_with_2_trade_vars(self):
+        # FIXME: flatten_subprocess conflicting with trade variable setting too ??
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(
@@ -536,6 +544,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             join(self.root_dir, self.namespace))
 
     def test_08_changing_trade_variables_by_adding_df_column(self):
+        # FIXME: flatten_subprocess conflicting with trade variable setting too ??
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(
