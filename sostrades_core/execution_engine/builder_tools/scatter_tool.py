@@ -302,16 +302,17 @@ class ScatterTool(SosTool):
 
         for builder in self.sub_builders:
             old_builder_name = builder.sos_name
-            # if flatten subprocess then the discipline will be build at coupling above the driver
-            # then the name of the driver must be inside the discipline name
-            # else the discipline is build in the driver then no need of driver_name
-            # if self.flatten_subprocess:
+
             driver_name = self.driver.sos_name
-            disc_name = f'{driver_name}.{name}.{old_builder_name}'
+            driver_full_name = self.driver.get_disc_full_name()
+            father_executor_name = self.driver.father_executor.get_disc_full_name()
+            namespace_name = driver_full_name.replace(f'{father_executor_name}.', '', 1)
+            disc_name = f'{namespace_name}.{name}.{old_builder_name}'
             # else:
             #     disc_name = f'{name}.{old_builder_name}'
 
             builder.set_disc_name(disc_name)
+
             if new_name:
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
             self.set_father_discipline()
@@ -335,7 +336,7 @@ class ScatterTool(SosTool):
         driver_full_name = self.driver.get_disc_full_name()
         if driver_display_name != driver_full_name:
             local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
-            display_value = f'{self.driver.get_disc_display_name()}.{name}.{old_builder_name}'
+            display_value = f'{driver_display_name}.{name}.{old_builder_name}'
             local_ns_disc.set_display_value(display_value)
 
         if self.display_options['hide_under_coupling']:
@@ -346,6 +347,11 @@ class ScatterTool(SosTool):
             local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
             display_value = f'{driver_display_name}.{old_builder_name}.{name}'
             local_ns_disc.set_display_value(display_value)
+        elif self.display_options['hide_coupling_in_driver']:
+            local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
+            display_value = f'{driver_display_name}.{old_builder_name}'
+            local_ns_disc.set_display_value(display_value)
+
         if self.display_options['autogather']:
             if self.display_options['group_scenarios_under_disciplines']:
                 gather_name = old_builder_name
