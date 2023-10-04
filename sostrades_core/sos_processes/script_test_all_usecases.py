@@ -488,13 +488,13 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         if data_integrity_passed:
             if not study_2.ee.factory.contains_mdo or force_run:
                 post_processing_passed, error_msg_post_processing = test_post_processing_study(
-                    study=study_2, force_run=True)
+                    study=study_2, force_run=force_run)
                 test_passed = post_processing_passed
                 info_msg += error_msg_post_processing
 
                 if post_processing_passed:
                     if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
-                        run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=True)
+                        run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
                         test_passed = run_test_passed
                         info_msg += error_msg_run
                     else:
