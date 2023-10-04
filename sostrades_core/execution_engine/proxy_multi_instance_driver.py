@@ -179,19 +179,16 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         """
         if self.flatten_subprocess and self.builder_tool:
             proxies_names = self.builder_tool.get_all_built_disciplines_names()
+            # return self.builder_tool.has_built and proxies_names
+            # TODO: upon overload of is_configured method can refactor quickfix below
+            if self.builder_tool.has_built:
+                return bool(proxies_names)
+            else:
+                self.set_configure_status(False)
+                return False
         else:
             proxies_names = [disc.sos_name for disc in self.scenarios]
-        # # assuming self.coupling_per_scenario is true so bock below commented
-        # if self.coupling_per_scenario:
-        #     builder_names = [b.sos_name for b in self.cls_builder]
-        #     expected_proxies_names = []
-        #     for sc_name in scenario_names:
-        #         for builder_name in builder_names:
-        #             expected_proxies_names.append(self.ee.ns_manager.compose_ns([sc_name, builder_name]))
-        #     return set(expected_proxies_names) == set(proxies_names)
-        # else:
-        # return set(proxies_names) == set(scenario_names)
-        return proxies_names != [] and set(proxies_names) == set(scenario_names)
+            return proxies_names != [] and set(proxies_names) == set(scenario_names)
 
     def prepare_variables_to_propagate(self):
         # TODO: code below might need refactoring after reference_scenario
