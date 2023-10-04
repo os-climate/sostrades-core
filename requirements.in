@@ -29,6 +29,7 @@ PyYAML>=5.4
 
 # Development requirements
 nose2==0.9.1
+pytest==7.4.0
 
 # Unused old requirements
 # pyarrow==6.0.1
