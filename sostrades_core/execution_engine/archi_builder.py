@@ -221,12 +221,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             # chekc if sub architectures are built and activation_df has been
             # modified
             if (
-                activation_df is not None
-                and not activation_df.equals(
-                    self._structuring_variables[self.ACTIVATION_DF]
-                )
-                and not activation_df.equals(self.default_activation_df)
-                and activation_df.columns.equals(self.default_activation_df.columns)
+                    activation_df is not None
+                    and not activation_df.equals(
+                self._structuring_variables[self.ACTIVATION_DF]
+            )
+                    and not activation_df.equals(self.default_activation_df)
+                    and activation_df.columns.equals(self.default_activation_df.columns)
             ):
                 rows_to_delete = []
                 modified_activation_df = deepcopy(activation_df)
@@ -241,8 +241,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                         if not all(self.default_activation_df[colname].isnull()):
                             # check if values are among possible values
                             if not all(
-                                colval.isin(
-                                    self.default_activation_df[colname])
+                                    colval.isin(
+                                        self.default_activation_df[colname])
                             ):
                                 wrong_values = colval.loc[
                                     ~colval.isin(
@@ -264,9 +264,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                                     ~self.default_activation_df[colname], vb
                                 ].values.tolist()
                                 if not (
-                                    activation_df.loc[
-                                        activation_df[vb].isin(unavailable_vb)
-                                    ][activation_df[colname]]
+                                        activation_df.loc[
+                                            activation_df[vb].isin(unavailable_vb)
+                                        ][activation_df[colname]]
                                 ).empty:
                                     # if not available value blocks are activated,
                                     # set False in activation_df
@@ -312,7 +312,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return []
 
     def create_vb_disc_namespaces_and_builders(
-        self, archi_df, activation_dict, archi_parent
+            self, archi_df, activation_dict, archi_parent
     ):
         """
         Create builder dict of value blocks
@@ -380,14 +380,14 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             self.children_dict[ns] = []
             for ns_child in builder_dict:
                 if (
-                    ns in ns_child
-                    and ns != ns_child
-                    and len(ns.split('.')) + 1 == len(ns_child.split('.'))
+                        ns in ns_child
+                        and ns != ns_child
+                        and len(ns.split('.')) + 1 == len(ns_child.split('.'))
                 ):
                     self.children_dict[ns].append(ns_child)
 
     def get_full_namespaces_from_archi(
-        self, namespace, activation_dict, archi_df, archi_parent
+            self, namespace, activation_dict, archi_df, archi_parent
     ):
         """
         Get full namespaces of builder with current namespace by reading archi_df
@@ -411,7 +411,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 vb_father = archi_df.loc[
                     (archi_df[self.CURRENT] == namespace.split('.')[0])
                     & (~archi_df[self.PARENT].isna())
-                ]
+                    ]
                 # if no parents and architecture name not in architecture_df,
                 # namespace builder will be built below architecture
                 if len(vb_father) == 0:
@@ -717,13 +717,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         Return True/False if builder is activated/desactivated in self.activation_df
         """
         if (
-            self.ACTIVATION_DF in self.get_data_in()
-            and self.get_sosdisc_inputs(self.ACTIVATION_DF) is not None
+                self.ACTIVATION_DF in self.get_data_in()
+                and self.get_sosdisc_inputs(self.ACTIVATION_DF) is not None
         ):
             activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
             if (
-                builder_name in activation_df.columns
-                and builder_name not in self.activation_dict.keys()
+                    builder_name in activation_df.columns
+                    and builder_name not in self.activation_dict.keys()
             ):
                 df = deepcopy(activation_df)
                 for builder, activ_dict in self.activation_dict.items():
@@ -817,7 +817,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         if namespace == self.sos_name:
             driver_name = 'driver'
         # standard case
-        elif self.sos_name in namespace:
+        elif self.sos_name.split('.')[-1] in namespace:
             builder_name = f"{namespace.split('.', 1)[1]}"
             driver_name = f'{builder_name}.driver'
             # case when no archi_node is specified in architecture_df
@@ -832,7 +832,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         else:
             builder.set_disc_name(builder.sos_name.split('.')[-1])
             builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, [builder],
-                                                            display_options={'hide_under_coupling': True})
+                                                                           display_options={
+                                                                               'hide_under_coupling': True})
         if namespace == self.sos_name:
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], self.get_disc_full_name())
@@ -902,8 +903,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         # row
         activation_df_row = archi_df.loc[
             (archi_df[self.ACTIVATION]) & (
-                archi_df[self.CURRENT] != self.sos_name)
-        ][self.CURRENT].values
+                    archi_df[self.CURRENT] != self.sos_name)
+            ][self.CURRENT].values
         for builder in activation_df_row:
             parent = archi_df.loc[archi_df[self.CURRENT] == builder][
                 self.PARENT
@@ -1005,11 +1006,11 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             self.add_inputs(dict_desc_in, clean_inputs=False)
         else:
             if not self.default_activation_df.equals(
-                self.dm.get_data(
-                    self.get_var_full_name(
-                        self.ACTIVATION_DF, self.get_data_in()),
-                    ProxyDisciplineBuilder.DEFAULT,
-                )
+                    self.dm.get_data(
+                        self.get_var_full_name(
+                            self.ACTIVATION_DF, self.get_data_in()),
+                        ProxyDisciplineBuilder.DEFAULT,
+                    )
             ):
                 self.get_data_in()[self.ACTIVATION_DF][
                     self.VALUE
@@ -1025,7 +1026,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return activation_dict
 
     def get_scatter_input_value(
-        self, namespace, input_name, builder_name, condition_dict=None
+            self, namespace, input_name, builder_name, condition_dict=None
     ):
         """
         Get product list of actor_name for builder_name
@@ -1037,7 +1038,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 if namespace in activ_dict:
                     activation_df = activation_df.loc[
                         activation_df[var] == activ_dict[namespace]
-                    ]
+                        ]
 
             subactivation_df = activation_df.loc[activation_df[builder_name]]
             # To deal with scatter of scatter
@@ -1046,7 +1047,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 for key, value in condition_dict.items():
                     subactivation_df = subactivation_df.loc[
                         subactivation_df[key] == value
-                    ]
+                        ]
 
             input_value = [
                 val for val in subactivation_df[input_name] if val is not None
