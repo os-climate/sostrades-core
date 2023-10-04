@@ -62,6 +62,10 @@ class ScatterTool(SosTool):
         self.ns_to_update = None
         self.sc_map = None
 
+    @property
+    def has_built(self):
+        return self.__scattered_disciplines.keys() == set(self.__scatter_list)
+
     def set_display_options(self, display_options_dict):
         '''
         Set the display options dictionnary for the driver
