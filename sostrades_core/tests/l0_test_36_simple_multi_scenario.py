@@ -266,11 +266,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertEqual(
             self.exec_eng.dm.get_value('MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),
             ['scenario_1', 'scenario_W', 'scenario_2'])
-        ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-            'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        for sc in ['scenario_1', 'scenario_2']:
-            assert sc in ms_sub_disc_names
+
+        ## flatten_subprocess
+        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
+        #     'MyCase.multi_scenarios')[0]
+        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        # for sc in ['scenario_1', 'scenario_2']:
+        #     assert sc in ms_sub_disc_names
 
         # Now, change to REFERENCE_MODE to COPY_MODE and check that the non-trade variables from non-reference scenarios have
         # 'editable' in True.

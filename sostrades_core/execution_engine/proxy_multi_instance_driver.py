@@ -263,8 +263,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             #     print('dfqsfdqs')
             if instance_reference:
                 scenario_names = scenario_names[:-1]
-                ref_discipline = self.scenarios[self.get_reference_scenario_index(
-                )]
 
                 # ref_discipline_full_name =
                 # ref_discipline.get_disc_full_name() # do provide the sting
@@ -282,8 +280,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                 ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
                     trade_vars)
 
-                scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
-                                                                                                      scenario_names,
+                scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(scenario_names,
                                                                                                       ref_dict)
 
                 # Update of original editability state in case modification
@@ -312,7 +309,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                     scenarios_non_trade_vars_dict)
                 # Propagation to other scenarios if necessary
                 self.propagate_reference_non_trade_variables(
-                    ref_changes_dict, ref_dict, ref_discipline, scenario_names)
+                    ref_changes_dict, ref_dict, scenario_names)
             else:
                 if self.original_editable_dict_non_ref:
                     for sc in scenario_names:
@@ -389,21 +386,26 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             #                                   **self.original_editable_dict_non_ref}
             self.save_editable_attr = False
 
-    def get_reference_scenario_index(self):
-        """
-        """
-        index_ref = 0
-        my_root = self.ee.ns_manager.compose_ns(
-            [self.sos_name, self.REFERENCE_SCENARIO_NAME])
+    def get_reference_scenario_disciplines(self):
+        reference_scenario_root_name = self.ee.ns_manager.compose_ns([self.get_disc_full_name(),
+                                                                      self.REFERENCE_SCENARIO_NAME])
+        return [disc for disc in self.scenarios if reference_scenario_root_name in disc.get_disc_full_name()]
 
-        for disc in self.scenarios:
-            if disc.sos_name == self.REFERENCE_SCENARIO_NAME \
-                    or my_root in disc.sos_name:  # for flatten_subprocess
-                # TODO: better implement this 2nd condition ?
-                break
-            else:
-                index_ref += 1
-        return index_ref
+    # def get_reference_scenario_index(self):
+    #     """
+    #     """
+    #     index_ref = 0
+    #     my_root = self.ee.ns_manager.compose_ns(
+    #         [self.sos_name, self.REFERENCE_SCENARIO_NAME])
+    #
+    #     for disc in self.scenarios:
+    #         if disc.sos_name == self.REFERENCE_SCENARIO_NAME \
+    #                 or my_root in disc.sos_name:  # for flatten_subprocess
+    #             # TODO: better implement this 2nd condition ?
+    #             break
+    #         else:
+    #             index_ref += 1
+    #     return index_ref
 
     def check_if_there_are_reference_variables_changes(self):
 
@@ -418,14 +420,13 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         return ref_changes_dict
 
     def get_reference_non_trade_variables_changes(self, trade_vars):
-        ref_discipline = self.scenarios[self.get_reference_scenario_index()]
-
         # Take reference scenario non-trade variables (num and non-num) and its
         # values
         ref_dict = {}
-        for key in ref_discipline.get_input_data_names():
-            if all(key.split(self.REFERENCE_SCENARIO_NAME + '.')[-1] != trade_var for trade_var in trade_vars):
-                ref_dict[key] = ref_discipline.ee.dm.get_value(key)
+        for ref_discipline in self.get_reference_scenario_disciplines():
+            for key in ref_discipline.get_input_data_names():
+                if all(key.split(self.REFERENCE_SCENARIO_NAME + '.')[-1] != trade_var for trade_var in trade_vars):
+                    ref_dict[key] = ref_discipline.ee.dm.get_value(key)
 
         # Check if reference values have changed and select only those which
         # have changed
@@ -462,7 +463,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         return ref_changes_dict, ref_dict
 
-    def propagate_reference_non_trade_variables(self, ref_changes_dict, ref_dict, ref_discipline,
+    def propagate_reference_non_trade_variables(self, ref_changes_dict, ref_dict,
                                                 scenario_names_to_propagate):
 
         if ref_changes_dict:
@@ -474,13 +475,11 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         dict_to_propagate = {}
         # Propagate all reference
         if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
-            dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
-                                                                                      scenario_names_to_propagate,
+            dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(scenario_names_to_propagate,
                                                                                       ref_dict)
         # Propagate reference changes
         elif self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.COPY_MODE and ref_changes_dict:
-            dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(ref_discipline,
-                                                                                      scenario_names_to_propagate,
+            dict_to_propagate = self.transform_dict_from_reference_to_other_scenarios(scenario_names_to_propagate,
                                                                                       ref_changes_dict)
         # Propagate other scenarios variables and values
         if self.there_are_new_scenarios:
@@ -558,7 +557,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         return dict_out
 
-    def transform_dict_from_reference_to_other_scenarios(self, ref_discipline, scenario_names, dict_from_ref):
+    def transform_dict_from_reference_to_other_scenarios(self, scenario_names, dict_from_ref):
 
         transformed_to_other_scenarios_dict = {}
         for key in dict_from_ref.keys():
