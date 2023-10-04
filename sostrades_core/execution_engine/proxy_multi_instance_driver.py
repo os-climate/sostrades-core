@@ -502,8 +502,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     def search_evaluator_names_and_modify_mode_iteratively(self, disc):
 
         list = []
+        # subdisc_to_check = disc.scenarios if hasattr(disc, 'scenarios') else disc.proxy_disciplines
         for subdisc in disc.proxy_disciplines:
-            if subdisc.__class__.__name__ == 'ProxyDriverEvaluator':
+            if subdisc.__class__.__name__ == 'ProxyMultiInstanceDriver':
                 if subdisc.get_sosdisc_inputs(self.INSTANCE_REFERENCE) == True:
                     # If upper ProxyDriverEvaluator is in linked mode, all
                     # lower ProxyDriverEvaluator shall be as well.
