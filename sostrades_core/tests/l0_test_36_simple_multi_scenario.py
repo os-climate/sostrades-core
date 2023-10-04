@@ -385,7 +385,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                        scenario + '.Disc3.power', 'editable'), True)
 
     def test_03_consecutive_configure(self):
-        # FIXME: flatten_subprocess conflicting with trade variable setting too ??
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
@@ -477,7 +476,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.o'), o2)
 
     def test_04_dump_and_load_after_execute_with_2_trade_vars(self):
-        # FIXME: flatten_subprocess conflicting with trade variable setting too ??
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(
@@ -545,7 +543,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
             join(self.root_dir, self.namespace))
 
     def test_08_changing_trade_variables_by_adding_df_column(self):
-        # FIXME: flatten_subprocess conflicting with trade variable setting too ??
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(

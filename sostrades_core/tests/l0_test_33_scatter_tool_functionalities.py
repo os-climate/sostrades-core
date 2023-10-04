@@ -286,7 +286,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.assertEqual(scenario_list_value, self.scenario_list)
 
     def test_05_scatter_name_output_capability(self):
-        # FIXME: ask for help
         '''
         Check that the scatter_list is correctly created in output of the driver
         '''
