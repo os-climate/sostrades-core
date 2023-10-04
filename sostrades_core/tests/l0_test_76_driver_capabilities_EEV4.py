@@ -1346,34 +1346,22 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t|_ Disc3'
 
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n    ' \
-                         '|_ root.outer_ms  (ProxyMultiInstanceDriver) [True]\n        ' \
-                         '|_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n            ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms  (ProxyMultiInstanceDriver) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
-                         '|_ root.outer_ms.scenario_1.Disc3  (ProxyDiscipline) [True]\n        ' \
-                         '|_ root.outer_ms.scenario_2  (ProxyCoupling) [True]\n            ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms  (ProxyMultiInstanceDriver) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
-                         '|_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]\n        ' \
-                         '|_ root.outer_ms.ReferenceScenario  (ProxyCoupling) [True]\n            ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms  (ProxyMultiInstanceDriver) [True]\n                ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
-                         '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]'
+                         '|_ root.outer_ms  (ProxyMultiInstanceDriver) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms  (ProxyMultiInstanceDriver) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.Disc3  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms  (ProxyMultiInstanceDriver) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms  (ProxyMultiInstanceDriver) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]'
 
         self.assertEqual(exec_eng.display_treeview_nodes(),
                          exp_ns_tree)
@@ -1717,34 +1705,22 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t|_ Disc3'
 
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n    ' \
-                         '|_ root.outer_ms  (ProxyMultiInstanceDriver) [True]\n        ' \
-                         '|_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n            ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms  (ProxyMultiInstanceDriver) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_1.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
-                         '|_ root.outer_ms.scenario_1.Disc3  (ProxyDiscipline) [True]\n        ' \
-                         '|_ root.outer_ms.scenario_2  (ProxyCoupling) [True]\n            ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms  (ProxyMultiInstanceDriver) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.scenario_2.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
-                         '|_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]\n        ' \
-                         '|_ root.outer_ms.ReferenceScenario  (ProxyCoupling) [True]\n            ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms  (ProxyMultiInstanceDriver) [True]\n                ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_1  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_2  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n                ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario  (ProxyCoupling) [True]\n                    ' \
-                         '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n            ' \
-                         '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]'
+                         '|_ root.outer_ms  (ProxyMultiInstanceDriver) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms  (ProxyMultiInstanceDriver) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.Disc3  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms  (ProxyMultiInstanceDriver) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms  (ProxyMultiInstanceDriver) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.Disc3  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_1.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.scenario_2.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n    ' \
+                         '|_ root.outer_ms.ReferenceScenario.inner_ms.ReferenceScenario.Disc1  (ProxyDiscipline) [True]'
 
         self.assertEqual(exec_eng.display_treeview_nodes(),
                          exp_ns_tree)
