@@ -90,6 +90,7 @@ class ScatterTool(SosTool):
             self.sc_map = self.ee.scattermap_manager.get_build_map(self.map_name)
             self.ee.scattermap_manager.associate_disc_to_build_map(self)
             self.sc_map.configure_map(self.sub_builders)
+
     def prepare_tool(self):
         '''
         Prepare tool function if some data of the driver are needed to configure the tool
@@ -184,6 +185,7 @@ class ScatterTool(SosTool):
             if scatter_list_name in self.driver.get_data_out():
                 self.ee.dm.set_data(self.driver.get_var_full_name(
                     scatter_list_name, self.driver.get_data_out()), 'value', self.__scatter_list)
+
     def build(self):
         ''' 
         Configuration of the SoSscatter : 
@@ -211,7 +213,6 @@ class ScatterTool(SosTool):
                 else:
                     self.build_child_scatter(
                         name, new_name, ns_ids_list)
-
 
     def build_sub_coupling(self, name, new_name, ns_ids_list):
         '''
@@ -270,8 +271,6 @@ class ScatterTool(SosTool):
                 ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
             ns_ids_list.append(ns_id)
 
-        
-
         return ns_ids_list
 
     def build_child_scatter(self, name, new_name, ns_ids_list):
@@ -302,11 +301,11 @@ class ScatterTool(SosTool):
             # if flatten subprocess then the discipline will be build at coupling above the driver
             # then the name of the driver must be inside the discipline name
             # else the discipline is build in the driver then no need of driver_name
-            if self.flatten_subprocess:
-                driver_name = self.driver.sos_name
-                disc_name = f'{driver_name}.{name}.{old_builder_name}'
-            else:
-                disc_name = f'{name}.{old_builder_name}'
+            # if self.flatten_subprocess:
+            driver_name = self.driver.sos_name
+            disc_name = f'{driver_name}.{name}.{old_builder_name}'
+            # else:
+            #     disc_name = f'{name}.{old_builder_name}'
 
             builder.set_disc_name(disc_name)
             if new_name:
@@ -328,14 +327,20 @@ class ScatterTool(SosTool):
         2. group_scenarios_under_disciplines : Group All the scenario under each discipline in display treeview (the exec treeview remains the same)
         3. autogather : Add a Gather discipline which will autogather disciplines
         '''
+        driver_display_name = self.driver.get_disc_display_name()
+        driver_full_name = self.driver.get_disc_full_name()
+        if driver_display_name != driver_full_name:
+            local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
+            display_value = f'{self.driver.get_disc_display_name()}.{name}.{old_builder_name}'
+            local_ns_disc.set_display_value(display_value)
 
         if self.display_options['hide_under_coupling']:
             local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
-            display_value = f'{self.driver.get_disc_display_name()}.{name}'
+            display_value = f'{driver_display_name}.{name}'
             local_ns_disc.set_display_value(display_value)
         elif self.display_options['group_scenarios_under_disciplines']:
             local_ns_disc = self.ee.ns_manager.get_local_namespace(disc)
-            display_value = f'{self.driver.get_disc_display_name()}.{old_builder_name}.{name}'
+            display_value = f'{driver_display_name}.{old_builder_name}.{name}'
             local_ns_disc.set_display_value(display_value)
         if self.display_options['autogather']:
             if self.display_options['group_scenarios_under_disciplines']:
@@ -375,6 +380,7 @@ class ScatterTool(SosTool):
                 gather_disc = gather_builder.build()
                 self.ee.factory.add_discipline(gather_disc)
                 self.__gather_disciplines[gather_name] = gather_disc
+
     def clean_scattered_disciplines(self, sub_names):
         '''
         Clean disciplines that was scattered and are not in the scatter_list anymore
