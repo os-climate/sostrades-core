@@ -85,8 +85,8 @@ def generate_script_for_usecases_test(usecases):
     script = "import unittest\n\n\nclass TestUsecases(unittest.TestCase):\n\tpass\n"
 
     def get_test_function_for_usecase(usecase_path: str, test_number: int):
-        path_for_import = usecase_path.replace(".py",'').replace("\\",'.')
-        test_name = f"test_{test_number:03d}_"+ "_".join(usecase_path.replace(".py",'').replace("\\",'.').split(".")[-2:])
+        path_for_import = usecase_path.replace(".py",'').replace("\\",'.').replace("/",'.')
+        test_name = f"test_{test_number:03d}_"+ "_".join(usecase_path.replace(".py",'').replace("\\",'.').replace("/",'.').split(".")[-2:])
         test_function_code = f"\n\tdef {test_name}(self):\n" \
                              f"\t\tfrom {path_for_import} import Study\n" \
                              f"\t\tusecase = Study()\n" \
