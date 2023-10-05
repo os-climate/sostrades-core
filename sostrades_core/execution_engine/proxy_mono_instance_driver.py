@@ -32,77 +32,78 @@ class ProxyMonoInstanceDriverException(Exception):
 
 class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
-    # def setup_sos_disciplines(self):
-    #     disc_in = self.get_data_in()
-    #     dynamic_inputs = {self.EVAL_INPUTS: {self.TYPE: 'dataframe',
-    #                                          self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
-    #                                                                      'full_name': ('string', None, False)},
-    #                                          self.DATAFRAME_EDITION_LOCKED: False,
-    #                                          self.STRUCTURING: True,
-    #                                          self.VISIBILITY: self.SHARED_VISIBILITY,
-    #                                          self.NAMESPACE: self.NS_EVAL},
-    #                       self.EVAL_OUTPUTS: {self.TYPE: 'dataframe',
-    #                                           self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
-    #                                                                       'full_name': ('string', None, False),
-    #                                                                       'output_name': ('multiple', None, True)},
-    #                                           self.DATAFRAME_EDITION_LOCKED: False,
-    #                                           self.STRUCTURING: True,
-    #                                           self.VISIBILITY: self.SHARED_VISIBILITY,
-    #                                           self.NAMESPACE: self.NS_EVAL},
-    #                       'n_processes': {self.TYPE: 'int', self.NUMERICAL: True, self.DEFAULT: 1},
-    #                       'wait_time_between_fork': {self.TYPE: 'float', self.NUMERICAL: True,
-    #                                                  self.DEFAULT: 0.0}
-    #                       }
-    #
-    #     dynamic_outputs = {
-    #         'samples_inputs_df': {self.TYPE: 'dataframe', 'unit': None, self.VISIBILITY: self.SHARED_VISIBILITY,
-    #                               self.NAMESPACE: self.NS_EVAL}
-    #     }
-    #
-    #     selected_inputs_has_changed = False
-    #     if self.EVAL_INPUTS in disc_in:
-    #         # if len(disc_in) != 0:
-    #
-    #         eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
-    #         eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-    #
-    #         # we fetch the inputs and outputs selected by the user
-    #         selected_outputs = eval_outputs[eval_outputs['selected_output']
-    #                                         == True]['full_name']
-    #         selected_inputs = eval_inputs[eval_inputs['selected_input']
-    #                                       == True]['full_name']
-    #         if 'output_name' in eval_outputs.columns:
-    #             eval_out_names = eval_outputs[eval_outputs['selected_output']
-    #                                           == True]['output_name'].tolist()
-    #         else:
-    #             eval_out_names = [None for _ in selected_outputs]
-    #         if set(selected_inputs.tolist()) != set(self.selected_inputs):
-    #             selected_inputs_has_changed = True
-    #             self.selected_inputs = selected_inputs.tolist()
-    #         self.selected_outputs = selected_outputs.tolist()
-    #
-    #         if len(selected_inputs) > 0 and len(selected_outputs) > 0:
-    #             # TODO: OK that it blocks config. with empty input ? also, might want an eval without outputs ?
-    #             # we set the lists which will be used by the evaluation function of sosEval
-    #             self.set_eval_in_out_lists(
-    #                 self.selected_inputs, self.selected_outputs)
-    #
-    #             # setting dynamic outputs. One output of type dict per selected output
-    #             self.eval_out_names = []
-    #             for out_var, out_name in zip(self.selected_outputs, eval_out_names):
-    #                 _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
-    #                 self.eval_out_names.append(_out_name)
-    #                 dynamic_outputs.update(
-    #                     {_out_name: {self.TYPE: 'dict',
-    #                                  self.VISIBILITY: 'Shared',
-    #                                  self.NAMESPACE: self.NS_EVAL}})
-    #             dynamic_inputs.update(self._get_dynamic_inputs_doe(
-    #                 disc_in, selected_inputs_has_changed))
-    #             dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
-    #                                                            self.VISIBILITY: 'Shared',
-    #                                                            self.NAMESPACE: self.NS_EVAL}})
-    #     self.add_inputs(dynamic_inputs)
-    #     self.add_outputs(dynamic_outputs)
+    def setup_sos_disciplines(self):
+        disc_in = self.get_data_in()
+        if disc_in:
+            dynamic_inputs = {self.EVAL_INPUTS: {self.TYPE: 'dataframe',
+                                                 self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                                             'full_name': ('string', None, False)},
+                                                 self.DATAFRAME_EDITION_LOCKED: False,
+                                                 self.STRUCTURING: True,
+                                                 self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                 self.NAMESPACE: self.NS_EVAL},
+                              self.EVAL_OUTPUTS: {self.TYPE: 'dataframe',
+                                                  self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
+                                                                              'full_name': ('string', None, False),
+                                                                              'output_name': ('multiple', None, True)},
+                                                  self.DATAFRAME_EDITION_LOCKED: False,
+                                                  self.STRUCTURING: True,
+                                                  self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                  self.NAMESPACE: self.NS_EVAL},
+                              'n_processes': {self.TYPE: 'int', self.NUMERICAL: True, self.DEFAULT: 1},
+                              'wait_time_between_fork': {self.TYPE: 'float', self.NUMERICAL: True,
+                                                         self.DEFAULT: 0.0}
+                              }
+
+            dynamic_outputs = {
+                'samples_inputs_df': {self.TYPE: 'dataframe', 'unit': None, self.VISIBILITY: self.SHARED_VISIBILITY,
+                                      self.NAMESPACE: self.NS_EVAL}
+            }
+
+            selected_inputs_has_changed = False
+            if self.EVAL_INPUTS in disc_in:
+                # if len(disc_in) != 0:
+
+                eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+                eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+
+                # we fetch the inputs and outputs selected by the user
+                selected_outputs = eval_outputs[eval_outputs['selected_output']
+                                                == True]['full_name']
+                selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                              == True]['full_name']
+                if 'output_name' in eval_outputs.columns:
+                    eval_out_names = eval_outputs[eval_outputs['selected_output']
+                                                  == True]['output_name'].tolist()
+                else:
+                    eval_out_names = [None for _ in selected_outputs]
+                if set(selected_inputs.tolist()) != set(self.selected_inputs):
+                    selected_inputs_has_changed = True
+                    self.selected_inputs = selected_inputs.tolist()
+                self.selected_outputs = selected_outputs.tolist()
+
+                if len(selected_inputs) > 0 and len(selected_outputs) > 0:
+                    # TODO: OK that it blocks config. with empty input ? also, might want an eval without outputs ?
+                    # we set the lists which will be used by the evaluation function of sosEval
+                    self.set_eval_in_out_lists(
+                        self.selected_inputs, self.selected_outputs)
+
+                    # setting dynamic outputs. One output of type dict per selected output
+                    self.eval_out_names = []
+                    for out_var, out_name in zip(self.selected_outputs, eval_out_names):
+                        _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
+                        self.eval_out_names.append(_out_name)
+                        dynamic_outputs.update(
+                            {_out_name: {self.TYPE: 'dict',
+                                         self.VISIBILITY: 'Shared',
+                                         self.NAMESPACE: self.NS_EVAL}})
+                    dynamic_inputs.update(self._get_dynamic_inputs_doe(
+                        disc_in, selected_inputs_has_changed))
+                    dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
+                                                                   self.VISIBILITY: 'Shared',
+                                                                   self.NAMESPACE: self.NS_EVAL}})
+            self.add_inputs(dynamic_inputs)
+            self.add_outputs(dynamic_outputs)
 
     def configure_driver(self):
         disc_in = self.get_data_in()
