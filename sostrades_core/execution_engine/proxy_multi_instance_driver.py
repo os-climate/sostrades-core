@@ -107,6 +107,17 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             # no further disciplines needed to be builded by the evaluator
         return []
 
+    def is_configured(self):
+        config_status = super().is_configured()
+        disc_in = self.get_data_in()
+        # TODO: to be improved with ref. instance refacto
+        if self.INSTANCE_REFERENCE in disc_in and self.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
+            config_status = config_status and (
+                not self.check_if_there_are_reference_variables_changes()) and (
+                self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
+                )
+        return config_status
+
     def update_reference(self):
         return self.INSTANCE_REFERENCE in self.get_data_in()
 
