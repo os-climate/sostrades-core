@@ -298,7 +298,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
         """
-        super().setup_sos_disciplines()
+        # super().setup_sos_disciplines()
         if self.ALGO_OPTIONS in self.get_sosdisc_inputs().keys():
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)

@@ -23,6 +23,7 @@ import copy
 import pandas as pd
 import numpy as np
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 
 class ProxyMultiInstanceDriverException(Exception):
@@ -30,6 +31,71 @@ class ProxyMultiInstanceDriverException(Exception):
 
 
 class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
+
+    # def setup_sos_disciplines(self):
+    #     disc_in = self.get_data_in()
+    #     self.build_multi_instance_inst_desc_io()
+    #     if self.GENERATED_SAMPLES in disc_in:
+    #         generated_samples = self.get_sosdisc_inputs(
+    #             self.GENERATED_SAMPLES)
+    #         generated_samples_dict = {
+    #             self.GENERATED_SAMPLES: generated_samples}
+    #         scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+    #         # checking whether generated_samples has changed
+    #         # NB also doing nothing with an empty dataframe, which means sample needs to be regenerated to renew
+    #         # scenario_df on 2nd config. The reason of this choice is that using an optional generated_samples
+    #         # gives problems with structuring variables checks leading
+    #         # to incomplete configuration sometimes
+    #         if not (generated_samples.empty and not self.old_samples_df) \
+    #                 and not dict_are_equal(generated_samples_dict, self.old_samples_df):
+    #             # checking whether the dataframes are already coherent in which case the changes come probably
+    #             # from a load and there is no need to crush the truth
+    #             # values
+    #             if not generated_samples.equals(
+    #                     scenario_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], axis=1)):
+    #                 # TODO: could overload struct. var. check to spare this deepcopy (only if generated_samples
+    #                 #  remains as a DriverEvaluator input, othrwise another sample change check logic is needed)
+    #                 self.old_samples_df = copy.deepcopy(
+    #                     generated_samples_dict)
+    #                 # we crush old scenario_df and propose a df with
+    #                 # all scenarios imposed by new sample, all
+    #                 # de-activated
+    #                 scenario_df = pd.DataFrame(
+    #                     columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME])
+    #                 scenario_df = pd.concat(
+    #                     [scenario_df, generated_samples], axis=1)
+    #                 n_scenarios = len(scenario_df.index)
+    #                 # check whether the number of generated scenarios
+    #                 # is not too high to auto-activate them
+    #                 if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
+    #                     scenario_df[self.SELECTED_SCENARIO] = True
+    #                 else:
+    #                     self.logger.warning(
+    #                         f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
+    #                     scenario_df[self.SELECTED_SCENARIO] = False
+    #                 scenario_name = scenario_df[self.SCENARIO_NAME]
+    #                 for i in scenario_name.index.tolist():
+    #                     scenario_name.iloc[i] = 'scenario_' + \
+    #                                             str(i + 1)
+    #                 self.logger.info(
+    #                     'Generated sample has changed, updating scenarios to select.')
+    #                 self.dm.set_data(self.get_var_full_name(self.SCENARIO_DF, disc_in),
+    #                                  'value', scenario_df, check_value=False)
+
+    def configure_driver(self):
+        disc_in = self.get_data_in()
+        if self.SCENARIO_DF in disc_in:
+            self.configure_tool()
+            self.configure_subprocesses_with_driver_input()
+            self.set_eval_possible_values(io_type_in=False, strip_first_ns=True)
+
+    def set_wrapper_attributes(self, wrapper):
+        super().set_wrapper_attributes(wrapper)
+        # for the gatherlike capabilities
+        eval_attributes = {'gather_names': self.gather_names,
+                           'gather_out_keys': self.gather_out_keys,
+                           }
+        wrapper.attributes.update(eval_attributes)
 
     def prepare_multi_instance_build(self):
         """
