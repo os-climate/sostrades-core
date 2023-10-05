@@ -273,7 +273,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
                        f'\t|_ Disc1']
 
         exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == self.exec_eng.display_treeview_nodes() #FIXME: ask for help
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
     def test_05_display_on_multi_instance_evaluator_hide_coupling(self):
 

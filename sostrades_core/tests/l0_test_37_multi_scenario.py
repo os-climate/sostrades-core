@@ -369,7 +369,6 @@ class TestMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_4.o'), o4)
 
     def test_05_multi_scenario_from_process_with_basic_config_from_usecase_and_with_ref(self):
-        # FIXME: there seems to be a problem with reference instance + flatten_subprocess
         from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase_without_ref import Study
 
         builder_process = self.exec_eng.factory.get_builder_from_process(
