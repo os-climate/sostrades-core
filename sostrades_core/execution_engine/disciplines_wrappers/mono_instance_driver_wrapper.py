@@ -203,7 +203,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             # drop irrelevant + reorder
             self.custom_samples = self.custom_samples[self.attributes['selected_inputs']]
 
-    def mono_instance_run(self):
+    def run(self):
         '''
             Overloaded SoSEval method
             The execution of the doe

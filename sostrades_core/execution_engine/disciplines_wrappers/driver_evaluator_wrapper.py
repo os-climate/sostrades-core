@@ -79,11 +79,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
     _maturity = 'Fake'
 
-    BUILDER_MODE = 'builder_mode'
     MONO_INSTANCE = 'mono_instance'
     MULTI_INSTANCE = 'multi_instance'
     REGULAR_BUILD = 'regular_build'
-    BUILDER_MODE_POSSIBLE_VALUES = [MULTI_INSTANCE, MONO_INSTANCE]
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
     USECASE_DATA = 'usecase_data'
     GATHER_DEFAULT_SUFFIX = '_dict'
@@ -93,10 +91,11 @@ class DriverEvaluatorWrapper(SoSWrapp):
         None, None, 'Empty')
 
     DESC_IN = {
-        BUILDER_MODE: {SoSWrapp.TYPE: 'string',
-                       # SoSWrapp.DEFAULT: MULTI_INSTANCE,
-                       SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
-                       SoSWrapp.STRUCTURING: True}}
+        # BUILDER_MODE: {SoSWrapp.TYPE: 'string',
+        #                # SoSWrapp.DEFAULT: MULTI_INSTANCE,
+        #                SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
+        #                SoSWrapp.STRUCTURING: True}
+    }
 
     with_modal = True
     if with_modal:
@@ -223,10 +222,4 @@ class DriverEvaluatorWrapper(SoSWrapp):
         """
         Run overload
         """
-        builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
-        if builder_mode == self.MONO_INSTANCE:
-            self.mono_instance_run()
-        elif builder_mode == self.MULTI_INSTANCE:
-            self.multi_instance_run()
-        else:
-            raise NotImplementedError()
+        pass

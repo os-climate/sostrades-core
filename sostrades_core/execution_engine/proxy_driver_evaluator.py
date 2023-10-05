@@ -94,31 +94,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    EVAL_INPUTS = ProxySampleGenerator.EVAL_INPUTS
-
-    SAMPLES_DF = ProxySampleGenerator.SAMPLES_DF
-    SAMPLES_DF_DESC = ProxySampleGenerator.SAMPLES_DF_DESC.copy()
-    SAMPLES_DF_DESC[ProxyDiscipline.STRUCTURING] = True
-    SELECTED_SCENARIO = ProxySampleGenerator.SELECTED_SCENARIO
-    SCENARIO_NAME = ProxySampleGenerator.SCENARIO_NAME
-    SAMPLES_DF_COLUMNS_LIST = [SELECTED_SCENARIO, SCENARIO_NAME]
-    WITH_SAMPLE_GENERATOR = 'with_sample_generator'
-    WITH_SAMPLE_GENERATOR_DESC = {
-        ProxyDiscipline.TYPE: 'bool',
-        ProxyDiscipline.DEFAULT: False,
-        ProxyDiscipline.STRUCTURING: True,
-    }
-
-    GATHER_DEFAULT_SUFFIX = GatherDiscipline.GATHER_SUFFIX
-
-    GATHER_OUTPUTS = GatherDiscipline.GATHER_OUTPUTS
-
-    DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
-               WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
-
-    ##
-    ## To refactor instancce reference and subprocess import
-    ##
+    MONO_INSTANCE = DriverEvaluatorWrapper.MONO_INSTANCE
+    MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
+    REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
+    SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
+    GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
 
     INSTANCE_REFERENCE = 'instance_reference'
     LINKED_MODE = 'linked_mode'
