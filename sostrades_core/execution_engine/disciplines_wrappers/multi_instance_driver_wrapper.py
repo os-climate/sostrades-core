@@ -48,33 +48,29 @@ from gemseo.core.parallel_execution import ParallelExecution
 
 
 class MultiInstanceDriverWrapper(DriverEvaluatorWrapper):
-    # pass
-    def multi_instance_run(self):
-        """
-        Run in the multi instance case.
-        """
-        pass
-        # # very simple ms only
-        # self._init_input_data()
-        # subpr_to_eval = self.subprocesses_to_eval or range(self.n_subprocs)
-        # gather_names = self.attributes['gather_names']
-        # gather_out_keys = self.attributes['gather_out_keys']
-        # # TODO: if an output does not exist in a scenario, it will not be in the dict. Add entry {sc_name: None} ?
-        # gather_output_dict = {key: {} for key in gather_out_keys}
-        # # gather_output_dict = {key: {sc: None for sc in self.attributes['scenario_names']} for key in gather_out_keys}
-        #
-        # for i_subprocess in subpr_to_eval:
-        #     self.subprocess_evaluation({}, i_subprocess)
-        #     # save data of execution i.e. scenario values
-        #     subprocess_outputs = {key: self.attributes['sub_mdo_disciplines'][i_subprocess].local_data[key]
-        #                           for key in self.attributes['sub_mdo_disciplines'][i_subprocess].output_grammar.get_data_names()}
-        #     self.store_sos_outputs_values(
-        #         subprocess_outputs, full_name_keys=True)
-        #
-        #     # the keys of gather_names correspond to the full names of the vars to gather
-        #     gathered_in_subprocess = self._select_output_data(subprocess_outputs, gather_names)
-        #     for _gathered_var_name, _gathered_var_value in gathered_in_subprocess.items():
-        #         # the values of gather_names are tuples out_key, scenario_name which allow mapping to global_dict_output
-        #         out_key, scenario_name = gather_names[_gathered_var_name]
-        #         gather_output_dict[out_key][scenario_name] = _gathered_var_value
-        # self.store_sos_outputs_values(gather_output_dict)
+    pass
+    # TODO: creating the class in case it needs to host eval_outputs capabilities
+    # def run(self):
+    #     self._init_input_data()
+    #     subpr_to_eval = self.subprocesses_to_eval or range(self.n_subprocs)
+    #     gather_names = self.attributes['gather_names']
+    #     gather_out_keys = self.attributes['gather_out_keys']
+    #     # NB: if an output does not exist in a scenario, it will not be in the dict. Add entry {sc_name: None} ?
+    #     gather_output_dict = {key: {} for key in gather_out_keys}
+    #     # gather_output_dict = {key: {sc: None for sc in self.attributes['scenario_names']} for key in gather_out_keys}
+    #
+    #     for i_subprocess in subpr_to_eval:
+    #         self.subprocess_evaluation({}, i_subprocess)
+    #         # save data of execution i.e. scenario values
+    #         subprocess_outputs = {key: self.attributes['sub_mdo_disciplines'][i_subprocess].local_data[key]
+    #                               for key in self.attributes['sub_mdo_disciplines'][i_subprocess].output_grammar.get_data_names()}
+    #         self.store_sos_outputs_values(
+    #             subprocess_outputs, full_name_keys=True)
+    #
+    #         # the keys of gather_names correspond to the full names of the vars to gather
+    #         gathered_in_subprocess = self._select_output_data(subprocess_outputs, gather_names)
+    #         for _gathered_var_name, _gathered_var_value in gathered_in_subprocess.items():
+    #             # the values of gather_names are tuples out_key, scenario_name which allow mapping to global_dict_output
+    #             out_key, scenario_name = gather_names[_gathered_var_name]
+    #             gather_output_dict[out_key][scenario_name] = _gathered_var_value
+    #     self.store_sos_outputs_values(gather_output_dict)

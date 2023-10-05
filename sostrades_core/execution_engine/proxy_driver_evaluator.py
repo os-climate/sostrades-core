@@ -98,11 +98,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    BUILDER_MODE = DriverEvaluatorWrapper.BUILDER_MODE
     MONO_INSTANCE = DriverEvaluatorWrapper.MONO_INSTANCE
     MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
     REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
-    BUILDER_MODE_POSSIBLE_VALUES = DriverEvaluatorWrapper.BUILDER_MODE_POSSIBLE_VALUES
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
     GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
 
@@ -171,7 +169,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.display_options = display_options
 
-        self.old_builder_mode = None
         self.eval_process_builder = None
         self.eval_in_list = None
         self.eval_out_list = None
