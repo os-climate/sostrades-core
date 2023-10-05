@@ -477,17 +477,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
                 self.logger.warning(error_msg)
 
-    def clean_sub_builders(self):
-        '''
-        Clean sub_builders as they were at initialization especially for their associated namespaces
-        '''
-        for builder in self.cls_builder:
-            # delete all associated namespaces
-            builder.delete_all_associated_namespaces()
-            # set back all associated namespaces that was at the init of the
-            # evaluator
-            builder.add_namespace_list_in_associated_namespaces(
-                self.associated_namespaces)
+    # TODO: clean the code that cleans after builder mode change
+    # def clean_sub_builders(self):
+    #     '''
+    #     Clean sub_builders as they were at initialization especially for their associated namespaces
+    #     '''
+    #     for builder in self.cls_builder:
+    #         # delete all associated namespaces
+    #         builder.delete_all_associated_namespaces()
+    #         # set back all associated namespaces that was at the init of the
+    #         # evaluator
+    #         builder.add_namespace_list_in_associated_namespaces(
+    #             self.associated_namespaces)
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
