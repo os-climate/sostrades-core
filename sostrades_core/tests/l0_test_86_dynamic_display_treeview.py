@@ -234,8 +234,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 #             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
 #         self.exec_eng.ns_manager.add_display_ns_to_builder(
 #             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
-        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', [disc1_builder, disc2_builder])
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios',
+                                                                             [disc1_builder, disc2_builder])
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
@@ -298,8 +298,10 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
-        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', [disc1_builder, disc2_builder], display_options={'hide_coupling_in_driver': True})
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios',
+                                                                             [disc1_builder, disc2_builder],
+                                                                             display_options={
+                                                                                 'hide_coupling_in_driver': True})
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)

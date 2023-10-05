@@ -78,8 +78,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'Disc3', mod_list)
         builder_list.append(disc3_builder)
 
-        multi_scenarios =  self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', builder_list)
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', builder_list)
         exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
         exec_eng.configure()
@@ -100,8 +99,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.ns_manager.add_ns(
             'ns_out_disc3', 'MyCase')
 
-        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', builder_list)
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', builder_list)
 
         # add post-processing on 'Post-processing' node by loading a module
         # with implemented graphs
@@ -603,8 +601,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'Disc3', mod_list)
         builder_list.append(disc3_builder)
 
-        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', builder_list)
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
