@@ -316,7 +316,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # io full name maps set by ProxyDiscipline
         super().set_wrapper_attributes(wrapper)
 
-        # driverevaluator subprocess # TODO: actually no longer necessary in multi-instance ?
+        # driverevaluator subprocess # TODO: actually no longer necessary in multi-instance (gather capabilities)
         wrapper.attributes.update({'sub_mdo_disciplines': [
             proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
             if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scatters
@@ -429,19 +429,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     df_desc_tuple = tuple([var_type, None, True])
 
                 self.logger.warning(error_msg)
-
-    # TODO: clean the code that cleans after builder mode change
-    # def clean_sub_builders(self):
-    #     '''
-    #     Clean sub_builders as they were at initialization especially for their associated namespaces
-    #     '''
-    #     for builder in self.cls_builder:
-    #         # delete all associated namespaces
-    #         builder.delete_all_associated_namespaces()
-    #         # set back all associated namespaces that was at the init of the
-    #         # evaluator
-    #         builder.add_namespace_list_in_associated_namespaces(
-    #             self.associated_namespaces)
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
