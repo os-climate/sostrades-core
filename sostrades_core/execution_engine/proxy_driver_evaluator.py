@@ -450,14 +450,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     var_type = self.eval_in_possible_types[col]
                     df_desc_tuple = tuple([var_type, None, True])
 
-                    if no_None_in_df and not samples_df[col].apply(
-                            lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).all():
-                        warning_msg = f'Some value has wrong types in column {col}, the subprocess variable is of type {var_type} and all variables in the column should be the same'
-                        self.check_integrity_msg_list.append(warning_msg)
-                    else:
-                        samples_df_descriptor[col] = df_desc_tuple
-            self.ee.dm.set_data(samples_df_full_name, self.DATAFRAME_DESCRIPTOR,
-                                samples_df_descriptor, check_value=False)
+                self.logger.warning(error_msg)
+
+    # TODO: clean the code that cleans after builder mode change
+    # def clean_sub_builders(self):
+    #     '''
+    #     Clean sub_builders as they were at initialization especially for their associated namespaces
+    #     '''
+    #     for builder in self.cls_builder:
+    #         # delete all associated namespaces
+    #         builder.delete_all_associated_namespaces()
+    #         # set back all associated namespaces that was at the init of the
+    #         # evaluator
+    #         builder.add_namespace_list_in_associated_namespaces(
+    #             self.associated_namespaces)
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
