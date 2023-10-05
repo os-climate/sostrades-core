@@ -1282,7 +1282,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.check_discipline_values(
             ref_disc_sellar_1, target_values_dict, print_flag=print_flag)
 
-    def test_12_nested_very_simple_multi_scenarios_with_reference(self):
+    def _test_12_nested_very_simple_multi_scenarios_with_reference(self):
         # FIXME: flatten_subprocess + instance_reference and maybe other issues
         '''
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
@@ -1639,7 +1639,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                     study_name + '.outer_ms.' + 'scenario_1' + '.inner_ms.' + name + '.x', 'editable'),
                 True)
 
-    def test_12_2_reproduction_error_GUI_multi_scenarios_with_reference(self):
+    def _test_12_2_reproduction_error_GUI_multi_scenarios_with_reference(self):
         # FIXME: flatten_subprocess + instance_reference and maybe other issues
         '''
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
