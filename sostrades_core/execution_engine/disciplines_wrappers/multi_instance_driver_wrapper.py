@@ -42,9 +42,6 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import logging
 
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
-import pandas as pd
-from collections import ChainMap
-from gemseo.core.parallel_execution import ParallelExecution
 
 
 class MultiInstanceDriverWrapper(DriverEvaluatorWrapper):
