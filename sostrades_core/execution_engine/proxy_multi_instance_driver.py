@@ -107,6 +107,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             # no further disciplines needed to be builded by the evaluator
         return []
 
+    def update_reference(self):
+        return self.INSTANCE_REFERENCE in self.get_data_in()
+
     def build_multi_instance_inst_desc_io(self, disc_in):
         '''
         Complete inst_desc_in with scenario_df

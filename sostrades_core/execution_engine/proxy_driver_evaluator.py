@@ -497,8 +497,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         with_modal = True
         self.set_sub_process_usecase_status_from_user_inputs(with_modal)
 
-        disc_in = self.get_data_in()
-
         # Treat the case of SP_UC_Import
         if self.sub_proc_import_usecase_status == 'SP_UC_Import':
             # Get the anonymized dict
@@ -509,25 +507,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 # (without use of Modal)
                 anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
                     self.USECASE_DATA)
-
-            # LOAD REFERENCE of MULTI-INSTANCE MODE WITH USECASE DATA
-            if self.INSTANCE_REFERENCE in disc_in:
-                # method = 'set_values'
+            # LOAD REFERENCE
+            if self.update_reference():
                 self.update_reference_from_anonymised_dict(
                     anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
 
-            elif self.BUILDER_MODE in disc_in:
-                builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
-                if builder_mode == self.MONO_INSTANCE:
-                    # LOAD REFERENCE of MONO-INSTANCE MODE WITH USECASE DATA
-                    # method = 'load_study'
-                    self.update_reference_from_anonymised_dict(
-                        anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
-            else:
-                # We are in multi instance qithout reference
-                # LOAD ALL SCENARIOS of MULTI-INSTANCE MODE WITH USECASE DATA
-                # (Not needed as already covered)
-                pass
+    def update_reference(self):
+        # TODO: quick fix for split of ref. instance, method is to refactor
+        # TODO: currently inactive in ProxyOptim, need overload to activate
+        return False
 
     def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name,
                                               with_modal):
