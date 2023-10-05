@@ -323,7 +323,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # io full name maps set by ProxyDiscipline
         super().set_wrapper_attributes(wrapper)
 
-        # driverevaluator subprocess # TODO: actually no longer necessary in multi-instance ?
+        # driverevaluator subprocess # TODO: actually no longer necessary in multi-instance (gather capabilities)
         wrapper.attributes.update({'sub_mdo_disciplines': [
             proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
             if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scatters
@@ -338,16 +338,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Return True if the subprocess is configured or the builder is empty.
         """
-        # Explanation:
-        # 1. self._data_in == {} : if the discipline as no input key it should have and so need to be configured
-        # 2. Added condition compared to SoSDiscipline(as sub_discipline or associated sub_process builder)
-        # 2.1 (self.get_disciplines_to_configure() == [] and len(self.proxy_disciplines) != 0) : sub_discipline(s) exist(s) but all configured
-        # 2.2 len(self.cls_builder) == 0 No yet provided builder but we however need to configure (as in 2.1 when we have sub_disciplines which no need to be configured)
-        # Remark1: condition "(   and len(self.proxy_disciplines) != 0) or len(self.cls_builder) == 0" added for proc build
-        # Remark2: /!\ REMOVED the len(self.proxy_disciplines) == 0 condition
-        # to accommodate the DriverEvaluator that holds te build until inputs
-        # are available
-        return self.get_disciplines_to_configure() == []  # or len(self.cls_builder) == 0
+        return self.get_disciplines_to_configure() == []
 
     def get_disciplines_to_configure(self):
         return self._get_disciplines_to_configure(self.scenarios)
@@ -457,19 +448,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                 f'beginning). Dynamic inputs might  not be created. should be in {default_list}'
 
                 self.logger.warning(error_msg)
-
-    # TODO: clean the code that cleans after builder mode change
-    # def clean_sub_builders(self):
-    #     '''
-    #     Clean sub_builders as they were at initialization especially for their associated namespaces
-    #     '''
-    #     for builder in self.cls_builder:
-    #         # delete all associated namespaces
-    #         builder.delete_all_associated_namespaces()
-    #         # set back all associated namespaces that was at the init of the
-    #         # evaluator
-    #         builder.add_namespace_list_in_associated_namespaces(
-    #             self.associated_namespaces)
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
