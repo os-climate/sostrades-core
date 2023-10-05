@@ -146,6 +146,9 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
         return [self.eval_process_builder] if self.eval_process_builder else []
 
+    def update_reference(self):
+        return bool(self.get_data_in())
+
     def get_x0(self):
         '''
         Get initial values for input values decided in the evaluation

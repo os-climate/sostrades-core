@@ -489,13 +489,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
 
     def update_reference(self):
-        '''
-
         # TODO: quick fix for split of ref. instance, method is to refactor
         # TODO: currently inactive in ProxyOptim, need overload to activate
-
-        '''
-
         return False
 
     def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name,
