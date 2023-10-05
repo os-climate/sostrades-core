@@ -284,24 +284,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def configure_driver(self):
         """
-        To be overload by drivers with specific configuration actions
+        To be overloaded by drivers with specific configuration actions
         """
-        # Extract variables for eval analysis in mono instance mode
-        disc_in = self.get_data_in()
-        if self.BUILDER_MODE in disc_in:
-            if self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE \
-                    and self.EVAL_INPUTS in disc_in and len(self.proxy_disciplines) > 0:
-                # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
-                # Manage usecase import
-                ref_discipline_full_name = f'{self.ee.study_name}.Eval'
-                self.manage_import_inputs_from_sub_process(
-                    ref_discipline_full_name)
-                # SET EVAL POSSIBLE VALUES
-                self.set_eval_possible_values()
-            elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE and self.SCENARIO_DF in disc_in:
-                self.configure_tool()
-                self.configure_subprocesses_with_driver_input()
-                self.set_eval_possible_values(io_type_in=False, strip_first_ns=True)
+        pass
 
     def setup_sos_disciplines(self):
         """
@@ -495,37 +480,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # io full name maps set by ProxyDiscipline
         super().set_wrapper_attributes(wrapper)
 
-        # driverevaluator subprocess
+        # driverevaluator subprocess # TODO: actually no longer necessary in multi-instance ?
         wrapper.attributes.update({'sub_mdo_disciplines': [
             proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
             if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scatters
-
-        if self.BUILDER_MODE in self.get_data_in():
-            builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
-            eval_attributes = {}
-            if builder_mode == self.MONO_INSTANCE and self.eval_in_list is not None:
-                # specific to mono-instance
-                eval_attributes = {'eval_in_list': self.eval_in_list,
-                                   'eval_out_list': self.eval_out_list,
-                                   'eval_out_names': self.eval_out_names,
-                                   'reference_scenario': self.get_x0(),
-                                   'activated_elems_dspace_df': [[True, True]
-                                                                 if self.ee.dm.get_data(var,
-                                                                                        self.TYPE) == 'array' else [
-                                       True]
-                                                                 for var in self.eval_in_list],
-                                   # NB: this works with an array of dimensions >2 even though it looks incoherent
-                                   'driver_name': self.get_disc_full_name(),
-                                   'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
-                                   'selected_inputs': self.selected_inputs,
-                                   'selected_outputs': self.selected_outputs,
-                                   }
-            elif builder_mode == self.MULTI_INSTANCE:
-                # for the gatherlike capabilities
-                eval_attributes = {'gather_names': self.gather_names,
-                                   'gather_out_keys': self.gather_out_keys,
-                                   }
-            wrapper.attributes.update(eval_attributes)
 
     def is_configured(self):
         """
