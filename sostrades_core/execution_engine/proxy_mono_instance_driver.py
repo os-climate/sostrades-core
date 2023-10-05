@@ -149,6 +149,9 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     def update_reference(self):
         return bool(self.get_data_in())
 
+    def is_configured(self):
+        return super().is_configured() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
+
     def get_x0(self):
         '''
         Get initial values for input values decided in the evaluation

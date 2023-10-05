@@ -335,22 +335,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         """
-        disc_in = self.get_data_in()
-        if self.BUILDER_MODE in disc_in:
-            if self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MULTI_INSTANCE:
-                if self.INSTANCE_REFERENCE in disc_in and self.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
-                    if self.SCENARIO_DF in disc_in:
-                        config_status = super().is_configured() and self.subprocess_is_configured()
-                        config_status = config_status and (
-                            not self.check_if_there_are_reference_variables_changes())
-                        config_status = config_status and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
-                        return config_status
-            elif self.get_sosdisc_inputs(self.BUILDER_MODE) == self.MONO_INSTANCE:
-                config_status = super().is_configured() and self.subprocess_is_configured()
-                # The next condition is not needed (and not working)
-                # config_status = config_status and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
-                return config_status
-
         return super().is_configured() and self.subprocess_is_configured()
 
     def subprocess_is_configured(self):
