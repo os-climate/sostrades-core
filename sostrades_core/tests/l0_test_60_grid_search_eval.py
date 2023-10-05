@@ -272,7 +272,6 @@ class TestGridSearchEval(unittest.TestCase):
     #     shortest_list = grid_search_disc.generate_shortest_name(list)
 
     def test_03_postproc_check(self):
-        # FIXME: there is no postprocessing and no asserts
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
 

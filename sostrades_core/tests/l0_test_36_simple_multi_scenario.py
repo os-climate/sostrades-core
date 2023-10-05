@@ -153,7 +153,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.o'), o2)
 
     def test_02_multi_instance_configuration_from_df_with_reference_scenario(self):
-        # FIXME: flatten_subprocess + instance_reference not working
         # # simple 2-disc process NOT USING nested scatters
         proc_name = 'test_multi_instance_basic'
         builders = self.exec_eng.factory.get_builder_from_process(self.repo,
