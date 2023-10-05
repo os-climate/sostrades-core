@@ -434,47 +434,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Get the actual drivers of the subprocesses of the DriverEvaluator.
         """
         # NB: custom driver wrapper not implemented
-        disc_in = self.get_data_in()
-        if self.WITH_SAMPLE_GENERATOR in disc_in and self.get_sosdisc_inputs(self.WITH_SAMPLE_GENERATOR):
-            if self.sample_generator_disc is None:
-                self.sample_generator_disc = self.build_sample_generator_disc()
-        elif self.sample_generator_disc is not None:
-            self.clean_children([
-                self.sample_generator_disc])  # TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
-            self.sample_generator_disc = None
+        # FIXME: clean the code that used to clean after builder mode change
+        # TODO: feels like the class hierarchy coherence of this method could be improved..
         return []
-
-    def build_sample_generator_disc(self):
-        '''
-
-        Build the associated sample generator if requested
-         - 1. create the builder
-         - 2. Create the namespace ns_sapling with ns_driver value
-         - 3. Associate this namespace to the buider
-         - 4. Build and add the discipline
-
-        '''
-        # create the builder of a ProxySampleGenerator
-        sampling_builder = self.ee.factory.create_sample_generator('SampleGenerator')
-        # # associate ns_sampling for samples_df output and
-        ns_sampling = self.ee.ns_manager.add_ns(ProxySampleGenerator.NS_SAMPLING,
-                                                self.ee.ns_manager.get_local_namespace_value(self))
-        sampling_builder.associate_namespaces(ns_sampling)
-        # create discipline in factory as sister not daughter
-        self.ee.factory.current_discipline = self.father_executor
-        sampling_disc = sampling_builder.build()
-        sampling_disc.configurator = self
-        # add dependency of the namespace for the discipline
-        self.ee.ns_manager.add_disc_in_dependency_list_of_namespace(ns_sampling, sampling_disc.disc_id)
-        self.ee.factory.add_discipline(sampling_disc)
-        # perform a reference switch so that the SampleGenerator discipline shows in treeview before driver
-        # TODO: [discuss] whether there is a cleaner way
-        sister_proxies = self.father_executor.proxy_disciplines
-        driver_idx = sister_proxies.index(self)
-        sg_idx = sister_proxies.index(sampling_disc)
-        sister_proxies[driver_idx], sister_proxies[sg_idx] = sister_proxies[sg_idx], sister_proxies[driver_idx]
-        # return discipline for association in driver
-        return sampling_disc
 
     def prepare_execution(self):
         """

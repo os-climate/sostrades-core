@@ -97,13 +97,14 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                            }
         wrapper.attributes.update(eval_attributes)
 
-    def prepare_multi_instance_build(self):
+    def prepare_build(self):
         """
         Call the tool to build the subprocesses in multi-instance builder mode.
         """
-        self.build_tool()
-        # Tool is building disciplines for the driver on behalf of the driver name
-        # no further disciplines needed to be builded by the evaluator
+        if self.get_data_in():
+            self.build_tool()
+            # Tool is building disciplines for the driver on behalf of the driver name
+            # no further disciplines needed to be builded by the evaluator
         return []
 
     def build_multi_instance_inst_desc_io(self):
