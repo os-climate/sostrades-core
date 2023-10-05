@@ -319,26 +319,31 @@ class SosFactory:
     # TODO: these implementations are WIP to test class split (adding of mod)
     def create_mono_instance_driver(self, sos_name, cls_builder, with_sample_generator=False, display_options=None):
         module_struct_list = f'{self.EE_PATH}.proxy_mono_instance_driver.ProxyMonoInstanceDriver'
+        driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.mono_instance_driver_wrapper.MonoInstanceDriverWrapper'
         return self.create_driver(sos_name=sos_name,
                                    cls_builder=cls_builder,
                                    map_name=None,
                                    with_sample_generator=with_sample_generator,
                                    flatten_subprocess=False,
                                    display_options=display_options,
-                                   module_struct_list=module_struct_list)
+                                   module_struct_list=module_struct_list,
+                                  driver_wrapper_mod=driver_wrapper_mod)
 
-    def create_multi_instance_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, display_options=None):
+    def create_multi_instance_driver(self, sos_name, cls_builder, with_sample_generator=False, display_options=None,
+                                     map_name=None):
         module_struct_list = f'{self.EE_PATH}.proxy_multi_instance_driver.ProxyMultiInstanceDriver'
+        driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.multi_instance_driver_wrapper.MultiInstanceDriverWrapper'
         return self.create_driver(sos_name=sos_name,
                                    cls_builder=cls_builder,
                                    map_name=map_name,
                                    with_sample_generator=with_sample_generator,
                                    flatten_subprocess=True,
                                    display_options=display_options,
-                                   module_struct_list=module_struct_list)
+                                   module_struct_list=module_struct_list,
+                                  driver_wrapper_mod=driver_wrapper_mod)
 
     def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, flatten_subprocess=False,
-                      display_options=None, module_struct_list=None):
+                      display_options=None, module_struct_list=None, driver_wrapper_mod=None):
         '''
 
         Args:
@@ -363,8 +368,8 @@ class SosFactory:
         if module_struct_list is None:
             module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
-
-        driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
+        if driver_wrapper_mod is None:
+            driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
         driver_wrapper_cls = self.get_disc_class_from_module(
             driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)

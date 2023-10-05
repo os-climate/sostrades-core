@@ -55,7 +55,7 @@ class UnitTestHandler(Handler):
 
 
 class TestSoSimportUsecase(unittest.TestCase):
-
+    # FIXME: flatten_subprocess => tests are passing but infinite configuration loop is present.
     def check_discipline_value(self, my_disc, my_data_name, target_value, print_flag=True, ioType='in'):
         my_data = my_disc.get_data_io_from_key(
             ioType, my_data_name)

@@ -39,8 +39,7 @@ class ProcessBuilder(BaseProcessBuilder):
         coupling_builder = self.ee.factory.get_builder_from_process(
             repo=repo, mod_id=sub_proc)
 
-        eval_driver = self.ee.factory.create_multi_instance_driver(
-            'Eval', coupling_builder)
+        eval_driver = self.ee.factory.create_multi_instance_driver('Eval', coupling_builder)
 
         # driver namespaces
         self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')

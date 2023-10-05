@@ -52,8 +52,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
-        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', [builder])
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
@@ -154,8 +153,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
 
-        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', [builder])
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
@@ -233,8 +231,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
 
-        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', [builder])
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
@@ -330,8 +327,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         builder = self.factory.create_architecture_builder(
             vb_builder_name, architecture_df)
 
-        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(
-            'multi_scenarios', [builder])
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', [builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)

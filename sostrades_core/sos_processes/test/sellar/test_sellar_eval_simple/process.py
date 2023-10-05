@@ -40,8 +40,7 @@ class ProcessBuilder(BaseProcessBuilder):
             repo=repo, mod_id=sub_proc)
 
         # driver builder
-        eval_driver = self.ee.factory.create_multi_instance_driver(
-                'Eval', coupling_builder)
+        eval_driver = self.ee.factory.create_multi_instance_driver('Eval', coupling_builder)
 
 
         # shift nested subprocess namespaces
