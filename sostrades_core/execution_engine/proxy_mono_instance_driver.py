@@ -136,14 +136,14 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                                }
             wrapper.attributes.update(eval_attributes)
 
-    def prepare_mono_instance_build(self):
+    def prepare_build(self):
         '''
         Get the builder of the single subprocesses in mono-instance builder mode.
         '''
-        if self.eval_process_builder is None:
+        if self.get_data_in() and self.eval_process_builder is None:
             self._set_eval_process_builder()
 
-        return [self.eval_process_builder] if self.eval_process_builder is not None else []
+        return [self.eval_process_builder] if self.eval_process_builder else []
 
     def get_x0(self):
         '''

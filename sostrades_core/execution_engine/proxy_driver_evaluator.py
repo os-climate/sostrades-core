@@ -432,30 +432,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Get the actual drivers of the subprocesses of the DriverEvaluator.
         """
         # NB: custom driver wrapper not implemented
-        builder_list = []
-        if self.BUILDER_MODE in self.get_data_in():
-            builder_mode = self.get_sosdisc_inputs(self.BUILDER_MODE)
-            builder_mode_has_changed = builder_mode != self.old_builder_mode
-            if builder_mode_has_changed:
-                self.clean_children()
-                self.clean_sub_builders()
-                if self.old_builder_mode == self.MONO_INSTANCE:
-                    self.eval_process_builder = None
-                elif self.old_builder_mode == self.MULTI_INSTANCE:
-                    self.builder_tool = None
-                self.old_builder_mode = copy.copy(builder_mode)
-            if builder_mode == self.MULTI_INSTANCE:
-                builder_list = self.prepare_multi_instance_build()
-            elif builder_mode == self.MONO_INSTANCE:
-                builder_list = self.prepare_mono_instance_build()
-            elif builder_mode == self.REGULAR_BUILD:
-                builder_list = super().prepare_build()
-            elif builder_mode is None:
-                pass
-            else:
-                raise ValueError(
-                    f'Wrong builder mode input in {self.sos_name}')
-        return builder_list
+        # FIXME: clean the code that used to clean after builder mode change
+        # TODO: feels like the class hierarchy coherence of this method could be improved..
+        return []
 
     def prepare_execution(self):
         """
