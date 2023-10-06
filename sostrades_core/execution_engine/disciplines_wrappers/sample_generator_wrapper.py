@@ -547,30 +547,33 @@ class SampleGeneratorWrapper(SoSWrapp):
 
                 # Next lines of code treat the case in which eval inputs change with a previously defined design space,
                 # so that the bound are kept instead of set to default None.
-                if 'design_space' in disc_in and selected_inputs_has_changed:
-                    from_design_space = list(
-                        disc_in['design_space'][self.VALUE]['variable'])
-                    from_eval_inputs = self.selected_inputs
+                if 'design_space' in disc_in:
+                    disc_in['design_space'][self.DEFAULT] = default_design_space
+                    disc_in['design_space'][self.DATAFRAME_DESCRIPTOR] = design_space_dataframe_descriptor
+                    if selected_inputs_has_changed:
+                        from_design_space = list(
+                            disc_in['design_space'][self.VALUE]['variable'])
+                        from_eval_inputs = self.selected_inputs
 
-                    df_cols = ['variable', 'lower_bnd', 'upper_bnd'] + (
-                        ['nb_points'] if self.sampling_method == self.GRID_SEARCH else [])
-                    final_dataframe = pd.DataFrame(
-                        None, columns=df_cols)
+                        df_cols = ['variable', 'lower_bnd', 'upper_bnd'] + (
+                            ['nb_points'] if self.sampling_method == self.GRID_SEARCH else [])
+                        final_dataframe = pd.DataFrame(
+                            None, columns=df_cols)
 
-                    for element in from_eval_inputs:
-                        if element in from_design_space:
-                            final_dataframe = final_dataframe.append(disc_in['design_space'][self.VALUE]
-                                                                     [disc_in['design_space'][self.VALUE][
-                                                                          'variable'] == element])
-                        else:
-                            elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
-                            if self.sampling_method == self.GRID_SEARCH:
-                                elem_dict['lower_bnd'] = 0.0
-                                elem_dict['upper_bnd'] = 100.0
-                                elem_dict['nb_points'] = 2
-                            final_dataframe = final_dataframe.append(
-                                elem_dict, ignore_index=True)
-                    disc_in['design_space'][self.VALUE] = final_dataframe
+                        for element in from_eval_inputs:
+                            if element in from_design_space:
+                                final_dataframe = final_dataframe.append(disc_in['design_space'][self.VALUE]
+                                                                         [disc_in['design_space'][self.VALUE][
+                                                                              'variable'] == element])
+                            else:
+                                elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
+                                if self.sampling_method == self.GRID_SEARCH:
+                                    elem_dict['lower_bnd'] = 0.0
+                                    elem_dict['upper_bnd'] = 100.0
+                                    elem_dict['nb_points'] = 2
+                                final_dataframe = final_dataframe.append(
+                                    elem_dict, ignore_index=True)
+                        disc_in['design_space'][self.VALUE] = final_dataframe
 
     def filter_eval_inputs_types_to_float(self, eval_inputs):
         allowed_types = ['float']
