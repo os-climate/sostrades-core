@@ -797,8 +797,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 {f'{driver_name}.scenario_df': {'type': 'dataframe',
                                                 'default': pd.DataFrame(
                                                     columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
-                 f'{driver_name}.builder_mode': {'type': 'string',
-                                                 'value': 'multi_instance'}},
+                 # f'{driver_name}.builder_mode': {'type': 'string',
+                 #                                 'value': 'multi_instance'}
+                 },
             )
 
         self.add_outputs(dynamic_outputs)
