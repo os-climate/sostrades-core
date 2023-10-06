@@ -78,9 +78,9 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
     _maturity = 'Fake'
 
-    MONO_INSTANCE = 'mono_instance'
-    MULTI_INSTANCE = 'multi_instance'
-    REGULAR_BUILD = 'regular_build'
+    # MONO_INSTANCE = 'mono_instance'
+    # MULTI_INSTANCE = 'multi_instance'
+    # REGULAR_BUILD = 'regular_build'
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
     USECASE_DATA = 'usecase_data'
     GATHER_DEFAULT_SUFFIX = '_dict'

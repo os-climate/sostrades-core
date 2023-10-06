@@ -98,9 +98,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    MONO_INSTANCE = DriverEvaluatorWrapper.MONO_INSTANCE
-    MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
-    REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
+    # MONO_INSTANCE = DriverEvaluatorWrapper.MONO_INSTANCE
+    # MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
+    # REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
     GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
 
