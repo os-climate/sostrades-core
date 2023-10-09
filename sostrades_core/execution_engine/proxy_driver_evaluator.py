@@ -254,7 +254,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
         exploited for couplings etc.
         """
-        # TODO: [to discuss] move to mono-instance side ? as no longer really useful in multi because flatten_subprocess
+        # FIXME: check if move to mono-instance side as no longer really useful in multi
         self._restart_data_io_to_disc_io()
         for proxy_disc in self.proxy_disciplines:
             # if not isinstance(proxy_disc, ProxyDisciplineGather):
@@ -281,7 +281,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Get the actual drivers of the subprocesses of the DriverEvaluator.
         """
         # NB: custom driver wrapper not implemented
-        # FIXME: clean the code that used to clean after builder mode change
         # TODO: feels like the class hierarchy coherence of this method could be improved..
         return []
 
