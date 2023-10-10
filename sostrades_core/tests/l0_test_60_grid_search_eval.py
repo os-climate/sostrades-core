@@ -52,15 +52,16 @@ class TestGridSearchEval(unittest.TestCase):
         pd.set_option('display.max_columns', 10)
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
-        self.repo = 'sostrades_core.sos_processes.test'
+        self.repo = 'sostrades_core.sos_processes.test.tests_driver_eval.mono'
+        
         self.base_path = 'sostrades_core.sos_wrapping.test_discs'
         self.exec_eng = ExecutionEngine(self.namespace)
 
         self.factory = self.exec_eng.factory
         self.evaluator = 'Eval'
         self.sample_generator = 'SampleGenerator'
-        self.proc_name = 'test_grid_search'
-        self.proc_name_mult = 'test_grid_search_mult'
+        self.proc_name = 'test_mono_driver_grid_search'
+        self.proc_name_mult = 'test_mono_driver_grid_search_mult'
         self.my_handler = UnitTestHandler()
         eeLOGGER = getLogger('sostrades_core.execution_engine')
         eeLOGGER.setLevel(DEBUG)
@@ -394,7 +395,7 @@ class TestGridSearchEval(unittest.TestCase):
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
-        proc_name = "test_sellar_grid_search"
+        proc_name = "test_mono_driver_grid_search_sellar"
         grid_search_builder = factory.get_builder_from_process(repo=self.repo,
                                                                mod_id=proc_name)
 

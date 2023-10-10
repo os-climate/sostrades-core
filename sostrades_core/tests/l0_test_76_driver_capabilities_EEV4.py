@@ -158,9 +158,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
-        proc_name = "test_simple_sellar_generator_eval"
-        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo+'.tests_driver_eval.mono'
+        proc_name = "test_mono_driver_sellar_simple_disc"
+        doe_eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                             mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -272,6 +272,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
+        #TODO: see with carlos
         proc_name = "test_disc1_doe_eval_of_doe_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
@@ -419,9 +420,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
-        proc_name = "test_simple1_simple2_sellar_generator_eval"
-        builders = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_sample_generator_sellar_disc1_disc2"
+        builders = factory.get_builder_from_process(repo=repo_name,
                                                     mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -539,9 +540,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
-        proc_name = "test_simple_sellar_generator_eval"
-        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_sellar_simple_disc"
+        doe_eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                             mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -636,8 +637,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_disc1_eval"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_simple"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -770,8 +772,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_disc1_eval"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_simple"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1003,13 +1006,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert x_all_nan == True
 
     def test_9_nested_very_simple_multi_scenarios(self):
-        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_without_ref import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver.usecase_without_ref import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_multi_instance_nested"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_of_multi_driver"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1086,13 +1090,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         whereas the inner multi scenario driver represents scenarios on the Production process. The test is load from a
         usecase and it checks only the treeviews both for namespaces and for proxy objects.
         """
-        from sostrades_core.sos_processes.test.test_multi_instance_nested_with_archibuilder.usecase import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver_archibuilder.usecase import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_multi_instance_nested_with_archibuilder"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo +  ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_of_multi_driver_archibuilder"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1210,7 +1215,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         with_coupling = True
-
+        #TODO: n'existe plus voir Carlos
         # The generator eval process
         if with_coupling:
             proc_name = 'test_sellar_coupling_generator_eval_cp'
@@ -1290,13 +1295,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         are non-trade variables.
         '''
 
-        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_multi_instance_nested"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_of_multi_driver"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1646,13 +1652,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
         are non-trade variables.
         '''
-        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref_2 import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref_2 import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_multi_instance_nested"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_of_multi_driver"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1911,13 +1918,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
-        self.repo = self.repo + '.sellar'
-        proc_name = 'test_sellar_coupling_eval_generator_flatten'
+        repo_name = self.repo + '.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver_sample_generator_sellar_coupling'
         usecase_name = 'usecase1_cp_multi_with_ref'
 
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
