@@ -314,6 +314,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self.mdo_discipline_wrapp is not None:
             super().prepare_execution()
             self.reset_subdisciplines_of_wrapper()
+        else:
             self._update_status_dm(self.STATUS_DONE)
 
     def reset_subdisciplines_of_wrapper(self):
