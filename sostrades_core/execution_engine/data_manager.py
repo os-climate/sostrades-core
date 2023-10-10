@@ -307,6 +307,7 @@ class DataManager:
     def get_data_id(self, var_f_name):
         ''' Get data id with var_f_name
         '''
+
         return self.data_id_map[var_f_name]
 
     def get_discipline_ids_list(self, disc_f_name):

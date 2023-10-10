@@ -321,6 +321,7 @@ class SoSWrapp(object):
         """
         Define the run of the discipline
 
+
         To be overloaded by subclasses.
         """
         raise NotImplementedError()

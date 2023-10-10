@@ -22,6 +22,7 @@ import inspect
 import importlib
 from os.path import join, dirname, isfile
 
+
 from sostrades_core.execution_engine.proxy_discipline_gather import ProxyDisciplineGather
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart import \

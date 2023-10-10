@@ -96,6 +96,7 @@ class SoSMDODiscipline(MDODiscipline):
         # SoSWrapp run
         local_data = self.sos_wrapp._run()
         # local data update
+
         self.store_local_data(**local_data)
 
         # get output from data connector
