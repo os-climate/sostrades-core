@@ -316,9 +316,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         trade_vars = []
         # check that all the input scenarios have indeed been built
         # (configuration sequence allows the opposite)
-        if self.subprocesses_built(scenario_names):
-            trade_vars = [col for col in scenario_df.columns if col not in
-                          [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
+
+        trade_vars = [col for col in scenario_df.columns if col not in
+                      [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
         return scenario_df, instance_reference, trade_vars, scenario_names
 
     def _clear_gather_names(self):
@@ -364,6 +364,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         if self.subprocesses_built(scenario_names):
             if instance_reference:
                 # propagate non trade variables values from reference scenario to other scenarios
+                scenario_names = scenario_names[:-1]
                 self.manage_reference_scenario_features(trade_vars, scenario_names)
             else:
                 self.turn_other_variables_to_editable(scenario_names)
@@ -404,8 +405,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         Header TO DO when dealing with reference scenario
 
         '''
-        scenario_names = scenario_names[:-1]
-
         # ref_discipline_full_name =
         # ref_discipline.get_disc_full_name() # do provide the sting
         # path of data in flatten
