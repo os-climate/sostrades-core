@@ -14,36 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import copy
-import re
-import numpy as np
-
-import platform
-from tqdm import tqdm
-import time
-
-from sostrades_core.tools.base_functions.compute_len import compute_len
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
-
-from numpy import array, ndarray, delete, NaN
-
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
-
-
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import logging
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-import pandas as pd
-from collections import ChainMap
-from gemseo.core.parallel_execution import ParallelExecution
 
 
 class DriverEvaluatorWrapper(SoSWrapp):
@@ -86,32 +62,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
     USECASE_DATA = 'usecase_data'
     GATHER_DEFAULT_SUFFIX = '_dict'
 
-
-    default_process_builder_parameter_type = ProcessBuilderParameterType(
-        None, None, 'Empty')
-
-    DESC_IN = {
-        # BUILDER_MODE: {SoSWrapp.TYPE: 'string',
-        #                # SoSWrapp.DEFAULT: MULTI_INSTANCE,
-        #                SoSWrapp.POSSIBLE_VALUES: BUILDER_MODE_POSSIBLE_VALUES,
-        #                SoSWrapp.STRUCTURING: True}
-    }
-
-    with_modal = True
-    if with_modal:
-        DESC_IN.update({SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
-                                             'structuring': True,
-                                             'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                                             'user_level': 1,
-                                             'optional': False}})
-    else:
-        DESC_IN.update({USECASE_DATA: {'type': 'dict',
-                                       'structuring': True,
-                                       'default': {},
-                                       'user_level': 1,
-                                       'optional': False}})
-
-    def __init__(self, sos_name, logger:logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger):
         """
         Constructor.
 
@@ -200,8 +151,8 @@ class DriverEvaluatorWrapper(SoSWrapp):
             i_subprocess (int): index of the subprocess to execute, i.e. the subprocess that provides reference inputs
                                 and to whom delta_dict is applied
         """
-        local_data = self.attributes['sub_mdo_disciplines'][i_subprocess]\
-                         .execute(self._get_input_data(var_delta_dict, i_subprocess))
+        local_data = self.attributes['sub_mdo_disciplines'][i_subprocess] \
+            .execute(self._get_input_data(var_delta_dict, i_subprocess))
         # out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'][i_subprocess])
         # if convert_to_array:
         #     out_local_data_converted = convert_new_type_into_array(
