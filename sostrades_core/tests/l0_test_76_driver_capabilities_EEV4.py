@@ -157,16 +157,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
-        proc_name = "test_simple_sellar_generator_eval"
-        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo+'.tests_driver_eval.mono'
+        proc_name = "test_mono_driver_sellar_simple_disc"
+        doe_eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                             mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
@@ -245,128 +245,6 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertAlmostEqual(
                 eval_disc_y2[key][0], reference_dict_eval_disc_y2[key][0])
 
-    def _test_2_DoeEval_of_DoeEval(self):
-        """ Here we test a DoeEval of a DoeEval process on a single sub-discipline to check that the transition of the
-        driver layer from working with short names to working with tuples of short names and namespace (of the
-        discipline to the local data variable belongs) is implemented. It is really a test of driver of a driver using
-        DoeEval. The test demonstrates the capability to use a driver of a driver.
-        """
-        # FIXME: Out of scope current US. This test will have to be adapted to
-        # the new architecture in the future.
-
-        dspace_dict_upper = {'variable': ['DoEEvalUpper.DoEEvalLower.Disc1.b'],
-
-                             'lower_bnd': [50.],
-                             'upper_bnd': [200.],
-
-                             }
-        dspace_upper = pd.DataFrame(dspace_dict_upper)
-        dspace_dict_lower = {'variable': ['DoEEvalUpper.DoEEvalLower.Disc1.a'],
-
-                             'lower_bnd': [50.],
-                             'upper_bnd': [200.],
-
-                             }
-        dspace_lower = pd.DataFrame(dspace_dict_lower)
-
-        exec_eng = ExecutionEngine(self.study_name)
-        factory = exec_eng.factory
-        proc_name = "test_disc1_doe_eval_of_doe_eval"
-        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
-                                                            mod_id=proc_name)
-
-        exec_eng.factory.set_builders_to_coupling_builder(
-            doe_eval_builder)
-
-        exec_eng.configure()
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
-                       '|_ doe',
-                       f'\t|_ DoEEvalUpper',
-                       '\t\t|_ DoEEvalLower',
-                       '\t\t\t|_ Disc1']
-        exp_tv_str = '\n'.join(exp_tv_list)
-        exec_eng.display_treeview_nodes(True)
-        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
-
-        assert not exec_eng.root_process.proxy_disciplines[0].is_sos_coupling
-        assert not exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
-
-        # -- set up disciplines
-        private_values = {
-            self.study_name + '.Eval.x': array([10.]),
-            self.study_name + '.DoEEvalUpper.DoEEvalLower.Disc1.a': array([5.]),
-            self.study_name + '.DoEEvalUpper.DoEEvalLower.Disc1.b': array([25431.]),
-            self.study_name + '.Eval.y': array([4.])}
-        exec_eng.load_study_from_input_dict(private_values)
-
-        input_selection_upper_b = {'selected_input': [False, False, True],
-                                   'full_name': ['x', 'DoEEvalUpper.DoEEvalLower.Disc1.a',
-                                                 'DoEEvalUpper.DoEEvalLower.Disc1.b']}
-        input_selection_upper_b = pd.DataFrame(input_selection_upper_b)
-        output_selection_upper_y_dict = {'selected_output': [True, False, True],
-                                         'full_name': ['y_dict', 'DoEEvalUpper.DoEEvalLower.Disc1.indicator',
-                                                       'DoEEvalUpper.DoEEvalLower.samples_inputs_df']}
-        output_selection_upper_y_dict = pd.DataFrame(
-            output_selection_upper_y_dict)
-
-        input_selection_lower_a = {'selected_input': [False, True, False],
-                                   'full_name': ['x', 'DoEEvalUpper.DoEEvalLower.Disc1.a',
-                                                 'DoEEvalUpper.DoEEvalLower.Disc1.b']}
-        input_selection_lower_a = pd.DataFrame(input_selection_lower_a)
-        output_selection_lower_y = {'selected_output': [True, False],
-                                    'full_name': ['y', 'DoEEvalUpper.DoEEvalLower.Disc1.indicator']}
-        output_selection_lower_y = pd.DataFrame(output_selection_lower_y)
-
-        disc_dict = {f'{self.ns}.DoEEvalUpper.sampling_algo': "lhs",
-                     f'{self.ns}.DoEEvalUpper.eval_inputs': input_selection_upper_b,
-                     f'{self.ns}.DoEEvalUpper.eval_outputs': output_selection_upper_y_dict,
-                     f'{self.ns}.DoEEvalUpper.DoEEvalLower.sampling_algo': "lhs",
-                     f'{self.ns}.DoEEvalUpper.DoEEvalLower.eval_inputs': input_selection_lower_a,
-                     f'{self.ns}.DoEEvalUpper.DoEEvalLower.eval_outputs': output_selection_lower_y}
-
-        n_samples = 3
-        exec_eng.load_study_from_input_dict(disc_dict)
-        disc_dict = {'doe.DoEEvalUpper.algo_options': {'n_samples': n_samples, 'face': 'faced'},
-                     'doe.DoEEvalUpper.design_space': dspace_upper,
-                     'doe.DoEEvalUpper.DoEEvalLower.algo_options': {'n_samples': n_samples, 'face': 'faced'},
-                     'doe.DoEEvalUpper.DoEEvalLower.design_space': dspace_lower
-                     }
-
-        exec_eng.load_study_from_input_dict(disc_dict)
-        exec_eng.execute()
-
-        for var in ['doe.y_dict_dict', 'doe.y_dict', 'doe.y']:
-            self.assertIn(var, exec_eng.root_process.get_output_data_names())
-
-        proxy_disc = exec_eng.root_process.proxy_disciplines[
-            0].proxy_disciplines[0].proxy_disciplines[0]
-        mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
-        reference_local_data = copy.deepcopy(mdo_disc.local_data)
-
-        keys_upper = list(exec_eng.dm.get_value('doe.y_dict_dict').keys())
-        i_upper = 0
-        for b in exec_eng.dm.get_value('doe.DoEEvalUpper.samples_inputs_df')['DoEEvalUpper.DoEEvalLower.Disc1.b']:
-            keys_lower = list(exec_eng.dm.get_value(
-                'doe.y_dict_dict')[keys_upper[i_upper]].keys())
-            i_lower = 0
-            samples_input_dataframe = exec_eng.dm.get_value(
-                'doe.DoEEvalUpper.DoEEvalLower.samples_inputs_df_dict')[keys_upper[i_upper]]
-            for a in samples_input_dataframe['DoEEvalUpper.DoEEvalLower.Disc1.a']:
-                y_output = exec_eng.dm.get_value('doe.y_dict_dict')[
-                    keys_upper[i_upper]][keys_lower[i_lower]]
-
-                in_local_data = copy.deepcopy(reference_local_data)
-                in_local_data['doe.DoEEvalUpper.DoEEvalLower.Disc1.a'] = a
-                in_local_data['doe.DoEEvalUpper.DoEEvalLower.Disc1.b'] = b
-                out_local_data = mdo_disc.execute(in_local_data)
-                y_reference = out_local_data['doe.y']
-
-                self.assertAlmostEqual(y_output, y_reference)
-
-                i_lower += 1
-            i_upper += 1
-
     def _test_3_simple_custom_driver(self):
         # FIXME: Out of scope current US. This test will have to be adapted to
         # the new architecture in the future.
@@ -418,16 +296,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
-        proc_name = "test_simple1_simple2_sellar_generator_eval"
-        builders = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_sample_generator_sellar_disc1_disc2"
+        builders = factory.get_builder_from_process(repo=repo_name,
                                                     mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             builders)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
@@ -538,16 +416,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
-        proc_name = "test_simple_sellar_generator_eval"
-        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_sellar_simple_disc"
+        doe_eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                             mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
@@ -635,15 +513,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_disc1_eval"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_simple"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
@@ -769,15 +648,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_disc1_eval"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_simple"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
@@ -1002,13 +882,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert x_all_nan == True
 
     def test_9_nested_very_simple_multi_scenarios(self):
-        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_without_ref import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver.usecase_without_ref import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_multi_instance_nested"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_of_multi_driver"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1085,13 +966,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         whereas the inner multi scenario driver represents scenarios on the Production process. The test is load from a
         usecase and it checks only the treeviews both for namespaces and for proxy objects.
         """
-        from sostrades_core.sos_processes.test.test_multi_instance_nested_with_archibuilder.usecase import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver_archibuilder.usecase import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_multi_instance_nested_with_archibuilder"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo +  ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_of_multi_driver_archibuilder"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1209,7 +1091,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         with_coupling = True
-
+        #TODO: n'existe plus voir Carlos
         # The generator eval process
         if with_coupling:
             proc_name = 'test_sellar_coupling_generator_eval_cp'
@@ -1289,13 +1171,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         are non-trade variables.
         '''
 
-        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_multi_instance_nested"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_of_multi_driver"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1645,13 +1528,14 @@ class TestSoSDOEScenario(unittest.TestCase):
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
         are non-trade variables.
         '''
-        from sostrades_core.sos_processes.test.test_multi_instance_nested.usecase_with_ref_2 import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref_2 import Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        proc_name = "test_multi_instance_nested"
-        eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_of_multi_driver"
+        eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
@@ -1910,13 +1794,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
-        self.repo = self.repo + '.sellar'
-        proc_name = 'test_sellar_coupling_eval_generator_flatten'
+        repo_name = self.repo + '.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver_sample_generator_sellar_coupling'
         usecase_name = 'usecase1_cp_multi_with_ref'
 
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 

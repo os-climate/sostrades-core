@@ -28,7 +28,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase_without_ref import Study
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_sample_generator_simple.usecase_without_ref import Study
 
 
 class TestMultiScenario(unittest.TestCase):
@@ -146,8 +146,9 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_01_multiscenario_with_sample_generator_cp(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_with_samplegenerator'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_sample_generator_simple'
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -156,7 +157,6 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -218,8 +218,9 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_02_multiscenario_with_sample_generator_cp_sellar(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_sellar_eval_generator'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo + '.sellar',
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_with_sample_option_sellar'
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -228,7 +229,6 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp_sellar()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -257,13 +257,14 @@ class TestMultiScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         self.study_name = 'MyStudy'
-        proc_name = 'test_sellar_eval_generator'
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_with_sample_option_sellar'
 
         # get the sample generator inputs
         self.setUp_cp_sellar()
 
         study_dump = BaseStudyManager(
-            self.repo + '.sellar', proc_name, self.study_name)
+            repo_name, proc_name, self.study_name)
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 
@@ -274,7 +275,6 @@ class TestMultiScenario(unittest.TestCase):
 
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -296,7 +296,7 @@ class TestMultiScenario(unittest.TestCase):
 
         ########################
         study_load = BaseStudyManager(
-            self.repo + '.sellar', proc_name, self.study_name)
+            repo_name, proc_name, self.study_name)
         study_load.load_data(from_path=dump_dir)
         # print(study_load.ee.dm.get_data_dict_values())
         study_load.run()
@@ -304,9 +304,10 @@ class TestMultiScenario(unittest.TestCase):
         rmtree(dump_dir)
 
     def test_04_multi_scenario_from_process_with_basic_config_from_usecase(self):
-
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_sample_generator_simple'
         builder_process = self.exec_eng.factory.get_builder_from_process(
-            self.repo, 'test_multi_instance_with_samplegenerator')
+            repo_name, proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(
             builder_process)
 
@@ -368,10 +369,13 @@ class TestMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_4.o'), o4)
 
     def test_05_multi_scenario_from_process_with_basic_config_from_usecase_and_with_ref(self):
-        from sostrades_core.sos_processes.test.test_multi_instance_with_samplegenerator.usecase_without_ref import Study
+        # FIXME: there seems to be a problem with reference instance + flatten_subprocess
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_sample_generator_simple.usecase_without_ref import Study
 
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_sample_generator_simple'
         builder_process = self.exec_eng.factory.get_builder_from_process(
-            self.repo, 'test_multi_instance_with_samplegenerator')
+            repo_name, proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(
             builder_process)
 
@@ -514,8 +518,9 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_06_consecutive_configure(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_with_samplegenerator'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_sample_generator_simple'
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -524,7 +529,6 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -678,8 +682,9 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_07_dump_and_load_after_execute_with_2_trade_vars(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_with_samplegenerator'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_sample_generator_simple'
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -688,7 +693,6 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -742,7 +746,7 @@ class TestMultiScenario(unittest.TestCase):
 
         exec_eng2 = ExecutionEngine(self.namespace)
         builders = exec_eng2.factory.get_builder_from_process(
-            self.repo, proc_name)
+            repo_name, proc_name)
         exec_eng2.factory.set_builders_to_coupling_builder(builders)
         exec_eng2.configure()
 

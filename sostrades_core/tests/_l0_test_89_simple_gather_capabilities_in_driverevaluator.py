@@ -87,8 +87,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.indicator2 = self.a1 * self.b2
 
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_basic'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_simple"
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -100,7 +101,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                       'scenario_W',
                                                       'scenario_2']})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         # dict_values[f'{self.study_name}.Eval.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()

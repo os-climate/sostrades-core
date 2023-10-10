@@ -183,7 +183,6 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'mono_instance'
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             True],
                                                                                       'scenario_name': ['scenario_1',
@@ -241,7 +240,6 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             True],
                                                                                       'scenario_name': ['scenario_1',
@@ -307,7 +305,6 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             True],
                                                                                       'scenario_name': ['scenario_1',
