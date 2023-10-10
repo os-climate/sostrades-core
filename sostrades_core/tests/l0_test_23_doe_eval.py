@@ -130,7 +130,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
-        proc_name = "test_sellar_generator_eval"
+        proc_name = "_test_sellar_generator_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
 
@@ -305,7 +305,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
-        proc_name = "test_sellar_generator_eval"
+        proc_name = "_test_sellar_generator_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
 
@@ -428,7 +428,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
-        proc_name = "test_sellar_generator_eval"
+        proc_name = "_test_sellar_generator_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
 
@@ -662,7 +662,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
-        proc_name = "test_sellar_generator_eval"
+        proc_name = "_test_sellar_generator_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
 
@@ -1008,7 +1008,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         my_handler = UnitTestHandler()
         exec_eng.logger.addHandler(my_handler)
 
-        proc_name = "test_sellar_generator_eval"
+        proc_name = "_test_sellar_generator_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
 
@@ -1237,7 +1237,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng = ExecutionEngine(same_usecase_name)
         factory = exec_eng.factory
 
-        proc_name = "test_sellar_generator_eval"
+        proc_name = "_test_sellar_generator_eval"
         doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
                                                             mod_id=proc_name)
 

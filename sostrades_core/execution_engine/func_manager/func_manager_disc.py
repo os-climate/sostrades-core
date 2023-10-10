@@ -89,7 +89,7 @@ class FunctionManagerDisc(SoSWrapp):
                                                   AGGR_TYPE: ('string', None, True),
                                                   PARENT: ('string', None, True),
                                                   # index of the dataframe
-                                                  INDEX: ('int', None, True),
+                                                  # INDEX: ('int', None, True),
                                                   NAMESPACE_VARIABLE: ('string', None, True),
                                                   },  # col name of the dataframe
                          'dataframe_edition_locked': False,
@@ -110,8 +110,33 @@ class FunctionManagerDisc(SoSWrapp):
         super().__init__(sos_name=sos_name, logger=logger)
         self.function_dict = None
         self.func_manager = FunctionManager()
+        self.__formulation = None
+        self.old_iter = -1
+
+    def set_optim_formulation(self, formulation):
+        '''
+
+        Set the formulation object (sent by proxyoptim and built by mdoscenario of gemseo
+        '''
+        self.__formulation = formulation
+
+    def get_current_iter(self):
+        '''
+        Get current iter from the optimisation problem in the formulation object built by GEMSEO
+        If no formulation then we compute in the old way, iter is the number of method calls
+        '''
+        if self.__formulation is not None:
+            return self.__formulation.opt_problem.current_iter
+        else:
+            self.iter += 1
+            return self.iter
 
     def setup_sos_disciplines(self):
+        '''
+
+        Specific configure for the func manager discipline
+
+        '''
         dynamic_inputs, dynamic_outputs = {}, {}
 
         # initialization of func_manager
@@ -220,7 +245,7 @@ class FunctionManagerDisc(SoSWrapp):
         # -- output update : lagrangian penalization
         dynamic_outputs[self.OBJECTIVE_LAGR] = {'type': 'array', self.VISIBILITY: self.SHARED_VISIBILITY,
                                                 'namespace': self.NS_OPTIM}
-        self.iter, self.last_len_database = 0, 0
+        self.iter, self.last_len_database = -1, 0
         self.old_optim_output_df = pd.DataFrame()
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
@@ -234,9 +259,13 @@ class FunctionManagerDisc(SoSWrapp):
         computes the scalarization
         '''
 
-        f_manager = self.func_manager
+        current_iter = self.get_current_iter()
+        # --initialize csv
+        if current_iter == 0 and self.get_sosdisc_inputs(self.EXPORT_CSV):
+            self.initialize_csv_files()
+
         aggr_mod_ineq, aggr_mod_eq = self.get_sosdisc_inputs(['aggr_mod_ineq', 'aggr_mod_eq'])
-        f_manager.set_aggregation_mods(aggr_mod_ineq, aggr_mod_eq)
+        self.func_manager.set_aggregation_mods(aggr_mod_ineq, aggr_mod_eq)
         # -- update function values
         for f in self.function_dict.keys():
             fvalue_df = self.get_sosdisc_inputs(f)
@@ -244,107 +273,106 @@ class FunctionManagerDisc(SoSWrapp):
             # conversion dataframe > array:
             f_arr = self.convert_df_to_array(f, fvalue_df)
             # update func manager with value as array
-            f_manager.update_function_value(f, f_arr)
+            self.func_manager.update_function_value(f, f_arr)
 
         # -- build aggregation functions
-        f_manager.build_aggregated_functions(eps=1e-3)  # alpha=3
+        self.func_manager.build_aggregated_functions(eps=1e-3)  # alpha=3
 
-        # --initialize csv
-        if self.iter == 0 and self.get_sosdisc_inputs(self.EXPORT_CSV):
-            s_name = [full_name for full_name in self.local_data if 'export_csv' in full_name][0].split('.')[0]
-            t = time.localtime()
-            start_time = time.strftime("%H%M", t)
-            self.csvfile = open(
-                f'mod_{s_name}_funcmanager_test.csv', 'w')
-            self.csvfile2 = open(
-                f'aggr_{s_name}_funcmanager_test.csv', 'w')
-            self.writer = csv.writer(
-                self.csvfile, lineterminator='\n', delimiter=',')
-            self.writer2 = csv.writer(
-                self.csvfile2, lineterminator='\n', delimiter=',')
+        # # -- store output values
 
-        # skip = False
-        # try:
-        #     disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        #     opt_problem = disc.formulation.opt_problem
-        #     database = opt_problem.database
-        #     if len(database) == self.last_len_database and self.last_len_database > 0:
-        #         # if database did not change, skip output values storing
-        #         skip = True
-        #     else:
-        #         # if the length changed store new values and go on to store output
-        #         # values
-        #         self.iter += 1
-        #         self.last_len_database = len(database)
-        # except:
-        #     self.iter += 1
-        #     pass
+        dict_out = self.build_dict_output_values()
 
-        # -- store output values
-        self.iter += 1
+        if self.get_sosdisc_inputs(self.EXPORT_CSV):
+            self.write_in_csv_files(current_iter, dict_out)
 
-        msg1 = [str(self.iter)]
-        header = ["iteration "]
-        header2 = ["iteration "]
-        msg2 = [str(self.iter)]
+        # To store all results of the optim in a dataframe
+        self.build_new_output_optim_df(current_iter, dict_out)
 
+        dict_out[self.OPTIM_OUTPUT_DF] = self.old_optim_output_df
+
+        self.store_sos_outputs_values(dict_out)
+
+    def build_dict_output_values(self):
+        '''
+        Build the dictionary of outputs for the discipline
+
+        '''
         dict_out = {}
         for f in self.function_dict.keys():
-            val = f_manager.mod_functions[f][self.VALUE]
+            val = self.func_manager.mod_functions[f][self.VALUE]
             out_name = self.__build_mod_names(f)
-
-            msg1.append(str(val))
-            header.append(out_name)
 
             dict_out[out_name] = np.array(
                 [val])
         dict_out[self.INEQ_CONSTRAINT] = np.array(
-            [f_manager.aggregated_functions[self.INEQ_CONSTRAINT]])
+            [self.func_manager.aggregated_functions[self.INEQ_CONSTRAINT]])
         dict_out[self.EQ_CONSTRAINT] = np.array(
-            [f_manager.aggregated_functions[self.EQ_CONSTRAINT]])
+            [self.func_manager.aggregated_functions[self.EQ_CONSTRAINT]])
         dict_out[self.OBJECTIVE] = np.array(
-            [f_manager.aggregated_functions[self.OBJECTIVE]])
-        dict_out[self.OBJECTIVE_LAGR] = np.array([f_manager.mod_obj])
+            [self.func_manager.aggregated_functions[self.OBJECTIVE]])
+        dict_out[self.OBJECTIVE_LAGR] = np.array([self.func_manager.mod_obj])
 
-        # header2 += 'INEQ_CONSTRAINT' + ' , ' + 'EQ_CONSTRAINT' + ' , ' + 'OBJECTIVE' + ' , ' + \
-        #     'OBJECTIVE_LAGR'
-        header2.extend(['OBJ_LAGR', 'OBJ', 'INEQ', 'EQ'])
+        return dict_out
 
-        msg2.extend([str(f_manager.mod_obj), str(f_manager.aggregated_functions[self.OBJECTIVE]),
-                     str(f_manager.aggregated_functions[self.INEQ_CONSTRAINT]),
-                     str(f_manager.aggregated_functions[self.EQ_CONSTRAINT])])
+    def build_new_output_optim_df(self, current_iter, dict_out):
+        '''
 
-        if self.get_sosdisc_inputs(self.EXPORT_CSV):
-            if self.iter == 1:
-                self.writer.writerow(header)
-                self.writer2.writerow(header2)
-            self.writer.writerow(msg1)
-            self.writer2.writerow(msg2)
-            self.csvfile2.flush()
-            self.csvfile.flush()
+        Build new_output_optim_df if the current iteration is new
+        Only first run of the optim iteration will be triggered
 
-        # Store current x
-        current_x = {}
-        for input in self.get_sosdisc_inputs().keys():
-            if input in self.get_sosdisc_inputs('function_df')[self.VARIABLE].to_list():
-                current_x[input] = self.get_sosdisc_inputs(input)
-
-        # To store all results of the optim in a dataframe
-        full_end_df = pd.DataFrame({key: [value]
-                                    for key, value in dict_out.items()})
-        full_end_df.insert(loc=0, column='iteration',
-                           value=[self.iter - 1])
-
-        if self.iter <= 2:
-            dict_out[self.OPTIM_OUTPUT_DF] = full_end_df
-        elif self.iter > 2:
-            # if skip:
-            #     dict_out[self.OPTIM_OUTPUT_DF] = old_optim_output_df
-            # else:
-            dict_out[self.OPTIM_OUTPUT_DF] = pd.concat([
+        '''
+        if current_iter == self.old_iter + 1:
+            full_end_df = pd.DataFrame({key: [value]
+                                        for key, value in dict_out.items()})
+            full_end_df.insert(loc=0, column='iteration',
+                               value=[current_iter])
+            self.old_iter = current_iter
+            new_optim_output_df = pd.concat([
                 self.old_optim_output_df, full_end_df])
-        self.old_optim_output_df = dict_out[self.OPTIM_OUTPUT_DF]
-        self.store_sos_outputs_values(dict_out)
+            self.old_optim_output_df = new_optim_output_df
+
+    def initialize_csv_files(self):
+        '''
+
+        With export csv option some CSV files are initialized to follow the optimisation wrt func manager outputs
+
+        '''
+        s_name = [full_name for full_name in self.local_data if 'export_csv' in full_name][0].split('.')[0]
+        t = time.localtime()
+
+        self.csvfile = open(
+            f'mod_{s_name}_funcmanager_test.csv', 'w')
+        self.csvfile2 = open(
+            f'aggr_{s_name}_funcmanager_test.csv', 'w')
+        self.writer = csv.writer(
+            self.csvfile, lineterminator='\n', delimiter=',')
+        self.writer2 = csv.writer(
+            self.csvfile2, lineterminator='\n', delimiter=',')
+
+    def write_in_csv_files(self, current_iter, dict_out):
+        '''
+
+        With export csv option CSV files are written and flushed to follow the optimisation wrt func manager outputs
+
+        '''
+        msg2_list = [self.INEQ_CONSTRAINT, self.EQ_CONSTRAINT, self.OBJECTIVE, self.OBJECTIVE_LAGR]
+
+        msg1 = [str(current_iter)]
+        msg1.extend([str(val) for key, val in dict_out.items() if key not in msg2_list])
+        header = ["iteration "]
+        header.extend([key for key in dict_out if key not in msg2_list])
+        header2 = ["iteration "]
+        header2.extend([key for key in dict_out if key in msg2_list])
+        msg2 = [str(current_iter)]
+        msg2.extend([str(val) for key, val in dict_out.items() if key in msg2_list])
+
+        if current_iter == 1:
+            self.writer.writerow(header)
+            self.writer2.writerow(header2)
+        self.writer.writerow(msg1)
+        self.writer2.writerow(msg2)
+        self.csvfile2.flush()
+        self.csvfile.flush()
 
     def compute_sos_jacobian(self):
 
@@ -781,12 +809,12 @@ class FunctionManagerDisc(SoSWrapp):
         chart_filters = []
         chart_list = ['lagrangian objective', 'aggregated objectives',
                       'objectives', 'ineq_constraints', 'eq_constraints', 'objective (colored)']
-        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
+        optim_output_df = self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)
+        if optim_output_df[self.INEQ_CONSTRAINT].empty:
             chart_list.remove('ineq_constraints')
-        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
+        if optim_output_df[self.EQ_CONSTRAINT].empty:
             chart_list.remove('eq_constraints')
-        if self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty and \
-                self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.EQ_CONSTRAINT].empty:
+        if optim_output_df[self.INEQ_CONSTRAINT].empty and optim_output_df[self.EQ_CONSTRAINT].empty:
             chart_list.remove('objective (colored)')
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'charts'))
@@ -845,13 +873,19 @@ class FunctionManagerDisc(SoSWrapp):
                                                                          parameters_df.loc[obj_list],
                                                                          name=chart)
                 elif chart == 'ineq_constraints':
-                    new_chart = self.get_chart_parameters_mod_iterations(optim_output_df,
-                                                                         parameters_df.loc[ineq_list],
-                                                                         name=chart)
+                    is_ineq_constraints = 'ineq_constraint' in func_df.loc[
+                        func_df['weight'] != 0., 'ftype'].values.tolist()
+                    if is_ineq_constraints:
+                        new_chart = self.get_chart_parameters_mod_iterations(optim_output_df,
+                                                                             parameters_df.loc[ineq_list],
+                                                                             name=chart)
                 elif chart == 'eq_constraints':
-                    new_chart = self.get_chart_parameters_mod_iterations(optim_output_df,
-                                                                         parameters_df.loc[eq_list],
-                                                                         name=chart)
+                    is_eq_constraints = 'eq_constraint' in func_df.loc[
+                        func_df['weight'] != 0., 'ftype'].values.tolist()
+                    if is_eq_constraints:
+                        new_chart = self.get_chart_parameters_mod_iterations(optim_output_df,
+                                                                             parameters_df.loc[eq_list],
+                                                                             name=chart)
                 if new_chart is not None:
                     instanciated_charts.append(new_chart)
         return instanciated_charts

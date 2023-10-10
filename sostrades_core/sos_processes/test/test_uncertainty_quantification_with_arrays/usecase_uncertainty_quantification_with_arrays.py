@@ -46,7 +46,7 @@ class Study(StudyManager):
         array_var_column = []
         for triplet in triplets:
             array_var_column += [triplet] * len(self.samples_dataframe[:-1])
-        array_var_column.append(10.)
+        array_var_column.append(90.)
         samples_dataframe['input_array'] = array_var_column
         samples_dataframe['scenario'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference']
         self.samples_dataframe = samples_dataframe
@@ -76,8 +76,8 @@ class Study(StudyManager):
 
         dspace = pd.DataFrame({
             'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
-            'lower_bnd': [85., 80., 80., np.array([50., 40., 60])],
-            'upper_bnd': [105., 120., 120., np.array([150., 80., 120.])],
+            'lower_bnd': [85., 80., 80., np.array([x_range.min(), y_range.min(), z_range.min()])],
+            'upper_bnd': [105., 120., 120., np.array([x_range.max(), y_range.max(), z_range.max()])],
             'nb_points': [10, 10, 10, 10],
             'full_name': ['COC', 'RC', 'NRC', 'input_array'],
         })

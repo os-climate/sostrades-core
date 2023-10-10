@@ -73,7 +73,7 @@ class SoSMDODiscipline(MDODiscipline):
         self.reduced_dm = reduced_dm
         self.input_full_name_map = None
         self.output_full_name_map = None
-        self.logger=logger
+        self.logger = logger
         super().__init__(name=full_name, grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path)
         self.is_sos_coupling = False
 

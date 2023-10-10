@@ -63,7 +63,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         cls = self.__factory.get_disc_class_from_module(mod_path)
         self.cls_gather = cls
 
-        super().__init__(sos_name, ee, cls, associated_namespaces=associated_namespaces, logger=ee.logger.getChild(self.__class__.__name__))
+        super().__init__(sos_name, ee, cls, associated_namespaces=associated_namespaces)
 
         # add input_name to inst_desc_in
         self.build_inst_desc_in_with_map()

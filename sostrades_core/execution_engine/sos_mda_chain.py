@@ -68,7 +68,8 @@ class SoSMDAChain(MDAChain):
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
     RESIDUALS_HISTORY = "residuals_history"
     NUM_DESC_IN = {
-        SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+        SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',
+                                              # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                               NUMERICAL: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                      # POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
@@ -83,6 +84,7 @@ class SoSMDAChain(MDAChain):
     def __init__(self,
                  #             ee,
                  disciplines,  # type: Sequence[MDODiscipline]
+                 logger,  # type: logging.Logger
                  reduced_dm=None,  # type: dict
                  sub_mda_class="MDAJacobi",  # type: str
                  max_mda_iter=20,  # type: int
@@ -98,40 +100,37 @@ class SoSMDAChain(MDAChain):
                  log_convergence=False,  # type: bool
                  linear_solver="DEFAULT",  # type: str
                  linear_solver_options=None,  # type: Mapping[str,Any]
-                 authorize_self_coupled_disciplines=False,  # type: bool
-                 logger=None,  #type: logging.Logger
+                 # authorize_self_coupled_disciplines=False,  # type: bool
                  **sub_mda_options
                  ):
         ''' Constructor
         '''
-        if logger is None:
-            logger = logging.getLogger(__name__)
         self.logger = logger
         self.is_sos_coupling = True
         # =========================================================================
         # #         self.ee = ee
         # #         self.dm = ee.dm
         # =========================================================================
-        self.authorize_self_coupled_disciplines = authorize_self_coupled_disciplines
+        # self.authorize_self_coupled_disciplines = authorize_self_coupled_disciplines
         self.reduced_dm = reduced_dm
 
         super().__init__(disciplines,
-                          sub_mda_class=sub_mda_class,
-                          max_mda_iter=max_mda_iter,
-                          name=name,
-                          n_processes=n_processes,
-                          chain_linearize=chain_linearize,
-                          tolerance=tolerance,
-                          linear_solver_tolerance=linear_solver_tolerance,
-                          use_lu_fact=use_lu_fact,
-                          grammar_type=grammar_type,
-                          coupling_structure=coupling_structure,
-                          sub_coupling_structures=sub_coupling_structures,
-                          log_convergence=log_convergence,
-                          linear_solver=linear_solver,
-                          linear_solver_options=linear_solver_options,
-                          **sub_mda_options
-                          )
+                         sub_mda_class=sub_mda_class,
+                         max_mda_iter=max_mda_iter,
+                         name=name,
+                         n_processes=n_processes,
+                         chain_linearize=chain_linearize,
+                         tolerance=tolerance,
+                         linear_solver_tolerance=linear_solver_tolerance,
+                         use_lu_fact=use_lu_fact,
+                         grammar_type=grammar_type,
+                         coupling_structure=coupling_structure,
+                         sub_coupling_structures=sub_coupling_structures,
+                         log_convergence=log_convergence,
+                         linear_solver=linear_solver,
+                         linear_solver_options=linear_solver_options,
+                         **sub_mda_options
+                         )
 
     def _run(self):
         '''
@@ -201,12 +200,13 @@ class SoSMDAChain(MDAChain):
             # for now, parallel tasks are run sequentially
             for coupled_disciplines in parallel_tasks:
                 # several disciplines coupled
-                first_disc = coupled_disciplines[0]
-                if len(coupled_disciplines) > 1 or (
-                        len(coupled_disciplines) == 1
-                        and self.coupling_structure.is_self_coupled(first_disc)
-                        and self.authorize_self_coupled_disciplines
-                ):
+                # first_disc = coupled_disciplines[0]
+                if len(coupled_disciplines) > 1:
+                    # or (len(coupled_disciplines) == 1
+                    # and self.coupling_structure.is_self_coupled(first_disc)
+                    ##### DEACTIVATE OPTION authorize_self_coupled_disciplines that was not correctly implemented for strong couplings (flag in GEMSEO to True)
+                    # Option that is never used
+                    # and self.authorize_self_coupled_disciplines
                     # several disciplines coupled
 
                     # get the disciplines from self.disciplines
@@ -437,15 +437,17 @@ class SoSMDAChain(MDAChain):
             # for now, parallel tasks are run sequentially
             for coupled_disciplines in parallel_tasks:
                 first_disc = coupled_disciplines[0]
-                if len(coupled_disciplines) > 1 or (
-                        len(coupled_disciplines) == 1
-                        and self.coupling_structure.is_self_coupled(first_disc)
-                        # TODO: replace by "and not
-                        # isinstance(coupled_disciplines[0], MDA)" as in GEMSEO
-                        # actual version
-                        and not coupled_disciplines[0].is_sos_coupling
-                        and self.authorize_self_coupled_disciplines
-                ):
+                if len(coupled_disciplines) > 1:
+                    # or (len(coupled_disciplines) == 1
+                    # and self.coupling_structure.is_self_coupled(first_disc)
+                    # TODO: replace by "and not
+                    # isinstance(coupled_disciplines[0], MDA)" as in GEMSEO
+                    # actual version
+                    # and not coupled_disciplines[0].is_sos_coupling
+                    ##### DEACTIVATE OPTION authorize_self_coupled_disciplines that was not correctly implemented for strong couplings (flag in GEMSEO to True)
+                    # Option that is never used
+                    # #self.authorize_self_coupled_disciplines
+
                     # several disciplines coupled
 
                     # order the MDA disciplines the same way as the

@@ -165,3 +165,40 @@ class SoSBuilder:
         self.__associated_namespaces_dict = {}
 
         self.__args['associated_namespaces'] = self.associated_namespaces
+
+    def update_associated_namespaces_with_extra_name(self, extra_name, after_name=None):
+        '''
+
+        Args:
+            extra_name: extra_name to add after the after name for each associated namespaces to the builder
+            after_name: name after which you add the extra_name for each associated namespaces to the builder
+
+        Create the new updated namespaces, then delete the old one and associate the new ones
+
+        '''
+        namespace_object_list = [self.__ee.ns_manager.all_ns_dict[ns_id] for ns_id in self.associated_namespaces]
+        new_associated_namespaces = self.__ee.ns_manager.update_namespace_list_with_extra_ns(extra_name,
+                                                                                             after_name=after_name,
+                                                                                             namespace_list=namespace_object_list,
+                                                                                             clean_namespaces=True)
+        self.delete_all_associated_namespaces()
+        self.associate_namespaces(new_associated_namespaces)
+
+    def update_associated_namespaces_with_extra_name_rec(self, extra_name, after_name=None):
+        """
+        Recursively update_associated_namespaces_with_extra_name for builder and sub-builders.
+        Args:
+            extra_name: extra_name to add after the after name for each associated namespaces to the builder
+            after_name: name after which you add the extra_name for each associated namespaces to the builder
+        """
+        # TODO: no check so that a ns associated to two builders won't be updated twice.
+        self.update_associated_namespaces_with_extra_name(extra_name, after_name)
+        sub_builders = self.args["cls_builder"]
+        try:
+            sub_builders_iterator = iter(sub_builders)
+        except TypeError:
+            pass
+        else:
+            for builder in sub_builders_iterator:
+                if isinstance(builder, SoSBuilder):
+                    builder.update_associated_namespaces_with_extra_name_rec(extra_name, after_name)

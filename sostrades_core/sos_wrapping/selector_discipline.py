@@ -68,11 +68,12 @@ class SelectorDiscipline(ProxyCoupling):
 
             if repository is not None:
                 disciplines_in_repo = find_disciplines_in_folder(repository)
+                self.label_todisc_dict = self.create_label_to_disc_dict(repository, disciplines_in_repo)
 
                 dynamic_inputs['discipline'] = {
                     ProxyCoupling.TYPE: 'string',
                     ProxyCoupling.STRUCTURING: True,
-                    ProxyCoupling.POSSIBLE_VALUES: disciplines_in_repo
+                    ProxyCoupling.POSSIBLE_VALUES: list(self.label_todisc_dict.keys())
                 }
                 if self.new_variables:
                     self.new_variables = False
@@ -80,6 +81,17 @@ class SelectorDiscipline(ProxyCoupling):
                     self.new_variables = True
         self.add_inputs(dynamic_inputs)
         ProxyCoupling.setup_sos_disciplines(self)
+
+    def create_label_to_disc_dict(self, repository, disciplines_in_repo):
+        label_todisc_dict = {}
+
+        for disc in disciplines_in_repo:
+            try:
+                inst_class = self.ee.factory.get_disc_class_from_module(f'{repository}.{disc}')
+                label_todisc_dict[inst_class._ontology_data['label']] = disc
+            except:
+                label_todisc_dict[disc] = disc
+        return label_todisc_dict
 
     def is_configured(self):
         '''
@@ -96,7 +108,8 @@ class SelectorDiscipline(ProxyCoupling):
         if 'discipline' in self.get_data_in():
             inputs_dict = self.get_sosdisc_inputs()
             disc_name = inputs_dict['discipline_name']
-            discipline = inputs_dict['discipline']
+            discipline_label = inputs_dict['discipline']
+            discipline = self.label_todisc_dict[discipline_label]
             repo = inputs_dict['repository']
             disc_path = f'{repo}.{discipline}'
             if discipline is not None:

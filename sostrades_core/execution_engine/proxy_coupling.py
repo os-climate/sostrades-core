@@ -42,9 +42,9 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
 
-#if platform.system() != 'Windows':
+# if platform.system() != 'Windows':
 #    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-#- TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
+# - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
 MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
 ksp_lib_petsc = MyFakeKSPLib()
 
@@ -92,7 +92,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     SECANT_ACCELERATION = "secant"
     M2D_ACCELERATION = "m2d"
     RESIDUALS_HISTORY = "residuals_history"
-    AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
+    # AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
 
     # get list of available linear solvers from LinearSolversFactory
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
@@ -194,11 +194,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'group_mda_disciplines': {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
                                   ProxyDiscipline.DEFAULT: False, ProxyDiscipline.USER_LEVEL: 3,
                                   ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
-        AUTHORIZE_SELF_COUPLED_DISCIPLINES: {ProxyDiscipline.TYPE: 'bool',
-                                             ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                                             ProxyDiscipline.DEFAULT: False,
-                                             ProxyDiscipline.USER_LEVEL: 3,
-                                             ProxyDiscipline.STRUCTURING: True}
+        # AUTHORIZE_SELF_COUPLED_DISCIPLINES: {ProxyDiscipline.TYPE: 'bool',
+        #                                      ProxyDiscipline.POSSIBLE_VALUES: [True, False],
+        #                                      ProxyDiscipline.DEFAULT: False,
+        #                                      ProxyDiscipline.USER_LEVEL: 3,
+        #                                      ProxyDiscipline.STRUCTURING: True}
     }
 
     DESC_OUT = {
@@ -248,7 +248,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ee (ExecutionEngine): execution engine of the current process
         '''
         self.is_sos_coupling = True
-        ProxyDiscipline._reload(self, sos_name, ee, logger=ee.logger.getChild(self.__class__.__name__), associated_namespaces=associated_namespaces)
+        ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
+        self.logger = ee.logger.getChild(self.__class__.__name__)
 
     # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to
     # reduce footprint in GEMSEO
@@ -813,7 +814,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                         len(coupled_disciplines) == 1
                         and self.coupling_structure.is_self_coupled(first_disc)
                         #                     and not coupled_disciplines[0].is_sos_coupling #TODO: replace by "and not isinstance(coupled_disciplines[0], MDA)" as in GEMSEO actual version
-                        and self.get_sosdisc_inputs(self.AUTHORIZE_SELF_COUPLED_DISCIPLINES)
+                        # and self.get_sosdisc_inputs(self.AUTHORIZE_SELF_COUPLED_DISCIPLINES) #Deactivate AUTHORIZE_SELF_COUPLED_DISCIPLINES which is not correctly implemented regarding strong couplings
+                        # option that is never used in SoSTrades applications for now
                 ):
                     # - MDA detection
                     # in this case, mda i/o is the union of all i/o (different from MDOChain)
@@ -904,7 +906,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if select_all or 'Residuals History' in chart_list:
             sub_mda_class = self.get_sosdisc_inputs('sub_mda_class')
             if post_processing_mda_data is not None and sub_mda_class in post_processing_mda_data.columns:
-                residuals_through_iterations = np.asarray(list(map(lambda x: [x[0]], post_processing_mda_data[sub_mda_class])))
+                residuals_through_iterations = np.asarray(
+                    list(map(lambda x: [x[0]], post_processing_mda_data[sub_mda_class])))
                 iterations = list(range(len(residuals_through_iterations)))
                 min_y, max_y = inf, - inf
                 min_value, max_value = residuals_through_iterations.min(), residuals_through_iterations.max()

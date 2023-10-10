@@ -34,11 +34,11 @@ class Study(StudyManager):
 
         # ======================================================================
         dict_of_list_values = {
-            'x': [[3.], [4.]],
-            'z': [[-10., 0.]],
+            'x': [array([3.]), array([4.])],
+            'z': [array([-10., 0.])],
             'Sellar_Problem.local_dv': [10.],
-            'y_1': [[1.]],
-            'y_2': [[1.]]
+            'y_1': [array([1.])],
+            'y_2': [array([1.])]
         }
         # ======================================================================
 
@@ -85,10 +85,10 @@ class Study(StudyManager):
         # ======================================================================
 
         local_dv = 10.
-        disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = [2.]
-        disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = [1.]
-        disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = [1.]
-        disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = [1., 1.]
+        disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

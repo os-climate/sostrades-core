@@ -17,10 +17,9 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class Disc1(SoSWrapp):
-
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc1_doe_eval',
+        'label': 'Disc1_doe_eval',
         'type': '',
         'source': '',
         'validated': '',
