@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Coupling Eval Generator in flatten mode',
+        'label': 'Core Test Sellar Coupling Multi instance Driver With Sample Generator',
         'description': '',
         'category': '',
         'version': '',

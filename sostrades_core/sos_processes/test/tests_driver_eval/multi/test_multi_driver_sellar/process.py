@@ -23,7 +23,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Eval simple',
+        'label': 'Core Test Sellar Multi Instance Eval simple',
         'description': '',
         'category': '',
         'version': '',

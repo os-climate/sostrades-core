@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Display Treeview Process',
+        'label': 'Core Test Multi Instance Driver Hide Coupling In Driver Option',
         'description': '',
         'category': '',
         'version': '',

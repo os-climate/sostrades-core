@@ -21,7 +21,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Group Scenarios Under Discipline Process',
+        'label': 'Core Test Multi Instance Driver Group Scenarios Under Discipline Option',
         'description': '',
         'category': '',
         'version': '',
