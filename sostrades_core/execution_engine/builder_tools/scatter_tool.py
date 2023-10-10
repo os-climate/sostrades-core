@@ -41,7 +41,7 @@ class ScatterTool(SosTool):
     DISPLAY_OPTIONS_POSSIBILITIES = ['hide_under_coupling', 'hide_coupling_in_driver',
                                      'group_scenarios_under_disciplines', 'autogather']
 
-    def __init__(self, sos_name, ee, cls_builder, map_name=None, coupling_per_scenario=True,
+    def __init__(self, sos_name, ee, cls_builder, map_name=None,
                  display_options=False):
         '''
         Constructor
@@ -50,13 +50,11 @@ class ScatterTool(SosTool):
         SosTool.__init__(self, sos_name, ee, cls_builder)
 
         self.map_name = map_name
-        self.coupling_per_scenario = coupling_per_scenario
         self.display_options = {disp_option: False for disp_option in self.DISPLAY_OPTIONS_POSSIBILITIES}
         self.set_display_options(display_options)
         self.driver_display_value = None
         self.__scattered_disciplines = {}
         self.__gather_disciplines = {}
-        self.sub_coupling_builder_dict = {}
         self.__scatter_list = None
         self.input_name = None
         self.ns_to_update = None
@@ -85,7 +83,7 @@ class ScatterTool(SosTool):
 
     def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None):
         '''    
-        MEthod that associate tool to the driver and add scatter map
+        Method that associate tool to the driver and add scatter map
         '''
         SosTool.associate_tool_to_driver(
             self, driver, cls_builder=cls_builder, associated_namespaces=associated_namespaces)
@@ -119,12 +117,6 @@ class ScatterTool(SosTool):
         if self.display_options['hide_coupling_in_driver']:
             self.driver_display_value = self.driver.get_disc_display_name()
 
-        if self.display_options['group_scenarios_under_disciplines'] or self.display_options['autogather']:
-            self.flatten_subprocess = True
-
-        if self.flatten_subprocess:
-            self.coupling_per_scenario = False
-
     def get_values_for_namespaces_to_update(self):
         '''
         Get the values of the namespace list defined in the namespace manager
@@ -134,13 +126,8 @@ class ScatterTool(SosTool):
         # store ns_to_update namespace object
         self.ns_to_update = {}
         for ns_name in ns_to_update_name_list:
-            if not self.flatten_subprocess:
-                self.ns_to_update[ns_name] = self.ee.ns_manager.get_shared_namespace(self.driver,
-                                                                                     ns_name)
-            else:
-                # if flatten subprocess then the father evaluator for a nested scatter is always the root coupling
-                # and we should take ns_to_update of the shared_ns_dict to be consistent with father_executor name and driver_name
-                self.ns_to_update[ns_name] = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
+            # we should take ns_to_update of the shared_ns_dict to be consistent with father_executor name and driver_name
+            self.ns_to_update[ns_name] = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
 
     def get_dynamic_output_from_tool(self):
         '''
@@ -202,58 +189,22 @@ class ScatterTool(SosTool):
 
         if self.__scatter_list is not None:
 
+            # get new_names that are not yet built and clean the one that are no more in the scatter list
             new_sub_names = self.clean_scattered_disciplines(
                 self.__scatter_list)
-
+            # if gather option then add a gather discipline
+            # OPEN QUESTION : should be at driver evaluator level for mono and multiinstance ?
             if self.display_options['autogather']:
                 self.add_gather()
-            # build sub_process through the factory
+
             for name in self.__scatter_list:
-                new_name = name in new_sub_names
+                # check if the name is new
+                new_name_flag = name in new_sub_names
+                # update namespaces to update with this name
                 ns_ids_list = self.update_namespaces(name)
-                if self.coupling_per_scenario:
-                    self.build_sub_coupling(
-                        name, new_name, ns_ids_list)
-                else:
-                    self.build_child_scatter(
-                        name, new_name, ns_ids_list)
 
-    def build_sub_coupling(self, name, new_name, ns_ids_list):
-        '''
-        Build a coupling for each name 
-        name (string) : scatter_name in the scatter_list
-        new_name (bool) : True if name is a new_name in the build
-        ns_ids_list (list) : The list of ns_keys that already have been updated with the scatter_name and mus tbe associated to the builder 
-
-        1. Create the coupling with its name
-        2. Add all builders to the coupling
-        3. Associate new namespaces to the builder (the coupling will associate the namespace to its children)
-        4. Build the coupling builder
-        5 Add the builded discipline to the driver and factory
-        '''
-        # Call scatter map to modify the associated namespace
-
-        if new_name:
-            coupling_builder = self.driver.create_sub_builder_coupling(
-                name, self.sub_builders)
-
-            if self.display_options['hide_coupling_in_driver']:
-                self.ee.ns_manager.add_display_ns_to_builder(
-                    coupling_builder, self.driver_display_value)
-
-            self.associate_namespaces_to_builder(
-                coupling_builder, ns_ids_list)
-            self.sub_coupling_builder_dict[name] = coupling_builder
-
-            coupling_disc = coupling_builder.build()
-            # flag the coupling so that it can be executed in parallel
-            coupling_disc.is_parallel = True
-            self.add_scatter_discipline(coupling_disc, name)
-
-        else:
-            coupling_disc = self.sub_coupling_builder_dict[name].build()
-            # flag the coupling so that it can be executed in parallel
-            coupling_disc.is_parallel = True
+                self.build_child(
+                    name, new_name_flag, ns_ids_list)
 
     def update_namespaces(self, name):
         '''
@@ -277,7 +228,7 @@ class ScatterTool(SosTool):
 
         return ns_ids_list
 
-    def build_child_scatter(self, name, new_name, ns_ids_list):
+    def build_child(self, name, new_name_flag, ns_ids_list):
         '''
         #        |_name_1
         #                |_Disc1
@@ -286,9 +237,9 @@ class ScatterTool(SosTool):
         #                |_Disc1
         #                |_Disc2
 
-        Build scattered disciplines directly under driver
-        name (string) : scatter_name in the scatter_list
-        new_name (bool) : True if name is a new_name in the build
+        Build child disciplines under the father executor of the driver (to get a flatten subprocess all the time)
+        name (string) : new name in the scatter_list
+        new_name_flag (bool) : True if name is a new_name in the build
         ns_ids_list (list) : The list of ns_keys that already have been updated with the scatter_name and mus tbe associated to the builder 
 
         1. Set builders as a list and loop over builders
@@ -301,19 +252,13 @@ class ScatterTool(SosTool):
         '''
 
         for builder in self.sub_builders:
-            old_builder_name = builder.sos_name
 
-            driver_name = self.driver.sos_name
-            driver_full_name = self.driver.get_disc_full_name()
-            father_executor_name = self.driver.father_executor.get_disc_full_name()
-            namespace_name = driver_full_name.replace(f'{father_executor_name}.', '', 1)
-            disc_name = f'{namespace_name}.{name}.{old_builder_name}'
-            # else:
-            #     disc_name = f'{name}.{old_builder_name}'
+            old_builder_name = builder.sos_name
+            disc_name = self.get_subdisc_name(name, old_builder_name)
 
             builder.set_disc_name(disc_name)
 
-            if new_name:
+            if new_name_flag:
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
             self.set_father_discipline()
             disc = builder.build()
@@ -322,8 +267,28 @@ class ScatterTool(SosTool):
 
             builder.set_disc_name(old_builder_name)
             # Add the discipline only if it is a new_name
-            if new_name:
+            if new_name_flag:
                 self.add_scatter_discipline(disc, name)
+
+    def get_subdisc_name(self, name, old_builder_name):
+        '''
+
+        Args:
+            name: name of the scenario
+            old_builder_name: old name of the builder
+
+        Returns:
+            disc_name : full_name of the discipline to build
+
+        '''
+        # get the full_name of the driver and of the father_executor
+        driver_full_name = self.driver.get_disc_full_name()
+        father_executor_name = self.driver.father_executor.get_disc_full_name()
+        # delete the name of the father_executor because the disc will be built at father_executor node
+        namespace_name = driver_full_name.replace(f'{father_executor_name}.', '', 1)
+        disc_name = f'{namespace_name}.{name}.{old_builder_name}'
+
+        return disc_name
 
     def apply_display_options(self, disc, name, old_builder_name):
         '''
@@ -365,15 +330,13 @@ class ScatterTool(SosTool):
             Add gather discipline for autogather
             the gather discipline name will automatically be the name of the builder
             if display option group_scenarios_under_disciplines s activated then we want a gather per subbuilder
-            if not only one gather per driver which gather automatically all outputs need flatten_subprocess option in order to gather correctly all disciplines
+
         '''
 
         if self.display_options['group_scenarios_under_disciplines']:
             for sub_builder in self.sub_builders:
-                if self.flatten_subprocess:
-                    gather_name = f'{self.driver.sos_name}.{sub_builder.sos_name}'
-                else:
-                    gather_name = sub_builder.sos_name
+
+                gather_name = f'{self.driver.sos_name}.{sub_builder.sos_name}'
                 if sub_builder.sos_name not in self.__gather_disciplines:
                     gather_builder = self.ee.factory.add_gather_builder(gather_name)
                     self.set_father_discipline()
@@ -397,7 +360,7 @@ class ScatterTool(SosTool):
         Return the new scatter names not yet present in the list of scattered disciplines
         '''
         # sort sub_names to filter new names and disciplines to remove
-        clean_builders_list = []
+
         new_sub_names = [
             name for name in sub_names if not name in self.__scattered_disciplines]
         disc_name_to_remove = [
@@ -413,9 +376,6 @@ class ScatterTool(SosTool):
 
         for disc in disc_to_remove:
             self.clean_from_driver(self.__scattered_disciplines[disc])
-            if self.coupling_per_scenario:
-                del self.sub_coupling_builder_dict[disc]
-
             del self.__scattered_disciplines[disc]
 
     def clean_all_disciplines_from_tool(self):

@@ -19,13 +19,9 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 import logging
-from typing import Optional
 import copy
 import pandas as pd
-from numpy import NaN
-import numpy as np
 
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
@@ -33,9 +29,7 @@ from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisci
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
-from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -132,12 +126,27 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     NS_EVAL = 'ns_eval'
 
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
+    with_modal = True
+    default_process_builder_parameter_type = ProcessBuilderParameterType(
+        None, None, 'Empty')
+
+    if with_modal:
+        DESC_IN = {SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
+                                        'structuring': True,
+                                        'default': default_process_builder_parameter_type.to_data_manager_dict(),
+                                        'user_level': 1,
+                                        'optional': False}}
+    else:
+        DESC_IN = {USECASE_DATA: {'type': 'dict',
+                                  'structuring': True,
+                                  'default': {},
+                                  'user_level': 1,
+                                  'optional': False}}
 
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
                  map_name=None,
-                 flatten_subprocess=False,
                  display_options=None,
                  ):
         """
@@ -164,8 +173,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.builder_tool = None
 
         self.map_name = map_name
-        self.flatten_subprocess = flatten_subprocess
-        self.scenarios = []  # to keep track of subdisciplines in a flatten_subprocess case
+        self.scenarios = []
 
         self.display_options = display_options
 
@@ -179,8 +187,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_out_list_size = []
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
-        self.scatter_list_valid = True
-        self.scatter_list_integrity_msg = ''
+        self.scenario_list_valid = True
+        self.scenario_list_integrity_msg = ''
 
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
@@ -213,36 +221,21 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         return self.ee.ns_manager.disc_ns_dict[self]['others_ns'][self.NS_EVAL].get_value()
 
-    def get_desc_in_out(self, io_type):
-        """
-        get the desc_in or desc_out. if a wrapper exists get it from the wrapper, otherwise get it from the proxy class
-        """
-        # TODO : check if the following logic could be OK and implement it
-        # according to what we want to do : DESC_IN of Proxy is updated by SoSWrapp if exists
-        # thus no mixed calls to n-1 and n-2
-
-        if self.mdo_discipline_wrapp.wrapper is not None:
-            # ProxyDiscipline gets the DESC from the wrapper
-            return ProxyDiscipline.get_desc_in_out(self, io_type)
-        else:
-            # ProxyDisciplineBuilder expects the DESC on the proxies e.g. Coupling
-            # TODO: move to coupling ?
-            return super().get_desc_in_out(io_type)
-
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger:logging.Logger):
+    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
         creation of mdo_discipline_wrapp by the proxy which in this case is a MDODisciplineDriverWrapp that will create
         a SoSMDODisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
         them in a different way than a coupling.
         """
-        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, logger.getChild("MDODisciplineDriverWrapp"), wrapper, wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, logger.getChild("MDODisciplineDriverWrapp"), wrapper,
+                                                             wrapping_mode)
 
     def configure(self):
         """
         Configure the DriverEvaluator layer
         """
         # set the scenarios references, for flattened subprocess configuration
-        if self.flatten_subprocess and self.builder_tool:
+        if self.builder_tool:
             self.scenarios = self.builder_tool.get_all_built_disciplines()
         else:
             self.scenarios = self.proxy_disciplines
@@ -308,8 +301,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         for disc in self.scenarios:
             disc.prepare_execution()
         # TODO : cache mgmt of children necessary ? here or in  SoSMDODisciplineDriver ?
-        super().prepare_execution()
-        self.reset_subdisciplines_of_wrapper()
+        if self.mdo_discipline_wrapp is not None:
+            super().prepare_execution()
+            self.reset_subdisciplines_of_wrapper()
+            self._update_status_dm(self.STATUS_DONE)
 
     def reset_subdisciplines_of_wrapper(self):
         self.mdo_discipline_wrapp.reset_subdisciplines(self)
@@ -326,7 +321,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # driverevaluator subprocess # TODO: actually no longer necessary in multi-instance (gather capabilities)
         wrapper.attributes.update({'sub_mdo_disciplines': [
             proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
-            if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scatters
+            if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scenarios
 
     def is_configured(self):
         """
@@ -346,10 +341,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def check_data_integrity(self):
         # checking for duplicates
         disc_in = self.get_data_in()
-        if self.SCENARIO_DF in disc_in and not self.scatter_list_valid:
+        if self.SCENARIO_DF in disc_in and not self.scenario_list_valid:
             self.dm.set_data(
                 self.get_var_full_name(self.SCENARIO_DF, disc_in),
-                self.CHECK_INTEGRITY_MSG, self.scatter_list_integrity_msg)
+                self.CHECK_INTEGRITY_MSG, self.scenario_list_integrity_msg)
 
     def fill_possible_values(self, disc, io_type_in=True, io_type_out=True):
         '''
@@ -360,7 +355,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         poss_in_values_full = set()
         poss_out_values_full = set()
-        if io_type_in: # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
+        if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
             disc_in = disc.get_data_in()
             for data_in_key in disc_in.keys():
                 is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
@@ -669,8 +664,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 already_set_names = eval_input_new_dm['full_name'].tolist()
                 already_set_values = eval_input_new_dm['selected_input'].tolist()
                 for index, name in enumerate(already_set_names):
-                    default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = already_set_values[
-                        index]  # this will filter variables that are not inputs of the subprocess
+                    default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
+                        already_set_values[
+                            index]  # this will filter variables that are not inputs of the subprocess
                     if self.MULTIPLIER_PARTICULE in name:
                         default_dataframe = default_dataframe.append(
                             pd.DataFrame({'selected_input': [already_set_values[index]],
@@ -691,7 +687,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                  'value', default_out_dataframe, check_value=False)
             # check if the eval_inputs need to be updated after a subprocess configure
             elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-                self.check_eval_io(eval_output_new_dm['full_name'].tolist(), default_out_dataframe['full_name'].tolist(),
+                self.check_eval_io(eval_output_new_dm['full_name'].tolist(),
+                                   default_out_dataframe['full_name'].tolist(),
                                    is_eval_input=False)
                 default_dataframe = copy.deepcopy(default_out_dataframe)
                 already_set_names = eval_output_new_dm['full_name'].tolist()
