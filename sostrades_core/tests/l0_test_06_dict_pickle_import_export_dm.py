@@ -299,11 +299,12 @@ class TestSerializeDF(unittest.TestCase):
     def test_05_load_study_after_execute(self):
         # load process in GUI
         self.name = 'MyCase'
-        self.repo = 'sostrades_core.sos_processes.test'
+        self.repo = 'sostrades_core.sos_processes.test.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver'
         self.exec_eng = ExecutionEngine(self.name)
 
         builders = self.exec_eng.factory.get_builder_from_process(
-            repo=self.repo, mod_id='test_driver')
+            repo=self.repo, mod_id=proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
 
         self.exec_eng.configure()
@@ -312,7 +313,6 @@ class TestSerializeDF(unittest.TestCase):
                                     'scenario_name': ['scenario_1',
                                                       'scenario_2']})
         dict_values[f'{self.name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.name}.multi_scenarios.builder_mode'] = 'multi_instance'
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
@@ -358,7 +358,7 @@ class TestSerializeDF(unittest.TestCase):
 
         exec_eng2 = ExecutionEngine(self.name)
         builders = exec_eng2.factory.get_builder_from_process(
-            repo=self.repo, mod_id='test_driver')
+            repo=self.repo, mod_id=proc_name)
         exec_eng2.factory.set_builders_to_coupling_builder(builders)
 
         exec_eng2.configure()

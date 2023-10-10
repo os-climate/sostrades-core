@@ -113,16 +113,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-
-        proc_name = "test_sellar_generator_eval"
-        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = "test_mono_driver_with_sample_option_sellar"
+        doe_eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                             mod_id=proc_name)
 
         exec_eng.factory.set_builders_to_coupling_builder(
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario

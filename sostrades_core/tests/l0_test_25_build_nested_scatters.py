@@ -50,7 +50,6 @@ class TestBuildScatter(unittest.TestCase):
                                                              mod_id=self.sub_proc)
         # builder_list is a list of builders from self.sub_proc
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
         with self.assertRaises(Exception) as cm:
@@ -151,7 +150,6 @@ class TestBuildScatter(unittest.TestCase):
                                                              mod_id=self.sub_proc)
         # builder_list is a list of builders from self.sub_proc
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
         scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list, display_options={
@@ -257,7 +255,6 @@ class TestBuildScatter(unittest.TestCase):
                                                              mod_id=self.sub_proc)
         # builder_list is a list of builders from self.sub_proc
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
         scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list, display_options={
@@ -357,7 +354,6 @@ class TestBuildScatter(unittest.TestCase):
                                                              mod_id=self.sub_proc)
         # builder_list is a list of builders from self.sub_proc
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
         scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list, display_options={

@@ -64,8 +64,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': ['scenario_1',
                                                       'scenario_2']})
-        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df,
-                       f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance'}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
@@ -181,8 +180,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': ['scenario_1',
                                                       'scenario_2']})
-        dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-                       f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -251,8 +249,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': ['scenario_1',
                                                       'scenario_2']})
-        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df,
-                       f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance'}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
@@ -348,8 +345,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': ['scenario_1',
                                                       'scenario_2']})
-        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df,
-                       f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance'}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',

@@ -100,7 +100,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': self.scenario_list})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -146,7 +145,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': self.scenario_list})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -213,7 +211,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': self.scenario_list})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -272,7 +269,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': self.scenario_list})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -302,7 +298,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': self.scenario_list})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -332,7 +327,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': self.scenario_list})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
