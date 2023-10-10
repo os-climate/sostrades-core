@@ -129,10 +129,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
     def test_02_uncertainty_quantification_from_cartesian_product(self):
         """In this test we prove the ability to couple a grid search and an uq
         """
-        proc_name = 'test_coupling_doe_uq'
-
+        proc_name = 'test_mono_driver_with_uq'
+        repo_name = self.repo + ".tests_driver_eval.mono"
         builder = self.factory.get_builder_from_process(
-            self.repo, proc_name)
+            repo_name, proc_name)
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 

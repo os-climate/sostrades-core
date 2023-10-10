@@ -35,11 +35,12 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         default initialisation test
         '''
-
+        repo_name = 'sostrades_core.sos_processes.test.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver'
         builder_list1 = self.ee.factory.get_builder_from_process(
-            'sostrades_core.sos_processes.test', 'test_driver')
+            repo_name, proc_name)
         builder_list2 = self.ee.factory.get_builder_from_process(
-            'sostrades_core.sos_processes.test', 'test_driver')
+            repo_name, proc_name)
         ns_list_standard = deepcopy(self.ee.ns_manager.ns_list)
         # ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
         #     'Scatter1', after_name=exec_eng.study_name)

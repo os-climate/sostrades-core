@@ -87,8 +87,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.indicator2 = self.a1 * self.b2
 
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_basic'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_simple"
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()

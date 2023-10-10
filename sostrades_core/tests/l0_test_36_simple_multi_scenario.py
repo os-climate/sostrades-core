@@ -85,8 +85,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
     # NEW EEV4 TESTS
     def test_01_multi_instance_configuration_from_df_without_reference_scenario(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_basic'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        proc_name = 'test_multi_driver_simple'
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -154,8 +155,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     def test_02_multi_instance_configuration_from_df_with_reference_scenario(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_basic'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        proc_name = 'test_multi_driver_simple'
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -386,8 +388,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     def test_03_consecutive_configure(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_basic'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        proc_name = 'test_multi_driver_simple'
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -477,9 +480,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     def test_04_dump_and_load_after_execute_with_2_trade_vars(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_basic'
+        proc_name = 'test_multi_driver_simple'
+        repo_name = self.repo + ".tests_driver_eval.multi"
         builders = self.exec_eng.factory.get_builder_from_process(
-            self.repo, proc_name)
+            repo_name, proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
         scenario_df = pd.DataFrame(
@@ -514,7 +518,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         exec_eng2 = ExecutionEngine(self.namespace)
         builders = exec_eng2.factory.get_builder_from_process(
-            self.repo, proc_name)
+            repo_name, proc_name)
         exec_eng2.factory.set_builders_to_coupling_builder(builders)
         exec_eng2.configure()
 
@@ -544,9 +548,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
     def test_08_changing_trade_variables_by_adding_df_column(self):
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_basic'
+        proc_name = 'test_multi_driver_simple'
+        repo_name = self.repo + ".tests_driver_eval.multi"
         builders = self.exec_eng.factory.get_builder_from_process(
-            self.repo, proc_name)
+            repo_name, proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
         scenario_df = pd.DataFrame(
@@ -602,8 +607,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.o'), o2)
 
     def test_09_two_scenarios_with_same_name(self):
-        proc_name = 'test_multi_instance_basic'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        proc_name = 'test_multi_driver_simple'
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
@@ -637,8 +643,9 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.assertIn(runtime_error_message, str(cm.exception))
 
     def test_10_two_scenarios_with_same_name_on_2nd_config(self):
-        proc_name = 'test_multi_instance_basic'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        proc_name = 'test_multi_driver_simple'
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()

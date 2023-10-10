@@ -28,7 +28,7 @@ from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
-from sostrades_core.sos_processes.test.test_driver.usecase_scatter import Study
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver.usecase_scatter import Study
 
 
 class TestSameVarnameHandling(unittest.TestCase):

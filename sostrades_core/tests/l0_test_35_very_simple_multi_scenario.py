@@ -15,7 +15,7 @@ limitations under the License.
 '''
 
 import pandas as pd
-from sostrades_core.sos_processes.test.test_driver.usecase_scatter import Study as study_scatter
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver.usecase_scatter import Study as study_scatter
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
