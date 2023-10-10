@@ -48,7 +48,6 @@ class Study(StudyManager):
 
         disc_dict = {}
         # DoE + Eval inputs
-        disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
         n_samples = 10
         levels = [0.25, 0.5, 0.75]
         centers = [5]

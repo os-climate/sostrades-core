@@ -41,7 +41,6 @@ class Study(StudyManager):
 
         disc_dict = {}
         # Eval inputs
-        disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_ind
 

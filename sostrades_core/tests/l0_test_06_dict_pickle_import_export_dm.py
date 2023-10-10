@@ -313,7 +313,6 @@ class TestSerializeDF(unittest.TestCase):
                                     'scenario_name': ['scenario_1',
                                                       'scenario_2']})
         dict_values[f'{self.name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.name}.multi_scenarios.builder_mode'] = 'multi_instance'
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 

@@ -27,7 +27,6 @@ class Study(StudyManager):
     def setup_usecase(self):
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
 
         b1 = 4

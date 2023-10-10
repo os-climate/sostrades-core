@@ -48,7 +48,6 @@ class Study(StudyManager):
                                                       'scenario_W',
                                                       'scenario_2']})
         disc_dict[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        disc_dict[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         disc_dict[f'{self.study_name}.multi_scenarios.instance_reference'] = True
         disc_dict[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
 

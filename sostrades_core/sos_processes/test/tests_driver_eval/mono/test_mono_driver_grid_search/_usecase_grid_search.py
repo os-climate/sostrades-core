@@ -52,7 +52,6 @@ class Study(StudyManager):
 
         dict_values = {
             # CASE CONFIG INPUTS
-            f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
 
             # GRID SEARCH INPUTS

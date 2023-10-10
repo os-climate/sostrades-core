@@ -101,7 +101,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                       'scenario_W',
                                                       'scenario_2']})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         # dict_values[f'{self.study_name}.Eval.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()

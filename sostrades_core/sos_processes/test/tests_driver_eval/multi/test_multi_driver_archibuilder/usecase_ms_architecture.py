@@ -30,8 +30,7 @@ class Study(StudyManager):
         scenario_df = pd.DataFrame({'selected_scenario': [True, True],
                                     'scenario_name': ['scenario_1',
                                                       'scenario_2']})
-        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df,
-                       f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance'}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         activation_df_1 = pd.DataFrame({'Business': ['Remy'],
                                         'CAPEX': [True],

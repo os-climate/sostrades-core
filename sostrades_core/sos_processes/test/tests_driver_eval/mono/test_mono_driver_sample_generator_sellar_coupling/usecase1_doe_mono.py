@@ -56,7 +56,6 @@ class Study(StudyManager):
 
         disc_dict = {}
         # DoE + Eval inputs
-        disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
         n_samples = 20
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
         disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "lhs"

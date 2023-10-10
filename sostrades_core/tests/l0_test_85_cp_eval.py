@@ -122,7 +122,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
