@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Test Disc1 Disc3 eval simple',
+        'label': 'Core Test Disc1 Disc3 Multi Instance eval simple',
         'description': '',
         'category': '',
         'version': '',

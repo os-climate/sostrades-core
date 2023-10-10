@@ -21,7 +21,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Display Treeview Autogather with Group Scenarios Under Disciplines Process',
+        'label': 'Core Test Multi Instance Driver Autogather And Group Scenarios Under Disciplines Options',
         'description': '',
         'category': '',
         'version': '',
