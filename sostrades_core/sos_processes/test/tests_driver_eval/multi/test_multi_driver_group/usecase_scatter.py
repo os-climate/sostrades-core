@@ -28,7 +28,6 @@ class Study(StudyManager):
 
         driver_name = 'multi_actors'
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                           True],
                                                                                     'scenario_name': ['actor_1',

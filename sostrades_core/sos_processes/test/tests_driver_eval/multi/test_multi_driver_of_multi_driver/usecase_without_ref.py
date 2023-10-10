@@ -34,7 +34,6 @@ class Study(StudyManager):
         scenario_df_inner = pd.DataFrame({'selected_scenario': [True, True],
                                           'scenario_name': ['name_1',
                                                             'name_2']})
-        values_dict[f'{self.study_name}.outer_ms.builder_mode'] = 'multi_instance'
         values_dict[f'{self.study_name}.outer_ms.scenario_df'] = scenario_df_outer
 
         self.constant = [1, 2]
@@ -50,7 +49,6 @@ class Study(StudyManager):
 
 
         for i, sc in enumerate(scenario_list_outer):
-            values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.builder_mode'] = 'multi_instance'
             values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.scenario_df'] = scenario_df_inner
             values_dict[self.study_name + '.outer_ms.'+sc+'.Disc3.constant'] = self.constant[i]
             values_dict[self.study_name + '.outer_ms.'+sc+'.Disc3.power'] = self.power[i]

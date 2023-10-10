@@ -78,8 +78,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -281,8 +280,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -403,8 +401,7 @@ class TestGridSearchEval(unittest.TestCase):
             grid_search_builder)
 
         exec_eng.configure()
-        initial_input = {f'{self.ns}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.ns}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.ns}.{self.sample_generator}.sampling_method': 'grid_search'}
         exec_eng.load_study_from_input_dict(initial_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
@@ -493,8 +490,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -593,8 +589,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -689,8 +684,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -784,8 +778,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 

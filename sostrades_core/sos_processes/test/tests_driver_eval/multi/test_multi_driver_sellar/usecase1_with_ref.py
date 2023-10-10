@@ -40,7 +40,6 @@ class Study(StudyManager):
                                                       'scenario_W',
                                                       'scenario_2']})
         disc_dict[f'{self.study_name}.Eval.scenario_df'] = scenario_df
-        disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.Eval.instance_reference'] = True
         disc_dict[f'{ns}.Eval.reference_mode'] = 'copy_mode'
 

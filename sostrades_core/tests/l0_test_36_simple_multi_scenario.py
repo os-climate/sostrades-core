@@ -100,7 +100,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                       'scenario_W',
                                                       'scenario_2']})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         # dict_values[f'{self.study_name}.Eval.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -170,7 +169,6 @@ class TestSimpleMultiScenario(unittest.TestCase):
                                                       'scenario_W',
                                                       'scenario_2']})
         dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = True
         dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -398,8 +396,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         scenario_df = pd.DataFrame(
             [['scenario_1', True, self.b1]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
-        dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-                       f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -491,8 +488,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             [['scenario_1', True, self.b1, self.z1], ['scenario_2', True, self.b2, self.z2]],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
 
-        dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-                       f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -559,8 +555,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
 
-        dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-                       f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         # manually configure the scenarios non-varying values (~reference)
@@ -618,8 +613,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         scenario_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_1', True, self.b2]],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
-        dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-                       f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
 
         error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
         exp_tv = 'Nodes representation for Treeview MyCase\n' \
@@ -655,8 +649,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_2', True, self.b2]],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
 
-        dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-                       f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+        dict_values = {f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         scenario_df['scenario_name'].iloc[2] = 'scenario_1'

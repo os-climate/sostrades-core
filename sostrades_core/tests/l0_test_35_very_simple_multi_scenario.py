@@ -112,10 +112,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.configure()
 
         dict_values = {}
-        samples_df = pd.DataFrame({'selected_scenario': [True, True],
-                                   'scenario_name': ['scenario_1',
-                                                     'scenario_2']})
-        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
+        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -159,10 +159,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         self.get_simple_multiscenario_process_configured(self.exec_eng)
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                           True],
-                                                                                     'scenario_name': ['scenario_1',
-                                                                                                       'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -267,10 +267,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.get_simple_multiscenario_process_configured(self.exec_eng)
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                           True],
-                                                                                     'scenario_name': ['scenario_1',
-                                                                                                       'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -329,10 +329,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.get_simple_multiscenario_process_configured(self.exec_eng)
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                           True],
-                                                                                     'scenario_name': ['scenario_1',
-                                                                                                       'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
         # dict_values[f'{self.study_name}.multi_scenarios.scenario_list'] = [
         #     'scenario_1', 'scenario_2']
 
@@ -410,10 +410,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.get_simple_multiscenario_process_configured(self.exec_eng)
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                           True],
-                                                                                     'scenario_name': ['scenario_1',
-                                                                                                       'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -514,10 +514,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         print(exp_tv_str)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                           True],
-                                                                                     'scenario_name': ['scenario_1',
-                                                                                                       'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
         # # check tree view with scenario_1 and scenario_2
@@ -606,10 +606,10 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.configure()
 
         dict_values = {}
-        samples_df = pd.DataFrame({'selected_scenario': [True, True],
-                                   'scenario_name': ['scenario_1',
-                                                     'scenario_2']})
-        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
+        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
+                                    'scenario_name': ['scenario_1',
+                                                      'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes(exec_display=True, display_variables=True)
 

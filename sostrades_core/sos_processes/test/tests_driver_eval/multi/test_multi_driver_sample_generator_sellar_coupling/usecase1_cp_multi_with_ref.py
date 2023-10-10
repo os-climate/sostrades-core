@@ -58,6 +58,7 @@ class Study(StudyManager):
 
         disc_dict = {}
         # CP + Eval inputs
+        disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{ns}.Eval.eval_inputs_cp'] = input_selection_cp_x_z
         disc_dict[f'{ns}.Eval.instance_reference'] = True

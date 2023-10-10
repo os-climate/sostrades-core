@@ -139,7 +139,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
@@ -214,8 +214,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
@@ -313,8 +314,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
         # -- set up disciplines in Scenario
         disc_dict = {}
         # DoE inputs
@@ -436,8 +438,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -564,8 +567,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -670,8 +674,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -758,8 +763,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_local_dv_x,
@@ -922,8 +928,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -1016,8 +1023,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         # -- set up disciplines
         values_dict = {f'{self.ns}.Eval.x': 1., f'{self.ns}.Eval.y_1': 1., f'{self.ns}.Eval.y_2': 1.,
@@ -1127,8 +1135,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         # necessary to activate integrity checks for this test (dataframe checks)
         exec_eng.set_debug_mode('data_check_integrity')
 
-        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
                                'full_name': ['Eval.Sellar_Problem.local_dv', 'x', 'y_1',
@@ -1245,9 +1254,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {
-            f'{same_usecase_name}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         # -- set up disciplines in Scenario
         disc_dict = {}
@@ -1323,8 +1332,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{self.ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -1407,8 +1417,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             doe_eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ doe',
@@ -1488,8 +1499,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {f'{ns}.Eval.builder_mode': 'mono_instance'}
+        builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
+
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,

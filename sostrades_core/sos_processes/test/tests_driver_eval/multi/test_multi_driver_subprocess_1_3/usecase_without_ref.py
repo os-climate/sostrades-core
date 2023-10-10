@@ -47,7 +47,6 @@ class Study(StudyManager):
                                                       'scenario_W',
                                                       'scenario_2']})
         disc_dict[f'{self.study_name}.Eval.scenario_df'] = scenario_df
-        disc_dict[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
 
         # configure the scenarios
         scenario_list = ['scenario_1', 'scenario_2']

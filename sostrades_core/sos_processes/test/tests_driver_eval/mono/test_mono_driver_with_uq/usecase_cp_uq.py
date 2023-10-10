@@ -53,7 +53,6 @@ class Study(StudyManager):
 
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
 
         a_list = np.linspace(0, 10, 10).tolist()

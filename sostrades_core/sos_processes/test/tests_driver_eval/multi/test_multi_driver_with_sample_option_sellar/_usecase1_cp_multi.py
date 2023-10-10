@@ -50,7 +50,6 @@ class Study(StudyManager):
         
         disc_dict = {}
         # DoE + Eval inputs
-        disc_dict[f'{ns}.Eval.builder_mode'] = 'multi_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{ns}.eval_inputs_cp'] = input_selection_cp_x_z
 

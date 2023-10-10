@@ -158,7 +158,6 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -231,7 +230,6 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp_sellar()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -278,7 +276,6 @@ class TestMultiScenario(unittest.TestCase):
 
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Eval.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -533,7 +530,6 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -698,7 +694,6 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 

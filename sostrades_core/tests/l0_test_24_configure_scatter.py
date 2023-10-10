@@ -80,7 +80,6 @@ class TestScatterDiscipline(unittest.TestCase):
     def test_01_raw_initialisation(self):
 
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.builder_mode': 'multi_instance',
             f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True],
                                                                      'scenario_name': ['A1']})}
 
@@ -102,7 +101,6 @@ class TestScatterDiscipline(unittest.TestCase):
     def test_02_multiinstance_modification_remove_one_aircraft_1(self):
 
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.builder_mode': 'multi_instance',
             f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True] * len(self.list_aircraft_1),
                                                                      'scenario_name': self.list_aircraft_1})}
 
@@ -146,7 +144,6 @@ class TestScatterDiscipline(unittest.TestCase):
     def test_03_multiinstance_modification_remove_one_aircraft_2(self):
 
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.builder_mode': 'multi_instance',
             f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True] * len(self.list_aircraft_1),
                                                                      'scenario_name': self.list_aircraft_1})}
 
@@ -189,8 +186,7 @@ class TestScatterDiscipline(unittest.TestCase):
 
     def test_04_multiinstance_modification_remove_all_aircraft(self):
 
-        private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.builder_mode': 'multi_instance'}
+        private_values_multiproduct = {}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
 
@@ -198,7 +194,6 @@ class TestScatterDiscipline(unittest.TestCase):
         raw_dm_values.sort()
 
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.builder_mode': 'multi_instance',
             f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True] * len(self.list_aircraft_1),
                                                                      'scenario_name': self.list_aircraft_1})}
 
