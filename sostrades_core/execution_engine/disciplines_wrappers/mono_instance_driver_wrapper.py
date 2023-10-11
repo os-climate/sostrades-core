@@ -24,7 +24,8 @@ from tqdm import tqdm
 import time
 
 from sostrades_core.tools.base_functions.compute_len import compute_len
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, \
+    convert_array_into_new_type
 
 from numpy import array, ndarray, delete, NaN
 
@@ -34,7 +35,6 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
-
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -87,7 +87,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             def sample_evaluator(sample_to_evaluate):
                 """Evaluate a sample
                 """
-                return self.evaluation(sample_to_evaluate, convert_to_array=False, completed_eval_in_list=completed_eval_in_list)
+                return self.evaluation(sample_to_evaluate, convert_to_array=False,
+                                       completed_eval_in_list=completed_eval_in_list)
 
             parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
                                          wait_time_between_fork=wait_time_between_samples)
@@ -228,18 +229,10 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                              for var_to_eval in self.attributes['eval_in_list']])
 
         reference_scenario_id = len(self.samples)
-        eval_in_with_multiplied_var = None
-        # if self.INPUT_MULTIPLIER_TYPE != []:
-        #     origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
-        #     multipliers_samples = copy.deepcopy(self.samples)
-        #     self.add_multiplied_var_to_samples(
-        #         multipliers_samples, origin_vars_to_update_dict)
-        #     eval_in_with_multiplied_var = self.attributes['eval_in_list'] + \
-        #         list(origin_vars_to_update_dict.keys())
 
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(
-            self.samples, convert_to_array=False, completed_eval_in_list=eval_in_with_multiplied_var)
+            self.samples, convert_to_array=False)
 
         # we loop through the samples evaluated to build dictionaries needed
         # for output generation
