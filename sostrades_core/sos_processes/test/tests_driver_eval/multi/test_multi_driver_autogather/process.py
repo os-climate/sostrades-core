@@ -33,6 +33,6 @@ class ProcessBuilder(BaseProcessBuilder):
                                                             mod_id='test_disc1_disc2_coupling')
 
         multi_scenarios = self.ee.factory.create_multi_instance_driver(
-            'multi_scenarios', cls_list, display_options={'autogather': True})
+            'multi_scenarios', cls_list)
 
         return multi_scenarios

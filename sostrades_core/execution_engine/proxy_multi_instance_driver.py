@@ -31,10 +31,118 @@ class ProxyMultiInstanceDriverException(Exception):
 
 
 class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
+    '''
+    Class for driver on multi instance mode
+    '''
+
+    DISPLAY_OPTIONS_POSSIBILITIES = ['hide_under_coupling', 'hide_coupling_in_driver',
+                                     'group_scenarios_under_disciplines', 'autogather']
+
+    #            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
+    #             'autogather' : will create an automatic gather discipline which will gather
+    #                         all cls_builder outputs at driver node
+    #             'hide_under_coupling' : Hide all disciplines created under the coupling at scenario name node for display purpose
+    #             'hide_coupling_in_driver': Hide the coupling (scenario_name node) under the driver for display purpose
+    #             'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose
+    #                                                   Scenarios will be under discipline for the display treeview
+
+    DISPLAY_OPTIONS_DEFAULT = {disp_option: False for disp_option in DISPLAY_OPTIONS_POSSIBILITIES}
+    DISPLAY_OPTIONS = 'display_options'
+
+    DESC_IN = {
+        # MUST BE REPLACED BY SAMPLES_DF ?
+        ProxyDriverEvaluator.SCENARIO_DF: {
+            ProxyDriverEvaluator.TYPE: 'dataframe',
+            ProxyDriverEvaluator.DEFAULT: pd.DataFrame(
+                columns=[ProxyDriverEvaluator.SELECTED_SCENARIO, ProxyDriverEvaluator.SCENARIO_NAME]),
+            ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {ProxyDriverEvaluator.SELECTED_SCENARIO: ('bool', None, True),
+                                                        ProxyDriverEvaluator.SCENARIO_NAME: ('string', None, True)},
+            ProxyDriverEvaluator.DYNAMIC_DATAFRAME_COLUMNS: True,
+            ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
+            ProxyDriverEvaluator.EDITABLE: True,
+            ProxyDriverEvaluator.STRUCTURING: True
+        },  # TODO: manage variable columns for (non-very-simple) multiscenario cases
+        # MUST BE REPLACED OR USED FOR GENERIC GATHERING FEATURE
+        ProxyDriverEvaluator.EVAL_OUTPUTS: {
+            ProxyDriverEvaluator.TYPE: 'dataframe',
+            ProxyDriverEvaluator.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
+            ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
+                                                        'full_name': ('string', None, False),
+                                                        'output_name': ('multiple', None, True)
+                                                        },
+            ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
+            ProxyDriverEvaluator.STRUCTURING: True,
+            # TODO: run-time coupling is not possible but might want variable in NS_EVAL for config-time coupling ?
+            # ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
+            # ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_EVAL
+        },
+        ProxyDriverEvaluator.INSTANCE_REFERENCE: {
+            ProxyDriverEvaluator.TYPE: 'bool',
+            ProxyDriverEvaluator.DEFAULT: False,
+            ProxyDriverEvaluator.POSSIBLE_VALUES: [True, False],
+            ProxyDriverEvaluator.STRUCTURING: True
+        },
+        ProxyDriverEvaluator.GENERATED_SAMPLES: {ProxyDriverEvaluator.TYPE: 'dataframe',
+                                                 ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
+                                                     ProxyDriverEvaluator.SELECTED_SCENARIO: ('string', None, False),
+                                                     ProxyDriverEvaluator.SCENARIO_NAME: ('string', None, False)},
+                                                 ProxyDriverEvaluator.DYNAMIC_DATAFRAME_COLUMNS: True,
+                                                 ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: True,
+                                                 ProxyDriverEvaluator.STRUCTURING: True,
+                                                 ProxyDriverEvaluator.UNIT: None,
+                                                 ProxyDriverEvaluator.DEFAULT: pd.DataFrame(),
+                                                 ProxyDriverEvaluator.USER_LEVEL: 3
+                                                 },
+        DISPLAY_OPTIONS: {ProxyDriverEvaluator.TYPE: 'dict',
+                          ProxyDriverEvaluator.STRUCTURING: True,
+                          ProxyDriverEvaluator.DEFAULT: DISPLAY_OPTIONS_DEFAULT,
+                          ProxyDriverEvaluator.SUBTYPE: {'dict': 'bool'}
+                          }
+    }
+
+    DESC_IN.update(ProxyDriverEvaluator.DESC_IN)
+
+    def __init__(self, sos_name, ee, cls_builder,
+                 driver_wrapper_cls=None,
+                 associated_namespaces=None,
+                 map_name=None,
+                 process_display_options=None
+                 ):
+        """
+        Constructor
+
+        Arguments:
+            sos_name (string): name of the discipline/node
+            ee (ExecutionEngine): execution engine of the current process
+            cls_builder (List[SoSBuilder]): list of the sub proxy builders
+            driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
+            map_name (string): name of the map associated to the scatter builder in case of multi-instance build
+            associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+            process_display_options  [dict] still keep the possibility to modify display options through the process for archibuilder
+        """
+        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces, map_name)
+
+        self.display_options = None
+        if process_display_options is not None:
+            self.display_options = process_display_options
 
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
-        self.build_multi_instance_inst_desc_io(disc_in)
+        self.add_reference_mode(disc_in)
+        self.add_gather_outputs(disc_in)
+
+        self.set_generated_samples_values(disc_in)
+
+    def set_generated_samples_values(self, disc_in):
+        '''
+
+        Args:
+            disc_in: input dictionary with values
+
+        if generated samples modify the selection of scenario in the scenario_df
+        OPEN QUESTION : Do we need that ?
+
+        '''
         if self.GENERATED_SAMPLES in disc_in:
             generated_samples = self.get_sosdisc_inputs(
                 self.GENERATED_SAMPLES)
@@ -89,13 +197,11 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.configure_subprocesses_with_driver_input()
             self.set_eval_possible_values(io_type_in=False, strip_first_ns=True)
 
-    def set_wrapper_attributes(self, wrapper):
-        super().set_wrapper_attributes(wrapper)
-        # for the gatherlike capabilities
-        eval_attributes = {'gather_names': self.gather_names,
-                           'gather_out_keys': self.gather_out_keys,
-                           }
-        wrapper.attributes.update(eval_attributes)
+    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
+        """
+        No need to create a MDODisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
+        """
+        pass
 
     def prepare_build(self):
         """
@@ -105,6 +211,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.build_tool()
             # Tool is building disciplines for the driver on behalf of the driver name
             # no further disciplines needed to be builded by the evaluator
+            # then we return an empty list
         return []
 
     def is_configured(self):
@@ -114,48 +221,18 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         if self.INSTANCE_REFERENCE in disc_in and self.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
             config_status = config_status and (
                 not self.check_if_there_are_reference_variables_changes()) and (
-                self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
-                )
+                                    self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
+                            )
         return config_status
 
     def update_reference(self):
         return self.INSTANCE_REFERENCE in self.get_data_in()
 
-    def build_multi_instance_inst_desc_io(self, disc_in):
+    def add_reference_mode(self, disc_in):
         '''
-        Complete inst_desc_in with scenario_df
+        Add reference mode as dynamic input if we are using instance reference option
         '''
-        dynamic_inputs = {
-            self.SCENARIO_DF: {
-                self.TYPE: 'dataframe',
-                self.DEFAULT: pd.DataFrame(columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME]),
-                self.DATAFRAME_DESCRIPTOR: {self.SELECTED_SCENARIO: ('bool', None, True),
-                                            self.SCENARIO_NAME: ('string', None, True)},
-                self.DYNAMIC_DATAFRAME_COLUMNS: True,
-                self.DATAFRAME_EDITION_LOCKED: False,
-                self.EDITABLE: True,
-                self.STRUCTURING: True
-            },  # TODO: manage variable columns for (non-very-simple) multiscenario cases
-            self.EVAL_OUTPUTS: {
-                self.TYPE: 'dataframe',
-                self.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
-                self.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
-                                            'full_name': ('string', None, False),
-                                            'output_name': ('multiple', None, True)
-                                            },
-                self.DATAFRAME_EDITION_LOCKED: False,
-                self.STRUCTURING: True,
-                # TODO: run-time coupling is not possible but might want variable in NS_EVAL for config-time coupling ?
-                # self.VISIBILITY: self.SHARED_VISIBILITY,
-                # self.NAMESPACE: self.NS_EVAL
-            },
-            self.INSTANCE_REFERENCE: {
-                self.TYPE: 'bool',
-                self.DEFAULT: False,
-                self.POSSIBLE_VALUES: [True, False],
-                self.STRUCTURING: True
-            }
-        }
+        dynamic_inputs = {}
 
         if self.INSTANCE_REFERENCE in disc_in:
             instance_reference = self.get_sosdisc_inputs(
@@ -167,23 +244,14 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                                             self.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
                                             self.STRUCTURING: True}})
 
-        dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
-                                                        self.DATAFRAME_DESCRIPTOR: {
-                                                            self.SELECTED_SCENARIO: ('string', None, False),
-                                                            self.SCENARIO_NAME: ('string', None, False)},
-                                                        self.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                                        self.DATAFRAME_EDITION_LOCKED: True,
-                                                        self.STRUCTURING: True,
-                                                        self.UNIT: None,
-                                                        # self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-                                                        # self.NAMESPACE: 'ns_sampling',
-                                                        self.DEFAULT: pd.DataFrame(),
-                                                        # self.OPTIONAL:
-                                                        # True,
-                                                        self.USER_LEVEL: 3
-                                                        }})
         self.add_inputs(dynamic_inputs)
 
+    def add_gather_outputs(self, disc_in):
+        '''
+
+        Add gather output variables to dynamic desc_out to deal with gather option (autogather and eval_outputs)
+
+        '''
         dynamic_outputs = {}
         if self.EVAL_OUTPUTS in disc_in:
             _vars_to_gather = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
@@ -215,22 +283,26 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         '''
         if self.builder_tool is None:
             builder_tool_cls = self.ee.factory.create_scatter_tool_builder(
-                'scatter_tool', map_name=self.map_name,
-                display_options=self.display_options)
+                'scatter_tool', map_name=self.map_name)
             self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
-        self.scatter_list_valid, self.scatter_list_integrity_msg = self.check_scatter_list_validity()
-        if self.scatter_list_valid:
+        self.scenario_list_valid, self.scenario_list_integrity_msg = self.check_scenario_list_validity()
+        if self.scenario_list_valid:
             self.builder_tool.prepare_tool()
         else:
-            self.logger.error(self.scatter_list_integrity_msg)
+            self.logger.error(self.scenario_list_integrity_msg)
 
     def build_tool(self):
-        if self.builder_tool is not None and self.scatter_list_valid:
+        '''
+
+        Build the tool if the list of scenario is valid
+
+        '''
+        if self.builder_tool is not None and self.scenario_list_valid:
             self.builder_tool.build()
 
-    def check_scatter_list_validity(self):
+    def check_scenario_list_validity(self):
         # checking for duplicates
         msg = ''
         if self.SCENARIO_DF in self.get_data_in():
@@ -257,7 +329,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         Arguments:
             scenario_names (list[string]): expected names of the subproxies.
         """
-        if self.flatten_subprocess and self.builder_tool:
+        if self.builder_tool:
             proxies_names = self.builder_tool.get_all_built_disciplines_names()
             # return self.builder_tool.has_built and proxies_names
             # TODO: upon overload of is_configured method can refactor quickfix below
@@ -290,9 +362,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         trade_vars = []
         # check that all the input scenarios have indeed been built
         # (configuration sequence allows the opposite)
-        if self.subprocesses_built(scenario_names):
-            trade_vars = [col for col in scenario_df.columns if col not in
-                          [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
+
+        trade_vars = [col for col in scenario_df.columns if col not in
+                      [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
         return scenario_df, instance_reference, trade_vars, scenario_names
 
     def _clear_gather_names(self):
@@ -334,70 +406,14 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         """
 
         scenario_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
-        # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO SUBDISCIPLINES
+
         if self.subprocesses_built(scenario_names):
-            # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
-            # PROPAGATE NON-TRADE VARIABLES VALUES FROM REFERENCE TO
-            # SUBDISCIPLINES
-            # if self.sos_name == 'inner_ms':
-            #     print('dfqsfdqs')
             if instance_reference:
+                # propagate non trade variables values from reference scenario to other scenarios
                 scenario_names = scenario_names[:-1]
-
-                # ref_discipline_full_name =
-                # ref_discipline.get_disc_full_name() # do provide the sting
-                # path of data in flatten
-                driver_evaluator_ns = self.get_disc_full_name()
-                reference_scenario_ns = self.ee.ns_manager.compose_ns(
-                    [driver_evaluator_ns, self.REFERENCE_SCENARIO_NAME])
-                # ref_discipline_full_name may need to be renamed has it is not
-                # true in flatten mode
-                ref_discipline_full_name = reference_scenario_ns
-
-                # Manage usecase import
-                self.manage_import_inputs_from_sub_process(
-                    ref_discipline_full_name)
-                ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
-                    trade_vars)
-
-                scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(scenario_names,
-                                                                                                      ref_dict)
-
-                # Update of original editability state in case modification
-                # scenario df
-                if (not set(scenario_names) == set(self.old_scenario_names)):
-                    new_scenarios = set(scenario_names) - set(self.old_scenario_names)
-                    self.there_are_new_scenarios = True
-                    for new_scenario in new_scenarios:
-                        new_scenario_non_trade_vars_dict = {key: value
-                                                            for key, value in scenarios_non_trade_vars_dict.items()
-                                                            if new_scenario in key}
-
-                        new_scenario_editable_dict = self.save_original_editable_attr_from_non_trade_variables(
-                            new_scenario_non_trade_vars_dict)
-                        self.original_editable_dict_non_ref.update(
-                            new_scenario_editable_dict)
-                self.old_scenario_names = scenario_names
-
-                # Save the original editability state in case reference is
-                # un-instantiated.
-                self.save_original_editability_state(
-                    ref_dict, scenarios_non_trade_vars_dict)
-                # Modification of read-only or editable depending on
-                # LINKED_MODE or COPY_MODE
-                self.modify_editable_attribute_according_to_reference_mode(
-                    scenarios_non_trade_vars_dict)
-                # Propagation to other scenarios if necessary
-                self.propagate_reference_non_trade_variables(
-                    ref_changes_dict, ref_dict, scenario_names)
+                self.manage_reference_scenario_features(trade_vars, scenario_names)
             else:
-                if self.original_editable_dict_non_ref:
-                    for sc in scenario_names:
-                        for key in self.original_editable_dict_non_ref.keys():
-                            if sc in key:
-                                self.ee.dm.set_data(
-                                    key, 'editable', self.original_editable_dict_non_ref[key])
-
+                self.turn_other_variables_to_editable(scenario_names)
             # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
             # check that there are indeed variable changes input, with respect
             # to reference scenario
@@ -419,6 +435,85 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                     # flags for structuring ? TO TEST
                     self.ee.dm.set_values_from_dict(scenarios_data_dict)
                     # self.ee.load_study_from_input_dict(scenarios_data_dict)
+
+    '''
+    All methods below are here for reference scenario and need to be cleaned 
+    
+    '''
+
+    def manage_reference_scenario_features(self, trade_vars, scenario_names):
+        '''
+
+        Args:
+            trade_vars: trade variables
+            scenario_names: scenario names
+
+        Header TO DO when dealing with reference scenario
+
+        '''
+        # ref_discipline_full_name =
+        # ref_discipline.get_disc_full_name() # do provide the sting
+        # path of data in flatten
+        driver_evaluator_ns = self.get_disc_full_name()
+        reference_scenario_ns = self.ee.ns_manager.compose_ns(
+            [driver_evaluator_ns, self.REFERENCE_SCENARIO_NAME])
+        # ref_discipline_full_name may need to be renamed has it is not
+        # true in flatten mode
+        ref_discipline_full_name = reference_scenario_ns
+
+        # Manage usecase import
+        self.manage_import_inputs_from_sub_process(
+            ref_discipline_full_name)
+        ref_changes_dict, ref_dict = self.get_reference_non_trade_variables_changes(
+            trade_vars)
+
+        scenarios_non_trade_vars_dict = self.transform_dict_from_reference_to_other_scenarios(scenario_names,
+                                                                                              ref_dict)
+
+        # Update of original editability state in case modification
+        # scenario df
+        if (not set(scenario_names) == set(self.old_scenario_names)):
+            new_scenarios = set(scenario_names) - set(self.old_scenario_names)
+            self.there_are_new_scenarios = True
+            for new_scenario in new_scenarios:
+                new_scenario_non_trade_vars_dict = {key: value
+                                                    for key, value in scenarios_non_trade_vars_dict.items()
+                                                    if new_scenario in key}
+
+                new_scenario_editable_dict = self.save_original_editable_attr_from_non_trade_variables(
+                    new_scenario_non_trade_vars_dict)
+                self.original_editable_dict_non_ref.update(
+                    new_scenario_editable_dict)
+        self.old_scenario_names = scenario_names
+
+        # Save the original editability state in case reference is
+        # un-instantiated.
+        self.save_original_editability_state(
+            ref_dict, scenarios_non_trade_vars_dict)
+        # Modification of read-only or editable depending on
+        # LINKED_MODE or COPY_MODE
+        self.modify_editable_attribute_according_to_reference_mode(
+            scenarios_non_trade_vars_dict)
+        # Propagation to other scenarios if necessary
+        self.propagate_reference_non_trade_variables(
+            ref_changes_dict, ref_dict, scenario_names)
+
+    def turn_other_variables_to_editable(self, scenario_names):
+        '''
+
+        Args:
+            scenario_names (list) : List of scenario names
+
+        Turn Editable all the variables that needs to be editable in the original_editable_dict
+        TO DO : better explain why
+
+        '''
+        if self.original_editable_dict_non_ref:
+            for sc in scenario_names:
+                for key in self.original_editable_dict_non_ref.keys():
+                    if sc in key:
+                        self.ee.dm.set_data(
+                            key, 'editable', self.original_editable_dict_non_ref[key])
 
     # def set_reference_trade_variables_in_scenario_df(self, sce_df):
     #
