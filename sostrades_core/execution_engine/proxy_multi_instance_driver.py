@@ -31,6 +31,24 @@ class ProxyMultiInstanceDriverException(Exception):
 
 
 class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
+    '''
+    Class for driver on multi instance mode
+    '''
+
+    DISPLAY_OPTIONS_POSSIBILITIES = ['hide_under_coupling', 'hide_coupling_in_driver',
+                                     'group_scenarios_under_disciplines', 'autogather']
+
+    #            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
+    #             'autogather' : will create an automatic gather discipline which will gather
+    #                         all cls_builder outputs at driver node
+    #             'hide_under_coupling' : Hide all disciplines created under the coupling at scenario name node for display purpose
+    #             'hide_coupling_in_driver': Hide the coupling (scenario_name node) under the driver for display purpose
+    #             'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose
+    #                                                   Scenarios will be under discipline for the display treeview
+
+    DISPLAY_OPTIONS_DEFAULT = {disp_option: False for disp_option in DISPLAY_OPTIONS_POSSIBILITIES}
+    DISPLAY_OPTIONS = 'display_options'
+
     DESC_IN = {
         # MUST BE REPLACED BY SAMPLES_DF ?
         ProxyDriverEvaluator.SCENARIO_DF: {
@@ -74,10 +92,39 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                                                  ProxyDriverEvaluator.UNIT: None,
                                                  ProxyDriverEvaluator.DEFAULT: pd.DataFrame(),
                                                  ProxyDriverEvaluator.USER_LEVEL: 3
-                                                 }
+                                                 },
+        DISPLAY_OPTIONS: {ProxyDriverEvaluator.TYPE: 'dict',
+                          ProxyDriverEvaluator.STRUCTURING: True,
+                          ProxyDriverEvaluator.DEFAULT: DISPLAY_OPTIONS_DEFAULT,
+                          ProxyDriverEvaluator.SUBTYPE: {'dict': 'bool'}
+                          }
     }
 
     DESC_IN.update(ProxyDriverEvaluator.DESC_IN)
+
+    def __init__(self, sos_name, ee, cls_builder,
+                 driver_wrapper_cls=None,
+                 associated_namespaces=None,
+                 map_name=None,
+                 process_display_options=None
+                 ):
+        """
+        Constructor
+
+        Arguments:
+            sos_name (string): name of the discipline/node
+            ee (ExecutionEngine): execution engine of the current process
+            cls_builder (List[SoSBuilder]): list of the sub proxy builders
+            driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
+            map_name (string): name of the map associated to the scatter builder in case of multi-instance build
+            associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+            process_display_options  [dict] still keep the possibility to modify display options through the process for archibuilder
+        """
+        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces, map_name)
+
+        self.display_options = None
+        if process_display_options is not None:
+            self.display_options = process_display_options
 
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
@@ -236,8 +283,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         '''
         if self.builder_tool is None:
             builder_tool_cls = self.ee.factory.create_scatter_tool_builder(
-                'scatter_tool', map_name=self.map_name,
-                display_options=self.display_options)
+                'scatter_tool', map_name=self.map_name)
             self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)

@@ -31,6 +31,8 @@ class Study(StudyManager):
                                                                                                             True],
                                                                                       'scenario_name': ['scenario_1',
                                                                                                         'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.display_options'] = {'autogather': True,
+                                                                             'group_scenarios_under_disciplines': True}
         setup_data_list.append(dict_values)
         constant1 = 10
         constant2 = 20

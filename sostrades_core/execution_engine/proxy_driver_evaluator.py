@@ -92,9 +92,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    # MONO_INSTANCE = DriverEvaluatorWrapper.MONO_INSTANCE
-    # MULTI_INSTANCE = DriverEvaluatorWrapper.MULTI_INSTANCE
-    # REGULAR_BUILD = DriverEvaluatorWrapper.REGULAR_BUILD
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
     GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
 
@@ -147,7 +144,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
                  map_name=None,
-                 display_options=None,
                  ):
         """
         Constructor
@@ -174,8 +170,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.map_name = map_name
         self.scenarios = []
-
-        self.display_options = display_options
 
         self.eval_process_builder = None
         self.eval_in_list = None
@@ -278,12 +272,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         To be overloaded by drivers with specific configuration actions
         """
         pass
-
-    # def setup_sos_disciplines(self):
-    #     """
-    #     Dynamic inputs and outputs of the DriverEvaluator
-    #     """
-    #     super().setup_sos_disciplines()  #TODO: this actually does nothing unless there exists a custom driver wrapper
 
     def prepare_build(self):
         """

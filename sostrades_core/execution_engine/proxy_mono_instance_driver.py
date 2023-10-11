@@ -19,7 +19,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-import copy
+
 import pandas as pd
 from numpy import NaN
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp

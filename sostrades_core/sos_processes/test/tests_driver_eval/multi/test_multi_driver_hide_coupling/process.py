@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- Generate test 2 process
+# -- Generate test 2 process
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
 class ProcessBuilder(BaseProcessBuilder):
-
     # ontology information
     _ontology_data = {
         'label': 'Core Test Display Treeview Process',
@@ -29,7 +28,6 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-
         # instantiate factory by getting builder from process
         cls_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                             mod_id='test_disc1_disc2_coupling')
@@ -47,7 +45,7 @@ class ProcessBuilder(BaseProcessBuilder):
             disc2_builder, f'{self.ee.study_name}.Disc2')
 
         multi_scenarios = self.ee.factory.create_multi_instance_driver(
-            'multi_scenarios', cls_list, display_options={'hide_coupling_in_driver': True})
+            'multi_scenarios', cls_list)
         self.ee.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.ee.study_name}')
         return multi_scenarios
