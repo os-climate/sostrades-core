@@ -43,8 +43,15 @@ class ScatterTool(SosTool):
     DISPLAY_OPTIONS_POSSIBILITIES = ['hide_under_coupling', 'hide_coupling_in_driver',
                                      'group_scenarios_under_disciplines']
 
-    def __init__(self, sos_name, ee, cls_builder, map_name=None,
-                 display_options=False):
+    #            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
+    #             'autogather' : will create an automatic gather discipline which will gather
+    #                         all cls_builder outputs at driver node
+    #             'hide_under_coupling' : Hide all disciplines created under the coupling at scenario name node for display purpose
+    #             'hide_coupling_in_driver': Hide the coupling (scenario_name node) under the driver for display purpose
+    #             'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose
+    #                                                   Scenarios will be under discipline for the display treeview
+
+    def __init__(self, sos_name, ee, cls_builder, map_name=None):
         '''
         Constructor
         '''
@@ -52,8 +59,6 @@ class ScatterTool(SosTool):
         SosTool.__init__(self, sos_name, ee, cls_builder)
 
         self.map_name = map_name
-        self.display_options = {disp_option: False for disp_option in self.DISPLAY_OPTIONS_POSSIBILITIES}
-        self.set_display_options(display_options)
         self.driver_display_value = None
         self.__scattered_disciplines = {}
         self.__gather_disciplines = {}
@@ -120,6 +125,15 @@ class ScatterTool(SosTool):
             self.set_scatter_list(
                 samples_df[samples_df[self.driver.SELECTED_SCENARIO] == True][
                     self.driver.SCENARIO_NAME].values.tolist())
+
+        display_options = self.driver.get_sosdisc_inputs('display_options')
+        # if display options are set in the process, it wins we cannot modify display options again
+        if self.driver.display_options is not None:
+            self.set_display_options(self.driver.display_options)
+        # else we check if the input has changed
+        else:
+            if display_options is not None:
+                self.set_display_options(display_options)
 
         display_options = self.driver.get_sosdisc_inputs('display_options')
         # if display options are set in the process, it wins we cannot modify display options again

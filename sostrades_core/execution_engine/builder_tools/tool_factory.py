@@ -124,7 +124,7 @@ class ToolFactory:
 
     def create_tool_builder(
             self, tool_name, tool_type, sub_builders=None,
-            map_name=None, display_options=None
+            map_name=None
     ):
         """
         create a  tool builder
@@ -134,7 +134,6 @@ class ToolFactory:
             tool_name, tool_type, [self.TOOL_FOLDER])
         tool_builder.set_builder_info('map_name', map_name)
         tool_builder.set_builder_info('cls_builder', sub_builders)
-        tool_builder.set_builder_info('display_options', display_options)
         return tool_builder
 
     def get_disc_class_from_module(self, module_path):
@@ -181,7 +180,7 @@ class ToolFactory:
                     value
                     for value, cls in inspect.getmembers(sub_module)
                     if inspect.isclass(getattr(sub_module, value))
-                    and cls.__module__ == sub_module.__name__
+                       and cls.__module__ == sub_module.__name__
                 ]
                 # CHeck if the following class is in the list
                 if class_name in class_list:

@@ -317,29 +317,38 @@ class SosFactory:
         return builder
 
     # TODO: these implementations are WIP to test class split (adding of mod)
-    def create_mono_instance_driver(self, sos_name, cls_builder, with_sample_generator=False, display_options=None):
+    def create_mono_instance_driver(self, sos_name, cls_builder, with_sample_generator=False):
+        '''
+
+        Args:
+            sos_name: Name of the driver
+            cls_builder: (builder list or 1 builder) builder that will be use for driver subprocess
+            with_sample_generator:
+
+        Returns:
+
+        '''
         module_struct_list = f'{self.EE_PATH}.proxy_mono_instance_driver.ProxyMonoInstanceDriver'
         driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.mono_instance_driver_wrapper.MonoInstanceDriverWrapper'
         return self.create_driver(sos_name=sos_name,
                                   cls_builder=cls_builder,
                                   map_name=None,
                                   with_sample_generator=with_sample_generator,
-                                  display_options=display_options,
                                   module_struct_list=module_struct_list,
                                   driver_wrapper_mod=driver_wrapper_mod)
 
-    def create_multi_instance_driver(self, sos_name, cls_builder, with_sample_generator=False, display_options=None,
-                                     map_name=None):
+    def create_multi_instance_driver(self, sos_name, cls_builder, with_sample_generator=False, map_name=None):
         module_struct_list = f'{self.EE_PATH}.proxy_multi_instance_driver.ProxyMultiInstanceDriver'
-        return self.create_driver(sos_name=sos_name,
-                                  cls_builder=cls_builder,
-                                  map_name=map_name,
-                                  with_sample_generator=with_sample_generator,
-                                  display_options=display_options,
-                                  module_struct_list=module_struct_list)
+        builder_list = self.create_driver(sos_name=sos_name,
+                                          cls_builder=cls_builder,
+                                          map_name=map_name,
+                                          with_sample_generator=with_sample_generator,
+                                          module_struct_list=module_struct_list)
 
-    def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False,
-                      display_options=None, module_struct_list=None, driver_wrapper_mod=None):
+        return builder_list
+
+    def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, module_struct_list=None,
+                      driver_wrapper_mod=None):
         '''
 
         Args:
@@ -347,13 +356,7 @@ class SosFactory:
             cls_builder: sub process builder list to evaluate
             map_name (optional): Map associated to scatter_tool (in multiinstance mode)
             with_sample_generator (optional): Add a sample generator and associate it to the driver evaluator
-            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
-                'autogather' : will create an automatic gather discipline which will gather
-                            all cls_builder outputs at driver node
-                'hide_under_coupling' : Hide all disciplines created under the coupling at scenario name node for display purpose
-                'hide_coupling_in_driver': Hide the coupling (scenario_name node) under the driver for display purpose
-                'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose
-                                                      Scenarios will be under discipline for the display treeview
+
 
         Returns: A driver evaluator with all the parameters
 
@@ -377,7 +380,6 @@ class SosFactory:
             builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 
         builder.set_builder_info('map_name', map_name)
-        builder.set_builder_info('display_options', display_options)
 
         builder_list = [builder]
         if with_sample_generator:
@@ -426,12 +428,11 @@ class SosFactory:
 
         return builder
 
-    def create_scatter_tool_builder(self, tool_name, map_name, display_options=None):
+    def create_scatter_tool_builder(self, tool_name, map_name):
         """
         create a scatter tool builder with the tool factory
         """
-        scatter_tool = self.tool_factory.create_tool_builder(tool_name, 'ScatterTool', map_name=map_name,
-                                                             display_options=display_options)
+        scatter_tool = self.tool_factory.create_tool_builder(tool_name, 'ScatterTool', map_name=map_name)
 
         return scatter_tool
 
