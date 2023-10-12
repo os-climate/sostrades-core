@@ -32,6 +32,7 @@ class Study(StudyManager):
                                                                                                           True],
                                                                                     'scenario_name': ['actor_1',
                                                                                                       'actor_2']})
+        dict_values[f'{self.study_name}.{driver_name}.display_options'] = {'group_scenarios_under_disciplines': True}
         setup_data_list.append(dict_values)
         constant1 = 10
         constant2 = 20

@@ -832,8 +832,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, builder)
         else:
             builder.set_disc_name(builder.sos_name.split('.')[-1])
-            builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, [builder], display_options={
-                'hide_under_coupling': True})
+            builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, [builder])
+            builder_scatter[0].set_builder_info('process_display_options', {'hide_under_coupling': True})
+            # , display_options={'hide_under_coupling': True}
         if namespace == self.sos_name:
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], self.get_disc_full_name())

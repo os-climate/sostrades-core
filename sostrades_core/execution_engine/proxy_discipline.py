@@ -225,7 +225,7 @@ class ProxyDiscipline:
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  #POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                              NUMERICAL: True, STRUCTURING: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                      POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
@@ -234,10 +234,8 @@ class ProxyDiscipline:
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                     NUMERICAL: True, STRUCTURING: True}, 
+                     NUMERICAL: True, STRUCTURING: True},
     }
-
-
 
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
@@ -268,7 +266,8 @@ class ProxyDiscipline:
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
-        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades', logger=self.logger)
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades',
+                                        logger=self.logger)
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.model = None
@@ -276,7 +275,7 @@ class ProxyDiscipline:
         self.father_executor: Union["ProxyDiscipline", None] = None
         self.cls = cls_builder
 
-    def set_father_executor(self, father_executor):#: "ProxyDiscipline"):
+    def set_father_executor(self, father_executor):  #: "ProxyDiscipline"):
         """
         set father executor
 
@@ -291,7 +290,8 @@ class ProxyDiscipline:
         """
         pass
 
-    def _reload(self, sos_name, ee, associated_namespaces = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
+    def _reload(self, sos_name, ee,
+                associated_namespaces=None):  #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
 
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
@@ -357,12 +357,13 @@ class ProxyDiscipline:
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
 
-    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger:logging.Logger):
+    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger: logging.Logger):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=name, logger=logger.getChild("MDODisciplineWrapp"), wrapper=wrapper, wrapping_mode=wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=name, logger=logger.getChild("MDODisciplineWrapp"),
+                                                       wrapper=wrapper, wrapping_mode=wrapping_mode)
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
@@ -420,7 +421,7 @@ class ProxyDiscipline:
         '''
         GEMSEO objects instanciation
         '''
-        if self.mdo_discipline_wrapp.mdo_discipline is None:
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is None:
             # init gemseo discipline if it has not been created yet
             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
@@ -789,7 +790,6 @@ class ProxyDiscipline:
             the dict filtered with variables that are not yet in data_io
         '''
 
-
         new_var_dict = {key: value for key, value in var_dict.items() if
                         not key in self.get_data_io_dict_keys(io_type) and not key in self.get_data_io_dict_tuple_keys(
                             io_type)}
@@ -993,7 +993,7 @@ class ProxyDiscipline:
         # check if all config_dependency_disciplines are configured. If not no
         # need to try configuring the discipline because all is not ready for
         # it
-        def_bool = True
+
         if self.check_configured_dependency_disciplines():
             self.set_numerical_parameters()
 
@@ -1008,8 +1008,6 @@ class ProxyDiscipline:
             self._update_status_dm(self.STATUS_CONFIGURE)
 
             self.set_configure_status(True)
-
-
 
     def __check_all_data_integrity(self):
         '''
@@ -2052,7 +2050,7 @@ class ProxyDiscipline:
         self.status = self.get_status_after_configure()
 
     def get_status_after_configure(self):
-        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
             return self.mdo_discipline_wrapp.mdo_discipline.status
         else:
             return self._status
