@@ -49,19 +49,12 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     DISPLAY_OPTIONS_DEFAULT = {disp_option: False for disp_option in DISPLAY_OPTIONS_POSSIBILITIES}
     DISPLAY_OPTIONS = 'display_options'
 
+    # with SampleGenerator, whether to activate and build all the sampled
+    MAX_SAMPLE_AUTO_BUILD_SCENARIOS = 1024
+
     DESC_IN = {
-        # MUST BE REPLACED BY SAMPLES_DF ?
-        ProxyDriverEvaluator.SCENARIO_DF: {
-            ProxyDriverEvaluator.TYPE: 'dataframe',
-            ProxyDriverEvaluator.DEFAULT: pd.DataFrame(
-                columns=[ProxyDriverEvaluator.SELECTED_SCENARIO, ProxyDriverEvaluator.SCENARIO_NAME]),
-            ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {ProxyDriverEvaluator.SELECTED_SCENARIO: ('bool', None, True),
-                                                        ProxyDriverEvaluator.SCENARIO_NAME: ('string', None, True)},
-            ProxyDriverEvaluator.DYNAMIC_DATAFRAME_COLUMNS: True,
-            ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
-            ProxyDriverEvaluator.EDITABLE: True,
-            ProxyDriverEvaluator.STRUCTURING: True
-        },  # TODO: manage variable columns for (non-very-simple) multiscenario cases
+
+        # TODO: manage variable columns for (non-very-simple) multiscenario cases
         # MUST BE REPLACED OR USED FOR GENERIC GATHERING FEATURE
         ProxyDriverEvaluator.EVAL_OUTPUTS: {
             ProxyDriverEvaluator.TYPE: 'dataframe',
@@ -82,17 +75,17 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             ProxyDriverEvaluator.POSSIBLE_VALUES: [True, False],
             ProxyDriverEvaluator.STRUCTURING: True
         },
-        ProxyDriverEvaluator.GENERATED_SAMPLES: {ProxyDriverEvaluator.TYPE: 'dataframe',
-                                                 ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
-                                                     ProxyDriverEvaluator.SELECTED_SCENARIO: ('string', None, False),
-                                                     ProxyDriverEvaluator.SCENARIO_NAME: ('string', None, False)},
-                                                 ProxyDriverEvaluator.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                                 ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: True,
-                                                 ProxyDriverEvaluator.STRUCTURING: True,
-                                                 ProxyDriverEvaluator.UNIT: None,
-                                                 ProxyDriverEvaluator.DEFAULT: pd.DataFrame(),
-                                                 ProxyDriverEvaluator.USER_LEVEL: 3
-                                                 },
+        # ProxyDriverEvaluator.GENERATED_SAMPLES: {ProxyDriverEvaluator.TYPE: 'dataframe',
+        #                                          ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
+        #                                              ProxyDriverEvaluator.SELECTED_SCENARIO: ('string', None, False),
+        #                                              ProxyDriverEvaluator.SCENARIO_NAME: ('string', None, False)},
+        #                                          ProxyDriverEvaluator.DYNAMIC_DATAFRAME_COLUMNS: True,
+        #                                          ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: True,
+        #                                          ProxyDriverEvaluator.STRUCTURING: True,
+        #                                          ProxyDriverEvaluator.UNIT: None,
+        #                                          ProxyDriverEvaluator.DEFAULT: pd.DataFrame(),
+        #                                          ProxyDriverEvaluator.USER_LEVEL: 3
+        #                                          },
         DISPLAY_OPTIONS: {ProxyDriverEvaluator.TYPE: 'dict',
                           ProxyDriverEvaluator.STRUCTURING: True,
                           ProxyDriverEvaluator.DEFAULT: DISPLAY_OPTIONS_DEFAULT,
@@ -131,68 +124,68 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         self.add_reference_mode(disc_in)
         self.add_gather_outputs(disc_in)
 
-        self.set_generated_samples_values(disc_in)
+        # self.set_generated_samples_values(disc_in)
 
-    def set_generated_samples_values(self, disc_in):
-        '''
-
-        Args:
-            disc_in: input dictionary with values
-
-        if generated samples modify the selection of scenario in the scenario_df
-        OPEN QUESTION : Do we need that ?
-
-        '''
-        if self.GENERATED_SAMPLES in disc_in:
-            generated_samples = self.get_sosdisc_inputs(
-                self.GENERATED_SAMPLES)
-            generated_samples_dict = {
-                self.GENERATED_SAMPLES: generated_samples}
-            scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-            # checking whether generated_samples has changed
-            # NB also doing nothing with an empty dataframe, which means sample needs to be regenerated to renew
-            # scenario_df on 2nd config. The reason of this choice is that using an optional generated_samples
-            # gives problems with structuring variables checks leading
-            # to incomplete configuration sometimes
-            if not (generated_samples.empty and not self.old_samples_df) \
-                    and not dict_are_equal(generated_samples_dict, self.old_samples_df):
-                # checking whether the dataframes are already coherent in which case the changes come probably
-                # from a load and there is no need to crush the truth
-                # values
-                if not generated_samples.equals(
-                        scenario_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], axis=1)):
-                    # TODO: could overload struct. var. check to spare this deepcopy (only if generated_samples
-                    #  remains as a DriverEvaluator input, othrwise another sample change check logic is needed)
-                    self.old_samples_df = copy.deepcopy(
-                        generated_samples_dict)
-                    # we crush old scenario_df and propose a df with
-                    # all scenarios imposed by new sample, all
-                    # de-activated
-                    scenario_df = pd.DataFrame(
-                        columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME])
-                    scenario_df = pd.concat(
-                        [scenario_df, generated_samples], axis=1)
-                    n_scenarios = len(scenario_df.index)
-                    # check whether the number of generated scenarios
-                    # is not too high to auto-activate them
-                    if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
-                        scenario_df[self.SELECTED_SCENARIO] = True
-                    else:
-                        self.logger.warning(
-                            f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
-                        scenario_df[self.SELECTED_SCENARIO] = False
-                    scenario_name = scenario_df[self.SCENARIO_NAME]
-                    for i in scenario_name.index.tolist():
-                        scenario_name.iloc[i] = 'scenario_' + \
-                                                str(i + 1)
-                    self.logger.info(
-                        'Generated sample has changed, updating scenarios to select.')
-                    self.dm.set_data(self.get_var_full_name(self.SCENARIO_DF, disc_in),
-                                     'value', scenario_df, check_value=False)
+    # def set_generated_samples_values(self, disc_in):
+    #     '''
+    #
+    #     Args:
+    #         disc_in: input dictionary with values
+    #
+    #     if generated samples modify the selection of scenario in the samples_df
+    #     OPEN QUESTION : Do we need that ?
+    #
+    #     '''
+    #     if self.GENERATED_SAMPLES in disc_in:
+    #         generated_samples = self.get_sosdisc_inputs(
+    #             self.GENERATED_SAMPLES)
+    #         generated_samples_dict = {
+    #             self.GENERATED_SAMPLES: generated_samples}
+    #         samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+    #         # checking whether generated_samples has changed
+    #         # NB also doing nothing with an empty dataframe, which means sample needs to be regenerated to renew
+    #         # samples_df on 2nd config. The reason of this choice is that using an optional generated_samples
+    #         # gives problems with structuring variables checks leading
+    #         # to incomplete configuration sometimes
+    #         if not (generated_samples.empty and not self.old_samples_df) \
+    #                 and not dict_are_equal(generated_samples_dict, self.old_samples_df):
+    #             # checking whether the dataframes are already coherent in which case the changes come probably
+    #             # from a load and there is no need to crush the truth
+    #             # values
+    #             if not generated_samples.equals(
+    #                     samples_df.drop([self.SELECTED_SCENARIO, self.SCENARIO_NAME], axis=1)):
+    #                 # TODO: could overload struct. var. check to spare this deepcopy (only if generated_samples
+    #                 #  remains as a DriverEvaluator input, othrwise another sample change check logic is needed)
+    #                 self.old_samples_df = copy.deepcopy(
+    #                     generated_samples_dict)
+    #                 # we crush old samples_df and propose a df with
+    #                 # all scenarios imposed by new sample, all
+    #                 # de-activated
+    #                 samples_df = pd.DataFrame(
+    #                     columns=[self.SELECTED_SCENARIO, self.SCENARIO_NAME])
+    #                 samples_df = pd.concat(
+    #                     [samples_df, generated_samples], axis=1)
+    #                 n_scenarios = len(samples_df.index)
+    #                 # check whether the number of generated scenarios
+    #                 # is not too high to auto-activate them
+    #                 if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
+    #                     samples_df[self.SELECTED_SCENARIO] = True
+    #                 else:
+    #                     self.logger.warning(
+    #                         f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
+    #                     samples_df[self.SELECTED_SCENARIO] = False
+    #                 scenario_name = samples_df[self.SCENARIO_NAME]
+    #                 for i in scenario_name.index.tolist():
+    #                     scenario_name.iloc[i] = 'scenario_' + \
+    #                                             str(i + 1)
+    #                 self.logger.info(
+    #                     'Generated sample has changed, updating scenarios to select.')
+    #                 self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
+    #                                  'value', samples_df, check_value=False)
 
     def configure_driver(self):
         disc_in = self.get_data_in()
-        if self.SCENARIO_DF in disc_in:
+        if self.SAMPLES_DF in disc_in:
             self.configure_tool()
             self.configure_subprocesses_with_driver_input()
             self.set_eval_possible_values(io_type_in=False, strip_first_ns=True)
@@ -253,22 +246,23 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         '''
         dynamic_outputs = {}
-        if self.EVAL_OUTPUTS in disc_in:
-            _vars_to_gather = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
-            # we fetch the inputs and outputs selected by the user
-            vars_to_gather = _vars_to_gather[_vars_to_gather['selected_output'] == True]
-            selected_outputs = vars_to_gather['full_name'].values.tolist()
-            outputs_names = vars_to_gather['output_name'].values.tolist()
-            self._clear_gather_names()
-            for out_var, out_name in zip(selected_outputs, outputs_names):
-                _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
-                # Val : Possibility to add subtype for dict with output type maybe ?
-                dynamic_outputs.update(
-                    {_out_name: {self.TYPE: 'dict',
-                                 self.VISIBILITY: 'Shared',
-                                 self.NAMESPACE: self.NS_EVAL}})
-                self._set_gather_names(out_var, _out_name)
-                # TODO: Disc1.indicator_dict is shown as indicator_dict on GUI and it is not desired behaviour
+        ## TO DO : Refactor so that gather discipline is dealing with gathering outputs
+        # if self.EVAL_OUTPUTS in disc_in:
+        #     _vars_to_gather = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+        #     # we fetch the inputs and outputs selected by the user
+        #     vars_to_gather = _vars_to_gather[_vars_to_gather['selected_output'] == True]
+        #     selected_outputs = vars_to_gather['full_name'].values.tolist()
+        #     outputs_names = vars_to_gather['output_name'].values.tolist()
+        #     self._clear_gather_names()
+        #     for out_var, out_name in zip(selected_outputs, outputs_names):
+        #         _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
+        #         # Val : Possibility to add subtype for dict with output type maybe ?
+        #         dynamic_outputs.update(
+        #             {_out_name: {self.TYPE: 'dict',
+        #                          self.VISIBILITY: 'Shared',
+        #                          self.NAMESPACE: self.NS_EVAL}})
+        #         self._set_gather_names(out_var, _out_name)
+        #         # TODO: Disc1.indicator_dict is shown as indicator_dict on GUI and it is not desired behaviour
 
         # so that eventual mono-instance outputs get clear
         if self.builder_tool is not None:
@@ -305,10 +299,10 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     def check_scenario_list_validity(self):
         # checking for duplicates
         msg = ''
-        if self.SCENARIO_DF in self.get_data_in():
-            scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-            scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
-                                         == True][self.SCENARIO_NAME].values.tolist()
+        if self.SAMPLES_DF in self.get_data_in():
+            samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+            scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]
+                                        == True][self.SCENARIO_NAME].values.tolist()
             set_sc_names = set(scenario_names)
             if len(scenario_names) != len(set_sc_names):
                 repeated_elements = [
@@ -345,27 +339,27 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     def prepare_variables_to_propagate(self):
         # TODO: code below might need refactoring after reference_scenario
         # configuration fashion is decided upon
-        scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
+        samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
         instance_reference = self.get_sosdisc_inputs(self.INSTANCE_REFERENCE)
-        # sce_df = copy.deepcopy(scenario_df)
+        # sce_df = copy.deepcopy(samples_df)
 
         if instance_reference:
             # Addition of Reference Scenario
-            scenario_df = scenario_df.append(
+            samples_df = samples_df.append(
                 {self.SELECTED_SCENARIO: True,
                  self.SCENARIO_NAME: self.REFERENCE_SCENARIO_NAME},
                 ignore_index=True)
-        # NB assuming that the scenario_df entries are unique otherwise there
+        # NB assuming that the samples_df entries are unique otherwise there
         # is some intelligence to be added
-        scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO]
-                                     == True][self.SCENARIO_NAME].values.tolist()
+        scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]
+                                    == True][self.SCENARIO_NAME].values.tolist()
         trade_vars = []
         # check that all the input scenarios have indeed been built
         # (configuration sequence allows the opposite)
 
-        trade_vars = [col for col in scenario_df.columns if col not in
+        trade_vars = [col for col in samples_df.columns if col not in
                       [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
-        return scenario_df, instance_reference, trade_vars, scenario_names
+        return samples_df, instance_reference, trade_vars, scenario_names
 
     def _clear_gather_names(self):
         """
@@ -388,10 +382,10 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         gather_names_for_var = {}
         disc_in = self.get_data_in()
-        if self.SCENARIO_DF in disc_in:
+        if self.SAMPLES_DF in disc_in:
             driver_evaluator_ns = self.get_disc_full_name()
-            scenario_df = self.get_sosdisc_inputs(self.SCENARIO_DF)
-            scenario_names = scenario_df[scenario_df[self.SELECTED_SCENARIO] == True][
+            samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+            scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO] == True][
                 self.SCENARIO_NAME].values.tolist()
 
             for sc in scenario_names:
@@ -405,7 +399,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         This method forces the trade variables values of the subprocesses in function of the driverevaluator input df.
         """
 
-        scenario_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
+        samples_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
 
         if self.subprocesses_built(scenario_names):
             if instance_reference:
@@ -414,7 +408,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                 self.manage_reference_scenario_features(trade_vars, scenario_names)
             else:
                 self.turn_other_variables_to_editable(scenario_names)
-            # PROPAGATE TRADE VARIABLES VALUES FROM scenario_df
+            # PROPAGATE TRADE VARIABLES VALUES FROM samples_df
             # check that there are indeed variable changes input, with respect
             # to reference scenario
             if trade_vars:
@@ -423,8 +417,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                 scenarios_data_dict = {}
                 for sc in scenario_names:
                     # assuming it is unique
-                    sc_row = scenario_df[scenario_df[self.SCENARIO_NAME]
-                                         == sc].iloc[0]
+                    sc_row = samples_df[samples_df[self.SCENARIO_NAME]
+                                        == sc].iloc[0]
                     for var in trade_vars:
                         var_full_name = self.ee.ns_manager.compose_ns(
                             [driver_evaluator_ns, sc, var])
@@ -515,7 +509,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                         self.ee.dm.set_data(
                             key, 'editable', self.original_editable_dict_non_ref[key])
 
-    # def set_reference_trade_variables_in_scenario_df(self, sce_df):
+    # def set_reference_trade_variables_in_samples_df(self, sce_df):
     #
     #     var_names = [col for col in sce_df.columns if col not in
     #                  [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
@@ -529,7 +523,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     #                 sce_df.at[sce_df.loc[sce_df[self.SCENARIO_NAME] == 'ReferenceScenario'].index, var] = value_var
     #
     #     return sce_df
-    # def set_reference_trade_variables_in_scenario_df(self, sce_df):
+    # def set_reference_trade_variables_in_samples_df(self, sce_df):
     #
     #     var_names = [col for col in sce_df.columns if col not in
     #                  [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
@@ -584,7 +578,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
     def check_if_there_are_reference_variables_changes(self):
 
-        scenario_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
+        samples_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
 
         ref_changes_dict = {}
         if self.subprocesses_built(scenario_names):

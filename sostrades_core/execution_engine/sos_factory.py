@@ -28,6 +28,7 @@ from pandas.core.common import flatten
 from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
+from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
 from sostrades_core.sos_wrapping.selector_discipline import SelectorDiscipline
 
@@ -387,7 +388,7 @@ class SosFactory:
                                                             'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper')
             self.__execution_engine.ns_manager.add_ns('ns_sampling',
                                                       self.__execution_engine.ns_manager.get_shared_ns_dict()[
-                                                          'ns_eval'].value)
+                                                          ProxyDriverEvaluator.NS_DRIVER].value)
             builder_list.insert(0, sampling_builder)
 
         return builder_list

@@ -49,13 +49,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             |_ INSTANCE_REFERENCE (structuring, dynamic : builder_mode == self.MULTI_INSTANCE)
                 |_ REFERENCE_MODE (structuring, dynamic :instance_referance == TRUE) 
                 |_ REFERENCE_SCENARIO_NAME (structuring, dynamic :instance_referance == TRUE) #TODO
-            |_ GATHER_OUTPUTS ( structuring, dynamic : builder_mode == self.MONO_INSTANCE)
-            |_ SAMPLES_DF (dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
+            |_ EVAL_OUTPUTS (namespace: NS_DRIVER, structuring, dynamic : builder_mode == self.MONO_INSTANCE)
+            |_ SAMPLES_DF (namespace: NS_DRIVER, dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
             |_ 'n_processes' (dynamic : builder_mode == self.MONO_INSTANCE)         
             |_ 'wait_time_between_fork' (dynamic : builder_mode == self.MONO_INSTANCE)
 
         |_ DESC_OUT
-            |_ samples_inputs_df (dynamic: builder_mode == self.MONO_INSTANCE)
+            |_ samples_inputs_df (namespace: NS_DRIVER, dynamic: builder_mode == self.MONO_INSTANCE)
             |_ <var>_dict (internal namespace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0
             and gather_outputs not empty, for <var> in gather_outputs)
 
@@ -65,7 +65,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 |_ REFERENCE_MODE 
                 |_ REFERENCE_SCENARIO_NAME  #TODO
             |_ EVAL_INPUTS  #NO NEED
-            |_ GATHER_OUTPUTS #FOR GATHER MODE
+            |_ EVAL_OUTPUTS #FOR GATHER MODE
             |_ GENERATED_SAMPLES #TO DELETE
             |_ SCENARIO_DF #TO DELETE
             |_ SAMPLES_DF
@@ -92,8 +92,23 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
+    # EVAL_INPUTS = 'eval_inputs'
+    # EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
+
+    NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
+
+    SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
+    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
+    SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
+    SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
+    DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC}
+
     GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
+    EVAL_OUTPUTS = 'eval_outputs'
+
+    ##
+    ## To refactor instancce reference and subprocess import
+    ##
 
     INSTANCE_REFERENCE = 'instance_reference'
     LINKED_MODE = 'linked_mode'
@@ -106,19 +121,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     with_modal = True
     default_process_builder_parameter_type = ProcessBuilderParameterType(
         None, None, 'Empty')
-
+    SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
+    USECASE_DATA = 'usecase_data'
     if with_modal:
-        DESC_IN = {SUB_PROCESS_INPUTS: {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
-                                        'structuring': True,
-                                        'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                                        'user_level': 1,
-                                        'optional': False}}
+        DESC_IN[SUB_PROCESS_INPUTS] = {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
+                                       'structuring': True,
+                                       'default': default_process_builder_parameter_type.to_data_manager_dict(),
+                                       'user_level': 1,
+                                       'optional': False}
     else:
-        DESC_IN = {USECASE_DATA: {'type': 'dict',
-                                  'structuring': True,
-                                  'default': {},
-                                  'user_level': 1,
-                                  'optional': False}}
 
         DESC_IN[USECASE_DATA] = {'type': 'dict',
                                  'structuring': True,
@@ -193,19 +204,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def _add_optional_shared_ns(self):
         """
-        Add the shared namespace NS_EVAL should it not exist.
+        Add the shared namespace NS_DRIVER should it not exist.
         """
         # do the same for the shared namespace for coupling with the DriverEvaluator
         # also used to store gathered variables in multi-instance
-        if self.NS_EVAL not in self.ee.ns_manager.shared_ns_dict.keys():
+        if self.NS_DRIVER not in self.ee.ns_manager.shared_ns_dict.keys():
             self.ee.ns_manager.add_ns(
-                self.NS_EVAL, self.ee.ns_manager.compose_local_namespace_value(self))
+                self.NS_DRIVER, self.ee.ns_manager.compose_local_namespace_value(self))
 
     def _get_disc_shared_ns_value(self):
         """
-        Get the namespace ns_eval used in the mono-instance case.
+        Get the namespace NS_DRIVER used in the mono-instance case.
         """
-        return self.ee.ns_manager.disc_ns_dict[self]['others_ns'][self.NS_EVAL].get_value()
+        return self.ee.ns_manager.disc_ns_dict[self]['others_ns'][self.NS_DRIVER].get_value()
 
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
@@ -353,12 +364,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # checking for duplicates
         self.check_integrity_msg_list = []
         disc_in = self.get_data_in()
-        if self.SCENARIO_DF in disc_in and not self.scenario_list_valid:
+        if self.SAMPLES_DF in disc_in and not self.scenario_list_valid:
             self.dm.set_data(
-                self.get_var_full_name(self.SCENARIO_DF, disc_in),
+                self.get_var_full_name(self.SAMPLES_DF, disc_in),
                 self.CHECK_INTEGRITY_MSG, self.scenario_list_integrity_msg)
 
-    def check_data_integrity_samples_df(self):
+    def fill_possible_values(self, disc, io_type_in=False, io_type_out=True):
         '''
 
         Check the data integrity of the samples_df :
@@ -370,37 +381,37 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         poss_in_values_full = set()
         poss_out_values_full = set()
-        if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
-            disc_in = disc.get_data_in()
-            for data_in_key in disc_in.keys():
-                is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
-                is_structuring = disc_in[data_in_key].get(
-                    self.STRUCTURING, False)
-                in_coupling_numerical = data_in_key in list(
-                    ProxyCoupling.DESC_IN.keys())
-                full_id = disc.get_var_full_name(
-                    data_in_key, disc_in)
-                is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                             ]['io_type'] == 'in'
-                # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
-                is_editable = disc_in[data_in_key]['editable']
-                is_None = disc_in[data_in_key]['value'] is None
-                is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
-                if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
-                    # Caution ! This won't work for variables with points in name
-                    # as for ac_model
-                    # we remove the study name from the variable full  name for a
-                    # sake of simplicity
-                    if is_input_type and not is_a_multiplier:
-                        poss_in_values_full.add(
-                            full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
-                        # poss_in_values_full.append(full_id)
-
-        samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-        if len(samples_df) > 0:
-            scenario_names = samples_df[self.SCENARIO_NAME].values.tolist()
-        else:
-            scenario_names = []
+        # if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
+        #     disc_in = disc.get_data_in()
+        #     for data_in_key in disc_in.keys():
+        #         is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
+        #         is_structuring = disc_in[data_in_key].get(
+        #             self.STRUCTURING, False)
+        #         in_coupling_numerical = data_in_key in list(
+        #             ProxyCoupling.DESC_IN.keys())
+        #         full_id = disc.get_var_full_name(
+        #             data_in_key, disc_in)
+        #         is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+        #                      ]['io_type'] == 'in'
+        #         # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+        #         is_editable = disc_in[data_in_key]['editable']
+        #         is_None = disc_in[data_in_key]['value'] is None
+        #         is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
+        #         if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
+        #             # Caution ! This won't work for variables with points in name
+        #             # as for ac_model
+        #             # we remove the study name from the variable full  name for a
+        #             # sake of simplicity
+        #             if is_input_type and not is_a_multiplier:
+        #                 poss_in_values_full.add(
+        #                     full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
+        #                 # poss_in_values_full.append(full_id)
+        #
+        #             # if is_input_multiplier_type and not is_None:
+        #             #     poss_in_values_list = self.set_multipliers_values(
+        #             #         disc, full_id, data_in_key)
+        #             #     for val in poss_in_values_list:
+        #             #         poss_in_values_full.append(val)
 
         scatter_list_validity = True
         # Check if two scenario have the same names

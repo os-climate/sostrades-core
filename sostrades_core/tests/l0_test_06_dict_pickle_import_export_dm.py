@@ -85,7 +85,7 @@ class TestSerializeDF(unittest.TestCase):
 
         self.dict_of_dict_in_data = {'key_A': {'subKey1': 0.1234, 'subKey2': 111.111, 'subKey3': 2036},
                                      'key_B': {'subKey1': 1.2345, 'subKey2': 222.222, 'subKey3': 2036}}
-        a_df = DataFrame(array([[5., -.05, 5.e5, 5.**5], [2.9, 1., 0., -209.1],
+        a_df = DataFrame(array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
                                 [0.7e-5, 2e3 / 3, 17., 3.1416], [-19., -2., -1e3, 6.6]]),
                          columns=['key1', 'key2', 'key3', 'key4'])
         self.dict_of_df_in_data = {'key_C': a_df,
@@ -146,7 +146,8 @@ class TestSerializeDF(unittest.TestCase):
                           [2., 4., 8., 16.], [4., 8., 16., 32.]])
         origin_dict = {'x': {'type': 'float', 'unit': 'meters', 'value': 1.23},
                        'arr': {'type': 'array', 'unit': 'modes', 'value': arr_array},
-                       'list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': '#names', 'value': list_val},
+                       'list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'unit': '#names',
+                                'value': list_val},
                        'df': {'type': 'dataframe', 'unit': None, 'value': DataFrame(df_array, columns=df_col)}}
         test_extract_DF = join(self.out_dir, 'test_extract_DF')
         if not Path(test_extract_DF).is_dir():
@@ -309,10 +310,10 @@ class TestSerializeDF(unittest.TestCase):
 
         self.exec_eng.configure()
         dict_values = {}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scenario_1',
-                                                      'scenario_2']})
-        dict_values[f'{self.name}.multi_scenarios.scenario_df'] = scenario_df
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scenario_1',
+                                                     'scenario_2']})
+        dict_values[f'{self.name}.multi_scenarios.samples_df'] = samples_df
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 

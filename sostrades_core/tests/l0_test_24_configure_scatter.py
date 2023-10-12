@@ -33,7 +33,6 @@ class TestScatterDiscipline(unittest.TestCase):
         self.name = 'Root'
         self.ee = ExecutionEngine(self.name)
 
-
         # get coupling process builder
         sub_proc = 'test_disc1_disc2_coupling'
         cls_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
@@ -47,10 +46,10 @@ class TestScatterDiscipline(unittest.TestCase):
         self.ee.factory.set_builders_to_coupling_builder(scatter_list)
         self.ee.configure()
 
-        #-- aircraft lists
+        # -- aircraft lists
         self.list_aircraft_1 = ['CH19_Kero', 'CH19_H2']
 
-        #-- the idea here is to check that removing (from CH19_Kero and CH19_H2 list) one
+        # -- the idea here is to check that removing (from CH19_Kero and CH19_H2 list) one
         # of the aircraft give the same result reagrdless of the aircraft position in the list
         # (because variables are own by one of the associated discipline)
         self.list_aircraft_remove_1_1 = ['CH19_H2']
@@ -59,7 +58,6 @@ class TestScatterDiscipline(unittest.TestCase):
         self.list_aircraft_add_1 = ['CH19_Kero', 'A320', 'CH19_H2']
 
     def build_aircraft_disciplines_list(self, list_aircraft=[]):
-
         disciplines_list = []
 
         disciplines_list.append(self.name)
@@ -78,10 +76,9 @@ class TestScatterDiscipline(unittest.TestCase):
         return disciplines_list
 
     def test_01_raw_initialisation(self):
-
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True],
-                                                                     'scenario_name': ['A1']})}
+            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame({'selected_scenario': [True],
+                                                                    'scenario_name': ['A1']})}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
 
@@ -99,10 +96,10 @@ class TestScatterDiscipline(unittest.TestCase):
                              'Discipline between reference and generated are different')
 
     def test_02_multiinstance_modification_remove_one_aircraft_1(self):
-
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True] * len(self.list_aircraft_1),
-                                                                     'scenario_name': self.list_aircraft_1})}
+            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame(
+                {'selected_scenario': [True] * len(self.list_aircraft_1),
+                 'scenario_name': self.list_aircraft_1})}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
 
@@ -120,10 +117,11 @@ class TestScatterDiscipline(unittest.TestCase):
         self.assertListEqual(list_aircraft_1_disciplines, disciplines_list,
                              'Discipline between reference and generated are different')
 
-        #-- remove on aircraft
+        # -- remove on aircraft
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True] * len(self.list_aircraft_remove_1_1),
-                                                                     'scenario_name': self.list_aircraft_remove_1_1})}
+            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame(
+                {'selected_scenario': [True] * len(self.list_aircraft_remove_1_1),
+                 'scenario_name': self.list_aircraft_remove_1_1})}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
 
@@ -142,10 +140,10 @@ class TestScatterDiscipline(unittest.TestCase):
                              'Discipline between reference and generated are different')
 
     def test_03_multiinstance_modification_remove_one_aircraft_2(self):
-
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True] * len(self.list_aircraft_1),
-                                                                     'scenario_name': self.list_aircraft_1})}
+            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame(
+                {'selected_scenario': [True] * len(self.list_aircraft_1),
+                 'scenario_name': self.list_aircraft_1})}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
 
@@ -163,10 +161,11 @@ class TestScatterDiscipline(unittest.TestCase):
         self.assertListEqual(list_aircraft_1_disciplines, disciplines_list,
                              'Discipline between reference and generated are different')
 
-        #-- remove on aircraft
+        # -- remove on aircraft
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True] * len(self.list_aircraft_remove_1_2),
-                                                                     'scenario_name': self.list_aircraft_remove_1_2})}
+            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame(
+                {'selected_scenario': [True] * len(self.list_aircraft_remove_1_2),
+                 'scenario_name': self.list_aircraft_remove_1_2})}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
 
@@ -185,7 +184,6 @@ class TestScatterDiscipline(unittest.TestCase):
                              'Discipline between reference and generated are different')
 
     def test_04_multiinstance_modification_remove_all_aircraft(self):
-
         private_values_multiproduct = {}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
@@ -194,8 +192,9 @@ class TestScatterDiscipline(unittest.TestCase):
         raw_dm_values.sort()
 
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [True] * len(self.list_aircraft_1),
-                                                                     'scenario_name': self.list_aircraft_1})}
+            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame(
+                {'selected_scenario': [True] * len(self.list_aircraft_1),
+                 'scenario_name': self.list_aircraft_1})}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
 
@@ -210,10 +209,11 @@ class TestScatterDiscipline(unittest.TestCase):
         self.assertListEqual(list_aircraft_1_disciplines, disciplines_list,
                              'Discipline between reference and generated are different')
 
-        #-- remove all aircraft
+        # -- remove all aircraft
         private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.scenario_df': pd.DataFrame({'selected_scenario': [False] * len(self.list_aircraft_1),
-                                                                     'scenario_name': self.list_aircraft_1})}
+            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame(
+                {'selected_scenario': [False] * len(self.list_aircraft_1),
+                 'scenario_name': self.list_aircraft_1})}
 
         self.ee.load_study_from_input_dict(private_values_multiproduct)
 
@@ -231,7 +231,7 @@ class TestScatterDiscipline(unittest.TestCase):
         self.assertListEqual(list_aircraft_remove_all, disciplines_list,
                              'Discipline between reference and generated are different')
 
-        #-- cheack that data manager is also cleared
+        # -- cheack that data manager is also cleared
 
         last_dm_values = list(self.ee.dm.data_id_map.keys())
         last_dm_values.sort()

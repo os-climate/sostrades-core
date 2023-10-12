@@ -71,7 +71,8 @@ class TestArchiBuilder(unittest.TestCase):
         architecture_df = pd.DataFrame(
             {'Parent': ['Business', 'Business', 'Remy', 'Tomato'],
              'Current': ['Remy', 'Tomato', 'Opex', 'CAPEX'],
-             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'ValueBlockDiscipline', 'ValueBlockDiscipline'],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'ValueBlockDiscipline',
+                      'ValueBlockDiscipline'],
              'Action': [('standard'), ('standard'), ('standard'), ('standard')],
              'Activation': [True, True, False, False], })
 
@@ -106,9 +107,9 @@ class TestArchiBuilder(unittest.TestCase):
         disc_archi = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.namespace}.Business')[0]
         self.assertEqual(list(disc_archi.activated_builders.keys()), [
-                         'Business.Remy', 'Business.Tomato', 'Business.Remy.Opex', 'Business.Tomato.CAPEX'])
+            'Business.Remy', 'Business.Tomato', 'Business.Remy.Opex', 'Business.Tomato.CAPEX'])
         self.assertDictEqual(disc_archi.activation_dict, {'Business': {
-                             'Business.Remy.Opex': 'Remy', 'Business.Tomato.CAPEX': 'Tomato'}})
+            'Business.Remy.Opex': 'Remy', 'Business.Tomato.CAPEX': 'Tomato'}})
 
         activation_df = pd.DataFrame(
             {'Business': ['Remy', 'Tomato'],
@@ -144,7 +145,7 @@ class TestArchiBuilder(unittest.TestCase):
 
         # No children because the scatter has no children
         self.assertListEqual([disc.sos_name for disc in disc_Remy.config_dependency_disciplines], [
-                             'Remy.Opex'])
+            'Remy.Opex'])
 
         # desactiation of all builders
         activation_df = pd.DataFrame(
@@ -171,7 +172,8 @@ class TestArchiBuilder(unittest.TestCase):
         architecture_df = pd.DataFrame(
             {'Parent': ['Business', 'Business', 'Remy', 'Tomato'],
              'Current': ['Remy', 'Tomato', 'Opex', 'CAPEX'],
-             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'ValueBlockDiscipline', 'ValueBlockDiscipline'],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'ValueBlockDiscipline',
+                      'ValueBlockDiscipline'],
              'Action': [('standard'), ('standard'), ('standard'), ('standard')],
              'Activation': [False, False, False, False], })
 
@@ -206,7 +208,7 @@ class TestArchiBuilder(unittest.TestCase):
         disc_archi = self.exec_eng.dm.get_disciplines_with_name(
             f'{self.namespace}.Business')[0]
         self.assertEqual(list(disc_archi.activated_builders.keys()), [
-                         'Business.Remy', 'Business.Tomato', 'Business.Remy.Opex', 'Business.Tomato.CAPEX'])
+            'Business.Remy', 'Business.Tomato', 'Business.Remy.Opex', 'Business.Tomato.CAPEX'])
         self.assertDictEqual(disc_archi.activation_dict, {})
 
         activation_df = pd.DataFrame(
@@ -247,7 +249,7 @@ class TestArchiBuilder(unittest.TestCase):
 
         # No children because the scatter has no children
         self.assertListEqual([disc.sos_name for disc in disc_Remy.config_dependency_disciplines], [
-                             'Remy.Opex'])
+            'Remy.Opex'])
 
         # desactiation of all builders
         activation_df = pd.DataFrame(
@@ -331,14 +333,15 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-        activation_df = pd.DataFrame({'product_list': [None], 'ChildrenScatter': True, 'Standard1': [True], 'Standard2': [
-                                     True], 'Scatter': [True], 'SubArchi': [True], 'ScatterArchi': [True]})
+        activation_df = pd.DataFrame(
+            {'product_list': [None], 'ChildrenScatter': True, 'Standard1': [True], 'Standard2': [
+                True], 'Scatter': [True], 'SubArchi': [True], 'ScatterArchi': [True]})
 
         self.assertDictEqual(activation_df.to_dict(), self.exec_eng.dm.get_value(
             'MyCase.ArchiBuilder.activation_df').to_dict())
 
         activation_df = pd.DataFrame({'product_list': [None], 'Standard1': [True], 'Standard2': [
-                                     True], 'Scatter': [False], 'SubArchi': [False], 'ScatterArchi': [True]})
+            True], 'Scatter': [False], 'SubArchi': [False], 'ScatterArchi': [True]})
         self.exec_eng.load_study_from_input_dict(
             {'MyCase.ArchiBuilder.activation_df': activation_df})
 
@@ -440,8 +443,11 @@ class TestArchiBuilder(unittest.TestCase):
         architecture_df = pd.DataFrame(
             {'Parent': ['Business', 'Business', 'Remy', 'Remy', 'Tomato'],
              'Current': ['Remy', 'Tomato', 'Opex', 'CAPEX', 'CAPEX'],
-             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('standard'), ('standard'), ('scatter', 'product_list', 'ValueBlockDiscipline'), ('scatter', 'product_list', 'ValueBlockDiscipline'), ('scatter', 'product_list', 'ValueBlockDiscipline')],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline',
+                      'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
+             'Action': [('standard'), ('standard'), ('scatter', 'product_list', 'ValueBlockDiscipline'),
+                        ('scatter', 'product_list', 'ValueBlockDiscipline'),
+                        ('scatter', 'product_list', 'ValueBlockDiscipline')],
              'Activation': [True, True, False, False, False], })
 
         print('architecture df: \n', architecture_df)
@@ -496,11 +502,11 @@ class TestArchiBuilder(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['A320', 'A321'])
+            'MyCase.Business.Remy.CAPEX.driver.samples_df')['scenario_name'].values.tolist(), ['A320', 'A321'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.Opex.driver.scenario_df')['scenario_name'].values.tolist(), ['A320'])
+            'MyCase.Business.Remy.Opex.driver.samples_df')['scenario_name'].values.tolist(), ['A320'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Tomato.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['B737'])
+            'MyCase.Business.Tomato.CAPEX.driver.samples_df')['scenario_name'].values.tolist(), ['B737'])
 
         # test configure and cleaning
 
@@ -532,13 +538,12 @@ class TestArchiBuilder(unittest.TestCase):
 
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
-
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['A321'])
+            'MyCase.Business.Remy.CAPEX.driver.samples_df')['scenario_name'].values.tolist(), ['A321'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.Opex.driver.scenario_df')['scenario_name'].values.tolist(), ['A320', 'A321'])
+            'MyCase.Business.Remy.Opex.driver.samples_df')['scenario_name'].values.tolist(), ['A320', 'A321'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Tomato.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['B737'])
+            'MyCase.Business.Tomato.CAPEX.driver.samples_df')['scenario_name'].values.tolist(), ['B737'])
 
     def test_07_architecture_multi_level(self):
         self.repo_business = 'business_case.sos_wrapping.'
@@ -569,14 +574,20 @@ class TestArchiBuilder(unittest.TestCase):
             {'Parent': ['Opex', 'Opex'],
              'Current': ['FHS', 'Delivery'],
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', component_fhs_architecture_df), ('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', component_Delivery_architecture_df)],
+             'Action': [
+                 ('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', component_fhs_architecture_df), (
+                 'scatter_architecture', 'product_list', 'SumValueBlockDiscipline',
+                 component_Delivery_architecture_df)],
              'Activation': [False, False]})
 
         architecture_df = pd.DataFrame(
             {'Parent': ['Business', 'Business', 'Remy', 'Remy', 'Tomato'],
              'Current': ['Remy', 'Tomato', 'CAPEX', 'Opex', 'CAPEX'],
-             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('standard'), ('standard'), ('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', component_sales_architecture_df), ('architecture', Opex_architecture_df), ('scatter', 'product_list', 'ValueBlockDiscipline')],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline',
+                      'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
+             'Action': [('standard'), ('standard'), (
+             'scatter_architecture', 'product_list', 'SumValueBlockDiscipline', component_sales_architecture_df),
+                        ('architecture', Opex_architecture_df), ('scatter', 'product_list', 'ValueBlockDiscipline')],
              'Activation': [True, True, False, False, False]})
 
         builder = self.factory.create_architecture_builder(
@@ -634,13 +645,13 @@ class TestArchiBuilder(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
+            'MyCase.Business.Remy.CAPEX.driver.samples_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Tomato.CAPEX.driver.scenario_df')['scenario_name'].values.tolist(), ['AC3', 'AC4'])
+            'MyCase.Business.Tomato.CAPEX.driver.samples_df')['scenario_name'].values.tolist(), ['AC3', 'AC4'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.Opex.FHS.driver.scenario_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
+            'MyCase.Business.Remy.Opex.FHS.driver.samples_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
         self.assertListEqual(self.exec_eng.dm.get_value(
-            'MyCase.Business.Remy.Opex.Delivery.driver.scenario_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
+            'MyCase.Business.Remy.Opex.Delivery.driver.samples_df')['scenario_name'].values.tolist(), ['AC1', 'AC2'])
 
     def test_08_process_simple_architecture_execution(self):
 
@@ -678,7 +689,7 @@ class TestArchiBuilder(unittest.TestCase):
         msg_log_error = 'Invalid Value Block Activation Configuration: value block OPEX not available for [\'Tomato\']'
         self.assertTrue(msg_log_error in my_handler.msg_list)
 
-        activ_df = pd.DataFrame({'Business': ['Remy',   'Tomato'],
+        activ_df = pd.DataFrame({'Business': ['Remy', 'Tomato'],
                                  'CAPEX': [True, True],
                                  'OPEX': [True, False],
                                  'Manhour': [True, False]})
@@ -804,12 +815,13 @@ class TestArchiBuilder(unittest.TestCase):
 
     def test_11_build_standard_value_block_at_architecture_node(self):
         # TODO: not actually testing this functionality, rewrite test when ArchiBuilder as tool (see code commented out)
-        vb_builder_name = 'ArchiBuilder' # 'Opex'
+        vb_builder_name = 'ArchiBuilder'  # 'Opex'
 
         architecture_df = pd.DataFrame(
             {'Parent': [None, 'Opex', 'Opex', 'Opex', 'Opex'],
              'Current': ['Opex', 'Delivery', 'Manhour', 'Cooking', 'Energy'],
-             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline',
+                      'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
              'Action': [('standard'), ('standard'), ('standard'), ('standard'), ('standard')],
              'Activation': [False, False, False, False, False]})
 
