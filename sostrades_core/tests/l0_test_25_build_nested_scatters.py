@@ -91,11 +91,11 @@ class TestBuildScatter(unittest.TestCase):
 
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
             'group_scenarios_under_disciplines': True}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
 
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -167,13 +167,13 @@ class TestBuildScatter(unittest.TestCase):
 
         self.exec_eng.configure()
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
             'group_scenarios_under_disciplines': True,
             'autogather': True}
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -272,13 +272,13 @@ class TestBuildScatter(unittest.TestCase):
 
         self.exec_eng.configure()
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
             'group_scenarios_under_disciplines': False,
             'autogather': True}
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -371,31 +371,31 @@ class TestBuildScatter(unittest.TestCase):
 
         self.exec_eng.configure()
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
             'group_scenarios_under_disciplines': False,
             'autogather': True}
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        scenario_df = pd.DataFrame({'selected_scenario': [False, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        samples_df = pd.DataFrame({'selected_scenario': [False, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
 
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
 
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)

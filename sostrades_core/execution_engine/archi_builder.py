@@ -756,12 +756,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
     def setup_sos_disciplines(self):
         """
-        Set scenario_df value by reading activation_df input
+        Set samples_df value by reading activation_df input
         """
         dynamic_outputs = {}
         for driver_name, input_name in self.driver_input_to_fill.items():
 
-            if f'{driver_name}.scenario_df' in self.get_data_out():
+            if f'{driver_name}.samples_df' in self.get_data_out():
                 activation_df = deepcopy(self.get_sosdisc_inputs(self.ACTIVATION_DF))
 
                 if driver_name == 'driver':
@@ -788,14 +788,14 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 indexes = np.unique(input_value, return_index=True)[1]
                 input_value = [input_value[index] for index in sorted(indexes)]
 
-                scenario_full_name = self.get_var_full_name(f'{driver_name}.scenario_df', self.get_data_out())
+                scenario_full_name = self.get_var_full_name(f'{driver_name}.samples_df', self.get_data_out())
                 self.dm.set_data(scenario_full_name, 'value', pd.DataFrame({self.SCENARIO_NAME: input_value,
                                                                             self.SELECTED_SCENARIO: True}),
                                  check_value=False)
             dynamic_outputs.update(
-                {f'{driver_name}.scenario_df': {'type': 'dataframe',
-                                                'default': pd.DataFrame(
-                                                    columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
+                {f'{driver_name}.samples_df': {'type': 'dataframe',
+                                               'default': pd.DataFrame(
+                                                   columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
                  # f'{driver_name}.builder_mode': {'type': 'string',
                  #                                 'value': 'multi_instance'}
                  },

@@ -137,6 +137,22 @@ class SampleGeneratorWrapper(SoSWrapp):
     EVAL_INPUTS_CP = 'eval_inputs_cp'
     GENERATED_SAMPLES = 'generated_samples'
     SAMPLES_DF = 'samples_df'
+    SELECTED_SCENARIO = 'selected_scenario'
+    SCENARIO_NAME = 'scenario_name'
+    NS_DRIVER = 'ns_driver'
+    SAMPLES_DF_DESC = {
+        SoSWrapp.TYPE: 'dataframe',
+        SoSWrapp.DEFAULT: pd.DataFrame(
+            columns=[SELECTED_SCENARIO, SCENARIO_NAME]),
+        SoSWrapp.DATAFRAME_DESCRIPTOR: {SELECTED_SCENARIO: ('bool', None, True),
+                                        SCENARIO_NAME: ('string', None, True)},
+        SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
+        SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
+        SoSWrapp.EDITABLE: True,
+        SoSWrapp.STRUCTURING: True,
+        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+        SoSWrapp.NAMESPACE: NS_DRIVER
+    }
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -150,12 +166,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                           'editable': False}
                }
 
-    DESC_OUT = {SAMPLES_DF: {'type': 'dataframe',
-                             'unit': None,
-                             'visibility': SoSWrapp.SHARED_VISIBILITY,
-                             'namespace': 'ns_sampling'
-                             }
-                }
+    DESC_OUT = {SAMPLES_DF: SAMPLES_DF_DESC}
 
     def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name=sos_name, logger=logger)
@@ -271,7 +282,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             raise Exception(
                 f"Sampling has not been made")
 
-        self.store_sos_outputs_values({'samples_df': samples_df})
+        self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def instantiate_sampling_tool(self):
         """
@@ -283,7 +294,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                 self.sample_generator_doe = DoeSampleGenerator(logger=self.logger.getChild("DoeSampleGenerator"))
         elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
             if self.sample_generator_cp is None:
-                self.sample_generator_cp = CartesianProductSampleGenerator(logger=self.logger.getChild("CartesianProductSampleGenerator"))
+                self.sample_generator_cp = CartesianProductSampleGenerator(
+                    logger=self.logger.getChild("CartesianProductSampleGenerator"))
 
     def get_algo_default_options(self, algo_name):
         """

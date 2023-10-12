@@ -180,10 +180,10 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                            True],
-                                                                                      'scenario_name': ['scenario_1',
-                                                                                                        'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -235,10 +235,10 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                            True],
-                                                                                      'scenario_name': ['scenario_1',
-                                                                                                        'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
@@ -297,10 +297,10 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                          True],
-                                                                                    'scenario_name': ['scenario_1',
-                                                                                                      'scenario_2']})
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                         True],
+                                                                                   'scenario_name': ['scenario_1',
+                                                                                                     'scenario_2']})
 
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {'hide_coupling_in_driver': True}
         self.exec_eng.load_study_from_input_dict(dict_values)

@@ -105,17 +105,17 @@ class ScatterTool(SosTool):
         '''
 
         super().prepare_tool()
-        if self.driver.SCENARIO_DF in self.driver.get_data_in():
+        if self.driver.SAMPLES_DF in self.driver.get_data_in():
             instance_reference = self.driver.get_sosdisc_inputs(self.driver.INSTANCE_REFERENCE)
-            scenario_df = self.driver.get_sosdisc_inputs(self.driver.SCENARIO_DF)
-            # sce_df = copy.deepcopy(scenario_df)
+            samples_df = self.driver.get_sosdisc_inputs(self.driver.SAMPLES_DF)
+            # sce_df = copy.deepcopy(samples_df)
             if instance_reference:
-                scenario_df = scenario_df.append(
+                samples_df = samples_df.append(
                     {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'},
                     ignore_index=True)
 
             self.set_scatter_list(
-                scenario_df[scenario_df[self.driver.SELECTED_SCENARIO] == True][
+                samples_df[samples_df[self.driver.SELECTED_SCENARIO] == True][
                     self.driver.SCENARIO_NAME].values.tolist())
 
         self.get_values_for_namespaces_to_update()
@@ -147,7 +147,7 @@ class ScatterTool(SosTool):
     def get_dynamic_output_from_tool(self):
         '''
         Add the scatter list output name into dynamic desc_out in the behalf of the driver
-        this scatter_list is depending on scenario_df configuration
+        this scatter_list is depending on samples_df configuration
         Add then all scenario_name for each scenario
         '''
         dynamic_outputs = {}
