@@ -21,7 +21,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_processes.test.test_grid_search',
+        'label': 'Core Test Mono Driver Eval Grid Search',
         'description': '',
         'category': '',
         'version': '',
