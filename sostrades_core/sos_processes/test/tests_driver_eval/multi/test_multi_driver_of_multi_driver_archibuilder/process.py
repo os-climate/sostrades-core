@@ -22,7 +22,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Test Multi Instance Nested (DriverEvaluator) with Archi Builder',
+        'label': 'Core Test Multi Instance Nested (DriverEvaluator) with Archi Builder',
         'description': '',
         'category': '',
         'version': '',

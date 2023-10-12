@@ -22,7 +22,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Disc1 Driver Evaluator',
+        'label': 'Core Test Disc1 Mono instance Eval',
         'description': '',
         'category': '',
         'version': '',
