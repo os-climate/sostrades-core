@@ -161,7 +161,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         my_namespace = {'ns_barrierr': self.exec_eng.study_name,
                         'ns_ac': f'{self.exec_eng.study_name}.Disc1',
-                        'ns_eval': f'{self.exec_eng.study_name}.multi_scenarios'}
+                        'ns_driver': f'{self.exec_eng.study_name}.multi_scenarios'}
 
         # instantiate factory by getting builder from process
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
@@ -220,7 +220,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             'Disc2', mod_list)
 
         self.exec_eng.ns_manager.add_ns(
-            'ns_eval', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
+            'ns_driver', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
         self.exec_eng.ns_manager.add_ns(
             'ns_ac', f'{self.exec_eng.study_name}', display_value=f'{self.exec_eng.study_name}.Disc1')
 
@@ -281,7 +281,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             'Disc2', mod_list)
 
         self.exec_eng.ns_manager.add_ns(
-            'ns_eval', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
+            'ns_driver', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
         self.exec_eng.ns_manager.add_ns(
             'ns_ac', f'{self.exec_eng.study_name}', display_value=f'{self.exec_eng.study_name}.Disc1')
 

@@ -71,7 +71,7 @@ class UncertaintyQuantification(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.UNIT: None,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        SoSWrapp.NAMESPACE: 'ns_eval',
+        SoSWrapp.NAMESPACE: 'ns_driver',
     }
     DESC_IN = {
         'samples_inputs_df': eval_df_data_description,
@@ -88,7 +88,7 @@ class UncertaintyQuantification(SoSWrapp):
             },
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_eval',
+            SoSWrapp.NAMESPACE: 'ns_driver',
         },
         'confidence_interval': {
             SoSWrapp.TYPE: 'float',
@@ -123,7 +123,7 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_eval',
+            SoSWrapp.NAMESPACE: 'ns_driver',
         },
         EVAL_OUTPUTS: {
             SoSWrapp.TYPE: 'dataframe',
@@ -136,7 +136,7 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_eval',
+            SoSWrapp.NAMESPACE: 'ns_driver',
         },
     }
 

@@ -44,7 +44,7 @@ class ProcessBuilder(BaseProcessBuilder):
             mods_dict,
             ns_dict={
                 'ns_OptimSellar': self.ee.study_name,
-                'ns_eval': f'{self.ee.study_name}',
+                'ns_driver': f'{self.ee.study_name}',
             },
         )
         eval_name = 'Eval'

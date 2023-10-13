@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.proxy_optim import ProxyOptim
 
 '''
@@ -385,7 +386,7 @@ class SosFactory:
         if with_sample_generator:
             sampling_builder = self.get_builder_from_module('SampleGenerator',
                                                             'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper')
-            self.__execution_engine.ns_manager.add_ns('ns_sampling',
+            self.__execution_engine.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING,
                                                       self.__execution_engine.ns_manager.get_shared_ns_dict()[
                                                           ProxyDriverEvaluator.NS_DRIVER].value)
             builder_list.insert(0, sampling_builder)

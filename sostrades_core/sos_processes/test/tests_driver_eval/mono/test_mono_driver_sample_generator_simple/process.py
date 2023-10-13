@@ -16,6 +16,7 @@ limitations under the License.
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 # -- Generate test 2 process
 
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
@@ -33,7 +34,7 @@ class ProcessBuilder(BaseProcessBuilder):
         mods_dict = {'Disc1': disc_dir + 'disc1.Disc1'}
         builder_list_sellar = self.create_builder_list(
             mods_dict,
-            ns_dict={'ns_ac': self.ee.study_name, 'ns_eval': f'{self.ee.study_name}'},
+            ns_dict={'ns_ac': self.ee.study_name, 'ns_driver': f'{self.ee.study_name}'},
         )
         eval_builder = self.ee.factory.create_mono_instance_driver(
             'Eval', builder_list_sellar
@@ -43,7 +44,8 @@ class ProcessBuilder(BaseProcessBuilder):
             'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         }
         doe_builder = self.create_builder_list(
-            mod_dict_doe, ns_dict={'ns_sampling': f'{self.ee.study_name}'}
+            mod_dict_doe, ns_dict={SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}',
+                                   SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}'}
         )
 
         doe_builder.append(eval_builder)

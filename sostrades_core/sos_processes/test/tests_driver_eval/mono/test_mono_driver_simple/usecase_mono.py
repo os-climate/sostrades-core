@@ -31,6 +31,8 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
 
+        samples =  {'selected_scenario': [False, True, False],
+                    'scenario_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = {'selected_input': [False, True, False],
                              'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
@@ -47,7 +49,9 @@ class Study(StudyManager):
         # a_values = [array([2.0]), array([4.0]), array(
         #     [6.0]), array([8.0]), array([10.0])]
         a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
-        samples_dict = {'Disc1.a': a_values}
+        samples_dict = {'selected_scenario': [True]*5,
+                        'scenario_name':[f'scenario_{i}' for i in range(1,6)],
+                        'Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
 
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
