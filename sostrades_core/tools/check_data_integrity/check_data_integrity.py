@@ -221,7 +221,7 @@ class CheckDataIntegrity():
             dynamic_dataframe_column = False
 
         # Dataframe editable in GUI but no dataframe descriptor
-        if dataframe_descriptor is None:
+        if dataframe_descriptor is None and not dynamic_dataframe_column:
             check_integrity_msg = 'No dataframe descriptor set'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
         else:
