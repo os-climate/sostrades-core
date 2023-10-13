@@ -40,7 +40,7 @@ custom-inherit==2.4.0
     # via -r ./gemseo/requirements.txt
 cvxpy==1.1.18
     # via -r ./sostrades-core/requirements.in
-cycler==0.12.0
+cycler==0.12.1
     # via matplotlib
 decorator==5.1.1
     # via networkx
@@ -48,7 +48,7 @@ defusedxml==0.7.1
     # via python3-saml
 dill==0.3.7
     # via openturns
-dnspython==1.16.0
+dnspython==2.2.1
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   eventlet
@@ -100,7 +100,7 @@ gitpython==3.1.31
     # via
     #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-ontology/requirements.in
-google-auth==2.23.2
+google-auth==2.23.3
     # via kubernetes
 graphviz==0.16
     # via
@@ -373,7 +373,7 @@ seaborn==0.9.0
     # via -r ./witness-core/requirements.in
 shiboken2==5.15.2
     # via pyside2
-simplejson==3.19.1
+simplejson==3.19.2
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   dremio-client
@@ -429,14 +429,14 @@ typing-extensions==4.8.0
     # via
     #   alembic
     #   black
-tzlocal==5.0.1
+tzlocal==5.1
     # via trino
 urllib3==2.0.6
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   kubernetes
     #   requests
-websocket-client==1.6.3
+websocket-client==1.6.4
     # via kubernetes
 werkzeug==2.0.3
     # via
