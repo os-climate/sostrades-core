@@ -17,6 +17,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Generate a doe scenario
 """
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
@@ -47,7 +48,7 @@ class ProcessBuilder(BaseProcessBuilder):
         # no need to shift
 
         # driver namespaces
-        self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
-        self.ee.ns_manager.add_ns('ns_eval', f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, f'{self.ee.study_name}.Eval')
+        self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.Eval')
 
         return eval_driver

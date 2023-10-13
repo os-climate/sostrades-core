@@ -141,6 +141,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
     NS_DRIVER = 'ns_driver'
+    NS_SAMPLING = 'ns_sampling'
     SAMPLES_DF_DESC = {
         SoSWrapp.TYPE: 'dataframe',
         SoSWrapp.DEFAULT: pd.DataFrame(
@@ -461,7 +462,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                     self.DATAFRAME_EDITION_LOCKED: False,
                                     self.STRUCTURING: True,
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
-                                    self.NAMESPACE: 'ns_sampling'}
+                                    self.NAMESPACE: self.NS_SAMPLING}
                                })
 
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
@@ -639,7 +640,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                             self.STRUCTURING: True,
                                                             self.UNIT: None,
                                                             self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                            self.NAMESPACE: 'ns_sampling',
+                                                            self.NAMESPACE: self.NS_SAMPLING,
                                                             self.DEFAULT: self.samples_gene_df}})
 
         # Set or update GENERATED_SAMPLES in line with selected
@@ -717,7 +718,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                      self.DATAFRAME_EDITION_LOCKED: False,
                                                      self.STRUCTURING: True,
                                                      self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                     self.NAMESPACE: 'ns_sampling',
+                                                     self.NAMESPACE: self.NS_SAMPLING,
                                                      self.DEFAULT: default_in_eval_input_cp}})
 
     def setup_gs(self, dynamic_inputs):
@@ -812,7 +813,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                               self.STRUCTURING: True,
                                               self.UNIT: None,
                                               self.VISIBILITY: self.SHARED_VISIBILITY,
-                                              self.NAMESPACE: 'ns_sampling'}
+                                              self.NAMESPACE: self.NS_SAMPLING}
         if self.eval_inputs_cp_validity:
             if self.eval_inputs_cp_has_changed:
                 self.samples_gene_df = self.generate_sample_for_cp()

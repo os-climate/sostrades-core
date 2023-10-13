@@ -171,6 +171,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.map_name = map_name
         self.scenarios = []
 
+        self.samples = None
+
         self.eval_process_builder = None
         self.eval_in_possible_values = []
         self.eval_in_list = None
@@ -655,39 +657,40 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                       original_editable_state_dict=self.original_editable_dict_trade_variables)
 
         disc_in = self.get_data_in()
-        if possible_in_types and io_type_in:
-            self.eval_in_possible_types = possible_in_types
-            # Build names with keys dict
-            possible_in_values = list(possible_in_types.keys())
-            # these sorts are just for aesthetics
-            possible_in_values.sort()
-            default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
-                                                 'full_name': possible_in_values})
+        # TODO: transfert to simple sample generator
+        # if possible_in_values and io_type_in:
 
-            eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
+        #     # Convert sets into lists
+        #     possible_in_values = list(possible_in_values)
+        #     # these sorts are just for aesthetics
+        #     possible_in_values.sort()
+        #     default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
+        #                                          'full_name': possible_in_values})
 
-            if eval_input_new_dm is None:
-                self.dm.set_data(eval_inputs_f_name,
-                                 'value', default_in_dataframe, check_value=False)
-            # check if the eval_inputs need to be updated after a subprocess
-            # configure
-            elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-                self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-                                   is_eval_input=True)
-                default_dataframe = copy.deepcopy(default_in_dataframe)
-                already_set_names = eval_input_new_dm['full_name'].tolist()
-                already_set_values = eval_input_new_dm['selected_input'].tolist()
-                for index, name in enumerate(already_set_names):
-                    default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
-                        already_set_values[
-                            index]  # this will filter variables that are not inputs of the subprocess
-                    if self.MULTIPLIER_PARTICULE in name:
-                        default_dataframe = default_dataframe.append(
-                            pd.DataFrame({'selected_input': [already_set_values[index]],
-                                          'full_name': [name]}), ignore_index=True)
-                self.dm.set_data(eval_inputs_f_name,
-                                 'value', default_dataframe, check_value=False)
+        #     eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+        #     eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
+
+        #     if eval_input_new_dm is None:
+        #         self.dm.set_data(eval_inputs_f_name,
+        #                          'value', default_in_dataframe, check_value=False)
+        #     # check if the eval_inputs need to be updated after a subprocess
+        #     # configure
+        #     elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+        #         self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+        #                            is_eval_input=True)
+        #         default_dataframe = copy.deepcopy(default_in_dataframe)
+        #         already_set_names = eval_input_new_dm['full_name'].tolist()
+        #         already_set_values = eval_input_new_dm['selected_input'].tolist()
+        #         for index, name in enumerate(already_set_names):
+        #             default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
+        #                 already_set_values[
+        #                     index]  # this will filter variables that are not inputs of the subprocess
+        #             if self.MULTIPLIER_PARTICULE in name:
+        #                 default_dataframe = default_dataframe.append(
+        #                     pd.DataFrame({'selected_input': [already_set_values[index]],
+        #                                   'full_name': [name]}), ignore_index=True)
+        #         self.dm.set_data(eval_inputs_f_name,
+        #                          'value', default_dataframe, check_value=False)
 
         if possible_out_values and io_type_out:
             possible_out_values = list(possible_out_values)

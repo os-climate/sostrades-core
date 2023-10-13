@@ -51,7 +51,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # create an outer ms driver
         multi_scenarios = self.ee.factory.create_multi_instance_driver('outer_ms', builder_list)
-        # multi_scenarios[0].associate_namespaces(ns_eval_outer)
+        # multi_scenarios[0].associate_namespaces(ns_driver_outer)
         return multi_scenarios
 
         # ns_lower_doe_eval = self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoEEvalUpper.DoEEvalLower')

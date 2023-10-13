@@ -17,6 +17,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Generate a doe scenario
 """
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
@@ -44,7 +45,7 @@ class ProcessBuilder(BaseProcessBuilder):
             mods_dict_sellar,
             ns_dict={
                 'ns_OptimSellar': self.ee.study_name,
-                'ns_eval': f'{self.ee.study_name}',
+                SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}',
             },
         )
         eval_builder = self.ee.factory.create_driver(
@@ -55,7 +56,8 @@ class ProcessBuilder(BaseProcessBuilder):
             'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
         }
         doe_builder = self.create_builder_list(
-            mod_dict_doe, ns_dict={'ns_sampling': f'{self.ee.study_name}'}
+            mod_dict_doe, ns_dict={SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}',
+                                   SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}'}
         )
 
         mods_dict2 = {'Simple_Disc2': disc_dir + 'simple_discs_doe_eval.SimpleDisc2'}

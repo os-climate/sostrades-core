@@ -15,6 +15,7 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 #-- Generate test 1 process
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
@@ -34,7 +35,8 @@ class ProcessBuilder(BaseProcessBuilder):
         # putting the ns_sampling in the same value as the driver will trigger
         # the coupling like in mono instance case
         self.ee.ns_manager.add_ns(
-            'ns_sampling', f'{self.ee.study_name}.multi_scenarios')
+            SampleGeneratorWrapper.NS_SAMPLING, f'{self.ee.study_name}.multi_scenarios',
+            SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.multi_scenarios')
 
         # multi scenario driver builder
         repo_name = "sostrades_core.sos_processes.test.tests_driver_eval.multi"

@@ -25,6 +25,7 @@ from numpy import array, ndarray, delete, NaN
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
@@ -64,7 +65,7 @@ class MultipliersWrapper(SoSWrapp):
     # TODO: add and refer class variables
     EVAL_INPUTS = 'eval_inputs'
     EVAL_INPUTS_CP = 'eval_inputs_cp'
-    DISC_SHARED_NS = 'ns_sampling'
+    DISC_SHARED_NS = SampleGeneratorWrapper.NS_SAMPLING
 
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'

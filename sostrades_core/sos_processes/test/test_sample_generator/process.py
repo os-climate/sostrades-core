@@ -17,6 +17,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Generate a doe scenario
 """
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
@@ -39,7 +40,7 @@ class ProcessBuilder(BaseProcessBuilder):
         }
         builder = self.create_builder_list(
             mod_dict_doe,
-            ns_dict={'ns_sampling': f'{self.ee.study_name}.SampleGenerator'},
+            ns_dict={SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}.SampleGenerator', SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}.SampleGenerator'},
         )
 
         return builder

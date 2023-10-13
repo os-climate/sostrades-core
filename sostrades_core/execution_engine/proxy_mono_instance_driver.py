@@ -22,6 +22,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 import pandas as pd
 from numpy import NaN
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 
@@ -56,6 +57,8 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         'wait_time_between_fork': {ProxyDriverEvaluator.TYPE: 'float', ProxyDriverEvaluator.NUMERICAL: True,
                                    ProxyDriverEvaluator.DEFAULT: 0.0}
     }
+
+    DESC_IN.update(ProxyDriverEvaluator.DESC_IN)
 
     # DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None,
     #                                   ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
@@ -112,7 +115,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
     def configure_driver(self):
         disc_in = self.get_data_in()
-        if self.EVAL_INPUTS in disc_in and len(self.proxy_disciplines) > 0:
+        if len(self.proxy_disciplines) > 0:
             # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
             # Manage usecase import
             ref_discipline_full_name = f'{self.ee.study_name}.Eval'
@@ -120,21 +123,45 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 ref_discipline_full_name)
             # SET EVAL POSSIBLE VALUES
             self.set_eval_possible_values()
+            self.build_samples()
+    
+    def build_samples(self):
+        '''
+        build a sample dict with full name variables and selected scenario
+        '''
+        sample_df = self.get_sosdisc_inputs('samples_df').copy()
+        self.samples = []
+
+        # get all columns that are not scenario_name or selected_scenario
+        disc_name = self.get_disc_full_name()
+        selected_inputs = [col for col in sample_df.columns 
+                           if col != SampleGeneratorWrapper.SELECTED_SCENARIO and col != SampleGeneratorWrapper.SCENARIO_NAME]
+        # build selected inputs with fullnames to get x0 for reference scenario
+        self.selected_inputs = [f'{disc_name}.{key}' for key in selected_inputs]
+        # keep only the rows where the scenario is selected
+        sample_df = sample_df[sample_df[SampleGeneratorWrapper.SELECTED_SCENARIO]== True]
+        sample_df = sample_df.drop(SampleGeneratorWrapper.SELECTED_SCENARIO, axis='columns')
+        
+        # rename dataframe columns with full names
+        for key in selected_inputs:
+            sample_df[f'{disc_name}.{key}'] = sample_df[key].values
+        sample_df = sample_df.drop(selected_inputs, axis='columns')
+
+        scenario_nb = len(sample_df[SampleGeneratorWrapper.SCENARIO_NAME])
+        for i in range(scenario_nb):
+            self.samples.append(sample_df.iloc[i].to_dict())
+        #add reference scenario
+        self.samples.append(self.get_x0())
+            
+
 
     def set_wrapper_attributes(self, wrapper):
         super().set_wrapper_attributes(wrapper)
-        if self.eval_in_list is not None:
+        if self.samples is not None:
             # specific to mono-instance
-            eval_attributes = {'eval_in_list': self.eval_in_list,
+            eval_attributes = {'samples': self.samples,
                                'eval_out_list': self.eval_out_list,
                                'eval_out_names': self.eval_out_names,
-                               'reference_scenario': self.get_x0(),
-                               'activated_elems_dspace_df': [[True, True]
-                                                             if self.ee.dm.get_data(var,
-                                                                                    self.TYPE) == 'array' else [
-                                   True]
-                                                             for var in self.eval_in_list],
-                               # NB: this works with an array of dimensions >2 even though it looks incoherent
                                'driver_name': self.get_disc_full_name(),
                                'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
                                'selected_inputs': self.selected_inputs,
@@ -161,9 +188,11 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         '''
         Get initial values for input values decided in the evaluation
         '''
+        dict_data =  dict(zip(self.selected_inputs,
+                        map(self.dm.get_value, self.selected_inputs)))
+        dict_data[SampleGeneratorWrapper.SCENARIO_NAME] = 'reference_scenario'
 
-        return dict(zip(self.eval_in_list,
-                        map(self.dm.get_value, self.eval_in_list)))
+        return dict_data
 
     ## TODO This method must be moved into a specific sample generator
     # def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):

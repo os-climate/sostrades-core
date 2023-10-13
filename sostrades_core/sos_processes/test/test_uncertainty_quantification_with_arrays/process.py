@@ -15,6 +15,7 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 #-- Generate test 1 process
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
@@ -34,7 +35,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         ns_dict = {
             'ns_uncertainty_quantification': f'{self.ee.study_name}.{uq_name}',
-            'ns_eval': f'{self.ee.study_name}.{uq_name}'}
+            SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}.{uq_name}'}
         self.ee.ns_manager.add_ns_def(ns_dict)
 
         builder = self.ee.factory.add_uq_builder(uq_name)
