@@ -224,7 +224,7 @@ class CheckDataIntegrity():
         if dataframe_descriptor is None and not dynamic_dataframe_column:
             check_integrity_msg = 'No dataframe descriptor set'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
-        else:
+        elif dataframe_descriptor is not None:
             df_descriptor_well_defined = True
             for key in dataframe_descriptor:
                 # Check column data well described
