@@ -219,7 +219,35 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         dict_output = {}
 
         # We first begin by sample generation
-        self.samples = self.attributes['samples']
+        samples_df = self.get_sosdisc_inputs(SampleGeneratorWrapper.SAMPLES_DF)
+        
+        input_columns = [f"{self.attributes['driver_name']}.{col}" for col in samples_df.columns 
+                         if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
+        input_columns_short_name = [col for col in samples_df.columns 
+                         if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
+        # get reference scenario
+        reference_values = self.get_sosdisc_inputs(input_columns, full_name_keys=True)
+        if len(input_columns) == 1:
+            reference_values = [reference_values]
+        reference_scenario = {input_columns[i]: reference_values[i] for i in range(len(input_columns))}
+        reference_scenario[SampleGeneratorWrapper.SCENARIO_NAME] = 'reference_scenario'
+
+        # keep only selected scenario
+        samples_df = samples_df[samples_df[SampleGeneratorWrapper.SELECTED_SCENARIO]== True]
+        samples_df = samples_df.drop(SampleGeneratorWrapper.SELECTED_SCENARIO, axis='columns')
+
+        #rename the columns with full names
+        for key in input_columns_short_name:
+            samples_df[f"{self.attributes['driver_name']}.{key}"] = samples_df[key].values
+        samples_df = samples_df.drop(input_columns_short_name, axis='columns')
+
+        #build samples dict
+        self.samples = []
+        scenario_nb = len(samples_df[SampleGeneratorWrapper.SCENARIO_NAME])
+        for i in range(scenario_nb):
+            self.samples.append(samples_df.iloc[i].to_dict())
+        #add reference scenario
+        self.samples.append(reference_scenario)
 
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(
