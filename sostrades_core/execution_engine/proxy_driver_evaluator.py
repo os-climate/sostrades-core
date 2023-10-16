@@ -90,7 +90,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     }
 
     # EVAL_INPUTS = 'eval_inputs'
-    # EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
+    EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 
     NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
 
@@ -345,37 +345,37 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         poss_in_values_full = set()
         poss_out_values_full = set()
-        # if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
-        #     disc_in = disc.get_data_in()
-        #     for data_in_key in disc_in.keys():
-        #         is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
-        #         is_structuring = disc_in[data_in_key].get(
-        #             self.STRUCTURING, False)
-        #         in_coupling_numerical = data_in_key in list(
-        #             ProxyCoupling.DESC_IN.keys())
-        #         full_id = disc.get_var_full_name(
-        #             data_in_key, disc_in)
-        #         is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-        #                      ]['io_type'] == 'in'
-        #         # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
-        #         is_editable = disc_in[data_in_key]['editable']
-        #         is_None = disc_in[data_in_key]['value'] is None
-        #         is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
-        #         if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
-        #             # Caution ! This won't work for variables with points in name
-        #             # as for ac_model
-        #             # we remove the study name from the variable full  name for a
-        #             # sake of simplicity
-        #             if is_input_type and not is_a_multiplier:
-        #                 poss_in_values_full.add(
-        #                     full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
-        #                 # poss_in_values_full.append(full_id)
-        #
-        #             # if is_input_multiplier_type and not is_None:
-        #             #     poss_in_values_list = self.set_multipliers_values(
-        #             #         disc, full_id, data_in_key)
-        #             #     for val in poss_in_values_list:
-        #             #         poss_in_values_full.append(val)
+        if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
+            disc_in = disc.get_data_in()
+            for data_in_key in disc_in.keys():
+                is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
+                is_structuring = disc_in[data_in_key].get(
+                    self.STRUCTURING, False)
+                in_coupling_numerical = data_in_key in list(
+                    ProxyCoupling.DESC_IN.keys())
+                full_id = disc.get_var_full_name(
+                    data_in_key, disc_in)
+                is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
+                             ]['io_type'] == 'in'
+                # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
+                is_editable = disc_in[data_in_key]['editable']
+                is_None = disc_in[data_in_key]['value'] is None
+                is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
+                if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
+                    # Caution ! This won't work for variables with points in name
+                    # as for ac_model
+                    # we remove the study name from the variable full  name for a
+                    # sake of simplicity
+                    if is_input_type and not is_a_multiplier:
+                        poss_in_values_full.add(
+                            full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
+                        # poss_in_values_full.append(full_id)
+        
+                    # if is_input_multiplier_type and not is_None:
+                    #     poss_in_values_list = self.set_multipliers_values(
+                    #         disc, full_id, data_in_key)
+                    #     for val in poss_in_values_list:
+                    #         poss_in_values_full.append(val)
 
         if io_type_out:
             disc_out = disc.get_data_out()
@@ -643,7 +643,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
               
             # check if the eval_inputs need to be updated after a subprocess
             # configure
-            if set(eval_input_new_dm) != (set(possible_in_values)):
+            if eval_input_new_dm is None or set(eval_input_new_dm) != (set(possible_in_values)):
                 self.dm.set_data(eval_inputs_f_name,
                                  'value', possible_in_values, check_value=False)
 

@@ -282,6 +282,10 @@ class SampleGeneratorWrapper(SoSWrapp):
         else:
             raise Exception(
                 f"Sampling has not been made")
+        
+        # Add the scenario names and selected scenario columns
+        samples_df[self.SELECTED_SCENARIO] = [True] * len(samples_df)
+        samples_df[self.SCENARIO_NAME] = [f'scenario_{i}' for i in range(len(samples_df))]
 
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
