@@ -35,10 +35,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
 
     DESC_IN = {
-        ProxyDriverEvaluator.POSSIBLE_INPUTS: {ProxyDriverEvaluator.TYPE: 'list',
-                                                ProxyDriverEvaluator.EDITABLE:False,
-                                                   ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-                                                   ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
+        
         ProxyDriverEvaluator.EVAL_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                             ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                 'selected_output': ('bool', None, True),
