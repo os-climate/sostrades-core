@@ -40,7 +40,7 @@ custom-inherit==2.4.0
     # via -r ./gemseo/requirements.txt
 cvxpy==1.1.18
     # via -r ./sostrades-core/requirements.in
-cycler==0.12.0
+cycler==0.12.1
     # via matplotlib
 decorator==5.1.1
     # via networkx
@@ -100,7 +100,7 @@ gitpython==3.1.31
     # via
     #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-ontology/requirements.in
-google-auth==2.23.2
+google-auth==2.23.3
     # via kubernetes
 graphviz==0.16
     # via
@@ -436,7 +436,7 @@ urllib3==2.0.6
     #   -r ./sostrades-webapi/requirements.in
     #   kubernetes
     #   requests
-websocket-client==1.6.3
+websocket-client==1.6.4
     # via kubernetes
 werkzeug==2.0.3
     # via
