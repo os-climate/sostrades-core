@@ -140,6 +140,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     SAMPLES_DF = 'samples_df'
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
+    
     NS_DRIVER = 'ns_driver'
     NS_SAMPLING = 'ns_sampling'
     SAMPLES_DF_DESC = {
@@ -151,9 +152,16 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
         SoSWrapp.EDITABLE: True,
+        SoSWrapp.STRUCTURING:True,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
         SoSWrapp.NAMESPACE: NS_DRIVER
     }
+    EVAL_POSSIBLE_INPUTS = 'eval_possible_inputs'
+    EVAL_POSSIBLE_INPUTS_DESC = {SoSWrapp.TYPE: 'list',
+                                SoSWrapp.STRUCTURING: True,
+                                SoSWrapp.EDITABLE:False,
+                                SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+                                SoSWrapp.NAMESPACE: NS_DRIVER}
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -286,7 +294,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         
         # Add the scenario names and selected scenario columns
         samples_df[self.SELECTED_SCENARIO] = [True] * len(samples_df)
-        samples_df[self.SCENARIO_NAME] = [f'scenario_{i}' for i in range(len(samples_df))]
+        samples_df[self.SCENARIO_NAME] = [f'scenario_{i}' for i in range(1,len(samples_df)+1)]
 
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
@@ -468,12 +476,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
                                     self.NAMESPACE: self.NS_SAMPLING}
                                })
-        dynamic_inputs.update({'possible_inputs':
-                                   {self.TYPE: 'list',
-                                    self.STRUCTURING: True,
-                                    self.EDITABLE:False,
-                                    self.VISIBILITY: self.SHARED_VISIBILITY,
-                                    self.NAMESPACE: self.NS_DRIVER}
+        dynamic_inputs.update({self.EVAL_POSSIBLE_INPUTS: self.EVAL_POSSIBLE_INPUTS_DESC
                                })
 
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
@@ -493,8 +496,8 @@ class SampleGeneratorWrapper(SoSWrapp):
     def setup_dynamic_eval_inputs(self, dynamic_inputs):
         
         disc_in = self.get_data_in()
-        if 'eval_inputs' in disc_in and 'possible_inputs' in disc_in:
-            possible_inputs = self.get_sosdisc_inputs('possible_inputs')
+        if 'eval_inputs' in disc_in and self.EVAL_POSSIBLE_INPUTS in disc_in:
+            possible_inputs = self.get_sosdisc_inputs(self.EVAL_POSSIBLE_INPUTS)
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
             if eval_inputs is None and len(possible_inputs)>0:
                 # build eval_input with default dataframe

@@ -101,12 +101,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
     SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
-    DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC}
-    DESC_IN[SAMPLES_DF][SampleGeneratorWrapper.STRUCTURING]= True
+
+    DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
+               SampleGeneratorWrapper.EVAL_POSSIBLE_INPUTS:SampleGeneratorWrapper.EVAL_POSSIBLE_INPUTS_DESC}
 
     GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
     EVAL_OUTPUTS = 'eval_outputs'
-    POSSIBLE_INPUTS = 'possible_inputs'
+    POSSIBLE_INPUTS = SampleGeneratorWrapper.EVAL_POSSIBLE_INPUTS
+
     ##
     ## To refactor instancce reference and subprocess import
     ##
@@ -659,7 +661,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         disc_in = self.get_data_in()
         # fill possible in values and set them in the possible_values list
-        if possible_in_values and io_type_in:
+        if possible_in_values:
 
             # Convert sets into lists
             possible_in_values = list(possible_in_values)
