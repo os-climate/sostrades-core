@@ -35,14 +35,10 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
 
     DESC_IN = {
-        # ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
-        #                                           ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
-        #                                               'selected_input': ('bool', None, True),
-        #                                               'full_name': ('string', None, False)},
-        #                                           ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
-        #                                           ProxyDriverEvaluator.STRUCTURING: True,
-        #                                           ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-        #                                           ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
+        ProxyDriverEvaluator.POSSIBLE_INPUTS: {ProxyDriverEvaluator.TYPE: 'list',
+                                                ProxyDriverEvaluator.EDITABLE:False,
+                                                   ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
+                                                   ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
         ProxyDriverEvaluator.EVAL_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                             ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                 'selected_output': ('bool', None, True),
@@ -130,28 +126,29 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         build a sample dict with full name variables and selected scenario
         '''
         sample_df = self.get_sosdisc_inputs('samples_df').copy()
-        self.samples = []
+        if len(sample_df) >0:
+            self.samples = []
 
-        # get all columns that are not scenario_name or selected_scenario
-        disc_name = self.get_disc_full_name()
-        selected_inputs = [col for col in sample_df.columns 
-                           if col != SampleGeneratorWrapper.SELECTED_SCENARIO and col != SampleGeneratorWrapper.SCENARIO_NAME]
-        # build selected inputs with fullnames to get x0 for reference scenario
-        self.selected_inputs = [f'{disc_name}.{key}' for key in selected_inputs]
-        # keep only the rows where the scenario is selected
-        sample_df = sample_df[sample_df[SampleGeneratorWrapper.SELECTED_SCENARIO]== True]
-        sample_df = sample_df.drop(SampleGeneratorWrapper.SELECTED_SCENARIO, axis='columns')
-        
-        # rename dataframe columns with full names
-        for key in selected_inputs:
-            sample_df[f'{disc_name}.{key}'] = sample_df[key].values
-        sample_df = sample_df.drop(selected_inputs, axis='columns')
+            # get all columns that are not scenario_name or selected_scenario
+            disc_name = self.get_disc_full_name()
+            selected_inputs = [col for col in sample_df.columns 
+                            if col != SampleGeneratorWrapper.SELECTED_SCENARIO and col != SampleGeneratorWrapper.SCENARIO_NAME]
+            # build selected inputs with fullnames to get x0 for reference scenario
+            self.selected_inputs = [f'{disc_name}.{key}' for key in selected_inputs]
+            # keep only the rows where the scenario is selected
+            sample_df = sample_df[sample_df[SampleGeneratorWrapper.SELECTED_SCENARIO]== True]
+            sample_df = sample_df.drop(SampleGeneratorWrapper.SELECTED_SCENARIO, axis='columns')
+            
+            # rename dataframe columns with full names
+            for key in selected_inputs:
+                sample_df[f'{disc_name}.{key}'] = sample_df[key].values
+            sample_df = sample_df.drop(selected_inputs, axis='columns')
 
-        scenario_nb = len(sample_df[SampleGeneratorWrapper.SCENARIO_NAME])
-        for i in range(scenario_nb):
-            self.samples.append(sample_df.iloc[i].to_dict())
-        #add reference scenario
-        self.samples.append(self.get_x0())
+            scenario_nb = len(sample_df[SampleGeneratorWrapper.SCENARIO_NAME])
+            for i in range(scenario_nb):
+                self.samples.append(sample_df.iloc[i].to_dict())
+            #add reference scenario
+            self.samples.append(self.get_x0())
             
 
 
