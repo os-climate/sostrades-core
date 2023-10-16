@@ -34,7 +34,7 @@ class Study(StudyManager):
         scenario_df_inner = pd.DataFrame({'selected_scenario': [True, True],
                                           'scenario_name': ['name_1',
                                                             'name_2']})
-        values_dict[f'{self.study_name}.outer_ms.scenario_df'] = scenario_df_outer
+        values_dict[f'{self.study_name}.outer_ms.samples_df'] = scenario_df_outer
         values_dict[f'{self.study_name}.outer_ms.instance_reference'] = True
         values_dict[f'{self.study_name}.outer_ms.reference_mode'] = 'copy_mode'
 
@@ -49,9 +49,9 @@ class Study(StudyManager):
         scenario_list_outer = ['scenario_1', 'scenario_2']
         scenario_list_inner = ['name_1', 'name_2']
         for i, sc in enumerate(scenario_list_outer):
-            values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.scenario_df'] = scenario_df_inner
+            values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.samples_df'] = scenario_df_inner
             values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.instance_reference'] = True
-        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.scenario_df'] = scenario_df_inner
+        values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.samples_df'] = scenario_df_inner
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.instance_reference'] = True
         values_dict[f'{self.study_name}.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'copy_mode'
 

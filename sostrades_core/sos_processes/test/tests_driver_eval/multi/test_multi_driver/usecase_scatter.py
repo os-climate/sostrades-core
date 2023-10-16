@@ -27,7 +27,7 @@ class Study(StudyManager):
         setup_data_list = []
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             True],
                                                                                       'scenario_name': ['scenario_1',
                                                                                                         'scenario_2']})

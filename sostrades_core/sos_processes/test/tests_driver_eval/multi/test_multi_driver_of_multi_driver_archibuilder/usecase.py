@@ -39,9 +39,9 @@ class Study(StudyManager):
                                                              'sc3_all_by_road']})
 
         dict_values = {
-                       f'{self.study_name}.outer_ms.scenario_df': scenario_df_outer,
-                       f'{self.study_name}.outer_ms.sc1_business.inner_ms.scenario_df': scenario_df_inner1,
-                       f'{self.study_name}.outer_ms.sc2_business.inner_ms.scenario_df': scenario_df_inner2}
+                       f'{self.study_name}.outer_ms.samples_df': scenario_df_outer,
+                       f'{self.study_name}.outer_ms.sc1_business.inner_ms.samples_df': scenario_df_inner1,
+                       f'{self.study_name}.outer_ms.sc2_business.inner_ms.samples_df': scenario_df_inner2}
 
 
         activation_df_business_1 = pd.DataFrame({'Business': ['Remy'],

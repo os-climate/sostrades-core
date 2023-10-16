@@ -38,7 +38,7 @@ class Study(StudyManager):
                                     'scenario_name': ['scenario_1',
                                                       'scenario_W',
                                                       'scenario_2']})
-        disc_dict[f'{self.study_name}.Eval.scenario_df'] = scenario_df
+        disc_dict[f'{self.study_name}.Eval.samples_df'] = scenario_df
         disc_dict[f'{ns}.Eval.instance_reference'] = True
         disc_dict[f'{ns}.Eval.reference_mode'] = 'copy_mode'
 
