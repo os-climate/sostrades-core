@@ -1352,7 +1352,8 @@ class ProxyDiscipline:
 
             # store structuring variables in self._structuring_variables
             if self.STRUCTURING in data_keys and curr_data[self.STRUCTURING] is True:
-                self._structuring_variables[key] = None
+                if curr_data[self.IO_TYPE] == self.IO_TYPE_IN:
+                    self._structuring_variables[key] = None
                 del curr_data[self.STRUCTURING]
             if self.CHECK_INTEGRITY_MSG not in data_keys:
                 curr_data[self.CHECK_INTEGRITY_MSG] = ''

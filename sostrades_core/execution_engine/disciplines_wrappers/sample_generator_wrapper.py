@@ -150,7 +150,6 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
         SoSWrapp.EDITABLE: True,
-        SoSWrapp.STRUCTURING: True,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
         SoSWrapp.NAMESPACE: NS_DRIVER
     }
@@ -204,6 +203,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
             # TODO: Here we start from scratch each time we switch from one method to the other
             #       ... but maybe we would like to keep selected eval_inputs or eval_inputs_cp ?
+            self.set_eval_possible_values()
 
             if self.sampling_method == self.DOE_ALGO:
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
@@ -463,6 +463,13 @@ class SampleGeneratorWrapper(SoSWrapp):
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
                                     self.NAMESPACE: self.NS_SAMPLING}
                                })
+        dynamic_inputs.update({'possible_inputs':
+                                   {self.TYPE: 'list',
+                                    self.STRUCTURING: True,
+                                    self.EDITABLE:False,
+                                    self.VISIBILITY: self.SHARED_VISIBILITY,
+                                    self.NAMESPACE: self.NS_DRIVER}
+                               })
 
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
         """
@@ -470,6 +477,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             Create or update DESIGN_SPACE
             Create or update ALGO_OPTIONS
         """
+        self.setup_dynamic_eval_inputs(dynamic_inputs)
         self.setup_design_space(dynamic_inputs)
         self.setup_algo_options(dynamic_inputs)
         # Setup GENERATED_SAMPLES for cartesian product
@@ -477,6 +485,18 @@ class SampleGeneratorWrapper(SoSWrapp):
             # TODO: manage config-time sample for grid search and test for DoE
             self.setup_generated_samples_for_doe(dynamic_inputs)
 
+    def setup_dynamic_eval_inputs(self, dynamic_inputs):
+        
+        disc_in = self.get_data_in()
+        if 'eval_inputs' in disc_in and 'possible_inputs' in disc_in:
+            possible_inputs = self.get_sosdisc_inputs('possible_inputs')
+            eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+            if eval_inputs is None and len(possible_inputs)>0:
+                # build eval_input with default dataframe
+                eval_inputs = pd.DataFrame({'selected_input': [False]*len(possible_inputs),
+                                            'full_name':possible_inputs})
+                dynamic_inputs['eval_inputs'][self.VALUE] = eval_inputs
+                
     def setup_algo_options(self, dynamic_inputs):
         """
             Method that setup 'algo_options'
@@ -503,7 +523,44 @@ class SampleGeneratorWrapper(SoSWrapp):
                         disc_in[self.ALGO_OPTIONS][self.VALUE], default_dict)
                     disc_in[self.ALGO_OPTIONS][self.VALUE] = {
                         key: options_map[key] for key in all_options}
+                    
 
+    def set_eval_possible_values(self):
+        disc_in = self.get_data_in()
+        if self.POSSIBLE_VALUES in disc_in:
+            possible_values = self.get_sosdisc_inputs(self.POSSIBLE_VALUES)
+            if possible_values is not None:
+                possible_in_values = list(possible_values)
+                # these sorts are just for aesthetics
+                possible_in_values.sort()
+                default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
+                                                 'full_name': possible_in_values})
+
+                eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+                eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
+
+                if eval_input_new_dm is None:
+                    self.dm.set_data(eval_inputs_f_name,
+                                 'value', default_in_dataframe, check_value=False)
+                # check if the eval_inputs need to be updated after a subprocess
+                # configure
+                elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+                    self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                                    is_eval_input=True)
+                    default_dataframe = copy.deepcopy(default_in_dataframe)
+                    already_set_names = eval_input_new_dm['full_name'].tolist()
+                    already_set_values = eval_input_new_dm['selected_input'].tolist()
+                    for index, name in enumerate(already_set_names):
+                        default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
+                            already_set_values[
+                                index]  # this will filter variables that are not inputs of the subprocess
+                        if self.MULTIPLIER_PARTICULE in name:
+                            default_dataframe = default_dataframe.append(
+                                pd.DataFrame({'selected_input': [already_set_values[index]],
+                                            'full_name': [name]}), ignore_index=True)
+                    self.dm.set_data(eval_inputs_f_name,
+                                    'value', default_dataframe, check_value=False)
+                    
     def setup_design_space(self, dynamic_inputs):
         """
         Method that setup 'design_space'
@@ -515,16 +572,14 @@ class SampleGeneratorWrapper(SoSWrapp):
         # Dynamic input of default design space
         if 'eval_inputs' in disc_in:
             eval_inputs = self.get_sosdisc_inputs('eval_inputs')
-            # if self.sampling_method == self.GRID_SEARCH:
-            #     eval_inputs = self.filter_eval_inputs_types_to_float(eval_inputs)
-            #     disc_in['eval_inputs'][self.VALUE] = eval_inputs
-
+            
             if eval_inputs is not None:
 
                 # selected_inputs = eval_inputs[eval_inputs['selected_input']
                 #                               == True]['full_name']
                 selected_inputs = self.reformat_eval_inputs(
                     eval_inputs).tolist()
+
 
                 if set(selected_inputs) != set(self.selected_inputs):
                     selected_inputs_has_changed = True
