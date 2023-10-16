@@ -22,6 +22,7 @@ from pandas._testing import assert_frame_equal
 import re
 
 from gemseo.algos.doe.doe_factory import DOEFactory
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -271,6 +272,8 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         target_samples_df = pd.DataFrame(data=target_samples,
                                          columns=selected_inputs)
+        #keep only variables columns in samples_df
+        doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
 
         assert_frame_equal(doe_disc_samples, target_samples_df)
 
@@ -385,6 +388,10 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             design_space = exec_eng.dm.get_value(
                 'doe.SampleGenerator.design_space')
+            
+            #keep only variables columns in samples_df
+            doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
+
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
             # Check whether samples correspond with eval_inputs variable
@@ -538,6 +545,9 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             design_space = exec_eng.dm.get_value(
                 'doe.SampleGenerator.design_space')
+            #remove scenario columns from samples_df
+            doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
+
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
             # Check whether samples correspond with eval_inputs variable

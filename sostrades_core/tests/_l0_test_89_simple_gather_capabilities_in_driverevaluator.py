@@ -649,7 +649,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #         [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #
     #     dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-    #                    f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+    #                    f'{self.study_name}.multi_scenarios.samples_df': scenario_df}
     #
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     # manually configure the scenarios non-varying values (~reference)
@@ -678,7 +678,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #
     #     scenario_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1, self.z2], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
-    #     dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+    #     dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = scenario_df
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     self.exec_eng.execute()
     #     y1, o1 = (self.a1 * self.x1 + self.b1,
@@ -705,7 +705,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     scenario_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_1', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #     dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-    #                    f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+    #                    f'{self.study_name}.multi_scenarios.samples_df': scenario_df}
     #
     #     error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
     #     exp_tv = 'Nodes representation for Treeview MyCase\n' \
@@ -722,7 +722,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
     #     self.assertIn(error_message, self.my_handler.msg_list)
     #
-    #     runtime_error_message = 'Variable MyCase.multi_scenarios.scenario_df : ' \
+    #     runtime_error_message = 'Variable MyCase.multi_scenarios.samples_df : ' \
     #         'Cannot activate several scenarios with the same name (scenario_1).'
     #     # data integrity Exception
     #     with self.assertRaises(ValueError) as cm:
@@ -740,7 +740,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #         [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #
     #     dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-    #                    f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+    #                    f'{self.study_name}.multi_scenarios.samples_df': scenario_df}
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #
     #     scenario_df['scenario_name'].iloc[2] = 'scenario_1'
@@ -767,7 +767,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
     #     self.assertIn(error_message, self.my_handler.msg_list)
     #
-    #     runtime_error_message = 'Variable MyCase.multi_scenarios.scenario_df : ' \
+    #     runtime_error_message = 'Variable MyCase.multi_scenarios.samples_df : ' \
     #         'Cannot activate several scenarios with the same name (scenario_1).'
     #     # data integrity Exception
     #     with self.assertRaises(ValueError) as cm:
