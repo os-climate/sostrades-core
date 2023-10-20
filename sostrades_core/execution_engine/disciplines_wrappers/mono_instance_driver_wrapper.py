@@ -299,6 +299,12 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             subprocess_ref_outputs, full_name_keys=True)
         # save doeeval outputs
         sample_input_df = pd.DataFrame( self.samples)
+
+        # go again with short names into samples_inputs_df
+        for key in input_columns_short_name:
+            sample_input_df[key] = sample_input_df[f"{self.attributes['driver_name']}.{key}"].values
+        sample_input_df = sample_input_df.drop(input_columns, axis='columns')
+
         self.store_sos_outputs_values({'samples_inputs_df':sample_input_df})
 
         self.store_sos_outputs_values(
