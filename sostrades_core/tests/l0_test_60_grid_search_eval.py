@@ -351,7 +351,7 @@ class TestGridSearchEval(unittest.TestCase):
                 'scenario_6':55.0,
                 'scenario_7':27.0,
                 'scenario_8':32.0,
-                _scenario:45.0,}
+                'reference_scenario':45.0,}
 
         new_gsoutputs_dict={'doe_samples_dataframe':doe_disc_samples,
                             'GridSearch.Disc1.y_dict':yy_dict}

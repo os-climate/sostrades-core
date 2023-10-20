@@ -639,7 +639,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # + reference value)
         expected_eval_disc_samples = pd.DataFrame(
             {'scenario_name': ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4', 'scenario_5', 'reference_scenario'],
-             'doe.Eval.x': x_values + [1.000000], 'doe.Eval.z': z_values + [array([1.0, 1.0])]})
+             'x': x_values + [1.000000], 'z': z_values + [array([1.0, 1.0])]})
         assert_frame_equal(
             eval_disc_samples, expected_eval_disc_samples, check_dtype=False)
 
@@ -719,7 +719,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # initial point) are within [0,10.] range
         sample_inputs_df = exec_eng.dm.get_value(
             'doe.samples_inputs_df')
-        generated_x = sample_inputs_df['doe.Eval.x'].tolist()
+        generated_x = sample_inputs_df['x'].tolist()
         self.assertTrue(
             all(0 <= element[0] <= 10. for element in generated_x[:-1]))
 
@@ -729,7 +729,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
         # check that all generated samples are within [5.,11.] range
         generated_x = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['doe.Eval.x'].tolist()
+            'doe.samples_inputs_df')['x'].tolist()
         self.assertTrue(
             all(5. <= element[0] <= 11. for element in generated_x[:-1]))
 
@@ -743,12 +743,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         # exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         generated_x = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['doe.Eval.x'].tolist()
+            'doe.samples_inputs_df')['x'].tolist()
         self.assertTrue(
             all(-9. <= element[0] <= 150. for element in generated_x[:-1]))
 
         generated_z = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['doe.Eval.z'].tolist()
+            'doe.samples_inputs_df')['z'].tolist()
         self.assertTrue(
             all(-10. <= element[0] <= 10. and 4. <= element[1] <= 100. for element in
                 generated_z[:-1]))
@@ -1341,9 +1341,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         i = 0
         for key in eval_disc_ind.keys():
-            self.assertTrue(0. <= eval_disc_samples[f'{ns}.Eval.Disc1.a'][i] <= 1.)
+            self.assertTrue(0. <= eval_disc_samples[f'Disc1.a'][i] <= 1.)
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples[f'{ns}.Eval.Disc1.a'][i])
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples[f'Disc1.a'][i])
             i += 1
 
     def test_16_Eval_User_Defined_samples_custom_output_name(self):
