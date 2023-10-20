@@ -32,6 +32,7 @@ from numpy import array
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 import os
 from os.path import dirname, join
 
@@ -231,7 +232,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {'x': x_values, 'z': z_values}
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
+                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}' for i in range(1,6)],
+                          'x': x_values, 'z': z_values}
         # samples_dict = {'z': z_values, 'x': x_values,
         #                 'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -278,12 +281,12 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_2': array([15.000894464408367]),
                                       'scenario_3': array([11.278122259980103]),
                                       'scenario_4': array([5.1893098993071565]),
-                                      'scenario_5': array([101.52834810032466]), 'reference': array([2.29689011157193])}
+                                      'scenario_5': array([101.52834810032466]), 'reference_scenario': array([2.29689011157193])}
         reference_dict_doe_disc_y2 = {'scenario_1': array([11.033919669249876]),
                                       'scenario_2': array([9.200264485831308]),
                                       'scenario_3': array([6.186104699873589]),
                                       'scenario_4': array([7.644306621667905]),
-                                      'scenario_5': array([10.67812782219566]), 'reference': array([3.515549442140351])}
+                                      'scenario_5': array([10.67812782219566]), 'reference_scenario': array([3.515549442140351])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
                 doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
@@ -377,7 +380,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                                        'scenario_8': array([5.286891081070988]),
                                        'scenario_9': array([3.240108355137796]),
                                        'scenario_10': array([6.194561090631401]),
-                                       'reference': array([2.29689011157193])}
+                                       'reference_scenario': array([2.29689011157193])}
         reference_dict_eval_disc_y2 = {'scenario_1': array([5.238984386606706]),
                                        'scenario_2': array([4.692178398916815]),
                                        'scenario_3': array([3.7249176675790494]),
@@ -388,7 +391,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                                        'scenario_8': array([4.2993240487306235]),
                                        'scenario_9': array([3.8000300983977455]),
                                        'scenario_10': array([4.488887520686984]),
-                                       'reference': array([3.5155494421403515])}
+                                       'reference_scenario': array([3.5155494421403515])}
         for key in eval_disc_y1.keys():
             self.assertAlmostEqual(
                 eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0])
@@ -588,15 +591,15 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value(
-            'doe.Eval.samples_df').columns.tolist(), ['x'])
+            'doe.Eval.samples_df').columns.tolist(), [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME, 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             ['subprocess.Sellar_Problem.local_dv', 'x'])
+                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,'subprocess.Sellar_Problem.local_dv', 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             ['subprocess.Sellar_Problem.local_dv'])
+                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,'subprocess.Sellar_Problem.local_dv'])
         disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -609,7 +612,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {'x': x_values, 'z': z_values}
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5, 
+                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}' for i in range(1,6)],
+                        'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{self.ns}.Eval.samples_df'] = samples_df
 
@@ -633,8 +638,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # check that the generated samples are the ones expected (custom sample
         # + reference value)
         expected_eval_disc_samples = pd.DataFrame(
-            {'scenario': ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4', 'scenario_5', 'reference'],
-             'x': x_values + [1.000000], 'z': z_values + [array([1.0, 1.0])]})
+            {'scenario_name': ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4', 'scenario_5', 'reference_scenario'],
+             'doe.Eval.x': x_values + [1.000000], 'doe.Eval.z': z_values + [array([1.0, 1.0])]})
         assert_frame_equal(
             eval_disc_samples, expected_eval_disc_samples, check_dtype=False)
 
@@ -712,8 +717,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
         # check that all generated samples (except the last one which is the
         # initial point) are within [0,10.] range
-        generated_x = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['x'].tolist()
+        sample_inputs_df = exec_eng.dm.get_value(
+            'doe.samples_inputs_df')
+        generated_x = sample_inputs_df['doe.Eval.x'].tolist()
         self.assertTrue(
             all(0 <= element[0] <= 10. for element in generated_x[:-1]))
 
@@ -723,7 +729,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
         # check that all generated samples are within [5.,11.] range
         generated_x = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['x'].tolist()
+            'doe.samples_inputs_df')['doe.Eval.x'].tolist()
         self.assertTrue(
             all(5. <= element[0] <= 11. for element in generated_x[:-1]))
 
@@ -737,12 +743,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         # exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         generated_x = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['x'].tolist()
+            'doe.samples_inputs_df')['doe.Eval.x'].tolist()
         self.assertTrue(
             all(-9. <= element[0] <= 150. for element in generated_x[:-1]))
 
         generated_z = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['z'].tolist()
+            'doe.samples_inputs_df')['doe.Eval.z'].tolist()
         self.assertTrue(
             all(-10. <= element[0] <= 10. and 4. <= element[1] <= 100. for element in
                 generated_z[:-1]))
@@ -777,7 +783,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574,
                            6.954954792150857]
 
-        samples_dict = {'x': x_values,
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
+                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}' for i in range(1,6)],
+                        'x': x_values,
                         'subprocess.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{self.ns}.Eval.samples_df'] = samples_df
@@ -1020,7 +1028,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         wrong_values = 5 * [0.0]
 
         # samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
-        samples_dict = {'z': z_values, 'x': x_values,
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
+                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
+                         'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -1039,7 +1049,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         error_message = f"Variable root.Eval.samples_df : Dataframe value has a column wrong_values but the dataframe descriptor has not, df_descriptor keys : dict_keys(['x', 'z'])"
 
         self.assertEqual(str(cm.exception), error_message)
-        samples_dict = {'z': z_values, 'x': x_values}
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
+                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
+                        'z': z_values, 'x': x_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
 
@@ -1329,9 +1341,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         i = 0
         for key in eval_disc_ind.keys():
-            self.assertTrue(0. <= eval_disc_samples['Disc1.a'][i] <= 1.)
+            self.assertTrue(0. <= eval_disc_samples[f'{ns}.Eval.Disc1.a'][i] <= 1.)
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i])
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples[f'{ns}.Eval.Disc1.a'][i])
             i += 1
 
     def test_16_Eval_User_Defined_samples_custom_output_name(self):
@@ -1370,7 +1382,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {'x': x_values, 'z': z_values}
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
+                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}' for i in range(1,6)],
+                        'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
 
@@ -1415,12 +1429,12 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_2': array([15.000894464408367]),
                                       'scenario_3': array([11.278122259980103]),
                                       'scenario_4': array([5.1893098993071565]),
-                                      'scenario_5': array([101.52834810032466]), 'reference': array([2.29689011157193])}
+                                      'scenario_5': array([101.52834810032466]), 'reference_scenario': array([2.29689011157193])}
         reference_dict_doe_disc_y2 = {'scenario_1': array([11.033919669249876]),
                                       'scenario_2': array([9.200264485831308]),
                                       'scenario_3': array([6.186104699873589]),
                                       'scenario_4': array([7.644306621667905]),
-                                      'scenario_5': array([10.67812782219566]), 'reference': array([3.515549442140351])}
+                                      'scenario_5': array([10.67812782219566]), 'reference_scenario': array([3.515549442140351])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
                 doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
@@ -1432,4 +1446,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_9_doe_eval_with_2_outputs_with_the_same_name()
+    cls.test_6_doe_eval_design_space_normalisation()

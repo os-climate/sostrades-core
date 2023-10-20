@@ -92,5 +92,5 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             return my_sample
         my_res = combvec(vect_list)
         samples_df = pd.DataFrame(my_res, columns=variable_list)
-
+        
         return samples_df
