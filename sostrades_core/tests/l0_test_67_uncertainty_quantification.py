@@ -88,7 +88,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         out3 = list(pd.Series(np.square(Var1) + np.square(Var2)) * 100000)
 
         self.data_df = pd.DataFrame(
-            {'scenario': self.samples_dataframe['scenario'], 'output1': out1, 'output2': out2, 'output3': out3})
+            {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output2': out2, 'output3': out3})
 
         input_selection = {'selected_input': [True, True, True],
                            'full_name': ['COC', 'RC', 'NRC']}
@@ -223,7 +223,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             array_var_column += [triplet] * len(self.samples_dataframe[:-1])
         array_var_column.append(10.)
         samples_dataframe['input_array'] = array_var_column
-        samples_dataframe['scenario'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference']
+        samples_dataframe['scenario_name'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference_scenario']
         self.samples_dataframe = samples_dataframe
 
         # fixes a particular state of the random generator algorithm thanks to
@@ -238,7 +238,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         out3 = list(pd.Series(np.square(Var1) + np.square(Var2)) * 100000)
 
         self.data_df = pd.DataFrame(
-            {'scenario': self.samples_dataframe['scenario'], 'output1': out1, 'output2': out2, 'output3': out3})
+            {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output2': out2, 'output3': out3})
 
         input_selection = {'selected_input': [True, True, True, True],
                            'full_name': ['COC', 'RC', 'NRC', 'input_array']}
@@ -315,7 +315,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             array_var_column += [triplet] * len(self.samples_dataframe[:-1])
         array_var_column.append(10.)
         samples_dataframe['input_array'] = array_var_column
-        samples_dataframe['scenario'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference']
+        samples_dataframe['scenario_name'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference_scenario']
         self.samples_dataframe = samples_dataframe
 
         # fixes a particular state of the random generator algorithm thanks to
@@ -333,7 +333,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
                                    (-Var1**2 - Var2**2) * 100_000]).T)
 
         self.data_df = pd.DataFrame(
-            {'scenario': self.samples_dataframe['scenario'], 'output1': out1, 'output_array': out_array})
+            {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output_array': out_array})
 
         input_selection = {'selected_input': [True, True, True, True],
                            'full_name': ['COC', 'RC', 'NRC', 'input_array']}

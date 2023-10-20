@@ -438,7 +438,7 @@ class UncertaintyQuantification(SoSWrapp):
             inputs_dict['input_distribution_parameters_df']
         )
 
-        self.all_samples_df = samples_inputs_df.merge(samples_outputs_df, on='scenario', how='left')
+        self.all_samples_df = samples_inputs_df.merge(samples_outputs_df, on='scenario_name', how='left')
         self.breakdown_arrays_to_float()
 
         self.set_float_input_distribution_parameters_df_values()
@@ -458,7 +458,7 @@ class UncertaintyQuantification(SoSWrapp):
         self.float_input_distribution_parameters_df = pd.DataFrame()
 
         self.float_all_samples_df = pd.DataFrame()
-        self.float_all_samples_df['scenario'] = self.all_samples_df['scenario']
+        self.float_all_samples_df['scenario_name'] = self.all_samples_df['scenario_name']
 
         self.pure_float_input_names = []
         self.dict_array_float_names = {}
@@ -533,8 +533,8 @@ class UncertaintyQuantification(SoSWrapp):
         """
         Delete the reference scenario in a df for UQ
         """
-        reference_scenario_samples_list = [scen for scen in samples_df['scenario'].values if 'reference' in scen]
-        samples_df_wo_ref = samples_df.loc[~samples_df['scenario'].isin(reference_scenario_samples_list)]
+        reference_scenario_samples_list = [scen for scen in samples_df['scenario_name'].values if 'reference_scenario' in scen]
+        samples_df_wo_ref = samples_df.loc[~samples_df['scenario_name'].isin(reference_scenario_samples_list)]
 
         return samples_df_wo_ref
 

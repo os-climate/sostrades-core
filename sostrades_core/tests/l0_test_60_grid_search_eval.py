@@ -161,7 +161,7 @@ class TestGridSearchEval(unittest.TestCase):
         y_dict = grid_search_disc_output['Disc1.y_dict']
 
         # CHECK THE GRIDSEARCH OUTPUTS
-        doe_disc_samples_ref = pd.DataFrame({'scenario': [
+        doe_disc_samples_ref = pd.DataFrame({'scenario_name': [
             'scenario_1', 'scenario_2', 'scenario_3'], 'Disc1.x': [5.0, 6.0, 7.0]})
         y_dict_ref = {'scenario_1': 102.0,
                       'scenario_2': 122.0, 'scenario_3': 142.0}
@@ -351,7 +351,7 @@ class TestGridSearchEval(unittest.TestCase):
                 'scenario_6':55.0,
                 'scenario_7':27.0,
                 'scenario_8':32.0,
-                'reference':45.0,}
+                _scenario:45.0,}
 
         new_gsoutputs_dict={'doe_samples_dataframe':doe_disc_samples,
                             'GridSearch.Disc1.y_dict':yy_dict}
