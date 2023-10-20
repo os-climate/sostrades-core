@@ -280,7 +280,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             samples_all_row.append(samples_row)
             out_samples_all_row.append(out_samples_row)
         
-        output_columns = ['scenario']
+        output_columns = ['scenario_name']
         output_columns.extend(self.attributes['selected_outputs'])
         samples_output_df = pd.DataFrame(out_samples_all_row, columns=output_columns)
         # construction of a dictionary of dynamic outputs
