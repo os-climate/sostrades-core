@@ -1087,12 +1087,12 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_2': array([15.000894464408367]),
                                       'scenario_3': array([11.278122259980103]),
                                       'scenario_4': array([5.1893098993071565]),
-                                      'scenario_5': array([101.52834810032466]), 'reference': array([2.29689011157193])}
+                                      'scenario_5': array([101.52834810032466]), 'reference_scenario': array([2.29689011157193])}
         reference_dict_doe_disc_y2 = {'scenario_1': array([11.033919669249876]),
                                       'scenario_2': array([9.200264485831308]),
                                       'scenario_3': array([6.186104699873589]),
                                       'scenario_4': array([7.644306621667905]),
-                                      'scenario_5': array([10.67812782219566]), 'reference': array([3.515549442140351])}
+                                      'scenario_5': array([10.67812782219566]), 'reference_scenario': array([3.515549442140351])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
                 doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
