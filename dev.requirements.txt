@@ -94,12 +94,12 @@ future==0.18.3
     #   autograd
 genson==1.2.2
     # via -r ./gemseo/requirements.txt
-gitdb==4.0.10
+gitdb==4.0.11
     # via gitpython
 gitpython==3.1.31
     # via
-    #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-ontology/requirements.in
+    #   -r ./sostrades-webapi/requirements.in
 google-auth==2.23.3
     # via kubernetes
 graphviz==0.16
@@ -248,7 +248,7 @@ petsc4py==3.19.4 ; platform_system != "Windows"
     # via
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-core/requirements.in
-pillow==10.0.1
+pillow==10.1.0
     # via matplotlib
 platformdirs==3.11.0
     # via black
