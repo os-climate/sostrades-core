@@ -35,7 +35,14 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
 
     DESC_IN = {
-        
+        ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
+                                                  ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
+                                                      'selected_input': ('bool', None, True),
+                                                      'full_name': ('string', None, False)},
+                                                  ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
+                                                  ProxyDriverEvaluator.STRUCTURING: True,
+                                                  ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
+                                                  ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
         ProxyDriverEvaluator.EVAL_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                             ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                 'selected_output': ('bool', None, True),
@@ -53,9 +60,9 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
     DESC_IN.update(ProxyDriverEvaluator.DESC_IN)
 
-    # DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None,
-    #                                   ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-    #                                   ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER}}
+    DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None,
+                                       ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
+                                       ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER}}
 
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
@@ -63,31 +70,35 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         dynamic_outputs = {}
         if disc_in:
             selected_inputs_has_changed = False
-            if self.EVAL_OUTPUTS in disc_in:
+            if self.EVAL_INPUTS in disc_in and self.EVAL_OUTPUTS in disc_in:
                 # All eval_inputs dynamic setup should be moved to a specific sample generator
+                eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
                 eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
                 # eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                if eval_outputs is not None:
+                if eval_inputs is not None and eval_outputs is not None:
                     # we fetch the inputs and outputs selected by the user
                     selected_outputs = eval_outputs[eval_outputs['selected_output']
                                                     == True]['full_name']
-                    # selected_inputs = eval_inputs[eval_inputs['selected_input']
-                    #                               == True]['full_name']
+                    selected_inputs = eval_inputs[eval_inputs['selected_input']
+                                                   == True]['full_name']
                     if 'output_name' in eval_outputs.columns:
                         eval_out_names = eval_outputs[eval_outputs['selected_output']
                                                       == True]['output_name'].tolist()
                     else:
                         eval_out_names = [None for _ in selected_outputs]
+                    if set(selected_inputs.tolist()) != set(self.selected_inputs):
+                        selected_inputs_has_changed = True
+                        self.selected_inputs = selected_inputs.tolist()
                     # if set(selected_inputs.tolist()) != set(self.selected_inputs):
                     #     selected_inputs_has_changed = True
                     #     self.selected_inputs = selected_inputs.tolist()
                     self.selected_outputs = selected_outputs.tolist()
 
-                    if len(selected_outputs) > 0:
+                    if len(selected_inputs) > 0 and len(selected_outputs) > 0:
                         # TODO: OK that it blocks config. with empty input ? also, might want an eval without outputs ?
                         # we set the lists which will be used by the evaluation function of sosEval
                         self.set_eval_in_out_lists(
-                            None, self.selected_outputs)
+                            self.selected_inputs, self.selected_outputs)
 
                         # setting dynamic outputs. One output of type dict per selected output
                         self.eval_out_names = []
@@ -98,8 +109,8 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                                 {_out_name: {self.TYPE: 'dict',
                                              self.VISIBILITY: 'Shared',
                                              self.NAMESPACE: self.NS_DRIVER}})
-                        # dynamic_inputs.update(self._get_dynamic_inputs_doe(
-                        #     disc_in, selected_inputs_has_changed))
+                        dynamic_inputs.update(self._get_dynamic_inputs_doe(
+                             disc_in, selected_inputs_has_changed))
                         dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
                                                                        self.VISIBILITY: 'Shared',
                                                                        self.NAMESPACE: self.NS_DRIVER}})
@@ -150,54 +161,54 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     
 
     ## TODO This method must be moved into a specific sample generator
-    # def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
-    #     default_custom_dataframe = pd.DataFrame(
-    #         [[NaN for _ in range(len(self.selected_inputs))]], columns=self.selected_inputs)
-    #     dataframe_descriptor = {}
-    #     for i, key in enumerate(self.selected_inputs):
-    #         var_f_name = self.eval_in_list[i]
-    #         if var_f_name in self.ee.dm.data_id_map:
-    #             var = tuple([self.ee.dm.get_data(
-    #                 var_f_name, self.TYPE), None, True])
-    #             dataframe_descriptor[key] = var
-    #         elif self.MULTIPLIER_PARTICULE in var_f_name:
-    #             # for multipliers assume it is a float
-    #             dataframe_descriptor[key] = ('float', None, True)
-    #         else:
-    #             raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
-    #
-    #     dynamic_inputs = {'samples_df': {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
-    #                                      self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
-    #                                      self.DATAFRAME_EDITION_LOCKED: False,
-    #                                      self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-    #                                      self.NAMESPACE: self.NS_DRIVER
-    #                                      }}
-    #
-    #     # This reflects 'samples_df' dynamic input has been configured and that
-    #     # eval_inputs have changed
-    #     if 'samples_df' in disc_in and selected_inputs_has_changed:
-    #
-    #         if disc_in['samples_df']['value'] is not None:
-    #             from_samples = list(disc_in['samples_df']['value'].keys())
-    #             from_eval_inputs = list(default_custom_dataframe.keys())
-    #             final_dataframe = pd.DataFrame(
-    #                 None, columns=self.selected_inputs)
-    #
-    #             len_df = 1
-    #             for element in from_eval_inputs:
-    #                 if element in from_samples:
-    #                     len_df = len(disc_in['samples_df']['value'])
-    #
-    #             for element in from_eval_inputs:
-    #                 if element in from_samples:
-    #                     final_dataframe[element] = disc_in['samples_df']['value'][element]
-    #
-    #                 else:
-    #                     final_dataframe[element] = [NaN for _ in range(len_df)]
-    #
-    #             disc_in['samples_df'][self.VALUE] = final_dataframe
-    #         disc_in['samples_df'][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
-    #     return dynamic_inputs
+    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
+        all_columns = [SampleGeneratorWrapper.SELECTED_SCENARIO,SampleGeneratorWrapper.SCENARIO_NAME] + self.selected_inputs
+        default_custom_dataframe = pd.DataFrame(
+            [[NaN for _ in range(len(all_columns))]], columns=all_columns)
+        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor']
+        for i, key in enumerate(self.selected_inputs):
+            var_f_name = self.eval_in_list[i]
+            if var_f_name in self.ee.dm.data_id_map:
+                var = tuple([self.ee.dm.get_data(
+                    var_f_name, self.TYPE), None, True])
+                dataframe_descriptor[key] = var
+            elif self.MULTIPLIER_PARTICULE in var_f_name:
+                # for multipliers assume it is a float
+                dataframe_descriptor[key] = ('float', None, True)
+            else:
+                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
+    
+        dynamic_inputs = {'samples_df': {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
+                                         self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
+                                         self.DATAFRAME_EDITION_LOCKED: False,
+                                         self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+                                         self.NAMESPACE: self.NS_DRIVER
+                                         }}
+    
+        # This reflects 'samples_df' dynamic input has been configured and that
+        # eval_inputs have changed
+        if 'samples_df' in disc_in and selected_inputs_has_changed:
+    
+            if disc_in['samples_df']['value'] is not None:
+                from_samples = list(disc_in['samples_df']['value'].keys())
+                from_eval_inputs = list(default_custom_dataframe.keys())
+                final_dataframe = pd.DataFrame(
+                    None, columns=all_columns)
+    
+                len_df = 1
+                for element in from_eval_inputs:
+                    if element in from_samples:
+                        len_df = len(disc_in['samples_df']['value'])
+    
+                for element in from_eval_inputs:
+                    if element in from_samples:
+                        final_dataframe[element] = disc_in['samples_df']['value'][element]
+    
+                    else:
+                        final_dataframe[element] = [NaN for _ in range(len_df)]
+                disc_in['samples_df'][self.VALUE] = final_dataframe
+            disc_in['samples_df'][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
+        return dynamic_inputs
 
     def _set_eval_process_builder(self):
         '''

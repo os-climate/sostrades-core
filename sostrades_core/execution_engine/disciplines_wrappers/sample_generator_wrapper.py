@@ -155,12 +155,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
         SoSWrapp.NAMESPACE: NS_DRIVER
     }
-    EVAL_POSSIBLE_INPUTS = 'eval_possible_inputs'
-    EVAL_POSSIBLE_INPUTS_DESC = {SoSWrapp.TYPE: 'list',
-                                SoSWrapp.STRUCTURING: True,
-                                SoSWrapp.EDITABLE:False,
-                                SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-                                SoSWrapp.NAMESPACE: NS_DRIVER}
+    
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -211,7 +206,6 @@ class SampleGeneratorWrapper(SoSWrapp):
 
             # TODO: Here we start from scratch each time we switch from one method to the other
             #       ... but maybe we would like to keep selected eval_inputs or eval_inputs_cp ?
-            self.set_eval_possible_values()
 
             if self.sampling_method == self.DOE_ALGO:
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
@@ -292,11 +286,20 @@ class SampleGeneratorWrapper(SoSWrapp):
                 f"Sampling has not been made")
         
         # Add the scenario names and selected scenario columns
-        samples_df[self.SELECTED_SCENARIO] = [True] * len(samples_df)
-        samples_df[self.SCENARIO_NAME] = [f'scenario_{i}' for i in range(1,len(samples_df)+1)]
-
+        samples_df = self.set_scenario_columns(samples_df)
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
+    def set_scenario_columns(self, samples_df):
+        '''
+        Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df dataframe
+        '''
+        if self.SELECTED_SCENARIO not in samples_df:
+            ordered_columns = [self.SELECTED_SCENARIO, self.SCENARIO_NAME] + samples_df.columns.tolist()
+            samples_df[self.SELECTED_SCENARIO] = [True] * len(samples_df)
+            samples_df[self.SCENARIO_NAME] = [f'scenario_{i}' for i in range(1,len(samples_df)+1)]
+            samples_df = samples_df[ordered_columns]
+        return samples_df
+    
     def instantiate_sampling_tool(self):
         """
            Instantiate SampleGenerator once and only if needed
@@ -475,16 +478,13 @@ class SampleGeneratorWrapper(SoSWrapp):
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
                                     self.NAMESPACE: self.NS_SAMPLING}
                                })
-        dynamic_inputs.update({self.EVAL_POSSIBLE_INPUTS: self.EVAL_POSSIBLE_INPUTS_DESC
-                               })
-
+        
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
         """
             Setup dynamic inputs when EVAL_INPUTS/SAMPLING_ALGO are already set
             Create or update DESIGN_SPACE
             Create or update ALGO_OPTIONS
         """
-        self.setup_dynamic_eval_inputs(dynamic_inputs)
         self.setup_design_space(dynamic_inputs)
         self.setup_algo_options(dynamic_inputs)
         # Setup GENERATED_SAMPLES for cartesian product
@@ -492,18 +492,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             # TODO: manage config-time sample for grid search and test for DoE
             self.setup_generated_samples_for_doe(dynamic_inputs)
 
-    def setup_dynamic_eval_inputs(self, dynamic_inputs):
-        
-        disc_in = self.get_data_in()
-        if 'eval_inputs' in disc_in and self.EVAL_POSSIBLE_INPUTS in disc_in:
-            possible_inputs = self.get_sosdisc_inputs(self.EVAL_POSSIBLE_INPUTS)
-            eval_inputs = self.get_sosdisc_inputs('eval_inputs')
-            if eval_inputs is None and len(possible_inputs)>0:
-                # build eval_input with default dataframe
-                eval_inputs = pd.DataFrame({'selected_input': [False]*len(possible_inputs),
-                                            'full_name':possible_inputs})
-                dynamic_inputs['eval_inputs'][self.VALUE] = eval_inputs
-                
+   
     def setup_algo_options(self, dynamic_inputs):
         """
             Method that setup 'algo_options'
@@ -532,42 +521,6 @@ class SampleGeneratorWrapper(SoSWrapp):
                         key: options_map[key] for key in all_options}
                     
 
-    def set_eval_possible_values(self):
-        disc_in = self.get_data_in()
-        if self.POSSIBLE_VALUES in disc_in:
-            possible_values = self.get_sosdisc_inputs(self.POSSIBLE_VALUES)
-            if possible_values is not None:
-                possible_in_values = list(possible_values)
-                # these sorts are just for aesthetics
-                possible_in_values.sort()
-                default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
-                                                 'full_name': possible_in_values})
-
-                eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
-
-                if eval_input_new_dm is None:
-                    self.dm.set_data(eval_inputs_f_name,
-                                 'value', default_in_dataframe, check_value=False)
-                # check if the eval_inputs need to be updated after a subprocess
-                # configure
-                elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-                    self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-                                    is_eval_input=True)
-                    default_dataframe = copy.deepcopy(default_in_dataframe)
-                    already_set_names = eval_input_new_dm['full_name'].tolist()
-                    already_set_values = eval_input_new_dm['selected_input'].tolist()
-                    for index, name in enumerate(already_set_names):
-                        default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
-                            already_set_values[
-                                index]  # this will filter variables that are not inputs of the subprocess
-                        if self.MULTIPLIER_PARTICULE in name:
-                            default_dataframe = default_dataframe.append(
-                                pd.DataFrame({'selected_input': [already_set_values[index]],
-                                            'full_name': [name]}), ignore_index=True)
-                    self.dm.set_data(eval_inputs_f_name,
-                                    'value', default_dataframe, check_value=False)
-                    
     def setup_design_space(self, dynamic_inputs):
         """
         Method that setup 'design_space'
@@ -693,6 +646,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
             self.samples_gene_df = self.generate_sample_for_doe(
                 algo_name, algo_options, dspace_df)
+            self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df)
 
             dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
                                                             self.DATAFRAME_DESCRIPTOR: {},
@@ -878,14 +832,17 @@ class SampleGeneratorWrapper(SoSWrapp):
         if self.eval_inputs_cp_validity:
             if self.eval_inputs_cp_has_changed:
                 self.samples_gene_df = self.generate_sample_for_cp()
-            df_descriptor = {row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
-                             self.eval_inputs_cp_filtered.iterrows()}
+            df_descriptor  = {self.SELECTED_SCENARIO:('bool',None,False),
+                              self.SCENARIO_NAME:('string',None,False)}
+            df_descriptor.update({row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
+                             self.eval_inputs_cp_filtered.iterrows()})
             generated_samples_data_description.update({self.DATAFRAME_DESCRIPTOR: df_descriptor,
                                                        self.DYNAMIC_DATAFRAME_COLUMNS: False})
         else:
             # if self.eval_inputs_cp_has_changed:
             self.samples_gene_df = pd.DataFrame()
 
+        self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df)
         generated_samples_data_description.update({self.DEFAULT: self.samples_gene_df})
         dynamic_inputs.update({self.GENERATED_SAMPLES: generated_samples_data_description})
 

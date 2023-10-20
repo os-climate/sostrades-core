@@ -298,8 +298,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         self.store_sos_outputs_values(
             subprocess_ref_outputs, full_name_keys=True)
         # save doeeval outputs
-        #self.store_sos_outputs_values(
-        #    {'samples_inputs_df': self.samples})
+        sample_input_df = pd.DataFrame( self.samples)
+        self.store_sos_outputs_values({'samples_inputs_df':sample_input_df})
 
         self.store_sos_outputs_values(
             {'samples_outputs_df': samples_output_df})
