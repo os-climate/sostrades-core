@@ -385,14 +385,31 @@ class SosFactory:
 
         builder_list = [builder]
         if with_sample_generator:
-            sampling_builder = self.get_builder_from_module('SampleGenerator',
-                                                            'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper')
+            sampling_builder = self.create_sample_generator('SampleGenerator')
             self.__execution_engine.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING,
                                                       self.__execution_engine.ns_manager.get_shared_ns_dict()[
                                                           ProxyDriverEvaluator.NS_DRIVER].value)
             builder_list.insert(0, sampling_builder)
 
         return builder_list
+
+    def create_sample_generator(self, sos_name):
+        '''
+
+        Args:
+            sos_name: Name of the sample generator
+
+        Returns: A sample generator builder
+
+        '''
+        sampling_proxy_mod = f'{self.EE_PATH}.proxy_sample_generator.ProxySampleGenerator'
+        sampling_proxy_cls = self.get_disc_class_from_module(sampling_proxy_mod)
+        sampling_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
+        sampling_wrapper_cls = self.get_disc_class_from_module(sampling_wrapper_mod)
+        sampling_builder = SoSBuilder(sos_name, self.__execution_engine, sampling_proxy_cls)
+        sampling_builder.set_builder_info('cls_builder', sampling_wrapper_cls)
+        return sampling_builder
+
 
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
         # TODO: recode when driver classes are properly merged, at the moment
