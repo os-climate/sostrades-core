@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- Generate test 1 process
+# -- Generate test 1 process
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
 class ProcessBuilder(BaseProcessBuilder):
-
     # ontology information
     _ontology_data = {
         'label': 'Core Test Multi Instance Nested (DriverEvaluator)',
@@ -29,15 +28,14 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-
-
-
-
         # get builder for disc1
         builder_disc1 = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                                  mod_id='test_disc1_scenario')
         # create an inner ms driver for disc1 only in builder_list
+        ns_driver_inner = self.ee.ns_manager.add_ns('ns_driver', f'{self.ee.study_name}.inner_ms')
         builder_list = self.ee.factory.create_multi_instance_driver('inner_ms', builder_disc1)
+        builder_list[0].associate_namespaces(ns_driver_inner)
+
         # get builder for disc3 and append to builder_list
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
         disc3_builder = self.ee.factory.get_builder_from_module(
@@ -49,9 +47,12 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns(
             'ns_out_disc3', f'{self.ee.study_name}')
 
+        # self.ee.scattermap_manager.add_build_map('outer_map'
+        #                                          , {'ns_to_update': ['ns_driver']})
         # create an outer ms driver
+        ns_driver_outer = self.ee.ns_manager.add_ns('ns_driver', f'{self.ee.study_name}.outer_ms')
         multi_scenarios = self.ee.factory.create_multi_instance_driver('outer_ms', builder_list)
-        # multi_scenarios[0].associate_namespaces(ns_driver_outer)
+        multi_scenarios[0].associate_namespaces(ns_driver_outer)
         return multi_scenarios
 
         # ns_lower_doe_eval = self.ee.ns_manager.add_ns('ns_doe_eval', f'{self.ee.study_name}.DoEEvalUpper.DoEEvalLower')
