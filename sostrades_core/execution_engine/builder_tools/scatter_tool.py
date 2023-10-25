@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
+from collections import defaultdict
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -65,6 +66,7 @@ class ScatterTool(SosTool):
         self.ns_to_update = None
         self.sc_map = None
         self.display_options = {disp_option: False for disp_option in self.DISPLAY_OPTIONS_POSSIBILITIES}
+        self.already_associated_ns_dict = defaultdict(set)
 
     @property
     def has_built(self):
@@ -135,14 +137,23 @@ class ScatterTool(SosTool):
     def get_values_for_namespaces_to_update(self):
         '''
         Get the values of the namespace list defined in the namespace manager
+        We need also to take into account all namespaces that are associated to the sub builders
         '''
         ns_to_update_name_list = self.get_ns_to_update_name_list()
 
         # store ns_to_update namespace object
         self.ns_to_update = {}
+        self.associated_ns_to_update = {}
+
         for ns_name in ns_to_update_name_list:
             # we should take ns_to_update of the shared_ns_dict to be consistent with father_executor name and driver_name
             self.ns_to_update[ns_name] = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
+            # loop on the sub builders to check if some namespaces are associated to them
+            # we will need to update them if they are
+            # store them by builder in the dict associated_ns_to_update
+            for builder in self.sub_builders:
+                self.associated_ns_to_update.update(
+                    {builder: self.ee.ns_manager.all_ns_dict[ns] for ns in builder.associated_namespaces})
 
     def get_dynamic_output_from_tool(self):
         '''
@@ -215,21 +226,20 @@ class ScatterTool(SosTool):
             for name in self.__scatter_list:
                 # check if the name is new
                 new_name_flag = name in new_sub_names
-                # update namespaces to update with this name
-                ns_ids_list = self.update_namespaces(name)
 
                 self.build_child(
-                    name, new_name_flag, ns_ids_list)
+                    name, new_name_flag)
 
-    def update_namespaces(self, name):
+    def update_namespaces(self, name, builder):
         '''
         Update all ns_to_update namespaces and the scatter namespace with the scatter_name just after the local_namespace
         Return the list of namespace keys for future builder association
         All namespaces are not added in shared_ns_dict to be transparent and only associated to the right disciplines
+        We need to take into account all namespaces already associated to builders that needs a specific update by builders
         '''
 
         ns_ids_list = []
-
+        associated_ns_ids_dict = defaultdict(list)
         extra_name = f'{self.driver.sos_name}.{name}'
         after_name = self.driver.father_executor.get_disc_full_name()
 
@@ -241,9 +251,21 @@ class ScatterTool(SosTool):
                 ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
             ns_ids_list.append(ns_id)
 
-        return ns_ids_list
+        # We updat ethe value of all namespaces that are associated to sub builders
+        for builder_ns, ns in self.associated_ns_to_update.items():
+            # if the namespace has already been associated in previous configure do not update it twice
+            # already associated namespaces are stored per builder in the already_associated_ns_dict
+            if builder == builder_ns and ns.get_ns_id() not in self.already_associated_ns_dict[builder]:
+                updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
+                    ns.get_value(), extra_name, after_name=after_name)
+                display_value = ns.get_display_value_if_exists()
+                ns_id = self.ee.ns_manager.add_ns(
+                    ns.name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
+                associated_ns_ids_dict[builder_ns].append(ns_id)
 
-    def build_child(self, name, new_name_flag, ns_ids_list):
+        return ns_ids_list, associated_ns_ids_dict
+
+    def build_child(self, name, new_name_flag):
         '''
         #        |_name_1
         #                |_Disc1
@@ -274,7 +296,15 @@ class ScatterTool(SosTool):
             builder.set_disc_name(disc_name)
 
             if new_name_flag:
+                # update namespaces to update with this name
+                ns_ids_list, associated_ns_ids_dict = self.update_namespaces(name, builder)
+                # store associated namespaces per builder in the already_associated_ns_dict to prevent updating twice a namespace
+                self.already_associated_ns_dict[builder].update(ns_ids_list)
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
+                # in the case where we had associated namespaces to the builder we need to update them specifically for each builder
+                # namespace values have been already updated we just eneed to associat ethem to the new discipline built
+                if builder in associated_ns_ids_dict and len(associated_ns_ids_dict[builder]) != 0:
+                    self.associate_namespaces_to_builder(builder, associated_ns_ids_dict[builder])
             self.set_father_discipline()
             disc = builder.build()
 

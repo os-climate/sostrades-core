@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- Generate test 1 process
+# -- Generate test 1 process
 import pandas as pd
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
-class ProcessBuilder(BaseProcessBuilder):
 
+class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
         'label': 'Core Test Multi Instance Nested (DriverEvaluator) with Archi Builder',
@@ -35,7 +35,7 @@ class ProcessBuilder(BaseProcessBuilder):
             {'Parent': ['Business', 'Remy', 'Remy'],
              'Current': ['Remy', 'CAPEX', 'OPEX'],
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('standard'),  ('standard'),  ('standard')],
+             'Action': [('standard'), ('standard'), ('standard')],
              'Activation': [True, False, False]})
         builder_business = self.ee.factory.create_architecture_builder(
             vb_builder_name_business, architecture_df_business)
@@ -45,8 +45,9 @@ class ProcessBuilder(BaseProcessBuilder):
         architecture_df_production = pd.DataFrame(
             {'Parent': ['Production', 'Production', 'Local', 'Abroad', 'Abroad'],
              'Current': ['Abroad', 'Local', 'Road', 'Road', 'Plane'],
-             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('standard'),  ('standard'),  ('standard'),  ('standard'),  ('standard')],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline',
+                      'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
+             'Action': [('standard'), ('standard'), ('standard'), ('standard'), ('standard')],
              'Activation': [True, False, False, False, False]})
         builder_production = self.ee.factory.create_architecture_builder(
             vb_builder_name_production, architecture_df_production)
@@ -55,9 +56,13 @@ class ProcessBuilder(BaseProcessBuilder):
         builder_list = [builder_production, builder_business]
 
         # create the inner ms driver
+        ns_driver_inner = self.ee.ns_manager.add_ns('ns_driver', f'{self.ee.study_name}.inner_ms')
         inner_ms = self.ee.factory.create_multi_instance_driver('inner_ms', builder_list)
+        inner_ms[0].associate_namespaces(ns_driver_inner)
 
         # create an outer ms driver
+        ns_driver_outer = self.ee.ns_manager.add_ns('ns_driver', f'{self.ee.study_name}.outer_ms')
         outer_ms = self.ee.factory.create_multi_instance_driver('outer_ms', inner_ms)
+        outer_ms[0].associate_namespaces(ns_driver_outer)
 
         return outer_ms
