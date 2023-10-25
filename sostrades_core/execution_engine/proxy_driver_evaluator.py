@@ -971,11 +971,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         Instantiate the tool if it does not and prepare it with data that he needs (the tool know what he needs)
         '''
+        # get_values_for_namespace only once at builder creation. Then ns_shared_dict is not necessary anymore
         if self.builder_tool is None:
             builder_tool_cls = self.ee.factory.create_scatter_tool_builder(
                 'scatter_tool', map_name=self.map_name,
                 display_options=self.display_options)
             self.builder_tool = builder_tool_cls.instantiate()
+            # in particular, get_values_for_namespaces_to_update()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
         self.scatter_list_valid, self.scatter_list_integrity_msg = self.check_scatter_list_validity()

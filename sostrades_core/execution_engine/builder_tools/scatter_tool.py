@@ -90,6 +90,8 @@ class ScatterTool(SosTool):
             self.sc_map = self.ee.scattermap_manager.get_build_map(self.map_name)
             self.ee.scattermap_manager.associate_disc_to_build_map(self)
             self.sc_map.configure_map(self.sub_builders)
+        self.get_values_for_namespaces_to_update()
+
     def prepare_tool(self):
         '''
         Prepare tool function if some data of the driver are needed to configure the tool
@@ -108,8 +110,6 @@ class ScatterTool(SosTool):
             self.set_scatter_list(
                 scenario_df[scenario_df[self.driver.SELECTED_SCENARIO] == True][
                     self.driver.SCENARIO_NAME].values.tolist())
-
-        self.get_values_for_namespaces_to_update()
 
         if self.display_options['hide_coupling_in_driver']:
             self.driver_display_value = self.driver.get_disc_display_name()
@@ -261,6 +261,7 @@ class ScatterTool(SosTool):
 
         extra_name = f'{self.driver.sos_name}.{name}'
         after_name = self.driver.father_executor.get_disc_full_name()
+        ns_list = self.ns_to_update.values()
 
         for ns_name, ns in self.ns_to_update.items():
             updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
@@ -270,7 +271,7 @@ class ScatterTool(SosTool):
                 ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
             ns_ids_list.append(ns_id)
 
-        
+        self.ee.ns_manager.clean_all_ns_in_nslist(ns_list, clean_all_ns_with_name=False)
 
         return ns_ids_list
 
