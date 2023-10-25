@@ -268,6 +268,8 @@ class ScatterTool(SosTool):
 
         # We updat ethe value of all namespaces that are associated to sub builders
         for builder_ns, ns in self.associated_ns_to_update.items():
+            # if the namespace has already been associated in previous configure do not update it twice
+            # already associated namespaces are stored per builder in the already_associated_ns_dict
             if builder == builder_ns and ns.get_ns_id() not in self.already_associated_ns_dict[builder]:
                 updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
                     ns.get_value(), extra_name, after_name=after_name)
@@ -311,6 +313,7 @@ class ScatterTool(SosTool):
             if new_name_flag:
                 # update namespaces to update with this name
                 ns_ids_list, associated_ns_ids_dict = self.update_namespaces(name, builder)
+                # store associated namespaces per builder in the already_associated_ns_dict to prevent updating twice a namespace
                 self.already_associated_ns_dict[builder].update(ns_ids_list)
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
                 # in the case where we had associated namespaces to the builder we need to update them specifically for each builder
