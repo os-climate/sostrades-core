@@ -37,8 +37,7 @@ class Study(StudyManager):
                              f'{ns}.multi_scenarios.scenario_2.Disc1.b': 2,
                              f'{ns}.multi_scenarios.scenario_2.Disc2.constant': 20,
                              f'{ns}.multi_scenarios.scenario_2.Disc2.power': 3,
-                             f'{ns}.multi_scenarios.scenario_2.x': 4,
-                             f'{ns}.multi_scenarios.builder_mode': 'multi_instance'}]
+                             f'{ns}.multi_scenarios.scenario_2.x': 4}]
 
         private_val = {}
         for dic in private_val_list:

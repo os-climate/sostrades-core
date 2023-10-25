@@ -51,15 +51,16 @@ class TestGridSearchEval(unittest.TestCase):
         pd.set_option('display.max_columns', 10)
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
-        self.repo = 'sostrades_core.sos_processes.test'
+        self.repo = 'sostrades_core.sos_processes.test.tests_driver_eval.mono'
+        
         self.base_path = 'sostrades_core.sos_wrapping.test_discs'
         self.exec_eng = ExecutionEngine(self.namespace)
 
         self.factory = self.exec_eng.factory
         self.evaluator = 'Eval'
         self.sample_generator = 'SampleGenerator'
-        self.proc_name = 'test_grid_search'
-        self.proc_name_mult = 'test_grid_search_mult'
+        self.proc_name = 'test_mono_driver_grid_search'
+        self.proc_name_mult = 'test_mono_driver_grid_search_mult'
         self.my_handler = UnitTestHandler()
         eeLOGGER = getLogger('sostrades_core.execution_engine')
         eeLOGGER.setLevel(DEBUG)
@@ -76,8 +77,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -160,7 +160,7 @@ class TestGridSearchEval(unittest.TestCase):
         y_dict = grid_search_disc_output['Disc1.y_dict']
 
         # CHECK THE GRIDSEARCH OUTPUTS
-        doe_disc_samples_ref = pd.DataFrame({'scenario': [
+        doe_disc_samples_ref = pd.DataFrame({'scenario_name': [
             'scenario_1', 'scenario_2', 'scenario_3'], 'Disc1.x': [5.0, 6.0, 7.0]})
         y_dict_ref = {'scenario_1': 102.0,
                       'scenario_2': 122.0, 'scenario_3': 142.0}
@@ -279,8 +279,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -351,7 +350,7 @@ class TestGridSearchEval(unittest.TestCase):
                 'scenario_6':55.0,
                 'scenario_7':27.0,
                 'scenario_8':32.0,
-                'reference':45.0,}
+                'reference_scenario':45.0,}
 
         new_gsoutputs_dict={'doe_samples_dataframe':doe_disc_samples,
                             'GridSearch.Disc1.y_dict':yy_dict}
@@ -393,7 +392,7 @@ class TestGridSearchEval(unittest.TestCase):
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
-        proc_name = "test_sellar_grid_search"
+        proc_name = "test_mono_driver_grid_search_sellar"
         grid_search_builder = factory.get_builder_from_process(repo=self.repo,
                                                                mod_id=proc_name)
 
@@ -401,8 +400,7 @@ class TestGridSearchEval(unittest.TestCase):
             grid_search_builder)
 
         exec_eng.configure()
-        initial_input = {f'{self.ns}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.ns}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.ns}.{self.sample_generator}.sampling_method': 'grid_search'}
         exec_eng.load_study_from_input_dict(initial_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
@@ -491,8 +489,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -591,8 +588,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -687,8 +683,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
@@ -782,8 +777,7 @@ class TestGridSearchEval(unittest.TestCase):
             sa_builder)
 
         self.exec_eng.configure()
-        initial_input = {f'{self.study_name}.{self.evaluator}.builder_mode': 'mono_instance',
-                         f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
+        initial_input = {f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search'}
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 

@@ -72,6 +72,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
     ACTIVATION_DF = 'activation_df'
 
     DEFAULT_VB_FOLDER_LIST = ['sostrades_core.sos_wrapping']
+    NS_DRIVER = 'ns_driver'
 
     def __init__(self, sos_name, ee, architecture_df, cls_builder=None, associated_namespaces=None,
                  custom_vb_folder_list=None):
@@ -756,12 +757,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
     def setup_sos_disciplines(self):
         """
-        Set scenario_df value by reading activation_df input
+        Set samples_df value by reading activation_df input
         """
         dynamic_outputs = {}
         for driver_name, input_name in self.driver_input_to_fill.items():
 
-            if f'{driver_name}.scenario_df' in self.get_data_out():
+            if f'{driver_name}.samples_df' in self.get_data_out():
                 activation_df = deepcopy(self.get_sosdisc_inputs(self.ACTIVATION_DF))
 
                 if driver_name == 'driver':
@@ -788,14 +789,14 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 indexes = np.unique(input_value, return_index=True)[1]
                 input_value = [input_value[index] for index in sorted(indexes)]
 
-                scenario_full_name = self.get_var_full_name(f'{driver_name}.scenario_df', self.get_data_out())
+                scenario_full_name = self.get_var_full_name(f'{driver_name}.samples_df', self.get_data_out())
                 self.dm.set_data(scenario_full_name, 'value', pd.DataFrame({self.SCENARIO_NAME: input_value,
                                                                             self.SELECTED_SCENARIO: True}),
                                  check_value=False)
             dynamic_outputs.update(
-                {f'{driver_name}.scenario_df': {'type': 'dataframe',
-                                                'default': pd.DataFrame(
-                                                    columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
+                {f'{driver_name}.samples_df': {'type': 'dataframe',
+                                               'default': pd.DataFrame(
+                                                   columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
                  # f'{driver_name}.builder_mode': {'type': 'string',
                  #                                 'value': 'multi_instance'}
                  },
@@ -817,6 +818,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         # case when scatter is on archi_node or scatter on other node at root level
         if namespace == self.sos_name:
             driver_name = 'driver'
+            builder_name = namespace
         # standard case
         elif self.sos_name.split('.')[-1] in namespace:
             builder_name = f"{namespace.split('.', 1)[1]}"
@@ -832,8 +834,17 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, builder)
         else:
             builder.set_disc_name(builder.sos_name.split('.')[-1])
-            builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, [builder], display_options={
-                'hide_under_coupling': True})
+            builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, [builder])
+
+            builder_scatter[0].set_builder_info('process_display_options', {'hide_under_coupling': True})
+            # , display_options={'hide_under_coupling': True}
+
+        # create ns_driver as local_namespace and associate it to the builder
+        builder_full_name = f'{self.get_disc_full_name()}.{builder_name}'
+        driver_full_name = f'{self.get_disc_full_name()}.{driver_name}'
+        ns_driver = self.ee.ns_manager.add_ns(self.NS_DRIVER, driver_full_name, display_value=builder_full_name)
+        builder_scatter[0].associate_namespaces(ns_driver)
+
         if namespace == self.sos_name:
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], self.get_disc_full_name())

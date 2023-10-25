@@ -30,6 +30,7 @@ from tempfile import gettempdir
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
+
 # FIXME: tests are not active because WIP on gather capabilities
 
 class UnitTestHandler(Handler):
@@ -87,20 +88,20 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.indicator2 = self.a1 * self.b2
 
         # # simple 2-disc process NOT USING nested scatters
-        proc_name = 'test_multi_instance_basic'
-        builders = self.exec_eng.factory.get_builder_from_process(self.repo,
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = "test_multi_driver_simple"
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
 
         # build the scenarios
         dict_values = {}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
-                                    'scenario_name': ['scenario_1',
-                                                      'scenario_W',
-                                                      'scenario_2']})
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        samples_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                   'scenario_name': ['scenario_1',
+                                                     'scenario_W',
+                                                     'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         # dict_values[f'{self.study_name}.Eval.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -115,13 +116,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # configure b, z from a dataframe
-        scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
-                                    'scenario_name': ['scenario_1',
-                                                      'scenario_W',
-                                                      'scenario_2'],
-                                    'Disc1.b': [self.b1, 1e6, self.b2],
-                                    'z': [self.z1, 1e6, self.z2]})
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+        samples_df = pd.DataFrame({'selected_scenario': [True, False, True],
+                                   'scenario_name': ['scenario_1',
+                                                     'scenario_W',
+                                                     'scenario_2'],
+                                   'Disc1.b': [self.b1, 1e6, self.b2],
+                                   'z': [self.z1, 1e6, self.z2]})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
     def tearDown(self):
@@ -137,8 +138,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # configure eval_output for gather capabilities
         dict_values[f'{self.study_name}.multi_scenarios.eval_outputs'] = \
             pd.DataFrame({'selected_output': [True, False, True],
-                          'full_name': ['y', 'o', 'Disc1.indicator'],# anonymized wrt scenario
-                          'output_name': [None, None, None]}) # by default {output}_dict
+                          'full_name': ['y', 'o', 'Disc1.indicator'],  # anonymized wrt scenario
+                          'output_name': [None, None, None]})  # by default {output}_dict
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # check output existence
@@ -173,8 +174,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # configure eval_output for gather capabilities
         dict_values[f'{self.study_name}.multi_scenarios.eval_outputs'] = \
             pd.DataFrame({'selected_output': [True, True, True],
-                          'full_name': ['y', 'o', 'Disc1.indicator'],# anonymized wrt scenario
-                          'output_name': [None, 'my_o_out_name', 'my_indi_out_name']}) # by default {output}_dict
+                          'full_name': ['y', 'o', 'Disc1.indicator'],  # anonymized wrt scenario
+                          'output_name': [None, 'my_o_out_name', 'my_indi_out_name']})  # by default {output}_dict
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # check output existence
@@ -215,7 +216,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
                              eval_outputs['selected_output'].values.tolist())
         self.assertListEqual([None, None, None],
                              eval_outputs['output_name'].values.tolist())
-        self.assertListEqual(['Disc1.indicator', 'o', 'y'], # alphabetic order by default
+        self.assertListEqual(['Disc1.indicator', 'o', 'y'],  # alphabetic order by default
                              eval_outputs['full_name'].values.tolist())
 
         eval_outputs['selected_output'] = [True, True, True]
@@ -268,11 +269,11 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #
     #     # build the scenarios
     #     dict_values = {}
-    #     scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+    #     samples_df = pd.DataFrame({'selected_scenario': [True, False, True],
     #                                 'scenario_name': ['scenario_1',
     #                                                   'scenario_W',
     #                                                   'scenario_2']})
-    #     dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+    #     dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
     #     dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
     #     dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = True
     #     dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
@@ -303,13 +304,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #
     #     # Configure b and z of others scenarios (trade variables)
-    #     scenario_df = pd.DataFrame({'selected_scenario': [True, False, True],
+    #     samples_df = pd.DataFrame({'selected_scenario': [True, False, True],
     #                                 'scenario_name': ['scenario_1',
     #                                                   'scenario_W',
     #                                                   'scenario_2'],
     #                                 'Disc1.b': [self.b1, 1e6, self.b2],
     #                                 'z': [self.z1, 1e6, self.z2]})
-    #     dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+    #     dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #
     #     # Check trades variables are ok and that non-trade variables have been
@@ -367,7 +368,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #         self.assertEqual(self.exec_eng.dm.get_data(self.study_name + '.multi_scenarios.' +
     #                                                    scenario + '.Disc3.power', 'editable'), False)
     #
-    #     self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist(),
+    #     self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.samples_df')['scenario_name'].values.tolist(),
     #                      ['scenario_1', 'scenario_W', 'scenario_2'])
     #     ms_disc = self.exec_eng.dm.get_disciplines_with_name(
     #         'MyCase.multi_scenarios')[0]
@@ -419,11 +420,11 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     # scenario with proper propagation and editability state.
     #     dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = True
     #     dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
-    #     scenario_df = pd.DataFrame({'selected_scenario': [True, True, True],
+    #     samples_df = pd.DataFrame({'selected_scenario': [True, True, True],
     #                                 'scenario_name': ['scenario_1',
     #                                                   'scenario_W',
     #                                                   'scenario_2']})
-    #     dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+    #     dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     # Value propagation
     #     self.assertEqual(self.exec_eng.dm.get_value(
@@ -495,10 +496,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     self.exec_eng.factory.set_builders_to_coupling_builder(builders)
     #     self.exec_eng.configure()
     #
-    #     scenario_df = pd.DataFrame(
+    #     samples_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #     dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-    #                    f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+    #                    f'{self.study_name}.multi_scenarios.samples_df': samples_df}
     #
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     self.exec_eng.display_treeview_nodes()
@@ -507,10 +508,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
     #     self.assertEqual(ms_sub_disc_names, ['scenario_1'])
     #
-    #     scenario_df = pd.DataFrame(
+    #     samples_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #
-    #     dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+    #     dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
     #
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     self.exec_eng.display_treeview_nodes()
@@ -519,10 +520,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     self.assertEqual(ms_sub_disc_names, ['scenario_1',
     #                                          'scenario_2'])
     #
-    #     scenario_df = pd.DataFrame(
+    #     samples_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1], ['scenario_2', False, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #
-    #     dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+    #     dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
     #
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     self.exec_eng.display_treeview_nodes()
@@ -530,11 +531,11 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
     #     self.assertEqual(ms_sub_disc_names, ['scenario_1'])
     #
-    #     scenario_df = pd.DataFrame(
+    #     samples_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #
     #     dict_values[self.study_name +
-    #                 '.multi_scenarios.scenario_df'] = scenario_df
+    #                 '.multi_scenarios.samples_df'] = samples_df
     #
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -578,11 +579,11 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #         self.repo,  proc_name)
     #     self.exec_eng.factory.set_builders_to_coupling_builder(builders)
     #     self.exec_eng.configure()
-    #     scenario_df = pd.DataFrame(
+    #     samples_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1, self.z1], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
     #
     #     dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-    #                    f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+    #                    f'{self.study_name}.multi_scenarios.samples_df': samples_df}
     #
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #
@@ -644,11 +645,11 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #         self.repo,  proc_name)
     #     self.exec_eng.factory.set_builders_to_coupling_builder(builders)
     #     self.exec_eng.configure()
-    #     scenario_df = pd.DataFrame(
+    #     samples_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #
     #     dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-    #                    f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+    #                    f'{self.study_name}.multi_scenarios.samples_df': scenario_df}
     #
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     # manually configure the scenarios non-varying values (~reference)
@@ -677,7 +678,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #
     #     scenario_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1, self.z2], ['scenario_2', True, self.b2, self.z2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b', 'z'])
-    #     dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
+    #     dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = scenario_df
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #     self.exec_eng.execute()
     #     y1, o1 = (self.a1 * self.x1 + self.b1,
@@ -704,7 +705,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     scenario_df = pd.DataFrame(
     #         [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_1', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #     dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-    #                    f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+    #                    f'{self.study_name}.multi_scenarios.samples_df': scenario_df}
     #
     #     error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
     #     exp_tv = 'Nodes representation for Treeview MyCase\n' \
@@ -721,7 +722,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
     #     self.assertIn(error_message, self.my_handler.msg_list)
     #
-    #     runtime_error_message = 'Variable MyCase.multi_scenarios.scenario_df : ' \
+    #     runtime_error_message = 'Variable MyCase.multi_scenarios.samples_df : ' \
     #         'Cannot activate several scenarios with the same name (scenario_1).'
     #     # data integrity Exception
     #     with self.assertRaises(ValueError) as cm:
@@ -739,7 +740,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #         [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_2', True, self.b2]], columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
     #
     #     dict_values = {f'{self.study_name}.multi_scenarios.builder_mode': 'multi_instance',
-    #                    f'{self.study_name}.multi_scenarios.scenario_df': scenario_df}
+    #                    f'{self.study_name}.multi_scenarios.samples_df': scenario_df}
     #     self.exec_eng.load_study_from_input_dict(dict_values)
     #
     #     scenario_df['scenario_name'].iloc[2] = 'scenario_1'
@@ -766,7 +767,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #     self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
     #     self.assertIn(error_message, self.my_handler.msg_list)
     #
-    #     runtime_error_message = 'Variable MyCase.multi_scenarios.scenario_df : ' \
+    #     runtime_error_message = 'Variable MyCase.multi_scenarios.samples_df : ' \
     #         'Cannot activate several scenarios with the same name (scenario_1).'
     #     # data integrity Exception
     #     with self.assertRaises(ValueError) as cm:

@@ -60,7 +60,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_eval': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -87,7 +87,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         out3 = list(pd.Series(np.square(Var1) + np.square(Var2)) * 100000)
 
         self.data_df = pd.DataFrame(
-            {'scenario': self.samples_dataframe['scenario'], 'output1': out1, 'output2': out2, 'output3': out3})
+            {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output2': out2, 'output3': out3})
 
         input_selection = {'selected_input': [True, True, True],
                            'full_name': ['COC', 'RC', 'NRC']}
@@ -129,10 +129,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
     def test_02_uncertainty_quantification_from_cartesian_product(self):
         """In this test we prove the ability to couple a grid search and an uq
         """
-        proc_name = 'test_coupling_doe_uq'
-
+        proc_name = 'test_mono_driver_with_uq'
+        repo_name = self.repo + ".tests_driver_eval.mono"
         builder = self.factory.get_builder_from_process(
-            self.repo, proc_name)
+            repo_name, proc_name)
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
@@ -154,7 +154,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         disc_dict = {}
         # DoE inputs
-        disc_dict[f'{ns}.Eval.builder_mode'] = 'mono_instance'
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
 
         a_list = np.linspace(0, 10, 2).tolist()
@@ -195,7 +194,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_eval': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -223,7 +222,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             array_var_column += [triplet] * len(self.samples_dataframe[:-1])
         array_var_column.append(10.)
         samples_dataframe['input_array'] = array_var_column
-        samples_dataframe['scenario'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference']
+        samples_dataframe['scenario_name'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference_scenario']
         self.samples_dataframe = samples_dataframe
 
         # fixes a particular state of the random generator algorithm thanks to
@@ -238,7 +237,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         out3 = list(pd.Series(np.square(Var1) + np.square(Var2)) * 100000)
 
         self.data_df = pd.DataFrame(
-            {'scenario': self.samples_dataframe['scenario'], 'output1': out1, 'output2': out2, 'output3': out3})
+            {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output2': out2, 'output3': out3})
 
         input_selection = {'selected_input': [True, True, True, True],
                            'full_name': ['COC', 'RC', 'NRC', 'input_array']}
@@ -287,7 +286,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_eval': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -315,7 +314,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             array_var_column += [triplet] * len(self.samples_dataframe[:-1])
         array_var_column.append(10.)
         samples_dataframe['input_array'] = array_var_column
-        samples_dataframe['scenario'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference']
+        samples_dataframe['scenario_name'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference_scenario']
         self.samples_dataframe = samples_dataframe
 
         # fixes a particular state of the random generator algorithm thanks to
@@ -333,7 +332,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
                                    (-Var1**2 - Var2**2) * 100_000]).T)
 
         self.data_df = pd.DataFrame(
-            {'scenario': self.samples_dataframe['scenario'], 'output1': out1, 'output_array': out_array})
+            {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output_array': out_array})
 
         input_selection = {'selected_input': [True, True, True, True],
                            'full_name': ['COC', 'RC', 'NRC', 'input_array']}
@@ -373,243 +372,3 @@ class TestUncertaintyQuantification(unittest.TestCase):
         for graph in graph_list:
             graph.to_plotly().show()
         """
-
-
-    #
-    # def test_03_simple_cache_on_grid_search_uq_process(self):
-    #     """In this test we prove the ability of the cache to work properly on a grid search
-    #     First, we create a process made of a coupling of a grid search and an uq on the grid search's output
-    #     Then we activate the cache , change one uq input while maintaining grid search inputs  and run the process.
-    #     since none of the grid search's inputs has been changed, we expect the grid search not to run
-    #     """
-    #     proc_name = 'test_coupling_doe_uq'
-    #
-    #     builder = self.factory.get_builder_from_process(
-    #         self.repo, proc_name)
-    #
-    #     self.ee.factory.set_builders_to_coupling_builder(builder)
-    #
-    #     self.ee.load_study_from_input_dict({})
-    #
-    #     print(self.ee.display_treeview_nodes())
-    #
-    #     self.grid_search = 'GridSearch'
-    #     self.study_name = 'Test'
-    #
-    #     eval_inputs = self.ee.dm.get_value(
-    #         f'{self.study_name}.{self.grid_search}.eval_inputs')
-    #     eval_inputs.loc[eval_inputs['full_name'] ==
-    #                     f'{self.grid_search}.Disc1.x', ['selected_input']] = True
-    #     eval_inputs.loc[eval_inputs['full_name'] ==
-    #                     f'{self.grid_search}.Disc1.j', ['selected_input']] = True
-    #
-    #     eval_outputs = self.ee.dm.get_value(
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs')
-    #     eval_outputs.loc[eval_outputs['full_name'] ==
-    #                      f'{self.grid_search}.Disc1.y', ['selected_output']] = True
-    #
-    #     dspace = pd.DataFrame({
-    #         'shortest_name': ['x', 'j'],
-    #         'lower_bnd': [5., 20.],
-    #         'upper_bnd': [7., 25.],
-    #         'nb_points': [2, 2],
-    #         'full_name': ['GridSearch.Disc1.x', 'GridSearch.Disc1.j'],
-    #     })
-    #
-    #     dict_values = {
-    #         # GRID SEARCH INPUTS
-    #         f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
-    #         f'{self.study_name}.{self.grid_search}.design_space': dspace,
-    #
-    #         # DISC1 INPUTS
-    #         f'{self.study_name}.{self.grid_search}.Disc1.name': 'A1',
-    #         f'{self.study_name}.{self.grid_search}.Disc1.a': 20,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.b': 2,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.x': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.d': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.f': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.g': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.h': 3.,
-    #         f'{self.study_name}.{self.grid_search}.Disc1.j': 3.,
-    #
-    #     }
-    #
-    #     self.ee.load_study_from_input_dict(dict_values)
-    #
-    #     grid_search_disc = self.ee.dm.get_disciplines_with_name(
-    #         f'{self.study_name}.{self.grid_search}')[0]
-    #
-    #     uq_disc = self.ee.dm.get_disciplines_with_name(
-    #         f'{self.name}.{self.uncertainty_quantification}')[0]
-    #
-    #     # check cache is None
-    #     self.assertEqual(
-    #         grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
-    #     self.assertEqual(uq_disc.get_sosdisc_inputs('cache_type'), 'None')
-    #     self.assertEqual(self.ee.root_process.cache, None)
-    #     self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
-    #     self.assertEqual(self.ee.root_process.sos_disciplines[0].cache, None)
-    #
-    #     # first execute
-    #     res_1 = self.ee.execute()
-    #     # get number of calls after first call
-    #     n_call_grid_search_1 = grid_search_disc.n_calls
-    #     n_call_uq_1 = uq_disc.n_calls
-    #
-    #     # second execute without change of parameters
-    #     res_2 = self.ee.execute()
-    #
-    #     # get number of calls after second call
-    #     n_call_grid_search_2 = grid_search_disc.n_calls
-    #     n_call_uq_2 = uq_disc.n_calls
-    #
-    #     # self.assertEqual(n_call_root_2, n_call_root_1 + 1)
-    #     self.assertEqual(n_call_grid_search_2, n_call_grid_search_1 + 1)
-    #     self.assertEqual(n_call_uq_2, n_call_uq_1 + 1)
-    #
-    #     # ACTIVATE SIMPLE CACHE ROOT PROCESS
-    #
-    #     dict_values[f'{self.name}.cache_type'] = 'SimpleCache'
-    #     self.ee.load_study_from_input_dict(dict_values)
-    #
-    #     self.assertEqual(grid_search_disc.get_sosdisc_inputs(
-    #         'cache_type'), 'SimpleCache')
-    #     self.assertEqual(uq_disc.get_sosdisc_inputs(
-    #         'cache_type'), 'SimpleCache')
-    #     self.assertEqual(
-    #         self.ee.root_process.cache.__class__.__name__, 'SimpleCache')
-    #     self.assertEqual(
-    #         self.ee.root_process.mdo_chain.cache.__class__.__name__, 'SimpleCache')
-    #     self.assertEqual(
-    #         self.ee.root_process.sos_disciplines[0].cache.__class__.__name__, 'SimpleCache')
-    #
-    #     # first execute
-    #     res_1 = self.ee.execute()
-    #     # get number of calls after first call
-    #     n_call_grid_search_1 = grid_search_disc.n_calls
-    #     n_call_uq_1 = uq_disc.n_calls
-    #
-    #     # second execute without change of parameters
-    #     res_2 = self.ee.execute()
-    #
-    #     # get number of calls after second call
-    #     n_call_grid_search_2 = grid_search_disc.n_calls
-    #     n_call_uq_2 = uq_disc.n_calls
-    #
-    #     # check that neither grid_search nor uq has run
-    #     self.assertEqual(n_call_grid_search_2, n_call_grid_search_1)
-    #     self.assertEqual(n_call_uq_2, n_call_uq_1)
-    #
-    #     # Third execute with a change of a uq parameter and no change on doe
-    #     dict_values[f'{self.study_name}.{self.grid_search}.confidence_interval'] = 95
-    #     self.ee.load_study_from_input_dict(dict_values)
-    #
-    #     res_3 = self.ee.execute()
-    #
-    #     # get number of calls after third call
-    #     n_call_grid_search_3 = grid_search_disc.n_calls
-    #     n_call_uq_3 = uq_disc.n_calls
-    #
-    #     # check that uq has run but grid search hasn't
-    #     self.assertEqual(n_call_grid_search_3, n_call_grid_search_2)
-    #     self.assertEqual(n_call_uq_3, n_call_uq_2 + 1)
-    #
-    #     # Fourth execute with a change of a grid_search parameter and no change
-    #     # on uq
-    #     dict_values[f'{self.study_name}.{self.grid_search}.wait_time_between_fork'] = 5.0
-    #     self.ee.load_study_from_input_dict(dict_values)
-    #     res_4 = self.ee.execute()
-    #
-    #     # get number of calls after fourth call
-    #     n_call_grid_search_4 = grid_search_disc.n_calls
-    #     n_call_uq_4 = uq_disc.n_calls
-    #
-    #     # check that grid search has run and uq hasn't
-    #     self.assertEqual(n_call_grid_search_4, n_call_grid_search_3 + 1)
-    #     self.assertEqual(n_call_uq_4, n_call_uq_3)
-    #
-    #     # Fifth execute with a change of a common input
-    #     eval_outputs_2 = self.ee.dm.get_value('Test.GridSearch.eval_outputs')
-    #     eval_outputs_2.loc[eval_outputs['full_name'] ==
-    #                        f'{self.grid_search}.Disc1.indicator', ['selected_output']] = True
-    #
-    #     dict_values[f'{self.study_name}.{self.grid_search}.eval_outputs'] = eval_outputs_2
-    #     self.ee.load_study_from_input_dict(dict_values)
-    #     res_5 = self.ee.execute()
-    #
-    #     # get number of calls after fifth call
-    #     n_call_grid_search_5 = grid_search_disc.n_calls
-    #     n_call_uq_5 = uq_disc.n_calls
-    #
-    #     # check that both grid search and uq have run
-    #     self.assertEqual(n_call_grid_search_5, n_call_grid_search_4 + 1)
-    #     self.assertEqual(n_call_uq_5, n_call_uq_4 + 1)
-    #
-    #     # DESACTIVATE CACHE
-    #
-    #     dict_values[f'{self.name}.cache_type'] = 'None'
-    #     self.ee.load_study_from_input_dict(dict_values)
-    #
-    #     # check cache is None
-    #     self.assertEqual(
-    #         grid_search_disc.get_sosdisc_inputs('cache_type'), 'None')
-    #     self.assertEqual(uq_disc.get_sosdisc_inputs('cache_type'), 'None')
-    #     self.assertEqual(self.ee.root_process.cache, None)
-    #     self.assertEqual(self.ee.root_process.mdo_chain.cache, None)
-    #     self.assertEqual(self.ee.root_process.sos_disciplines[0].cache, None)
-    #
-    #     #  execute one more time
-    #     res_6 = self.ee.execute()
-    #
-    #     # get number of calls after changing cache
-    #     n_call_grid_search_6 = grid_search_disc.n_calls
-    #     n_call_uq_6 = uq_disc.n_calls
-    #
-    #     # check that both grid search and uq have run since there is no more
-    #     # cache
-    #     self.assertEqual(n_call_grid_search_6, n_call_grid_search_5 + 1)
-    #     self.assertEqual(n_call_uq_6, n_call_uq_5 + 1)
-
-    # def test_04_simple_cache_on_grid_search_uq_process(self):
-    #
-    #     self.ref_dir = join(dirname(__file__), 'data')
-    #     self.dump_dir = join(self.ref_dir, 'dumped_cache_test_67')
-    #     study_1 = study_grid_search_uq(run_usecase=True)
-    #     study_1.set_dump_directory(
-    #         self.dump_dir)
-    #     study_1.load_data()
-    #
-    #     dict_values = {
-    #         f'{study_1.study_name}.cache_type': 'SimpleCache'}
-    #     study_1.load_data(from_input_dict=dict_values)
-    #
-    #     study_1.run()
-    #     study_1.dump_data(self.dump_dir)
-    #     study_1.dump_cache(self.dump_dir)
-    #
-    #     study_2 = BaseStudyManager(self.repo, 'test_coupling_doe_uq', study_1.study_name)
-    #     study_2.load_data(from_path=self.dump_dir)
-    #     study_2.load_cache(self.dump_dir)
-    #
-    #     dict_values = {
-    #         f'{study_1.study_name}.{study_1.grid_search}.confidence_interval': 95}
-    #     study_2.load_data(from_input_dict=dict_values)
-    #
-    #     study_2.run()
-    #
-    #     # check cache activation by counting n_calls
-    #     for disc in list(study_2.ee.dm.gemseo_disciplines_id_map.values()):
-    #         if disc[0].name in ['usecase', 'UncertaintyQuantification']:
-    #             self.assertEqual(disc[0].n_calls, 1)
-    #         else:
-    #             self.assertEqual(disc[0].n_calls, 0)
-    #
-    #     self.dir_to_del.append(self.dump_dir)
-
-
-if '__main__' == __name__:
-    cls = TestUncertaintyQuantification()
-    cls.setUp()
-    cls.test_01_uncertainty_quantification()
-    cls.tearDown()

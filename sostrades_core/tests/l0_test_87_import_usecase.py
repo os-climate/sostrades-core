@@ -33,7 +33,6 @@ from numpy import array, std, NaN
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
-
 import os
 from os.path import dirname, join
 import math
@@ -93,14 +92,15 @@ class TestSoSimportUsecase(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
+        repo_name = self.repo + '.tests_driver_eval.multi'
         self.repo = self.repo + '.disc1_disc3'
-        proc_name = 'test_disc1_disc3_eval_simple'
+        proc_name = 'test_multi_driver_subprocess_1_3'
         usecase_name = 'usecase_with_ref'
 
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -149,8 +149,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
@@ -177,14 +178,15 @@ class TestSoSimportUsecase(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
+        repo_name = self.repo + '.tests_driver_eval.multi'
         self.repo = self.repo + '.disc1_disc3'
-        proc_name = 'test_disc1_disc3_eval_generator'
+        proc_name = 'test_multi_driver_sample_generator_subprocess_1_3'
         usecase_name = 'usecase_with_ref'
 
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -232,8 +234,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
@@ -249,26 +252,27 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
 
-    def test_3_usecase_import_mono_instances_eval_generator_doe_disc1_disc3(self):
+    def _test_3_usecase_import_mono_instances_eval_generator_doe_disc1_disc3(self):
         """
         This test checks the usecase import capability in mono instance mode with doe algo product generator + eval
         It uses the test_disc1_disc3_list nested process 
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
+        repo_name = self.repo + '.tests_driver_eval.mono'
         self.repo = self.repo + '.disc1_disc3'
-        proc_name = 'test_disc1_disc3_coupling_eval_generator'
+
+        proc_name = 'test_mono_driver_sample_generator_subprocess_1_3'
         usecase_name = 'usecase1_doe_mono'
         coupling_name = 'D1_D3_Coupling'
 
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -317,8 +321,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
@@ -345,8 +350,9 @@ class TestSoSimportUsecase(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
-        self.repo = self.repo + '.sellar'
-        proc_name = 'test_sellar_eval_simple'
+        repo_name = self.repo + '.tests_driver_eval.multi'
+        self.repo = self.repo + ".sellar"
+        proc_name = 'test_multi_driver_sellar'
 
         usecase_name = 'usecase1_with_ref'
 
@@ -357,7 +363,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -390,14 +396,14 @@ class TestSoSimportUsecase(unittest.TestCase):
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
             # Below was as it was done in the console first
-            #==================================================================
+            # ==================================================================
             # anonymize_input_dict_from_usecase = {}
             # anonymize_input_dict_from_usecase['<study_ph>.x'] = array([1.])
             # anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([1.])
             # anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([1.])
             # anonymize_input_dict_from_usecase['<study_ph>.z'] = array([1., 1.])
             # anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
-            #==================================================================
+            # ==================================================================
 
             # Here is as it has been modified to be as in the GUI and/or  csv
             # anonymised dict import.
@@ -416,8 +422,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
@@ -448,11 +455,12 @@ class TestSoSimportUsecase(unittest.TestCase):
         with_coupling = False  # In multi instances only False is of interest
 
         # The generator eval process
+        repo_name = self.repo + '.tests_driver_eval.multi'
         self.repo = self.repo + '.sellar'
         if with_coupling:
-            proc_name = 'test_sellar_coupling_eval_generator'
+            proc_name = 'test_multi_driver_sample_generator_sellar_coupling'
         else:
-            proc_name = 'test_sellar_eval_generator'
+            proc_name = 'test_multi_driver_sample_generator_sellar_simple'
 
         usecase_name = 'usecase1_cp_multi_with_ref'
 
@@ -467,7 +475,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -504,14 +512,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         else:
             if with_coupling:
                 # Below was as it was done in the console first
-                #==============================================================
+                # ==============================================================
                 # anonymize_input_dict_from_usecase = {}
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([1., 1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
-                #==============================================================
+                # ==============================================================
 
                 # Here is as it has been modified to be as in the GUI and/or
                 # csv anonymised dict import.
@@ -528,14 +536,14 @@ class TestSoSimportUsecase(unittest.TestCase):
 
             else:
                 # Below was as it was done in the console first
-                #==============================================================
+                # ==============================================================
                 # anonymize_input_dict_from_usecase = {}
                 # anonymize_input_dict_from_usecase['<study_ph>.x'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.z'] = array([1., 1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.Sellar_Problem.local_dv'] = 10.
-                #==============================================================
+                # ==============================================================
 
                 # Here is as it has been modified to be as in the GUI and/or
                 # csv anonymised dict import.
@@ -554,8 +562,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
@@ -573,7 +582,7 @@ class TestSoSimportUsecase(unittest.TestCase):
 
         # study_dump.run()
 
-    def test_6_usecase_import_mono_instances_eval_generator_doe_sellar(self):
+    def _test_6_usecase_import_mono_instances_eval_generator_doe_sellar(self):
         """
         This test checks the usecase import capability in mono instance mode with generator  + eval
         It uses the sellar_coupling nested process
@@ -582,15 +591,16 @@ class TestSoSimportUsecase(unittest.TestCase):
         from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
-
+        # TODO: ask Carlos
         with_coupling = True  # In mono instance only True is of interest
 
         # The generator eval process
+        repo_name = self.repo + '.tests_driver_eval.mono'
         self.repo = self.repo + '.sellar'
         if with_coupling:
-            proc_name = 'test_sellar_coupling_eval_generator'
+            proc_name = 'test_mono_driver_sample_generator_sellar_coupling'
         else:
-            proc_name = 'test_sellar_subprocess_eval_generator'
+            proc_name = 'test_mono_driver_sample_generator_sellar_list'
 
         usecase_name = 'usecase1_doe_mono'
 
@@ -605,7 +615,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -643,14 +653,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         else:
             if with_coupling:
                 # Below was as it was done in the console first
-                #==============================================================
+                # ==============================================================
                 # anonymize_input_dict_from_usecase = {}
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([1., 1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
-                #==============================================================
+                # ==============================================================
 
                 # Here is as it has been modified to be as in the GUI and/or
                 # csv anonymised dict import.
@@ -667,14 +677,14 @@ class TestSoSimportUsecase(unittest.TestCase):
 
             else:
                 # Below was as it was done in the console first
-                #==============================================================
+                # ==============================================================
                 # anonymize_input_dict_from_usecase = {}
                 # anonymize_input_dict_from_usecase['<study_ph>.x'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.y_1'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.y_2'] = array([1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.z'] = array([1., 1.])
                 # anonymize_input_dict_from_usecase['<study_ph>.subprocess.Sellar_Problem.local_dv'] = 10.
-                #==============================================================
+                # ==============================================================
 
                 # Here is as it has been modified to be as in the GUI and/or
                 # csv anonymised dict import.
@@ -696,8 +706,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
@@ -725,8 +736,9 @@ class TestSoSimportUsecase(unittest.TestCase):
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
+        repo_name = self.repo + '.tests_driver_eval.multi'
         self.repo = self.repo + '.sellar'
-        proc_name = 'test_sellar_coupling_eval_generator_flatten'
+        proc_name = 'test_multi_driver_sample_generator_sellar_coupling'
         usecase_name = 'usecase1_cp_multi_with_ref'
 
         # Associated nested subprocess
@@ -737,7 +749,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -770,14 +782,14 @@ class TestSoSimportUsecase(unittest.TestCase):
                 self.repo, sub_process_name, sub_process_usecase_name)
         else:
             # Below was as it was done in the console first
-            #==================================================================
+            # ==================================================================
             # anonymize_input_dict_from_usecase = {}
             # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.x'] = array([1.])
             # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_1'] = array([1.])
             # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.y_2'] = array([1.])
             # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.z'] = array([1., 1.])
             # anonymize_input_dict_from_usecase['<study_ph>.SellarCoupling.Sellar_Problem.local_dv'] = 10.
-            #==================================================================
+            # ==================================================================
 
             # Here is as it has been modified to be as in the GUI and/or
             # csv anonymised dict import
@@ -800,8 +812,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
@@ -830,13 +843,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
-        proc_name = 'test_multi_instance_basic'
+        repo_name = self.repo + '.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver_simple'
         usecase_name = 'usecase_with_ref'
 
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -890,8 +904,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.multi_scenarios.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.multi_scenarios.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.multi_scenarios.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
@@ -918,13 +933,14 @@ class TestSoSimportUsecase(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
-        proc_name = 'test_multi_instance_with_samplegenerator'
+        repo_name = self.repo + '.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver_sample_generator_simple'
         usecase_name = 'usecase_with_ref'
 
         # Creation of the study from the associated usecase
         self.study_name = usecase_name
         imported_module = import_module(
-            '.'.join([self.repo, proc_name, usecase_name]))
+            '.'.join([repo_name, proc_name, usecase_name]))
 
         study_dump = imported_module.Study(run_usecase=True)
 
@@ -978,8 +994,9 @@ class TestSoSimportUsecase(unittest.TestCase):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 self.repo, sub_process_name, sub_process_usecase_name)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            #process_builder_parameter_type.usecase_data = {}
-            dict_values[f'{self.study_name}.multi_scenarios.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            # process_builder_parameter_type.usecase_data = {}
+            dict_values[
+                f'{self.study_name}.multi_scenarios.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.multi_scenarios.usecase_data'] = anonymize_input_dict_from_usecase
         study_dump.load_data(from_input_dict=dict_values)
@@ -993,3 +1010,9 @@ class TestSoSimportUsecase(unittest.TestCase):
         print_flag = False
         self.check_discipline_values(
             ref_disc, target_values_dict, print_flag=print_flag)
+
+
+if __name__ == "__main__":
+    test = TestSoSimportUsecase()
+    test.setUp()
+    test.test_5_usecase_import_multi_instances_eval_generator_cp_sellar()

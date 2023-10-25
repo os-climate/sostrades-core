@@ -22,9 +22,11 @@ import numpy as np
 import platform
 from tqdm import tqdm
 import time
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 
 from sostrades_core.tools.base_functions.compute_len import compute_len
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, \
+    convert_array_into_new_type
 
 from numpy import array, ndarray, delete, NaN
 
@@ -34,7 +36,6 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
-
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -68,14 +69,15 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                     "multiprocessing is not possible on Windows")
                 n_processes = 1
             self.logger.info("running sos eval in sequential")
-
-            for i in tqdm(range(len(samples)), ncols=100, position=0):
+            scenario_nb = len(samples)
+            for i in tqdm(range(scenario_nb), ncols=100, position=0):
                 time.sleep(0.1)
-                self.logger.info(f'   Scenario_{str(i + 1)} is running.')
-                x = samples[i]
-                scenario_name = "scenario_" + str(i + 1)
+                scenario_name = samples[i][SampleGeneratorWrapper.SCENARIO_NAME]
+                self.logger.info(f'   {scenario_name} is running.')
+                x = {key:value for key,value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
+                
                 evaluation_output[scenario_name] = x, self.evaluation(
-                    x, scenario_name, convert_to_array, completed_eval_in_list)
+                    x, scenario_name, convert_to_array)
             return evaluation_output
 
         if n_processes > 1:
@@ -87,7 +89,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             def sample_evaluator(sample_to_evaluate):
                 """Evaluate a sample
                 """
-                return self.evaluation(sample_to_evaluate, convert_to_array=False, completed_eval_in_list=completed_eval_in_list)
+                return self.evaluation(sample_to_evaluate, convert_to_array=False)
 
             parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
                                          wait_time_between_fork=wait_time_between_samples)
@@ -104,7 +106,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                     index: The sample index.
                     outputs: The outputs of the parallel execution.
                 """
-                scenario_name = "scenario_" + str(index + 1)
+                scenario_name = samples[index][SampleGeneratorWrapper.SCENARIO_NAME]
                 evaluation_output[scenario_name] = (samples[index], outputs)
                 self.logger.info(
                     f'{scenario_name} has been run. computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
@@ -113,26 +115,31 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             try:
                 # execute all the scenarios (except the reference scenario)  in
                 # parallel
-                parallel.execute(samples[0:-1], exec_callback=store_callback)
+                #remove the scenario_name key of each sample
+                x = [{key:value for key,value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME} for i in range(len(samples))]
+                
+                parallel.execute(x[0:-1], exec_callback=store_callback)
                 # execute the reference scenario in a sequential way so that
                 # sostrades objects are updated
-                scenario_name = "scenario_" + str(len(samples))
+                scenario_name = samples[-1][SampleGeneratorWrapper.SCENARIO_NAME]
                 evaluation_output[scenario_name] = samples[-1], self.evaluation(
-                    samples[-1], scenario_name, convert_to_array, completed_eval_in_list)
+                    x[-1], scenario_name, convert_to_array)
                 self.proxy_disciplines[0]._update_status_recursive(
                     self.STATUS_DONE)
                 dict_to_return = {}
-                for (scenario_name, sample_value) in sorted(evaluation_output.items(),
-                                                            key=lambda scenario: int(
-                                                                scenario[0].split("scenario_")[1])):
-                    dict_to_return[scenario_name] = sample_value
+                #return the outputs in the same order of the scenario lists
+                for sample in samples:
+                    scenario_name = sample[SampleGeneratorWrapper.SCENARIO_NAME]
+                    if scenario_name in evaluation_output.keys():
+                        dict_to_return[scenario_name] = evaluation_output[scenario_name]
+                
                 return dict_to_return
 
             except:
                 self.proxy_disciplines[0]._update_status_recursive(
                     self.STATUS_FAILED)  # FIXME: This won't work
 
-    def evaluation(self, x, scenario_name=None, convert_to_array=True, completed_eval_in_list=None):
+    def evaluation(self, x, scenario_name=None, convert_to_array=True):
         """
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
@@ -141,12 +148,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         # self.attributes['sub_mdo_discipline'].clear_cache() # TODO: cache
         # management?
 
-        if completed_eval_in_list is None:
-            eval_in = self.attributes['eval_in_list']
-        else:
-            eval_in = completed_eval_in_list
-        # TODO: get a values_dict to arrive here for a + robust impl. less prone var. name errors and so ?
-        values_dict = dict(zip(eval_in, x))
+        
+        values_dict = x
 
         local_data = self.attributes['sub_mdo_disciplines'][0].execute(
             self._get_input_data(values_dict))
@@ -173,35 +176,36 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         return out_values
 
-    def take_samples(self):
-        """
-        Generating samples for the Eval
-        """
-        self.custom_samples = self.get_sosdisc_inputs('samples_df').copy()
-        self.check_custom_samples()
-        return self.custom_samples
+    # def take_samples(self):
+    #     """
+    #     Generating samples for the Eval
+    #     """
+    #     self.custom_samples = self.get_sosdisc_inputs('samples_df').copy()
+    #     # self.check_custom_samples()
+    #     return self.custom_samples
 
-    def check_custom_samples(self):
-        """ We that the columns of the dataframe are the same  that  the selected inputs
-        We also check that they are of the same type
-        """
-        if not set(self.attributes['selected_inputs']).issubset(set(self.custom_samples.columns.to_list())):
-            missing_eval_in_variables = set.union(set(self.attributes['selected_inputs']), set(
-                self.custom_samples.columns.to_list())) - set(self.custom_samples.columns.to_list())
-            msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
-            # To do: provide also the list of missing eval_in variables:
-            self.logger.error(msg)
-            raise ValueError(msg)
-        else:
-            not_relevant_columns = set(
-                self.custom_samples.columns.to_list()) - set(self.attributes['selected_inputs'])
-            msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
-            self.logger.warning(msg)
-            # if len(not_relevant_columns) != 0:
-            #     self.custom_samples.drop(
-            #         not_relevant_columns, axis=1, inplace=True)
-            # drop irrelevant + reorder
-            self.custom_samples = self.custom_samples[self.attributes['selected_inputs']]
+    # TODO: transfert to sample generaor
+    # def check_custom_samples(self):
+    #     """ We that the columns of the dataframe are the same  that  the selected inputs
+    #     We also check that they are of the same type
+    #     """
+    #     if not set(self.attributes['selected_inputs']).issubset(set(self.custom_samples.columns.to_list())):
+    #         missing_eval_in_variables = set.union(set(self.attributes['selected_inputs']), set(
+    #             self.custom_samples.columns.to_list())) - set(self.custom_samples.columns.to_list())
+    #         msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
+    #         # To do: provide also the list of missing eval_in variables:
+    #         self.logger.error(msg)
+    #         raise ValueError(msg)
+    #     else:
+    #         not_relevant_columns = set(
+    #             self.custom_samples.columns.to_list()) - set(self.attributes['selected_inputs'])
+    #         msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
+    #         self.logger.warning(msg)
+    #         # if len(not_relevant_columns) != 0:
+    #         #     self.custom_samples.drop(
+    #         #         not_relevant_columns, axis=1, inplace=True)
+    #         # drop irrelevant + reorder
+    #         self.custom_samples = self.custom_samples[self.attributes['selected_inputs']]
 
     def run(self):
         '''
@@ -215,52 +219,51 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         dict_output = {}
 
         # We first begin by sample generation
-        self.samples = self.take_samples()
+        samples_df = self.get_sosdisc_inputs(SampleGeneratorWrapper.SAMPLES_DF)
+        
+        input_columns = [f"{self.attributes['driver_name']}.{col}" for col in samples_df.columns 
+                         if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
+        input_columns_short_name = [col for col in samples_df.columns 
+                         if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
+        # get reference scenario
+        reference_values = self.get_sosdisc_inputs(input_columns, full_name_keys=True)
+        if len(input_columns) == 1:
+            reference_values = [reference_values]
+        reference_scenario = {input_columns[i]: reference_values[i] for i in range(len(input_columns))}
+        reference_scenario[SampleGeneratorWrapper.SCENARIO_NAME] = 'reference_scenario'
 
-        # Before, for User-defined samples, Eval received a dataframe and transformed it into list in take_samples
-        # above. For DoE sampling generation Eval received a list.
-        # Now, for User-defined samples and DoE sampling generation, Eval receives a dataframe in both cases and
-        # transforms it in list.
-        self.samples = self.samples.values.tolist()
+        # keep only selected scenario
+        samples_df = samples_df[samples_df[SampleGeneratorWrapper.SELECTED_SCENARIO]== True]
+        samples_df = samples_df.drop(SampleGeneratorWrapper.SELECTED_SCENARIO, axis='columns')
 
-        # Then add the reference scenario (initial point ) to the input samples
-        self.samples.append([self.attributes['reference_scenario'][var_to_eval]
-                             for var_to_eval in self.attributes['eval_in_list']])
+        #rename the columns with full names
+        for key in input_columns_short_name:
+            samples_df[f"{self.attributes['driver_name']}.{key}"] = samples_df[key].values
+        samples_df = samples_df.drop(input_columns_short_name, axis='columns')
 
-        reference_scenario_id = len(self.samples)
-        eval_in_with_multiplied_var = None
-        # if self.INPUT_MULTIPLIER_TYPE != []:
-        #     origin_vars_to_update_dict = self.create_origin_vars_to_update_dict()
-        #     multipliers_samples = copy.deepcopy(self.samples)
-        #     self.add_multiplied_var_to_samples(
-        #         multipliers_samples, origin_vars_to_update_dict)
-        #     eval_in_with_multiplied_var = self.attributes['eval_in_list'] + \
-        #         list(origin_vars_to_update_dict.keys())
+        #build samples dict
+        self.samples = []
+        scenario_nb = len(samples_df[SampleGeneratorWrapper.SCENARIO_NAME])
+        for i in range(scenario_nb):
+            self.samples.append(samples_df.iloc[i].to_dict())
+        #add reference scenario
+        self.samples.append(reference_scenario)
 
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(
-            self.samples, convert_to_array=False, completed_eval_in_list=eval_in_with_multiplied_var)
+            self.samples, convert_to_array=False)
 
         # we loop through the samples evaluated to build dictionaries needed
         # for output generation
-        reference_scenario = f'scenario_{reference_scenario_id}'
-
+       
         for (scenario_name, evaluated_samples) in evaluation_outputs.items():
-
-            # generation of the dictionary of samples used
-            dict_one_sample = {}
-            current_sample = evaluated_samples[0]
-            scenario_naming = scenario_name if scenario_name != reference_scenario else 'reference'
-            for idx, f_name in enumerate(self.attributes['eval_in_list']):
-                dict_one_sample[f_name] = current_sample[idx]
-            dict_sample[scenario_naming] = dict_one_sample
 
             # generation of the dictionary of outputs
             dict_one_output = {}
             current_output = evaluated_samples[1]
             for idx, values in enumerate(current_output):
                 dict_one_output[self.attributes['eval_out_list'][idx]] = values
-            dict_output[scenario_naming] = dict_one_output
+            dict_output[scenario_name] = dict_one_output
 
         # construction of a dataframe of generated samples
         # columns are selected inputs
@@ -276,10 +279,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 out_samples_row.append(generated_output)
             samples_all_row.append(samples_row)
             out_samples_all_row.append(out_samples_row)
-        input_columns = ['scenario']
-        input_columns.extend(self.attributes['selected_inputs'])
-        samples_input_df = pd.DataFrame(samples_all_row, columns=input_columns)
-        output_columns = ['scenario']
+        
+        output_columns = ['scenario_name']
         output_columns.extend(self.attributes['selected_outputs'])
         samples_output_df = pd.DataFrame(out_samples_all_row, columns=output_columns)
         # construction of a dictionary of dynamic outputs
@@ -297,8 +298,14 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         self.store_sos_outputs_values(
             subprocess_ref_outputs, full_name_keys=True)
         # save doeeval outputs
-        self.store_sos_outputs_values(
-            {'samples_inputs_df': samples_input_df})
+        sample_input_df = pd.DataFrame( self.samples)
+
+        # go again with short names into samples_inputs_df
+        for key in input_columns_short_name:
+            sample_input_df[key] = sample_input_df[f"{self.attributes['driver_name']}.{key}"].values
+        sample_input_df = sample_input_df.drop(input_columns, axis='columns')
+
+        self.store_sos_outputs_values({'samples_inputs_df':sample_input_df})
 
         self.store_sos_outputs_values(
             {'samples_outputs_df': samples_output_df})
