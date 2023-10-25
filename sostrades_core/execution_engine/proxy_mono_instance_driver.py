@@ -36,13 +36,13 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
     DESC_IN = {
         ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
-                                                  ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
-                                                      'selected_input': ('bool', None, True),
-                                                      'full_name': ('string', None, False)},
-                                                  ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
-                                                  ProxyDriverEvaluator.STRUCTURING: True,
-                                                  ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-                                                  ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
+                                           ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
+                                               'selected_input': ('bool', None, True),
+                                               'full_name': ('string', None, False)},
+                                           ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
+                                           ProxyDriverEvaluator.STRUCTURING: True,
+                                           ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
+                                           ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
         ProxyDriverEvaluator.EVAL_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                             ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                 'selected_output': ('bool', None, True),
@@ -61,8 +61,8 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     DESC_IN.update(ProxyDriverEvaluator.DESC_IN)
 
     DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None,
-                                       ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-                                       ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER}}
+                                      ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
+                                      ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER}}
 
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
@@ -80,7 +80,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                     selected_outputs = eval_outputs[eval_outputs['selected_output']
                                                     == True]['full_name']
                     selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                                   == True]['full_name']
+                                                  == True]['full_name']
                     if 'output_name' in eval_outputs.columns:
                         eval_out_names = eval_outputs[eval_outputs['selected_output']
                                                       == True]['output_name'].tolist()
@@ -110,7 +110,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                                              self.VISIBILITY: 'Shared',
                                              self.NAMESPACE: self.NS_DRIVER}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
-                             disc_in, selected_inputs_has_changed))
+                            disc_in, selected_inputs_has_changed))
                         dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
                                                                        self.VISIBILITY: 'Shared',
                                                                        self.NAMESPACE: self.NS_DRIVER}})
@@ -127,20 +127,19 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 ref_discipline_full_name)
             # SET EVAL POSSIBLE VALUES
             self.set_eval_possible_values()
-    
 
     def set_wrapper_attributes(self, wrapper):
         super().set_wrapper_attributes(wrapper)
         if self.selected_inputs is not None:
             # specific to mono-instance
             eval_attributes = {
-                                'eval_out_list': self.eval_out_list,
-                                'eval_out_names': self.eval_out_names,
-                                'driver_name': self.get_disc_full_name(),
-                                'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
-                                'selected_inputs': self.selected_inputs,
-                                'selected_outputs': self.selected_outputs,
-                                }
+                'eval_out_list': self.eval_out_list,
+                'eval_out_names': self.eval_out_names,
+                'driver_name': self.get_disc_full_name(),
+                'reduced_dm': self.ee.dm.reduced_dm,  # for conversions
+                'selected_inputs': self.selected_inputs,
+                'selected_outputs': self.selected_outputs,
+            }
             wrapper.attributes.update(eval_attributes)
 
     def prepare_build(self):
@@ -158,14 +157,13 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     def is_configured(self):
         return super().is_configured() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
 
-    
-
     ## TODO This method must be moved into a specific sample generator
     def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
-        all_columns = [SampleGeneratorWrapper.SELECTED_SCENARIO,SampleGeneratorWrapper.SCENARIO_NAME] + self.selected_inputs
+        all_columns = [SampleGeneratorWrapper.SELECTED_SCENARIO,
+                       SampleGeneratorWrapper.SCENARIO_NAME] + self.selected_inputs
         default_custom_dataframe = pd.DataFrame(
             [[NaN for _ in range(len(all_columns))]], columns=all_columns)
-        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor']
+        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
         for i, key in enumerate(self.selected_inputs):
             var_f_name = self.eval_in_list[i]
             if var_f_name in self.ee.dm.data_id_map:
@@ -177,33 +175,33 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 dataframe_descriptor[key] = ('float', None, True)
             else:
                 raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
-    
+
         dynamic_inputs = {'samples_df': {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
                                          self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
                                          self.DATAFRAME_EDITION_LOCKED: False,
                                          self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
                                          self.NAMESPACE: self.NS_DRIVER
                                          }}
-    
+
         # This reflects 'samples_df' dynamic input has been configured and that
         # eval_inputs have changed
         if 'samples_df' in disc_in and selected_inputs_has_changed:
-    
+
             if disc_in['samples_df']['value'] is not None:
                 from_samples = list(disc_in['samples_df']['value'].keys())
                 from_eval_inputs = list(default_custom_dataframe.keys())
                 final_dataframe = pd.DataFrame(
                     None, columns=all_columns)
-    
+
                 len_df = 1
                 for element in from_eval_inputs:
                     if element in from_samples:
                         len_df = len(disc_in['samples_df']['value'])
-    
+
                 for element in from_eval_inputs:
                     if element in from_samples:
                         final_dataframe[element] = disc_in['samples_df']['value'][element]
-    
+
                     else:
                         final_dataframe[element] = [NaN for _ in range(len_df)]
                 disc_in['samples_df'][self.VALUE] = final_dataframe

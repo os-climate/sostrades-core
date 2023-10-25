@@ -818,6 +818,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         # case when scatter is on archi_node or scatter on other node at root level
         if namespace == self.sos_name:
             driver_name = 'driver'
+            builder_name = namespace
         # standard case
         elif self.sos_name.split('.')[-1] in namespace:
             builder_name = f"{namespace.split('.', 1)[1]}"
