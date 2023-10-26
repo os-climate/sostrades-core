@@ -16,6 +16,7 @@ limitations under the License.
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 #-- process configuration class
 from typing import Optional
+import traceback
 import logging
 from importlib import import_module
 from pathlib import Path
@@ -235,9 +236,11 @@ class SoSProcessFactory:
                     f'Unable to load the following module {repository_module_name}')
 
         except ModuleNotFoundError as error:
+            traceback.print_stack()
             self.logger.critical(
                 f'Unable to load the following module {repository_module_name} : {str(error)}')
         except TypeError as error:
+            traceback.print_stack()
             self.logger.critical(
                 f'Unable to load the following module {repository_module_name} : {str(error)}')
 
