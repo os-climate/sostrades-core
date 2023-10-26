@@ -160,7 +160,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
         SoSWrapp.EDITABLE: True,
-        SoSWrapp.STRUCTURING:True,
+        SoSWrapp.STRUCTURING: True,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
         SoSWrapp.NAMESPACE: NS_DRIVER
     }
@@ -178,7 +178,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                           'editable': False}
                }
 
-    DESC_OUT = {SAMPLES_DF: SAMPLES_DF_DESC}
+    # DESC_OUT = {SAMPLES_DF: SAMPLES_DF_DESC}
 
     def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name=sos_name, logger=logger)
@@ -227,8 +227,9 @@ class SampleGeneratorWrapper(SoSWrapp):
 
                 self.sampling_generation_mode = self.AT_CONFIGURATION_TIME
                 disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_CONFIGURATION_TIME
-                pass
 
+                # dynamic_inputs = self.sample_generator.setup(disc_in)
+                #FIXME: finish impl.
 
             elif self.sampling_method == self.DOE_ALGO:
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
@@ -284,6 +285,9 @@ class SampleGeneratorWrapper(SoSWrapp):
             dynamic_inputs = {}
             dynamic_outputs = {}
 
+        if self.sampling_generation_mode == self.AT_RUN_TIME:
+            dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC.copy()
+
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
@@ -292,25 +296,26 @@ class SampleGeneratorWrapper(SoSWrapp):
             Overloaded class method
             The generation of samples_df as run time
         '''
-        samples_df = None
+        if self.sampling_generation_mode == self.AT_RUN_TIME:
+            samples_df = None
 
-        if self.sampling_method == self.DOE_ALGO:
-            samples_df = self.run_doe()
-        elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
-            samples_df = self.run_cp()
+            if self.sampling_method == self.DOE_ALGO:
+                samples_df = self.run_doe()
+            elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
+                samples_df = self.run_cp()
 
-        # Loop to raise an error in case the sampling has not been made.
-        # If samples' type is dataframe, that means that the previous loop has
-        # been entered.
-        if isinstance(samples_df, pd.DataFrame):
-            pass
-        else:
-            raise Exception(
-                f"Sampling has not been made")
-        
-        # Add the scenario names and selected scenario columns
-        samples_df = self.set_scenario_columns(samples_df)
-        self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
+            # Loop to raise an error in case the sampling has not been made.
+            # If samples' type is dataframe, that means that the previous loop has
+            # been entered.
+            if isinstance(samples_df, pd.DataFrame):
+                pass
+            else:
+                raise Exception(
+                    f"Sampling has not been made")
+
+            # Add the scenario names and selected scenario columns
+            samples_df = self.set_scenario_columns(samples_df)
+            self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def set_scenario_columns(self, samples_df):
         '''

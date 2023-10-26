@@ -631,10 +631,12 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         #     'cp.CP')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
         disc = exec_eng.root_process.proxy_disciplines[0]
 
-        disc_samples = disc.get_sosdisc_outputs(
-            'samples_df')
+        if self.sampling_generation_mode_cp == 'at_run_time':
 
-        print(disc_samples)
+            disc_samples = disc.get_sosdisc_outputs(
+                'samples_df')
+
+            print(disc_samples)
 
         targeted_samples = [
             [0.0, [-10.0, 0.0]],
@@ -754,10 +756,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         exec_eng.execute()
 
-        disc_samples = disc.get_sosdisc_outputs(
-            'samples_df')
+        if self.sampling_generation_mode_cp == 'at_run_time':
+            disc_samples = disc.get_sosdisc_outputs(
+                'samples_df')
 
-        print(disc_samples)
+            print(disc_samples)
 
         # 4. Change sampling_method: go to doe_algo
         # CP inputs
