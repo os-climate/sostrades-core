@@ -59,3 +59,18 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
             samples_df (dataframe) : generated samples
         '''
         return pd.DataFrame(columns=var_names)
+
+    def _check_samples(self, samples_df):
+        '''
+        Method that checks the sample output type
+        Arguments:
+            samples_df (dataframe) : generated samples
+        Raises:
+            Exception if samples_df is not a dataframe
+        '''
+        if not(isinstance(samples_df, pd.DataFrame)):
+            msg = "Expected sampling output type should be pandas.core.frame.DataFrame"
+            msg += "however sampling type of sampling generator <%s> " % str(
+                self.__class__.__name__)
+            msg += "is <%s> " % str(type(samples_df))
+            raise SimpleSampleGeneratorTypeError()
