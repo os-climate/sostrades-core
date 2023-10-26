@@ -33,6 +33,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.execution_engine.sample_generators.simple_sample_generator import SimpleSampleGenerator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
     CartesianProductSampleGenerator
@@ -123,11 +124,19 @@ class SampleGeneratorWrapper(SoSWrapp):
     PARALLEL_OPTIONS = 'parallel_options'
 
     SAMPLING_METHOD = 'sampling_method'
+    SIMPLE_SAMPLING_METHOD = 'simple'
     DOE_ALGO = 'doe_algo'
     CARTESIAN_PRODUCT = 'cartesian_product'
     GRID_SEARCH = 'grid_search'
     FULLFACT = 'fullfact'
-    available_sampling_methods = [DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
+    available_sampling_methods = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
+
+    SAMPLE_GENERATOR_CLS = {
+        SIMPLE_SAMPLING_METHOD: SimpleSampleGenerator,
+        DOE_ALGO: DoeSampleGenerator,
+        CARTESIAN_PRODUCT: CartesianProductSampleGenerator,
+        GRID_SEARCH: CartesianProductSampleGenerator
+    }
 
     SAMPLING_GENERATION_MODE = 'sampling_generation_mode'
     AT_CONFIGURATION_TIME = 'at_configuration_time'
@@ -151,7 +160,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
         SoSWrapp.EDITABLE: True,
-        SoSWrapp.STRUCTURING:True,
+        SoSWrapp.STRUCTURING: True,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
         SoSWrapp.NAMESPACE: NS_DRIVER
     }
@@ -169,13 +178,12 @@ class SampleGeneratorWrapper(SoSWrapp):
                                           'editable': False}
                }
 
-    DESC_OUT = {SAMPLES_DF: SAMPLES_DF_DESC}
+    # DESC_OUT = {SAMPLES_DF: SAMPLES_DF_DESC}
 
     def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name=sos_name, logger=logger)
         self.sampling_method = None
-        self.sample_generator_doe = None
-        self.sample_generator_cp = None
+        self.sample_generator = None
 
         self.sampling_generation_mode = None
 
@@ -207,7 +215,61 @@ class SampleGeneratorWrapper(SoSWrapp):
             # TODO: Here we start from scratch each time we switch from one method to the other
             #       ... but maybe we would like to keep selected eval_inputs or eval_inputs_cp ?
 
-            if self.sampling_method == self.DOE_ALGO:
+            if self.sampling_method == self.SIMPLE_SAMPLING_METHOD:
+                # Reset parameters of the other method to initial values
+                # (cleaning)
+                #TODO: move all of these to the corresponding tools !
+                self.previous_eval_inputs_cp = None
+                self.eval_inputs_cp_filtered = None
+                self.eval_inputs_cp_validity = True
+                self.selected_inputs = []
+                self.dict_desactivated_elem = {}
+
+                # 0. force config time sampling
+                self.sampling_generation_mode = self.AT_CONFIGURATION_TIME
+                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_CONFIGURATION_TIME
+
+                # 1. handle dynamic inputs of the mode
+                # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
+                dynamic_inputs, dynamic_outputs = {}, {}
+                dynamic_inputs.update({'eval_inputs':
+                                   {self.TYPE: 'dataframe',
+                                    self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                                'full_name': ('string', None, False)},
+                                    self.DATAFRAME_EDITION_LOCKED: False,
+                                    self.STRUCTURING: True,
+                                    self.VISIBILITY: self.SHARED_VISIBILITY,
+                                    self.NAMESPACE: self.NS_SAMPLING}
+                               })
+                dynamic_inputs.update({'scenario_names':
+                                           {self.TYPE: 'list',
+                                            self.SUBTYPE: {'list':'string'},
+                                            self.STRUCTURING: True,
+                                            self.VISIBILITY: self.SHARED_VISIBILITY,
+                                            self.NAMESPACE: self.NS_SAMPLING}
+                                       })
+                dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
+                                                                self.DATAFRAME_DESCRIPTOR: {},
+                                                                self.DYNAMIC_DATAFRAME_COLUMNS: True,
+                                                                self.DATAFRAME_EDITION_LOCKED: True,
+                                                                self.STRUCTURING: True,
+                                                                self.UNIT: None,
+                                                                self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                                self.NAMESPACE: self.NS_SAMPLING,
+                                                                self.DEFAULT: pd.DataFrame()}})
+                # 2. retrieve input that configures the sampling tool
+                if 'scenario_names' in disc_in:
+                    scenario_names = self.get_sosdisc_inputs('scenario_names')
+                    eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+                    if scenario_names and eval_inputs is not None:
+                        selected_inputs = self.reformat_eval_inputs(eval_inputs).tolist()
+                        # 3. if sampling at config.time set the generated samples
+                        self.samples_gene_df = self.sample_generator.generate_samples(selected_inputs)
+                        self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df,
+                                                                         scenario_names=scenario_names)
+                        disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+
+            elif self.sampling_method == self.DOE_ALGO:
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
                 # Reset parameters of the other method to initial values
                 # (cleaning)
@@ -261,6 +323,10 @@ class SampleGeneratorWrapper(SoSWrapp):
             dynamic_inputs = {}
             dynamic_outputs = {}
 
+        # 4. if sampling at run-time add the corresponding output
+        if self.sampling_generation_mode == self.AT_RUN_TIME:
+            dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC.copy()
+
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
@@ -269,49 +335,49 @@ class SampleGeneratorWrapper(SoSWrapp):
             Overloaded class method
             The generation of samples_df as run time
         '''
-        samples_df = None
+        if self.sampling_generation_mode == self.AT_RUN_TIME:
+            samples_df = None
 
-        if self.sampling_method == self.DOE_ALGO:
-            samples_df = self.run_doe()
-        elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
-            samples_df = self.run_cp()
+            if self.sampling_method == self.DOE_ALGO:
+                samples_df = self.run_doe()
+            elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
+                samples_df = self.run_cp()
 
-        # Loop to raise an error in case the sampling has not been made.
-        # If samples' type is dataframe, that means that the previous loop has
-        # been entered.
-        if isinstance(samples_df, pd.DataFrame):
-            pass
-        else:
-            raise Exception(
-                f"Sampling has not been made")
-        
-        # Add the scenario names and selected scenario columns
-        samples_df = self.set_scenario_columns(samples_df)
-        self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
+            # Loop to raise an error in case the sampling has not been made.
+            # If samples' type is dataframe, that means that the previous loop has
+            # been entered.
+            if isinstance(samples_df, pd.DataFrame):
+                pass
+            else:
+                raise Exception(
+                    f"Sampling has not been made")
 
-    def set_scenario_columns(self, samples_df):
+            # Add the scenario names and selected scenario columns
+            samples_df = self.set_scenario_columns(samples_df)
+            self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
+
+    def set_scenario_columns(self, samples_df, scenario_names=None):
         '''
         Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df dataframe
         '''
         if self.SELECTED_SCENARIO not in samples_df:
             ordered_columns = [self.SELECTED_SCENARIO, self.SCENARIO_NAME] + samples_df.columns.tolist()
+            if scenario_names is None:
+                samples_df[self.SCENARIO_NAME] = [f'scenario_{i}' for i in range(1,len(samples_df)+1)]
+            else:
+                samples_df[self.SCENARIO_NAME] = scenario_names
             samples_df[self.SELECTED_SCENARIO] = [True] * len(samples_df)
-            samples_df[self.SCENARIO_NAME] = [f'scenario_{i}' for i in range(1,len(samples_df)+1)]
             samples_df = samples_df[ordered_columns]
         return samples_df
     
     def instantiate_sampling_tool(self):
         """
-           Instantiate SampleGenerator once and only if needed
+           Instantiate SampleGenerator only if needed
         """
-        # TODO: refactor OO?
-        if self.sampling_method == self.DOE_ALGO:
-            if self.sample_generator_doe is None:
-                self.sample_generator_doe = DoeSampleGenerator(logger=self.logger.getChild("DoeSampleGenerator"))
-        elif self.sampling_method in [self.CARTESIAN_PRODUCT, self.GRID_SEARCH]:
-            if self.sample_generator_cp is None:
-                self.sample_generator_cp = CartesianProductSampleGenerator(
-                    logger=self.logger.getChild("CartesianProductSampleGenerator"))
+        if self.sampling_method:
+            sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
+            if self.sample_generator.__class__ != sample_generator_cls:
+                self.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
 
     def get_algo_default_options(self, algo_name):
         """
@@ -321,7 +387,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         # In get_options_and_default_values, it is already checked whether the algo_name belongs to the list of possible Gemseo
         # DoE algorithms
         if algo_name in get_available_doe_algorithms():
-            algo_options_desc_in, algo_options_descr_dict = self.sample_generator_doe.get_options_and_default_values(
+            algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_and_default_values(
                 algo_name)
             return algo_options_desc_in
         else:
@@ -398,11 +464,6 @@ class SampleGeneratorWrapper(SoSWrapp):
             if enable_var:
 
                 self.dict_desactivated_elem[dv] = {}
-                # TODO: why these self-assignments ?
-                # if [type(val), type(lb), type(ub)] == [str] * 3:
-                #     val = val
-                #     lb = lb
-                #     ub = ub
                 name = dv
                 if type(val) != list and type(val) != ndarray:
                     size = 1
@@ -454,7 +515,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         """
         if self.sampling_method == self.DOE_ALGO:
             # Get possible values for sampling algorithm name
-            available_doe_algorithms = self.sample_generator_doe.get_available_algo_names()
+            available_doe_algorithms = self.sample_generator.get_available_algo_names()
             dynamic_inputs.update({'sampling_algo':
                                        {self.TYPE: 'string',
                                         self.STRUCTURING: True,
@@ -673,7 +734,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         design_space = self.create_design_space(
             self.selected_inputs, dspace_df)
 
-        samples_gene_df = self.sample_generator_doe.generate_samples(
+        samples_gene_df = self.sample_generator.generate_samples(
             algo_name, algo_options, design_space)
         return samples_gene_df
 
@@ -859,7 +920,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         """
         dict_of_list_values = self.eval_inputs_cp_filtered.set_index(
             'full_name').T.to_dict('records')[0]
-        samples_gene_df = self.sample_generator_cp.generate_samples(
+        samples_gene_df = self.sample_generator.generate_samples(
             dict_of_list_values)
         return samples_gene_df
 

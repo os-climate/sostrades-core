@@ -30,6 +30,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapp
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
+from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -90,7 +91,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     }
 
     EVAL_INPUTS = 'eval_inputs'
-    EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 
     NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
 
@@ -104,7 +104,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
     EVAL_OUTPUTS = 'eval_outputs'
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
-    
+
     ##
     ## To refactor instancce reference and subprocess import
     ##
@@ -337,83 +337,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.get_var_full_name(self.SAMPLES_DF, disc_in),
                 self.CHECK_INTEGRITY_MSG, self.scenario_list_integrity_msg)
 
-    def fill_possible_values(self, disc, io_type_in=False, io_type_out=True):
-        '''
-            Fill possible values lists for eval inputs and outputs
-            an input variable must be a float coming from a data_in of a discipline in all the process
-            and not a default variable
-            an output variable must be any data from a data_out discipline
-        '''
-        poss_in_values_full = set()
-        poss_out_values_full = set()
-        if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
-            disc_in = disc.get_data_in()
-            for data_in_key in disc_in.keys():
-                is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
-                is_structuring = disc_in[data_in_key].get(
-                    self.STRUCTURING, False)
-                in_coupling_numerical = data_in_key in list(
-                    ProxyCoupling.DESC_IN.keys())
-                full_id = disc.get_var_full_name(
-                    data_in_key, disc_in)
-                is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                             ]['io_type'] == 'in'
-                # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
-                is_editable = disc_in[data_in_key]['editable']
-                is_None = disc_in[data_in_key]['value'] is None
-                is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
-                if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
-                    # Caution ! This won't work for variables with points in name
-                    # as for ac_model
-                    # we remove the study name from the variable full  name for a
-                    # sake of simplicity
-                    if is_input_type and not is_a_multiplier:
-                        poss_in_values_full.add(
-                            full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
-                        # poss_in_values_full.append(full_id)
-
-                    # if is_input_multiplier_type and not is_None:
-                    #     poss_in_values_list = self.set_multipliers_values(
-                    #         disc, full_id, data_in_key)
-                    #     for val in poss_in_values_list:
-                    #         poss_in_values_full.append(val)
-
-        if io_type_out:
-            disc_out = disc.get_data_out()
-            for data_out_key in disc_out.keys():
-                # Caution ! This won't work for variables with points in name
-                # as for ac_model
-                in_coupling_numerical = data_out_key in list(
-                    ProxyCoupling.DESC_IN.keys()) or data_out_key == 'residuals_history'
-                full_id = disc.get_var_full_name(
-                    data_out_key, disc_out)
-                if not in_coupling_numerical:
-                    # we anonymize wrt. driver evaluator node namespace
-                    poss_out_values_full.add(
-                        full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
-                    # poss_out_values_full.append(full_id)
-        return poss_in_values_full, poss_out_values_full
-
-    def find_possible_values(
-            self, disc, possible_in_values, possible_out_values,
-            io_type_in=True, io_type_out=True):
-        '''
-            Run through all disciplines and sublevels
-            to find possible values for eval_inputs and eval_outputs
-        '''
-        # TODO: does this involve avoidable, recursive back and forths during  configuration ? (<-> config. graph)
-        if len(disc.proxy_disciplines) != 0:
-            for sub_disc in disc.proxy_disciplines:
-                sub_in_values, sub_out_values = self.fill_possible_values(
-                    sub_disc, io_type_in=io_type_in, io_type_out=io_type_out)
-                possible_in_values.update(sub_in_values)
-                possible_out_values.update(sub_out_values)
-                self.find_possible_values(
-                    sub_disc, possible_in_values, possible_out_values,
-                    io_type_in=io_type_in, io_type_out=io_type_out)
-
-        return possible_in_values, possible_out_values
-
     def check_eval_io(self, given_list, default_list, is_eval_input):
         """
         Set the evaluation variable list (in and out) present in the DM
@@ -612,25 +535,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             strip_first_ns (bool): whether to strip the scenario name (multi-instance case) from the variable name
         '''
 
-        possible_in_values, possible_out_values = set(), set()
-        # scenarios contains all the built sub disciplines (proxy_disciplines does NOT in flatten mode)
-        for scenario_disc in self.scenarios:
-            analyzed_disc = scenario_disc
-            possible_in_values_full, possible_out_values_full = self.fill_possible_values(
-                analyzed_disc, io_type_in=io_type_in, io_type_out=io_type_out)
-            possible_in_values_full, possible_out_values_full = self.find_possible_values(analyzed_disc,
-                                                                                          possible_in_values_full,
-                                                                                          possible_out_values_full,
-                                                                                          io_type_in=io_type_in,
-                                                                                          io_type_out=io_type_out)
-            # strip the scenario name to have just one entry for repeated variables in scenario instances
-            if strip_first_ns:
-                possible_in_values_full = [_var.split('.', 1)[-1] for _var in possible_in_values_full]
-                possible_out_values_full = [_var.split('.', 1)[-1] for _var in possible_out_values_full]
-            possible_in_values.update(possible_in_values_full)
-            possible_out_values.update(possible_out_values_full)
+        possible_in_values, possible_out_values = find_possible_values(self, io_type_in=io_type_in,
+                                                                       io_type_out=io_type_out,
+                                                                       strip_first_ns=strip_first_ns)
 
-        disc_in = self.get_data_in()
         disc_in = self.get_data_in()
         # TODO: transfert to simple sample generator
         if possible_in_values and io_type_in:

@@ -176,19 +176,19 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             else:
                 raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
 
-        dynamic_inputs = {'samples_df': {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                         self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
-                                         self.DATAFRAME_EDITION_LOCKED: False,
-                                         self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-                                         self.NAMESPACE: self.NS_DRIVER
-                                         }}
+        # dynamic_inputs = {self.SAMPLES_DF: {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
+        #                                  self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
+        #                                  self.DATAFRAME_EDITION_LOCKED: False,
+        #                                  self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+        #                                  self.NAMESPACE: self.NS_DRIVER
+        #                                  }}
 
         # This reflects 'samples_df' dynamic input has been configured and that
         # eval_inputs have changed
-        if 'samples_df' in disc_in and selected_inputs_has_changed:
+        if self.SAMPLES_DF in disc_in and selected_inputs_has_changed:
 
-            if disc_in['samples_df']['value'] is not None:
-                from_samples = list(disc_in['samples_df']['value'].keys())
+            if disc_in[self.SAMPLES_DF]['value'] is not None:
+                from_samples = list(disc_in[self.SAMPLES_DF]['value'].keys())
                 from_eval_inputs = list(default_custom_dataframe.keys())
                 final_dataframe = pd.DataFrame(
                     None, columns=all_columns)
@@ -196,17 +196,17 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 len_df = 1
                 for element in from_eval_inputs:
                     if element in from_samples:
-                        len_df = len(disc_in['samples_df']['value'])
+                        len_df = len(disc_in[self.SAMPLES_DF]['value'])
 
                 for element in from_eval_inputs:
                     if element in from_samples:
-                        final_dataframe[element] = disc_in['samples_df']['value'][element]
+                        final_dataframe[element] = disc_in[self.SAMPLES_DF]['value'][element]
 
                     else:
                         final_dataframe[element] = [NaN for _ in range(len_df)]
-                disc_in['samples_df'][self.VALUE] = final_dataframe
-            disc_in['samples_df'][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
-        return dynamic_inputs
+                disc_in[self.SAMPLES_DF][self.VALUE] = final_dataframe
+            disc_in[self.SAMPLES_DF][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
+        return {}
 
     def _set_eval_process_builder(self):
         '''
