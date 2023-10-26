@@ -118,7 +118,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             self.add_outputs(dynamic_outputs)
 
     def configure_driver(self):
-        disc_in = self.get_data_in()
         if len(self.proxy_disciplines) > 0:
             # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
             # Manage usecase import
