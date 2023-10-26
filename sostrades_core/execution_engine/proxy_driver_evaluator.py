@@ -30,7 +30,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapp
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
-from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values, fill_possible_values
+from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -535,18 +535,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             strip_first_ns (bool): whether to strip the scenario name (multi-instance case) from the variable name
         '''
 
-        possible_in_values, possible_out_values = set(), set()
-        # scenarios contains all the built sub disciplines (proxy_disciplines does NOT in flatten mode)
-        for scenario_disc in self.scenarios:
-            analyzed_disc = scenario_disc
-            possible_in_values_full, possible_out_values_full = find_possible_values(analyzed_disc,
-                                                                                     self.get_disc_full_name(),
-                                                                                     io_type_in=io_type_in,
-                                                                                     io_type_out=io_type_out,
-                                                                                     strip_first_ns=strip_first_ns)
-
-            possible_in_values.update(possible_in_values_full)
-            possible_out_values.update(possible_out_values_full)
+        possible_in_values, possible_out_values = find_possible_values(self, io_type_in=io_type_in,
+                                                                       io_type_out=io_type_out,
+                                                                       strip_first_ns=strip_first_ns)
 
         disc_in = self.get_data_in()
         # TODO: transfert to simple sample generator
