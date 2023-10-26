@@ -165,7 +165,7 @@ class SoSProcessFactory:
             libraries = python_path_libraries.split(pathsep)
 
             for library in libraries:
-                self.logger.info(f"Schanning Library {library}. Paths {Path(library).rglob(f'*/{PROCESSES_MODULE_NAME}/')}.")
+                self.logger.info(f"Scanning Library {library}. Paths {list(Path(library).rglob(f'*/{PROCESSES_MODULE_NAME}/'))}.")
                 processes_modules = [relpath(p, library).replace(sep, '.') for p in Path(
                     library).rglob(f'*/{PROCESSES_MODULE_NAME}/')]
 
