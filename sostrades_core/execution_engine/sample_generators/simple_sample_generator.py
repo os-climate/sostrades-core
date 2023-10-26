@@ -41,22 +41,13 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
     '''
     GENERATOR_NAME = "SIMPLE_SAMPLE_GENERATOR"
 
-    DIMENSION = "dimension"
-    _VARIABLES_NAMES = "variables_names"
-    _VARIABLES_SIZES = "variables_sizes"
-    N_PROCESSES = 'n_processes'
-    WAIT_TIME_BETWEEN_SAMPLES = 'wait_time_between_samples'
-
-    N_SAMPLES = "n_samples"
-
     def __init__(self, logger: logging.Logger):
         '''
         Constructor
         '''
         super().__init__(self.GENERATOR_NAME, logger=logger)
 
-
-    def _generate_samples(self, ):
+    def _generate_samples(self, var_names):
         '''
         Method that generate samples based as a cartesian product of list of values for selected variables.
         Selected variables are provided in the keys of "dict_of_list_values".
@@ -67,16 +58,19 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
         Returns:
             samples_df (dataframe) : generated samples
         '''
-        pass
+        return pd.DataFrame(columns=var_names)
 
-        # variable_list = dict_of_list_values.keys()
-        # vect_list = [dict_of_list_values[elem]
-        #              for elem in variable_list]
-        #
-        # def combvec(vect_list):
-        #     my_sample = list(itertools.product(*vect_list))
-        #     return my_sample
-        # my_res = combvec(vect_list)
-        # samples_df = pd.DataFrame(my_res, columns=variable_list)
-        #
-        # return samples_df
+    def _check_samples(self, samples_df):
+        '''
+        Method that checks the sample output type
+        Arguments:
+            samples_df (dataframe) : generated samples
+        Raises:
+            Exception if samples_df is not a dataframe
+        '''
+        if not(isinstance(samples_df, pd.DataFrame)):
+            msg = "Expected sampling output type should be pandas.core.frame.DataFrame"
+            msg += "however sampling type of sampling generator <%s> " % str(
+                self.__class__.__name__)
+            msg += "is <%s> " % str(type(samples_df))
+            raise SimpleSampleGeneratorTypeError()
