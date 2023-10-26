@@ -40,7 +40,7 @@ class ScatterTool(SosTool):
         'version': '',
     }
     DISPLAY_OPTIONS_POSSIBILITIES = ['hide_under_coupling', 'hide_coupling_in_driver',
-                                     'group_scenarios_under_disciplines', 'autogather']
+                                     'group_scenarios_under_disciplines']
 
     #            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
     #             'autogather' : will create an automatic gather discipline which will gather
@@ -218,10 +218,8 @@ class ScatterTool(SosTool):
             # get new_names that are not yet built and clean the one that are no more in the scatter list
             new_sub_names = self.clean_scattered_disciplines(
                 self.__scatter_list)
-            # if gather option then add a gather discipline
-            # OPEN QUESTION : should be at driver evaluator level for mono and multiinstance ?
-            if self.display_options['autogather']:
-                self.add_gather()
+            # Always add gather to get gather_outputs
+            self.add_gather()
 
             for name in self.__scatter_list:
                 # check if the name is new
@@ -362,28 +360,37 @@ class ScatterTool(SosTool):
             display_value = f'{driver_display_name}.{old_builder_name}'
             local_ns_disc.set_display_value(display_value)
 
-        if self.display_options['autogather']:
-            if self.display_options['group_scenarios_under_disciplines']:
-                gather_name = old_builder_name
-            else:
-                gather_name = f'{self.driver.sos_name}_gather'
+        if self.display_options['group_scenarios_under_disciplines']:
+            gather_name = old_builder_name
+        else:
+            gather_name = f'{self.driver.sos_name}_gather'
 
-            self.__gather_disciplines[gather_name].add_disc_to_config_dependency_disciplines(disc)
+        self.__gather_disciplines[gather_name].add_disc_to_config_dependency_disciplines(disc)
 
     def add_gather(self):
         '''
-            Add gather discipline for autogather
+            Add gather discipline for gather outputs
             the gather discipline name will automatically be the name of the builder
-            if display option group_scenarios_under_disciplines s activated then we want a gather per subbuilder
+            if display option group_scenarios_under_disciplines is activated then we want a gather per subbuilder
 
         '''
-
+        # get ns_driver to associate ns_gather to it
+        ns_driver = None
+        if 'ns_driver' in self.driver.get_shared_ns_dict():
+            ns_driver = self.driver.get_shared_ns_dict()['ns_driver'].value
+        
         if self.display_options['group_scenarios_under_disciplines']:
             for sub_builder in self.sub_builders:
 
                 gather_name = f'{self.driver.sos_name}.{sub_builder.sos_name}'
                 if sub_builder.sos_name not in self.__gather_disciplines:
                     gather_builder = self.ee.factory.add_gather_builder(gather_name)
+
+                    # deal with ns_gather namespace
+                    if ns_driver is not None:
+                        ns_gather = self.ee.ns_manager.add_ns('ns_gather', ns_driver)
+                        gather_builder.associate_namespaces(ns_gather)
+
                     self.set_father_discipline()
                     gather_disc = gather_builder.build()
                     self.ee.factory.add_discipline(gather_disc)
@@ -394,6 +401,10 @@ class ScatterTool(SosTool):
                 gather_builder = self.ee.factory.add_gather_builder(gather_name)
                 self.ee.ns_manager.add_display_ns_to_builder(
                     gather_builder, self.driver.get_disc_display_name())
+                # deal with ns_gather namespace
+                if ns_driver is not None:
+                    ns_gather = self.ee.ns_manager.add_ns('ns_gather', ns_driver)
+                    gather_builder.associate_namespaces(ns_gather)
                 self.set_father_discipline()
                 gather_disc = gather_builder.build()
                 self.ee.factory.add_discipline(gather_disc)

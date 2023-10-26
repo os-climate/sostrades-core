@@ -25,6 +25,7 @@ from numpy import NaN
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
+from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
 
 
 class ProxyMonoInstanceDriverException(Exception):
@@ -69,53 +70,47 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         dynamic_inputs = {}
         dynamic_outputs = {}
         if disc_in:
+            if self.EVAL_OUTPUTS in disc_in:
+                eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+                selected_outputs_dict = gather_selected_outputs(eval_outputs, self.GATHER_DEFAULT_SUFFIX)
+                self.selected_outputs = selected_outputs_dict.keys()
+                if len(selected_outputs_dict) > 0:
+                    self.eval_out_list = [f'{self.get_disc_full_name()}.{element}' for element in selected_outputs_dict.keys()]
+                    # setting dynamic outputs. One output of type dict per selected output
+                    dynamic_outputs.update(
+                        {out_name: {self.TYPE: 'dict',
+                                    self.VISIBILITY: 'Shared',
+                                    self.NAMESPACE: self.NS_DRIVER} 
+                        for out_name in selected_outputs_dict.values()})
+                    dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
+                                                                       self.VISIBILITY: 'Shared',
+                                                                       self.NAMESPACE: self.NS_DRIVER}})
+
+                    self.add_outputs(dynamic_outputs)
+
             selected_inputs_has_changed = False
-            if self.EVAL_INPUTS in disc_in and self.EVAL_OUTPUTS in disc_in:
+            if self.EVAL_INPUTS in disc_in :
                 # All eval_inputs dynamic setup should be moved to a specific sample generator
                 eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
                 # eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                if eval_inputs is not None and eval_outputs is not None:
-                    # we fetch the inputs and outputs selected by the user
-                    selected_outputs = eval_outputs[eval_outputs['selected_output']
-                                                    == True]['full_name']
+                if eval_inputs is not None:
+                    # we fetch the inputs selected by the user
                     selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                                  == True]['full_name']
-                    if 'output_name' in eval_outputs.columns:
-                        eval_out_names = eval_outputs[eval_outputs['selected_output']
-                                                      == True]['output_name'].tolist()
-                    else:
-                        eval_out_names = [None for _ in selected_outputs]
+                                                   == True]['full_name']
                     if set(selected_inputs.tolist()) != set(self.selected_inputs):
                         selected_inputs_has_changed = True
                         self.selected_inputs = selected_inputs.tolist()
-                    # if set(selected_inputs.tolist()) != set(self.selected_inputs):
-                    #     selected_inputs_has_changed = True
-                    #     self.selected_inputs = selected_inputs.tolist()
-                    self.selected_outputs = selected_outputs.tolist()
 
-                    if len(selected_inputs) > 0 and len(selected_outputs) > 0:
+                    if len(selected_inputs) > 0:
                         # TODO: OK that it blocks config. with empty input ? also, might want an eval without outputs ?
                         # we set the lists which will be used by the evaluation function of sosEval
-                        self.set_eval_in_out_lists(
-                            self.selected_inputs, self.selected_outputs)
+                        self.eval_in_list = [f'{self.get_disc_full_name()}.{element}' for element in selected_inputs]
 
-                        # setting dynamic outputs. One output of type dict per selected output
-                        self.eval_out_names = []
-                        for out_var, out_name in zip(self.selected_outputs, eval_out_names):
-                            _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
-                            self.eval_out_names.append(_out_name)
-                            dynamic_outputs.update(
-                                {_out_name: {self.TYPE: 'dict',
-                                             self.VISIBILITY: 'Shared',
-                                             self.NAMESPACE: self.NS_DRIVER}})
                         dynamic_inputs.update(self._get_dynamic_inputs_doe(
-                            disc_in, selected_inputs_has_changed))
-                        dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
-                                                                       self.VISIBILITY: 'Shared',
-                                                                       self.NAMESPACE: self.NS_DRIVER}})
+                             disc_in, selected_inputs_has_changed))
+
             self.add_inputs(dynamic_inputs)
-            self.add_outputs(dynamic_outputs)
+            
 
     def configure_driver(self):
         disc_in = self.get_data_in()

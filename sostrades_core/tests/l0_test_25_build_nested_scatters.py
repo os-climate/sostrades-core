@@ -77,7 +77,7 @@ class TestBuildScatter(unittest.TestCase):
             self.exec_eng00.configure()
             dict_values[f'{self.study_name}.{driver_name}.display_options'] = {'wrong_option': True}
             self.exec_eng00.load_study_from_input_dict(dict_values)
-        error_message = f"Display options should be in the possible list : ['hide_under_coupling', 'hide_coupling_in_driver', 'group_scenarios_under_disciplines', 'autogather']"
+        error_message = f"Display options should be in the possible list : ['hide_under_coupling', 'hide_coupling_in_driver', 'group_scenarios_under_disciplines']"
         self.assertEqual(str(cm.exception), error_message)
 
         self.factory = self.exec_eng.factory
@@ -126,7 +126,8 @@ class TestBuildScatter(unittest.TestCase):
                        f'\t\t\t|_ Disc2',
                        f'\t\t|_ scatter2',
                        f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2', ]
+                       f'\t\t\t|_ Disc2', 
+                       f'\t|_ {driver_name}_gather',]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(exec_display=True)
@@ -161,7 +162,7 @@ class TestBuildScatter(unittest.TestCase):
         dict_values = {}
         # User fill in the fields in the GUI
 
-        scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list, )
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(scatter_list)
 
@@ -171,9 +172,10 @@ class TestBuildScatter(unittest.TestCase):
                                    'scenario_name': ['scatter1',
                                                      'scatter2']})
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
-            'group_scenarios_under_disciplines': True,
-            'autogather': True}
+            'group_scenarios_under_disciplines': True}
         dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
+        dict_values[f'{self.study_name}.{driver_name}.eval_output'] = pd.DataFrame({'selected_output': [True, True, True],
+                          'full_name': ['Disc1.y', 'Disc2.z', 'Disc1.indicator']})
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -212,7 +214,8 @@ class TestBuildScatter(unittest.TestCase):
                        f'\t\t\t|_ Disc2',
                        f'\t\t|_ scatter2',
                        f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2', ]
+                       f'\t\t\t|_ Disc2',,
+                       f'\t\t|_ {driver_name}_gather' ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(exec_display=True)
@@ -236,19 +239,19 @@ class TestBuildScatter(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.y_gather')
+        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.y_dict')
         y_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.y') for scatter_name in scatter_list}
 
         self.assertDictEqual(y_gather, y_gather_th)
 
-        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.indicator_gather')
+        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.indicator_dict')
         indicator_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.Disc1.indicator') for scatter_name in scatter_list}
 
         self.assertDictEqual(indicator_gather, indicator_gather_th)
 
-        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc2.z_gather')
+        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc2.z_dict')
         z_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.z') for scatter_name in scatter_list}
 
@@ -276,9 +279,10 @@ class TestBuildScatter(unittest.TestCase):
                                    'scenario_name': ['scatter1',
                                                      'scatter2']})
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
-            'group_scenarios_under_disciplines': False,
-            'autogather': True}
+            'group_scenarios_under_disciplines': False}
         dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
+        dict_values[f'{self.study_name}.{driver_name}.eval_output'] = pd.DataFrame({'selected_output': [True, True, True],
+                          'full_name': ['Disc1.y', 'Disc2.z', 'Disc1.indicator']})
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -336,19 +340,19 @@ class TestBuildScatter(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
         self.exec_eng.execute()
 
-        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.y_gather')
+        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.y_dict')
         y_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.y') for scatter_name in scatter_list}
 
         self.assertDictEqual(y_gather, y_gather_th)
 
-        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.indicator_gather')
+        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.indicator_dict')
         indicator_gather_th = {f'{scatter_name}.Disc1': self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.Disc1.indicator') for scatter_name in scatter_list}
 
         self.assertDictEqual(indicator_gather, indicator_gather_th)
 
-        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.z_gather')
+        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.z_dict')
         z_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.z') for scatter_name in scatter_list}
 
@@ -464,3 +468,8 @@ class TestBuildScatter(unittest.TestCase):
             f'{self.study_name}.{driver_name}.{scatter_name}.z') for scatter_name in scatter_list}
 
         self.assertDictEqual(z_gather, z_gather_th)
+
+if __name__ == '__main__':
+    test = TestBuildScatter()
+    test.setUp()
+    test.test_01_build_coupling_of_scatter()
