@@ -77,6 +77,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 self.selected_outputs = selected_outputs_dict.keys()
                 if len(selected_outputs_dict) > 0:
                     self.eval_out_list = [f'{self.get_disc_full_name()}.{element}' for element in selected_outputs_dict.keys()]
+                    self.eval_out_names = selected_outputs_dict.values()
                     # setting dynamic outputs. One output of type dict per selected output
                     dynamic_outputs.update(
                         {out_name: {self.TYPE: 'dict',
