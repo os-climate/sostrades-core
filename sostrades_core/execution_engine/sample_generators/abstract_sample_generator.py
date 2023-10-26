@@ -1,6 +1,5 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2023/11/02 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -68,13 +67,13 @@ class AbstractSampleGenerator(object):
             msg += "is <%s> " % str(type(samples))
             raise SampleTypeError()
 
-    def get_options_and_default_values(self, algo_name):
-        '''
-        Returns the Sample Generator expected inputs for the algo options of the selected algorithm
-        (to be provided to proxy i/o grammars)
-        To be overloaded by subclass
-        '''
-        raise NotImplementedError
+    # def get_options_and_default_values(self, algo_name):
+    #     '''
+    #     Returns the Sample Generator expected inputs for the algo options of the selected algorithm
+    #     (to be provided to proxy i/o grammars)
+    #     To be overloaded by subclass
+    #     '''
+    #     raise NotImplementedError
 
     def _check_options(self, *args, **kwargs):
         '''
