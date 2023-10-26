@@ -157,6 +157,7 @@ class SoSProcessFactory:
         
         # check for PYTHONPATH environment variable
         python_path_libraries = environ.get('PYTHONPATH')
+        self.logger.info('Adding PYTHONPATH processes')
 
         if python_path_libraries is not None and len(python_path_libraries) > 0:
 
@@ -164,6 +165,7 @@ class SoSProcessFactory:
             libraries = python_path_libraries.split(pathsep)
 
             for library in libraries:
+                self.logger.info(f"Schanning Library {library}. Paths {Path(library).rglob(f'*/{PROCESSES_MODULE_NAME}/')}.")
                 processes_modules = [relpath(p, library).replace(sep, '.') for p in Path(
                     library).rglob(f'*/{PROCESSES_MODULE_NAME}/')]
 
