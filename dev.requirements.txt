@@ -12,7 +12,7 @@ autograd==1.6.2
     # via pymoo
 black==22.3.0
     # via -r ./sostrades-core/requirements.in
-cachetools==5.3.1
+cachetools==5.3.2
     # via google-auth
 certifi==2023.7.22
     # via
@@ -20,7 +20,7 @@ certifi==2023.7.22
     #   requests
 chaospy==4.3.7
     # via -r ./sostrades-core/requirements.in
-charset-normalizer==3.3.0
+charset-normalizer==3.3.1
     # via requests
 click==8.1.7
     # via
@@ -94,19 +94,19 @@ future==0.18.3
     #   autograd
 genson==1.2.2
     # via -r ./gemseo/requirements.txt
-gitdb==4.0.10
+gitdb==4.0.11
     # via gitpython
 gitpython==3.1.31
     # via
-    #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-ontology/requirements.in
+    #   -r ./sostrades-webapi/requirements.in
 google-auth==2.23.3
     # via kubernetes
 graphviz==0.16
     # via
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-webapi/requirements.in
-greenlet==3.0.0
+greenlet==3.0.1
     # via eventlet
 h5py==3.2.1
     # via -r ./gemseo/requirements.txt
@@ -248,7 +248,7 @@ petsc4py==3.19.4 ; platform_system != "Windows"
     # via
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-core/requirements.in
-pillow==10.0.1
+pillow==10.1.0
     # via matplotlib
 platformdirs==3.11.0
     # via black
@@ -429,7 +429,7 @@ typing-extensions==4.8.0
     # via
     #   alembic
     #   black
-tzlocal==5.1
+tzlocal==5.2
     # via trino
 urllib3==2.0.6
     # via
