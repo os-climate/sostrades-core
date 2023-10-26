@@ -110,8 +110,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                                 'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2']}
         self.output_selection_obj = pd.DataFrame(output_selection_obj)
 
-        output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2']}
+        output_selection_obj_y1_y2 = {
+            'selected_output': [False, False, False, False, False, False, False, True, True, True],
+            'full_name': ['c_1', 'c_2', 'doe.obj_dict', 'doe.samples_inputs_df', 'doe.samples_outputs_df',
+                          'doe.y_1_dict', 'doe.y_2_dict', 'obj', 'y_1', 'y_2']}
         self.output_selection_obj_y1_y2 = pd.DataFrame(
             output_selection_obj_y1_y2)
 
@@ -217,7 +219,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
-
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
                      f'{ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2}
@@ -231,9 +232,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}' for i in range(1,6)],
-                          'x': x_values, 'z': z_values}
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+                        'x': x_values, 'z': z_values}
         # samples_dict = {'z': z_values, 'x': x_values,
         #                 'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -280,12 +281,14 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_2': array([15.000894464408367]),
                                       'scenario_3': array([11.278122259980103]),
                                       'scenario_4': array([5.1893098993071565]),
-                                      'scenario_5': array([101.52834810032466]), 'reference_scenario': array([2.29689011157193])}
+                                      'scenario_5': array([101.52834810032466]),
+                                      'reference_scenario': array([2.29689011157193])}
         reference_dict_doe_disc_y2 = {'scenario_1': array([11.033919669249876]),
                                       'scenario_2': array([9.200264485831308]),
                                       'scenario_3': array([6.186104699873589]),
                                       'scenario_4': array([7.644306621667905]),
-                                      'scenario_5': array([10.67812782219566]), 'reference_scenario': array([3.515549442140351])}
+                                      'scenario_5': array([10.67812782219566]),
+                                      'reference_scenario': array([3.515549442140351])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
                 doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
@@ -443,7 +446,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
-
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
                        f'\t|_ SampleGenerator',
@@ -572,7 +574,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
-
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
                        f'\t|_ Eval',
@@ -590,15 +591,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value(
-            'doe.Eval.samples_df').columns.tolist(), [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME, 'x'])
+            'doe.Eval.samples_df').columns.tolist(),
+                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME, 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,'subprocess.Sellar_Problem.local_dv', 'x'])
+                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,
+                              'subprocess.Sellar_Problem.local_dv', 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,'subprocess.Sellar_Problem.local_dv'])
+                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,
+                              'subprocess.Sellar_Problem.local_dv'])
         disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -611,8 +615,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5, 
-                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}' for i in range(1,6)],
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{self.ns}.Eval.samples_df'] = samples_df
@@ -637,7 +641,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # check that the generated samples are the ones expected (custom sample
         # + reference value)
         expected_eval_disc_samples = pd.DataFrame(
-            {'scenario_name': ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4', 'scenario_5', 'reference_scenario'],
+            {'scenario_name': ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4', 'scenario_5',
+                               'reference_scenario'],
              'x': x_values + [1.000000], 'z': z_values + [array([1.0, 1.0])]})
         assert_frame_equal(
             eval_disc_samples, expected_eval_disc_samples, check_dtype=False)
@@ -680,7 +685,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.configure()
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
-
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -771,7 +775,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
-
         # -- set up disciplines in Scenario
         disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_local_dv_x,
                      f'{self.ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2}
@@ -782,8 +785,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574,
                            6.954954792150857]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}' for i in range(1,6)],
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values,
                         'subprocess.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -830,8 +833,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(eval_disc_y1), 6)
         self.assertEqual(len(eval_disc_y2), 6)
 
-    
-
     def test_9_doe_eval_with_2_outputs_with_the_same_name(self):
         """ Here we test that the doe displays properly 2 outputs
         with the same short name
@@ -857,7 +858,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.configure()
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
-
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -953,7 +953,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
-
         # -- set up disciplines
         values_dict = {f'{self.ns}.Eval.x': 1., f'{self.ns}.Eval.y_1': 1., f'{self.ns}.Eval.y_2': 1.,
                        f'{self.ns}.Eval.z': array([1., 1.]),
@@ -968,8 +967,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict.update(values_dict)
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        msg_log_error_output_z = "The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
-        msg_log_error_acceleration = "The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
+        msg_log_error_output_z = "The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'doe.acceleration_dict', 'doe.samples_inputs_df', 'doe.samples_outputs_df', 'obj', 'y_1', 'y_2']"
+        msg_log_error_acceleration = "The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'doe.acceleration_dict', 'doe.samples_inputs_df', 'doe.samples_outputs_df', 'obj', 'y_1', 'y_2']"
 
         self.assertTrue(msg_log_error_output_z in my_handler.msg_list)
         self.assertTrue(msg_log_error_acceleration in my_handler.msg_list)
@@ -999,7 +998,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
-
         input_selection_x_z = {'selected_input': [False, True, False, False, True],
                                'full_name': ['Eval.Sellar_Problem.local_dv', 'x', 'y_1',
                                              'y_2',
@@ -1027,9 +1025,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         wrong_values = 5 * [0.0]
 
         # samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
-                         'z': z_values, 'x': x_values,
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                        SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
+                                                               'scenario_5'],
+                        'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -1048,8 +1047,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         error_message = f"Variable root.Eval.samples_df : Dataframe value has a column wrong_values but the dataframe descriptor has not, df_descriptor keys : dict_keys(['x', 'z'])"
 
         self.assertEqual(str(cm.exception), error_message)
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                        SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
+                                                               'scenario_5'],
                         'z': z_values, 'x': x_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -1068,7 +1068,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        #TODO namespace of _dict values should be gathered dynamically
+        # TODO namespace of _dict values should be gathered dynamically
         self.assertIn('root.Eval.obj_dict', root_outputs)
         self.assertIn('root.Eval.y_1_dict', root_outputs)
         self.assertIn('root.Eval.y_2_dict', root_outputs)
@@ -1087,12 +1087,14 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_2': array([15.000894464408367]),
                                       'scenario_3': array([11.278122259980103]),
                                       'scenario_4': array([5.1893098993071565]),
-                                      'scenario_5': array([101.52834810032466]), 'reference_scenario': array([2.29689011157193])}
+                                      'scenario_5': array([101.52834810032466]),
+                                      'reference_scenario': array([2.29689011157193])}
         reference_dict_doe_disc_y2 = {'scenario_1': array([11.033919669249876]),
                                       'scenario_2': array([9.200264485831308]),
                                       'scenario_3': array([6.186104699873589]),
                                       'scenario_4': array([7.644306621667905]),
-                                      'scenario_5': array([10.67812782219566]), 'reference_scenario': array([3.515549442140351])}
+                                      'scenario_5': array([10.67812782219566]),
+                                      'reference_scenario': array([3.515549442140351])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
                 doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
@@ -1121,7 +1123,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.configure()
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
-
 
         # -- set up disciplines in Scenario
         disc_dict = {}
@@ -1199,7 +1200,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.configure()
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
-
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
@@ -1285,7 +1285,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
-
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ doe',
                        f'\t|_ SampleGenerator',
@@ -1367,7 +1366,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {}
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
-
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
                      f'{ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2_with_out_name}
@@ -1381,8 +1379,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}' for i in range(1,6)],
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -1428,12 +1426,14 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'scenario_2': array([15.000894464408367]),
                                       'scenario_3': array([11.278122259980103]),
                                       'scenario_4': array([5.1893098993071565]),
-                                      'scenario_5': array([101.52834810032466]), 'reference_scenario': array([2.29689011157193])}
+                                      'scenario_5': array([101.52834810032466]),
+                                      'reference_scenario': array([2.29689011157193])}
         reference_dict_doe_disc_y2 = {'scenario_1': array([11.033919669249876]),
                                       'scenario_2': array([9.200264485831308]),
                                       'scenario_3': array([6.186104699873589]),
                                       'scenario_4': array([7.644306621667905]),
-                                      'scenario_5': array([10.67812782219566]), 'reference_scenario': array([3.515549442140351])}
+                                      'scenario_5': array([10.67812782219566]),
+                                      'reference_scenario': array([3.515549442140351])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
                 doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
