@@ -108,6 +108,8 @@ class TestSimpleMultiScenario(unittest.TestCase):
 
         # configure the reference inputs by hand (not using reference scenario)
         self.scenario_list = ['scenario_1', 'scenario_2']
+        self.disc_per_scenario_list = ['multi_scenarios.scenario_1.Disc1', 'multi_scenarios.scenario_1.Disc3',
+                                       'multi_scenarios.scenario_2.Disc1', 'multi_scenarios.scenario_2.Disc3']
         for scenario in self.scenario_list:
             dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
             dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
@@ -145,11 +147,12 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # check output existence
         ms_disc = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        gather_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.multi_scenarios_gather')[0]
+        ms_sub_disc_names = [d.sos_name for d in ms_disc.scenarios]
+        self.assertEqual(ms_sub_disc_names, self.disc_per_scenario_list)
 
-        self.assertEqual(ms_sub_disc_names, self.scenario_list)
-
-        ms_disc_out = ms_disc.get_data_out()
+        ms_disc_out = gather_disc.get_data_out()
         self.assertIn('Disc1.indicator_dict', ms_disc_out)
         self.assertIn('y_dict', ms_disc_out)
         self.assertNotIn('o_dict', ms_disc_out)
@@ -181,11 +184,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # check output existence
         ms_disc = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        gather_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.multi_scenarios_gather')[0]
+        ms_sub_disc_names = [d.sos_name for d in ms_disc.scenarios]
 
-        self.assertEqual(ms_sub_disc_names, self.scenario_list)
+        self.assertEqual(ms_sub_disc_names, self.disc_per_scenario_list)
 
-        ms_disc_out = ms_disc.get_data_out()
+        ms_disc_out = gather_disc.get_data_out()
         self.assertIn('my_indi_out_name', ms_disc_out)
         self.assertIn('y_dict', ms_disc_out)
         self.assertIn('my_o_out_name', ms_disc_out)
@@ -231,11 +236,13 @@ class TestSimpleMultiScenario(unittest.TestCase):
         # check output existence
         ms_disc = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.multi_scenarios')[0]
-        ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
+        gather_disc = self.exec_eng.dm.get_disciplines_with_name(
+            'MyCase.multi_scenarios_gather')[0]
+        ms_sub_disc_names = [d.sos_name for d in ms_disc.scenarios]
 
-        self.assertEqual(ms_sub_disc_names, self.scenario_list)
+        self.assertEqual(ms_sub_disc_names, self.disc_per_scenario_list)
 
-        ms_disc_out = ms_disc.get_data_out()
+        ms_disc_out = gather_disc.get_data_out()
         self.assertIn('my_indi_out_name', ms_disc_out)
         self.assertIn('y_dict', ms_disc_out)
         self.assertIn('my_o_out_name', ms_disc_out)
@@ -774,3 +781,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     #         self.exec_eng.execute()
     #     self.assertIn(runtime_error_message, str(cm.exception))
     #
+if __name__ == '__main__':
+    test = TestSimpleMultiScenario()
+    test.setUp()
+    test.test_02_multi_instance_with_eval_outputs_as_hard_input_custom_and_default_out_names()

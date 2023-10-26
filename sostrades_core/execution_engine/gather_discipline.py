@@ -15,8 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import logging
 import pandas as pd
 from copy import copy
+from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_output_values
+from sostrades_core.tools.gather.gather_tool import gather_selected_outputs, get_eval_output
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -47,60 +50,141 @@ class GatherDiscipline(SoSWrapp):
                         'dataframe_descriptor', 'dataframe_edition_locked',
                         'default', 'optional', 'numerical', SoSWrapp.VISIBILITY, SoSWrapp.NAMESPACE,
                         SoSWrapp.NS_REFERENCE]
+    NS_GATHER = 'ns_gather'
+    EVAL_OUTPUTS = 'eval_outputs'
+    GATHER_SUFFIX = '_dict'
+    EVAL_OUTPUTS_DESC = {
+            SoSWrapp.TYPE: 'dataframe',
+            SoSWrapp.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
+            SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
+                                                        'full_name': ('string', None, False),
+                                                        'output_name': ('multiple', None, True)
+                                                        },
+            SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
+            SoSWrapp.STRUCTURING: True,
+            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+            SoSWrapp.NAMESPACE: NS_GATHER
+        }
+    
+    DESC_IN = {EVAL_OUTPUTS : EVAL_OUTPUTS_DESC}
+    
+    def __init__(self, sos_name, logger: logging.Logger):
+        """
+        Constructor
+
+        Arguments:
+            sos_name (string): name of the discipline/node
+            
+        """
+        super().__init__(sos_name, logger)
+        self.gather_names = None
 
     def setup_sos_disciplines(self):
         '''
            We add to the desc_in all the outputs of each child 
            We add to the desc_out the dict which will gather all inputs by name 
         '''
-        dynamic_inputs, dynamic_outputs = self.build_dynamic_io()
+        disc_in = self.get_data_in()
+        if self.EVAL_OUTPUTS in disc_in:
+            self.build_eval_output()
+            dynamic_inputs, dynamic_outputs = self.build_dynamic_io_from_gather_outputs()
 
-        self.add_inputs(dynamic_inputs)
-        self.add_outputs(dynamic_outputs)
+            self.add_inputs(dynamic_inputs)
+            self.add_outputs(dynamic_outputs)
 
-    def build_dynamic_io(self):
+    def build_eval_output(self):
+        '''
+        find possible values and add them into the eval_output variable
+        '''
+        disc_namespace = self.get_disc_display_name()
+        possible_out_values = set()
+        children_list = self.config_dependency_disciplines
+        for child in children_list:
+            possible_out_values_full = find_possible_output_values(child, disc_namespace)
+            possible_out_values.update(possible_out_values_full)
+
+        self.gather_names = {}
+        self.short_names = {}
+        if possible_out_values:
+
+            # strip ns and get output names
+            # the gather_names is needed to retreive output_name from full_name
+            self.gather_names = {f'{disc_namespace}.{output}':output.split('.',1)[-1] for output in possible_out_values}
+            # the short name is needed to retreive the input_name from output_name
+            self.short_names = {f'{output}':output.split('.')[-1] for output in set(self.gather_names.values())}
+
+            # get already set eval_output
+            disc_in = self.get_data_in()
+            eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+            eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)
+
+            # merge possible outputs with current eval_output
+            eval_output_df, error_msg = get_eval_output(set(self.gather_names.values()), eval_output_new_dm)
+
+            if error_msg != '':
+                self.logger.warning(error_msg)
+
+            # set eval_output value in desc_in
+            self.dm.set_data(eval_outputs_f_name,
+                                 'value', eval_output_df, check_value=False)
+
+    def build_dynamic_io_from_gather_outputs(self):
+        '''
+        Add in dynamic_input the eval_outputs that needs to be gathered 
+        and in dynamic_output the dict of eval_outputs that have been gathered
+        '''
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        children_list = self.config_dependency_disciplines
-        for child in children_list:
-            # child_name = child.sos_name.replace(f'{self.sos_name}.', '')
-            # child_name = child.get_disc_full_name().split(
-            #     f'{self.sos_name}.')[-1]
-            for output, output_dict in child.get_data_io_dict(self.IO_TYPE_OUT).items():
+        eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+        # get only variables that are selected
+        selected_outputs_dict = gather_selected_outputs(eval_outputs, self.GATHER_SUFFIX)
 
-                data_in_dict = {
-                    key: value for key, value in output_dict.items() if key in self.NEEDED_DATA_KEYS}
+        if len(selected_outputs_dict) > 0:
+            # search selected output variables in dependency_disc
+            children_list = self.config_dependency_disciplines
 
-                # if input is local : then put it to shared visibility and add the local namespace from child to the gather discipline as shared namespace
-                # if input is shared : copy the namespace and rename it (at least two namespaces with same name but different value since it is a gather)
-                # then add it as shared namespace for the gather discipline
-                output_namespace = copy(data_in_dict[self.NS_REFERENCE])
-                if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
-                    data_in_dict[self.VISIBILITY] = self.SHARED_VISIBILITY
-                else:
-                    output_namespace.name = output_namespace.value.split('.', 1)[-1]
+            for child in children_list:
+                
+                for output, output_dict in child.get_data_io_dict(self.IO_TYPE_OUT).items():
+                    # get the full name to retreive the variable from its output_name
+                    output_namespace = copy(output_dict[self.NS_REFERENCE])
+                    output_full_name = f'{output_namespace.value}.{output}'
 
-                output_namespace_name = output_namespace.name
+                    # check only outputs that are selected in the eval_output
+                    if output_full_name in self.gather_names.keys() and self.gather_names[output_full_name] in selected_outputs_dict.keys():
+                        data_in_dict = { key: value for key, value in output_dict.items() if key in self.NEEDED_DATA_KEYS}
 
-                short_alias = '.'.join([substr for substr in output_namespace_name.split('.') if
-                                        substr not in self.get_disc_display_name().split('.')])
-                self.add_new_shared_ns(output_namespace)
-                data_in_dict[self.NAMESPACE] = output_namespace_name
+                        # if input is local : then put it to shared visibility and add the local namespace from child to the gather discipline as shared namespace
+                        # if input is shared : copy the namespace and rename it (at least two namespaces with same name but different value since it is a gather)
+                        # then add it as shared namespace for the gather discipline
+                        output_namespace = copy(data_in_dict[self.NS_REFERENCE])
+                        if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
+                            data_in_dict[self.VISIBILITY] = self.SHARED_VISIBILITY
+                        else:
+                            output_namespace.name = output_namespace.value.split('.', 1)[-1]
 
-                dynamic_inputs[(output, short_alias)] = data_in_dict
-                if output.endswith('_gather'):
-                    output_name = output
-                else:
-                    output_name = f'{output}_gather'
-                dynamic_outputs[output_name] = data_in_dict.copy()
-                # if datafram then we store all the dataframes in one
-                if dynamic_outputs[output_name][self.TYPE] != 'dataframe':
-                    dynamic_outputs[output_name][self.TYPE] = 'dict'
-                dynamic_outputs[output_name][self.VISIBILITY] = self.LOCAL_VISIBILITY
-                del dynamic_outputs[output_name][self.NS_REFERENCE]
-                del dynamic_outputs[output_name][self.NAMESPACE]
+                        output_namespace_name = output_namespace.name
+
+                        short_alias = '.'.join([substr for substr in output_namespace_name.split('.') if
+                                                substr not in self.get_disc_display_name().split('.') and
+                                                substr not in self.gather_names[output_full_name].split('.')])
+                        self.add_new_shared_ns(output_namespace)
+                        data_in_dict[self.NAMESPACE] = output_namespace_name
+
+                        dynamic_inputs[(output, short_alias)] = data_in_dict
+
+                        output_name = selected_outputs_dict[self.gather_names[output_full_name]]
+                        dynamic_outputs[output_name] = data_in_dict.copy()
+                        # if datafram then we store all the dataframes in one
+                        if dynamic_outputs[output_name][self.TYPE] != 'dataframe':
+                            dynamic_outputs[output_name][self.TYPE] = 'dict'
+                        #set dynamic output in NS_DRIVER namespace
+                        dynamic_outputs[output_name][self.VISIBILITY] = self.SHARED_VISIBILITY
+                        dynamic_outputs[output_name][self.NAMESPACE] = self.NS_GATHER
+                        del dynamic_outputs[output_name][self.NS_REFERENCE]
         return dynamic_inputs, dynamic_outputs
+    
 
     def run(self):
         '''
@@ -109,20 +193,26 @@ class GatherDiscipline(SoSWrapp):
         input_dict = self.get_sosdisc_inputs()
         output_dict = {}
         output_keys = self.get_sosdisc_outputs().keys()
+        eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+
+        # get only selected eval_output
+        selected_output = gather_selected_outputs(eval_outputs, self.GATHER_SUFFIX)
 
         for out_key in output_keys:
-            if out_key.endswith('_gather'):
+            if out_key in selected_output.values():
                 output_df_list = []
                 output_dict[out_key] = {}
-                var_key = out_key.replace('_gather', '')
-
+                # retreive the name of the output written in the eval_output
+                var_key = [input_name for input_name, output_name in selected_output.items() if output_name ==out_key][0]
+            
                 for input_key in input_dict:
                     if isinstance(input_key, tuple) and input_key[0] == out_key:
                         # Then input_dict[input_key] is a dict
                         for input_input_key in input_dict[input_key]:
                             output_dict[out_key][input_input_key] = input_dict[input_key][input_input_key]
 
-                    if isinstance(input_key, tuple) and input_key[0] == var_key:
+                    #retreive input_name from output_name with the short_names disct
+                    if isinstance(input_key, tuple) and input_key[0] == self.short_names[var_key]:
                         if isinstance(input_dict[input_key], pd.DataFrame):
                             # create the dataframe list before concat
                             df_copy = input_dict[input_key].copy()
@@ -158,8 +248,8 @@ class GatherDiscipline(SoSWrapp):
         chart_filters = []
         output_dict = self.get_sosdisc_outputs()
 
-        chart_list = [key.replace('_gather', '')
-                      for key in output_dict.keys() if key.endswith('_gather')]
+        chart_list = [key.replace(self.GATHER_SUFFIX, '')
+                      for key in output_dict.keys() if key.endswith(self.GATHER_SUFFIX)]
 
         chart_filters.append(ChartFilter(
             'Charts gather', chart_list, chart_list, 'Charts gather'))
@@ -180,7 +270,7 @@ class GatherDiscipline(SoSWrapp):
         output_dict = self.get_sosdisc_outputs()
 
         for output_key, output_value in output_dict.items():
-            chart_name = output_key.replace('_gather', '')
+            chart_name = output_key.replace(self.GATHER_SUFFIX, '')
             chart_unit = self.get_data_out()[output_key][self.UNIT]
             if isinstance(output_value, dict):
                 first_value = list(output_value.values())[0]

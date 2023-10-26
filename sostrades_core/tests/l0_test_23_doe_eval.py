@@ -1446,4 +1446,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_6_doe_eval_design_space_normalisation()
+    cls.test_1_doe_eval_execution_fullfact()

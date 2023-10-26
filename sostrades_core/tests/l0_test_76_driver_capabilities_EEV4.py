@@ -1879,4 +1879,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if __name__ == '__main__':
     test = TestSoSDOEScenario()
     test.setUp()
-    test.test_8_Eval_reconfiguration_adding_again_User_Defined_samples_if_still_in_eval_inputs()
+    test.test_9_nested_very_simple_multi_scenarios()

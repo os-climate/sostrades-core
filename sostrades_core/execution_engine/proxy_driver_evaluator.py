@@ -29,11 +29,12 @@ from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDiscip
 from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
-# from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import ProxySampleGenerator
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.tools.gather.gather_tool import check_eval_io, get_eval_output
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
 from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values
+from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -101,20 +102,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
     SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
-    WITH_SAMPLE_GENERATOR = 'with_sample_generator'
-    WITH_SAMPLE_GENERATOR_DESC = {
-        ProxyDiscipline.TYPE: 'bool',
-        ProxyDiscipline.DEFAULT: False,
-        ProxyDiscipline.STRUCTURING: True,
-    }
+    GATHER_DEFAULT_SUFFIX = GatherDiscipline.GATHER_SUFFIX
+    EVAL_OUTPUTS = GatherDiscipline.EVAL_OUTPUTS
 
-    DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
-               WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
-
-    GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
-    EVAL_OUTPUTS = 'eval_outputs'
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
 
+    DESC_IN = {
+        SAMPLES_DF: SAMPLES_DF_DESC
+    }
+    
+    
     ##
     ## To refactor instancce reference and subprocess import
     ##
@@ -391,38 +388,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.get_var_full_name(self.SAMPLES_DF, disc_in),
                 self.CHECK_INTEGRITY_MSG, self.scenario_list_integrity_msg)
 
-    def check_eval_io(self, given_list, default_list, is_eval_input):
-        """
-        Set the evaluation variable list (in and out) present in the DM
-        which fits with the eval_in_base_list filled in the usecase or by the user
-        """
-
-        for given_io in given_list:
-            if given_io not in default_list and not self.MULTIPLIER_PARTICULE in given_io:
-                if is_eval_input:
-                    error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
-                                f'input of the subprocess with the correct full name (without study name at the ' \
-                                f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
-                                f'be created. should be in {default_list} '
-
-        # Check if column names are not coherent with subprocess
-        # Check if value to describe the scenario has not the type in line with the subprocess
-        # Also build a dataframe descriptor for samples_df and push it into the dm
-        if value_check:
-            variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
-            samples_df_full_name = self.get_input_var_full_name(self.SAMPLES_DF)
-            samples_df_descriptor = copy.deepcopy(self.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR])
-            # samples_df_descriptor = self.ee.dm.get_data(samples_df_full_name, self.DATAFRAME_DESCRIPTOR)
-            for col in variables_column:
-                if not col in self.eval_in_possible_values:
-                    warning_msg = f'The variable {col} is not in the subprocess eval input values: It cannot be a column of the {self.SAMPLES_DF} '
-                    self.check_integrity_msg_list.append(warning_msg)
-                else:
-                    var_type = self.eval_in_possible_types[col]
-                    df_desc_tuple = tuple([var_type, None, True])
-
-                self.logger.warning(error_msg)
-
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
         Method for import usecase option which will be refactored
@@ -631,8 +596,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # check if the eval_inputs need to be updated after a subprocess
             # configure
             elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-                self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
                                    is_eval_input=True)
+                if error_msg != '':
+                    self.logger.warning(error_msg)
                 default_dataframe = copy.deepcopy(default_in_dataframe)
                 already_set_names = eval_input_new_dm['full_name'].tolist()
                 already_set_values = eval_input_new_dm['selected_input'].tolist()
@@ -648,32 +615,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                  'value', default_dataframe, check_value=False)
 
         if possible_out_values and io_type_out:
-            possible_out_values = list(possible_out_values)
-            possible_out_values.sort()
-            default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
-                                                  'full_name': possible_out_values,
-                                                  'output_name': [None for _ in possible_out_values]})
+            # get already set eval_output
             eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
             eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)
-            if eval_output_new_dm is None:
-                self.dm.set_data(eval_outputs_f_name,
-                                 'value', default_out_dataframe, check_value=False)
-            # check if the eval_inputs need to be updated after a subprocess configure
-            elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-                self.check_eval_io(eval_output_new_dm['full_name'].tolist(),
-                                   default_out_dataframe['full_name'].tolist(),
-                                   is_eval_input=False)
-                default_dataframe = copy.deepcopy(default_out_dataframe)
-                already_set_names = eval_output_new_dm['full_name'].tolist()
-                already_set_values = eval_output_new_dm['selected_output'].tolist()
-                if 'output_name' in eval_output_new_dm.columns:
-                    # TODO: maybe better to repair tests than to accept default, in particular for data integrity check
-                    already_set_out_names = eval_output_new_dm['output_name'].tolist()
-                else:
-                    already_set_out_names = [None for _ in already_set_names]
-                for index, name in enumerate(already_set_names):
-                    default_dataframe.loc[default_dataframe['full_name'] == name,
-                    ['selected_output', 'output_name']] = \
-                        (already_set_values[index], already_set_out_names[index])
-                self.dm.set_data(eval_outputs_f_name,
-                                 'value', default_dataframe, check_value=False)
+
+            #get all possible outputs and merge with current eval_output
+            eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
+            if error_msg != '':
+                self.logger
+            self.dm.set_data(eval_outputs_f_name,
+                                 'value', eval_output_df, check_value=False)
+            
