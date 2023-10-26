@@ -236,9 +236,9 @@ class SoSProcessFactory:
 
         except ModuleNotFoundError as error:
             self.logger.critical(
-                f'Unable to load the following module {repository_module_name} : {str(error)}')
+                f'Unable to load the following module {repository_module_name} : {str(error)}', exc_info=error)
         except TypeError as error:
             self.logger.critical(
-                f'Unable to load the following module {repository_module_name} : {str(error)}')
+                f'Unable to load the following module {repository_module_name} : {str(error)}', exc_info=error)
 
         return repositories_by_process
