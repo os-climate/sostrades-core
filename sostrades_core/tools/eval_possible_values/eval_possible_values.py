@@ -15,8 +15,12 @@ def find_possible_values(disc, prefix_name_to_delete,
     # TODO: does this involve avoidable, recursive back and forths during  configuration ? (<-> config. graph)
     possible_in_values, possible_out_values = fill_possible_values(
         disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
+    if hasattr(disc, 'scenarios'):
+        sub_disciplines = disc.scenarios
+    else:
+        sub_disciplines = disc.proxy_disciplines
 
-    for sub_disc in disc.proxy_disciplines:
+    for sub_disc in sub_disciplines:
         sub_in_values, sub_out_values = fill_possible_values(
             sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
         possible_in_values.update(sub_in_values)
