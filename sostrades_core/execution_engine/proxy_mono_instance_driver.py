@@ -176,12 +176,12 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             else:
                 raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
 
-        dynamic_inputs = {'samples_df': {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
-                                         self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
-                                         self.DATAFRAME_EDITION_LOCKED: False,
-                                         self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-                                         self.NAMESPACE: self.NS_DRIVER
-                                         }}
+        # dynamic_inputs = {'samples_df': {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
+        #                                  self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
+        #                                  self.DATAFRAME_EDITION_LOCKED: False,
+        #                                  self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+        #                                  self.NAMESPACE: self.NS_DRIVER
+        #                                  }}
 
         # This reflects 'samples_df' dynamic input has been configured and that
         # eval_inputs have changed
@@ -206,7 +206,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                         final_dataframe[element] = [NaN for _ in range(len_df)]
                 disc_in['samples_df'][self.VALUE] = final_dataframe
             disc_in['samples_df'][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
-        return dynamic_inputs
+        return {}
 
     def _set_eval_process_builder(self):
         '''
