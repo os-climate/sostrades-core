@@ -6,13 +6,25 @@ NUMERICAL_VAR_LIST = list(
     ProxyCoupling.DESC_IN.keys())
 
 
-def find_possible_values(disc, prefix_name_to_delete,
-                         io_type_in=True, io_type_out=True, strip_first_ns=False):
+def find_possible_input_values(disc, prefix_name_to_delete=None, strip_first_ns=False):
+    return find_possible_values(disc, prefix_name_to_delete=prefix_name_to_delete,
+                                io_type_in=True, io_type_out=False, strip_first_ns=strip_first_ns)[0]
+
+
+def find_possible_output_values(disc, prefix_name_to_delete=None, strip_first_ns=False):
+    return find_possible_values(disc, prefix_name_to_delete=prefix_name_to_delete,
+                                io_type_in=False, io_type_out=True, strip_first_ns=strip_first_ns)[1]
+
+
+def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_type_out=True, strip_first_ns=False):
     '''
         Run through all disciplines and sublevels
         to find possible values for eval_inputs and eval_outputs
     '''
-    # TODO: does this involve avoidable, recursive back and forths during  configuration ? (<-> config. graph)
+    # if no prefix_name to delete has been filled we use the full_name of the disc
+    if prefix_name_to_delete is None:
+        prefix_name_to_delete = disc.get_disc_full_name()
+
     possible_in_values, possible_out_values = fill_possible_values(
         disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
     if hasattr(disc, 'scenarios'):
@@ -26,8 +38,7 @@ def find_possible_values(disc, prefix_name_to_delete,
         possible_in_values.update(sub_in_values)
         possible_out_values.update(sub_out_values)
         sub_in_values, sub_out_values = find_possible_values(
-            sub_disc, prefix_name_to_delete,
-            io_type_in=io_type_in, io_type_out=io_type_out)
+            sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
         possible_in_values.update(sub_in_values)
         possible_out_values.update(sub_out_values)
 
@@ -89,8 +100,8 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
         if is_in_type and key not in NUMERICAL_VAR_LIST and not is_structuring and is_editable and is_input_type and not is_a_multiplier:
             # we remove the disc_full_name name from the variable full  name for a
             # sake of simplicity
-            poss_in_values_full.add(
-                full_id.split(f'{prefix_name_to_delete}.', 1)[1])
+
+            poss_in_values_full.add(full_id.removeprefix(prefix_name_to_delete))
 
     return poss_in_values_full
 
@@ -105,6 +116,6 @@ def fill_possible_output_values(disc, poss_out_values_full, prefix_name_to_delet
         if data_out_key != 'residuals_history':
             # we anonymize wrt. driver evaluator node namespace
             poss_out_values_full.add(
-                full_id.split(f'{prefix_name_to_delete}.', 1)[1])
+                full_id.removeprefix(prefix_name_to_delete))
 
     return poss_out_values_full

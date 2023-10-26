@@ -18,6 +18,7 @@ from typing import List
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from gemseo.core.scenario import Scenario
 from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
+from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_output_values
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -709,15 +710,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
     def set_eval_possible_values(self):
 
-        analyzed_disc = self.proxy_disciplines
-        possible_out_values = self.fill_possible_values(
-            analyzed_disc)  # possible_in_values
-
-        possible_out_values = self.find_possible_values(
-            analyzed_disc, possible_out_values)  # possible_in_values
-
-        # Take only unique values in the list
-        possible_out_values = list(set(possible_out_values))
+        possible_out_values = find_possible_output_values(self)
 
         # Fill the possible_values of obj and constraints
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
@@ -742,47 +735,47 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',
                          self.POSSIBLE_VALUES, [False, True])
 
-    def find_possible_values(
-            self, proxy_disciplines, possible_out_values):  # possible_in_values
-        """
-            Run through all disciplines and sublevels
-            to find possible values for eval_inputs and eval_outputs
-        """
-        if len(proxy_disciplines) != 0:
-            for disc in proxy_disciplines:
-                sub_out_values = self.fill_possible_values(
-                    [disc])  # sub_in_values
-                #                 possible_in_values.extend(sub_in_values)
-                possible_out_values.extend(sub_out_values)
-                self.find_possible_values(
-                    disc.proxy_disciplines, possible_out_values)  # possible_in_values
-
-        return possible_out_values  # possible_in_values
-
-    def fill_possible_values(self, proxy_disciplines):
-        """
-            Fill possible values lists for eval inputs and outputs
-            an input variable must be a float coming from a data_in of a discipline in all the process
-            and not a default variable
-            an output variable must be any data from a data_out discipline
-        """
-        # poss_in_values = []
-        poss_out_values = []
-        for disc in proxy_disciplines:
-            #             for data_in_key in disc.get_input_data_names(): #disc._data_in.keys():
-            #                 is_float = disc._data_in[data_in_key.split(NS_SEP)[-1]][self.TYPE] == 'float'
-            #                 in_coupling_numerical = data_in_key in SoSCoupling.DEFAULT_NUMERICAL_PARAM
-            #                 if not in_coupling_numerical: #is_float and
-            #                     # Caution ! This won't work for variables with points in name
-            #                     # as for ac_model
-            #                     poss_in_values.append(data_in_key)
-            for data_out_key in disc.get_output_data_names():  # disc._data_out.keys():
-                # Caution ! This won't work for variables with points in name
-                # as for ac_model
-                data_out_key = data_out_key.split(NS_SEP)[-1]
-                poss_out_values.append(data_out_key)
-
-        return poss_out_values  # poss_in_values
+    # def find_possible_values(
+    #         self, proxy_disciplines, possible_out_values):  # possible_in_values
+    #     """
+    #         Run through all disciplines and sublevels
+    #         to find possible values for eval_inputs and eval_outputs
+    #     """
+    #     if len(proxy_disciplines) != 0:
+    #         for disc in proxy_disciplines:
+    #             sub_out_values = self.fill_possible_values(
+    #                 [disc])  # sub_in_values
+    #             #                 possible_in_values.extend(sub_in_values)
+    #             possible_out_values.extend(sub_out_values)
+    #             self.find_possible_values(
+    #                 disc.proxy_disciplines, possible_out_values)  # possible_in_values
+    #
+    #     return possible_out_values  # possible_in_values
+    #
+    # def fill_possible_values(self, proxy_disciplines):
+    #     """
+    #         Fill possible values lists for eval inputs and outputs
+    #         an input variable must be a float coming from a data_in of a discipline in all the process
+    #         and not a default variable
+    #         an output variable must be any data from a data_out discipline
+    #     """
+    #     # poss_in_values = []
+    #     poss_out_values = []
+    #     for disc in proxy_disciplines:
+    #         #             for data_in_key in disc.get_input_data_names(): #disc._data_in.keys():
+    #         #                 is_float = disc._data_in[data_in_key.split(NS_SEP)[-1]][self.TYPE] == 'float'
+    #         #                 in_coupling_numerical = data_in_key in SoSCoupling.DEFAULT_NUMERICAL_PARAM
+    #         #                 if not in_coupling_numerical: #is_float and
+    #         #                     # Caution ! This won't work for variables with points in name
+    #         #                     # as for ac_model
+    #         #                     poss_in_values.append(data_in_key)
+    #         for data_out_key in disc.get_output_data_names():  # disc._data_out.keys():
+    #             # Caution ! This won't work for variables with points in name
+    #             # as for ac_model
+    #             data_out_key = data_out_key.split(NS_SEP)[-1]
+    #             poss_out_values.append(data_out_key)
+    #
+    #     return poss_out_values  # poss_in_values
 
     def set_diff_method(self):
         """
