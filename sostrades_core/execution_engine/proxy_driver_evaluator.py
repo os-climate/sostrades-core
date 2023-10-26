@@ -33,6 +33,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapp
 from sostrades_core.tools.gather.gather_tool import check_eval_io, get_eval_output
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
+from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values, fill_possible_values
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -93,7 +94,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     }
 
     EVAL_INPUTS = 'eval_inputs'
-    EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 
     NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
 
@@ -107,7 +107,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
     EVAL_OUTPUTS = 'eval_outputs'
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
-    
+
     ##
     ## To refactor instancce reference and subprocess import
     ##
@@ -373,85 +373,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.get_var_full_name(self.SAMPLES_DF, disc_in),
                 self.CHECK_INTEGRITY_MSG, self.scenario_list_integrity_msg)
 
-    def fill_possible_values(self, disc, io_type_in=False, io_type_out=True):
-        '''
+    def check_eval_io(self, given_list, default_list, is_eval_input):
+        """
+        Set the evaluation variable list (in and out) present in the DM
+        which fits with the eval_in_base_list filled in the usecase or by the user
+        """
 
-        Check the data integrity of the samples_df :
-        - if two scenario have the same names
-        - if no scenario are selected
-        - if a None is in the samples_df
-        - if column names are not coherent with subprocess
-        - if value to describe the scenario has not the type in line with the subprocess
-        '''
-        poss_in_values_full = set()
-        poss_out_values_full = set()
-        if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
-            disc_in = disc.get_data_in()
-            for data_in_key in disc_in.keys():
-                is_input_type = disc_in[data_in_key][self.TYPE] in self.EVAL_INPUT_TYPE
-                is_structuring = disc_in[data_in_key].get(
-                    self.STRUCTURING, False)
-                in_coupling_numerical = data_in_key in list(
-                    ProxyCoupling.DESC_IN.keys())
-                full_id = disc.get_var_full_name(
-                    data_in_key, disc_in)
-                is_in_type = self.dm.data_dict[self.dm.data_id_map[full_id]
-                             ]['io_type'] == 'in'
-                # is_input_multiplier_type = disc_in[data_in_key][self.TYPE] in self.INPUT_MULTIPLIER_TYPE
-                is_editable = disc_in[data_in_key]['editable']
-                is_None = disc_in[data_in_key]['value'] is None
-                is_a_multiplier = self.MULTIPLIER_PARTICULE in data_in_key
-                if is_in_type and not in_coupling_numerical and not is_structuring and is_editable:
-                    # Caution ! This won't work for variables with points in name
-                    # as for ac_model
-                    # we remove the study name from the variable full  name for a
-                    # sake of simplicity
-                    if is_input_type and not is_a_multiplier:
-                        poss_in_values_full.add(
-                            full_id.split(f'{self.get_disc_full_name()}.', 1)[1])
-                        # poss_in_values_full.append(full_id)
-
-                    # if is_input_multiplier_type and not is_None:
-                    #     poss_in_values_list = self.set_multipliers_values(
-                    #         disc, full_id, data_in_key)
-                    #     for val in poss_in_values_list:
-                    #         poss_in_values_full.append(val)
-
-        scatter_list_validity = True
-        # Check if two scenario have the same names
-        if len(set(scenario_names)) != len(scenario_names):
-            warning_msg = f'Two scenarios have same names in the samples_df, check the {self.SCENARIO_NAME} column'
-            self.check_integrity_msg_list.append(warning_msg)
-            scatter_list_validity = False
-
-        # Check if no scenario are selected
-        if samples_df.empty:
-            warning_msg = f'Your samples_df is empty, the driver cannot be configured'
-            self.check_integrity_msg_list.append(warning_msg)
-            scatter_list_validity = False
-        else:
-            selected_scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]][self.SCENARIO_NAME].values.tolist()
-            if len(selected_scenario_names) == 0:
-                warning_msg = f'You need to select at least one scenario to execute your driver'
-                self.check_integrity_msg_list.append(warning_msg)
-                scatter_list_validity = False
-
-        # in MultiInstance, flag self.scatter_list_validity detects specifically whether scenarios can be built (whereas
-        # other data_integrity checks concern i/o configuration or execution but do not impeach building the scenarios)
-        self.scatter_list_validity = scatter_list_validity
-
-        # Check if a None is in the samples_df
-        value_check = True
-        no_None_in_df = True
-        if self.sample_generator_disc is not None:
-            sampling_generation_mode = self.sample_generator_disc.sampling_generation_mode
-            if sampling_generation_mode == ProxySampleGenerator.AT_RUN_TIME:
-                value_check = False
-        if samples_df.isnull().values.any() and value_check:
-            columns_with_none = samples_df.columns[samples_df.isnull().any()].tolist()
-            warning_msg = f'There is a None in the samples_df, check the columns {columns_with_none} '
-            self.check_integrity_msg_list.append(warning_msg)
-            no_None_in_df = False
+        for given_io in given_list:
+            if given_io not in default_list and not self.MULTIPLIER_PARTICULE in given_io:
+                if is_eval_input:
+                    error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
+                                f'input of the subprocess with the correct full name (without study name at the ' \
+                                f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
+                                f'be created. should be in {default_list} '
 
         # Check if column names are not coherent with subprocess
         # Check if value to describe the scenario has not the type in line with the subprocess
@@ -653,12 +587,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             strip_first_ns (bool): whether to strip the scenario name (multi-instance case) from the variable name
         '''
 
-        possible_in_types, possible_out_values = find_possible_values(self, io_type_in=io_type_in,
-                                                                      io_type_out=io_type_out,
-                                                                      strip_first_ns=strip_first_ns,
-                                                                      original_editable_state_dict=self.original_editable_dict_trade_variables)
+        possible_in_values, possible_out_values = set(), set()
+        # scenarios contains all the built sub disciplines (proxy_disciplines does NOT in flatten mode)
+        for scenario_disc in self.scenarios:
+            analyzed_disc = scenario_disc
+            possible_in_values_full, possible_out_values_full = find_possible_values(analyzed_disc,
+                                                                                     self.get_disc_full_name(),
+                                                                                     io_type_in=io_type_in,
+                                                                                     io_type_out=io_type_out,
+                                                                                     strip_first_ns=strip_first_ns)
 
-        disc_in = self.get_data_in()
+            possible_in_values.update(possible_in_values_full)
+            possible_out_values.update(possible_out_values_full)
+
         disc_in = self.get_data_in()
         # TODO: transfert to simple sample generator
         if possible_in_values and io_type_in:
