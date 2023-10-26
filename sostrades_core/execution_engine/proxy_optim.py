@@ -710,7 +710,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
     def set_eval_possible_values(self):
 
-        possible_out_values = find_possible_output_values(self)
+        possible_out_values = find_possible_output_values(self, strip_first_ns=True)
 
         # Fill the possible_values of obj and constraints
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
