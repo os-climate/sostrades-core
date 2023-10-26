@@ -33,7 +33,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapp
 from sostrades_core.tools.gather.gather_tool import check_eval_io, get_eval_output
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
-from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values, fill_possible_values
+from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values
 
 
 class ProxyDriverEvaluatorException(Exception):

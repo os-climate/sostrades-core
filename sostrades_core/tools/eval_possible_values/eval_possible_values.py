@@ -3,7 +3,8 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 NUMERICAL_VAR_LIST = list(
-    ProxyCoupling.DESC_IN.keys())
+    ProxyCoupling.DESC_IN.keys()) + list(
+    ProxyCoupling.NUM_DESC_IN.keys())
 
 
 def find_possible_input_values(disc, prefix_name_to_delete=None, strip_first_ns=False):
@@ -101,7 +102,7 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
             # we remove the disc_full_name name from the variable full  name for a
             # sake of simplicity
 
-            poss_in_values_full.add(full_id.removeprefix(prefix_name_to_delete))
+            poss_in_values_full.add(full_id.removeprefix(f'{prefix_name_to_delete}.'))
 
     return poss_in_values_full
 
@@ -116,6 +117,6 @@ def fill_possible_output_values(disc, poss_out_values_full, prefix_name_to_delet
         if data_out_key != 'residuals_history':
             # we anonymize wrt. driver evaluator node namespace
             poss_out_values_full.add(
-                full_id.removeprefix(prefix_name_to_delete))
+                full_id.removeprefix(f'{prefix_name_to_delete}.'))
 
     return poss_out_values_full
