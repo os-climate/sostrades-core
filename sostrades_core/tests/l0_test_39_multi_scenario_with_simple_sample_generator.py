@@ -185,10 +185,13 @@ class TestMultiScenario(unittest.TestCase):
 
         # setup the driver and the sample generator jointly
         dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario':[True],
+                                                                                     'scenario_name':['reference']}) # TODO: to be removed when default build reference
         dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'simple'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
+        dict_values = {}
         self.assertEqual(self.exec_eng.dm.get_value(
             f'{self.study_name}.SampleGenerator.sampling_generation_mode'), 'at_configuration_time')
 
@@ -202,7 +205,13 @@ class TestMultiScenario(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] == 'z', ['selected_input']] = True
 
         # manually configure the scenarios non-varying values (~reference)
-        scenario_list = ['scenario_1', 'scenario_2', 'scenario_4']
+        scenario_list = ['a', 'b', 'c', 'd']
+
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = eval_inputs
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_names'] = scenario_list
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
         for scenario in scenario_list:
             dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
             dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
@@ -214,6 +223,8 @@ class TestMultiScenario(unittest.TestCase):
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
         samples_df['selected_scenario'] = [True, True, False, True]
+        samples_df['Disc1.b'] = [self.b1, self.b1, self.b2, self.b2]
+        samples_df['z'] = [self.z1, self.z2, self.z1, self.z2]
         dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -235,18 +246,18 @@ class TestMultiScenario(unittest.TestCase):
                   self.constant + self.z2 ** self.power)
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.y'), y1)
+            'MyCase.multi_scenarios.a.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.y'), y2)
+            'MyCase.multi_scenarios.b.y'), y2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_4.y'), y4)
+            'MyCase.multi_scenarios.d.y'), y4)
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_1.o'), o1)
+            'MyCase.multi_scenarios.a.o'), o1)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_2.o'), o2)
+            'MyCase.multi_scenarios.b.o'), o2)
         self.assertEqual(self.exec_eng.dm.get_value(
-            'MyCase.multi_scenarios.scenario_4.o'), o4)
+            'MyCase.multi_scenarios.d.o'), o4)
 
 
 if '__main__' == __name__:

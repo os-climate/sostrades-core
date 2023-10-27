@@ -181,9 +181,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                             f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
                         samples_df[self.SELECTED_SCENARIO] = False
                     scenario_name = samples_df[self.SCENARIO_NAME]
-                    for i in scenario_name.index.tolist():
-                        scenario_name.iloc[i] = 'scenario_' + \
-                                                str(i + 1)
+                    # for i in scenario_name.index.tolist():
+                    #     scenario_name.iloc[i] = 'scenario_' + \
+                    #                             str(i + 1)
                     self.logger.info(
                         'Generated sample has changed, updating scenarios to select.')
                     self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
