@@ -44,8 +44,6 @@ class ScatterTool(SosTool):
                                      'group_scenarios_under_disciplines']
 
     #            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
-    #             'autogather' : will create an automatic gather discipline which will gather
-    #                         all cls_builder outputs at driver node
     #             'hide_under_coupling' : Hide all disciplines created under the coupling at scenario name node for display purpose
     #             'hide_coupling_in_driver': Hide the coupling (scenario_name node) under the driver for display purpose
     #             'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose

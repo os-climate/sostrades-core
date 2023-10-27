@@ -1866,6 +1866,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exp_proxy_tv_with_status = '|_ usecase1_cp_multi_with_ref  (ProxyCoupling) [DONE]\n' \
                                    '    |_ usecase1_cp_multi_with_ref.Eval  (ProxyMultiInstanceDriver) [DONE]\n' \
                                    '    |_ usecase1_cp_multi_with_ref.SampleGenerator  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.Eval_gather  (ProxyDiscipline) [DONE]\n' \
                                    '    |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling  (ProxyCoupling) [DONE]\n' \
                                    '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
                                    '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \
@@ -1885,4 +1886,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if __name__ == '__main__':
     test = TestSoSDOEScenario()
     test.setUp()
-    test.test_10_nested_very_simple_multi_scenarios_with_archi_builder()
+    test.test_13_sellar_coupling_multi_instances_flatten()

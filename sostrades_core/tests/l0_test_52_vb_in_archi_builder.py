@@ -217,4 +217,4 @@ class TestVBArchiBuilder(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestVBArchiBuilder()
     cls.setUp()
-    cls.test_02_configure_data_io_for_multiple_vb_discipline()
+    cls.test_01_configure_data_io_for_vb_discipline()
