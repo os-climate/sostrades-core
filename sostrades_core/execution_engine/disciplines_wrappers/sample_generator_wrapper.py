@@ -238,6 +238,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                                 'full_name': ('string', None, False)},
                                     self.DATAFRAME_EDITION_LOCKED: False,
                                     self.STRUCTURING: True,
+                                    self.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
                                     self.NAMESPACE: self.NS_SAMPLING}
                                })
