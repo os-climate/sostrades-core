@@ -28,7 +28,7 @@ class DiscLogGeneration(SoSWrapp):
         'wait_time_s': {'type': 'int', 'default': 1}
     }
     DESC_OUT = {
-        'time_spent': {'type': 'float'},
+        'out': {'type': 'int'},
     }
 
     def run(self):
@@ -40,5 +40,6 @@ class DiscLogGeneration(SoSWrapp):
         time.sleep(wait_time_s)
 
         spent = time.time() - start_ts
+        self.logger.info(f"Spent {spent}s")
 
-        self.store_sos_outputs_values({'time_spent': spent})
+        self.store_sos_outputs_values({'out': 1})
