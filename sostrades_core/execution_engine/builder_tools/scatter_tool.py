@@ -232,8 +232,10 @@ class ScatterTool(SosTool):
             # get new_names that are not yet built and clean the one that are no more in the scatter list
             new_sub_names = self.clean_scattered_disciplines(
                 self.__scatter_list)
-            # Always add gather to get gather_outputs
-            self.add_gather()
+            
+            if len(self.__scatter_list)>0:
+                # Always add gather to get gather_outputs
+                self.add_gather()
 
             for name in self.__scatter_list:
                 # check if the name is new
@@ -375,10 +377,10 @@ class ScatterTool(SosTool):
             display_value = f'{driver_display_name}.{old_builder_name}'
             local_ns_disc.set_display_value(display_value)
 
-        if self.display_options['group_scenarios_under_disciplines']:
-            gather_name = old_builder_name
-        else:
-            gather_name = f'{self.driver.sos_name}_gather'
+        # if self.display_options['group_scenarios_under_disciplines']:
+        #     gather_name = old_builder_name
+        # else:
+        gather_name = f'{self.driver.sos_name}_gather'
 
         self.__gather_disciplines[gather_name].add_disc_to_config_dependency_disciplines(disc)
 
@@ -389,41 +391,35 @@ class ScatterTool(SosTool):
             if display option group_scenarios_under_disciplines is activated then we want a gather per subbuilder
 
         '''
-        # get ns_driver to associate ns_gather to it
-        ns_driver = None
-        if 'ns_driver' in self.driver.get_shared_ns_dict():
-            ns_driver = self.driver.get_shared_ns_dict()['ns_driver'].value
         
-        if self.display_options['group_scenarios_under_disciplines']:
-            for sub_builder in self.sub_builders:
+        # if self.display_options['group_scenarios_under_disciplines']:
+        #     for sub_builder in self.sub_builders:
 
-                gather_name = f'{self.driver.sos_name}.{sub_builder.sos_name}'
-                if sub_builder.sos_name not in self.__gather_disciplines:
-                    gather_builder = self.ee.factory.add_gather_builder(gather_name)
+        #         gather_name = f'{self.driver.sos_name}.{sub_builder.sos_name}'
+        #         if sub_builder.sos_name not in self.__gather_disciplines:
+        #             gather_builder = self.ee.factory.add_gather_builder(gather_name)
 
-                    # deal with ns_gather namespace
-                    if ns_driver is not None:
-                        ns_gather = self.ee.ns_manager.add_ns('ns_gather', ns_driver)
-                        gather_builder.associate_namespaces(ns_gather)
+        #             # deal with ns_gather namespace
+        #             if ns_driver is not None:
+        #                 ns_gather = self.ee.ns_manager.add_ns('ns_gather', ns_driver)
+        #                 gather_builder.associate_namespaces(ns_gather)
 
-                    self.set_father_discipline()
-                    gather_disc = gather_builder.build()
-                    self.ee.factory.add_discipline(gather_disc)
-                    self.__gather_disciplines[sub_builder.sos_name] = gather_disc
-        else:
-            gather_name = f'{self.driver.sos_name}_gather'
-            if gather_name not in self.__gather_disciplines:
-                gather_builder = self.ee.factory.add_gather_builder(gather_name)
-                self.ee.ns_manager.add_display_ns_to_builder(
-                    gather_builder, self.driver.get_disc_display_name())
-                # deal with ns_gather namespace
-                if ns_driver is not None:
-                    ns_gather = self.ee.ns_manager.add_ns('ns_gather', ns_driver)
-                    gather_builder.associate_namespaces(ns_gather)
-                self.set_father_discipline()
-                gather_disc = gather_builder.build()
-                self.ee.factory.add_discipline(gather_disc)
-                self.__gather_disciplines[gather_name] = gather_disc
+        #             self.set_father_discipline()
+        #             gather_disc = gather_builder.build()
+        #             self.ee.factory.add_discipline(gather_disc)
+        #             self.__gather_disciplines[sub_builder.sos_name] = gather_disc
+        # else:
+        gather_name = f'{self.driver.sos_name}_gather'
+        if gather_name not in self.__gather_disciplines:
+            gather_builder = self.ee.factory.add_gather_builder(gather_name)
+            self.ee.ns_manager.add_display_ns_to_builder(
+                gather_builder, self.driver.get_disc_display_name())
+            
+            self.set_father_discipline()
+            gather_disc = gather_builder.build()
+            self.ee.factory.add_discipline(gather_disc)
+            self.__gather_disciplines[gather_name] = gather_disc
+        
 
     def clean_scattered_disciplines(self, sub_names):
         '''

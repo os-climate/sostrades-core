@@ -114,7 +114,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         output_selection_obj_y1_y2 = {
             'selected_output': [False, False, False, False, False, False, False, True, True, True],
             'full_name': ['c_1', 'c_2', 'doe.obj_dict', 'doe.samples_inputs_df', 'doe.samples_outputs_df',
-                          'doe.y_1_dict', 'doe.y_2_dict', 'obj', 'y_1', 'y_2']}
+                          'doe.y_1_dict', 'doe.y_2_dict', 'obj', 'y_1', 'y_2'],
+            'output_name': [None]*10}
         self.output_selection_obj_y1_y2 = pd.DataFrame(
             output_selection_obj_y1_y2)
 
@@ -1446,4 +1447,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_1_doe_eval_execution_fullfact()
+    cls.test_10_warning_in_case_of_a_wrong_inputs_outputs_in_doe_eval()

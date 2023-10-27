@@ -50,7 +50,7 @@ def gather_selected_outputs(eval_outputs, gather_suffix):
     return final_out_names
 
 def get_eval_output(possible_out_values, eval_output_dm):
-    error_msg = ''
+    error_msg = []
     default_dataframe = None
     if possible_out_values:
         possible_out_values = list(possible_out_values)
@@ -64,9 +64,9 @@ def get_eval_output(possible_out_values, eval_output_dm):
         if eval_output_dm is not None and (set(eval_output_dm['full_name'].tolist()) != (set(default_dataframe['full_name'].tolist())) \
          or eval_output_dm['selected_output'].tolist() != (default_dataframe['selected_output'].tolist()) \
          or eval_output_dm['output_name'].tolist() != (default_dataframe['output_name'].tolist())):
-            error_msg = check_eval_io(eval_output_dm['full_name'].tolist(),
+            error_msg.extend(check_eval_io(eval_output_dm['full_name'].tolist(),
                                    default_dataframe['full_name'].tolist(),
-                                   is_eval_input=False)
+                                   is_eval_input=False))
             already_set_names = eval_output_dm['full_name'].tolist()
             already_set_values = eval_output_dm['selected_output'].tolist()
             if 'output_name' in eval_output_dm.columns:
@@ -87,19 +87,19 @@ def check_eval_io(given_list, default_list, is_eval_input):
     Set the evaluation variable list (in and out) present in the DM
     which fits with the eval_in_base_list filled in the usecase or by the user
     """
-    error_msg = ''
+    error_msg = []
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     for given_io in given_list:
         if given_io not in default_list and not MULTIPLIER_PARTICULE in given_io:
             if is_eval_input:
-                error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
+                error_msg.append(f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
                             f'input of the subprocess with the correct full name (without study name at the ' \
                             f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
-                            f'be created. should be in {default_list} '
+                            f'be created. should be in {default_list} ')
 
             else:
-                error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
+                error_msg.append(f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
                             f'output of the subprocess with the correct full name (without study name at the ' \
-                            f'beginning). Dynamic inputs might  not be created. should be in {default_list}'
+                            f'beginning). Dynamic inputs might  not be created. should be in {default_list}')
 
     return error_msg

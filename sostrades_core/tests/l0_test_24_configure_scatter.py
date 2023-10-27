@@ -62,6 +62,7 @@ class TestScatterDiscipline(unittest.TestCase):
 
         disciplines_list.append(self.name)
         disciplines_list.append(f'{self.name}.{self.ms_name}')
+        disciplines_list.append(f'{self.name}.{self.ms_name}_gather')
 
         for aircraft in list_aircraft:
             # disciplines_list.append(
@@ -243,5 +244,5 @@ class TestScatterDiscipline(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestScatterDiscipline()
     cls.setUp()
-    cls.test_04_multiinstance_modification_remove_all_aircraft()
+    cls.test_01_raw_initialisation()
     cls.tearDown()

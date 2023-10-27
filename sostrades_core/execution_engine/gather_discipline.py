@@ -50,7 +50,6 @@ class GatherDiscipline(SoSWrapp):
                         'dataframe_descriptor', 'dataframe_edition_locked',
                         'default', 'optional', 'numerical', SoSWrapp.VISIBILITY, SoSWrapp.NAMESPACE,
                         SoSWrapp.NS_REFERENCE]
-    NS_GATHER = 'ns_gather'
     EVAL_OUTPUTS = 'eval_outputs'
     GATHER_SUFFIX = '_dict'
     EVAL_OUTPUTS_DESC = {
@@ -62,8 +61,6 @@ class GatherDiscipline(SoSWrapp):
                                                         },
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
-            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: NS_GATHER
         }
     
     DESC_IN = {EVAL_OUTPUTS : EVAL_OUTPUTS_DESC}
@@ -78,19 +75,26 @@ class GatherDiscipline(SoSWrapp):
         """
         super().__init__(sos_name, logger)
         self.gather_names = None
+        self.gather_suffix = self.GATHER_SUFFIX
 
     def setup_sos_disciplines(self):
         '''
            We add to the desc_in all the outputs of each child 
            We add to the desc_out the dict which will gather all inputs by name 
         '''
+        dynamic_inputs, dynamic_outputs = self.build_dynamic_io()
+        self.add_inputs(dynamic_inputs)
+        self.add_outputs(dynamic_outputs)
+        
+
+    def build_dynamic_io(self):
+        dynamic_inputs = {}
+        dynamic_outputs = {}
         disc_in = self.get_data_in()
         if self.EVAL_OUTPUTS in disc_in:
             self.build_eval_output()
             dynamic_inputs, dynamic_outputs = self.build_dynamic_io_from_gather_outputs()
-
-            self.add_inputs(dynamic_inputs)
-            self.add_outputs(dynamic_outputs)
+        return dynamic_inputs, dynamic_outputs
 
     def build_eval_output(self):
         '''
@@ -121,8 +125,9 @@ class GatherDiscipline(SoSWrapp):
             # merge possible outputs with current eval_output
             eval_output_df, error_msg = get_eval_output(set(self.gather_names.values()), eval_output_new_dm)
 
-            if error_msg != '':
-                self.logger.warning(error_msg)
+            if len(error_msg) > 0:
+                for msg in error_msg:
+                    self.logger.warning(msg)
 
             # set eval_output value in desc_in
             self.dm.set_data(eval_outputs_f_name,
@@ -138,7 +143,7 @@ class GatherDiscipline(SoSWrapp):
 
         eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
         # get only variables that are selected
-        selected_outputs_dict = gather_selected_outputs(eval_outputs, self.GATHER_SUFFIX)
+        selected_outputs_dict = gather_selected_outputs(eval_outputs, self.gather_suffix)
 
         if len(selected_outputs_dict) > 0:
             # search selected output variables in dependency_disc
@@ -181,7 +186,7 @@ class GatherDiscipline(SoSWrapp):
                             dynamic_outputs[output_name][self.TYPE] = 'dict'
                         #set dynamic output in NS_DRIVER namespace
                         dynamic_outputs[output_name][self.VISIBILITY] = self.SHARED_VISIBILITY
-                        dynamic_outputs[output_name][self.NAMESPACE] = self.NS_GATHER
+                        del dynamic_outputs[output_name][self.NAMESPACE]
                         del dynamic_outputs[output_name][self.NS_REFERENCE]
         return dynamic_inputs, dynamic_outputs
     
@@ -196,7 +201,7 @@ class GatherDiscipline(SoSWrapp):
         eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
 
         # get only selected eval_output
-        selected_output = gather_selected_outputs(eval_outputs, self.GATHER_SUFFIX)
+        selected_output = gather_selected_outputs(eval_outputs, self.gather_suffix)
 
         for out_key in output_keys:
             if out_key in selected_output.values():
@@ -248,8 +253,8 @@ class GatherDiscipline(SoSWrapp):
         chart_filters = []
         output_dict = self.get_sosdisc_outputs()
 
-        chart_list = [key.replace(self.GATHER_SUFFIX, '')
-                      for key in output_dict.keys() if key.endswith(self.GATHER_SUFFIX)]
+        chart_list = [key.replace(self.gather_suffix, '')
+                      for key in output_dict.keys() if key.endswith(self.gather_suffix)]
 
         chart_filters.append(ChartFilter(
             'Charts gather', chart_list, chart_list, 'Charts gather'))
@@ -270,7 +275,7 @@ class GatherDiscipline(SoSWrapp):
         output_dict = self.get_sosdisc_outputs()
 
         for output_key, output_value in output_dict.items():
-            chart_name = output_key.replace(self.GATHER_SUFFIX, '')
+            chart_name = output_key.replace(self.gather_suffix, '')
             chart_unit = self.get_data_out()[output_key][self.UNIT]
             if isinstance(output_value, dict):
                 first_value = list(output_value.values())[0]

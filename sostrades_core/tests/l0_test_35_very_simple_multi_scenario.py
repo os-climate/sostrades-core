@@ -644,6 +644,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         disc_list_in_root_coupling = [disc.get_disc_full_name() for disc in
                                       self.exec_eng.root_process.proxy_disciplines]
         disc_list_in_root_coupling_th = ['MyCase.multi_scenarios',
+                                         'MyCase.multi_scenarios_gather',
                                          'MyCase.multi_scenarios.scenario_1.Disc1',
                                          'MyCase.multi_scenarios.scenario_1.Disc3',
                                          'MyCase.multi_scenarios.scenario_2.Disc1',
