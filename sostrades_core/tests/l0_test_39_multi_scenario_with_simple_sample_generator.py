@@ -174,11 +174,10 @@ class TestMultiScenario(unittest.TestCase):
         self.assertEqual(var_names, samples_df.columns[2:].tolist())
         self.assertEqual([True for _ in sce_names], samples_df['selected_scenario'].values.tolist())
 
-
-    def test_01_multiscenario_with_simple_sample_generator_configuration(self):
+    def test_02_multiscenario_with_sample_generator_input_var(self):
         # # simple 2-disc process
         repo_name = self.repo + ".tests_driver_eval.multi"
-        proc_name = 'test_multi_driver_sample_generator_simple'
+        proc_name = 'test_multi_driver_simple'
         builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
@@ -186,11 +185,12 @@ class TestMultiScenario(unittest.TestCase):
 
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'simple'
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'simple'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(
-            f'{self.study_name}.Sample_Generator.sampling_generation_mode'), 'at_configuration_time')
+            f'{self.study_name}.SampleGenerator.sampling_generation_mode'), 'at_configuration_time')
 
         eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.eval_inputs')
 

@@ -8,36 +8,68 @@ NUMERICAL_VAR_LIST = list(
 
 
 def find_possible_input_values(disc, prefix_name_to_delete=None, strip_first_ns=False):
+    '''
+    This method will find all possible input value under disc and all subdisciplines recursively
+    Args:
+        disc: disc where to find possible input values
+        prefix_name_to_delete: prefix to delete before all input values name if None then prefix is disc.get_disc_full_name()
+        strip_first_ns: If True will strip the first prefix by splitting with the point delimiter
+
+    Returns:
+        A set of possible input_values
+    '''
     return find_possible_values(disc, prefix_name_to_delete=prefix_name_to_delete,
                                 io_type_in=True, io_type_out=False, strip_first_ns=strip_first_ns)[0]
 
 
 def find_possible_output_values(disc, prefix_name_to_delete=None, strip_first_ns=False):
+    '''
+    This method will find all possible output values under disc and all subdisciplines recursively
+    Args:
+        disc: disc where to find possible output values
+        prefix_name_to_delete: prefix to delete before all output values name if None then prefix is disc.get_disc_full_name()
+        strip_first_ns: If True will strip the first prefix by splitting with the point delimiter
+
+    Returns:
+        A set of possible output_values
+    '''
     return find_possible_values(disc, prefix_name_to_delete=prefix_name_to_delete,
                                 io_type_in=False, io_type_out=True, strip_first_ns=strip_first_ns)[1]
 
 
 def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_type_out=True, strip_first_ns=False):
     '''
-        Run through all disciplines and sublevels
-        to find possible values for eval_inputs and eval_outputs
+        his method will find all possible output and inputs values under disc and all subdisciplines recursively
+        Args:
+        disc: disc where to find possible output values
+        prefix_name_to_delete: prefix to delete before all output values name if None then prefix is disc.get_disc_full_name()
+        strip_first_ns: If True will strip the first prefix by splitting with the point delimiter
+
+    Returns:
+        A set of possible input_values
+        A set of possible output_values
     '''
     # if no prefix_name to delete has been filled we use the full_name of the disc
     if prefix_name_to_delete is None:
         prefix_name_to_delete = disc.get_disc_full_name()
 
+    # fill possiblee values set for the high level disc
     possible_in_values, possible_out_values = fill_possible_values(
         disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
+
+    # find sub_disciplines if it's a driver then subdisciplines are stored in scenarios (proxy in run with flatten subprocess)
     if hasattr(disc, 'scenarios'):
         sub_disciplines = disc.scenarios
     else:
         sub_disciplines = disc.proxy_disciplines
 
+    # loop over all subdisciplines to find possible i/O values
     for sub_disc in sub_disciplines:
         sub_in_values, sub_out_values = fill_possible_values(
             sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
         possible_in_values.update(sub_in_values)
         possible_out_values.update(sub_out_values)
+        # Recursively if there is multiple levels
         sub_in_values, sub_out_values = find_possible_values(
             sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
         possible_in_values.update(sub_in_values)
@@ -78,7 +110,7 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
         prefix_name_to_delete: prefix_name_to_delete to delete from the name of the input value
 
     Returns:
-
+        Set of possible input values
     '''
     disc_in = disc.get_data_in()
     for key, data_dict in disc_in.items():
@@ -108,6 +140,16 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
 
 
 def fill_possible_output_values(disc, poss_out_values_full, prefix_name_to_delete):
+    '''
+
+    Args:
+        disc: discipline where to find output values
+        poss_out_values_full: list where to store output values
+        prefix_name_to_delete: prefix_name_to_delete to delete from the name of the output value
+
+    Returns:
+        Set of possible output values
+    '''
     disc_out = disc.get_data_out()
     for data_out_key in disc_out.keys():
         # Caution ! This won't work for variables with points in name
