@@ -263,14 +263,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             super().configure()
             # 3. specific configure depending on the driver
             self.configure_driver()
-            self._configure_sample_generator()
+            self.configure_sample_generator()
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
             self.set_children_numerical_inputs()
 
-    def _configure_sample_generator(self):
+    def configure_sample_generator(self):
         if self.sample_generator_disc and not self.sample_generator_disc.is_configured():
+            # TODO: remove eval_inputs from driver evaluator and activate this line
+            # self.sample_generator.set_eval_in_possible_values(self.eval_in_possible_values)
             self.sample_generator_disc.configure()
 
     def update_data_io_with_subprocess_io(self):

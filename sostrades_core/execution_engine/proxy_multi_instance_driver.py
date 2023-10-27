@@ -53,7 +53,17 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     MAX_SAMPLE_AUTO_BUILD_SCENARIOS = 1024
 
     DESC_IN = {
-
+        # # TODO: eval_inputs is to be removed from the driver evaluator
+        ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
+                                           ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
+                                               'selected_input': ('bool', None, True),
+                                               'full_name': ('string', None, False)},
+                                           ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
+                                           ProxyDriverEvaluator.STRUCTURING: True,
+                                           ProxyDriverEvaluator.OPTIONAL: True,
+                                           # ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
+                                           # ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER
+                                           },
         # TODO: manage variable columns for (non-very-simple) multiscenario cases
         # MUST BE REPLACED OR USED FOR GENERIC GATHERING FEATURE
         ProxyDriverEvaluator.EVAL_OUTPUTS: {
@@ -184,7 +194,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         if self.SAMPLES_DF in disc_in:
             self.configure_tool()
             self.configure_subprocesses_with_driver_input()
-            self.set_eval_possible_values(io_type_in=False, strip_first_ns=True)
+            self.set_eval_possible_values(#io_type_in=False ,
+                                          strip_first_ns=True)
 
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
         """

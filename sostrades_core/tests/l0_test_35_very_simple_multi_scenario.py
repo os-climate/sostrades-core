@@ -383,8 +383,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                 dm_value = self.exec_eng.dm.get_value(var)
                 if var == f'{self.study_name}.multi_scenarios.scenario_list' or \
                         var == f'{self.study_name}.multi_scenarios.generated_samples' or \
-                        var == f'{self.study_name}.SampleGenerator.eval_inputs' or \
-                        var == f'{self.study_name}.multi_scenarios_gather.gather_outputs':
+                        var == f'{self.study_name}.multi_scenarios.eval_inputs' or  \
+                        var == f'{self.study_name}.multi_scenarios.eval_outputs':
                     # this variable is an exception because it is forced by the value of another variable during setup
                     continue
 
