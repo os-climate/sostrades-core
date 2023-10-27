@@ -618,8 +618,10 @@ class TestSimpleMultiScenario(unittest.TestCase):
         error_message = 'Cannot activate several scenarios with the same name (scenario_1).'
         exp_tv = 'Nodes representation for Treeview MyCase\n' \
                  '|_ MyCase\n' \
-                 '\t|_ multi_scenarios'
-
+                 '\t|_ multi_scenarios\n' \
+                 '\t\t|_ Reference Scenario\n' \
+                 '\t\t\t|_ Disc1\n' \
+                 '\t\t\t|_ Disc3'
         # Exception
         # with self.assertRaises(Exception) as cm:
         #     self.exec_eng.load_study_from_input_dict(dict_values)
