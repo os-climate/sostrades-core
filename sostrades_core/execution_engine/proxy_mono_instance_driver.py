@@ -33,8 +33,9 @@ class ProxyMonoInstanceDriverException(Exception):
 
 class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
-    # TODO: manage desc_in in correct classes and give default value to eval_inputs
+    # TODO: manage desc_in in correct classes
     DESC_IN = {
+        # TODO: eval_inputs is to be removed from the driver evaluator
         ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                            ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                'selected_input': ('bool', None, True),

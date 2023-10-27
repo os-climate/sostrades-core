@@ -75,10 +75,11 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
         possible_in_values.update(sub_in_values)
         possible_out_values.update(sub_out_values)
 
+    # FIXME: should be sets comprehensions
     # strip the scenario name to have just one entry for repeated variables in scenario instances
     if strip_first_ns:
-        return [_var.split('.', 1)[-1] for _var in possible_in_values], [_var.split('.', 1)[-1] for _var in
-                                                                         possible_out_values]
+        return {_var.split('.', 1)[-1] for _var in possible_in_values}, {_var.split('.', 1)[-1] for _var in
+                                                                         possible_out_values}
     else:
         return possible_in_values, possible_out_values
 
