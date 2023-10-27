@@ -98,8 +98,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
     SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
+    WITH_SAMPLE_GENERATOR = 'with_sample_generator'
+    WITH_SAMPLE_GENERATOR_DESC = {
+        ProxyDiscipline.TYPE: 'bool',
+        ProxyDiscipline.DEFAULT: False,
+        ProxyDiscipline.STRUCTURING: True,
+    }
 
-    DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC}
+    DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
+               WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
 
     GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
     EVAL_OUTPUTS = 'eval_outputs'
@@ -171,6 +178,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.scenarios = []
 
         self.samples = None
+        self.sample_generator_disc = None
 
         self.eval_process_builder = None
         self.eval_in_list = None
@@ -280,8 +288,27 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Get the actual drivers of the subprocesses of the DriverEvaluator.
         """
         # NB: custom driver wrapper not implemented
-        # TODO: feels like the class hierarchy coherence of this method could be improved..
+        disc_in = self.get_data_in()
+        if self.WITH_SAMPLE_GENERATOR in disc_in and self.get_sosdisc_inputs(self.WITH_SAMPLE_GENERATOR):
+            if self.sample_generator_disc is None:
+                self.sample_generator_disc = self.build_sample_generator_disc()
+        elif self.sample_generator_disc is not None:
+            self.clean_children([self.sample_generator_disc]) #TODO: check whether sufficient for removal of shared ns NS_SAMPLING
+            self.sample_generator_disc = None
         return []
+
+    def build_sample_generator_disc(self):
+        # create the builder of a ProxySampleGenerator
+        sampling_builder = self.ee.factory.create_sample_generator('SampleGenerator')
+        # associate ns_sampling and ns_driver
+        ns_sampling = self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, self._get_disc_shared_ns_value())
+        sampling_builder.associate_namespaces(ns_sampling)
+        # create discipline in factory as sister not daughter
+        self.ee.factory.current_discipline = self.father_executor
+        sampling_disc = sampling_builder.build()
+        self.ee.factory.add_discipline(sampling_disc)
+        # return discipline for association in driver
+        return sampling_disc
 
     def prepare_execution(self):
         """

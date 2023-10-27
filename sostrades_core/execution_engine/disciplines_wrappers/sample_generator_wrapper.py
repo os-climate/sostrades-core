@@ -235,14 +235,17 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
                 dynamic_inputs, dynamic_outputs = {}, {}
                 dynamic_inputs.update({'eval_inputs':
+
                                            {self.TYPE: 'dataframe',
                                             self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
                                                                         'full_name': ('string', None, False)},
                                             self.DATAFRAME_EDITION_LOCKED: False,
                                             self.STRUCTURING: True,
+                                            self.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
                                             self.VISIBILITY: self.SHARED_VISIBILITY,
                                             self.NAMESPACE: self.NS_SAMPLING}
                                        })
+
                 dynamic_inputs.update({'scenario_names':
                                            {self.TYPE: 'list',
                                             self.SUBTYPE: {'list': 'string'},
