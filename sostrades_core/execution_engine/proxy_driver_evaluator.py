@@ -263,25 +263,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             super().configure()
             # 3. specific configure depending on the driver
             self.configure_driver()
-            # 4. configure the sample generator if there is one
-            if self.sample_generator_disc:
-                self.configure_sample_generator()
+            self._configure_sample_generator()
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
             self.set_children_numerical_inputs()
 
-    def configure_sample_generator(self):
-        '''
-        
-        Configure the sample generator associated to the driver. 
-        The driver is not fully configured for eval inputs possible value and the sample generator send the info to the driver (via driver_config_status)
-
-        '''
-        self.sample_generator_disc.set_eval_in_possible_values(possible_values=self.eval_in_possible_values,
-                                                               possible_types=self.eval_in_possible_types)
-        self.sample_generator_disc.samples_df_f_name = self.get_input_var_full_name(self.SAMPLES_DF)
-        if not self.sample_generator_disc.is_configured():
+    def _configure_sample_generator(self):
+        if self.sample_generator_disc and not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
 
     def update_data_io_with_subprocess_io(self):
@@ -315,7 +304,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if self.sample_generator_disc is None:
                 self.sample_generator_disc = self.build_sample_generator_disc()
         elif self.sample_generator_disc is not None:
-            self.clean_children([self.sample_generator_disc]) #TODO: check whether sufficient for removal of shared ns NS_SAMPLING
+            self.clean_children([self.sample_generator_disc]) #TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
             self.sample_generator_disc = None
         return []
 
