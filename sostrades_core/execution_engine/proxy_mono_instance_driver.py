@@ -147,8 +147,9 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         '''
         if self.get_data_in() and self.eval_process_builder is None:
             self._set_eval_process_builder()
-
-        return [self.eval_process_builder] if self.eval_process_builder else []
+        sub_builders = [self.eval_process_builder] if self.eval_process_builder else []
+        sub_builders.extend(super().prepare_build())
+        return sub_builders
 
     def update_reference(self):
         return bool(self.get_data_in())

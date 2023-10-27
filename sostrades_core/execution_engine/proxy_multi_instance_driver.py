@@ -199,9 +199,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         if self.get_data_in():
             self.build_tool()
             # Tool is building disciplines for the driver on behalf of the driver name
-            # no further disciplines needed to be builded by the evaluator
-            # then we return an empty list
-        return []
+            # no further disciplines needed to be built by the evaluator
+        return super().prepare_build()
 
     def is_configured(self):
         config_status = super().is_configured()
