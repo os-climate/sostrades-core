@@ -33,7 +33,7 @@ class ProxyMonoInstanceDriverException(Exception):
 
 class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
-
+    # TODO: manage desc_in in correct classes and give default value to eval_inputs
     DESC_IN = {
         ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                            ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
