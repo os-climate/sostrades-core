@@ -299,7 +299,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
             if len(samples_df) > 0:
                 scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]
-                                        == True][self.SCENARIO_NAME].values.tolist()
+                                            == True][self.SCENARIO_NAME].values.tolist()
             else:
                 scenario_names = []
             set_sc_names = set(scenario_names)
@@ -327,7 +327,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             # return self.builder_tool.has_built and proxies_names
             # TODO: upon overload of is_configured method can refactor quickfix below
             if self.builder_tool.has_built:
-                return bool(proxies_names)
+                return proxies_names != [] and set(proxies_names) == set(scenario_names)
             else:
                 self.set_configure_status(False)
                 return False
