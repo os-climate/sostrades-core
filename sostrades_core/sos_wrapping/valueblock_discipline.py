@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-import copy
+from copy import copy
 import pandas as pd
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
 
@@ -73,10 +73,10 @@ class ValueBlockDiscipline(GatherDiscipline):
                 data_in_dict[self.NAMESPACE] = output_namespace_name
 
                 dynamic_inputs[(output, short_alias)] = data_in_dict
-                if output.endswith(self.GATHER_SUFFIX):
+                if output.endswith(self.gather_suffix):
                     output_name = output
                 else:
-                    output_name = f'{output}{self.GATHER_SUFFIX}'
+                    output_name = f'{output}{self.gather_suffix}'
                 dynamic_outputs[output_name] = data_in_dict.copy()
                 # if datafram then we store all the dataframes in one
                 if dynamic_outputs[output_name][self.TYPE] != 'dataframe':

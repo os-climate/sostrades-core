@@ -229,6 +229,7 @@ class TestScatterDiscipline(unittest.TestCase):
 
         list_aircraft_remove_all = self.build_aircraft_disciplines_list()
 
+
         self.assertListEqual(list_aircraft_remove_all, disciplines_list,
                              'Discipline between reference and generated are different')
 
@@ -244,5 +245,5 @@ class TestScatterDiscipline(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestScatterDiscipline()
     cls.setUp()
-    cls.test_01_raw_initialisation()
+    cls.test_04_multiinstance_modification_remove_all_aircraft()
     cls.tearDown()
