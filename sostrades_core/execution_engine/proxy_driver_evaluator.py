@@ -256,10 +256,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # tree
             super().configure()
             self.configure_driver()
+            self._configure_sample_generator()
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
             self.set_children_numerical_inputs()
+
+    def _configure_sample_generator(self):
+        if self.sample_generator_disc and not self.sample_generator_disc.is_configured():
+            self.sample_generator_disc.configure()
 
     def update_data_io_with_subprocess_io(self):
         """
@@ -293,7 +298,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if self.sample_generator_disc is None:
                 self.sample_generator_disc = self.build_sample_generator_disc()
         elif self.sample_generator_disc is not None:
-            self.clean_children([self.sample_generator_disc]) #TODO: check whether sufficient for removal of shared ns NS_SAMPLING
+            self.clean_children([self.sample_generator_disc]) #TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
             self.sample_generator_disc = None
         return []
 
