@@ -545,8 +545,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
                 error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
                                    is_eval_input=True)
-                if error_msg != '':
-                    self.logger.warning(error_msg)
+                if len(error_msg) > 0:
+                    for msg in error_msg:
+                        self.logger.warning(msg)
                 default_dataframe = copy.deepcopy(default_in_dataframe)
                 already_set_names = eval_input_new_dm['full_name'].tolist()
                 already_set_values = eval_input_new_dm['selected_input'].tolist()
@@ -568,8 +569,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
             #get all possible outputs and merge with current eval_output
             eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
-            if error_msg != '':
-                self.logger
+            if len(error_msg) > 0:
+                for msg in error_msg:
+                        self.logger.warning(msg)
             self.dm.set_data(eval_outputs_f_name,
                                  'value', eval_output_df, check_value=False)
             

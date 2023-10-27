@@ -931,13 +931,16 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t|_ name_2\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t|_ Disc3\n' \
+                      '\t\t\t|_ inner_ms_gather\n' \
                       '\t\t|_ scenario_2\n' \
                       '\t\t\t|_ inner_ms\n' \
                       '\t\t\t\t|_ name_1\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t\t|_ name_2\n' \
                       '\t\t\t\t\t|_ Disc1\n' \
-                      '\t\t\t|_ Disc3'
+                      '\t\t\t|_ Disc3\n' \
+                      '\t\t\t|_ inner_ms_gather\n' \
+                      '\t|_ outer_ms_gather' 
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n' \
                          '    |_ root.outer_ms  (ProxyMultiInstanceDriver) [True]\n' \
                          '        |_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n' \
@@ -1026,6 +1029,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t\t|_ Business\n' \
                       '\t\t\t\t\t\t|_ Remy\n' \
                       '\t\t\t\t\t\t\t|_ CAPEX\n' \
+                      '\t\t\t|_ inner_ms_gather\n' \
                       '\t\t|_ sc2_business\n' \
                       '\t\t\t|_ inner_ms\n' \
                       '\t\t\t\t|_ sc1_local_prod\n' \
@@ -1046,7 +1050,9 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t\t|_ Business\n' \
                       '\t\t\t\t\t\t|_ Remy\n' \
                       '\t\t\t\t\t\t\t|_ CAPEX\n' \
-                      '\t\t\t\t\t\t\t|_ OPEX'
+                      '\t\t\t\t\t\t\t|_ OPEX\n' \
+                      '\t\t\t|_ inner_ms_gather\n' \
+                      '\t|_ outer_ms_gather'
 
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n' \
                          '    |_ root.outer_ms  (ProxyMultiInstanceDriver) [True]\n' \
@@ -1878,4 +1884,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if __name__ == '__main__':
     test = TestSoSDOEScenario()
     test.setUp()
-    test.test_9_nested_very_simple_multi_scenarios()
+    test.test_10_nested_very_simple_multi_scenarios_with_archi_builder()

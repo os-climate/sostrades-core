@@ -258,15 +258,4 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         self.ee.ns_manager.add_display_ns_to_builder(
             disc_builder, driver_display_value)
 
-    def set_eval_in_out_lists(self, in_list, out_list):
-        '''
-        Set the evaluation variable list (in and out) present in the DM
-        which fits with the eval_in_base_list filled in the usecase or by the user
-        '''
-
-        # final_in_list, final_out_list = self.remove_pseudo_variables(in_list, out_list) # only actual subprocess variables
-        if in_list is not None:
-            self.eval_in_list = [
-                f'{self.get_disc_full_name()}.{element}' for element in in_list]
-        self.eval_out_list = [
-            f'{self.get_disc_full_name()}.{element}' for element in out_list]
+    

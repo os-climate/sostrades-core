@@ -634,6 +634,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         disc_list_in_root_coupling = [disc.get_disc_full_name() for disc in
                                       self.exec_eng.root_process.proxy_disciplines]
         disc_list_in_root_coupling_th = ['MyCase.multi_scenarios',
+                                         'MyCase.multi_scenarios_gather',
                                          'MyCase.multi_scenarios.scenario_1.Disc1',
                                          'MyCase.multi_scenarios.scenario_1.Disc3',
                                          'MyCase.multi_scenarios.scenario_2.Disc1',
@@ -657,5 +658,5 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
     cls.setUp()
-    cls.test_07_scatter_node_namespace_removal_and_change_builder_mode_mono_to_multi()
+    cls.test_01_multi_scenario_driver()
     cls.tearDown()
