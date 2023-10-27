@@ -90,6 +90,7 @@ class ScatterTool(SosTool):
             self.sc_map = self.ee.scattermap_manager.get_build_map(self.map_name)
             self.ee.scattermap_manager.associate_disc_to_build_map(self)
             self.sc_map.configure_map(self.sub_builders)
+        # get new namespace values at first config rather than at prepare_tool phase to do it only once
         self.get_values_for_namespaces_to_update()
 
     def prepare_tool(self):
