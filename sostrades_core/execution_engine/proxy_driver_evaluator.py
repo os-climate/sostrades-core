@@ -102,14 +102,23 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
     SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
+    WITH_SAMPLE_GENERATOR = 'with_sample_generator'
+    WITH_SAMPLE_GENERATOR_DESC = {
+        ProxyDiscipline.TYPE: 'bool',
+        ProxyDiscipline.DEFAULT: False,
+        ProxyDiscipline.STRUCTURING: True,
+    }
+
+
+
     GATHER_DEFAULT_SUFFIX = GatherDiscipline.GATHER_SUFFIX
     EVAL_OUTPUTS = GatherDiscipline.EVAL_OUTPUTS
 
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
 
-    DESC_IN = {
-        SAMPLES_DF: SAMPLES_DF_DESC
-    }
+    DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
+               WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
+
     
     
     ##
