@@ -581,4 +581,4 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestMultiScenarioArchiBuilder()
     cls.setUp()
-    cls.test_01_very_simple_multi_scenario_of_simple_architecture()
+    cls.test_02_multi_scenario_of_architecture()

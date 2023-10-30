@@ -62,6 +62,7 @@ class TestScatterDiscipline(unittest.TestCase):
 
         disciplines_list.append(self.name)
         disciplines_list.append(f'{self.name}.{self.ms_name}')
+        disciplines_list.append(f'{self.name}.{self.ms_name}_gather')
 
         for aircraft in list_aircraft:
             # disciplines_list.append(
@@ -227,6 +228,7 @@ class TestScatterDiscipline(unittest.TestCase):
         disciplines_list.sort()
 
         list_aircraft_remove_all = self.build_aircraft_disciplines_list()
+
 
         self.assertListEqual(list_aircraft_remove_all, disciplines_list,
                              'Discipline between reference and generated are different')

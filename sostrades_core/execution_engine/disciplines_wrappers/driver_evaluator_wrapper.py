@@ -59,7 +59,6 @@ class DriverEvaluatorWrapper(SoSWrapp):
     # REGULAR_BUILD = 'regular_build'
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
     USECASE_DATA = 'usecase_data'
-    GATHER_DEFAULT_SUFFIX = '_dict'
 
     def __init__(self, sos_name, logger: logging.Logger):
         """
