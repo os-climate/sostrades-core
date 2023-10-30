@@ -179,6 +179,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.configure_tool()
             self.configure_subprocesses_with_driver_input()
             self.set_eval_possible_values(#io_type_in=False ,
+                                          io_type_out=False,
                                           strip_first_ns=True)
 
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):

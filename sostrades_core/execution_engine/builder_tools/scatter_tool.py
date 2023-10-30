@@ -393,8 +393,11 @@ class ScatterTool(SosTool):
         #             self.__gather_disciplines[sub_builder.sos_name] = gather_disc
         # else:
         gather_name = f'{self.driver.sos_name}_gather'
+        gather_path = f'{self.driver.get_disc_full_name()}_gather'
+        # strip_first_ns
+        gather_path = gather_path.split('.',1)[1]
         if gather_name not in self.__gather_disciplines:
-            gather_builder = self.ee.factory.add_gather_builder(gather_name)
+            gather_builder = self.ee.factory.add_gather_builder(gather_path)
             self.ee.ns_manager.add_display_ns_to_builder(
                 gather_builder, self.driver.get_disc_display_name())
             
