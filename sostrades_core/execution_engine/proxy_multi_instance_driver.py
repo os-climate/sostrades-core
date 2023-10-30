@@ -24,6 +24,7 @@ import pandas as pd
 import numpy as np
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.execution_engine.builder_tools.scatter_tool import ScatterTool
 
 
 class ProxyMultiInstanceDriverException(Exception):
@@ -35,12 +36,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     Class for driver on multi instance mode
     '''
 
-    DISPLAY_OPTIONS_POSSIBILITIES = ['hide_under_coupling', 'hide_coupling_in_driver',
-                                     'group_scenarios_under_disciplines', 'autogather']
+    DISPLAY_OPTIONS_POSSIBILITIES = ScatterTool.DISPLAY_OPTIONS_POSSIBILITIES
 
     #            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
-    #             'autogather' : will create an automatic gather discipline which will gather
-    #                         all cls_builder outputs at driver node
     #             'hide_under_coupling' : Hide all disciplines created under the coupling at scenario name node for display purpose
     #             'hide_coupling_in_driver': Hide the coupling (scenario_name node) under the driver for display purpose
     #             'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose
@@ -64,21 +62,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                                            # ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
                                            # ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER
                                            },
-        # TODO: manage variable columns for (non-very-simple) multiscenario cases
-        # MUST BE REPLACED OR USED FOR GENERIC GATHERING FEATURE
-        ProxyDriverEvaluator.EVAL_OUTPUTS: {
-            ProxyDriverEvaluator.TYPE: 'dataframe',
-            ProxyDriverEvaluator.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
-            ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
-                                                        'full_name': ('string', None, False),
-                                                        'output_name': ('multiple', None, True)
-                                                        },
-            ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
-            ProxyDriverEvaluator.STRUCTURING: True,
-            # TODO: run-time coupling is not possible but might want variable in NS_EVAL for config-time coupling ?
-            # ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-            # ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_EVAL
-        },
+
         ProxyDriverEvaluator.INSTANCE_REFERENCE: {
             ProxyDriverEvaluator.TYPE: 'bool',
             ProxyDriverEvaluator.DEFAULT: False,
@@ -195,6 +179,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.configure_tool()
             self.configure_subprocesses_with_driver_input()
             self.set_eval_possible_values(  # io_type_in=False ,
+                io_type_out=False,
                 strip_first_ns=True)
 
     def clean_children(self, list_children=None):
@@ -212,7 +197,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         super().clean_children(list_children)
 
         self.scenarios = [disc for disc in self.scenarios if disc not in list_children]
-
+        
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
         """
         No need to create a MDODisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver

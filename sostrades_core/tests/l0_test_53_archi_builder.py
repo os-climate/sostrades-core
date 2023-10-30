@@ -856,4 +856,4 @@ class TestArchiBuilder(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestArchiBuilder()
     cls.setUp()
-    cls.test_08_process_simple_architecture_execution()
+    cls.test_05_build_architecture_scatter()
