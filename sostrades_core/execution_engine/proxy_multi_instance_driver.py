@@ -194,8 +194,24 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         if self.SAMPLES_DF in disc_in:
             self.configure_tool()
             self.configure_subprocesses_with_driver_input()
-            self.set_eval_possible_values(#io_type_in=False ,
-                                          strip_first_ns=True)
+            self.set_eval_possible_values(  # io_type_in=False ,
+                strip_first_ns=True)
+
+    def clean_children(self, list_children=None):
+        '''
+
+        Args:
+            list_children: list of children to clean
+
+        Overload clean_children method to clean self.scenarios instead of self.proxy_disciplines
+
+        '''
+        if list_children is None:
+            list_children = self.scenarios
+
+        super().clean_children(list_children)
+
+        self.scenarios = [disc for disc in self.scenarios if disc not in list_children]
 
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
         """

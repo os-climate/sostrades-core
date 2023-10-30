@@ -236,7 +236,8 @@ class TestScatterDiscipline(unittest.TestCase):
         last_dm_values = list(self.ee.dm.data_id_map.keys())
         last_dm_values.sort()
 
-        self.assertListEqual(raw_dm_values, last_dm_values,
+        last_dm_values_th = [value for value in raw_dm_values if 'Reference Scenario' not in value]
+        self.assertListEqual(last_dm_values_th, last_dm_values,
                              'After removing discipline, data manager variables list is different than raw list')
 
 
