@@ -176,7 +176,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         disc_dict[f'{self.ee.study_name}.Eval.eval_inputs'] = eval_inputs
         disc_dict[f'{ns}.Eval.design_space'] = dspace
         # disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
-        disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{ns}.Eval_gather.eval_outputs'] = output_selection_obj_y1_y2
 
         disc_dict[f'{ns}.Eval.x'] = 10.
         disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.a'] = 5.
