@@ -166,6 +166,16 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.NAMESPACE: NS_DRIVER
     }
     
+    EVAL_INPUTS = 'eval_inputs'
+    EVAL_INPUTS_DESC = {SoSWrapp.TYPE: 'dataframe',
+                        SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
+                                                    'full_name': ('string', None, False)},
+                        SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
+                        SoSWrapp.STRUCTURING: True,
+                        SoSWrapp.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
+                        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+                        SoSWrapp.NAMESPACE: NS_SAMPLING,
+                        }
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -233,7 +243,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # 1. handle dynamic inputs of the mode
                 # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
                 dynamic_inputs, dynamic_outputs = {}, {}
-                dynamic_inputs.update({'eval_inputs':
+                dynamic_inputs.update({self.EVAL_INPUTS:
                                    {self.TYPE: 'dataframe',
                                     self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
                                                                 'full_name': ('string', None, False)},
@@ -262,7 +272,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # 2. retrieve input that configures the sampling tool
                 if 'scenario_names' in disc_in:
                     scenario_names = self.get_sosdisc_inputs('scenario_names')
-                    eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+                    eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
                     if scenario_names and eval_inputs is not None:
                         selected_inputs = self.reformat_eval_inputs(eval_inputs).tolist()
                         # 3. if sampling at config.time set the generated samples
@@ -331,6 +341,9 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
+
+    def set_eval_in_possible_values(self, possible_values):
+        pass
 
     def run(self):
         '''
@@ -532,7 +545,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         #                             'user_level': 99}
         #                            })
 
-        dynamic_inputs.update({'eval_inputs':
+        dynamic_inputs.update({self.EVAL_INPUTS:
                                    {self.TYPE: 'dataframe',
                                     self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
                                                                 'full_name': ('string', None, False)},
@@ -593,8 +606,8 @@ class SampleGeneratorWrapper(SoSWrapp):
         selected_inputs_has_changed = False
         disc_in = self.get_data_in()
         # Dynamic input of default design space
-        if 'eval_inputs' in disc_in:
-            eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+        if self.EVAL_INPUTS in disc_in:
+            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
             
             if eval_inputs is not None:
 
@@ -668,7 +681,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
     def filter_eval_inputs_types_to_float(self, eval_inputs):
         allowed_types = ['float']
-        driverevaluator_ns = self.get_var_full_name('eval_inputs', self.get_data_in()).split('.eval_inputs')[
+        driverevaluator_ns = self.get_var_full_name(self.EVAL_INPUTS, self.get_data_in()).split('.eval_inputs')[
             0]  # pylint: disable-msg=E1121
         to_filter = []
         for var in eval_inputs['full_name']:
@@ -809,7 +822,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         disc_in = self.get_data_in()
         self.eval_inputs_cp_has_changed = False
         if self.DESIGN_SPACE in disc_in:
-            eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
             design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
             # link doe-like inputs to cp attributes in the framework of GridSearch
             eval_inputs_cp = self.get_eval_inputs_cp_for_gs(eval_inputs, design_space)
