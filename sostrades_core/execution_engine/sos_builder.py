@@ -30,7 +30,8 @@ class SoSBuilder:
     SPECIFIC_PROXYS = ['ProxyCoupling', 'ProxyDisciplineGather', 'ProxyOptim', 'ArchiBuilder',
                        'ProxyDriverEvaluator', #FIXME: to remove
                        'ProxyMonoInstanceDriver', 'ProxyMultiInstanceDriver',
-                       'SelectorDiscipline', ]
+                       'SelectorDiscipline',
+                       'ProxySampleGenerator']
 
     def __init__(self, disc_name, ee, cls, is_executable=True):
         '''

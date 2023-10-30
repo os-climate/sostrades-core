@@ -90,7 +90,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    EVAL_INPUTS = 'eval_inputs'
+    EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
 
     NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
 
@@ -181,6 +181,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.sample_generator_disc = None
 
         self.eval_process_builder = None
+        self.eval_in_possible_values = []
         self.eval_in_list = None
         self.eval_out_list = None
         self.selected_inputs = []
@@ -265,7 +266,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def configure_sample_generator(self):
         if self.sample_generator_disc and not self.sample_generator_disc.is_configured():
             # TODO: remove eval_inputs from driver evaluator and activate this line
-            # self.sample_generator.set_eval_in_possible_values(self.eval_in_possible_values)
+            self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
             self.sample_generator_disc.configure()
 
     def update_data_io_with_subprocess_io(self):
@@ -583,6 +584,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             possible_in_values.sort()
             default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
                                                  'full_name': possible_in_values})
+
+            self.eval_in_possible_values = possible_in_values
 
             eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
             eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)

@@ -43,3 +43,10 @@ class ProxySampleGenerator(ProxyDiscipline):
         'icon': 'fas fa-outdent fa-fw',
         'version': '',
     }
+
+    # TODO: rewrite these functions for sample proxy migrating class variables etc.
+    def set_eval_in_possible_values(self, possible_values):
+        return self.mdo_discipline_wrapp.wrapper.set_eval_in_possible_values(possible_values)
+
+    def setup_sos_disciplines(self):
+        super().setup_sos_disciplines()

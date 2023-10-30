@@ -409,7 +409,6 @@ class SosFactory:
         sampling_builder.set_builder_info('cls_builder', sampling_wrapper_cls)
         return sampling_builder
 
-
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
         # TODO: recode when driver classes are properly merged, at the moment
         # custom driver wrapper is off (won't build)
