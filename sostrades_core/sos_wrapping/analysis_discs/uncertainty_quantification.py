@@ -175,7 +175,7 @@ class UncertaintyQuantification(SoSWrapp):
             dynamic_outputs = {}
             dynamic_inputs = {}
             if (self.EVAL_INPUTS in data_in) & (
-                    self.EVAL_INPUTS in data_in
+                    self.EVAL_OUTPUTS in data_in
             ):
                 eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
                 eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)

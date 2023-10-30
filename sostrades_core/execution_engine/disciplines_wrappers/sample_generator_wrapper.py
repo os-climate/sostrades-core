@@ -238,12 +238,13 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                                 'full_name': ('string', None, False)},
                                     self.DATAFRAME_EDITION_LOCKED: False,
                                     self.STRUCTURING: True,
+                                    self.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
                                     self.NAMESPACE: self.NS_SAMPLING}
                                })
                 dynamic_inputs.update({'scenario_names':
                                            {self.TYPE: 'list',
-                                            self.SUBTYPE: 'string',
+                                            self.SUBTYPE: {'list':'string'},
                                             self.STRUCTURING: True,
                                             self.VISIBILITY: self.SHARED_VISIBILITY,
                                             self.NAMESPACE: self.NS_SAMPLING}
@@ -260,10 +261,9 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # 2. retrieve input that configures the sampling tool
                 if 'scenario_names' in disc_in:
                     scenario_names = self.get_sosdisc_inputs('scenario_names')
-                    if scenario_names:
-                        eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+                    eval_inputs = self.get_sosdisc_inputs('eval_inputs')
+                    if scenario_names and eval_inputs is not None:
                         selected_inputs = self.reformat_eval_inputs(eval_inputs).tolist()
-
                         # 3. if sampling at config.time set the generated samples
                         self.samples_gene_df = self.sample_generator.generate_samples(selected_inputs)
                         self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df,

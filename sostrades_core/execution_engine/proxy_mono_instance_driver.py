@@ -34,8 +34,9 @@ class ProxyMonoInstanceDriverException(Exception):
 
 class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
-
+    # TODO: manage desc_in in correct classes
     DESC_IN = {
+        # TODO: eval_inputs is to be removed from the driver evaluator
         ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                            ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                'selected_input': ('bool', None, True),
@@ -114,7 +115,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             
 
     def configure_driver(self):
-        disc_in = self.get_data_in()
         if len(self.proxy_disciplines) > 0:
             # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
             # Manage usecase import
@@ -144,8 +144,10 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         '''
         if self.get_data_in() and self.eval_process_builder is None:
             self._set_eval_process_builder()
-
-        return [self.eval_process_builder] if self.eval_process_builder else []
+        sub_builders = [self.eval_process_builder] if self.eval_process_builder else []
+        # add sample generator
+        sub_builders.extend(super().prepare_build())
+        return sub_builders
 
     def update_reference(self):
         return bool(self.get_data_in())
