@@ -104,8 +104,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
         self.add_reference_mode(disc_in)
-
+        self.add_gather_outputs(disc_in)
         self.set_generated_samples_values(disc_in)
+        
 
     def set_generated_samples_values(self, disc_in):
         '''
@@ -232,6 +233,19 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         self.add_inputs(dynamic_inputs)
 
+    def add_gather_outputs(self, disc_in):
+        '''
+
+        Add gather output variables to dynamic desc_out to deal with gather option (autogather and eval_outputs)
+
+        '''
+        dynamic_outputs = {}
+        # so that eventual mono-instance outputs get clear
+        if self.builder_tool is not None:
+            dynamic_output_from_tool = self.builder_tool.get_dynamic_output_from_tool()
+            dynamic_outputs.update(dynamic_output_from_tool)
+
+        self.add_outputs(dynamic_outputs)
     
 
     def configure_tool(self):
