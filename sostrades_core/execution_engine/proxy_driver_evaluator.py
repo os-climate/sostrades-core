@@ -107,8 +107,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ProxyDiscipline.STRUCTURING: True,
     }
 
-
-
     GATHER_DEFAULT_SUFFIX = GatherDiscipline.GATHER_SUFFIX
     EVAL_OUTPUTS = GatherDiscipline.EVAL_OUTPUTS
     GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
@@ -116,8 +114,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
                WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
 
-    
-    
     ##
     ## To refactor instancce reference and subprocess import
     ##
@@ -307,7 +303,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if self.sample_generator_disc is None:
                 self.sample_generator_disc = self.build_sample_generator_disc()
         elif self.sample_generator_disc is not None:
-            self.clean_children([self.sample_generator_disc]) #TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
+            self.clean_children([
+                self.sample_generator_disc])  # TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
             self.sample_generator_disc = None
         return []
 
@@ -535,11 +532,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         input_dict_from_usecase = {}
         new_study_placeholder = ref_discipline_full_name
         for key_to_unanonymize, value in anonymize_input_dict_from_usecase.items():
-            converted_key = key_to_unanonymize.replace(
-                self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)
-            # see def __unanonymize_key  in execution_engine
-            uc_d = {converted_key: value}
-            input_dict_from_usecase.update(uc_d)
+            splitted_key = key_to_unanonymize.split('.')
+            if not (len(splitted_key) == 2 and splitted_key[-1] in self.NUMERICAL_VAR_LIST) and splitted_key[
+                -1] != 'residuals_history':
+                converted_key = key_to_unanonymize.replace(
+                    self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)
+                # see def __unanonymize_key  in execution_engine
+                uc_d = {converted_key: value}
+                input_dict_from_usecase.update(uc_d)
         return input_dict_from_usecase
 
     def set_eval_possible_values(self, io_type_in=True, io_type_out=True, strip_first_ns=False):
@@ -581,8 +581,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # check if the eval_inputs need to be updated after a subprocess
             # configure
             elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-                error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-                                   is_eval_input=True)
+                error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(),
+                                          default_in_dataframe['full_name'].tolist(),
+                                          is_eval_input=True)
                 if len(error_msg) > 0:
                     for msg in error_msg:
                         self.logger.warning(msg)
@@ -605,11 +606,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
             eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)
 
-            #get all possible outputs and merge with current eval_output
+            # get all possible outputs and merge with current eval_output
             eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
             if len(error_msg) > 0:
                 for msg in error_msg:
-                        self.logger.warning(msg)
+                    self.logger.warning(msg)
             self.dm.set_data(eval_outputs_f_name,
-                                 'value', eval_output_df, check_value=False)
-            
+                             'value', eval_output_df, check_value=False)
