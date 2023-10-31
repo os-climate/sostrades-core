@@ -117,8 +117,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         disc_in = self.get_data_in()
         self.add_reference_mode(disc_in)
         self.add_gather_outputs(disc_in)
-
         self.set_generated_samples_values(disc_in)
+        
 
     def set_generated_samples_values(self, disc_in):
         '''
@@ -218,7 +218,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         config_status = super().is_configured()
         disc_in = self.get_data_in()
         # TODO: to be improved with ref. instance refacto
-        if self.INSTANCE_REFERENCE in disc_in and self.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
+        if self.INSTANCE_REFERENCE in disc_in and self.INSTANCE_REFERENCE in self.get_data_in():
             config_status = config_status and (
                 not self.check_if_there_are_reference_variables_changes()) and (
                                     self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
@@ -253,30 +253,13 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         '''
         dynamic_outputs = {}
-        ## TO DO : Refactor so that gather discipline is dealing with gathering outputs
-        # if self.EVAL_OUTPUTS in disc_in:
-        #     _vars_to_gather = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
-        #     # we fetch the inputs and outputs selected by the user
-        #     vars_to_gather = _vars_to_gather[_vars_to_gather['selected_output'] == True]
-        #     selected_outputs = vars_to_gather['full_name'].values.tolist()
-        #     outputs_names = vars_to_gather['output_name'].values.tolist()
-        #     self._clear_gather_names()
-        #     for out_var, out_name in zip(selected_outputs, outputs_names):
-        #         _out_name = out_name or f'{out_var}{self.GATHER_DEFAULT_SUFFIX}'
-        #         # Val : Possibility to add subtype for dict with output type maybe ?
-        #         dynamic_outputs.update(
-        #             {_out_name: {self.TYPE: 'dict',
-        #                          self.VISIBILITY: 'Shared',
-        #                          self.NAMESPACE: self.NS_EVAL}})
-        #         self._set_gather_names(out_var, _out_name)
-        #         # TODO: Disc1.indicator_dict is shown as indicator_dict on GUI and it is not desired behaviour
-
         # so that eventual mono-instance outputs get clear
         if self.builder_tool is not None:
             dynamic_output_from_tool = self.builder_tool.get_dynamic_output_from_tool()
             dynamic_outputs.update(dynamic_output_from_tool)
 
         self.add_outputs(dynamic_outputs)
+    
 
     def configure_tool(self):
         '''
@@ -370,39 +353,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         trade_vars = [col for col in samples_df.columns if col not in
                       [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
         return samples_df, instance_reference, trade_vars, scenario_names
-
-    def _clear_gather_names(self):
-        """
-        Clear attributes gather_names and gather_out_keys used for multi-instance gather capabilities.
-        """
-        self.gather_names = {}
-        self.gather_out_keys = []
-
-    def _set_gather_names(self, var_name, output_out_name):
-        """
-        Build a dictionary var_full_name : (output_name, scenario_name) to facilitate gather capabilities and gathered
-        variable storage. This is done one variable at a time.
-
-        Arguments:
-            var_name: full name of variable to gather anonymized wrt scenario name node
-            output_out_name: full name of output gather variable anonymized wrt output namespace node
-        """
-
-        self.gather_out_keys.append(output_out_name)
-
-        gather_names_for_var = {}
-        disc_in = self.get_data_in()
-        if self.SAMPLES_DF in disc_in:
-            driver_evaluator_ns = self.get_disc_full_name()
-            samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-            scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO] == True][
-                self.SCENARIO_NAME].values.tolist()
-
-            for sc in scenario_names:
-                var_full_name = self.ee.ns_manager.compose_ns(
-                    [driver_evaluator_ns, sc, var_name])
-                gather_names_for_var[var_full_name] = (output_out_name, sc)
-        self.gather_names.update(gather_names_for_var)
 
     def configure_subprocesses_with_driver_input(self):
         """
