@@ -49,7 +49,7 @@ class ProcessBuilder(BaseProcessBuilder):
         )
         eval_name = 'Eval'
         doe_eval_builder = self.ee.factory.create_mono_instance_driver(
-            eval_name , builder_list_sellar, with_sample_generator=True
+            eval_name, builder_list_sellar
         )
 
         mods_dict2 = {'Simple_Disc': disc_dir + 'simple_disc.SimpleDisc'}
