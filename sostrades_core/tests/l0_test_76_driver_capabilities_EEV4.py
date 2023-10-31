@@ -1869,8 +1869,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # the evaluator and all proxies have run
         exp_proxy_tv_with_status = '|_ usecase1_cp_multi_with_ref  (ProxyCoupling) [DONE]\n' \
                                    '    |_ usecase1_cp_multi_with_ref.Eval  (ProxyMultiInstanceDriver) [DONE]\n' \
-                                   '    |_ usecase1_cp_multi_with_ref.SampleGenerator  (ProxySampleGenerator) [DONE]\n' \
                                    '    |_ usecase1_cp_multi_with_ref.Eval_gather  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.SampleGenerator  (ProxySampleGenerator) [DONE]\n' \
                                    '    |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling  (ProxyCoupling) [DONE]\n' \
                                    '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
                                    '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \

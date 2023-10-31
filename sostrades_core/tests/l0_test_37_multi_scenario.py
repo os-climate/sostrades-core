@@ -232,6 +232,7 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp_sellar()
         # setup the driver and the sample generator jointly
         dict_values = {}
+        dict_values[f'{self.study_name}.Eval.with_sample_generator'] = True
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -573,7 +574,7 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
-        gen = self.exec_eng.root_process.proxy_disciplines[1]
+        gen = self.exec_eng.root_process.proxy_disciplines[2]
         print(gen.mdo_discipline_wrapp.wrapper.samples_gene_df)
         self.assertTrue(samples_df.empty)
 
