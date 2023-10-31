@@ -118,7 +118,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         self.add_reference_mode(disc_in)
         self.add_gather_outputs(disc_in)
         self.set_generated_samples_values(disc_in)
-        
 
     def set_generated_samples_values(self, disc_in):
         '''
@@ -193,11 +192,12 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         '''
         if list_children is None:
             list_children = self.scenarios
+            list_children.extend(self.builder_tool.get_all_gather_disciplines())
 
         super().clean_children(list_children)
 
         self.scenarios = [disc for disc in self.scenarios if disc not in list_children]
-        
+
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
         """
         No need to create a MDODisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
@@ -259,7 +259,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             dynamic_outputs.update(dynamic_output_from_tool)
 
         self.add_outputs(dynamic_outputs)
-    
 
     def configure_tool(self):
         '''

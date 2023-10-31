@@ -220,8 +220,8 @@ class ScatterTool(SosTool):
             # get new_names that are not yet built and clean the one that are no more in the scatter list
             new_sub_names = self.clean_scattered_disciplines(
                 self.__scatter_list)
-            
-            if len(self.__scatter_list)>0:
+
+            if len(self.__scatter_list) > 0:
                 # Always add gather to get gather_outputs
                 self.add_gather()
 
@@ -378,7 +378,7 @@ class ScatterTool(SosTool):
             if display option group_scenarios_under_disciplines is activated then we want a gather per subbuilder
 
         '''
-        
+
         # if self.display_options['group_scenarios_under_disciplines']:
         #     for sub_builder in self.sub_builders:
 
@@ -399,17 +399,16 @@ class ScatterTool(SosTool):
         gather_name = f'{self.driver.sos_name}_gather'
         gather_path = f'{self.driver.get_disc_full_name()}_gather'
         # strip_first_ns
-        gather_path = gather_path.split('.',1)[1]
+        gather_path = gather_path.split('.', 1)[1]
         if gather_name not in self.__gather_disciplines:
             gather_builder = self.ee.factory.add_gather_builder(gather_path)
             self.ee.ns_manager.add_display_ns_to_builder(
                 gather_builder, self.driver.get_disc_display_name())
-            
+
             self.set_father_discipline()
             gather_disc = gather_builder.build()
             self.ee.factory.add_discipline(gather_disc)
             self.__gather_disciplines[gather_name] = gather_disc
-        
 
     def clean_scattered_disciplines(self, sub_names):
         '''
@@ -462,3 +461,6 @@ class ScatterTool(SosTool):
 
     def get_all_built_disciplines_names(self):
         return list(self.__scattered_disciplines.keys())
+
+    def get_all_gather_disciplines(self):
+        return list(self.__gather_disciplines.values())
