@@ -265,7 +265,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                                 self.DATAFRAME_DESCRIPTOR: {},
                                                                 self.DYNAMIC_DATAFRAME_COLUMNS: True,
                                                                 self.DATAFRAME_EDITION_LOCKED: True,
-                                                                self.STRUCTURING: True,
+                                                                self.STRUCTURING: False,  # needn't be for the sample generator
                                                                 self.UNIT: None,
                                                                 self.VISIBILITY: self.SHARED_VISIBILITY,
                                                                 self.NAMESPACE: self.NS_SAMPLING,
@@ -898,7 +898,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                               self.DATAFRAME_EDITION_LOCKED: True,
                                               self.DATAFRAME_DESCRIPTOR: {},
                                               self.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                              self.STRUCTURING: True,
+                                              self.STRUCTURING: False,  # needn't be for the sample generator
                                               self.UNIT: None,
                                               self.VISIBILITY: self.SHARED_VISIBILITY,
                                               self.NAMESPACE: self.NS_SAMPLING}
