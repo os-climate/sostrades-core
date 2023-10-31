@@ -533,7 +533,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         new_study_placeholder = ref_discipline_full_name
         for key_to_unanonymize, value in anonymize_input_dict_from_usecase.items():
             splitted_key = key_to_unanonymize.split('.')
-            if not (len(splitted_key) == 2 and splitted_key[-1] in self.NUMERICAL_VAR_LIST) and splitted_key[
+            if not (len(splitted_key) == 2 and splitted_key[-1] in ProxyCoupling.NUMERICAL_VAR_LIST) and splitted_key[
                 -1] != 'residuals_history':
                 converted_key = key_to_unanonymize.replace(
                     self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)
