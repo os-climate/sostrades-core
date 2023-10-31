@@ -109,8 +109,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ProxyDiscipline.STRUCTURING: True,
     }
 
-
-
     GATHER_DEFAULT_SUFFIX = GatherDiscipline.GATHER_SUFFIX
     EVAL_OUTPUTS = GatherDiscipline.EVAL_OUTPUTS
 
@@ -119,8 +117,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
                WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
 
-    
-    
     ##
     ## To refactor instancce reference and subprocess import
     ##
@@ -313,7 +309,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if self.sample_generator_disc is None:
                 self.sample_generator_disc = self.build_sample_generator_disc()
         elif self.sample_generator_disc is not None:
-            self.clean_children([self.sample_generator_disc]) #TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
+            self.clean_children([
+                self.sample_generator_disc])  # TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
             self.sample_generator_disc = None
         return []
 
@@ -558,7 +555,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         new_study_placeholder = ref_discipline_full_name
         for key_to_unanonymize, value in anonymize_input_dict_from_usecase.items():
             splitted_key = key_to_unanonymize.split('.')
-            if not (len(splitted_key) == 2 and splitted_key[-1] in ProxyCoupling.NUMERICAL_VAR_LIST) and splitted_key[
+            if not (len(splitted_key) == 2 and splitted_key[-1] in self.NUMERICAL_VAR_LIST) and splitted_key[
                 -1] != 'residuals_history':
                 converted_key = key_to_unanonymize.replace(
                     self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)
@@ -592,8 +589,35 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # these sorts are just for aesthetics
             possible_in_values.sort()
             self.eval_in_possible_values = possible_in_values
-            # TODO: BEFORE THERE WAS A CHECK_EVAL_IO THAT MOVED TO THE SAMPLER,
-            #  NOW THE DRIVER MUST CHECK WRT SAMPLES-DF. DOUBLE-CHECK IT IS DONE SOMEWHERE
+
+            eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
+
+            if eval_input_new_dm is None:
+                self.dm.set_data(eval_inputs_f_name,
+                                 'value', default_in_dataframe, check_value=False)
+            # check if the eval_inputs need to be updated after a subprocess
+            # configure
+            elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+                error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(),
+                                          default_in_dataframe['full_name'].tolist(),
+                                          is_eval_input=True)
+                if len(error_msg) > 0:
+                    for msg in error_msg:
+                        self.logger.warning(msg)
+                default_dataframe = copy.deepcopy(default_in_dataframe)
+                already_set_names = eval_input_new_dm['full_name'].tolist()
+                already_set_values = eval_input_new_dm['selected_input'].tolist()
+                for index, name in enumerate(already_set_names):
+                    default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
+                        already_set_values[
+                            index]  # this will filter variables that are not inputs of the subprocess
+                    if self.MULTIPLIER_PARTICULE in name:
+                        default_dataframe = default_dataframe.append(
+                            pd.DataFrame({'selected_input': [already_set_values[index]],
+                                          'full_name': [name]}), ignore_index=True)
+                self.dm.set_data(eval_inputs_f_name,
+                                 'value', default_dataframe, check_value=False)
 
         if possible_out_values and io_type_out:
             # NB: if io_type_out then we are in mono_instance so it's driver's responsibility to do this
@@ -601,11 +625,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
             eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)
 
-            #get all possible outputs and merge with current eval_output
+            # get all possible outputs and merge with current eval_output
             eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
             if len(error_msg) > 0:
                 for msg in error_msg:
-                        self.logger.warning(msg)
+                    self.logger.warning(msg)
             self.dm.set_data(eval_outputs_f_name,
-                                 'value', eval_output_df, check_value=False)
-            
+                             'value', eval_output_df, check_value=False)
