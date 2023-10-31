@@ -84,7 +84,8 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
 
             proxy_disc = builder.build()
 
-            if self.ee.ns_manager.get_local_namespace(self).is_display_value() and builder not in self.ee.ns_manager.display_ns_dict:
+            if self.ee.ns_manager.get_local_namespace(
+                    self).is_display_value() and builder not in self.ee.ns_manager.display_ns_dict:
                 father_display_value = self.get_disc_display_name()
                 display_value = f'{father_display_value}.{builder.sos_name}'
                 self.ee.ns_manager.get_local_namespace(
@@ -133,12 +134,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         """
         self.clean_children()
 
-        #         SoSDiscipline.clean(self)
-        self.father_builder.remove_discipline(self)
-        self.clean_dm_from_disc()
-        self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-            self, self.disc_id)
-        self.ee.factory.remove_sos_discipline(self)
+        super().clean()
 
     def clean_children(self, list_children=None):
         """
