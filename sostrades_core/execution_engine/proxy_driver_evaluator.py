@@ -270,10 +270,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_numerical_inputs()
 
     def configure_sample_generator(self):
-        if self.sample_generator_disc and not self.sample_generator_disc.is_configured():
+        if self.sample_generator_disc:
             # TODO: remove eval_inputs from driver evaluator and activate this line
             self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
-            self.sample_generator_disc.configure()
+            if not self.sample_generator_disc.is_configured():
+                self.sample_generator_disc.configure()
 
     def update_data_io_with_subprocess_io(self):
         """
@@ -560,47 +561,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                        strip_first_ns=strip_first_ns)
 
         disc_in = self.get_data_in()
-        # TODO: transfert to simple sample generator
         if possible_in_values and io_type_in:
 
             # Convert sets into lists
             possible_in_values = list(possible_in_values)
             # these sorts are just for aesthetics
             possible_in_values.sort()
-            default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
-                                                 'full_name': possible_in_values})
-
             self.eval_in_possible_values = possible_in_values
-
-            eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
-
-            if eval_input_new_dm is None:
-                self.dm.set_data(eval_inputs_f_name,
-                                 'value', default_in_dataframe, check_value=False)
-            # check if the eval_inputs need to be updated after a subprocess
-            # configure
-            elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-                error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-                                   is_eval_input=True)
-                if len(error_msg) > 0:
-                    for msg in error_msg:
-                        self.logger.warning(msg)
-                default_dataframe = copy.deepcopy(default_in_dataframe)
-                already_set_names = eval_input_new_dm['full_name'].tolist()
-                already_set_values = eval_input_new_dm['selected_input'].tolist()
-                for index, name in enumerate(already_set_names):
-                    default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
-                        already_set_values[
-                            index]  # this will filter variables that are not inputs of the subprocess
-                    if self.MULTIPLIER_PARTICULE in name:
-                        default_dataframe = default_dataframe.append(
-                            pd.DataFrame({'selected_input': [already_set_values[index]],
-                                          'full_name': [name]}), ignore_index=True)
-                self.dm.set_data(eval_inputs_f_name,
-                                 'value', default_dataframe, check_value=False)
+            # TODO: BEFORE THERE WAS A CHECK_EVAL_IO THAT MOVED TO THE SAMPLER,
+            #  NOW THE DRIVER MUST CHECK WRT SAMPLES-DF. DOUBLE-CHECK IT IS DONE SOMEWHERE
 
         if possible_out_values and io_type_out:
+            # NB: if io_type_out then we are in mono_instance so it's driver's responsibility to do this
             # get already set eval_output
             eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
             eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)

@@ -343,9 +343,6 @@ class SampleGeneratorWrapper(SoSWrapp):
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
-    def set_eval_in_possible_values(self, possible_values):
-        pass
-
     def run(self):
         '''
             Overloaded class method
