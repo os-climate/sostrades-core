@@ -504,6 +504,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
         self.send_children_to_father()
 
+    def clean_children(self, list_children=None):
+
+        if list_children is None:
+            list_children = [item for sublist in self.archi_disciplines.values() for item in sublist]
+
+        super().clean_children(list_children)
+
     def build_value_block(self, builder):
         """
         Method to build discipline with builder and namespace

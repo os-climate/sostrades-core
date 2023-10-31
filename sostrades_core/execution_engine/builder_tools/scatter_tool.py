@@ -70,6 +70,10 @@ class ScatterTool(SosTool):
     def has_built(self):
         return self.__scattered_disciplines.keys() == set(self.__scatter_list)
 
+    @property
+    def scatter_list(self):
+        return self.__scatter_list
+
     def set_display_options(self, display_options_dict):
         '''
         Set the display options dictionnary for the driver
@@ -149,9 +153,9 @@ class ScatterTool(SosTool):
             # loop on the sub builders to check if some namespaces are associated to them
             # we will need to update them if they are
             # store them by builder in the dict associated_ns_to_update
-            for builder in self.sub_builders:
-                self.associated_ns_to_update.update(
-                    {builder: self.ee.ns_manager.all_ns_dict[ns] for ns in builder.associated_namespaces})
+        for builder in self.sub_builders:
+            self.associated_ns_to_update.update(
+                {builder: self.ee.ns_manager.all_ns_dict[ns] for ns in builder.associated_namespaces})
 
     def get_dynamic_output_from_tool(self):
         '''
