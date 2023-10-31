@@ -181,11 +181,10 @@ class SampleGeneratorWrapper(SoSWrapp):
                                  'possible_values': available_sampling_methods,
                                  'default': DOE_ALGO},
                SAMPLING_GENERATION_MODE: {'type': 'string',
-                                          # TODO should be structuring and dynamic with AT_CONFIGURATION_TIME and read_only if BUILDER_MODE=MULTI_INSTANCE
-                                          # 'structuring': True,
+                                          'structuring': False, # TODO: when editable also structuring
                                           'possible_values': available_sampling_generation_modes,
                                           'default': AT_RUN_TIME,
-                                          'editable': False}
+                                          'editable': False} # TODO: render editable
                }
 
     # DESC_OUT = {SAMPLES_DF: SAMPLES_DF_DESC}
