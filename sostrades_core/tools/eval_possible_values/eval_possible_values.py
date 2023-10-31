@@ -2,9 +2,7 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 
 EVAL_INPUT_TYPE = ['float', 'array', 'int', 'string']
 MULTIPLIER_PARTICULE = '__MULTIPLIER__'
-NUMERICAL_VAR_LIST = list(
-    ProxyCoupling.DESC_IN.keys()) + list(
-    ProxyCoupling.NUM_DESC_IN.keys())
+NUMERICAL_VAR_LIST = ProxyCoupling.NUMERICAL_VAR_LIST
 
 
 def find_possible_input_values(disc, prefix_name_to_delete=None, strip_first_ns=False):
