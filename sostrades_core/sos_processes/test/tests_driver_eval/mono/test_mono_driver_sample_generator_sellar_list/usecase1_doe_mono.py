@@ -48,13 +48,6 @@ class Study(StudyManager):
 
         dspace = pd.DataFrame(dspace_dict)
 
-        # ======================================================================
-        # input_selection_x = {'selected_input': [False, True, False, False, False],
-        #                      'full_name': [f'Eval.{coupling_name}.Sellar_Problem.local_dv', f'Eval.{coupling_name}.x', f'Eval.{coupling_name}.y_1',
-        #                                    f'Eval.{coupling_name}.y_2',
-        #                                    f'Eval.{coupling_name}.z']}
-        # ======================================================================
-
         input_selection_x = {'selected_input': [False, True, False, False, False],
                              'full_name': [f'{coupling_name}.Sellar_Problem.local_dv', f'{coupling_name}.x',
                                            f'{coupling_name}.y_1',
@@ -62,12 +55,6 @@ class Study(StudyManager):
                                            f'{coupling_name}.z']}
 
         input_selection_x = pd.DataFrame(input_selection_x)
-
-        # ======================================================================
-        # output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-        #                               'full_name': [f'Eval.{coupling_name}.c_1', f'Eval.{coupling_name}.c_2', f'Eval.{coupling_name}.obj',
-        #                                             f'Eval.{coupling_name}.y_1', f'Eval.{coupling_name}.y_2']}
-        # ======================================================================
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
                                       'full_name': [f'{coupling_name}.c_1', f'{coupling_name}.c_2',
@@ -84,6 +71,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
+        disc_dict[f'{ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
 

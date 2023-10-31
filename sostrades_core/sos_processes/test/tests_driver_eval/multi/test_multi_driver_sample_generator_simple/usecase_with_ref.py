@@ -28,6 +28,7 @@ class Study(StudyManager):
         # setup the driver and the sample generator jointly
         dict_values = {}
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = True
         dict_values[f'{self.study_name}.multi_scenarios.reference_mode'] = 'linked_mode'
 

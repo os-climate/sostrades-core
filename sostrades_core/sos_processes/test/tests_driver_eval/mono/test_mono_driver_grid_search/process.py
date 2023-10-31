@@ -35,22 +35,11 @@ class ProcessBuilder(BaseProcessBuilder):
         disc1_builder = self.ee.factory.get_builder_from_module(
             'Disc1', mod1_path)
 
-        self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns('ns_test', f'{self.ee.study_name}.Eval.Disc1')
-
-        # sample generator builder
-        mod_sg = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        sg_builder = self.ee.factory.get_builder_from_module(
-            'SampleGenerator', mod_sg)
-
-        # # multipliers builder
-        # mod_mp = 'sostrades_core.execution_engine.disciplines_wrappers.multipliers_wrapper.MultipliersWrapper'
-        # mp_builder = self.ee.factory.get_builder_from_module(
-        #     'Multipliers', mod_mp)
 
         # evaluator builder
         eval_builder = self.ee.factory.create_mono_instance_driver(
             'Eval', [disc1_builder])
 
-        return eval_builder + [sg_builder]
+        return eval_builder

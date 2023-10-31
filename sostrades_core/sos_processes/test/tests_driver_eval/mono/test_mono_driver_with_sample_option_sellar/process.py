@@ -49,7 +49,7 @@ class ProcessBuilder(BaseProcessBuilder):
         )
 
         doe_eval_builder = self.ee.factory.create_mono_instance_driver(
-            'Eval', builder_list_sellar, with_sample_generator=True
+            'Eval', builder_list_sellar
         )
 
         return doe_eval_builder

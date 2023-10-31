@@ -53,6 +53,7 @@ class Study(StudyManager):
         disc_dict = {}
         # GridSearch inputs
 
+        disc_dict[f'{ns}.GridSearch.with_sample_generator'] = True
         disc_dict[f'{ns}.GridSearch.design_space'] = dspace
         disc_dict[f'{ns}.GridSearch.eval_inputs'] = input_selection_x
         disc_dict[f'{ns}.GridSearch.eval_outputs'] = output_selection_obj_y1_y2
