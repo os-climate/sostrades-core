@@ -179,6 +179,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
+        disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -199,12 +200,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
                        f'\t|_ Simple_Disc',
-                       f'\t|_ SampleGenerator',
                        f'\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1']
+                       '\t\t\t|_ Sellar_1',
+                       f'\t|_ SampleGenerator',
+                       ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
@@ -438,6 +440,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
+        disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -457,17 +460,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
                        f'\t|_ Simple_Disc',
-                       f'\t|_ SampleGenerator',
                        f'\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1']
+                       '\t\t\t|_ Sellar_1',
+                       f'\t|_ SampleGenerator',
+                       ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         proxy_disc2 = exec_eng.root_process.proxy_disciplines[
-            2].proxy_disciplines[0].proxy_disciplines[1]
+            1].proxy_disciplines[0].proxy_disciplines[1]
         ns_id_cache_disc2_own_data_structure = proxy_disc2._io_ns_map_in['cache_type']
         ns_id_cache_disc2_ns_manager = id(
             exec_eng.ns_manager.get_local_namespace(proxy_disc2))
@@ -485,7 +489,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(var_dict_dm_in, var_dict_data_in_root)
 
         proxy_disc_sellar_problem = exec_eng.root_process.proxy_disciplines[
-            2].proxy_disciplines[0].proxy_disciplines[0]
+            1].proxy_disciplines[0].proxy_disciplines[0]
         ns_id_cache_disc_sellar_problem_own_data_structure = proxy_disc_sellar_problem._io_ns_map_out[
             'c_1']
         # ns_id_cache_disc_sellar_problem_ns_manager = id(
