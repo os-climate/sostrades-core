@@ -41,25 +41,8 @@ class ProcessBuilder(BaseProcessBuilder):
         eval_driver = self.ee.factory.create_mono_instance_driver(
             'Eval', coupling_builder
         )
-        #======================================================================
-        # # shift nested subprocess namespaces
-        # coupling_name = 'D1_D3_Coupling'
-        # self.ee.ns_manager.add_ns(
-        #     'ns_disc3', f'{self.ee.study_name}.Eval.{coupling_name}')
-        # self.ee.ns_manager.add_ns(
-        #     'ns_out_disc3', f'{self.ee.study_name}.Eval.{coupling_name}')
-        # self.ee.ns_manager.add_ns(
-        #     'ns_ac', f'{self.ee.study_name}.Eval.{coupling_name}')
-        # self.ee.ns_manager.add_ns(
-        #     'ns_data_ac', f'{self.ee.study_name}.Eval.{coupling_name}')
-        #======================================================================
 
         # driver namespaces
-        self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, f'{self.ee.study_name}.Eval')
         self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.Eval')
-        # sample generator builder
-        mod_generator = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        generator_builder = self.ee.factory.get_builder_from_module(
-            'Sample_Generator', mod_generator)
 
-        return eval_driver + [generator_builder]
+        return eval_driver

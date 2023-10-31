@@ -158,7 +158,8 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z
@@ -531,7 +532,8 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # same input selection as first test, all scenarios activated
@@ -695,7 +697,8 @@ class TestMultiScenario(unittest.TestCase):
         self.setUp_cp()
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z

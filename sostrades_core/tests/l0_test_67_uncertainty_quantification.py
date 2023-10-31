@@ -171,6 +171,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
                                                      f'subprocess.Disc2.power'],
                                        'list_of_values': [a_list, [], x_list, []]
                                        })
+        disc_dict[f'{self.ee.study_name}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ee.study_name}.Eval.eval_inputs_cp'] = eval_inputs_cp
         disc_dict[f'{self.ee.study_name}.Eval.eval_inputs'] = eval_inputs
         disc_dict[f'{ns}.Eval.design_space'] = dspace

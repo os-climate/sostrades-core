@@ -55,6 +55,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = 'OT_FACTORIAL'
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples, 'levels': levels, 'centers': centers}
+        disc_dict[f'{ns}.with_sample_generator'] = True
         disc_dict[f'{ns}.eval_inputs'] = input_selection_a
         disc_dict[f'{ns}.eval_outputs'] = output_selection_ind
 

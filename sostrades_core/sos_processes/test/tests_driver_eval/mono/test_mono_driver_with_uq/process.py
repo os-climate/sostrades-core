@@ -44,7 +44,7 @@ class ProcessBuilder(BaseProcessBuilder):
         self.ee.ns_manager.add_ns('ns_driver', f'{self.ee.study_name}.Eval')
 
         eval_driver = self.ee.factory.create_mono_instance_driver(
-            'Eval', cls_list, with_sample_generator=True)
+            'Eval', cls_list)
 
         uq_builder = self.ee.factory.add_uq_builder(uq_name)
 

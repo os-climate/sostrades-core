@@ -55,6 +55,7 @@ class Study(StudyManager):
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
 
             # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
             f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
             f'{self.study_name}.{self.sample_generator}.design_space': dspace,

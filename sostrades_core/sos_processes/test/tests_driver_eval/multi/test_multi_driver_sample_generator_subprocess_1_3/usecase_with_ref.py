@@ -31,6 +31,7 @@ class Study(StudyManager):
         """
         dict_values = {}
         dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        dict_values[f'{self.study_name}.Eval.with_sample_generator'] = True
         dict_values[f'{self.study_name}.Eval.instance_reference'] = True
         dict_values[f'{self.study_name}.Eval.reference_mode'] = 'linked_mode'
 

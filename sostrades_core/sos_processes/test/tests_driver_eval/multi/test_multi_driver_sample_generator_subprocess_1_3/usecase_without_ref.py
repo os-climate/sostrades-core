@@ -46,6 +46,7 @@ class Study(StudyManager):
                                                'full_name': ['', 'Disc1.b', '', '', 'z'],
                                                'list_of_values': list_of_values_b_z
                                                })
+        dict_values[f'{self.study_name}.Eval.with_sample_generator'] = True
         dict_values[f'{self.study_name}.Eval.eval_inputs_cp'] = input_selection_cp_b_z
 
         self.x1 = 2.
