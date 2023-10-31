@@ -48,7 +48,7 @@ class ProcessBuilder(BaseProcessBuilder):
                 SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}',
             },
         )
-        eval_builder = self.ee.factory.create_driver(
+        eval_builder = self.ee.factory.create_mono_instance_driver(
             'Eval', builder_list_sellar
         )
 
