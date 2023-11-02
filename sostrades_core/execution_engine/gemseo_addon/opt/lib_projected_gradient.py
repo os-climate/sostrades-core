@@ -23,8 +23,9 @@ from builtins import super, zip
 import logging
 
 from future import standard_library
-from numpy import isfinite, real
+from numpy import isfinite, real, float64
 
+from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
 standard_library.install_aliases()
@@ -65,8 +66,8 @@ class ProjectedGradientOpt(OptimizationLibrary):
             {self.INTERNAL_NAME: "ProjectedGradient",
              self.REQUIRE_GRAD: True,
              self.POSITIVE_CONSTRAINTS: False,
-             self.HANDLE_EQ_CONS: True,
-             self.HANDLE_INEQ_CONS: True,
+             self.HANDLE_EQ_CONS: False,
+             self.HANDLE_INEQ_CONS: False,
              self.DESCRIPTION: 'Projected conjugated Gradient algorithm implementation',
              self.WEBSITE: doc + 'generated/scipy.optimize.fmin_tnc.html',
              },
@@ -121,6 +122,32 @@ class ProjectedGradientOpt(OptimizationLibrary):
         u_b = [val if isfinite(val) else None for val in u_b]
         bounds = list(zip(l_b, u_b))
 
+        def real_part_fun(
+                x,  # type: ndarray
+        ):  # type: (...) -> Union[int, float]
+            """Wrap the function and return the real part.
+
+            Args:
+                x: The values to be given to the function.
+
+            Returns:
+                The real part of the evaluation of the objective function.
+            """
+            return real(self.problem.objective.func(x))
+
+        def real_part_fun_grad(
+                x,  # type: ndarray
+        ):  # type: (...) -> Union[int, float]
+            """Wrap the function and return the real part.
+
+            Args:
+                x: The values to be given to the function.
+
+            Returns:
+                The real part of the evaluation of the objective function.
+            """
+            return self.problem.objective.jac(x).real.astype(float64)
+
         options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION)
         maxfun = options[self.MAX_ITER]
         options.pop(self.MAX_ITER)
@@ -131,40 +158,27 @@ class ProjectedGradientOpt(OptimizationLibrary):
         self._ftol_rel = 1e-10
         options.pop("ftol_rel")
 
-        x_star, nfev, status = fmin_tnc(func=self.problem.objective.func,
+        x_star, nfev, status = fmin_tnc(func=real_part_fun,
                                         x0=x_0,
-                                        fprime=self.problem.objective.jac,
+                                        fprime=real_part_fun_grad,
                                         maxfun=maxfun,
                                         bounds=bounds,
                                         **options)
 
         x_opt = self.problem.design_space.project_into_bounds(x_star)
-        val_opt, jac_opt = self.problem.evaluate_functions(
-            x_vect=x_opt,
-            eval_jac=True,
-            eval_obj=True,
-            normalize=False,
-            no_db_no_norm=True,
-        )
-        f_opt = val_opt[self.problem.objective.outvars[0]]
-        constraints_values = {
-            key: val_opt[key] for key in self.problem.get_constraints_names()
-        }
-        constraints_grad = {
-            key: jac_opt[key] for key in self.problem.get_constraints_names()
-        }
-        is_feasible = self.problem.is_point_feasible(val_opt)
-        from gemseo.algos.opt_result import OptimizationResult
+        f_opt = real_part_fun(x_opt)
+        is_feasible = self.problem.is_point_feasible(x_opt)
+
         optim_result = OptimizationResult(
             x_0=x_0,
             x_opt=x_opt,
             f_opt=f_opt,
             status=status,
-            constraints_values=constraints_values,
-            constraints_grad=constraints_grad,
+            constraints_values=None,
+            constraints_grad=None,
             optimizer_name=self.algo_name,
             message="",
-            n_obj_call=None,
+            n_obj_call=nfev,
             n_grad_call=None,
             n_constr_call=None,
             is_feasible=is_feasible,
