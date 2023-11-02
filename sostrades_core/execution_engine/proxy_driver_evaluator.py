@@ -51,13 +51,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             |_ INSTANCE_REFERENCE (structuring, dynamic : builder_mode == self.MULTI_INSTANCE)
                 |_ REFERENCE_MODE (structuring, dynamic :instance_referance == TRUE) 
                 |_ REFERENCE_SCENARIO_NAME (structuring, dynamic :instance_referance == TRUE) #TODO
-            |_ EVAL_OUTPUTS (namespace: NS_DRIVER, structuring, dynamic : builder_mode == self.MONO_INSTANCE)
-            |_ SAMPLES_DF (namespace: NS_DRIVER, dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
+            |_ EVAL_OUTPUTS ( structuring, dynamic : builder_mode == self.MONO_INSTANCE)
+            |_ SAMPLES_DF (dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
             |_ 'n_processes' (dynamic : builder_mode == self.MONO_INSTANCE)         
             |_ 'wait_time_between_fork' (dynamic : builder_mode == self.MONO_INSTANCE)
 
         |_ DESC_OUT
-            |_ samples_inputs_df (namespace: NS_DRIVER, dynamic: builder_mode == self.MONO_INSTANCE)
+            |_ samples_inputs_df (dynamic: builder_mode == self.MONO_INSTANCE)
             |_ <var>_dict (internal namespace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0
             and gather_outputs not empty, for <var> in gather_outputs)
 
@@ -95,8 +95,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     }
 
     EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
-
-    NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
 
     SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
     SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC.copy()
@@ -216,22 +214,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.gather_names = None
 
-    def _add_optional_shared_ns(self):
-        """
-        Add the shared namespace NS_DRIVER should it not exist.
-        """
-        # do the same for the shared namespace for coupling with the DriverEvaluator
-        # also used to store gathered variables in multi-instance
-        if self.NS_DRIVER not in self.ee.ns_manager.shared_ns_dict.keys():
-            self.ee.ns_manager.add_ns(
-                self.NS_DRIVER, self.ee.ns_manager.compose_local_namespace_value(self))
 
-    def _get_disc_shared_ns_value(self):
-        """
-        Get the namespace NS_DRIVER used in the mono-instance case.
-        """
-        return self.ee.ns_manager.disc_ns_dict[self]['others_ns'][self.NS_DRIVER].get_value()
-
+    
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
         creation of mdo_discipline_wrapp by the proxy which in this case is a MDODisciplineDriverWrapp that will create
@@ -337,8 +321,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         # create the builder of a ProxySampleGenerator
         sampling_builder = self.ee.factory.create_sample_generator('SampleGenerator')
-        # associate ns_sampling and ns_driver
-        ns_sampling = self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, self._get_disc_shared_ns_value())
+        # associate ns_sampling and 
+        ns_sampling = self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, self.ee.ns_manager.get_local_namespace_value(self) )
         sampling_builder.associate_namespaces(ns_sampling)
         # create discipline in factory as sister not daughter
         self.ee.factory.current_discipline = self.father_executor
@@ -347,6 +331,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # return discipline for association in driver
         return sampling_disc
 
+    
     def prepare_execution(self):
         """
         Preparation of the GEMSEO process, including GEMSEO objects instantiation

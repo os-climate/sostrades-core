@@ -6,7 +6,7 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
-
+s
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,15 +29,20 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
     # TODO: manage desc_in in correct classes
     DESC_IN = {
+        # TODO: eval_inputs is to be removed from the driver evaluator
+        ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
+                                           ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
+                                               'selected_input': ('bool', None, True),
+                                               'full_name': ('string', None, False)},
+                                           ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
+                                           ProxyDriverEvaluator.STRUCTURING: True},
         ProxyDriverEvaluator.EVAL_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                             ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                 'selected_output': ('bool', None, True),
                                                 'full_name': ('string', None, False),
                                                 'output_name': ('multiple', None, True)},
                                             ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
-                                            ProxyDriverEvaluator.STRUCTURING: True,
-                                            ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-                                            ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
+                                            ProxyDriverEvaluator.STRUCTURING: True},
         'n_processes': {ProxyDriverEvaluator.TYPE: 'int', ProxyDriverEvaluator.NUMERICAL: True,
                         ProxyDriverEvaluator.DEFAULT: 1},
         'wait_time_between_fork': {ProxyDriverEvaluator.TYPE: 'float', ProxyDriverEvaluator.NUMERICAL: True,
@@ -46,9 +51,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
     DESC_IN.update(ProxyDriverEvaluator.DESC_IN)
 
-    DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None,
-                                      ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-                                      ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER}}
+    DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None}}
 
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
@@ -64,13 +67,9 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                     self.eval_out_names = selected_outputs_dict.values()
                     # setting dynamic outputs. One output of type dict per selected output
                     dynamic_outputs.update(
-                        {out_name: {self.TYPE: 'dict',
-                                    self.VISIBILITY: 'Shared',
-                                    self.NAMESPACE: self.NS_DRIVER} 
+                        {out_name: {self.TYPE: 'dict'} 
                         for out_name in selected_outputs_dict.values()})
-                    dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
-                                                                   self.VISIBILITY: 'Shared',
-                                                                   self.NAMESPACE: self.NS_DRIVER}})
+                    dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe'}})
 
                     self.add_outputs(dynamic_outputs)
 

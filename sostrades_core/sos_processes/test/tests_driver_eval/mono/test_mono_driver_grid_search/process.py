@@ -36,7 +36,7 @@ class ProcessBuilder(BaseProcessBuilder):
         disc1_builder = self.ee.factory.get_builder_from_module(
             'Disc1', mod1_path)
 
-        self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.Eval')
+        
         self.ee.ns_manager.add_ns('ns_test', f'{self.ee.study_name}.Eval.Disc1')
 
         # evaluator builder

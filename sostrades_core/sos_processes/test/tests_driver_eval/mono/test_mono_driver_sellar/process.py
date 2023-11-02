@@ -45,7 +45,6 @@ class ProcessBuilder(BaseProcessBuilder):
             mods_dict,
             ns_dict={
                 'ns_OptimSellar': self.ee.study_name,
-                'ns_driver': f'{self.ee.study_name}.Eval',
             },
         )
         eval_builder = self.ee.factory.create_mono_instance_driver(

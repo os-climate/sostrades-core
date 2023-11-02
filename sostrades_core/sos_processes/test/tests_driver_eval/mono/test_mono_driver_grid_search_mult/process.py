@@ -37,7 +37,7 @@ class ProcessBuilder(BaseProcessBuilder):
             'Disc1', mod1_path)
 
         self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, f'{self.ee.study_name}.Eval') # TODO: this is for multipliers so eventually remove
-        self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.Eval')
+        
         self.ee.ns_manager.add_ns('ns_test', f'{self.ee.study_name}.Eval.Disc1')
 
         # multipliers builder
