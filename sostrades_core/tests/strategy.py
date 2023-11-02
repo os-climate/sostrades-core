@@ -20,9 +20,6 @@ from typing import Union
 # Create a temporary file
 
 
-GENERATED_TEST_FILE_USECASES = "generated_test_file.py"
-
-
 def run_tests_l0_l1_l2(main_folder, file_pattern):
     """run the tests in main folder corresponding to file_pattern"""
     initial_path = os.path.abspath(os.path.curdir)
@@ -55,7 +52,7 @@ def run_generated_usecase_test(temp_file_path):
         exitcode = pytest.main(['-W', 'ignore','--verbose', '--durations=5', '--durations-min=2.0'] + [temp_file_path])
     except Exception as e:
         # Handle any errors or exceptions here
-        print(f"Error while running pytest on {GENERATED_TEST_FILE_USECASES}: {e}")
+        print(f"Error while running pytest on {temp_file_path}: {e}")
         exitcode = -1
 
     return exitcode
