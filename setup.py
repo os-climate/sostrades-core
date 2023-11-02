@@ -27,31 +27,14 @@ with open('README.md') as f:
 with open('LICENSE') as f:
     license = f.read()
 
-reqs_list = [
-    'nose2==0.9.1',
-    'pycryptodome==3.9.8',
-    'plotly==5.3.0',
-    'pandas==1.3.0',
-    'numpy==1.24.3',
-    'cma==3.1.0',
-    'PyYAML==5.1.2',
-    'dremio_client==0.15.1',
-    'pyarrow==6.0.1',
-    'pydoe2==1.3.0',
-    'nlopt==2.6.2',
-    'scipy==1.10.1',
-    'gemseo==3.2.1',
-    'openturns==1.18',
-    'chaospy==4.3.7',
-    'sympy==1.4',
-    'trino',
-    'cvxpy==1.1.18',
-    'black==22.3.0',
-]
+# Read the requirements.in file and extract the required dependencies
+with open('requirements.in', 'r') as requirements_file:
+    reqs_list = [line.strip() for line in requirements_file if line.strip()]
 
+# platform-specific dependencies added conditionally
 if platform.system() != 'Windows':
-    reqs_list += 'petsc==3.12.3'
-    reqs_list += 'petsc4py==3.12.0'
+    reqs_list.append('petsc==3.12.3')
+    reqs_list.append('petsc4py==3.12.0')
 
 setup(
     name='sos-trades-core',
@@ -63,6 +46,6 @@ setup(
     license=license,
     packages=find_packages(exclude=('tests')),
     include_package_data=True,
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     install_requires=reqs_list,
 )
