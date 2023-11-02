@@ -39,7 +39,7 @@ setup(
     version='0.1.0',
     description='Core of System of System Trades',
     long_description=readme,
-    author='Airbus SAS',
+    author='Airbus SAS, Capgemini',
     url='https://github.com/os-climate/sostrades-core.git',
     license=license,
     packages=find_packages(exclude=('tests')),
