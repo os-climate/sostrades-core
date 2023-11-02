@@ -85,34 +85,114 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                                     self.NAMESPACE: self.NS_DRIVER} 
                         for out_name in selected_outputs_dict.values()})
                     dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
-                                                                       self.VISIBILITY: 'Shared',
-                                                                       self.NAMESPACE: self.NS_DRIVER}})
+                                                                   self.VISIBILITY: 'Shared',
+                                                                   self.NAMESPACE: self.NS_DRIVER}})
 
                     self.add_outputs(dynamic_outputs)
 
-            selected_inputs_has_changed = False
-            if self.EVAL_INPUTS in disc_in :
-                # All eval_inputs dynamic setup should be moved to a specific sample generator
-                eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                # eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                if eval_inputs is not None:
-                    # we fetch the inputs selected by the user
-                    selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                                   == True]['full_name']
-                    if set(selected_inputs.tolist()) != set(self.selected_inputs):
-                        selected_inputs_has_changed = True
-                        self.selected_inputs = selected_inputs.tolist()
+            if self.SAMPLES_DF in disc_in:
+                samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+                if samples_df is not None:
+                    selected_inputs = set(samples_df.columns)
+                    selected_inputs -= SampleGeneratorWrapper.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR].keys()
+                    if selected_inputs != set(self.selected_inputs):
+                        self.selected_inputs = list(selected_inputs)
+                        self.eval_in_list = [
+                            f'{self.get_disc_full_name()}.{element}' for element in self.selected_inputs]
+                        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
+                        for key, var_f_name in zip(self.selected_inputs, self.eval_in_list):
+                            if var_f_name in self.ee.dm.data_id_map:
+                                var = tuple([self.ee.dm.get_data(
+                                    var_f_name, self.TYPE), None, True])
+                                dataframe_descriptor[key] = var
+                            elif self.MULTIPLIER_PARTICULE in var_f_name:
+                                # for multipliers assume it is a float
+                                dataframe_descriptor[key] = ('float', None, True)
+                            else:
+                                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
 
-                    if len(selected_inputs) > 0:
-                        # TODO: OK that it blocks config. with empty input ? also, might want an eval without outputs ?
-                        # we set the lists which will be used by the evaluation function of sosEval
-                        self.eval_in_list = [f'{self.get_disc_full_name()}.{element}' for element in selected_inputs]
 
-                        dynamic_inputs.update(self._get_dynamic_inputs_doe(
-                             disc_in, selected_inputs_has_changed))
+            # # TODO: this part is just detecting a change in eval_inputs so should be moved to sample generator
+            # selected_inputs_has_changed = False
+            # if self.EVAL_INPUTS in disc_in :
+            #     # All eval_inputs dynamic setup should be moved to a specific sample generator
+            #     eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+            #     # eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+            #     if eval_inputs is not None:
+            #         # we fetch the inputs selected by the user
+            #         selected_inputs = eval_inputs[eval_inputs['selected_input']
+            #                                        == True]['full_name']
+            #         if set(selected_inputs.tolist()) != set(self.selected_inputs):
+            #             selected_inputs_has_changed = True
+            #             self.selected_inputs = selected_inputs.tolist()
+            #
+            #         # TODO: this part is setting the eval_in_list which is necessary @ driver level but must be done wrt samples_df
+            #         if len(selected_inputs) > 0:
+            #             # NB: it's OK that it blocks config. with empty input? also, might want an eval without outputs?
+            #             # we set the lists which will be used by the evaluation function
+            #             self.eval_in_list = [f'{self.get_disc_full_name()}.{element}' for element in selected_inputs]
+            #
+            #             # TODO: what is inside this method can go to the sample generator
+            #             dynamic_inputs.update(self._get_dynamic_inputs_doe(
+            #                  disc_in, selected_inputs_has_changed))
+            #
+            # self.add_inputs(dynamic_inputs)
 
-            self.add_inputs(dynamic_inputs)
-            
+    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
+        # TODO: first part of this method is actually filling the dataframe descriptor of samples_df using eval_inputs so
+        #  I believe it belongs in the sample generator --> actually makes no sense in the sample generator, needs to be
+        #  done by the driver based on samples_df columns (accept and put in df_descriptor with type or raise error)
+        all_columns = [SampleGeneratorWrapper.SELECTED_SCENARIO,
+                       SampleGeneratorWrapper.SCENARIO_NAME] + self.selected_inputs
+        default_custom_dataframe = pd.DataFrame(
+            [[NaN for _ in range(len(all_columns))]], columns=all_columns)
+        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
+        # for i, key in enumerate(self.selected_inputs):
+        #     var_f_name = self.eval_in_list[i]
+        #     if var_f_name in self.ee.dm.data_id_map:
+        #         var = tuple([self.ee.dm.get_data(
+        #             var_f_name, self.TYPE), None, True])
+        #         dataframe_descriptor[key] = var
+        #     elif self.MULTIPLIER_PARTICULE in var_f_name:
+        #         # for multipliers assume it is a float
+        #         dataframe_descriptor[key] = ('float', None, True)
+        #     else:
+        #         raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
+
+        # dynamic_inputs = {self.SAMPLES_DF: {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
+        #                                  self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
+        #                                  self.DATAFRAME_EDITION_LOCKED: False,
+        #                                  self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+        #                                  self.NAMESPACE: self.NS_DRIVER
+        #                                  }}
+
+        # TODO: second part of this method is modifying samples_df when there is a change in selected inputs as
+        #  to preserve the previously input values --> sample_generator
+
+        # This reflects 'samples_df' dynamic input has been configured and that
+        # eval_inputs have changed
+        if self.SAMPLES_DF in disc_in and selected_inputs_has_changed:
+
+            if disc_in[self.SAMPLES_DF]['value'] is not None:
+                from_samples = list(disc_in[self.SAMPLES_DF]['value'].keys())
+                from_eval_inputs = list(default_custom_dataframe.keys())
+                final_dataframe = pd.DataFrame(
+                    None, columns=all_columns)
+
+                len_df = 1
+                for element in from_eval_inputs:
+                    if element in from_samples:
+                        len_df = len(disc_in[self.SAMPLES_DF]['value'])
+
+                for element in from_eval_inputs:
+                    if element in from_samples:
+                        final_dataframe[element] = disc_in[self.SAMPLES_DF]['value'][element]
+
+                    else:
+                        final_dataframe[element] = [NaN for _ in range(len_df)]
+                disc_in[self.SAMPLES_DF][self.VALUE] = final_dataframe
+            disc_in[self.SAMPLES_DF][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
+        return {}
 
     def configure_driver(self):
         if len(self.proxy_disciplines) > 0:
@@ -154,57 +234,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
     def is_configured(self):
         return super().is_configured() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
-
-    ## TODO This method must be moved into a specific sample generator
-    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
-        all_columns = [SampleGeneratorWrapper.SELECTED_SCENARIO,
-                       SampleGeneratorWrapper.SCENARIO_NAME] + self.selected_inputs
-        default_custom_dataframe = pd.DataFrame(
-            [[NaN for _ in range(len(all_columns))]], columns=all_columns)
-        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
-        for i, key in enumerate(self.selected_inputs):
-            var_f_name = self.eval_in_list[i]
-            if var_f_name in self.ee.dm.data_id_map:
-                var = tuple([self.ee.dm.get_data(
-                    var_f_name, self.TYPE), None, True])
-                dataframe_descriptor[key] = var
-            elif self.MULTIPLIER_PARTICULE in var_f_name:
-                # for multipliers assume it is a float
-                dataframe_descriptor[key] = ('float', None, True)
-            else:
-                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
-
-        # dynamic_inputs = {self.SAMPLES_DF: {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
-        #                                  self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
-        #                                  self.DATAFRAME_EDITION_LOCKED: False,
-        #                                  self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        #                                  self.NAMESPACE: self.NS_DRIVER
-        #                                  }}
-
-        # This reflects 'samples_df' dynamic input has been configured and that
-        # eval_inputs have changed
-        if self.SAMPLES_DF in disc_in and selected_inputs_has_changed:
-
-            if disc_in[self.SAMPLES_DF]['value'] is not None:
-                from_samples = list(disc_in[self.SAMPLES_DF]['value'].keys())
-                from_eval_inputs = list(default_custom_dataframe.keys())
-                final_dataframe = pd.DataFrame(
-                    None, columns=all_columns)
-
-                len_df = 1
-                for element in from_eval_inputs:
-                    if element in from_samples:
-                        len_df = len(disc_in[self.SAMPLES_DF]['value'])
-
-                for element in from_eval_inputs:
-                    if element in from_samples:
-                        final_dataframe[element] = disc_in[self.SAMPLES_DF]['value'][element]
-
-                    else:
-                        final_dataframe[element] = [NaN for _ in range(len_df)]
-                disc_in[self.SAMPLES_DF][self.VALUE] = final_dataframe
-            disc_in[self.SAMPLES_DF][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
-        return {}
 
     def _set_eval_process_builder(self):
         '''
