@@ -32,11 +32,7 @@ class ProcessBuilder(BaseProcessBuilder):
     def get_builders(self):
         # simple 2-disc process NOT USING nested scatters coupled with a SampleGenerator
 
-        # putting the ns_sampling in the same value as the driver will trigger
-        # the coupling like in mono instance case
-        self.ee.ns_manager.add_ns(
-            SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.multi_scenarios')
-
+       
         # multi scenario driver builder
         repo_name = "sostrades_core.sos_processes.test.tests_driver_eval.multi"
         proc_name = "test_multi_driver_simple"

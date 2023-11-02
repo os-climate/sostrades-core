@@ -149,7 +149,6 @@ class SampleGeneratorWrapper(SoSWrapp):
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
 
-    NS_DRIVER = 'ns_driver'
     NS_SAMPLING = 'ns_sampling'
     REFERENCE_SCENARIO_NAME = 'Reference Scenario'
     SAMPLES_DF_DESC = {
@@ -163,9 +162,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
         SoSWrapp.EDITABLE: True,
-        SoSWrapp.STRUCTURING: True,
-        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        SoSWrapp.NAMESPACE: NS_DRIVER
+        SoSWrapp.STRUCTURING: True
     }
 
     EVAL_INPUTS = 'eval_inputs'

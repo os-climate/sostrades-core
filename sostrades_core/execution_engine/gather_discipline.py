@@ -183,7 +183,7 @@ class GatherDiscipline(SoSWrapp):
                         # if datafram then we store all the dataframes in one
                         if dynamic_outputs[output_name][self.TYPE] != 'dataframe':
                             dynamic_outputs[output_name][self.TYPE] = 'dict'
-                        #set dynamic output in NS_DRIVER namespace
+                        
                         dynamic_outputs[output_name][self.VISIBILITY] = self.LOCAL_VISIBILITY
                         del dynamic_outputs[output_name][self.NAMESPACE]
                         del dynamic_outputs[output_name][self.NS_REFERENCE]

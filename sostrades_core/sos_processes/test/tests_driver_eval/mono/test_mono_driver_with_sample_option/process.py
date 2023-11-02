@@ -32,8 +32,7 @@ class ProcessBuilder(BaseProcessBuilder):
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
         mods_dict = {'Disc2': disc_dir + 'disc2.Disc2',
                      'Disc1': disc_dir + 'disc1_doe_eval.Disc1'}
-        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name,
-                                                                    'ns_driver': f'{self.ee.study_name}'})
+        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name})
 
         doe_eval_builder = self.ee.factory.create_mono_instance_driver('Eval', builder_list)
 

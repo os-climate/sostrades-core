@@ -20,6 +20,7 @@ from time import time
 from pandas._testing import assert_frame_equal
 
 from gemseo.algos.doe.doe_factory import DOEFactory
+from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -962,19 +963,20 @@ class TestSoSDOEScenario(unittest.TestCase):
         # -- set up disciplines
         values_dict = {f'{self.ns}.Eval.x': 1., f'{self.ns}.Eval.y_1': 1., f'{self.ns}.Eval.y_2': 1.,
                        f'{self.ns}.Eval.z': array([1., 1.]),
-                       f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': 10}
+                       f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv': 10,
+                       f'{self.ns}.Eval.with_sample_generator': True}
 
         # configure disciplines with the algo lhs
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
-                     f'{self.ns}.eval_inputs': wrong_input_selection_x,
-                     f'{self.ns}.eval_outputs': wrong_output_selection_obj}
+                     f'{self.ns}.Eval.eval_inputs': wrong_input_selection_x,
+                     f'{self.ns}.Eval.eval_outputs': wrong_output_selection_obj}
 
         disc_dict.update(values_dict)
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        msg_log_error_output_z = "The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'doe.acceleration_dict', 'doe.samples_inputs_df', 'doe.samples_outputs_df', 'obj', 'y_1', 'y_2']"
-        msg_log_error_acceleration = "The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'doe.acceleration_dict', 'doe.samples_inputs_df', 'doe.samples_outputs_df', 'obj', 'y_1', 'y_2']"
+        msg_log_error_output_z = "The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['acceleration_dict', 'c_1', 'c_2', 'obj', 'samples_inputs_df', 'samples_outputs_df', 'y_1', 'y_2']"
+        msg_log_error_acceleration = "The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['acceleration_dict', 'c_1', 'c_2', 'obj', 'samples_inputs_df', 'samples_outputs_df', 'y_1', 'y_2']"
 
         self.assertTrue(msg_log_error_output_z in my_handler.msg_list)
         self.assertTrue(msg_log_error_acceleration in my_handler.msg_list)

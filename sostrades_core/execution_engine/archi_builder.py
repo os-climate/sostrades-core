@@ -72,7 +72,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
     ACTIVATION_DF = 'activation_df'
 
     DEFAULT_VB_FOLDER_LIST = ['sostrades_core.sos_wrapping']
-    NS_DRIVER = 'ns_driver'
 
     def __init__(self, sos_name, ee, architecture_df, cls_builder=None, associated_namespaces=None,
                  custom_vb_folder_list=None):
@@ -845,12 +844,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
             builder_scatter[0].set_builder_info('process_display_options', {'hide_under_coupling': True})
             # , display_options={'hide_under_coupling': True}
-
-        # create ns_driver as local_namespace and associate it to the builder
-        builder_full_name = f'{self.get_disc_full_name()}.{builder_name}'
-        driver_full_name = f'{self.get_disc_full_name()}.{driver_name}'
-        ns_driver = self.ee.ns_manager.add_ns(self.NS_DRIVER, driver_full_name, display_value=builder_full_name)
-        builder_scatter[0].associate_namespaces(ns_driver)
 
         if namespace == self.sos_name:
             self.ee.ns_manager.add_display_ns_to_builder(

@@ -56,13 +56,9 @@ class ProcessBuilder(BaseProcessBuilder):
         builder_list = [builder_production, builder_business]
 
         # create the inner ms driver
-        ns_driver_inner = self.ee.ns_manager.add_ns('ns_driver', f'{self.ee.study_name}.inner_ms')
         inner_ms = self.ee.factory.create_multi_instance_driver('inner_ms', builder_list)
-        inner_ms[0].associate_namespaces(ns_driver_inner)
-
+        
         # create an outer ms driver
-        ns_driver_outer = self.ee.ns_manager.add_ns('ns_driver', f'{self.ee.study_name}.outer_ms')
         outer_ms = self.ee.factory.create_multi_instance_driver('outer_ms', inner_ms)
-        outer_ms[0].associate_namespaces(ns_driver_outer)
-
+        
         return outer_ms

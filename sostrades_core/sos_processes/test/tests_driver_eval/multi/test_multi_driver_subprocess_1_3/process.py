@@ -45,5 +45,4 @@ class ProcessBuilder(BaseProcessBuilder):
 
         # driver namespaces
         self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, f'{self.ee.study_name}.Eval')
-        self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.Eval')
         return eval_driver

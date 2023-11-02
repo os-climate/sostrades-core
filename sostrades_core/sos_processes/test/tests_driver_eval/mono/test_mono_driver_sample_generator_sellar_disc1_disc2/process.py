@@ -45,7 +45,6 @@ class ProcessBuilder(BaseProcessBuilder):
             mods_dict_sellar,
             ns_dict={
                 'ns_OptimSellar': self.ee.study_name,
-                SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}',
             },
         )
         eval_builder = self.ee.factory.create_mono_instance_driver(

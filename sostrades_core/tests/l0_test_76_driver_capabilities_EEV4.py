@@ -180,8 +180,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
         disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
-        disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
-        disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -441,8 +441,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
         disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
-        disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
-        disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -1889,4 +1889,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if __name__ == '__main__':
     test = TestSoSDOEScenario()
     test.setUp()
-    test.test_13_sellar_coupling_multi_instances_flatten()
+    test.test_1_simple_disc_output_to_input_driver_DoeEval()

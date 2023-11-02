@@ -34,10 +34,7 @@ class ProcessBuilder(BaseProcessBuilder):
         mods_dict = {'Disc1': disc_dir + 'disc1.Disc1'}
         builder_list = self.create_builder_list(
             mods_dict,
-            ns_dict={
-                'ns_ac': self.ee.study_name,
-                SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}.Eval',
-            },
+            ns_dict={'ns_ac': self.ee.study_name}
         )
 
         eval_builder = self.ee.factory.create_mono_instance_driver(
