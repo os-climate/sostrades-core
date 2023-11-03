@@ -68,7 +68,7 @@ class TestMultiScenario(unittest.TestCase):
         self.power2 = 3
 
         self.scenario_list = scenario_list = ['scenario_1', 'scenario_2', 'scenario_3']
-        self.subprocess_inputs_to_check = ['Disc1.b','z']
+        self.subprocess_inputs_to_check = ['Disc1.b', 'z']
 
     def setUp_cp(self):
         self.sampling_generation_mode_cp = 'at_configuration_time'
