@@ -56,6 +56,8 @@ class ProxySampleGenerator(ProxyDiscipline):
         # TODO: might want to refactor this eventually
         if possible_values:
             disc_in = self.get_data_in()
+            # FIXME: this has to be done during configuration of the sampler. In the driver configuration, only an
+            #  attribute should be set. Implement this to fix test 39_02
             if self.EVAL_INPUTS in disc_in:
                 default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_values],
                                                      'full_name': possible_values})

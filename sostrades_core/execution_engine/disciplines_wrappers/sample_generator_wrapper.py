@@ -166,7 +166,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.EDITABLE: True,
         SoSWrapp.STRUCTURING: False,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        SoSWrapp.NAMESPACE: NS_DRIVER
+        SoSWrapp.NAMESPACE: NS_SAMPLING
     }
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
@@ -244,34 +244,25 @@ class SampleGeneratorWrapper(SoSWrapp):
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
                                     self.NAMESPACE: self.NS_SAMPLING}
                                })
-                dynamic_inputs.update({self.SCENARIO_NAMES:
-                                           {self.TYPE: 'list',
-                                            self.SUBTYPE: {'list': 'string'},
-                                            self.STRUCTURING: True,
-                                            self.DEFAULT: ['ReferenceScenario'],
-                                            self.VISIBILITY: self.SHARED_VISIBILITY,
-                                            self.NAMESPACE: self.NS_SAMPLING}
-                                       })
-                dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
-                                                                self.DATAFRAME_DESCRIPTOR: {},
-                                                                self.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                                                self.DATAFRAME_EDITION_LOCKED: True,
-                                                                self.STRUCTURING: False,  # needn't be for the sample generator
-                                                                self.UNIT: None,
-                                                                self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                                self.NAMESPACE: self.NS_SAMPLING,
-                                                                self.DEFAULT: pd.DataFrame()}})
+                # dynamic_inputs.update({self.SCENARIO_NAMES:
+                #                            {self.TYPE: 'list',
+                #                             self.SUBTYPE: {'list': 'string'},
+                #                             self.STRUCTURING: True,
+                #                             self.DEFAULT: ['ReferenceScenario'],
+                #                             self.VISIBILITY: self.SHARED_VISIBILITY,
+                #                             self.NAMESPACE: self.NS_SAMPLING}
+                #                        })
+                dynamic_inputs.update({self.GENERATED_SAMPLES: self.SAMPLES_DF_DESC})
                 # 2. retrieve input that configures the sampling tool
-                if 'scenario_names' in disc_in:
-                    scenario_names = self.get_sosdisc_inputs(self.SCENARIO_NAMES)
+                if self.EVAL_INPUTS in disc_in:
+                    samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
                     eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                    if scenario_names and eval_inputs is not None:
+                    if eval_inputs is not None and samples_df is not None:
                         selected_inputs = self.reformat_eval_inputs(eval_inputs).tolist()
-                        # 3. if sampling at config.time set the generated samples
-                        self.samples_gene_df = self.sample_generator.generate_samples(selected_inputs)
-                        self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df,
-                                                                         scenario_names=scenario_names)
-                        disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+                        if selected_inputs:
+                            # 3. if sampling at config.time set the generated samples
+                            self.samples_gene_df = self.sample_generator.generate_samples(samples_df, selected_inputs)
+                            disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
 
             elif self.sampling_method == self.DOE_ALGO:
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
