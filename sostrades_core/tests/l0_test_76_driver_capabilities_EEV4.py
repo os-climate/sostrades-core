@@ -800,7 +800,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(list(eval_disc_samples['Disc1.a']), a_values)
         x_all_None = True
         for element in list(eval_disc_samples['x']):
-            if math.isnan(element):
+            if element is None or math.isnan(element): # TODO: verify equivalence in gui.
                 pass
             else:
                 x_all_None = False
@@ -833,7 +833,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
         x_all_nan = True
         for element in list(eval_disc_samples['x']):
-            if math.isnan(element):
+            if element is None or math.isnan(element):
                 pass
             else:
                 x_all_nan = False
@@ -842,7 +842,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         b_all_nan = True
         for element in list(eval_disc_samples['Disc1.b']):
-            if math.isnan(element):
+            if element is None or math.isnan(element):
                 pass
             else:
                 b_all_nan = False
@@ -898,7 +898,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         x_all_nan = True
         for element in list(eval_disc_samples['x']):
-            if math.isnan(element):
+            if element is None or math.isnan(element):
                 pass
             else:
                 x_all_nan = False

@@ -47,18 +47,18 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
         '''
         super().__init__(self.GENERATOR_NAME, logger=logger)
 
-    def _generate_samples(self, var_names):
+    def _generate_samples(self, samples_df, var_names):
         '''
-        Method that generate samples based as a cartesian product of list of values for selected variables.
-        Selected variables are provided in the keys of "dict_of_list_values".
+        Method that only modifies the columns of samples_df based on var_names, removing the necessary columns and adding
+        empty columns as to have var_names as trade variables.
 
         Arguments:
-            dict_of_list_values (dict): for each selected variables it provides a list of values to be combined in a cartesian product
-
+            samples_df (dataframe): input samples_df to modify
+            var_names (list[string]): trade variables to become column name list
         Returns:
-            samples_df (dataframe) : generated samples
+            samples_df (dataframe) : generated samples with appropriate columns
         '''
-        return pd.DataFrame(columns=var_names)
+        return samples_df.reindex(columns=samples_df.columns[:2].tolist() + var_names)
 
     def _check_samples(self, samples_df):
         '''
