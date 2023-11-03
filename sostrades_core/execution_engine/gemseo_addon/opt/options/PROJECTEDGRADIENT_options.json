@@ -1,0 +1,19 @@
+{
+    "name": "PROJECTEDGRADIENT_options",
+    "required":["maxfun"],
+    "properties": {
+        "maxfun": {
+            "type": "number"
+            },
+        "normalize_design_space": {
+			"type": "boolean"
+			},
+        "ftol_rel": {
+            "type": "number"
+            }
+    }, 
+    "$schema": "http://json-schema.org/draft-04/schema", 
+    "additionalProperties": false,
+    "type": "object",
+    "id": "#PROJECTEDGRADIENT"
+    }
