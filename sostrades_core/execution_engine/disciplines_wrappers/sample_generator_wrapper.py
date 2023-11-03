@@ -145,7 +145,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     available_sampling_generation_modes = [AT_CONFIGURATION_TIME, AT_RUN_TIME]
 
     EVAL_INPUTS_CP = 'eval_inputs_cp'
-    GENERATED_SAMPLES = 'generated_samples'
+    GENERATED_SAMPLES = 'samples_df'
     SAMPLES_DF = 'samples_df'
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
@@ -714,7 +714,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                             self.DATAFRAME_DESCRIPTOR: {},
                                                             self.DYNAMIC_DATAFRAME_COLUMNS: True,
                                                             self.DATAFRAME_EDITION_LOCKED: True,
-                                                            self.STRUCTURING: True,
+                                                            self.STRUCTURING: False,
                                                             self.UNIT: None,
                                                             self.VISIBILITY: self.SHARED_VISIBILITY,
                                                             self.NAMESPACE: self.NS_SAMPLING,
@@ -913,7 +913,9 @@ class SampleGeneratorWrapper(SoSWrapp):
         # eval_inputs_cp
         disc_in = self.get_data_in()
         if self.GENERATED_SAMPLES in disc_in and self.samples_gene_df is not None:
-            disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+            self.dm.set_data(self.get_var_full_name(self.GENERATED_SAMPLES, disc_in),
+                             'value', self.samples_gene_df, check_value=False)
+            # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
 
     def generate_sample_for_cp(self):
         """

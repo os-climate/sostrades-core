@@ -51,17 +51,17 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             ProxyDriverEvaluator.POSSIBLE_VALUES: [True, False],
             ProxyDriverEvaluator.STRUCTURING: True
         },
-        ProxyDriverEvaluator.GENERATED_SAMPLES: {ProxyDriverEvaluator.TYPE: 'dataframe',
-                                                 ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
-                                                     ProxyDriverEvaluator.SELECTED_SCENARIO: ('bool', None, False),
-                                                     ProxyDriverEvaluator.SCENARIO_NAME: ('string', None, False)},
-                                                 ProxyDriverEvaluator.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                                 ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: True,
-                                                 ProxyDriverEvaluator.STRUCTURING: True,
-                                                 ProxyDriverEvaluator.UNIT: None,
-                                                 ProxyDriverEvaluator.DEFAULT: pd.DataFrame(),
-                                                 ProxyDriverEvaluator.USER_LEVEL: 3
-                                                 },
+        # ProxyDriverEvaluator.GENERATED_SAMPLES: {ProxyDriverEvaluator.TYPE: 'dataframe',
+        #                                          ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
+        #                                              ProxyDriverEvaluator.SELECTED_SCENARIO: ('bool', None, False),
+        #                                              ProxyDriverEvaluator.SCENARIO_NAME: ('string', None, False)},
+        #                                          ProxyDriverEvaluator.DYNAMIC_DATAFRAME_COLUMNS: True,
+        #                                          ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: True,
+        #                                          ProxyDriverEvaluator.STRUCTURING: True,
+        #                                          ProxyDriverEvaluator.UNIT: None,
+        #                                          ProxyDriverEvaluator.DEFAULT: pd.DataFrame(),
+        #                                          ProxyDriverEvaluator.USER_LEVEL: 3
+        #                                          },
         DISPLAY_OPTIONS: {ProxyDriverEvaluator.TYPE: 'dict',
                           ProxyDriverEvaluator.STRUCTURING: True,
                           ProxyDriverEvaluator.DEFAULT: DISPLAY_OPTIONS_DEFAULT,
@@ -99,7 +99,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         disc_in = self.get_data_in()
         self.add_reference_mode(disc_in)
         self.add_gather_outputs(disc_in)
-        self.set_generated_samples_values(disc_in)
+        # self.set_generated_samples_values(disc_in)
 
     def set_generated_samples_values(self, disc_in):
         '''
