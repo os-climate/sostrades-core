@@ -114,7 +114,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                                 final_dataframe[element] = disc_in[self.SAMPLES_DF]['value'][element]
 
                             else:
-                                final_dataframe[element] = [NaN for _ in range(len_df)]
+                                final_dataframe[element] = [None for _ in range(len_df)]
                         disc_in[self.SAMPLES_DF][self.VALUE] = final_dataframe
                     disc_in[self.SAMPLES_DF][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
 

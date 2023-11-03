@@ -36,15 +36,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
     # TODO: manage desc_in in correct classes
     DESC_IN = {
-        # TODO: eval_inputs is to be removed from the driver evaluator
-        ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
-                                           ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
-                                               'selected_input': ('bool', None, True),
-                                               'full_name': ('string', None, False)},
-                                           ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
-                                           ProxyDriverEvaluator.STRUCTURING: True,
-                                           ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-                                           ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
         ProxyDriverEvaluator.EVAL_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                             ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                 'selected_output': ('bool', None, True),

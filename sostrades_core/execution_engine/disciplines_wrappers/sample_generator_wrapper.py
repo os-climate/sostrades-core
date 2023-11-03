@@ -148,7 +148,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     SAMPLES_DF = 'samples_df'
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
-
+    SCENARIO_NAMES = 'scenario_names'
     NS_DRIVER = 'ns_driver'
     NS_SAMPLING = 'ns_sampling'
     REFERENCE_SCENARIO_NAME = 'Reference Scenario'
@@ -254,10 +254,11 @@ class SampleGeneratorWrapper(SoSWrapp):
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
                                     self.NAMESPACE: self.NS_SAMPLING}
                                })
-                dynamic_inputs.update({'scenario_names':
+                dynamic_inputs.update({self.SCENARIO_NAMES:
                                            {self.TYPE: 'list',
                                             self.SUBTYPE: {'list': 'string'},
                                             self.STRUCTURING: True,
+                                            self.DEFAULT: ['ReferenceScenario'],
                                             self.VISIBILITY: self.SHARED_VISIBILITY,
                                             self.NAMESPACE: self.NS_SAMPLING}
                                        })
@@ -272,7 +273,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                                                 self.DEFAULT: pd.DataFrame()}})
                 # 2. retrieve input that configures the sampling tool
                 if 'scenario_names' in disc_in:
-                    scenario_names = self.get_sosdisc_inputs('scenario_names')
+                    scenario_names = self.get_sosdisc_inputs(self.SCENARIO_NAMES)
                     eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
                     if scenario_names and eval_inputs is not None:
                         selected_inputs = self.reformat_eval_inputs(eval_inputs).tolist()
