@@ -168,7 +168,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = pd.DataFrame({'selected_input': [True, True, False],
                                                                                       'full_name': var_names + ['blabla']})
         self.exec_eng.load_study_from_input_dict(dict_values)
-        samples_df = self.exec_eng.dm.get_value(f'{self.study_name}.SampleGenerator.generated_samples')
+        samples_df = self.exec_eng.dm.get_value(f'{self.study_name}.SampleGenerator.samples_df')
 
         self.assertEqual(sce_names, samples_df['scenario_name'].values.tolist())
         self.assertEqual(var_names, samples_df.columns[2:].tolist())
