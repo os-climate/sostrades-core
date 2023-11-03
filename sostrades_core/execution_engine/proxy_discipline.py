@@ -1009,6 +1009,8 @@ class ProxyDiscipline:
             self._update_status_dm(self.STATUS_CONFIGURE)
 
             self.set_configure_status(True)
+            for disc in self.config_dependent_disciplines:
+                disc.set_configure_status(False)
 
     def __check_all_data_integrity(self):
         '''
