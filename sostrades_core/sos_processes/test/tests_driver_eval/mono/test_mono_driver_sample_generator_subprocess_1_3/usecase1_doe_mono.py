@@ -35,13 +35,6 @@ class Study(StudyManager):
         #coupling_name = 'subprocess'
         coupling_name = 'D1_D3_Coupling'
 
-        #======================================================================
-        # dspace_dict = {'variable': [f'Eval.{coupling_name}.Disc1.b', 'Eval.{coupling_name}.z', ],
-        #                'lower_bnd': [0., 0.],
-        #                'upper_bnd': [10., 10.],
-        #                }
-        #======================================================================
-
         dspace_dict = {'variable': [f'Eval.{coupling_name}.Disc1.b', 'Eval.{coupling_name}.z', ],
                        'lower_bnd': [0., 0.],
                        'upper_bnd': [10., 10.],
@@ -49,22 +42,11 @@ class Study(StudyManager):
 
         dspace = pd.DataFrame(dspace_dict)
 
-        #======================================================================
-        # input_selection_b_z = pd.DataFrame({'selected_input': [False, True, False, False, True],
-        #                                     'full_name': ['', f'Eval.{coupling_name}.Disc1.b', '', '', f'Eval.{coupling_name}.z']
-        #                                     })
-        #======================================================================
-
         input_selection_b_z = pd.DataFrame({'selected_input': [False, True, False, False, True],
                                             'full_name': ['', f'{coupling_name}.Disc1.b', '', '', f'{coupling_name}.z']
                                             })
 
         input_selection_b_z = pd.DataFrame(input_selection_b_z)
-
-        #======================================================================
-        # output_selection_obj_y_o = {'selected_output': [False, True, True],
-        #                             'full_name': [f'Eval.{coupling_name}.indicator', f'Eval.{coupling_name}.y', f'Eval.{coupling_name}.o']}
-        #======================================================================
 
         output_selection_obj_y_o = {'selected_output': [False, True, True],
                                     'full_name': [f'{coupling_name}.indicator', f'{coupling_name}.y', f'{coupling_name}.o']}
@@ -80,6 +62,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Sample_Generator.algo_options'] = {
             'n_samples': n_samples}
 
+        disc_dict[f'{ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_b_z
         disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y_o
 

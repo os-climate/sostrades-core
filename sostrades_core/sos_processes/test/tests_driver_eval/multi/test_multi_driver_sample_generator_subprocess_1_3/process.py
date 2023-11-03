@@ -35,9 +35,4 @@ class ProcessBuilder(BaseProcessBuilder):
         eval_driver = self.ee.factory.get_builder_from_process(
             repo=repo, mod_id=sub_proc)
 
-        # add sample generator builder
-        mod_generator = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        generator_builder = self.ee.factory.get_builder_from_module(
-            'Sample_Generator', mod_generator)
-
-        return eval_driver + [generator_builder]
+        return eval_driver

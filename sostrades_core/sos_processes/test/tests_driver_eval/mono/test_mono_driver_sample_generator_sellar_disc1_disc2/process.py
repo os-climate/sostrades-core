@@ -48,16 +48,8 @@ class ProcessBuilder(BaseProcessBuilder):
                 SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}',
             },
         )
-        eval_builder = self.ee.factory.create_driver(
+        eval_builder = self.ee.factory.create_mono_instance_driver(
             'Eval', builder_list_sellar
-        )
-
-        mod_dict_doe = {
-            'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        }
-        doe_builder = self.create_builder_list(
-            mod_dict_doe, ns_dict={SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}',
-                                   SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}'}
         )
 
         mods_dict2 = {'Simple_Disc2': disc_dir + 'simple_discs_doe_eval.SimpleDisc2'}
@@ -74,7 +66,6 @@ class ProcessBuilder(BaseProcessBuilder):
             },
         )
 
-        builder_list.append(doe_builder)
         builder_list.append(eval_builder)
         builder_list.append(builder_list2)
 

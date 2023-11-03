@@ -28,9 +28,11 @@ from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDiscip
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+from sostrades_core.tools.gather.gather_tool import check_eval_io, get_eval_output
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
 from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values
+from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -90,7 +92,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    EVAL_INPUTS = 'eval_inputs'
+    EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
 
     NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
 
@@ -105,12 +107,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         ProxyDiscipline.STRUCTURING: True,
     }
 
+    GATHER_DEFAULT_SUFFIX = GatherDiscipline.GATHER_SUFFIX
+    EVAL_OUTPUTS = GatherDiscipline.EVAL_OUTPUTS
+    GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
+
     DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
                WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
-
-    GATHER_DEFAULT_SUFFIX = DriverEvaluatorWrapper.GATHER_DEFAULT_SUFFIX
-    EVAL_OUTPUTS = 'eval_outputs'
-    GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
 
     ##
     ## To refactor instancce reference and subprocess import
@@ -181,6 +183,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.sample_generator_disc = None
 
         self.eval_process_builder = None
+        self.eval_in_possible_values = []
         self.eval_in_list = None
         self.eval_out_list = None
         self.selected_inputs = []
@@ -263,10 +266,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_numerical_inputs()
 
     def configure_sample_generator(self):
-        if self.sample_generator_disc and not self.sample_generator_disc.is_configured():
+        if self.sample_generator_disc:
             # TODO: remove eval_inputs from driver evaluator and activate this line
-            # self.sample_generator.set_eval_in_possible_values(self.eval_in_possible_values)
-            self.sample_generator_disc.configure()
+            self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+            if not self.sample_generator_disc.is_configured():
+                self.sample_generator_disc.configure()
 
     def update_data_io_with_subprocess_io(self):
         """
@@ -300,7 +304,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if self.sample_generator_disc is None:
                 self.sample_generator_disc = self.build_sample_generator_disc()
         elif self.sample_generator_disc is not None:
-            self.clean_children([self.sample_generator_disc]) #TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
+            self.clean_children([
+                self.sample_generator_disc])  # TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
             self.sample_generator_disc = None
         return []
 
@@ -370,27 +375,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.dm.set_data(
                 self.get_var_full_name(self.SAMPLES_DF, disc_in),
                 self.CHECK_INTEGRITY_MSG, self.scenario_list_integrity_msg)
-
-    def check_eval_io(self, given_list, default_list, is_eval_input):
-        """
-        Set the evaluation variable list (in and out) present in the DM
-        which fits with the eval_in_base_list filled in the usecase or by the user
-        """
-
-        for given_io in given_list:
-            if given_io not in default_list and not self.MULTIPLIER_PARTICULE in given_io:
-                if is_eval_input:
-                    error_msg = f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
-                                f'input of the subprocess with the correct full name (without study name at the ' \
-                                f'beginning) and within allowed types (int, array, float). Dynamic inputs might  not ' \
-                                f'be created. should be in {default_list} '
-
-                else:
-                    error_msg = f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
-                                f'output of the subprocess with the correct full name (without study name at the ' \
-                                f'beginning). Dynamic inputs might  not be created. should be in {default_list}'
-
-                self.logger.warning(error_msg)
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
@@ -549,11 +533,14 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         input_dict_from_usecase = {}
         new_study_placeholder = ref_discipline_full_name
         for key_to_unanonymize, value in anonymize_input_dict_from_usecase.items():
-            converted_key = key_to_unanonymize.replace(
-                self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)
-            # see def __unanonymize_key  in execution_engine
-            uc_d = {converted_key: value}
-            input_dict_from_usecase.update(uc_d)
+            splitted_key = key_to_unanonymize.split('.')
+            if not (len(splitted_key) == 2 and splitted_key[-1] in ProxyCoupling.NUMERICAL_VAR_LIST) and splitted_key[
+                -1] != 'residuals_history':
+                converted_key = key_to_unanonymize.replace(
+                    self.ee.STUDY_PLACEHOLDER_WITHOUT_DOT, new_study_placeholder)
+                # see def __unanonymize_key  in execution_engine
+                uc_d = {converted_key: value}
+                input_dict_from_usecase.update(uc_d)
         return input_dict_from_usecase
 
     def set_eval_possible_values(self, io_type_in=True, io_type_out=True, strip_first_ns=False):
@@ -574,68 +561,25 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                                        strip_first_ns=strip_first_ns)
 
         disc_in = self.get_data_in()
-        # TODO: transfert to simple sample generator
         if possible_in_values and io_type_in:
 
             # Convert sets into lists
             possible_in_values = list(possible_in_values)
             # these sorts are just for aesthetics
             possible_in_values.sort()
-            default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_in_values],
-                                                 'full_name': possible_in_values})
-
-            eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
-
-            if eval_input_new_dm is None:
-                self.dm.set_data(eval_inputs_f_name,
-                                 'value', default_in_dataframe, check_value=False)
-            # check if the eval_inputs need to be updated after a subprocess
-            # configure
-            elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-                self.check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-                                   is_eval_input=True)
-                default_dataframe = copy.deepcopy(default_in_dataframe)
-                already_set_names = eval_input_new_dm['full_name'].tolist()
-                already_set_values = eval_input_new_dm['selected_input'].tolist()
-                for index, name in enumerate(already_set_names):
-                    default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
-                        already_set_values[
-                            index]  # this will filter variables that are not inputs of the subprocess
-                    if self.MULTIPLIER_PARTICULE in name:
-                        default_dataframe = default_dataframe.append(
-                            pd.DataFrame({'selected_input': [already_set_values[index]],
-                                          'full_name': [name]}), ignore_index=True)
-                self.dm.set_data(eval_inputs_f_name,
-                                 'value', default_dataframe, check_value=False)
-
+            self.eval_in_possible_values = possible_in_values
+            # TODO: BEFORE THERE WAS A CHECK_EVAL_IO THAT MOVED TO THE SAMPLER,
+            #  NOW THE DRIVER MUST CHECK WRT SAMPLES-DF. DOUBLE-CHECK IT IS DONE SOMEWHERE
         if possible_out_values and io_type_out:
-            possible_out_values = list(possible_out_values)
-            possible_out_values.sort()
-            default_out_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
-                                                  'full_name': possible_out_values,
-                                                  'output_name': [None for _ in possible_out_values]})
+            # NB: if io_type_out then we are in mono_instance so it's driver's responsibility to do this
+            # get already set eval_output
             eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
             eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)
-            if eval_output_new_dm is None:
-                self.dm.set_data(eval_outputs_f_name,
-                                 'value', default_out_dataframe, check_value=False)
-            # check if the eval_inputs need to be updated after a subprocess configure
-            elif set(eval_output_new_dm['full_name'].tolist()) != (set(default_out_dataframe['full_name'].tolist())):
-                self.check_eval_io(eval_output_new_dm['full_name'].tolist(),
-                                   default_out_dataframe['full_name'].tolist(),
-                                   is_eval_input=False)
-                default_dataframe = copy.deepcopy(default_out_dataframe)
-                already_set_names = eval_output_new_dm['full_name'].tolist()
-                already_set_values = eval_output_new_dm['selected_output'].tolist()
-                if 'output_name' in eval_output_new_dm.columns:
-                    # TODO: maybe better to repair tests than to accept default, in particular for data integrity check
-                    already_set_out_names = eval_output_new_dm['output_name'].tolist()
-                else:
-                    already_set_out_names = [None for _ in already_set_names]
-                for index, name in enumerate(already_set_names):
-                    default_dataframe.loc[default_dataframe['full_name'] == name,
-                    ['selected_output', 'output_name']] = \
-                        (already_set_values[index], already_set_out_names[index])
-                self.dm.set_data(eval_outputs_f_name,
-                                 'value', default_dataframe, check_value=False)
+
+            # get all possible outputs and merge with current eval_output
+            eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
+            if len(error_msg) > 0:
+                for msg in error_msg:
+                    self.logger.warning(msg)
+            self.dm.set_data(eval_outputs_f_name,
+                             'value', eval_output_df, check_value=False)

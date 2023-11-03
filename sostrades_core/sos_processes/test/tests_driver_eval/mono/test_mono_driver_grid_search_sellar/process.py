@@ -41,15 +41,10 @@ class ProcessBuilder(BaseProcessBuilder):
                      'Sellar_1': disc_dir + 'Sellar1'}
         builder_list = self.create_builder_list(mods_dict,
                                                 ns_dict={'ns_OptimSellar': self.ee.study_name,
-                                                         SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}.Eval',
                                                          SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}.Eval'}
                                                 )
         # evaluator builder
         eval_builder = self.ee.factory.create_mono_instance_driver(
             'Eval', builder_list)
 
-        # sample generator builder
-        mod_sg = 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        sg_builder = self.ee.factory.get_builder_from_module(
-            'SampleGenerator', mod_sg)
-        return eval_builder + [sg_builder]
+        return eval_builder

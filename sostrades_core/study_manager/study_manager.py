@@ -15,8 +15,7 @@ limitations under the License.
 '''
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.sos_processes.script_test_all_usecases import processed_test_one_usecase
-from os.path import abspath, basename, dirname, relpath, splitext
-import sostrades_core
+from os.path import abspath, basename, dirname, relpath, splitext, join, exists
 from os import sep
 import numpy as np
 
@@ -31,22 +30,29 @@ class StudyManager(BaseStudyManager):
         :type: str
         """
         # get the process folder name
-        module_file = abspath(file_path)
-        module_name = splitext(basename(module_file))[0]
-        module_path = dirname(module_file)
-        proc_name = basename(module_path)
+        study_file_path = abspath(file_path)
+        study_file_name = splitext(basename(study_file_path))[0]
+        module_path = dirname(study_file_path)
+        process_name = basename(module_path)
 
-        # path to the repository containing sostrades_core
-        proc_root_dir = dirname(dirname(dirname(sostrades_core.__file__)))
-        # path of the repository containing the folder that contains the
-        # usecase
-        r_p = relpath(dirname(module_path), proc_root_dir).split(sep)[1:]
-        repository_name = '.'.join(r_p)
+        # Find the module path
+        module_path = dirname(module_path)
+        module_path_list = []
+
+        # Check if __init__.py exists in the parent directory
+        # If yes, it is a module
+        # If not, we stop
+        while exists(join(module_path, '__init__.py')):
+            module_path_list.append(basename(module_path))
+            module_path = dirname(module_path)
+
+        repository_name = '.'.join(module_path_list[::-1])
+
         # init dspace dict
         self.dspace = {}
         self.dspace['dspace_size'] = 0
 
-        super().__init__(repository_name, proc_name, module_name,
+        super().__init__(repository_name, process_name, study_file_name,
                          run_usecase=run_usecase, execution_engine=execution_engine)
 
     def update_dspace_with(self, name, value, lower, upper):

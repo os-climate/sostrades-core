@@ -27,7 +27,7 @@ class Study(StudyManager):
     def setup_usecase(self):
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
 
         b1 = 4
         b2 = 2
@@ -43,6 +43,7 @@ class Study(StudyManager):
                                                 'full_name': ['', 'Disc1.b', '', '', 'z'],
                                                 'list_of_values': list_of_values_b_z
                                                 })
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = input_selection_cp_b_z
 
         self.x1 = 2.

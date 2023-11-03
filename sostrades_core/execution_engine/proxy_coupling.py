@@ -208,6 +208,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     eps0 = 1.0e-6
     has_chart = False
+    NUMERICAL_VAR_LIST = list(
+        DESC_IN.keys()) + list(
+        ProxyDisciplineBuilder.NUM_DESC_IN.keys())
 
     def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
         '''

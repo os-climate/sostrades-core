@@ -35,12 +35,11 @@ class ProcessBuilder(BaseProcessBuilder):
         default initialisation test
         '''
 
-        mod_dict_doe = {
-            'SampleGenerator': 'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
-        }
-        builder = self.create_builder_list(
-            mod_dict_doe,
-            ns_dict={SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}.SampleGenerator', SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}.SampleGenerator'},
+        builder = self.ee.factory.create_sample_generator('SampleGenerator')
+
+        self.ee.ns_manager.add_ns_def(
+            {SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}.SampleGenerator',
+             SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}.SampleGenerator'},
         )
 
         return builder

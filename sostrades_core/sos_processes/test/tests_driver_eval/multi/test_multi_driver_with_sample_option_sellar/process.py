@@ -44,12 +44,11 @@ class ProcessBuilder(BaseProcessBuilder):
             mods_dict,
             ns_dict={
                 'ns_OptimSellar': self.ee.study_name,
-                'ns_driver': f'{self.ee.study_name}',
             },
         )
 
         doe_eval_builder = self.ee.factory.create_multi_instance_driver(
-            'Eval', builder_list_sellar, with_sample_generator=True
+            'Eval', builder_list_sellar
         )
 
         return doe_eval_builder

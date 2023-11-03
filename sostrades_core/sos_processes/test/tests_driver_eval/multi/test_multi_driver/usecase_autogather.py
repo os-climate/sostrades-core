@@ -29,11 +29,12 @@ class Study(StudyManager):
         setup_data_list = []
 
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.display_options'] = {'autogather': True}
         dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
                                                                                                             True],
                                                                                       'scenario_name': ['scenario_1',
                                                                                                         'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios_gather.eval_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
+                          'full_name': ['y', 'z', 'Disc1.indicator']})
         setup_data_list.append(dict_values)
         constant1 = 10
         constant2 = 20

@@ -27,7 +27,8 @@ class Study(StudyManager):
     def setup_usecase(self):
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'simple'
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'simple'
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
         dict_values[f'{self.study_name}.multi_scenarios.scenario_names'] = []
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = pd.DataFrame()
 
