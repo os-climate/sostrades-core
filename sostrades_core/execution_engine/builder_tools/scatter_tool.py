@@ -424,6 +424,11 @@ class ScatterTool(SosTool):
             name for name in self.__scattered_disciplines if not name in sub_names]
         self.remove_scattered_disciplines(disc_name_to_remove)
 
+        if len(disc_name_to_remove) != 0 or len(new_sub_names) != 0:
+            gather_discs = self.get_all_gather_disciplines()
+            if len(gather_discs) != 0:
+                for gather in gather_discs:
+                    gather.set_configure_status(False)
         return new_sub_names
 
     def remove_scattered_disciplines(self, disc_to_remove):
