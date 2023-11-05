@@ -1,3 +1,18 @@
+'''
+Copyright 2023 Capgemini
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+'''
 """
 TEST STRATEGY MODULE
 
@@ -18,9 +33,6 @@ How to use ?
 import sys, os, glob, pytest, tempfile
 from typing import Union
 # Create a temporary file
-
-
-GENERATED_TEST_FILE_USECASES = "generated_test_file.py"
 
 
 def run_tests_l0_l1_l2(main_folder, file_pattern):
@@ -55,7 +67,7 @@ def run_generated_usecase_test(temp_file_path):
         exitcode = pytest.main(['-W', 'ignore','--verbose', '--durations=5', '--durations-min=2.0'] + [temp_file_path])
     except Exception as e:
         # Handle any errors or exceptions here
-        print(f"Error while running pytest on {GENERATED_TEST_FILE_USECASES}: {e}")
+        print(f"Error while running pytest on {temp_file_path}: {e}")
         exitcode = -1
 
     return exitcode
