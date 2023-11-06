@@ -322,6 +322,14 @@ class SampleGeneratorWrapper(SoSWrapp):
         if self.sampling_generation_mode == self.AT_RUN_TIME:
             dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC.copy()
 
+        # TODO: quick-fix the wrong display of samples_df as output in GUI, should actually be automatic by dm cleaning
+        elif self.SAMPLES_DF in disc_in:
+            self.dm.set_data(
+                self.get_var_full_name(self.SAMPLES_DF, disc_in),
+                self.IO_TYPE,
+                self.IO_TYPE_IN
+            )
+
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
 
