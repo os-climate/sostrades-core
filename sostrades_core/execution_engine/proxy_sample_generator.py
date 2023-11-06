@@ -49,12 +49,27 @@ class ProxySampleGenerator(ProxyDiscipline):
 
     MULTIPLIER_PARTICULE = "__MULTIPLIER__" # todo: to delete
     EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
+    SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
+    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
 
     def set_eval_in_possible_values(self, possible_values):
-        # TODO: might want to refactor this eventually
+        driver_is_configured = True
+        # TODO: might want to refactor this eventually. If so, take into account that this "driver_is_configured" flag
+        #  is a quick fix. The proper way is probably as follows: in this method just set the attribute eval_in_possible_values
+        #  and handle SampleGenerator configuration status if it has changed. Then in SampleGenerator configuration do the
+        #  remaining actions in the code below (set eval_inputs and handle corresponding samples_df columns update).
         if possible_values:
+            driver_is_configured = False
             disc_in = self.get_data_in()
-            if self.EVAL_INPUTS in disc_in:
+            # FIXME: this has to be done during configuration of the sampler. In the driver configuration, only an
+            #  attribute should be set. Implement this to fix test 39_02
+            if disc_in and self.get_sosdisc_inputs(
+                    SampleGeneratorWrapper.SAMPLING_METHOD) == SampleGeneratorWrapper.CARTESIAN_PRODUCT:
+                # NB: this if clause only exists because cartesian product has no input variable "eval_inputs"
+                # TODO: so it has to disappear when eval_inputs_cp and eval_inputs are homogenized
+                driver_is_configured = True
+            elif self.EVAL_INPUTS in disc_in:
+                driver_is_configured = True
                 default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_values],
                                                      'full_name': possible_values})
                 eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
@@ -85,6 +100,40 @@ class ProxySampleGenerator(ProxyDiscipline):
                     self.dm.set_data(eval_inputs_f_name,
                                      'value', default_dataframe, check_value=False)
 
+                selected_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+                selected_inputs = selected_inputs[selected_inputs['selected_input'] == True]['full_name'].tolist()
+                all_columns = [SampleGeneratorWrapper.SELECTED_SCENARIO,
+                               SampleGeneratorWrapper.SCENARIO_NAME] + selected_inputs
+                default_custom_dataframe = pd.DataFrame(
+                    [[None for _ in range(len(all_columns))]], columns=all_columns)
+                dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
+                # This reflects 'samples_df' dynamic input has been configured and that
+                # eval_inputs have changed
+                if self.SAMPLES_DF in disc_in:
+                    if disc_in[self.SAMPLES_DF]['value'] is not None:
+                        from_samples = list(disc_in[self.SAMPLES_DF]['value'].keys())
+                        from_eval_inputs = list(default_custom_dataframe.keys())
+                        final_dataframe = pd.DataFrame(
+                            None, columns=all_columns)
+
+                        len_df = 1
+                        for element in from_eval_inputs:
+                            if element in from_samples:
+                                len_df = len(disc_in[self.SAMPLES_DF]['value'])
+
+                        for element in from_eval_inputs:
+                            if element in from_samples:
+                                final_dataframe[element] = disc_in[self.SAMPLES_DF]['value'][element]
+
+                            else:
+                                final_dataframe[element] = [None for _ in range(len_df)]
+                        disc_in[self.SAMPLES_DF][self.VALUE] = final_dataframe
+                    disc_in[self.SAMPLES_DF][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
+                elif self.get_sosdisc_inputs(SampleGeneratorWrapper.SAMPLING_GENERATION_MODE) == SampleGeneratorWrapper.AT_CONFIGURATION_TIME:
+                    driver_is_configured = False
+        return driver_is_configured
+
     # TODO: rewrite these functions for sample proxy migrating class variables etc.
     def setup_sos_disciplines(self):
+        # NB: the sample generator might be configuring twice when configured by driver and also in standalone
         super().setup_sos_disciplines()

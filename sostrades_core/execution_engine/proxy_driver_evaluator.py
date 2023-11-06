@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/03/03-2023/11/06 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -97,7 +98,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
 
     SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
-    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
+    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC.copy()
+    SAMPLES_DF_DESC[ProxyDiscipline.STRUCTURING] = True
+    SAMPLES_DF_DESC[ProxyDiscipline.NAMESPACE] = NS_DRIVER
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
     SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
     WITH_SAMPLE_GENERATOR = 'with_sample_generator'
@@ -267,8 +270,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def configure_sample_generator(self):
         if self.sample_generator_disc:
-            # TODO: remove eval_inputs from driver evaluator and activate this line
-            self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+            driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+
+            # TODO: this might be improved (see SampleGenerator.set_eval_in_possible_values)
+            if driver_config_status is False:
+                self.set_configure_status(False)
+
             if not self.sample_generator_disc.is_configured():
                 self.sample_generator_disc.configure()
 

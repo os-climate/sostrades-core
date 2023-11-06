@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -619,11 +620,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
-        if self.sampling_generation_mode_cp == 'at_configuration_time':
-            disc_generated_samples = disc.get_sosdisc_inputs(
-                'generated_samples')
-            print('generated_samples:')
-            print(disc_generated_samples)
+        # if self.sampling_generation_mode_cp == 'at_configuration_time':
+        #     disc_generated_samples = disc.get_sosdisc_inputs(
+        #         'generated_samples')
+        #     print('generated_samples:')
+        #     print(disc_generated_samples)
 
         exec_eng.execute()
 
@@ -724,11 +725,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
-        if self.sampling_generation_mode_cp == 'at_configuration_time':
-            disc_generated_samples = disc.get_sosdisc_inputs(
-                'generated_samples')
-            print('generated_samples:')
-            print(disc_generated_samples)
+        # if self.sampling_generation_mode_cp == 'at_configuration_time':
+        #     disc_generated_samples = disc.get_sosdisc_inputs(
+        #         'generated_samples')
+        #     print('generated_samples:')
+        #     print(disc_generated_samples)
 
         # 3. Input an updated eval_inputs_cp
         # CP inputs
@@ -748,11 +749,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print('eval_inputs_cp 3:')
         print(disc_eval_inputs_cp)
 
-        if self.sampling_generation_mode_cp == 'at_configuration_time':
-            disc_generated_samples = disc.get_sosdisc_inputs(
-                'generated_samples')
-            print('generated_samples:')
-            print(disc_generated_samples)
+        # if self.sampling_generation_mode_cp == 'at_configuration_time':
+        #     disc_generated_samples = disc.get_sosdisc_inputs(
+        #         'generated_samples')
+        #     print('generated_samples:')
+        #     print(disc_generated_samples)
 
         exec_eng.execute()
 

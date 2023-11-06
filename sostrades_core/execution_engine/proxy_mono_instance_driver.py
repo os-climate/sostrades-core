@@ -1,25 +1,18 @@
 '''
-Copyright (c) 2023 Capgemini
+Copyright 2023 Capgemini
 
-All rights reserved
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or mother materials provided with the distribution.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND OR ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 '''
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-
 import pandas as pd
 from numpy import NaN
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
@@ -36,15 +29,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
     # TODO: manage desc_in in correct classes
     DESC_IN = {
-        # TODO: eval_inputs is to be removed from the driver evaluator
-        ProxyDriverEvaluator.EVAL_INPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
-                                           ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
-                                               'selected_input': ('bool', None, True),
-                                               'full_name': ('string', None, False)},
-                                           ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
-                                           ProxyDriverEvaluator.STRUCTURING: True,
-                                           ProxyDriverEvaluator.VISIBILITY: ProxyDriverEvaluator.SHARED_VISIBILITY,
-                                           ProxyDriverEvaluator.NAMESPACE: ProxyDriverEvaluator.NS_DRIVER},
         ProxyDriverEvaluator.EVAL_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                             ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                 'selected_output': ('bool', None, True),
@@ -85,34 +69,31 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                                     self.NAMESPACE: self.NS_DRIVER} 
                         for out_name in selected_outputs_dict.values()})
                     dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe',
-                                                                       self.VISIBILITY: 'Shared',
-                                                                       self.NAMESPACE: self.NS_DRIVER}})
+                                                                   self.VISIBILITY: 'Shared',
+                                                                   self.NAMESPACE: self.NS_DRIVER}})
 
                     self.add_outputs(dynamic_outputs)
 
-            selected_inputs_has_changed = False
-            if self.EVAL_INPUTS in disc_in :
-                # All eval_inputs dynamic setup should be moved to a specific sample generator
-                eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                # eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                if eval_inputs is not None:
-                    # we fetch the inputs selected by the user
-                    selected_inputs = eval_inputs[eval_inputs['selected_input']
-                                                   == True]['full_name']
-                    if set(selected_inputs.tolist()) != set(self.selected_inputs):
-                        selected_inputs_has_changed = True
-                        self.selected_inputs = selected_inputs.tolist()
-
-                    if len(selected_inputs) > 0:
-                        # TODO: OK that it blocks config. with empty input ? also, might want an eval without outputs ?
-                        # we set the lists which will be used by the evaluation function of sosEval
-                        self.eval_in_list = [f'{self.get_disc_full_name()}.{element}' for element in selected_inputs]
-
-                        dynamic_inputs.update(self._get_dynamic_inputs_doe(
-                             disc_in, selected_inputs_has_changed))
-
-            self.add_inputs(dynamic_inputs)
-            
+            if self.SAMPLES_DF in disc_in:
+                samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+                if samples_df is not None:
+                    selected_inputs = set(samples_df.columns)
+                    selected_inputs -= SampleGeneratorWrapper.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR].keys()
+                    if selected_inputs != set(self.selected_inputs):
+                        self.selected_inputs = list(selected_inputs)
+                        self.eval_in_list = [
+                            f'{self.get_disc_full_name()}.{element}' for element in self.selected_inputs]
+                        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
+                        for key, var_f_name in zip(self.selected_inputs, self.eval_in_list):
+                            if var_f_name in self.ee.dm.data_id_map:
+                                var = tuple([self.ee.dm.get_data(
+                                    var_f_name, self.TYPE), None, True])
+                                dataframe_descriptor[key] = var
+                            elif self.MULTIPLIER_PARTICULE in var_f_name:
+                                # for multipliers assume it is a float
+                                dataframe_descriptor[key] = ('float', None, True)
+                            else:
+                                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
 
     def configure_driver(self):
         if len(self.proxy_disciplines) > 0:
@@ -154,57 +135,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
     def is_configured(self):
         return super().is_configured() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
-
-    ## TODO This method must be moved into a specific sample generator
-    def _get_dynamic_inputs_doe(self, disc_in, selected_inputs_has_changed):
-        all_columns = [SampleGeneratorWrapper.SELECTED_SCENARIO,
-                       SampleGeneratorWrapper.SCENARIO_NAME] + self.selected_inputs
-        default_custom_dataframe = pd.DataFrame(
-            [[NaN for _ in range(len(all_columns))]], columns=all_columns)
-        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
-        for i, key in enumerate(self.selected_inputs):
-            var_f_name = self.eval_in_list[i]
-            if var_f_name in self.ee.dm.data_id_map:
-                var = tuple([self.ee.dm.get_data(
-                    var_f_name, self.TYPE), None, True])
-                dataframe_descriptor[key] = var
-            elif self.MULTIPLIER_PARTICULE in var_f_name:
-                # for multipliers assume it is a float
-                dataframe_descriptor[key] = ('float', None, True)
-            else:
-                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
-
-        # dynamic_inputs = {self.SAMPLES_DF: {self.TYPE: 'dataframe', self.DEFAULT: default_custom_dataframe,
-        #                                  self.DATAFRAME_DESCRIPTOR: dataframe_descriptor,
-        #                                  self.DATAFRAME_EDITION_LOCKED: False,
-        #                                  self.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        #                                  self.NAMESPACE: self.NS_DRIVER
-        #                                  }}
-
-        # This reflects 'samples_df' dynamic input has been configured and that
-        # eval_inputs have changed
-        if self.SAMPLES_DF in disc_in and selected_inputs_has_changed:
-
-            if disc_in[self.SAMPLES_DF]['value'] is not None:
-                from_samples = list(disc_in[self.SAMPLES_DF]['value'].keys())
-                from_eval_inputs = list(default_custom_dataframe.keys())
-                final_dataframe = pd.DataFrame(
-                    None, columns=all_columns)
-
-                len_df = 1
-                for element in from_eval_inputs:
-                    if element in from_samples:
-                        len_df = len(disc_in[self.SAMPLES_DF]['value'])
-
-                for element in from_eval_inputs:
-                    if element in from_samples:
-                        final_dataframe[element] = disc_in[self.SAMPLES_DF]['value'][element]
-
-                    else:
-                        final_dataframe[element] = [NaN for _ in range(len_df)]
-                disc_in[self.SAMPLES_DF][self.VALUE] = final_dataframe
-            disc_in[self.SAMPLES_DF][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
-        return {}
 
     def _set_eval_process_builder(self):
         '''

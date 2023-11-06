@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/04/04-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -575,7 +576,10 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {}
+        builder_mode_input = {
+            f'{self.ns}.Eval.with_sample_generator': True,
+            f'{self.ns}.SampleGenerator.sampling_method': 'simple',
+                              }
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
@@ -584,14 +588,17 @@ class TestSoSDOEScenario(unittest.TestCase):
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
-                       '\t\t\t|_ Sellar_1']
+                       '\t\t\t|_ Sellar_1',
+                       f'\t|_ SampleGenerator',
+                       ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_x,
-                     f'{self.ns}.Eval.eval_outputs': self.output_selection_obj}
+                     f'{self.ns}.Eval.eval_outputs': self.output_selection_obj,
+                     }
         # DoE inputs
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value(
