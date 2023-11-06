@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -664,13 +665,15 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
-        builder_mode_input = {}
-        exec_eng.load_study_from_input_dict(builder_mode_input)
+        initial_input = {f'{ns}.Eval.with_sample_generator': True,
+                         f'{ns}.SampleGenerator.sampling_method': 'simple'}
+        exec_eng.load_study_from_input_dict(initial_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ root',
                        f'\t|_ Eval',
-                       '\t\t|_ Disc1']
+                       '\t\t|_ Disc1',
+                       '\t|_ SampleGenerator']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
@@ -689,11 +692,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
                      f'{ns}.Eval.eval_outputs': output_selection_ind}
 
+        exec_eng.load_study_from_input_dict(disc_dict)
+
         # a_values = [array([2.0]), array([4.0]), array(
         #     [6.0]), array([8.0]), array([10.0])]
         a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True]*5,
                         SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
                         'Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -795,7 +800,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(list(eval_disc_samples['Disc1.a']), a_values)
         x_all_None = True
         for element in list(eval_disc_samples['x']):
-            if math.isnan(element):
+            if element is None or math.isnan(element): # TODO: verify equivalence in gui.
                 pass
             else:
                 x_all_None = False
@@ -828,7 +833,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # self.assertEqual(list(eval_disc_samples['Eval.Disc1.a']), a_values)
         x_all_nan = True
         for element in list(eval_disc_samples['x']):
-            if math.isnan(element):
+            if element is None or math.isnan(element):
                 pass
             else:
                 x_all_nan = False
@@ -837,7 +842,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         b_all_nan = True
         for element in list(eval_disc_samples['Disc1.b']):
-            if math.isnan(element):
+            if element is None or math.isnan(element):
                 pass
             else:
                 b_all_nan = False
@@ -893,7 +898,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         x_all_nan = True
         for element in list(eval_disc_samples['x']):
-            if math.isnan(element):
+            if element is None or math.isnan(element):
                 pass
             else:
                 x_all_nan = False

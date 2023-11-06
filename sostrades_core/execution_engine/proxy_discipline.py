@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/02/23-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1008,6 +1009,8 @@ class ProxyDiscipline:
             self._update_status_dm(self.STATUS_CONFIGURE)
 
             self.set_configure_status(True)
+            for disc in self.config_dependent_disciplines:
+                disc.set_configure_status(False)
 
     def __check_all_data_integrity(self):
         '''

@@ -1,3 +1,18 @@
+'''
+Copyright 2023 Capgemini
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+'''
 """
 TEST STRATEGY MODULE
 
@@ -18,9 +33,6 @@ How to use ?
 import sys, os, glob, pytest, tempfile
 from typing import Union
 # Create a temporary file
-
-
-GENERATED_TEST_FILE_USECASES = "generated_test_file.py"
 
 
 def run_tests_l0_l1_l2(main_folder, file_pattern):
@@ -55,7 +67,7 @@ def run_generated_usecase_test(temp_file_path):
         exitcode = pytest.main(['-W', 'ignore','--verbose', '--durations=5', '--durations-min=2.0'] + [temp_file_path])
     except Exception as e:
         # Handle any errors or exceptions here
-        print(f"Error while running pytest on {GENERATED_TEST_FILE_USECASES}: {e}")
+        print(f"Error while running pytest on {temp_file_path}: {e}")
         exitcode = -1
 
     return exitcode
@@ -126,7 +138,7 @@ def test_usecases(mainfolder: str, processes_reponame: str):
         sys.exit(2)
 
 
-allowed_test_types = ['l0', 'l1', 'l2', 'uc']
+allowed_test_types = ['l0', 'l1', 'l2', 'uc', '--pattern']
 l_tests_pattern_mapping = {
     "l0": "l0_*.py",
     "l1": "l1_*.py",
@@ -134,29 +146,34 @@ l_tests_pattern_mapping = {
 }
 
 
-def gather_arguments(main_folder_default_value: str, test_type_default_value: str):
+def gather_arguments(test_type_default_value: str):
     """gathers arguments for running tests"""
-    mainfolder = main_folder_default_value
     testtype = test_type_default_value
+    file_pattern = ''
     if len(sys.argv) >= 2:
         testtype = sys.argv[1]
-    if len(sys.argv) >= 3:
-        mainfolder = sys.argv[2]
     if testtype not in allowed_test_types:
         print(f"Test type argument is wrong. must be in {allowed_test_types}")
-    return mainfolder, testtype
+    if testtype == '--pattern':
+        if len(sys.argv) >= 3:
+            file_pattern = sys.argv[2]
+        else:
+            print('please indicate the specific pattern')
+            sys.exit(-1)
+    if testtype != 'uc' and testtype != '--pattern':
+        file_pattern = l_tests_pattern_mapping[testtype]
+
+    return testtype, file_pattern
 
 
 def test_strategy(main_folder_default_value: str, processes_folder: Union[str, None]):
     sys.modules.pop('logging')
-    main_folder, test_type = gather_arguments(main_folder_default_value=main_folder_default_value,
-                                              test_type_default_value="l0")
+    test_type, file_pattern = gather_arguments(test_type_default_value="l0")
 
     if test_type != "uc":
-        file_pattern = l_tests_pattern_mapping[test_type]
-        exit_code = run_tests_l0_l1_l2(main_folder, file_pattern)
+        exit_code = run_tests_l0_l1_l2(main_folder_default_value, file_pattern)
     elif processes_folder is not None:
-        exit_code = test_usecases(main_folder, processes_folder)
+        exit_code = test_usecases(main_folder_default_value, processes_folder)
     else:
         print('No processes repo specified, exiting test.')
         exit_code = 0

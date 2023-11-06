@@ -1,5 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
+Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ class TestMultiScenario(unittest.TestCase):
         self.power2 = 3
 
         self.scenario_list = scenario_list = ['scenario_1', 'scenario_2', 'scenario_3']
-        self.subprocess_inputs_to_check = []
+        self.subprocess_inputs_to_check = ['Disc1.b', 'z']
 
     def setUp_cp(self):
         self.sampling_generation_mode_cp = 'at_configuration_time'
@@ -161,17 +161,33 @@ class TestMultiScenario(unittest.TestCase):
         # setup the driver and the sample generator jointly
         dict_values = {}
         sce_names = ['a', 'b', 'c']
+        selected_sce = [True, False, True]
+
         var_names = ['y_2', 'z']
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'simple'
-        dict_values[f'{self.study_name}.SampleGenerator.scenario_names'] = sce_names
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        samples_df = self.exec_eng.dm.get_value(f'{self.study_name}.SampleGenerator.samples_df')
+
+        ref_scenario = ['Reference Scenario']
+        self.assertEqual(['selected_scenario', 'scenario_name'], samples_df.columns.tolist())
+        self.assertEqual(ref_scenario, samples_df['scenario_name'].values.tolist())
+        self.assertEqual([True for _ in ref_scenario], samples_df['selected_scenario'].values.tolist())
+
+        # modify samples_df and save
+        samples_df = pd.DataFrame({'selected_scenario':selected_sce,
+                                   'scenario_name': sce_names})
+        dict_values[f'{self.study_name}.SampleGenerator.samples_df'] = samples_df
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # modify eval_inputs and save
         dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = pd.DataFrame({'selected_input': [True, True, False],
                                                                                       'full_name': var_names + ['blabla']})
         self.exec_eng.load_study_from_input_dict(dict_values)
-        samples_df = self.exec_eng.dm.get_value(f'{self.study_name}.SampleGenerator.generated_samples')
 
-        self.assertEqual(sce_names, samples_df['scenario_name'].values.tolist())
+        # check the columns have been added
+        samples_df = self.exec_eng.dm.get_value(f'{self.study_name}.SampleGenerator.samples_df')
         self.assertEqual(var_names, samples_df.columns[2:].tolist())
-        self.assertEqual([True for _ in sce_names], samples_df['selected_scenario'].values.tolist())
+        #
 
     def test_02_multiscenario_with_sample_generator_input_var(self):
         # # simple 2-disc process
@@ -184,8 +200,6 @@ class TestMultiScenario(unittest.TestCase):
 
         # setup the driver and the sample generator jointly
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario':[True],
-                                                                                     'scenario_name':['reference']}) # TODO: to be removed when default build reference
         dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'simple'
         self.exec_eng.load_study_from_input_dict(dict_values)
