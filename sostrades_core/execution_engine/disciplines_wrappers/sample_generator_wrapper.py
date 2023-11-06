@@ -163,10 +163,11 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
         SoSWrapp.EDITABLE: True,
-        SoSWrapp.STRUCTURING: False,
-        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        SoSWrapp.NAMESPACE: NS_SAMPLING
+        SoSWrapp.STRUCTURING: False
     }
+    SAMPLES_DF_DESC_SHARED = SAMPLES_DF_DESC.copy()
+    SAMPLES_DF_DESC_SHARED[SoSWrapp.NAMESPACE]=NS_SAMPLING
+    SAMPLES_DF_DESC_SHARED[SoSWrapp.VISIBILITY]=SoSWrapp.SHARED_VISIBILITY
 
     EVAL_INPUTS = 'eval_inputs'
     EVAL_INPUTS_DESC = {SoSWrapp.TYPE: 'dataframe',
@@ -262,7 +263,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                 #                             self.VISIBILITY: self.SHARED_VISIBILITY,
                 #                             self.NAMESPACE: self.NS_SAMPLING}
                 #                        })
-                dynamic_inputs.update({self.GENERATED_SAMPLES: self.SAMPLES_DF_DESC})
+
+                dynamic_inputs.update({self.GENERATED_SAMPLES: self.SAMPLES_DF_DESC_SHARED})
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
                     samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
@@ -330,7 +332,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         # 4. if sampling at run-time add the corresponding output
         if self.sampling_generation_mode == self.AT_RUN_TIME:
-            dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC.copy()
+            dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED
 
         # TODO: quick-fix the wrong display of samples_df as output in GUI, should actually be automatic by dm cleaning
         elif self.SAMPLES_DF in disc_in:

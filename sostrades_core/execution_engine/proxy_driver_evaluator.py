@@ -98,7 +98,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
     SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC.copy()
     SAMPLES_DF_DESC[ProxyDiscipline.STRUCTURING] = True
-    SAMPLES_DF_DESC[ProxyDiscipline.NAMESPACE] = NS_DRIVER
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
     SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
     WITH_SAMPLE_GENERATOR = 'with_sample_generator'

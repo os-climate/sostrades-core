@@ -291,4 +291,4 @@ class TestMultiScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestMultiScenario()
     cls.setUp()
-    cls.test_05_dump_and_load_after_execute_with_2_trade_vars()
+    cls.test_02_multiscenario_with_sample_generator_input_var()
