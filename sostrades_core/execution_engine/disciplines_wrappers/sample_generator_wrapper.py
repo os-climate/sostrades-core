@@ -265,7 +265,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 #                        })
                 dynamic_inputs.update({self.GENERATED_SAMPLES: self.SAMPLES_DF_DESC})
                 # 2. retrieve input that configures the sampling tool
-                if self.EVAL_INPUTS in disc_in:
+                if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
                     samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
                     eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
                     if eval_inputs is not None and samples_df is not None:
