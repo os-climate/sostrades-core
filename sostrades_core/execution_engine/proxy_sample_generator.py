@@ -50,7 +50,7 @@ class ProxySampleGenerator(ProxyDiscipline):
     MULTIPLIER_PARTICULE = "__MULTIPLIER__" # todo: to delete
     EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
     SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
-    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
+    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC_SHARED
 
     def set_eval_in_possible_values(self, possible_values: list[str]) -> bool:
         """
@@ -114,7 +114,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                                SampleGeneratorWrapper.SCENARIO_NAME] + selected_inputs
                 default_custom_dataframe = pd.DataFrame(
                     [[None for _ in range(len(all_columns))]], columns=all_columns)
-                dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
+                dataframe_descriptor = self.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
                 # This reflects 'samples_df' dynamic input has been configured and that
                 # eval_inputs have changed
                 if self.SAMPLES_DF in disc_in:

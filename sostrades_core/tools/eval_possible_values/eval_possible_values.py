@@ -66,9 +66,11 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
     if prefix_name_to_delete is None:
         prefix_name_to_delete = disc.get_disc_full_name()
 
+    possible_in_values, possible_out_values = set(), set()
     # fill possiblee values set for the high level disc
-    possible_in_values, possible_out_values = fill_possible_values(
-        disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
+    if disc.get_disc_full_name() != prefix_name_to_delete:
+        possible_in_values, possible_out_values = fill_possible_values(
+            disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
 
     # find sub_disciplines if it's a driver then subdisciplines are stored in scenarios (proxy in run with flatten subprocess)
     if hasattr(disc, 'scenarios'):

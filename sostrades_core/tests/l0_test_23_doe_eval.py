@@ -113,10 +113,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.output_selection_obj = pd.DataFrame(output_selection_obj)
 
         output_selection_obj_y1_y2 = {
-            'selected_output': [False, False, False, False, False, False, False, True, True, True],
-            'full_name': ['c_1', 'c_2', 'doe.obj_dict', 'doe.samples_inputs_df', 'doe.samples_outputs_df',
-                          'doe.y_1_dict', 'doe.y_2_dict', 'obj', 'y_1', 'y_2'],
-            'output_name': [None]*10}
+            'selected_output': [False, False, True, True, True],
+            'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2'],
+            'output_name': [None]*5}
         self.output_selection_obj_y1_y2 = pd.DataFrame(
             output_selection_obj_y1_y2)
 
@@ -156,10 +155,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
 
         # Eval inputs
-        disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -335,11 +334,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
 
         # Eval inputs
         # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
-        disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -480,8 +479,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = algo_name
-        disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
-        disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
 
         default_algo_options_lhs, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(
@@ -523,13 +522,13 @@ class TestSoSDOEScenario(unittest.TestCase):
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after eval_inputs and eval_outputs changes
-        disc_dict = {f'{self.ns}.eval_outputs': self.output_selection_obj_y1_y2,
-                     f'{self.ns}.eval_inputs': self.input_selection_x_z}
+        disc_dict = {f'{self.ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2,
+                     f'{self.ns}.Eval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
-        assert exec_eng.dm.get_value('doe.eval_outputs').equals(
+        assert exec_eng.dm.get_value('doe.Eval.eval_outputs').equals(
             self.output_selection_obj_y1_y2)
         df1 = self.input_selection_x_z
-        df2 = exec_eng.dm.get_value('doe.eval_inputs')
+        df2 = exec_eng.dm.get_value('doe.Eval.eval_inputs')
         df_all = df1.merge(df2, on=['selected_input', 'full_name'],
                            how='left', indicator=True)
         assert df_all[['selected_input', 'full_name']].equals(
@@ -546,7 +545,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                                  default_algo_options_fullfact[option])
 
         disc_dict = {f'{self.ns}.SampleGenerator.algo_options': {'n_samples': n_samples},
-                     f'{self.ns}.eval_outputs': self.output_selection_obj_y1_y2,
+                     f'{self.ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2,
                      f'{self.ns}.SampleGenerator.design_space': dspace_eval}
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -726,15 +725,15 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'face': 'faced'}
-        disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
-        disc_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
 
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         # check that all generated samples (except the last one which is the
         # initial point) are within [0,10.] range
         sample_inputs_df = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')
+            'doe.Eval.samples_inputs_df')
         generated_x = sample_inputs_df['x'].tolist()
         self.assertTrue(
             all(0 <= element[0] <= 10. for element in generated_x[:-1]))
@@ -745,13 +744,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
         # check that all generated samples are within [5.,11.] range
         generated_x = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['x'].tolist()
+            'doe.Eval.samples_inputs_df')['x'].tolist()
         self.assertTrue(
             all(5. <= element[0] <= 11. for element in generated_x[:-1]))
 
         # trigger a reconfiguration after algo name change
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "fullfact"
-        disc_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_eval
         exec_eng.load_study_from_input_dict(disc_dict)
         # disc_dict['doe.DoEEval.algo_options'] = {
@@ -759,12 +758,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         # exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         generated_x = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['x'].tolist()
+            'doe.Eval.samples_inputs_df')['x'].tolist()
         self.assertTrue(
             all(-9. <= element[0] <= 150. for element in generated_x[:-1]))
 
         generated_z = exec_eng.dm.get_value(
-            'doe.samples_inputs_df')['z'].tolist()
+            'doe.Eval.samples_inputs_df')['z'].tolist()
         self.assertTrue(
             all(-10. <= element[0] <= 10. and 4. <= element[1] <= 100. for element in
                 generated_z[:-1]))
@@ -904,16 +903,16 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
-                     f'{self.ns}.eval_inputs': input_selection_x_a,
-                     f'{self.ns}.eval_outputs': output_selection_z_z,
+                     f'{self.ns}.Eval.eval_inputs': input_selection_x_a,
+                     f'{self.ns}.Eval.eval_outputs': output_selection_z_z,
                      f'{self.ns}.SampleGenerator.algo_options': {'n_samples': 10, 'face': 'faced'},
                      f'{self.ns}.SampleGenerator.design_space': dspace
                      }
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
         self.assertEqual(len(exec_eng.dm.get_value(
-            'doe.subprocess.Disc1.z_dict')), 11)
-        self.assertEqual(len(exec_eng.dm.get_value('doe.z_dict')), 11)
+            'doe.Eval.subprocess.Disc1.z_dict')), 11)
+        self.assertEqual(len(exec_eng.dm.get_value('doe.Eval.z_dict')), 11)
 
         # Check coherence between ProxyCoupling of Eval and SoSMDAChain:
         self.assertEqual(set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_output_data_names()),
@@ -930,7 +929,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                       exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_input_data_names())
         # Check that the root process does not crush variables with the same
         # short name:
-        for var in ['doe.z_dict', 'doe.subprocess.Disc1.z_dict', 'doe.Eval.z', 'doe.Eval.subprocess.Disc1.z']:
+        for var in ['doe.Eval.z_dict', 'doe.Eval.subprocess.Disc1.z_dict', 'doe.Eval.z', 'doe.Eval.subprocess.Disc1.z']:
             self.assertIn(var, exec_eng.root_process.get_output_data_names())
 
     def test_10_warning_in_case_of_a_wrong_inputs_outputs_in_doe_eval(self):
@@ -982,8 +981,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict.update(values_dict)
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        msg_log_error_output_z = "The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['acceleration_dict', 'c_1', 'c_2', 'obj', 'samples_inputs_df', 'samples_outputs_df', 'y_1', 'y_2']"
-        msg_log_error_acceleration = "The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['acceleration_dict', 'c_1', 'c_2', 'obj', 'samples_inputs_df', 'samples_outputs_df', 'y_1', 'y_2']"
+        msg_log_error_output_z = "The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
+        msg_log_error_acceleration = "The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
 
         self.assertTrue(msg_log_error_output_z in my_handler.msg_list)
         self.assertTrue(msg_log_error_acceleration in my_handler.msg_list)
@@ -1145,8 +1144,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{same_usecase_name}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'fake_option': 'fake_option'}
         disc_dict[f'{same_usecase_name}.Eval.with_sample_generator'] = True
-        disc_dict[f'{same_usecase_name}.eval_inputs'] = self.input_selection_x_z
-        disc_dict[f'{same_usecase_name}.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{same_usecase_name}.Eval.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{same_usecase_name}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -1460,4 +1459,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_10_warning_in_case_of_a_wrong_inputs_outputs_in_doe_eval()
+    cls.test_13_sameusecase_name_as_doe_eval()
