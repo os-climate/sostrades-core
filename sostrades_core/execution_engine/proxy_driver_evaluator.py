@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/03-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/03/03-2023/11/06 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -254,7 +254,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def configure_sample_generator(self):
         if self.sample_generator_disc:
-            self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+            driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+
+            # TODO: this might be improved (see SampleGenerator.set_eval_in_possible_values)
+            if driver_config_status is False:
+                self.set_configure_status(False)
+
             if not self.sample_generator_disc.is_configured():
                 self.sample_generator_disc.configure()
 

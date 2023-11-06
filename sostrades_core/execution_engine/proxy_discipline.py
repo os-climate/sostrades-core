@@ -111,7 +111,7 @@ class ProxyDiscipline:
     # -- Disciplinary attributes
     DESC_IN = None
     DESC_OUT = None
-    IO_TYPE = 'io_type'
+    IO_TYPE = SoSWrapp.IO_TYPE
     IO_TYPE_IN = SoSWrapp.IO_TYPE_IN
     IO_TYPE_OUT = SoSWrapp.IO_TYPE_OUT
     TYPE = SoSWrapp.TYPE
