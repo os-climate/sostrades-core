@@ -128,8 +128,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                 # from a load and there is no need to crush the truth
                 # values
                 if not generated_samples.equals(samples_df):
-                    # TODO: could overload struct. var. check to spare this deepcopy (only if generated_samples
-                    #  remains as a DriverEvaluator input, othrwise another sample change check logic is needed)
                     self.old_samples_df = copy.deepcopy(
                         generated_samples_dict)
                     # we crush old samples_df and propose a df with
@@ -142,6 +140,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                     if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
                         samples_df[self.SELECTED_SCENARIO] = True
                     else:
+                        # FIXME: the checks below are no longer performed by anyone, to be migrated to SampleGenerator
                         self.logger.warning(
                             f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
                         samples_df[self.SELECTED_SCENARIO] = False
