@@ -275,7 +275,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def configure_sample_generator(self):
         if self.sample_generator_disc:
-            self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+            driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+
+            # TODO: this might be improved (see SampleGenerator.set_eval_in_possible_values)
+            if driver_config_status is False:
+                self.set_configure_status(False)
+
             if not self.sample_generator_disc.is_configured():
                 self.sample_generator_disc.configure()
 
