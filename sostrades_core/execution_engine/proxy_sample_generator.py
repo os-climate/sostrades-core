@@ -124,9 +124,13 @@ class ProxySampleGenerator(ProxyDiscipline):
                         for element in from_eval_inputs:
                             if element in from_samples:
                                 final_dataframe[element] = disc_in[self.SAMPLES_DF]['value'][element]
+                                dataframe_descriptor[element] = ('multiple', None, True)
+                                # TODO: dataframe descriptor should be corrected by driver as it's in charge of the
+                                #  subprocess, currently multi-instance driver does not have the mechanism
 
                             else:
                                 final_dataframe[element] = [None for _ in range(len_df)]
+                                dataframe_descriptor[element] = ('multiple', None, True)
                         disc_in[self.SAMPLES_DF][self.VALUE] = final_dataframe
                     disc_in[self.SAMPLES_DF][self.DATAFRAME_DESCRIPTOR] = dataframe_descriptor
                 elif self.get_sosdisc_inputs(SampleGeneratorWrapper.SAMPLING_GENERATION_MODE) == SampleGeneratorWrapper.AT_CONFIGURATION_TIME:
