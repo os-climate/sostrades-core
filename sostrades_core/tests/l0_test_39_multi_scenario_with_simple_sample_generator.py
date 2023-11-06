@@ -68,7 +68,7 @@ class TestMultiScenario(unittest.TestCase):
         self.power2 = 3
 
         self.scenario_list = scenario_list = ['scenario_1', 'scenario_2', 'scenario_3']
-        self.subprocess_inputs_to_check = ['Disc1.b', 'z']
+        self.subprocess_inputs_to_check = ['Disc1.b', 'z', 'Disc3.constant', 'Disc3.power', 'a', 'x', 'z']
 
     def setUp_cp(self):
         self.sampling_generation_mode_cp = 'at_configuration_time'
@@ -150,7 +150,7 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_01_standalone_simple_sample_generator(self):
         """
-        Checks a standalone simple sample generator that takes 'scenario_names' and 'eval_inputs' and generates an
+        Checks a standalone simple sample generator that takes 'eval_inputs' and generates an
         empty dataframe with the corresponding lines and columns and all scenarios selected.
         """
         sg_builder = self.exec_eng.factory.create_sample_generator('SampleGenerator')
@@ -191,7 +191,8 @@ class TestMultiScenario(unittest.TestCase):
         #
 
     def test_02_multiscenario_with_sample_generator_input_var(self):
-        # # simple 2-disc process
+
+        # simple 2-disc process
         repo_name = self.repo + ".tests_driver_eval.multi"
         proc_name = 'test_multi_driver_simple'
         builders = self.exec_eng.factory.get_builder_from_process(repo_name,
@@ -199,56 +200,70 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
 
-        # setup the driver and the sample generator jointly
+        # setup the driver and the sample generator mode
         dict_values = {}
         dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'simple'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
+        # check that simple sample generator forces config time sampling
         dict_values = {}
         self.assertEqual(self.exec_eng.dm.get_value(
             f'{self.study_name}.SampleGenerator.sampling_generation_mode'), 'at_configuration_time')
 
+        # check that eval_inputs possible values has been properly loaded
         eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.eval_inputs')
-
         set_subprocess_inputs = set(eval_inputs['full_name'])
         for var in self.subprocess_inputs_to_check:
             self.assertIn(var, set_subprocess_inputs)
 
+        # check that, when selecting some eval_inputs, the columns appear in samples_df
         eval_inputs.loc[eval_inputs['full_name'] == 'Disc1.b', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] == 'z', ['selected_input']] = True
 
-        # manually configure the scenarios non-varying values (~reference)
-        scenario_list = ['a', 'b', 'c', 'd']
-
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = eval_inputs
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_names'] = scenario_list
-
         self.exec_eng.load_study_from_input_dict(dict_values)
-
-        for scenario in scenario_list:
-            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
-            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
-            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
-            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
-            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.z'] = self.z1
-
-        # activate some of the scenarios, deactivated by default
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
-        samples_df['selected_scenario'] = [True, True, False, True]
-        samples_df['Disc1.b'] = [self.b1, self.b1, self.b2, self.b2]
-        samples_df['z'] = [self.z1, self.z2, self.z1, self.z2]
+        self.assertEqual(list(samples_df.columns), ['selected_scenario',
+                                                    'scenario_name',
+                                                    'Disc1.b',
+                                                    'z'])
+
+        # modify samples_df to actually generate the scenarios
+        scenario_list = ['a', 'b', 'c', 'd']
+        selected_scenario = [True, True, False, True]
+        samples_df = pd.DataFrame({'selected_scenario': selected_scenario,
+                                   'scenario_name': scenario_list,
+                                   'Disc1.b': [self.b1, self.b1, self.b2, self.b2],
+                                   'z': [self.z1, self.z2, self.z1, self.z2],
+                                   })
         dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ## flatten_subprocess
-        # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
-        #     'MyCase.multi_scenarios')[0]
-        # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
-        # self.assertEqual(ms_sub_disc_names, ['scenario_1',
-        #                                      'scenario_2',
-        #                                      'scenario_4'])
+        exp_tv = 'Nodes representation for Treeview MyCase\n' \
+                 '|_ MyCase\n' \
+                 '\t|_ multi_scenarios\n' \
+                 '\t\t|_ a\n' \
+                 '\t\t\t|_ Disc1\n' \
+                 '\t\t\t|_ Disc3\n' \
+                 '\t\t|_ b\n' \
+                 '\t\t\t|_ Disc1\n' \
+                 '\t\t\t|_ Disc3\n' \
+                 '\t\t|_ d\n' \
+                 '\t\t\t|_ Disc1\n' \
+                 '\t\t\t|_ Disc3\n' \
+                 '\t|_ SampleGenerator'
+        self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
+
+        # manually configure scenarios reference values
+        for scenario, sel in zip(scenario_list, selected_scenario):
+            if sel:
+                dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+                dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+                dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+                dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+        self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.exec_eng.execute()
 
