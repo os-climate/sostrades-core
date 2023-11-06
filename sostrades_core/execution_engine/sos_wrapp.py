@@ -79,6 +79,7 @@ class SoSWrapp(object):
     DATAFRAME_FILL = DesignVar.DATAFRAME_FILL
     ONE_COLUMN_FOR_KEY = DesignVar.ONE_COLUMN_FOR_KEY
     COLUMNS_NAMES = DesignVar.COLUMNS_NAMES
+    IO_TYPE = 'io_type'
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
