@@ -23,15 +23,25 @@ class Study(StudyManager):
 
     def __init__(self, run_usecase=False, execution_engine=None):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
+        # reference var values
+        self.x = 2.
+        self.a = 3
+        self.b = 8
+        self.z = 12
+        self.constant = 3
+        self.power = 2
 
     def setup_usecase(self):
         # setup the driver and the sample generator jointly
         dict_values = {}
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'simple'
         dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_names'] = []
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = pd.DataFrame()
-
+        dict_values[self.study_name + '.multi_scenarios.Reference Scenario.a'] = self.a
+        dict_values[self.study_name + '.multi_scenarios.Reference Scenario.x'] = self.x
+        dict_values[self.study_name + '.multi_scenarios.Reference Scenario.Disc3.constant'] = self.constant
+        dict_values[self.study_name + '.multi_scenarios.Reference Scenario.Disc3.power'] = self.power
+        dict_values[self.study_name + '.multi_scenarios.Reference Scenario.Disc1.b'] = self.b
+        dict_values[self.study_name + '.multi_scenarios.Reference Scenario.z'] = self.z
         return [dict_values]
 
 if '__main__' == __name__:
