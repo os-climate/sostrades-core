@@ -339,7 +339,8 @@ class SampleGeneratorWrapper(SoSWrapp):
             self.dm.set_data(
                 self.get_var_full_name(self.SAMPLES_DF, disc_in),
                 self.IO_TYPE,
-                self.IO_TYPE_IN
+                self.IO_TYPE_IN,
+                check_value=False
             )
 
         self.add_inputs(dynamic_inputs)
