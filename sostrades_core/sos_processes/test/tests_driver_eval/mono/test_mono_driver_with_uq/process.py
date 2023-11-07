@@ -41,7 +41,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         uq_name = 'UncertaintyQuantification'
 
-
+        self.ee.ns_manager.add_ns('ns_sampling', f'{self.ee.study_name}.Eval')
         eval_driver = self.ee.factory.create_mono_instance_driver(
             'Eval', cls_list)
 

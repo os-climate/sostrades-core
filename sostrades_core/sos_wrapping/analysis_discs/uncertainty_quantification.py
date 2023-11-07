@@ -70,7 +70,9 @@ class UncertaintyQuantification(SoSWrapp):
         SoSWrapp.TYPE: 'dataframe',
         SoSWrapp.DATAFRAME_DESCRIPTOR: {},
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
-        SoSWrapp.UNIT: None
+        SoSWrapp.UNIT: None,
+        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+        SoSWrapp.NAMESPACE: 'ns_sampling',
     }
     DESC_IN = {
         'samples_inputs_df': eval_df_data_description,
@@ -85,6 +87,8 @@ class UncertaintyQuantification(SoSWrapp):
                 NB_POINTS: ('int', None, True),
                 'full_name': ('string', None, False),
             },
+            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+            SoSWrapp.NAMESPACE: 'ns_sampling',
             SoSWrapp.STRUCTURING: True
         },
         'confidence_interval': {
@@ -118,7 +122,9 @@ class UncertaintyQuantification(SoSWrapp):
                 # 'ontology_name': ('string', None, False),je
             },
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
-            SoSWrapp.STRUCTURING: True
+            SoSWrapp.STRUCTURING: True,
+            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+            SoSWrapp.NAMESPACE: 'ns_sampling',
         },
         EVAL_OUTPUTS: {
             SoSWrapp.TYPE: 'dataframe',
@@ -129,7 +135,9 @@ class UncertaintyQuantification(SoSWrapp):
                 # 'ontology_name': ('string', None, False),
             },
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
-            SoSWrapp.STRUCTURING: True
+            SoSWrapp.STRUCTURING: True,
+            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
+            SoSWrapp.NAMESPACE: 'ns_sampling',
         },
     }
 
