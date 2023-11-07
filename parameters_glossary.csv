@@ -56,7 +56,15 @@ parallel_options,Parallel Options,,Parallel options of the optimization problem 
 power,Power,,,,
 Product_list,List of Products,,List of Products,,
 repo_of_sub_processes,Repository of subprocesses,,Folder root of the sub processes to be nested inside the DoE. If 'None' then it uses the sos_processes python for doe creation.,,
-samples_df,Samples,,,,
+resource_list,Resource List,,"coal, gas, oil, uranium",,
+sale_price_dict,Sale price per program,,Sale price of an aircraft per program,,CC - Costs
+sales_qty_all_scenario_df_dict,Sales Qty Scenario Aggregate,,,,
+sales_qty_all_scenario_dict,Sales Qty Scenario Dict,,,,
+sales_qty_df,A/C sales per year,#A/C/year,Number of aircraft sold for each year,,"CA - Denumerable quantities, counts"
+sales_qty_df_dict,A/C sales per year per program,,Number of aircraft sold for each year per program,,"CA - Denumerable quantities, counts"
+sales_qty_df_dict_dict,A/C sales per year Aggregate,,,,
+sales_qty_df_ramped,A/C sales per year ramp-up,#A/C/year,,,
+sales_qty_df_ramped_dict,A/C sales per year ramp-up Aggregate,,,,
 samples_inputs_df,Input Samples Data,-,Samples of the evaluated inputs,,
 samples_outputs_df,Output Samples Data,-,Samples of the evaluated outputs,,
 samples_size,Sample Size,,,,
