@@ -61,8 +61,6 @@ class ProxySampleGenerator(ProxyDiscipline):
         if possible_values:
             driver_is_configured = False
             disc_in = self.get_data_in()
-            # TODO: this should be done during configuration of the sampler. In the driver configuration, only an
-            #  attribute should be set.
             if disc_in and self.get_sosdisc_inputs(
                     SampleGeneratorWrapper.SAMPLING_METHOD) == SampleGeneratorWrapper.CARTESIAN_PRODUCT:
                 # NB: this if clause only exists because cartesian product has no input variable "eval_inputs"
@@ -124,8 +122,9 @@ class ProxySampleGenerator(ProxyDiscipline):
                             if element in from_samples:
                                 final_dataframe[element] = samples_df[element]
                                 dataframe_descriptor[element] = ('multiple', None, True)
-                                # TODO: dataframe descriptor should be corrected by driver as it's in charge of the
-                                #  subprocess, currently multi-instance driver does not have the mechanism
+                                # TODO: dataframe descriptor should be corrected by driver based on samples_df so that
+                                #  it can properly work in standalone driver. Currently multi-instance driver does not
+                                #  have the mechanism..
                             else:
                                 final_dataframe[element] = [None for _ in range(len_df)]
                                 dataframe_descriptor[element] = ('multiple', None, True)
