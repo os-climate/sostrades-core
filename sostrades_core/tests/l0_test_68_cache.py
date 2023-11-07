@@ -1123,9 +1123,9 @@ class TestCache(unittest.TestCase):
     #     eval_inputs.loc[eval_inputs['full_name'] ==
     #                     f'{self.grid_search}.Disc1.j', ['selected_input']] = True
     #
-    #     eval_outputs = self.ee.dm.get_value(
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs')
-    #     eval_outputs.loc[eval_outputs['full_name'] ==
+    #     gather_outputs = self.ee.dm.get_value(
+    #         f'{self.study_name}.{self.grid_search}.gather_outputs')
+    #     gather_outputs.loc[gather_outputs['full_name'] ==
     #                      f'{self.grid_search}.Disc1.y', ['selected_output']] = True
     #
     #     dspace = pd.DataFrame({
@@ -1139,7 +1139,7 @@ class TestCache(unittest.TestCase):
     #     dict_values = {
     #         # GRID SEARCH INPUTS
     #         f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+    #         f'{self.study_name}.{self.grid_search}.gather_outputs': gather_outputs,
     #         f'{self.study_name}.{self.grid_search}.design_space': dspace,
     #
     #         # DISC1 INPUTS
@@ -1288,9 +1288,9 @@ class TestCache(unittest.TestCase):
     #     eval_inputs.loc[eval_inputs['full_name'] ==
     #                     f'{self.grid_search}.Disc1.j', ['selected_input']] = True
     #
-    #     eval_outputs = self.ee.dm.get_value(
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs')
-    #     eval_outputs.loc[eval_outputs['full_name'] ==
+    #     gather_outputs = self.ee.dm.get_value(
+    #         f'{self.study_name}.{self.grid_search}.gather_outputs')
+    #     gather_outputs.loc[gather_outputs['full_name'] ==
     #                      f'{self.grid_search}.Disc1.y', ['selected_output']] = True
     #
     #     dspace = pd.DataFrame({
@@ -1304,7 +1304,7 @@ class TestCache(unittest.TestCase):
     #     dict_values = {
     #         # GRID SEARCH INPUTS
     #         f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+    #         f'{self.study_name}.{self.grid_search}.gather_outputs': gather_outputs,
     #         f'{self.study_name}.{self.grid_search}.design_space': dspace,
     #
     #         # DISC1 INPUTS

@@ -85,7 +85,7 @@ class Study(StudyManager):
             'n_samples': n_samples}
         disc_dict[f'{ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x
-        disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_obj_y1_y2
 
         with_modal = True
         if with_modal:

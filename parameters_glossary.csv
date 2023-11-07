@@ -107,13 +107,13 @@ eq_constraints,Equality Constraints,,Equality constraints in the optimization pr
 eval_inputs,Evaluated Inputs,,"Inputs to evaluate for the analysis (Sensitivity, Gradient, FORM ...)",,D - Nominal property
 eval_jac,Jacobian Evaluation,,"If True, and Evaluation mode is True, evaluate also the jacobian of the functions of the optimization problem ",,
 eval_mode,Evaluation Mode,,"If True, functions (constraints and objective) of the optimization problem are evaluated with values from the design space",,
-eval_outputs,Evaluated Outputs,,"Outputs to evaluate for the analysis (Sensitivity, Gradient, FORM ...)",,D - Nominal property
 formulation,Formulation,,,,
 full_ac_BOM,A/C Bill of Material,,,,
 function_df,Objective functions,,,,
 funding_info_dict_dict,Fundings per year,,List of fundings per year and per source,,
 fuselage_length_all_scenarios_dict,Fuselage Length All Scenarios,m,,,
 fuselage_length_dict,Fuselage length,m,Fuselage length,,
+gather_outputs,Gathered Outputs,,"Outputs to evaluate for the analysis (Sensitivity, Gradient, FORM ...)",,D - Nominal property
 global_mix_price_dict,Global mix price mod,,,,
 GMF_API_input_parameters_dict,GMF API Input Parameters Dict,,,,
 generated_samples,Generated Samples,-,,,

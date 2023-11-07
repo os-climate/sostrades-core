@@ -29,7 +29,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     SUBCOUPLING_NAME = 'subprocess'
     # TODO: manage desc_in in correct classes
     DESC_IN = {
-        ProxyDriverEvaluator.EVAL_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
+        ProxyDriverEvaluator.GATHER_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
                                             ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
                                                 'selected_output': ('bool', None, True),
                                                 'full_name': ('string', None, False),
@@ -51,9 +51,9 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         dynamic_inputs = {}
         dynamic_outputs = {}
         if disc_in:
-            if self.EVAL_OUTPUTS in disc_in:
-                eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
-                selected_outputs_dict = gather_selected_outputs(eval_outputs, self.GATHER_DEFAULT_SUFFIX)
+            if self.GATHER_OUTPUTS in disc_in:
+                gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
+                selected_outputs_dict = gather_selected_outputs(gather_outputs, self.GATHER_DEFAULT_SUFFIX)
                 self.selected_outputs = selected_outputs_dict.keys()
                 if len(selected_outputs_dict) > 0:
                     self.eval_out_list = [f'{self.get_disc_full_name()}.{element}' for element in selected_outputs_dict.keys()]

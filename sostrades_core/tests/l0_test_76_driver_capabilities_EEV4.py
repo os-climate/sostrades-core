@@ -182,7 +182,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             'n_samples': n_samples}
         disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
-        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -322,7 +322,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.Simple_Disc1.added_algo_options'] = {
             'n_samples': n_samples}
         values_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
-        values_dict[f'{self.ns}.eval_outputs'] = self.output_selection_obj_y1_y2
+        values_dict[f'{self.ns}.gather_outputs'] = self.output_selection_obj_y1_y2
 
         # Sellar inputs
         local_dv = 10.
@@ -443,7 +443,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             'n_samples': n_samples}
         disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
-        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -551,7 +551,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
-                     f'{ns}.Eval.eval_outputs': output_selection_ind}
+                     f'{ns}.Eval.gather_outputs': output_selection_ind}
 
         a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
 
@@ -690,7 +690,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
-                     f'{ns}.Eval.eval_outputs': output_selection_ind}
+                     f'{ns}.Eval.gather_outputs': output_selection_ind}
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
