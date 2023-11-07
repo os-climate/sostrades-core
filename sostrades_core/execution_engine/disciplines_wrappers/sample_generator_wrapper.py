@@ -145,7 +145,6 @@ class SampleGeneratorWrapper(SoSWrapp):
     available_sampling_generation_modes = [AT_CONFIGURATION_TIME, AT_RUN_TIME]
 
     EVAL_INPUTS_CP = 'eval_inputs_cp'
-    GENERATED_SAMPLES = 'samples_df'
     SAMPLES_DF = 'samples_df'
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
@@ -183,7 +182,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
                                  'possible_values': available_sampling_methods,
-                                 'default': DOE_ALGO},
+                                 'default': SIMPLE_SAMPLING_METHOD},
                SAMPLING_GENERATION_MODE: {'type': 'string',
                                           'structuring': True, # TODO: when editable also structuring
                                           'possible_values': available_sampling_generation_modes,
@@ -263,7 +262,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 #                             self.VISIBILITY: self.SHARED_VISIBILITY,
                 #                             self.NAMESPACE: self.NS_SAMPLING}
                 #                        })
-                dynamic_inputs.update({self.GENERATED_SAMPLES: self.SAMPLES_DF_DESC.copy()})
+                dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC.copy()})
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
                     samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
@@ -721,21 +720,21 @@ class SampleGeneratorWrapper(SoSWrapp):
                 algo_name, algo_options, dspace_df)
             self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df)
 
-            dynamic_inputs.update({self.GENERATED_SAMPLES: {self.TYPE: 'dataframe',
-                                                            self.DATAFRAME_DESCRIPTOR: {},
-                                                            self.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                                            self.DATAFRAME_EDITION_LOCKED: True,
-                                                            self.STRUCTURING: False,
-                                                            self.UNIT: None,
-                                                            self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                            self.NAMESPACE: self.NS_SAMPLING,
-                                                            self.DEFAULT: self.samples_gene_df}})
+            dynamic_inputs.update({self.SAMPLES_DF: {self.TYPE: 'dataframe',
+                                                     self.DATAFRAME_DESCRIPTOR: {},
+                                                     self.DYNAMIC_DATAFRAME_COLUMNS: True,
+                                                     self.DATAFRAME_EDITION_LOCKED: True,
+                                                     self.STRUCTURING: False,
+                                                     self.UNIT: None,
+                                                     self.VISIBILITY: self.SHARED_VISIBILITY,
+                                                     self.NAMESPACE: self.NS_SAMPLING,
+                                                     self.DEFAULT: self.samples_gene_df}})
 
         # Set or update GENERATED_SAMPLES in line with selected
         # eval_inputs_cp
         disc_in = self.get_data_in()
-        if self.GENERATED_SAMPLES in disc_in:
-            disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+        if self.SAMPLES_DF in disc_in:
+            disc_in[self.SAMPLES_DF][self.VALUE] = self.samples_gene_df
 
     def generate_sample_for_doe(self, algo_name, algo_options, dspace_df):
         """
@@ -766,7 +765,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             samples_df = self.generate_sample_for_doe(
                 algo_name, algo_options, dspace_df)
         elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
-            generated_samples = self.get_sosdisc_inputs(self.GENERATED_SAMPLES)
+            generated_samples = self.get_sosdisc_inputs(self.SAMPLES_DF)
             samples_df = generated_samples
 
         return samples_df
@@ -918,13 +917,13 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df)
         generated_samples_data_description.update({self.DEFAULT: self.samples_gene_df})
-        dynamic_inputs.update({self.GENERATED_SAMPLES: generated_samples_data_description})
+        dynamic_inputs.update({self.SAMPLES_DF: generated_samples_data_description})
 
         # Set or update GENERATED_SAMPLES in line with selected
         # eval_inputs_cp
         disc_in = self.get_data_in()
-        if self.GENERATED_SAMPLES in disc_in and self.samples_gene_df is not None:
-            self.dm.set_data(self.get_var_full_name(self.GENERATED_SAMPLES, disc_in),
+        if self.SAMPLES_DF in disc_in and self.samples_gene_df is not None:
+            self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
                              'value', self.samples_gene_df, check_value=False)
             # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
 
@@ -994,7 +993,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         """
 
         if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
-            generated_samples = self.get_sosdisc_inputs(self.GENERATED_SAMPLES)
+            generated_samples = self.get_sosdisc_inputs(self.SAMPLES_DF)
             samples_df = generated_samples
         elif self.sampling_generation_mode == self.AT_RUN_TIME:
             if self.eval_inputs_cp_validity:

@@ -226,7 +226,6 @@ sales_qty_df_dict,A/C sales per year per program,,Number of aircraft sold for ea
 sales_qty_df_dict_dict,A/C sales per year Aggregate,,,,
 sales_qty_df_ramped,A/C sales per year ramp-up,#A/C/year,,,
 sales_qty_df_ramped_dict,A/C sales per year ramp-up Aggregate,,,,
-samples_df,Samples,,,,
 samples_inputs_df,Input Samples Data,-,Samples of the evaluated inputs,,
 samples_outputs_df,Output Samples Data,-,Samples of the evaluated outputs,,
 samples_size,Sample Size,,,,
