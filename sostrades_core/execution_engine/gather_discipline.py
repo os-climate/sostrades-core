@@ -50,7 +50,7 @@ class GatherDiscipline(SoSWrapp):
                         'dataframe_descriptor', 'dataframe_edition_locked',
                         'default', 'optional', 'numerical', SoSWrapp.VISIBILITY, SoSWrapp.NAMESPACE,
                         SoSWrapp.NS_REFERENCE]
-    EVAL_OUTPUTS = 'eval_outputs'
+    GATHER_OUTPUTS = 'gather_outputs'
     GATHER_SUFFIX = '_dict'
     EVAL_OUTPUTS_DESC = {
             SoSWrapp.TYPE: 'dataframe',
@@ -63,7 +63,7 @@ class GatherDiscipline(SoSWrapp):
             SoSWrapp.STRUCTURING: True,
         }
     
-    DESC_IN = {EVAL_OUTPUTS : EVAL_OUTPUTS_DESC}
+    DESC_IN = {GATHER_OUTPUTS : EVAL_OUTPUTS_DESC}
     
     def __init__(self, sos_name, logger: logging.Logger):
         """
@@ -91,7 +91,7 @@ class GatherDiscipline(SoSWrapp):
         dynamic_inputs = {}
         dynamic_outputs = {}
         disc_in = self.get_data_in()
-        if self.EVAL_OUTPUTS in disc_in:
+        if self.GATHER_OUTPUTS in disc_in:
             self.build_eval_output()
             dynamic_inputs, dynamic_outputs = self.build_dynamic_io_from_gather_outputs()
         return dynamic_inputs, dynamic_outputs
@@ -119,8 +119,8 @@ class GatherDiscipline(SoSWrapp):
 
             # get already set eval_output
             disc_in = self.get_data_in()
-            eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
-            eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)
+            eval_output_new_dm = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
+            eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, disc_in)
 
             # merge possible outputs with current eval_output
             eval_output_df, error_msg = get_eval_output(set(self.gather_names.values()), eval_output_new_dm)
@@ -135,15 +135,15 @@ class GatherDiscipline(SoSWrapp):
 
     def build_dynamic_io_from_gather_outputs(self):
         '''
-        Add in dynamic_input the eval_outputs that needs to be gathered 
-        and in dynamic_output the dict of eval_outputs that have been gathered
+        Add in dynamic_input the gather_outputs that needs to be gathered 
+        and in dynamic_output the dict of gather_outputs that have been gathered
         '''
         dynamic_inputs = {}
         dynamic_outputs = {}
 
-        eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+        gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
         # get only variables that are selected
-        selected_outputs_dict = gather_selected_outputs(eval_outputs, self.gather_suffix)
+        selected_outputs_dict = gather_selected_outputs(gather_outputs, self.gather_suffix)
 
         if len(selected_outputs_dict) > 0:
             # search selected output variables in dependency_disc
@@ -198,10 +198,10 @@ class GatherDiscipline(SoSWrapp):
         input_dict = self.get_sosdisc_inputs()
         output_dict = {}
         output_keys = self.get_sosdisc_outputs().keys()
-        eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+        gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
 
         # get only selected eval_output
-        selected_output = gather_selected_outputs(eval_outputs, self.gather_suffix)
+        selected_output = gather_selected_outputs(gather_outputs, self.gather_suffix)
 
         for out_key in output_keys:
             if out_key in selected_output.values():

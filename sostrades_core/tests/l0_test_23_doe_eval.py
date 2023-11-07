@@ -158,7 +158,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
 
         # Eval inputs
-        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -224,7 +224,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
-                     f'{ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2}
+                     f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
         # Eval inputs
 
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
@@ -338,7 +338,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Eval inputs
         # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
-        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -480,7 +480,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = algo_name
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
-        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
 
         default_algo_options_lhs, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(
@@ -521,11 +521,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True),
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
-        # trigger a reconfiguration after eval_inputs and eval_outputs changes
-        disc_dict = {f'{self.ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2,
+        # trigger a reconfiguration after eval_inputs and gather_outputs changes
+        disc_dict = {f'{self.ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2,
                      f'{self.ns}.Eval.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
-        assert exec_eng.dm.get_value('doe.Eval.eval_outputs').equals(
+        assert exec_eng.dm.get_value('doe.Eval.gather_outputs').equals(
             self.output_selection_obj_y1_y2)
         df1 = self.input_selection_x_z
         df2 = exec_eng.dm.get_value('doe.Eval.eval_inputs')
@@ -545,7 +545,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                                  default_algo_options_fullfact[option])
 
         disc_dict = {f'{self.ns}.SampleGenerator.algo_options': {'n_samples': n_samples},
-                     f'{self.ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2,
+                     f'{self.ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2,
                      f'{self.ns}.SampleGenerator.design_space': dspace_eval}
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -597,7 +597,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_x,
-                     f'{self.ns}.Eval.eval_outputs': self.output_selection_obj,
+                     f'{self.ns}.Eval.gather_outputs': self.output_selection_obj,
                      }
         # DoE inputs
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -614,7 +614,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
                              [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,
                               'subprocess.Sellar_Problem.local_dv'])
-        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -726,7 +726,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'face': 'faced'}
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
-        disc_dict[f'{self.ns}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
 
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
@@ -789,7 +789,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_local_dv_x,
-                     f'{self.ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2}
+                     f'{self.ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
         # DoE inputs
 
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
@@ -904,7 +904,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
                      f'{self.ns}.Eval.eval_inputs': input_selection_x_a,
-                     f'{self.ns}.Eval.eval_outputs': output_selection_z_z,
+                     f'{self.ns}.Eval.gather_outputs': output_selection_z_z,
                      f'{self.ns}.SampleGenerator.algo_options': {'n_samples': 10, 'face': 'faced'},
                      f'{self.ns}.SampleGenerator.design_space': dspace
                      }
@@ -976,13 +976,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
                      f'{self.ns}.Eval.eval_inputs': wrong_input_selection_x,
-                     f'{self.ns}.Eval.eval_outputs': wrong_output_selection_obj}
+                     f'{self.ns}.Eval.gather_outputs': wrong_output_selection_obj}
 
         disc_dict.update(values_dict)
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        msg_log_error_output_z = "The output z in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
-        msg_log_error_acceleration = "The output acceleration in eval_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
+        msg_log_error_output_z = "The output z in gather_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
+        msg_log_error_acceleration = "The output acceleration in gather_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
 
         self.assertTrue(msg_log_error_output_z in my_handler.msg_list)
         self.assertTrue(msg_log_error_acceleration in my_handler.msg_list)
@@ -1023,7 +1023,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # -- set up disciplines in Scenario
         disc_dict = {#f'{ns}.Eval.with_sample_generator': True,
                      f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
-                     f'{ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2}
+                     f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
 
         # Eval inputs
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
@@ -1145,7 +1145,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             'n_samples': n_samples, 'fake_option': 'fake_option'}
         disc_dict[f'{same_usecase_name}.Eval.with_sample_generator'] = True
         disc_dict[f'{same_usecase_name}.Eval.eval_inputs'] = self.input_selection_x_z
-        disc_dict[f'{same_usecase_name}.Eval.eval_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{same_usecase_name}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -1243,7 +1243,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
                      f'{self.ns}.Eval.eval_inputs': input_selection_a,
-                     f'{self.ns}.Eval.eval_outputs': output_selection_ind}
+                     f'{self.ns}.Eval.gather_outputs': output_selection_ind}
 
         exec_eng.load_study_from_input_dict(disc_dict)
         disc_dict = {'doe.SampleGenerator.algo_options': {'n_samples': 10, 'face': 'faced'},
@@ -1325,7 +1325,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Eval inputs
         # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
-        disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_ind
+        disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_ind
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # -- Discipline inputs
@@ -1361,7 +1361,7 @@ class TestSoSDOEScenario(unittest.TestCase):
     def test_16_Eval_User_Defined_samples_custom_output_name(self):
         """
         This test checks that the custom samples applied to an Eval driver delivers expected outputs and these
-        are stored with a custom out name specified in eval_outputs. It is a non regression test.
+        are stored with a custom out name specified in gather_outputs. It is a non regression test.
         """
         study_name = 'root'
         ns = study_name
@@ -1382,7 +1382,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines in Scenario
         disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
-                     f'{ns}.Eval.eval_outputs': self.output_selection_obj_y1_y2_with_out_name}
+                     f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2_with_out_name}
         # Eval inputs
 
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
