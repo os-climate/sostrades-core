@@ -1242,8 +1242,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
-                     f'{self.ns}.eval_inputs': input_selection_a,
-                     f'{self.ns}.eval_outputs': output_selection_ind}
+                     f'{self.ns}.Eval.eval_inputs': input_selection_a,
+                     f'{self.ns}.Eval.eval_outputs': output_selection_ind}
 
         exec_eng.load_study_from_input_dict(disc_dict)
         disc_dict = {'doe.SampleGenerator.algo_options': {'n_samples': 10, 'face': 'faced'},
@@ -1321,11 +1321,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace_a
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'levels': levels, 'centers': centers}
-        disc_dict[f'{ns}.eval_inputs'] = input_selection_a
+        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a
 
         # Eval inputs
         # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
-        disc_dict[f'{ns}.eval_outputs'] = output_selection_ind
+        disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_ind
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # -- Discipline inputs
