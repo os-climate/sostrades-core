@@ -171,7 +171,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
                                  'possible_values': available_sampling_methods,
-                                 'default': DOE_ALGO},
+                                 'default': SIMPLE_SAMPLING_METHOD},
                SAMPLING_GENERATION_MODE: {'type': 'string',
                                           'structuring': True, # TODO: when editable also structuring
                                           'possible_values': available_sampling_generation_modes,
