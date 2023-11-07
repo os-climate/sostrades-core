@@ -114,8 +114,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     GATHER_DEFAULT_SUFFIX = GatherDiscipline.GATHER_SUFFIX
     EVAL_OUTPUTS = GatherDiscipline.EVAL_OUTPUTS
 
-    GENERATED_SAMPLES = SampleGeneratorWrapper.GENERATED_SAMPLES
-
     DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
                WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
 
