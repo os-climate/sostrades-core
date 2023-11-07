@@ -174,7 +174,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                  'possible_values': available_sampling_methods,
                                  'default': DOE_ALGO},
                SAMPLING_GENERATION_MODE: {'type': 'string',
-                                          'structuring': False, # TODO: when editable also structuring
+                                          'structuring': True, # TODO: when editable also structuring
                                           'possible_values': available_sampling_generation_modes,
                                           'default': AT_RUN_TIME,
                                           'editable': False} # TODO: render editable
@@ -252,7 +252,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 #                             self.VISIBILITY: self.SHARED_VISIBILITY,
                 #                             self.NAMESPACE: self.NS_SAMPLING}
                 #                        })
-                dynamic_inputs.update({self.GENERATED_SAMPLES: self.SAMPLES_DF_DESC})
+                dynamic_inputs.update({self.GENERATED_SAMPLES: self.SAMPLES_DF_DESC.copy()})
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
                     samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
@@ -262,7 +262,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                         if selected_inputs:
                             # 3. if sampling at config.time set the generated samples
                             self.samples_gene_df = self.sample_generator.generate_samples(samples_df, selected_inputs)
-                            disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+                            self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
+                                             self.VALUE, self.samples_gene_df, check_value=False)
 
             elif self.sampling_method == self.DOE_ALGO:
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
