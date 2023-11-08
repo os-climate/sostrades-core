@@ -249,7 +249,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.scenarios = self.proxy_disciplines
 
-        # configure al processes stored in children
+        # 1. configure all children which need to be configured
         for disc in self.get_disciplines_to_configure():
             disc.configure()
 
@@ -259,8 +259,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self._data_in == {} or self.subprocess_is_configured():
             # Call standard configure methods to set the process discipline
             # tree
+            # 2. configure first as a generic discipline
             super().configure()
+            # 3. specific configure depending on the driver
             self.configure_driver()
+            # 4. configure the sample generator if there is one
             self.configure_sample_generator()
 
         if self.subprocess_is_configured():
@@ -268,6 +271,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_numerical_inputs()
 
     def configure_sample_generator(self):
+        '''
+        
+        Configure the sample generator associated to the driver. 
+        The driver is not fully configured for eval inputs possible value and the sample generator send the info to the driver (via driver_config_status)
+
+        '''
         if self.sample_generator_disc:
             driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
 
@@ -316,6 +325,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         return []
 
     def build_sample_generator_disc(self):
+        '''
+
+        Build the associated sample generator if requested
+         - 1. create the builder
+         - 2. Create the namespace ns_sapling with ns_driver value
+         - 3. Associate this namespace to the buider
+         - 4. Build and add the discipline
+
+        '''
         # create the builder of a ProxySampleGenerator
         sampling_builder = self.ee.factory.create_sample_generator('SampleGenerator')
         # associate ns_sampling and ns_driver
@@ -343,6 +361,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self._update_status_dm(self.STATUS_DONE)
 
     def reset_subdisciplines_of_wrapper(self):
+        '''
+
+        Reset subdisciplines of the wrapper
+
+        '''
         self.mdo_discipline_wrapp.reset_subdisciplines(self)
 
     def set_wrapper_attributes(self, wrapper):
@@ -372,9 +395,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         return self.get_disciplines_to_configure() == []
 
     def get_disciplines_to_configure(self):
+        '''
+
+        Get the disciplines to configure which are the self.scenarios in driver world
+
+        '''
         return self._get_disciplines_to_configure(self.scenarios)
 
     def check_data_integrity(self):
+        '''
+
+        Set the check_integrity message following the scenario_list integrity message
+        TODO : Refacto the message in the US Lock the use of samples_df in the GUI
+
+        '''
         # checking for duplicates
         disc_in = self.get_data_in()
         if self.SAMPLES_DF in disc_in and not self.scenario_list_valid:
@@ -384,6 +418,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
+        Method for import usecase option which will be refactored
         """
         # Set sub_proc_import_usecase_status
         with_modal = True
@@ -405,13 +440,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
 
     def update_reference(self):
+        '''
+
         # TODO: quick fix for split of ref. instance, method is to refactor
         # TODO: currently inactive in ProxyOptim, need overload to activate
+
+        '''
+
         return False
 
     def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name,
                                               with_modal):
         """
+                # TODO: Refactor with the US refactor reference mode
         """
         # 1. Put anonymized dict in context (unanonymize) of the reference
         # First identify the reference scenario
@@ -568,7 +609,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         disc_in = self.get_data_in()
         if possible_in_values and io_type_in:
-
             # Convert sets into lists
             possible_in_values = list(possible_in_values)
             # these sorts are just for aesthetics
