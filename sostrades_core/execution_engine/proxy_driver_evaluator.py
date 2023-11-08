@@ -265,6 +265,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             super().configure()
             # 3. specific configure depending on the driver
             self.configure_driver()
+            # 4. configure the sample generator if there is one
             self.configure_sample_generator()
 
         if self.subprocess_is_configured():
@@ -272,6 +273,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_numerical_inputs()
 
     def configure_sample_generator(self):
+        '''
+        
+        Configure the sample generator associated to the driver. 
+        The driver is not fully configured for eval inputs possible value and the sample generator send the info to the driver (via driver_config_status)
+
+        '''
         if self.sample_generator_disc:
             driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
 
@@ -319,6 +326,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         return []
 
     def build_sample_generator_disc(self):
+        '''
+
+        Build the associated sample generator if requested
+         - 1. create the builder
+         - 2. Create the namespace ns_sapling with ns_driver value
+         - 3. Associate this namespace to the buider
+         - 4. Build and add the discipline
+
+        '''
         # create the builder of a ProxySampleGenerator
         sampling_builder = self.ee.factory.create_sample_generator('SampleGenerator')
         # associate ns_sampling and ns_driver
@@ -389,7 +405,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def check_data_integrity(self):
         '''
-        Check the data integrity of the input variables of the driver
+
+        Set the check_integrity message following the scenario_list integrity message
+        TODO : Refacto the message in the US Lock the use of samples_df in the GUI
+
         '''
         # checking for duplicates
         self.check_integrity_msg_list = []
@@ -423,8 +442,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
 
     def update_reference(self):
+        '''
+
         # TODO: quick fix for split of ref. instance, method is to refactor
         # TODO: currently inactive in ProxyOptim, need overload to activate
+
+        '''
+
         return False
 
     def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name,
@@ -587,7 +611,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         disc_in = self.get_data_in()
         if possible_in_values and io_type_in:
-
             # Convert sets into lists
             possible_in_values = list(possible_in_values)
             # these sorts are just for aesthetics
