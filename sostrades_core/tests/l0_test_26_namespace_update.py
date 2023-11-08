@@ -268,11 +268,10 @@ class TestNamespaceManagement(unittest.TestCase):
             'Disc1', self.mod1_path)
         disc2_builder = self.factory.get_builder_from_module(
             'Disc2', self.mod2_path)
-
         extra_name = 'extra_name'
         # update namespace list with extra_ns
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
-            extra_name, after_name=self.ee.study_name)
+            extra_name, after_name=self.ee.study_name, clean_existing=True)
         # update builder names with extra_name
         self.ee.factory.update_builder_list_with_extra_name(
             extra_name, [disc1_builder, disc2_builder])

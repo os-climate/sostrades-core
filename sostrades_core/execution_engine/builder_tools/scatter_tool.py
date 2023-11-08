@@ -270,7 +270,7 @@ class ScatterTool(SosTool):
                 ns.get_value(), extra_name, after_name=after_name)
             display_value = ns.get_display_value_if_exists()
             ns_id = self.ee.ns_manager.add_ns(
-                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
+                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False, clean_existing=False)
             ns_ids_list.append(ns_id)
 
         # remove/clean the initial namespace values of the subprocess before they were updated
