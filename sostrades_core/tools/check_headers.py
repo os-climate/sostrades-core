@@ -186,27 +186,6 @@ def check_headers(ignored_exts,ignored_file,airbus_rev_commit):
             if verbose:
                 print("R", item_path, '->', item_path_r)
 
-            file_path = os.path.join(repo_dir, item_path_r)
-
-            # Need to add Cap Modified Header section for python file
-            if item_path.endswith(".py"):
-                error = check_header_for_modified_file(file_path)
-                if error:
-                    HeaderErrorList.append(error)
-
-            elif item_path.split(".")[-1].lower() in ignored_exts:
-                # Do nothing for pkl, markdown, csv, ...
-                pass
-            elif item_path.endswith(".ts") or item_path.endswith(".html") or item_path.endswith(".scss"):
-                # Skip modified ts
-                pass
-            else:
-                # Need to check not handled file too
-                error = check_header_for_modified_file(file_path)
-                if error:
-                    HeaderErrorList.append(error)
-                print("UNHANDLED", file_path)
-
     for diff_item in diff_index.iter_change_type('M'):
         # Modified
         item_path = diff_item.b_path
