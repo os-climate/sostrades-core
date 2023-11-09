@@ -115,7 +115,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         output_selection_obj_y1_y2 = {
             'selected_output': [False, False, True, True, True],
             'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2'],
-            'output_name': [None]*5}
+            'output_name': [None] * 5}
         self.output_selection_obj_y1_y2 = pd.DataFrame(
             output_selection_obj_y1_y2)
 
@@ -579,7 +579,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         builder_mode_input = {
             f'{self.ns}.Eval.with_sample_generator': True,
             f'{self.ns}.SampleGenerator.sampling_method': 'simple',
-                              }
+        }
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
@@ -1021,9 +1021,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             output_selection_obj_y1_y2)
 
         # -- set up disciplines in Scenario
-        disc_dict = {#f'{ns}.Eval.with_sample_generator': True,
-                     f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
-                     f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
+        disc_dict = {  # f'{ns}.Eval.with_sample_generator': True,
+            f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
+            f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
 
         # Eval inputs
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
@@ -1340,7 +1340,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
 
         root_outputs = exec_eng.root_process.get_output_data_names()
-        self.assertIn('doe.Disc1.indicator_dict', root_outputs)
+        self.assertIn('doe.Eval.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
