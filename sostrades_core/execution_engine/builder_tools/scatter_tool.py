@@ -321,7 +321,7 @@ class ScatterTool(SosTool):
                 # in the case where we had associated namespaces to the builder we need to update them specifically for each builder
                 # namespace values have been already updated we just eneed to associat ethem to the new discipline built
                 if builder in associated_ns_ids_dict and len(associated_ns_ids_dict[builder]) != 0:
-                    self.associate_namespaces_to_builder(builder, associated_ns_ids_dict[builder])
+                    builder.add_namespace_list_in_associated_namespaces(associated_ns_ids_dict[builder])
             self.set_father_discipline()
             disc = builder.build()
 
