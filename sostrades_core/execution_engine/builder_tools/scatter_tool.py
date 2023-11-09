@@ -138,15 +138,6 @@ class ScatterTool(SosTool):
             if display_options is not None:
                 self.set_display_options(display_options)
 
-        display_options = self.driver.get_sosdisc_inputs('display_options')
-        # if display options are set in the process, it wins we cannot modify display options again
-        if self.driver.display_options is not None:
-            self.set_display_options(self.driver.display_options)
-        # else we check if the input has changed
-        else:
-            if display_options is not None:
-                self.set_display_options(display_options)
-
         if self.display_options['hide_coupling_in_driver']:
             self.driver_display_value = self.driver.get_disc_display_name()
 
