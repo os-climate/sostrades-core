@@ -47,7 +47,7 @@ class Study(StudyManager):
                                                 'full_name': ['', 'Disc1.b', '', '', 'z'],
                                                 'list_of_values': list_of_values_b_z
                                                 })
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = input_selection_cp_b_z
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = input_selection_cp_b_z
 
         # reference var values
         self.x = 2.

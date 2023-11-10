@@ -596,7 +596,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # CP inputs
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_z
         # disc_dict[f'{self.ns}.CP.generated_samples'] = generated_samples
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -616,7 +616,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print(disc_sampling_method)
 
         disc_eval_inputs_cp = disc.get_sosdisc_inputs(
-            'eval_inputs_cp')
+            'eval_inputs')
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
@@ -703,14 +703,14 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print(disc_sampling_method)
 
         disc_eval_inputs_cp = disc.get_sosdisc_inputs(
-            'eval_inputs_cp')
+            'eval_inputs')
         print('eval_inputs_cp 1:')
         print(disc_eval_inputs_cp)
 
         # 2. Input eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.display_treeview_nodes(True)
@@ -721,7 +721,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print(disc_sampling_method)
 
         disc_eval_inputs_cp = disc.get_sosdisc_inputs(
-            'eval_inputs_cp')
+            'eval_inputs')
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
@@ -734,7 +734,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # 3. Input an updated eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_y_1_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.display_treeview_nodes(True)
@@ -745,7 +745,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print(disc_sampling_method)
 
         disc_eval_inputs_cp = disc.get_sosdisc_inputs(
-            'eval_inputs_cp')
+            'eval_inputs')
         print('eval_inputs_cp 3:')
         print(disc_eval_inputs_cp)
 
@@ -778,11 +778,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
 
         disc_dict = {}
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         disc_dict = {}
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_y_1_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.execute()

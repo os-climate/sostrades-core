@@ -51,7 +51,7 @@ class Study(StudyManager):
 
         disc_dict = {}
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{ns}.SampleGenerator.eval_inputs_cp'] = input_selection_cp_x_z
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_cp_x_z
 
         return [disc_dict]
 
