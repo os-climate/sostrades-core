@@ -154,8 +154,7 @@ class TestMultiScenario(unittest.TestCase):
         empty dataframe with the corresponding lines and columns and all scenarios selected.
         """
         sg_builder = self.exec_eng.factory.create_sample_generator('SampleGenerator')
-        self.exec_eng.ns_manager.add_ns('ns_sampling', f'{self.exec_eng.study_name}.SampleGenerator',
-                                        'ns_driver', f'{self.exec_eng.study_name}.SampleGenerator')
+        self.exec_eng.ns_manager.add_ns('ns_sampling', f'{self.exec_eng.study_name}.SampleGenerator')
         self.exec_eng.factory.set_builders_to_coupling_builder([sg_builder])
         self.exec_eng.configure()
 
@@ -292,4 +291,4 @@ class TestMultiScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestMultiScenario()
     cls.setUp()
-    cls.test_05_dump_and_load_after_execute_with_2_trade_vars()
+    cls.test_02_multiscenario_with_sample_generator_input_var()

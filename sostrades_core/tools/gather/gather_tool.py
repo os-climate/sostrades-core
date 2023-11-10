@@ -18,10 +18,10 @@ limitations under the License.
 import pandas as pd
 
 
-def gather_selected_outputs(eval_outputs, gather_suffix):
+def gather_selected_outputs(gather_outputs, gather_suffix):
     """
     get selected output from the eval_output variable 
-    :param eval_outputs: dataframe containing the outputs with the columns:
+    :param gather_outputs: dataframe containing the outputs with the columns:
                             - selected_output
                             - full_name
                             - output_name
@@ -31,10 +31,10 @@ def gather_selected_outputs(eval_outputs, gather_suffix):
                 the output name as value
     """
     final_out_names = {}
-    if eval_outputs is not None:
-        selected_outputs = eval_outputs[eval_outputs['selected_output'] == True]['full_name'].tolist()
-        if 'output_name' in eval_outputs.columns:
-            eval_out_names = eval_outputs[eval_outputs['selected_output']== True]['output_name'].tolist()
+    if gather_outputs is not None:
+        selected_outputs = gather_outputs[gather_outputs['selected_output'] == True]['full_name'].tolist()
+        if 'output_name' in gather_outputs.columns:
+            eval_out_names = gather_outputs[gather_outputs['selected_output']== True]['output_name'].tolist()
         else:
             eval_out_names = [None for _ in selected_outputs]
 
@@ -93,7 +93,7 @@ def check_eval_io(given_list, default_list, is_eval_input):
                             f'be created. should be in {default_list} ')
 
             else:
-                error_msg.append(f'The output {given_io} in eval_outputs is not among possible values. Check if it is an ' \
+                error_msg.append(f'The output {given_io} in gather_outputs is not among possible values. Check if it is an ' \
                             f'output of the subprocess with the correct full name (without study name at the ' \
                             f'beginning). Dynamic inputs might  not be created. should be in {default_list}')
 

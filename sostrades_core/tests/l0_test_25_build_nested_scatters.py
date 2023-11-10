@@ -175,7 +175,7 @@ class TestBuildScatter(unittest.TestCase):
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
             'group_scenarios_under_disciplines': True}
         dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
-        dict_values[f'{self.study_name}.{driver_name}_gather.eval_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
+        dict_values[f'{self.study_name}.{driver_name}_gather.gather_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
                           'full_name': ['y', 'z', 'Disc1.indicator']})
         # User fill in the fields in the GUI
 
@@ -284,7 +284,7 @@ class TestBuildScatter(unittest.TestCase):
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
             'group_scenarios_under_disciplines': False}
         dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
-        dict_values[f'{self.study_name}.{driver_name}_gather.eval_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
+        dict_values[f'{self.study_name}.{driver_name}_gather.gather_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
                           'full_name': ['y', 'z', 'Disc1.indicator']})
         # User fill in the fields in the GUI
 
@@ -383,7 +383,7 @@ class TestBuildScatter(unittest.TestCase):
                                                      'scatter2']})
         dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
             'group_scenarios_under_disciplines': False}
-        dict_values[f'{self.study_name}.{driver_name}_gather.eval_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
+        dict_values[f'{self.study_name}.{driver_name}_gather.gather_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
                           'full_name': ['y', 'z', 'Disc1.indicator']})
         dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI

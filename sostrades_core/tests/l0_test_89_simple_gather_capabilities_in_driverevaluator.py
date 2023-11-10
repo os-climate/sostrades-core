@@ -138,7 +138,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     def test_01_multi_instance_with_eval_outputs_as_hard_input(self):
         dict_values = {}
         # configure eval_output for gather capabilities
-        dict_values[f'{self.study_name}.multi_scenarios_gather.eval_outputs'] = \
+        dict_values[f'{self.study_name}.multi_scenarios_gather.gather_outputs'] = \
             pd.DataFrame({'selected_output': [True, False, True],
                           'full_name': ['y', 'o', 'Disc1.indicator'],  # anonymized wrt scenario
                           'output_name': [None, None, None]})  # by default {output}_dict
@@ -175,7 +175,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     def test_02_multi_instance_with_eval_outputs_as_hard_input_custom_and_default_out_names(self):
         dict_values = {}
         # configure eval_output for gather capabilities
-        dict_values[f'{self.study_name}.multi_scenarios_gather.eval_outputs'] = \
+        dict_values[f'{self.study_name}.multi_scenarios_gather.gather_outputs'] = \
             pd.DataFrame({'selected_output': [True, True, True],
                           'full_name': ['y', 'o', 'Disc1.indicator'],  # anonymized wrt scenario
                           'output_name': [None, 'my_o_out_name', 'my_indi_out_name']})  # by default {output}_dict
@@ -215,21 +215,21 @@ class TestSimpleMultiScenario(unittest.TestCase):
             self.assertEqual(indicator_gather_ref[sc_name], indicator_gather[sc_name])
 
     def test_03_automatic_suggestion_of_eval_outputs_according_to_subprocesses_outputs(self):
-        eval_outputs_name = f'{self.study_name}.multi_scenarios_gather.eval_outputs'
-        eval_outputs = self.exec_eng.dm.get_value(eval_outputs_name)
+        eval_outputs_name = f'{self.study_name}.multi_scenarios_gather.gather_outputs'
+        gather_outputs = self.exec_eng.dm.get_value(eval_outputs_name)
         self.assertListEqual([False, False, False],
-                             eval_outputs['selected_output'].values.tolist())
+                             gather_outputs['selected_output'].values.tolist())
         self.assertListEqual([None, None, None],
-                             eval_outputs['output_name'].values.tolist())
+                             gather_outputs['output_name'].values.tolist())
         self.assertListEqual(['Disc1.indicator', 'o', 'y'],  # alphabetic order by default
-                             eval_outputs['full_name'].values.tolist())
+                             gather_outputs['full_name'].values.tolist())
 
-        eval_outputs['selected_output'] = [True, True, True]
-        eval_outputs['output_name'] = ['my_indi_out_name', 'my_o_out_name', None]  # by default {output}_dict
+        gather_outputs['selected_output'] = [True, True, True]
+        gather_outputs['output_name'] = ['my_indi_out_name', 'my_o_out_name', None]  # by default {output}_dict
 
         dict_values = {}
         # configure eval_output for gather capabilities
-        dict_values[eval_outputs_name] = eval_outputs
+        dict_values[eval_outputs_name] = gather_outputs
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -269,7 +269,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
     def test_04_multi_instance_gather_reconfigure_samples_df(self):
         dict_values = {}
         # configure eval_output for gather capabilities
-        dict_values[f'{self.study_name}.multi_scenarios_gather.eval_outputs'] = \
+        dict_values[f'{self.study_name}.multi_scenarios_gather.gather_outputs'] = \
             pd.DataFrame({'selected_output': [True, False, True],
                           'full_name': ['y', 'o', 'Disc1.indicator'],  # anonymized wrt scenario
                           'output_name': [None, None, None]})  # by default {output}_dict

@@ -43,7 +43,5 @@ class ProcessBuilder(BaseProcessBuilder):
             'Eval', coupling_builder
         )
 
-        # driver namespaces
-        self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_DRIVER, f'{self.ee.study_name}.Eval')
-
+        
         return eval_driver

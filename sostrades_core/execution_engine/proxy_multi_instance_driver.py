@@ -230,7 +230,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     def add_gather_outputs(self, disc_in):
         '''
 
-        Add gather output variables to dynamic desc_out to deal with gather option (autogather and eval_outputs)
+        Add gather output variables to dynamic desc_out to deal with gather option (autogather and gather_outputs)
 
         '''
         dynamic_outputs = {}
