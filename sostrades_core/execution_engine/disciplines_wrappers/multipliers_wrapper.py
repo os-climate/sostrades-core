@@ -64,7 +64,7 @@ class MultipliersWrapper(SoSWrapp):
     }
     # TODO: add and refer class variables
     EVAL_INPUTS = 'eval_inputs'
-    EVAL_INPUTS_CP = 'eval_inputs_cp'
+    EVAL_INPUTS_CP = 'eval_inputs'
     DISC_SHARED_NS = SampleGeneratorWrapper.NS_SAMPLING
 
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']

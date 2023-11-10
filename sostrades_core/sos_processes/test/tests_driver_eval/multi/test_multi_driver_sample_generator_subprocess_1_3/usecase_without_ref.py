@@ -48,7 +48,7 @@ class Study(StudyManager):
                                                'list_of_values': list_of_values_b_z
                                                })
         dict_values[f'{self.study_name}.Eval.with_sample_generator'] = True
-        dict_values[f'{self.study_name}.Eval.eval_inputs_cp'] = input_selection_cp_b_z
+        dict_values[f'{self.study_name}.Eval.eval_inputs'] = input_selection_cp_b_z
 
         self.x1 = 2.
         self.a1 = 3

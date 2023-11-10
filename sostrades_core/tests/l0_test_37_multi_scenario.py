@@ -147,6 +147,11 @@ class TestMultiScenario(unittest.TestCase):
         sleep(0.5)
 
     def test_01_multiscenario_with_sample_generator_cp(self):
+        """
+        This test checks the configuration and execution of a multi-instance driver with a simple subprocess and a
+        cartesian product sample generator. It also checks the proper management of eval_inputs variable when changing
+        generation method from simple to cartesian product and back.
+        """
         # # simple 2-disc process NOT USING nested scatters
         repo_name = self.repo + ".tests_driver_eval.multi"
         proc_name = 'test_multi_driver_sample_generator_simple'
@@ -163,7 +168,16 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z
+        # check management of eval_inputs columns and dataframe descriptor
+        eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.eval_inputs')
+        eval_inputs_df_desc = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.eval_inputs',
+                                                        'dataframe_descriptor')
+        self.assertListEqual(eval_inputs.columns.tolist(),
+                             ['selected_input','full_name', 'list_of_values'])
+        self.assertListEqual(list(eval_inputs_df_desc.keys()),
+                             ['selected_input', 'full_name', 'list_of_values'])
+
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(
@@ -219,7 +233,19 @@ class TestMultiScenario(unittest.TestCase):
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_4.o'), o4)
 
+        # check management of eval_inputs columns and dataframe descriptor when changing back to simple mode
+        self.exec_eng.load_study_from_input_dict({f'{self.study_name}.SampleGenerator.sampling_method': 'simple'})
+        eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.eval_inputs')
+        eval_inputs_df_desc = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.eval_inputs',
+                                                        'dataframe_descriptor')
+        self.assertListEqual(eval_inputs.columns.tolist(),
+                             ['selected_input','full_name'])
+        self.assertListEqual(list(eval_inputs_df_desc.keys()),
+                             ['selected_input', 'full_name'])
+
+
     def test_02_multiscenario_with_sample_generator_cp_sellar(self):
+
         # # simple 2-disc process NOT USING nested scatters
         repo_name = self.repo + ".tests_driver_eval.multi"
         proc_name = 'test_multi_driver_with_sample_option_sellar'
@@ -236,7 +262,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        dict_values[f'{self.study_name}.Eval.eval_inputs_cp'] = self.input_selection_cp_x_z
+        dict_values[f'{self.study_name}.Eval.eval_inputs'] = self.input_selection_cp_x_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # manually configure the scenarios non-varying values (~reference)
@@ -283,7 +309,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        dict_values[f'{self.study_name}.Eval.eval_inputs_cp'] = self.input_selection_cp_x_z
+        dict_values[f'{self.study_name}.Eval.eval_inputs'] = self.input_selection_cp_x_z
         study_dump.load_data(from_input_dict=dict_values)
 
         # manually configure the scenarios non-varying values (~reference)
@@ -540,7 +566,7 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # same input selection as first test, all scenarios activated
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
@@ -571,7 +597,7 @@ class TestMultiScenario(unittest.TestCase):
 
         # deactivate the eval inputs of the cartesian product and check that
         # the scenarios disappear
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp']['selected_input'] = False
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs']['selected_input'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
@@ -580,7 +606,7 @@ class TestMultiScenario(unittest.TestCase):
         self.assertTrue(samples_df.empty)
 
         # change the trade variables values
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z_3
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z_3
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
@@ -620,7 +646,7 @@ class TestMultiScenario(unittest.TestCase):
                                  samples_df[samples_df['scenario_name'] == sc].iloc[0][var])
 
         # change the trade variables themselves
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z_p
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z_p
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
@@ -704,7 +730,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs_cp'] = self.input_selection_cp_b_z
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(

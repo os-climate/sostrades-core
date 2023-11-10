@@ -144,7 +144,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     AT_RUN_TIME = 'at_run_time'
     available_sampling_generation_modes = [AT_CONFIGURATION_TIME, AT_RUN_TIME]
 
-    EVAL_INPUTS_CP = 'eval_inputs_cp'
+    EVAL_INPUTS_CP = 'eval_inputs'
     SAMPLES_DF = 'samples_df'
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
@@ -242,6 +242,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                                     self.VISIBILITY: self.SHARED_VISIBILITY,
                                     self.NAMESPACE: self.NS_SAMPLING}
                                })
+                # FIXME: need to adapt eval_inputs df descriptor in all modes so mode changes work
+
                 dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC.copy()})
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
@@ -767,11 +769,28 @@ class SampleGeneratorWrapper(SoSWrapp):
         default_in_eval_input_cp = pd.DataFrame({'selected_input': [False],
                                                  'full_name': [''],
                                                  'list_of_values': [[]]})
+        eval_inputs_df_desc = {'selected_input': ('bool', None, True),
+                               'full_name': ('string', None, False),
+                               'list_of_values': ('list', None, True)}
+
+        # update dataframe descriptor and value of eval_inputs variable
+        disc_in = self.get_data_in()
+        if self.EVAL_INPUTS_CP in disc_in:
+            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS_CP, disc_in)
+            self.dm.set_data(eval_inputs_f_name,
+                             self.DATAFRAME_DESCRIPTOR,
+                             eval_inputs_df_desc,
+                             check_value=False)
+            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS_CP)
+            if eval_inputs is not None:
+                eval_inputs = eval_inputs.reindex(columns=eval_inputs_df_desc.keys(), fill_value=[])
+                self.dm.set_data(eval_inputs_f_name,
+                                 self.VALUE,
+                                 eval_inputs,
+                                 check_value=False)
+
         dynamic_inputs.update({self.EVAL_INPUTS_CP: {self.TYPE: 'dataframe',
-                                                     self.DATAFRAME_DESCRIPTOR: {'selected_input': ('bool', None, True),
-                                                                                 'full_name': ('string', None, True),
-                                                                                 'list_of_values': (
-                                                                                     'list', None, True)},
+                                                     self.DATAFRAME_DESCRIPTOR: eval_inputs_df_desc,
                                                      self.DATAFRAME_EDITION_LOCKED: False,
                                                      self.STRUCTURING: True,
                                                      self.VISIBILITY: self.SHARED_VISIBILITY,
