@@ -186,7 +186,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                           'possible_values': available_sampling_generation_modes,
                                           'default': AT_RUN_TIME,
                                           'editable': False}, # TODO: render editable
-               # EVAL_INPUTS: EVAL_INPUTS_DESC
+               EVAL_INPUTS: EVAL_INPUTS_DESC
                }
 
     def __init__(self, sos_name, logger: logging.Logger):
@@ -234,15 +234,15 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
                 dynamic_inputs, dynamic_outputs = {}, {}
                 self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC, disc_in)
-                dynamic_inputs.update({self.EVAL_INPUTS:
-                                   {self.TYPE: 'dataframe',
-                                    self.DATAFRAME_DESCRIPTOR: self.EVAL_INPUTS_DF_DESC,
-                                    self.DATAFRAME_EDITION_LOCKED: False,
-                                    self.STRUCTURING: True,
-                                    self.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
-                                    self.VISIBILITY: self.SHARED_VISIBILITY,
-                                    self.NAMESPACE: self.NS_SAMPLING}
-                               })
+                # dynamic_inputs.update({self.EVAL_INPUTS:
+                #                    {self.TYPE: 'dataframe',
+                #                     self.DATAFRAME_DESCRIPTOR: self.EVAL_INPUTS_DF_DESC,
+                #                     self.DATAFRAME_EDITION_LOCKED: False,
+                #                     self.STRUCTURING: True,
+                #                     self.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
+                #                     self.VISIBILITY: self.SHARED_VISIBILITY,
+                #                     self.NAMESPACE: self.NS_SAMPLING}
+                #                })
                 dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC.copy()})
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
@@ -519,14 +519,14 @@ class SampleGeneratorWrapper(SoSWrapp):
                                    })
 
         self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC)
-        dynamic_inputs.update({self.EVAL_INPUTS:
-                                           {self.TYPE: 'dataframe',
-                                            self.DATAFRAME_DESCRIPTOR: self.EVAL_INPUTS_DF_DESC,
-                                            self.DATAFRAME_EDITION_LOCKED: False,
-                                            self.STRUCTURING: True,
-                                            self.VISIBILITY: self.SHARED_VISIBILITY,
-                                            self.NAMESPACE: self.NS_SAMPLING}
-                               })
+        # dynamic_inputs.update({self.EVAL_INPUTS:
+        #                                    {self.TYPE: 'dataframe',
+        #                                     self.DATAFRAME_DESCRIPTOR: self.EVAL_INPUTS_DF_DESC,
+        #                                     self.DATAFRAME_EDITION_LOCKED: False,
+        #                                     self.STRUCTURING: True,
+        #                                     self.VISIBILITY: self.SHARED_VISIBILITY,
+        #                                     self.NAMESPACE: self.NS_SAMPLING}
+        #                        })
 
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
         """
@@ -766,22 +766,22 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         """
         # TODO :  the i/o methods should belong to the generator for modularity
-        default_in_eval_input_cp = pd.DataFrame({'selected_input': [False],
-                                                 'full_name': [''],
-                                                 'list_of_values': [[]]})
+        # default_in_eval_input_cp = pd.DataFrame({'selected_input': [False],
+        #                                          'full_name': [''],
+        #                                          'list_of_values': [[]]})
         eval_inputs_cp_df_desc = {'selected_input': ('bool', None, True),
                                   'full_name': ('string', None, False),
                                   'list_of_values': ('list', None, True)}
 
         # update dataframe descriptor and value of eval_inputs variable
         self.update_eval_inputs_columns(eval_inputs_cp_df_desc)
-        dynamic_inputs.update({self.EVAL_INPUTS: {self.TYPE: 'dataframe',
-                                                  self.DATAFRAME_DESCRIPTOR: eval_inputs_cp_df_desc,
-                                                  self.DATAFRAME_EDITION_LOCKED: False,
-                                                  self.STRUCTURING: True,
-                                                  self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                  self.NAMESPACE: self.NS_SAMPLING,
-                                                  self.DEFAULT: default_in_eval_input_cp}})
+        # dynamic_inputs.update({self.EVAL_INPUTS: {self.TYPE: 'dataframe',
+        #                                           self.DATAFRAME_DESCRIPTOR: eval_inputs_cp_df_desc,
+        #                                           self.DATAFRAME_EDITION_LOCKED: False,
+        #                                           self.STRUCTURING: True,
+        #                                           self.VISIBILITY: self.SHARED_VISIBILITY,
+        #                                           self.NAMESPACE: self.NS_SAMPLING,
+        #                                           self.DEFAULT: default_in_eval_input_cp}})
 
     def update_eval_inputs_columns(self, eval_inputs_df_desc, disc_in=None):
         """
