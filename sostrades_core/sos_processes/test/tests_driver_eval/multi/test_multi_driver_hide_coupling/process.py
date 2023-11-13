@@ -36,8 +36,6 @@ class ProcessBuilder(BaseProcessBuilder):
         disc1_builder = cls_list[0]
         disc2_builder = cls_list[1]
         self.ee.ns_manager.add_ns(
-            'ns_driver', f'{self.ee.study_name}.multi_scenarios', display_value=f'{self.ee.study_name}')
-        self.ee.ns_manager.add_ns(
             'ns_ac', f'{self.ee.study_name}.Disc1', display_value=f'{self.ee.study_name}.Disc1')
 
         self.ee.ns_manager.add_display_ns_to_builder(

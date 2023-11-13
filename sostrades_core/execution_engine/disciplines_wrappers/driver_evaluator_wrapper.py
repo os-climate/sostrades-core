@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/12-2023/11/08 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -137,36 +137,6 @@ class DriverEvaluatorWrapper(SoSWrapp):
             input_data = self.get_sosdisc_inputs(
                 keys=input_data_names, in_dict=True, full_name_keys=True)
         return input_data
-
-    def subprocess_evaluation(self, var_delta_dict, i_subprocess, convert_to_array=True):
-        """
-        Evaluate a subprocess.
-
-        Arguments:
-            var_delta_dict (dict): keys are variable full names and values are variable non-reference values to be
-                                   applied for the execution of this subprocess. Providing an empty dict will evaluate
-                                   reference values unless input_data_for_disc[i_subprocess] attribute has been modified
-                                   beforehand.
-            i_subprocess (int): index of the subprocess to execute, i.e. the subprocess that provides reference inputs
-                                and to whom delta_dict is applied
-        """
-        local_data = self.attributes['sub_mdo_disciplines'][i_subprocess] \
-            .execute(self._get_input_data(var_delta_dict, i_subprocess))
-        # out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'][i_subprocess])
-        # if convert_to_array:
-        #     out_local_data_converted = convert_new_type_into_array(
-        #         out_local_data, self.attributes['reduced_dm'])
-        #     out_values = np.concatenate(
-        #         list(out_local_data_converted.values())).ravel()
-        # else:
-        #     out_values = []
-        #     # get back out_local_data is not enough because some variables
-        #     # could be filtered for unsupported type for gemseo  TODO: is this case relevant??
-        #     for y_id in self.attributes['eval_out_list'][i_subprocess]:
-        #         y_val = out_local_data[y_id]
-        #         out_values.append(y_val)
-        # return out_values
-        # return local_data
 
     def run(self):
         """

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/03-2023/11/06 Copyright 2023 Capgemini
+Modifications on 2023/03/03-2023/11/08 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -50,15 +50,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             |_ INSTANCE_REFERENCE (structuring, dynamic : builder_mode == self.MULTI_INSTANCE)
                 |_ REFERENCE_MODE (structuring, dynamic :instance_referance == TRUE) 
                 |_ REFERENCE_SCENARIO_NAME (structuring, dynamic :instance_referance == TRUE) #TODO
-            |_ EVAL_OUTPUTS (namespace: NS_DRIVER, structuring, dynamic : builder_mode == self.MONO_INSTANCE)
-            |_ SAMPLES_DF (namespace: NS_DRIVER, dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
+            |_ GATHER_OUTPUTS ( structuring, dynamic : builder_mode == self.MONO_INSTANCE)
+            |_ SAMPLES_DF (dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
             |_ 'n_processes' (dynamic : builder_mode == self.MONO_INSTANCE)         
             |_ 'wait_time_between_fork' (dynamic : builder_mode == self.MONO_INSTANCE)
 
         |_ DESC_OUT
-            |_ samples_inputs_df (namespace: NS_DRIVER, dynamic: builder_mode == self.MONO_INSTANCE)
+            |_ samples_inputs_df (dynamic: builder_mode == self.MONO_INSTANCE)
             |_ <var>_dict (internal namespace 'ns_doe', dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0
-            and eval_outputs not empty, for <var> in eval_outputs)
+            and gather_outputs not empty, for <var> in gather_outputs)
 
     2) Description of DESC parameters:
         |_ DESC_IN
@@ -66,7 +66,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 |_ REFERENCE_MODE 
                 |_ REFERENCE_SCENARIO_NAME  #TODO
             |_ EVAL_INPUTS  #NO NEED
-            |_ EVAL_OUTPUTS #FOR GATHER MODE
+            |_ GATHER_OUTPUTS #FOR GATHER MODE
             |_ GENERATED_SAMPLES #TO DELETE
             |_ SCENARIO_DF #TO DELETE
             |_ SAMPLES_DF
@@ -95,12 +95,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
 
-    NS_DRIVER = SampleGeneratorWrapper.NS_DRIVER
-
     SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
     SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC.copy()
     SAMPLES_DF_DESC[ProxyDiscipline.STRUCTURING] = True
-    SAMPLES_DF_DESC[ProxyDiscipline.NAMESPACE] = NS_DRIVER
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
     SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
     WITH_SAMPLE_GENERATOR = 'with_sample_generator'
@@ -111,7 +108,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     }
 
     GATHER_DEFAULT_SUFFIX = GatherDiscipline.GATHER_SUFFIX
-    EVAL_OUTPUTS = GatherDiscipline.EVAL_OUTPUTS
+
+    GATHER_OUTPUTS = GatherDiscipline.GATHER_OUTPUTS
 
     DESC_IN = {SAMPLES_DF: SAMPLES_DF_DESC,
                WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
@@ -214,22 +212,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.gather_names = None
 
-    def _add_optional_shared_ns(self):
-        """
-        Add the shared namespace NS_DRIVER should it not exist.
-        """
-        # do the same for the shared namespace for coupling with the DriverEvaluator
-        # also used to store gathered variables in multi-instance
-        if self.NS_DRIVER not in self.ee.ns_manager.shared_ns_dict.keys():
-            self.ee.ns_manager.add_ns(
-                self.NS_DRIVER, self.ee.ns_manager.compose_local_namespace_value(self))
-
-    def _get_disc_shared_ns_value(self):
-        """
-        Get the namespace NS_DRIVER used in the mono-instance case.
-        """
-        return self.ee.ns_manager.disc_ns_dict[self]['others_ns'][self.NS_DRIVER].get_value()
-
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
         creation of mdo_discipline_wrapp by the proxy which in this case is a MDODisciplineDriverWrapp that will create
@@ -249,7 +231,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         else:
             self.scenarios = self.proxy_disciplines
 
-        # configure al processes stored in children
+        # 1. configure all children which need to be configured
         for disc in self.get_disciplines_to_configure():
             disc.configure()
 
@@ -259,8 +241,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if self._data_in == {} or self.subprocess_is_configured():
             # Call standard configure methods to set the process discipline
             # tree
+            # 2. configure first as a generic discipline
             super().configure()
+            # 3. specific configure depending on the driver
             self.configure_driver()
+            # 4. configure the sample generator if there is one
             self.configure_sample_generator()
 
         if self.subprocess_is_configured():
@@ -268,6 +253,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.set_children_numerical_inputs()
 
     def configure_sample_generator(self):
+        '''
+        
+        Configure the sample generator associated to the driver. 
+        The driver is not fully configured for eval inputs possible value and the sample generator send the info to the driver (via driver_config_status)
+
+        '''
         if self.sample_generator_disc:
             driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
 
@@ -316,10 +307,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         return []
 
     def build_sample_generator_disc(self):
+        '''
+
+        Build the associated sample generator if requested
+         - 1. create the builder
+         - 2. Create the namespace ns_sapling with ns_driver value
+         - 3. Associate this namespace to the buider
+         - 4. Build and add the discipline
+
+        '''
         # create the builder of a ProxySampleGenerator
         sampling_builder = self.ee.factory.create_sample_generator('SampleGenerator')
-        # associate ns_sampling and ns_driver
-        ns_sampling = self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING, self._get_disc_shared_ns_value())
+        # associate ns_sampling and 
+        ns_sampling = self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING,
+                                                self.ee.ns_manager.get_local_namespace_value(self))
         sampling_builder.associate_namespaces(ns_sampling)
         # create discipline in factory as sister not daughter
         self.ee.factory.current_discipline = self.father_executor
@@ -343,6 +344,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self._update_status_dm(self.STATUS_DONE)
 
     def reset_subdisciplines_of_wrapper(self):
+        '''
+
+        Reset subdisciplines of the wrapper
+
+        '''
         self.mdo_discipline_wrapp.reset_subdisciplines(self)
 
     def set_wrapper_attributes(self, wrapper):
@@ -372,9 +378,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         return self.get_disciplines_to_configure() == []
 
     def get_disciplines_to_configure(self):
+        '''
+
+        Get the disciplines to configure which are the self.scenarios in driver world
+
+        '''
         return self._get_disciplines_to_configure(self.scenarios)
 
     def check_data_integrity(self):
+        '''
+
+        Set the check_integrity message following the scenario_list integrity message
+        TODO : Refacto the message in the US Lock the use of samples_df in the GUI
+
+        '''
         # checking for duplicates
         disc_in = self.get_data_in()
         if self.SAMPLES_DF in disc_in and not self.scenario_list_valid:
@@ -384,6 +401,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
+        Method for import usecase option which will be refactored
         """
         # Set sub_proc_import_usecase_status
         with_modal = True
@@ -405,13 +423,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
 
     def update_reference(self):
+        '''
+
         # TODO: quick fix for split of ref. instance, method is to refactor
         # TODO: currently inactive in ProxyOptim, need overload to activate
+
+        '''
+
         return False
 
     def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name,
                                               with_modal):
         """
+                # TODO: Refactor with the US refactor reference mode
         """
         # 1. Put anonymized dict in context (unanonymize) of the reference
         # First identify the reference scenario
@@ -552,7 +576,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def set_eval_possible_values(self, io_type_in=True, io_type_out=True, strip_first_ns=False):
         '''
         Check recursively the disciplines in the subprocess in order to detect their inputs and outputs.
-        Once all disciplines have been run through, set the possible values for eval_inputs and eval_outputs in the DM
+        Once all disciplines have been run through, set the possible values for eval_inputs and gather_outputs in the DM
         These are the variables names anonymized wrt driver-evaluator node (mono-instance) or scenario node
         (multi-instance).
 
@@ -568,7 +592,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         disc_in = self.get_data_in()
         if possible_in_values and io_type_in:
-
             # Convert sets into lists
             possible_in_values = list(possible_in_values)
             # these sorts are just for aesthetics
@@ -579,8 +602,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if possible_out_values and io_type_out:
             # NB: if io_type_out then we are in mono_instance so it's driver's responsibility to do this
             # get already set eval_output
-            eval_output_new_dm = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
-            eval_outputs_f_name = self.get_var_full_name(self.EVAL_OUTPUTS, disc_in)
+            eval_output_new_dm = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
+            eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, disc_in)
 
             # get all possible outputs and merge with current eval_output
             eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)

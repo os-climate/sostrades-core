@@ -59,7 +59,7 @@ class UncertaintyQuantification(SoSWrapp):
     }
 
     EVAL_INPUTS = 'eval_inputs'
-    EVAL_OUTPUTS = 'eval_outputs'
+    GATHER_OUTPUTS = 'gather_outputs'
     DEFAULT = SoSWrapp.DEFAULT
     UPPER_BOUND = "upper_bnd"
     LOWER_BOUND = "lower_bnd"
@@ -72,7 +72,7 @@ class UncertaintyQuantification(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.UNIT: None,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        SoSWrapp.NAMESPACE: 'ns_driver',
+        SoSWrapp.NAMESPACE: 'ns_sampling',
     }
     DESC_IN = {
         'samples_inputs_df': eval_df_data_description,
@@ -87,9 +87,9 @@ class UncertaintyQuantification(SoSWrapp):
                 NB_POINTS: ('int', None, True),
                 'full_name': ('string', None, False),
             },
-            SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_driver',
+            SoSWrapp.NAMESPACE: 'ns_sampling',
+            SoSWrapp.STRUCTURING: True
         },
         'confidence_interval': {
             SoSWrapp.TYPE: 'float',
@@ -124,9 +124,9 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_driver',
+            SoSWrapp.NAMESPACE: 'ns_sampling',
         },
-        EVAL_OUTPUTS: {
+        GATHER_OUTPUTS: {
             SoSWrapp.TYPE: 'dataframe',
             SoSWrapp.DATAFRAME_DESCRIPTOR: {
                 'selected_output': ('bool', None, True),
@@ -137,7 +137,7 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_driver',
+            SoSWrapp.NAMESPACE: 'ns_sampling',
         },
     }
 
@@ -176,12 +176,12 @@ class UncertaintyQuantification(SoSWrapp):
             dynamic_outputs = {}
             dynamic_inputs = {}
             if (self.EVAL_INPUTS in data_in) & (
-                    self.EVAL_OUTPUTS in data_in
+                    self.GATHER_OUTPUTS in data_in
             ):
-                eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+                gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
                 eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
-                if (eval_inputs is not None) & (eval_outputs is not None):
+                if (eval_inputs is not None) & (gather_outputs is not None):
 
                     selected_inputs = eval_inputs[
                         eval_inputs['selected_input'] == True
@@ -190,8 +190,8 @@ class UncertaintyQuantification(SoSWrapp):
                     in_param = selected_inputs.tolist()
                     # in_param.sort()
 
-                    selected_outputs = eval_outputs[
-                        eval_outputs['selected_output'] == True
+                    selected_outputs = gather_outputs[
+                        gather_outputs['selected_output'] == True
                         ]['full_name']
 
                     out_param = selected_outputs.tolist()
@@ -385,13 +385,13 @@ class UncertaintyQuantification(SoSWrapp):
         """
 
         self.check_eval_in_out_types(self.EVAL_INPUTS, self.IO_TYPE_IN)
-        self.check_eval_in_out_types(self.EVAL_OUTPUTS, self.IO_TYPE_OUT)
+        self.check_eval_in_out_types(self.GATHER_OUTPUTS, self.IO_TYPE_OUT)
 
     def check_eval_in_out_types(self, eval_io_name, io_type):
         """
 
         Args:
-            eval_io_name: evalinputs or eval_outputs
+            eval_io_name: evalinputs or gather_outputs
             io_type: 'in' or 'out'
 
         Returns: CHeck data_integrity for parameter inside eval in or out

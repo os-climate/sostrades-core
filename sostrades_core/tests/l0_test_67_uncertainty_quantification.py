@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2023/11/06 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -109,7 +109,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.name}.{self.uncertainty_quantification}.design_space': dspace,
             f'{self.name}.{self.uncertainty_quantification}.eval_inputs': pd.DataFrame(input_selection),
-            f'{self.name}.{self.uncertainty_quantification}.eval_outputs': pd.DataFrame(output_selection),
+            f'{self.name}.{self.uncertainty_quantification}.gather_outputs': pd.DataFrame(output_selection),
         }
 
         self.ee.load_study_from_input_dict(private_values)
@@ -177,7 +177,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         disc_dict[f'{self.ee.study_name}.Eval.eval_inputs'] = eval_inputs
         disc_dict[f'{ns}.Eval.design_space'] = dspace
         # disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
-        disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_obj_y1_y2
 
         disc_dict[f'{ns}.Eval.x'] = 10.
         disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.a'] = 5.
@@ -196,7 +196,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -260,7 +260,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.name}.{self.uncertainty_quantification}.design_space': dspace,
             f'{self.name}.{self.uncertainty_quantification}.eval_inputs': pd.DataFrame(input_selection),
-            f'{self.name}.{self.uncertainty_quantification}.eval_outputs': pd.DataFrame(output_selection),
+            f'{self.name}.{self.uncertainty_quantification}.gather_outputs': pd.DataFrame(output_selection),
         }
 
         self.ee.load_study_from_input_dict(private_values)
@@ -288,7 +288,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -355,7 +355,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.name}.{self.uncertainty_quantification}.design_space': dspace,
             f'{self.name}.{self.uncertainty_quantification}.eval_inputs': pd.DataFrame(input_selection),
-            f'{self.name}.{self.uncertainty_quantification}.eval_outputs': pd.DataFrame(output_selection),
+            f'{self.name}.{self.uncertainty_quantification}.gather_outputs': pd.DataFrame(output_selection),
         }
 
         self.ee.load_study_from_input_dict(private_values)

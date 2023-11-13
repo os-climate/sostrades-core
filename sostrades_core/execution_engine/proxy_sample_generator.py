@@ -50,9 +50,19 @@ class ProxySampleGenerator(ProxyDiscipline):
     MULTIPLIER_PARTICULE = "__MULTIPLIER__" # todo: to delete
     EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
     SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
-    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC
+    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC_SHARED
 
-    def set_eval_in_possible_values(self, possible_values):
+    def set_eval_in_possible_values(self, possible_values: list[str]) -> bool:
+        """
+        Method used by a driver in composition with a sample generator to pass the set of inputs of the subprocess
+        that can be selected in eval_inputs.
+
+        Arguments:
+            possible_values (list(string)): possible values of the eval_inputs variable names
+        Returns:
+             driver_is_configured (bool): flag to detect whether driver could ask sample generator for necessary
+                configuration actions
+        """
         driver_is_configured = True
         # TODO: might want to refactor this eventually. If so, take into account that this "driver_is_configured" flag
         #  is a quick fix. The proper way is probably as follows: in this method just set the attribute eval_in_possible_values
@@ -104,7 +114,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                                SampleGeneratorWrapper.SCENARIO_NAME] + selected_inputs
                 default_custom_dataframe = pd.DataFrame(
                     [[None for _ in range(len(all_columns))]], columns=all_columns)
-                dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
+                dataframe_descriptor = self.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
                 # This reflects 'samples_df' dynamic input has been configured and that
                 # eval_inputs have changed
                 if self.SAMPLES_DF in disc_in:

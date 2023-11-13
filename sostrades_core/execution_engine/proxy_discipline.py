@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2023/11/06 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -938,7 +938,7 @@ class ProxyDiscipline:
             if io_type == self.IO_TYPE_IN:
                 del self.inst_desc_in[var_name]
                 self.ee.dm.remove_keys(
-                    self.disc_id, self.get_var_full_name(var_name, self.get_data_in()))
+                    self.disc_id, self.get_var_full_name(var_name, self.get_data_in()), io_type)
 
                 del self._data_in[(var_name, self._io_ns_map_in[var_name])]
                 del self._io_ns_map_in[var_name]
@@ -948,7 +948,7 @@ class ProxyDiscipline:
                 if var_name in self.inst_desc_out:
                     del self.inst_desc_out[var_name]
                 self.ee.dm.remove_keys(
-                    self.disc_id, self.get_var_full_name(var_name, self.get_data_out()))
+                    self.disc_id, self.get_var_full_name(var_name, self.get_data_out()), io_type)
 
                 del self._data_out[(var_name, self._io_ns_map_out[var_name])]
                 del self._io_ns_map_out[var_name]

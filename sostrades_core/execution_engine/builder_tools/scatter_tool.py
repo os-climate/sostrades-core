@@ -103,6 +103,8 @@ class ScatterTool(SosTool):
             self.sc_map = self.ee.scattermap_manager.get_build_map(self.map_name)
             self.ee.scattermap_manager.associate_disc_to_build_map(self)
             self.sc_map.configure_map(self.sub_builders)
+        # get initial values of namespaces before updat eby the scatter tool at each build
+        self.get_values_for_namespaces_to_update()
 
     def prepare_tool(self):
         '''
@@ -122,8 +124,6 @@ class ScatterTool(SosTool):
             self.set_scatter_list(
                 samples_df[samples_df[self.driver.SELECTED_SCENARIO] == True][
                     self.driver.SCENARIO_NAME].values.tolist())
-
-        self.get_values_for_namespaces_to_update()
 
         display_options = self.driver.get_sosdisc_inputs('display_options')
         # if display options are set in the process, it wins we cannot modify display options again
@@ -307,7 +307,7 @@ class ScatterTool(SosTool):
                 # in the case where we had associated namespaces to the builder we need to update them specifically for each builder
                 # namespace values have been already updated we just eneed to associat ethem to the new discipline built
                 if builder in associated_ns_ids_dict and len(associated_ns_ids_dict[builder]) != 0:
-                    self.associate_namespaces_to_builder(builder, associated_ns_ids_dict[builder])
+                    builder.add_namespace_list_in_associated_namespaces(associated_ns_ids_dict[builder])
             self.set_father_discipline()
             disc = builder.build()
 

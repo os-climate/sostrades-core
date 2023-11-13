@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-def gather_selected_outputs(eval_outputs, gather_suffix):
+def gather_selected_outputs(gather_outputs, gather_suffix):
     """
     get selected output from the eval_output variable 
-    :param eval_outputs: dataframe containing the outputs with the columns:
+    :param gather_outputs: dataframe containing the outputs with the columns:
                             - selected_output
                             - full_name
                             - output_name
@@ -27,10 +27,10 @@ def gather_selected_outputs(eval_outputs, gather_suffix):
                 the output name as value
     """
     final_out_names = {}
-    if eval_outputs is not None:
-        selected_outputs = eval_outputs[eval_outputs['selected_output'] == True]['full_name'].tolist()
-        if 'output_name' in eval_outputs.columns:
-            eval_out_names = eval_outputs[eval_outputs['selected_output']== True]['output_name'].tolist()
+    if gather_outputs is not None:
+        selected_outputs = gather_outputs[gather_outputs['selected_output'] == True]['full_name'].tolist()
+        if 'output_name' in gather_outputs.columns:
+            eval_out_names = gather_outputs[gather_outputs['selected_output']== True]['output_name'].tolist()
         else:
             eval_out_names = [None for _ in selected_outputs]
 

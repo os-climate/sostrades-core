@@ -48,7 +48,7 @@ class Study(StudyManager):
         eval_inputs = pd.DataFrame({'selected_input': [True],
                                     'full_name': ['Disc1.x']})
 
-        eval_outputs = pd.DataFrame({'selected_output': [False, True],
+        gather_outputs = pd.DataFrame({'selected_output': [False, True],
                                      'full_name': ['Disc1.indicator', 'Disc1.y']})
 
         dict_values = {
@@ -58,7 +58,7 @@ class Study(StudyManager):
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
             f'{self.study_name}.{self.sample_generator}.design_space': dspace,
 
             # DISC1 INPUTS

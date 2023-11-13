@@ -33,7 +33,7 @@ class Study(StudyManager):
                                                                                       'scenario_name': ['scenario_1',
                                                                                                         'scenario_2']})
         dict_values[f'{self.study_name}.multi_scenarios.display_options'] = {'group_scenarios_under_disciplines': True}
-        dict_values[f'{self.study_name}.multi_scenarios_gather.eval_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
+        dict_values[f'{self.study_name}.multi_scenarios_gather.gather_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
                           'full_name': ['y', 'z', 'Disc1.indicator']})
         setup_data_list.append(dict_values)
         constant1 = 10

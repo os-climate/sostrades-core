@@ -34,8 +34,7 @@ class ProcessBuilder(BaseProcessBuilder):
         uq_name = 'UncertaintyQuantification'
 
         ns_dict = {
-            'ns_uncertainty_quantification': f'{self.ee.study_name}.{uq_name}',
-            'ns_driver': f'{self.ee.study_name}.{uq_name}'}
+            'ns_uncertainty_quantification': f'{self.ee.study_name}.{uq_name}'}
         self.ee.ns_manager.add_ns_def(ns_dict)
 
         builder = self.ee.factory.add_uq_builder(uq_name)
