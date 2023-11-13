@@ -276,6 +276,24 @@ class ProxyDiscipline:
         self.father_executor: Union["ProxyDiscipline", None] = None
         self.cls = cls_builder
 
+    @property
+    def configurator(self):
+        """
+        Property that is None when the discipline is self-configured and stores a reference to the configurator
+        discipline otherwise.
+        """
+        return self.__configurator
+
+    @configurator.setter
+    def configurator(self, disc):
+        """
+        Configurator discipline setter.
+        """
+        if disc is self:
+            self.__configurator = None
+        else:
+            self.__configurator = disc
+
     def set_father_executor(self, father_executor):  #: "ProxyDiscipline"):
         """
         set father executor
@@ -357,6 +375,7 @@ class ProxyDiscipline:
             self.__class__, self.dm)
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
+        self.__configurator: Union["ProxyDiscipline", None] = None
 
     def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger: logging.Logger):
         """
@@ -2234,7 +2253,7 @@ class ProxyDiscipline:
         '''
         disc_to_configure = []
         for disc in disc_list:
-            if not disc.is_configured():
+            if disc.configurator is None and not disc.is_configured():
                 disc_to_configure.append(disc)
         return disc_to_configure
 

@@ -342,6 +342,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # create discipline in factory as sister not daughter
         self.ee.factory.current_discipline = self.father_executor
         sampling_disc = sampling_builder.build()
+        sampling_disc.configurator = self
         self.ee.factory.add_discipline(sampling_disc)
         # return discipline for association in driver
         return sampling_disc
