@@ -243,7 +243,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                             self.NAMESPACE: self.NS_SAMPLING}
                                        })
 
-                dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC.copy()})
+                dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
 
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
@@ -315,14 +315,14 @@ class SampleGeneratorWrapper(SoSWrapp):
         if self.sampling_generation_mode == self.AT_RUN_TIME:
             dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED
 
-        # TODO: quick-fix the wrong display of samples_df as output in GUI, should actually be automatic by dm cleaning
-        elif self.SAMPLES_DF in disc_in:
-            self.dm.set_data(
-                self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                self.IO_TYPE,
-                self.IO_TYPE_IN,
-                check_value=False
-            )
+        # # TODO: quick-fix the wrong display of samples_df as output in GUI, should actually be automatic by dm cleaning
+        # elif self.SAMPLES_DF in disc_in:
+        #     self.dm.set_data(
+        #         self.get_var_full_name(self.SAMPLES_DF, disc_in),
+        #         self.IO_TYPE,
+        #         self.IO_TYPE_IN,
+        #         check_value=False
+        #     )
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
