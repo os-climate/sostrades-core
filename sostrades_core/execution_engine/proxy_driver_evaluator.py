@@ -373,7 +373,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         Return False if discipline is not configured or structuring variables have changed or children are not all configured
         """
-        return super().is_configured() and self.subprocess_is_configured()
+        driver_is_configured = super().is_configured() and self.subprocess_is_configured()
+        sample_generator_is_configured = not self.sample_generator_disc or self.sample_generator_disc.is_configured()
+        return driver_is_configured and sample_generator_is_configured
 
     def subprocess_is_configured(self):
         """
