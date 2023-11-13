@@ -71,7 +71,12 @@ class ProxySampleGenerator(ProxyDiscipline):
         if possible_values:
             driver_is_configured = False
             disc_in = self.get_data_in()
-            if self.EVAL_INPUTS in disc_in:
+            if disc_in and self.get_sosdisc_inputs(
+                    SampleGeneratorWrapper.SAMPLING_METHOD) == SampleGeneratorWrapper.CARTESIAN_PRODUCT:
+                # NB: this if clause only exists because cartesian product has no input variable "eval_inputs"
+                # TODO: so it has to disappear when eval_inputs_cp and eval_inputs are homogenized
+                driver_is_configured = True
+            elif self.EVAL_INPUTS in disc_in:
                 # FIXME: REWRITE THIS PART SO IT CAN WORK WITH EVAL_INPUTS_CP
                 driver_is_configured = True
                 default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_values],
