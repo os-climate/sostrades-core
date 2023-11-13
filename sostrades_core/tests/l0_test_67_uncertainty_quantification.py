@@ -159,11 +159,6 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         a_list = np.linspace(0, 10, 2).tolist()
         x_list = np.linspace(0, 10, 2).tolist()
-        eval_inputs = pd.DataFrame({'selected_input': [True, False, True, False],
-                                    'full_name': [f'subprocess.{disc1_name}.a',
-                                                  f'subprocess.{disc1_name}.b',
-                                                  f'x',
-                                                  f'subprocess.Disc2.power']})
 
         eval_inputs_cp = pd.DataFrame({'selected_input': [True, False, True, False],
                                        'full_name': [f'subprocess.{disc1_name}.a',
@@ -175,8 +170,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         disc_dict[f'{self.ee.study_name}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ee.study_name}.Eval.eval_inputs'] = eval_inputs_cp
         disc_dict[f'{ns}.Eval.design_space'] = dspace
-        # disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
-        disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
 
         disc_dict[f'{ns}.Eval.x'] = 10.
         disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.a'] = 5.
