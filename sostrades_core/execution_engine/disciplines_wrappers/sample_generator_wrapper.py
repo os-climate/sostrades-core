@@ -184,7 +184,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                           'structuring': True,
                                           'possible_values': available_sampling_generation_modes,
                                           'default': AT_RUN_TIME,
-                                          'editable': False}, # TODO: render editable
+                                          'editable': False},  # TODO: render editable
                EVAL_INPUTS: EVAL_INPUTS_DESC
                }
 
@@ -233,16 +233,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
                 dynamic_inputs, dynamic_outputs = {}, {}
                 self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC, disc_in)
-                # dynamic_inputs.update({self.EVAL_INPUTS:
-                #                    {self.TYPE: 'dataframe',
-                #                     self.DATAFRAME_DESCRIPTOR: self.EVAL_INPUTS_DF_DESC,
-                #                     self.DATAFRAME_EDITION_LOCKED: False,
-                #                     self.STRUCTURING: True,
-                #                     self.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
-                #                     self.VISIBILITY: self.SHARED_VISIBILITY,
-                #                     self.NAMESPACE: self.NS_SAMPLING}
-                #                })
-                dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC.copy()})
+                dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
+
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
                     samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
