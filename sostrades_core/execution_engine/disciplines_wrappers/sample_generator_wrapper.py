@@ -185,7 +185,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                           'structuring': True,
                                           'possible_values': available_sampling_generation_modes,
                                           'default': AT_RUN_TIME,
-                                          'editable': False}, # TODO: render editable
+                                          'editable': False},  # TODO: render editable
                EVAL_INPUTS: EVAL_INPUTS_DESC
                }
 
@@ -235,7 +235,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 dynamic_inputs, dynamic_outputs = {}, {}
 
                 self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC, disc_in)
-                dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC.copy()})
+                dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
 
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
