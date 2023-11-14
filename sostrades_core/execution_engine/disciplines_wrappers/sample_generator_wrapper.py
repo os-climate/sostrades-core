@@ -175,9 +175,10 @@ class SampleGeneratorWrapper(SoSWrapp):
                         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
                         SoSWrapp.NAMESPACE: NS_SAMPLING,
                         }
-    # dataframe descriptor for Cartesian Product case
-    EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
-    EVAL_INPUTS_CP_DF_DESC.update({'list_of_values': ('list', None, True)})
+
+    # # dataframe descriptor for Cartesian Product case  # TODO: problems with nose2
+    # EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
+    # EVAL_INPUTS_CP_DF_DESC.update({'list_of_values': ('list', None, True)})
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -188,7 +189,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                           'possible_values': available_sampling_generation_modes,
                                           'default': AT_RUN_TIME,
                                           'editable': False},  # TODO: render editable
-               EVAL_INPUTS: EVAL_INPUTS_DESC
+               EVAL_INPUTS: EVAL_INPUTS_DESC.copy()
                }
 
     def __init__(self, sos_name, logger: logging.Logger):
