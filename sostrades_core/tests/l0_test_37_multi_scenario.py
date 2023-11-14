@@ -663,25 +663,27 @@ class TestMultiScenario(unittest.TestCase):
                                                                  self.b2,
                                                                  self.b2
                                                                  ])
+
+        self.assertEqual(samples_df['Disc3.power'].values.tolist(), [self.power1,
+                                                                     self.power1,
+                                                                     self.power2,
+                                                                     self.power2,
+                                                                     self.power1,
+                                                                     self.power1,
+                                                                     self.power2,
+                                                                     self.power2,
+                                                                     ])
+
         self.assertEqual(samples_df['z'].values.tolist(), [self.z1,
-                                                           self.z1,
-                                                           self.z2,
                                                            self.z2,
                                                            self.z1,
+                                                           self.z2,
                                                            self.z1,
                                                            self.z2,
+                                                           self.z1,
                                                            self.z2,
                                                            ])
 
-        self.assertEqual(samples_df['Disc3.power'].values.tolist(), [self.power1,
-                                                                     self.power2,
-                                                                     self.power1,
-                                                                     self.power2,
-                                                                     self.power1,
-                                                                     self.power2,
-                                                                     self.power1,
-                                                                     self.power2,
-                                                                     ])
         samples_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
         ## flatten_subprocess
