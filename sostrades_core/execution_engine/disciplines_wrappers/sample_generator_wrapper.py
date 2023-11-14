@@ -169,13 +169,16 @@ class SampleGeneratorWrapper(SoSWrapp):
     EVAL_INPUTS_DF_DESC = {'selected_input': ('bool', None, True),
                            'full_name': ('string', None, False)} # FIXME: should not be non-editable in standalone sample
     EVAL_INPUTS_DESC = {SoSWrapp.TYPE: 'dataframe',
-                        SoSWrapp.DATAFRAME_DESCRIPTOR: EVAL_INPUTS_DF_DESC,
+                        SoSWrapp.DATAFRAME_DESCRIPTOR: EVAL_INPUTS_DF_DESC.copy(),
                         SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
                         SoSWrapp.STRUCTURING: True,
                         SoSWrapp.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
                         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
                         SoSWrapp.NAMESPACE: NS_SAMPLING,
                         }
+    # dataframe descriptor for Cartesian Product case
+    EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
+    EVAL_INPUTS_CP_DF_DESC.update({'list_of_values': ('list', None, True)})
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -234,7 +237,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
                 dynamic_inputs, dynamic_outputs = {}, {}
 
-                self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC, disc_in)
+                self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
                 dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
 
                 # 2. retrieve input that configures the sampling tool
@@ -501,16 +504,7 @@ class SampleGeneratorWrapper(SoSWrapp):
                                         self.STRUCTURING: True,
                                         self.POSSIBLE_VALUES: available_doe_algorithms}
                                    })
-
-        self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC)
-        # dynamic_inputs.update({self.EVAL_INPUTS:
-        #                                    {self.TYPE: 'dataframe',
-        #                                     self.DATAFRAME_DESCRIPTOR: self.EVAL_INPUTS_DF_DESC,
-        #                                     self.DATAFRAME_EDITION_LOCKED: False,
-        #                                     self.STRUCTURING: True,
-        #                                     self.VISIBILITY: self.SHARED_VISIBILITY,
-        #                                     self.NAMESPACE: self.NS_SAMPLING}
-        #                        })
+        self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy())
 
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
         """
@@ -749,23 +743,11 @@ class SampleGeneratorWrapper(SoSWrapp):
             dynamic_inputs (dict): the dynamic input dict to be updated
 
         """
-        # TODO :  the i/o methods should belong to the generator for modularity
-        # default_in_eval_input_cp = pd.DataFrame({'selected_input': [False],
-        #                                          'full_name': [''],
-        #                                          'list_of_values': [[]]})
-        eval_inputs_cp_df_desc = {'selected_input': ('bool', None, True),
-                                  'full_name': ('string', None, False),
-                                  'list_of_values': ('list', None, True)}
-
-        # update dataframe descriptor and value of eval_inputs variable
-        self.update_eval_inputs_columns(eval_inputs_cp_df_desc)
-        # dynamic_inputs.update({self.EVAL_INPUTS: {self.TYPE: 'dataframe',
-        #                                           self.DATAFRAME_DESCRIPTOR: eval_inputs_cp_df_desc,
-        #                                           self.DATAFRAME_EDITION_LOCKED: False,
-        #                                           self.STRUCTURING: True,
-        #                                           self.VISIBILITY: self.SHARED_VISIBILITY,
-        #                                           self.NAMESPACE: self.NS_SAMPLING,
-        #                                           self.DEFAULT: default_in_eval_input_cp}})
+        # eval_inputs_cp_df_desc = {'selected_input': ('bool', None, True),
+        #                           'full_name': ('string', None, False),
+        #                           'list_of_values': ('list', None, True)}
+        # update dataframe descriptor and value of eval_inputs variable for Cartesian Product
+        self.update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy())
 
     def update_eval_inputs_columns(self, eval_inputs_df_desc, disc_in=None):
         """
@@ -774,19 +756,23 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         Arguments:
             eval_inputs_df_desc (dict): dataframe descriptor to impose
-            disc_in (dict):
+            disc_in (dict): the discipline inputs dict (to avoid an extra call to self.get_data_in())
         """
+        # get the data_in only if not provided
         d_in = disc_in or self.get_data_in()
         if self.EVAL_INPUTS in d_in:
             eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, d_in)
+            # update dataframe descriptor
+            # TODO: when moving to proxy implement -> if self.configurator: df_desc['full_name'] non-editable else editable
             self.dm.set_data(eval_inputs_f_name,
                              self.DATAFRAME_DESCRIPTOR,
                              eval_inputs_df_desc,
                              check_value=False)
+            # update variable value with corresponding columns
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
             if eval_inputs is not None:
                 eval_inputs = eval_inputs.reindex(columns=eval_inputs_df_desc.keys(),
-                                                  fill_value=[])  # hardcoded compliance with 'list_of_values' column
+                                                  fill_value=[])  # hardcoded compliance with 'list_of_values' column default
                 self.dm.set_data(eval_inputs_f_name,
                                  self.VALUE,
                                  eval_inputs,
