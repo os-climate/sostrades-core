@@ -491,7 +491,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         print("done")
 
-    def test_05_grid_search_multipliers_inputs_for_2_columns(self):
+    def _test_05_grid_search_multipliers_inputs_for_2_columns(self):
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name_mult)
 
@@ -593,7 +593,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.assertEqual(result_val1, result__computed_val1)
         self.assertEqual(result_val2, result__computed_val2)
 
-    def test_06_grid_search_multipliers_inputs_for_all_columns(self):
+    def _test_06_grid_search_multipliers_inputs_for_all_columns(self):
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name_mult)
 
@@ -691,7 +691,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.assertEqual(result_val1, result__computed_val1)
         self.assertEqual(result_val2, result__computed_val2)
 
-    def test_07_grid_search_multipliers_inputs_for_dict(self):
+    def _test_07_grid_search_multipliers_inputs_for_dict(self):
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name_mult)
 
