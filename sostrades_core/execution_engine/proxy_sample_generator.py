@@ -23,7 +23,6 @@ from sostrades_core.tools.gather.gather_tool import check_eval_io
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 import pandas as pd
 
-
 class ProxySampleGeneratorException(Exception):
     pass
 
@@ -71,12 +70,8 @@ class ProxySampleGenerator(ProxyDiscipline):
         if possible_values:
             driver_is_configured = False
             disc_in = self.get_data_in()
-            if disc_in and self.get_sosdisc_inputs(
-                    SampleGeneratorWrapper.SAMPLING_METHOD) == SampleGeneratorWrapper.CARTESIAN_PRODUCT:
-                # NB: this if clause only exists because cartesian product has no input variable "eval_inputs"
-                # TODO: so it has to disappear when eval_inputs_cp and eval_inputs are homogenized
-                driver_is_configured = True
-            elif self.EVAL_INPUTS in disc_in:
+            if self.EVAL_INPUTS in disc_in:
+                # FIXME: REWRITE THIS PART SO IT CAN WORK WITH EVAL_INPUTS_CP
                 driver_is_configured = True
                 default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_values],
                                                      'full_name': possible_values})
@@ -87,26 +82,25 @@ class ProxySampleGenerator(ProxyDiscipline):
                     self.dm.set_data(eval_inputs_f_name,
                                      'value', default_in_dataframe, check_value=False)
                 # check if the eval_inputs need to be updated after a subprocess
-                # configure
+                # configureon s'ap
                 elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
                     error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
                                        is_eval_input=True)
-                    if len(error_msg) > 0:
-                        for msg in error_msg:
-                            self.logger.warning(msg)
-                    default_dataframe = deepcopy(default_in_dataframe)
-                    already_set_names = eval_input_new_dm['full_name'].tolist()
-                    already_set_values = eval_input_new_dm['selected_input'].tolist()
-                    for index, name in enumerate(already_set_names):
-                        default_dataframe.loc[default_dataframe['full_name'] == name, 'selected_input'] = \
-                            already_set_values[
-                                index]  # this will filter variables that are not inputs of the subprocess
-                        if self.MULTIPLIER_PARTICULE in name:
-                            default_dataframe = default_dataframe.append(
-                                pd.DataFrame({'selected_input': [already_set_values[index]],
-                                              'full_name': [name]}), ignore_index=True)
+                    for msg in error_msg:
+                        self.logger.warning(msg)
+
+                    # reindex eval_inputs to the possible values keeping other values and columns of the df
+                    eval_input_new_dm = eval_input_new_dm.\
+                        drop_duplicates('full_name').set_index('full_name').reindex(possible_values).\
+                        reset_index().reindex(columns=eval_input_new_dm.columns)
+                    eval_input_new_dm['selected_input'] = eval_input_new_dm['selected_input'].fillna(False).astype('bool')
+                    # manage the empty lists on column list_of_values
+                    if 'list_of_values' in eval_input_new_dm.columns:
+                        new_in = eval_input_new_dm['list_of_values'].isna()
+                        eval_input_new_dm.loc[new_in, 'list_of_values'] = pd.Series([[]] * new_in.sum()).values
+
                     self.dm.set_data(eval_inputs_f_name,
-                                     'value', default_dataframe, check_value=False)
+                                     'value', eval_input_new_dm, check_value=False)
 
                 selected_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
                 selected_inputs = selected_inputs[selected_inputs['selected_input'] == True]['full_name'].tolist()

@@ -90,7 +90,6 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
         possible_in_values.update(sub_in_values)
         possible_out_values.update(sub_out_values)
 
-    # FIXME: should be sets comprehensions
     # strip the scenario name to have just one entry for repeated variables in scenario instances
     if strip_first_ns:
         return {_var.split('.', 1)[-1] for _var in possible_in_values}, {_var.split('.', 1)[-1] for _var in
@@ -139,6 +138,9 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
                      ]['io_type'] == 'in'
         is_editable = data_dict['editable']
         is_a_multiplier = MULTIPLIER_PARTICULE in key
+        # is_numerical = data_dict.get(
+        #             ProxyCoupling.NUMERICAL, False)
+
         # a possible input value must :
         #           - be a ['float', 'array', 'int', 'string']
         #           - be an input (not a coupling variable)
@@ -146,6 +148,8 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
         #           - not be a numerical
         #           - not be structuring
         #           - not be a multiplier
+
+        # NB: using ProxyCoupling.NUMERICAL_VAR_LIST implies subprocess driver & optim numerical input are not forbidden
         if is_in_type and key not in NUMERICAL_VAR_LIST and not is_structuring and is_editable and is_input_type and not is_a_multiplier:
             # we remove the disc_full_name name from the variable full  name for a
             # sake of simplicity
