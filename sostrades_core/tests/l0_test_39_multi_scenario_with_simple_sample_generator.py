@@ -154,8 +154,7 @@ class TestMultiScenario(unittest.TestCase):
         empty dataframe with the corresponding lines and columns and all scenarios selected.
         """
         sg_builder = self.exec_eng.factory.create_sample_generator('SampleGenerator')
-        self.exec_eng.ns_manager.add_ns('ns_sampling', f'{self.exec_eng.study_name}.SampleGenerator',
-                                        'ns_driver', f'{self.exec_eng.study_name}.SampleGenerator')
+        self.exec_eng.ns_manager.add_ns('ns_sampling', f'{self.exec_eng.study_name}.SampleGenerator')
         self.exec_eng.factory.set_builders_to_coupling_builder([sg_builder])
         self.exec_eng.configure()
 
@@ -175,14 +174,15 @@ class TestMultiScenario(unittest.TestCase):
         self.assertEqual([True for _ in ref_scenario], samples_df['selected_scenario'].values.tolist())
 
         # modify samples_df and save
-        samples_df = pd.DataFrame({'selected_scenario':selected_sce,
+        samples_df = pd.DataFrame({'selected_scenario': selected_sce,
                                    'scenario_name': sce_names})
         dict_values[f'{self.study_name}.SampleGenerator.samples_df'] = samples_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # modify eval_inputs and save
-        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = pd.DataFrame({'selected_input': [True, True, False],
-                                                                                      'full_name': var_names + ['blabla']})
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = pd.DataFrame(
+            {'selected_input': [True, True, False],
+             'full_name': var_names + ['blabla']})
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # check the columns have been added
@@ -288,8 +288,59 @@ class TestMultiScenario(unittest.TestCase):
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.d.o'), o4)
 
+    def test_03_switch_iotype_samples_df(self):
+        """
+        Checks if switching io type for samples_df is OK in the DM and the treeview
+        """
+        # simple 2-disc process
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_simple'
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
+                                                                  proc_name)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        self.exec_eng.configure()
+
+        # setup the driver and the sample generator mode
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'doe_algo'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.assertEqual(self.exec_eng.dm.get_value(
+            f'{self.study_name}.SampleGenerator.sampling_generation_mode'), 'at_run_time')
+
+        # only 1 samples_df exists to connect results from sample generator with driver
+        self.assertEqual(len(self.exec_eng.dm.get_all_namespaces_from_var_name('samples_df')), 1)
+        samples_df_data = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df')
+
+        disc_dependencies = samples_df_data['disciplines_dependencies']
+        # Sample generator and Driver have samples_df in their data_io
+        self.assertEqual(len(disc_dependencies), 2)
+        # samples_df is out since we are in run_mode and sample generator computes samples_df
+        self.assertEqual(samples_df_data['io_type'], 'out')
+
+        # switch to simple
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'simple'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # we are at configuration_time
+        self.assertEqual(self.exec_eng.dm.get_value(
+            f'{self.study_name}.SampleGenerator.sampling_generation_mode'), 'at_configuration_time')
+
+        # only 1 samples_df exists to connect results from sample generator with driver
+        self.assertEqual(len(self.exec_eng.dm.get_all_namespaces_from_var_name('samples_df')), 1)
+
+        samples_df_data = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df')
+
+        disc_dependencies = samples_df_data['disciplines_dependencies']
+        # Sample generator and Driver have samples_df in their data_in
+        self.assertEqual(len(disc_dependencies), 2)
+
+        # the two disc have sampels_df as an input then it should be in in the dm (check the treeview)
+        self.assertEqual(samples_df_data['io_type'], 'in')
+
 
 if '__main__' == __name__:
     cls = TestMultiScenario()
     cls.setUp()
-    cls.test_05_dump_and_load_after_execute_with_2_trade_vars()
+    cls.test_02_multiscenario_with_sample_generator_input_var()

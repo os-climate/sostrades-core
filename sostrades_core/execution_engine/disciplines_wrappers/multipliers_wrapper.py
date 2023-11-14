@@ -262,7 +262,7 @@ class MultipliersWrapper(SoSWrapp):
             self, disc, possible_in_values, possible_out_values):
         '''
             Run through all disciplines and sublevels
-            to find possible values for eval_inputs and eval_outputs
+            to find possible values for eval_inputs and gather_outputs
         '''
         # TODO: copy-pasted code should b refactored (see above)
         # configuration ? (<-> config. graph)

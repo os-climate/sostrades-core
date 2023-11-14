@@ -148,7 +148,6 @@ class SampleGeneratorWrapper(SoSWrapp):
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
     SCENARIO_NAMES = 'scenario_names'
-    NS_DRIVER = 'ns_driver'
     NS_SAMPLING = 'ns_sampling'
     REFERENCE_SCENARIO_NAME = 'Reference Scenario'
     SAMPLES_DF_DESC = {
@@ -160,10 +159,11 @@ class SampleGeneratorWrapper(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
         SoSWrapp.EDITABLE: True,
-        SoSWrapp.STRUCTURING: False,
-        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        SoSWrapp.NAMESPACE: NS_SAMPLING
+        SoSWrapp.STRUCTURING: False
     }
+    SAMPLES_DF_DESC_SHARED = SAMPLES_DF_DESC.copy()
+    SAMPLES_DF_DESC_SHARED[SoSWrapp.NAMESPACE] = NS_SAMPLING
+    SAMPLES_DF_DESC_SHARED[SoSWrapp.VISIBILITY] = SoSWrapp.SHARED_VISIBILITY
 
     EVAL_INPUTS = 'eval_inputs'
     EVAL_INPUTS_DF_DESC = {'selected_input': ('bool', None, True),
@@ -233,17 +233,10 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # 1. handle dynamic inputs of the mode
                 # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
                 dynamic_inputs, dynamic_outputs = {}, {}
+
                 self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC, disc_in)
-                # dynamic_inputs.update({self.EVAL_INPUTS:
-                #                    {self.TYPE: 'dataframe',
-                #                     self.DATAFRAME_DESCRIPTOR: self.EVAL_INPUTS_DF_DESC,
-                #                     self.DATAFRAME_EDITION_LOCKED: False,
-                #                     self.STRUCTURING: True,
-                #                     self.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
-                #                     self.VISIBILITY: self.SHARED_VISIBILITY,
-                #                     self.NAMESPACE: self.NS_SAMPLING}
-                #                })
                 dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC.copy()})
+
                 # 2. retrieve input that configures the sampling tool
                 if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
                     samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
@@ -312,16 +305,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         # 4. if sampling at run-time add the corresponding output
         if self.sampling_generation_mode == self.AT_RUN_TIME:
-            dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC.copy()
-
-        # TODO: quick-fix the wrong display of samples_df as output in GUI, should actually be automatic by dm cleaning
-        elif self.SAMPLES_DF in disc_in:
-            self.dm.set_data(
-                self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                self.IO_TYPE,
-                self.IO_TYPE_IN,
-                check_value=False
-            )
+            dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED.copy()
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)

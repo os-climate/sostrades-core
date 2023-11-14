@@ -99,15 +99,15 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.j', ['selected_input']] = True
 
-        eval_outputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        gather_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.gather_outputs')
+        gather_outputs.loc[gather_outputs['full_name'] ==
                          'Disc1.y', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
 
             # DISC1 INPUTS
             f'{self.study_name}.{self.evaluator}.Disc1.name': 'A1',
@@ -196,7 +196,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         dict_values = {
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -239,7 +239,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         dict_values = {
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -309,15 +309,15 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.h', ['selected_input']] = True
 
-        eval_outputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        gather_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.gather_outputs')
+        gather_outputs.loc[gather_outputs['full_name'] ==
                          'Disc1.y', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
 
             # DISC1 INPUTS
             f'{self.study_name}.{self.evaluator}.Disc1.name': 'A1',
@@ -457,7 +457,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = input_selection_x
-        disc_dict[f'{self.ns}.Eval.eval_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = output_selection_obj_y1_y2
 
         exec_eng.load_study_from_input_dict(disc_dict)
         exec_eng.execute()
@@ -533,15 +533,15 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'subprocess.Disc1.dd_df@values1__MULTIPLIER__', ['selected_input']] = True
 
-        eval_outputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        gather_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.gather_outputs')
+        gather_outputs.loc[gather_outputs['full_name'] ==
                          'subprocess.Disc1.val_sum_dict', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -632,15 +632,15 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'subprocess.Disc1.dd_df@allcolumns__MULTIPLIER__', ['selected_input']] = True
 
-        eval_outputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        gather_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.gather_outputs')
+        gather_outputs.loc[gather_outputs['full_name'] ==
                          'subprocess.Disc1.val_sum_dict', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -731,15 +731,15 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'subprocess.Disc1.di_dict@allcolumns__MULTIPLIER__', ['selected_input']] = True
 
-        eval_outputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        gather_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.gather_outputs')
+        gather_outputs.loc[gather_outputs['full_name'] ==
                          'subprocess.Disc1.val_sum_dict2', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -823,15 +823,15 @@ class TestGridSearchEval(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.h', ['selected_input']] = True
 
-        eval_outputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_outputs')
-        eval_outputs.loc[eval_outputs['full_name'] ==
+        gather_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.gather_outputs')
+        gather_outputs.loc[gather_outputs['full_name'] ==
                          'Disc1.y', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
             f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
-            f'{self.study_name}.{self.evaluator}.eval_outputs': eval_outputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
 
             # DISC1 INPUTS
             f'{self.study_name}.{self.evaluator}.Disc1.name': 'A1',

@@ -39,8 +39,7 @@ class ProcessBuilder(BaseProcessBuilder):
         builder = self.ee.factory.create_sample_generator('SampleGenerator')
 
         self.ee.ns_manager.add_ns_def(
-            {SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}.SampleGenerator',
-             SampleGeneratorWrapper.NS_DRIVER: f'{self.ee.study_name}.SampleGenerator'},
+            {SampleGeneratorWrapper.NS_SAMPLING: f'{self.ee.study_name}.SampleGenerator'},
         )
 
         return builder

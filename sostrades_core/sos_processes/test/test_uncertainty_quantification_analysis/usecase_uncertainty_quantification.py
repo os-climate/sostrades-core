@@ -62,7 +62,7 @@ class Study(StudyManager):
                                         'unit': '$'})
         dict_values = {
             f'{self.study_name}.{self.uncertainty_quantification}.eval_inputs': self.input_selection,
-            f'{self.study_name}.{self.uncertainty_quantification}.eval_outputs': self.output_selection,
+            f'{self.study_name}.{self.uncertainty_quantification}.gather_outputs': self.output_selection,
             f'{self.study_name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
             f'{self.study_name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.study_name}.{self.uncertainty_quantification}.design_space': dspace,

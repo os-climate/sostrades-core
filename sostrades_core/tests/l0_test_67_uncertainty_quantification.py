@@ -61,7 +61,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -109,7 +109,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.name}.{self.uncertainty_quantification}.design_space': dspace,
             f'{self.name}.{self.uncertainty_quantification}.eval_inputs': pd.DataFrame(input_selection),
-            f'{self.name}.{self.uncertainty_quantification}.eval_outputs': pd.DataFrame(output_selection),
+            f'{self.name}.{self.uncertainty_quantification}.gather_outputs': pd.DataFrame(output_selection),
         }
 
         self.ee.load_study_from_input_dict(private_values)
@@ -189,7 +189,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -253,7 +253,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.name}.{self.uncertainty_quantification}.design_space': dspace,
             f'{self.name}.{self.uncertainty_quantification}.eval_inputs': pd.DataFrame(input_selection),
-            f'{self.name}.{self.uncertainty_quantification}.eval_outputs': pd.DataFrame(output_selection),
+            f'{self.name}.{self.uncertainty_quantification}.gather_outputs': pd.DataFrame(output_selection),
         }
 
         self.ee.load_study_from_input_dict(private_values)
@@ -281,7 +281,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_driver': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -348,7 +348,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.name}.{self.uncertainty_quantification}.design_space': dspace,
             f'{self.name}.{self.uncertainty_quantification}.eval_inputs': pd.DataFrame(input_selection),
-            f'{self.name}.{self.uncertainty_quantification}.eval_outputs': pd.DataFrame(output_selection),
+            f'{self.name}.{self.uncertainty_quantification}.gather_outputs': pd.DataFrame(output_selection),
         }
 
         self.ee.load_study_from_input_dict(private_values)

@@ -386,9 +386,7 @@ class SosFactory:
         builder_list = [builder]
         if with_sample_generator:
             sampling_builder = self.create_sample_generator('SampleGenerator')
-            self.__execution_engine.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING,
-                                                      self.__execution_engine.ns_manager.get_shared_ns_dict()[
-                                                          ProxyDriverEvaluator.NS_DRIVER].value)
+            
             builder_list.insert(0, sampling_builder)
 
         return builder_list

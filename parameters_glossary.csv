@@ -20,9 +20,9 @@ eq_constraints,Equality Constraints,,Equality constraints in the optimization pr
 eval_inputs,Evaluated Inputs,,"Inputs to evaluate for the analysis (Sensitivity, Gradient, FORM ...)",,D - Nominal property
 eval_jac,Jacobian Evaluation,,"If True, and Evaluation mode is True, evaluate also the jacobian of the functions of the optimization problem ",,
 eval_mode,Evaluation Mode,,"If True, functions (constraints and objective) of the optimization problem are evaluated with values from the design space",,
-eval_outputs,Evaluated Outputs,,"Outputs to evaluate for the analysis (Sensitivity, Gradient, FORM ...)",,D - Nominal property
 formulation,Formulation,,,,
 function_df,Objective functions,,,,
+gather_outputs,Gathered Outputs,,"Outputs to evaluate for the analysis (Sensitivity, Gradient, FORM ...)",,D - Nominal property
 generated_samples,Generated Samples,-,,,
 gradient_outputs,Gradient Results,,Results of the Gradient Analysis,,
 instance_reference,Instance Reference,-,,,
