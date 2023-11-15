@@ -159,7 +159,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
-        repo_name = self.repo+'.tests_driver_eval.mono'
+        repo_name = self.repo + '.tests_driver_eval.mono'
         proc_name = "test_mono_driver_sellar_simple_disc"
         doe_eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                             mod_id=proc_name)
@@ -213,12 +213,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         eval_disc = exec_eng.dm.get_disciplines_with_name('doe.Eval')[0]
 
-        #eval_disc_samples = eval_disc.get_sosdisc_outputs(
+        # eval_disc_samples = eval_disc.get_sosdisc_outputs(
         #    'samples_inputs_df')
         eval_disc_obj = eval_disc.get_sosdisc_outputs('obj_dict')
         eval_disc_y1 = eval_disc.get_sosdisc_outputs('y_1_dict')
         eval_disc_y2 = eval_disc.get_sosdisc_outputs('y_2_dict')
-        #self.assertEqual(len(eval_disc_samples), n_samples + 1)
+        # self.assertEqual(len(eval_disc_samples), n_samples + 1)
         self.assertEqual(len(eval_disc_obj), n_samples + 1)
         reference_dict_eval_disc_y1 = {'scenario_1': array([10.491019856682016]),
                                        'scenario_2': array([7.247824531594309]),
@@ -364,12 +364,12 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertEqual(exec_eng.dm.get_value(
                 'doe.SampleGenerator.sampling_algo'), "fullfact")
 
-        #eval_disc_samples = eval_disc.get_sosdisc_outputs(
+        # eval_disc_samples = eval_disc.get_sosdisc_outputs(
         #    'samples_inputs_df')
         eval_disc_obj = eval_disc.get_sosdisc_outputs('obj_dict')
         eval_disc_y1 = eval_disc.get_sosdisc_outputs('y_1_dict')
         eval_disc_y2 = eval_disc.get_sosdisc_outputs('y_2_dict')
-        #self.assertEqual(len(eval_disc_samples), n_samples + 1)
+        # self.assertEqual(len(eval_disc_samples), n_samples + 1)
         self.assertEqual(len(eval_disc_obj), n_samples + 1)
         reference_dict_eval_disc_y1 = {'scenario_1': array([10.491019856682016]),
                                        'scenario_2': array([7.247824531594309]),
@@ -555,8 +555,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:[f'scenario_{i}'for i in range(1,6)],
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -580,9 +580,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
 
-        #eval_disc_samples = eval_disc.get_sosdisc_outputs(
+        # eval_disc_samples = eval_disc.get_sosdisc_outputs(
         #    'samples_inputs_df')
-        #self.assertEqual(
+        # self.assertEqual(
         #    list(eval_disc_samples['Disc1.a'][0:-1]), a_values)
 
         eval_disc_ind = eval_disc.get_sosdisc_outputs(
@@ -698,8 +698,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         #     [6.0]), array([8.0]), array([10.0])]
         a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
+        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                        SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
+                                                               'scenario_5'],
                         'Disc1.a': a_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -729,9 +730,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
 
-        #eval_disc_samples = eval_disc.get_sosdisc_outputs(
+        # eval_disc_samples = eval_disc.get_sosdisc_outputs(
         #    'samples_inputs_df')
-        #self.assertEqual(
+        # self.assertEqual(
         #    list(eval_disc_samples['Disc1.a'][0:-1]), a_values)
 
         eval_disc_ind = eval_disc.get_sosdisc_outputs(
@@ -754,9 +755,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         # b_values = [array([1.0]), array([3.0]), array(
         #     [5.0]), array([1.0]), array([1.0])]
         b_values = [1.0, 3.0, 5.0, 7.0, 9.0]
-        new_samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
-                        'Disc1.a': a_values, 'Disc1.b': b_values}
+        new_samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                            SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3',
+                                                                   'scenario_4', 'scenario_5'],
+                            'Disc1.a': a_values, 'Disc1.b': b_values}
         new_samples_df = pd.DataFrame(new_samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
 
@@ -767,7 +769,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Check samples
         eval_disc = exec_eng.dm.get_disciplines_with_name(
             study_name + '.Eval')[0]
-        #eval_disc_samples = eval_disc.get_sosdisc_outputs(
+        # eval_disc_samples = eval_disc.get_sosdisc_outputs(
         #    'samples_inputs_df')
         # self.assertEqual(
         #     list(eval_disc_samples['Disc1.a'][0:-1]), a_values)
@@ -782,9 +784,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
 
         # Change of samples
-        new_samples_dict2 = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
-                        'Disc1.a': a_values}
+        new_samples_dict2 = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                             SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3',
+                                                                    'scenario_4', 'scenario_5'],
+                             'Disc1.a': a_values}
         new_samples_df2 = pd.DataFrame(new_samples_dict2)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df2
 
@@ -800,7 +803,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(list(eval_disc_samples['Disc1.a']), a_values)
         x_all_None = True
         for element in list(eval_disc_samples['x']):
-            if element is None or math.isnan(element): # TODO: verify equivalence in gui.
+            if element is None or math.isnan(element):  # TODO: verify equivalence in gui.
                 pass
             else:
                 x_all_None = False
@@ -815,9 +818,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_b
 
         # Change of samples
-        new_samples_dict3 = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
-                        'Disc1.a': a_values}
+        new_samples_dict3 = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                             SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3',
+                                                                    'scenario_4', 'scenario_5'],
+                             'Disc1.a': a_values}
         new_samples_df3 = pd.DataFrame(new_samples_dict3)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df3
 
@@ -857,9 +861,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
 
         # Change of samples
-        new_samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
-                        'Disc1.a': a_values, 'Disc1.b': b_values}
+        new_samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                            SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3',
+                                                                   'scenario_4', 'scenario_5'],
+                            'Disc1.a': a_values, 'Disc1.b': b_values}
         new_samples_df = pd.DataFrame(new_samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
 
@@ -881,9 +886,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
 
         # Change of samples
-        new_samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO:[True]*5,
-                        SampleGeneratorWrapper.SCENARIO_NAME:['scenario_1','scenario_2','scenario_3','scenario_4','scenario_5'],
-                        'Disc1.a': a_values, 'Disc1.b': b_values}
+        new_samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
+                            SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3',
+                                                                   'scenario_4', 'scenario_5'],
+                            'Disc1.a': a_values, 'Disc1.b': b_values}
         new_samples_df = pd.DataFrame(new_samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = new_samples_df
 
@@ -906,7 +912,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert x_all_nan == True
 
     def test_9_nested_very_simple_multi_scenarios(self):
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver.usecase_without_ref import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver.usecase_without_ref import \
+            Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -949,28 +956,25 @@ class TestSoSDOEScenario(unittest.TestCase):
                       '\t\t\t\t\t|_ Disc1\n' \
                       '\t\t\t|_ Disc3\n' \
                       '\t\t\t|_ inner_ms_gather\n' \
-                      '\t|_ outer_ms_gather' 
+                      '\t|_ outer_ms_gather'
         exp_proxy_tree = '|_ root  (ProxyCoupling) [True]\n' \
                          '    |_ root.outer_ms  (ProxyMultiInstanceDriver) [True]\n' \
-                         '        |_ root.outer_ms.scenario_1  (ProxyCoupling) [True]\n' \
-                         '            |_ root.outer_ms.scenario_1.inner_ms  (ProxyMultiInstanceDriver) [True]\n' \
-                         '                |_ root.outer_ms.scenario_1.inner_ms.name_1  (ProxyCoupling) [True]\n' \
-                         '                    |_ root.outer_ms.scenario_1.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n' \
-                         '                |_ root.outer_ms.scenario_1.inner_ms.name_2  (ProxyCoupling) [True]\n' \
-                         '                    |_ root.outer_ms.scenario_1.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n' \
-                         '            |_ root.outer_ms.scenario_1.Disc3  (ProxyDiscipline) [True]\n' \
-                         '        |_ root.outer_ms.scenario_2  (ProxyCoupling) [True]\n' \
-                         '            |_ root.outer_ms.scenario_2.inner_ms  (ProxyMultiInstanceDriver) [True]\n' \
-                         '                |_ root.outer_ms.scenario_2.inner_ms.name_1  (ProxyCoupling) [True]\n' \
-                         '                    |_ root.outer_ms.scenario_2.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n' \
-                         '                |_ root.outer_ms.scenario_2.inner_ms.name_2  (ProxyCoupling) [True]\n' \
-                         '                    |_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n' \
-                         '            |_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]'
+                         '    |_ root.outer_ms_gather  (ProxyDiscipline) [True]\n' \
+                         '    |_ root.outer_ms.scenario_1.inner_ms  (ProxyMultiInstanceDriver) [True]\n' \
+                         '    |_ root.outer_ms.scenario_1.Disc3  (ProxyDiscipline) [True]\n' \
+                         '    |_ root.outer_ms.scenario_2.inner_ms  (ProxyMultiInstanceDriver) [True]\n' \
+                         '    |_ root.outer_ms.scenario_2.Disc3  (ProxyDiscipline) [True]\n' \
+                         '    |_ root.outer_ms.scenario_1.inner_ms_gather  (ProxyDiscipline) [True]\n' \
+                         '    |_ root.outer_ms.scenario_2.inner_ms_gather  (ProxyDiscipline) [True]\n' \
+                         '    |_ root.outer_ms.scenario_1.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n' \
+                         '    |_ root.outer_ms.scenario_1.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]\n' \
+                         '    |_ root.outer_ms.scenario_2.inner_ms.name_1.Disc1  (ProxyDiscipline) [True]\n' \
+                         '    |_ root.outer_ms.scenario_2.inner_ms.name_2.Disc1  (ProxyDiscipline) [True]'
 
         self.assertEqual(exec_eng.display_treeview_nodes(exec_display=True),
                          exp_ns_tree)
-        # self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
-        #                  exp_proxy_tree)  # FIXME: update with nested
+        self.assertEqual(exec_eng.root_process.display_proxy_subtree(callback=lambda x: x.is_configured()),
+                         exp_proxy_tree)
 
         exec_eng.execute()
 
@@ -993,12 +997,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         whereas the inner multi scenario driver represents scenarios on the Production process. The test is load from a
         usecase and it checks only the treeviews both for namespaces and for proxy objects.
         """
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver_archibuilder.usecase import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver_archibuilder.usecase import \
+            Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
         factory = exec_eng.factory
-        repo_name = self.repo +  ".tests_driver_eval.multi"
+        repo_name = self.repo + ".tests_driver_eval.multi"
         proc_name = "test_multi_driver_of_multi_driver_archibuilder"
         eval_builder = factory.get_builder_from_process(repo=repo_name,
                                                         mod_id=proc_name)
@@ -1121,7 +1126,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         dump_dir = join(ref_dir, 'dump_load_cache')
 
         with_coupling = True
-        #TODO: n'existe plus voir Carlos
+        # TODO: n'existe plus voir Carlos
         # The generator eval process
         if with_coupling:
             proc_name = 'test_sellar_coupling_generator_eval_cp'
@@ -1201,7 +1206,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         are non-trade variables.
         '''
 
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import \
+            Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1558,7 +1564,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
         are non-trade variables.
         '''
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref_2 import Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref_2 import \
+            Study
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1890,6 +1897,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.assertEqual(study_dump.ee.root_process.display_proxy_subtree(
             lambda x: x.status), exp_proxy_tv_with_status)
+
 
 if __name__ == '__main__':
     test = TestSoSDOEScenario()
