@@ -130,7 +130,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     CARTESIAN_PRODUCT = 'cartesian_product'
     GRID_SEARCH = 'grid_search'
     FULLFACT = 'fullfact'
-    available_sampling_methods = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
+    AVAILABLE_SAMPLING_METHODS = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
 
     SAMPLE_GENERATOR_CLS = {
         SIMPLE_SAMPLING_METHOD: SimpleSampleGenerator,
@@ -183,7 +183,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
-                                 'possible_values': available_sampling_methods,
+                                 'possible_values': AVAILABLE_SAMPLING_METHODS,
                                  'default': SIMPLE_SAMPLING_METHOD},
                SAMPLING_GENERATION_MODE: {'type': 'string',
                                           'structuring': True,
@@ -200,13 +200,17 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         self.sampling_generation_mode = None
 
+        # TODO: MOVE TO DOE
         self.selected_inputs = []
         self.dict_desactivated_elem = {}
 
+        # TODO: MOVE TO CP
         self.previous_eval_inputs_cp = None
         self.eval_inputs_cp_has_changed = False
         self.eval_inputs_cp_filtered = None
         self.eval_inputs_cp_validity = True
+
+        # todo KEEP?
         self.samples_gene_df = None
 
     def setup_sos_disciplines(self):
@@ -217,9 +221,17 @@ class SampleGeneratorWrapper(SoSWrapp):
         disc_in = self.get_data_in()
 
         if len(disc_in) != 0:
-            self.sampling_method = self.get_sosdisc_inputs(
-                self.SAMPLING_METHOD)
+            self.sampling_method = self.get_sosdisc_inputs(self.SAMPLING_METHOD)
             self.instantiate_sampling_tool()
+
+            # # handle editability of generation mode only for mode simple
+            # self.sampling_generation_mode = self.get_sampling_generation_mode(disc_in)
+            #
+            # # manage eval_inputs additional column for Cartesian product
+            # self.manage_eval_inputs_columns(disc_in)
+            #
+            # # get the mode dynamic input
+            # dynamic_inputs, dynamic_outputs = self.sample_generator.get_dynamic_input(disc_in)
 
             if self.sampling_method == self.SIMPLE_SAMPLING_METHOD:
                 # Reset parameters of the other method to initial values (cleaning)
@@ -299,7 +311,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             elif self.sampling_method is not None:
                 raise Exception(
                     f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
-                    f"introduce one of the available methods from {self.available_sampling_methods}.")
+                    f"introduce one of the available methods from {self.AVAILABLE_SAMPLING_METHODS}.")
             else:
                 dynamic_inputs = {}
                 dynamic_outputs = {}
@@ -313,6 +325,16 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
+
+    def get_sampling_generation_mode(self, disc_in):
+        if self.sampling_method == self.SIMPLE_SAMPLING_METHOD:
+            # force config time sampling
+            disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_CONFIGURATION_TIME
+            disc_in[self.SAMPLING_GENERATION_MODE][self.EDITABLE] = False
+            return self.AT_CONFIGURATION_TIME
+        elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
+            disc_in[self.SAMPLING_GENERATION_MODE][self.EDITABLE] = True
+            return self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE)
 
     def run(self):
         '''
@@ -358,10 +380,16 @@ class SampleGeneratorWrapper(SoSWrapp):
         """
            Instantiate SampleGenerator only if needed
         """
-        if self.sampling_method:
-            sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
-            if self.sample_generator.__class__ != sample_generator_cls:
-                self.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
+        if self.sampling_method is not None:
+            if self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
+                sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
+                if self.sample_generator.__class__ != sample_generator_cls:
+                    self.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
+            else:
+                # TODO: self.logger.error ?
+                raise ValueError(
+                    f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
+                    f"introduce one of the available methods from {self.AVAILABLE_SAMPLING_METHODS}.")
 
     def get_algo_default_options(self, algo_name):
         """
@@ -716,9 +744,9 @@ class SampleGeneratorWrapper(SoSWrapp):
             dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
             samples_df = self.generate_sample_for_doe(
                 algo_name, algo_options, dspace_df)
-        elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
-            generated_samples = self.get_sosdisc_inputs(self.SAMPLES_DF)
-            samples_df = generated_samples
+        # elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
+        #     generated_samples = self.get_sosdisc_inputs(self.SAMPLES_DF)
+        #     samples_df = generated_samples
         return samples_df
 
     def setup_cp_method(self):
@@ -775,6 +803,12 @@ class SampleGeneratorWrapper(SoSWrapp):
                                  self.VALUE,
                                  eval_inputs,
                                  check_value=False)
+
+    def manage_eval_inputs_columns(self, disc_in):
+        if self.sampling_method == self.CARTESIAN_PRODUCT:
+            self.update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy(), disc_in)
+        elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
+            self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
 
     def setup_gs(self, dynamic_inputs):
         """
@@ -960,10 +994,10 @@ class SampleGeneratorWrapper(SoSWrapp):
             self.SAMPLES_DF (dataframe) : prepared samples for evaluation
         """
 
-        if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
-            generated_samples = self.get_sosdisc_inputs(self.SAMPLES_DF)
-            samples_df = generated_samples
-        elif self.sampling_generation_mode == self.AT_RUN_TIME:
+        # if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
+        #     generated_samples = self.get_sosdisc_inputs(self.SAMPLES_DF)
+        #     samples_df = generated_samples
+        if self.sampling_generation_mode == self.AT_RUN_TIME:
             if self.eval_inputs_cp_validity:
                 if self.eval_inputs_cp_has_changed:
                     samples_df = self.generate_sample_for_cp()
