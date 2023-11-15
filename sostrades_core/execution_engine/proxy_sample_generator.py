@@ -94,7 +94,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                         drop_duplicates('full_name').set_index('full_name').reindex(possible_values).\
                         reset_index().reindex(columns=eval_input_new_dm.columns)
                     eval_input_new_dm['selected_input'] = eval_input_new_dm['selected_input'].fillna(False).astype('bool')
-                    # manage the empty lists on column list_of_values
+                    # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
                     if 'list_of_values' in eval_input_new_dm.columns:
                         new_in = eval_input_new_dm['list_of_values'].isna()
                         eval_input_new_dm.loc[new_in, 'list_of_values'] = pd.Series([[]] * new_in.sum()).values
