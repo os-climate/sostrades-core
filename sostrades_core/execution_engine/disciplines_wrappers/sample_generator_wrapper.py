@@ -178,8 +178,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                         }
 
     # # dataframe descriptor for Cartesian Product case  # TODO: problems with nose2
-    # EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
-    # EVAL_INPUTS_CP_DF_DESC.update({'list_of_values': ('list', None, True)})
+    EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
+    EVAL_INPUTS_CP_DF_DESC.update({'list_of_values': ('list', None, True)})
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -744,9 +744,6 @@ class SampleGeneratorWrapper(SoSWrapp):
             dynamic_inputs (dict): the dynamic input dict to be updated
 
         """
-        # eval_inputs_cp_df_desc = {'selected_input': ('bool', None, True),
-        #                           'full_name': ('string', None, False),
-        #                           'list_of_values': ('list', None, True)}
         # update dataframe descriptor and value of eval_inputs variable for Cartesian Product
         self.update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy())
 
