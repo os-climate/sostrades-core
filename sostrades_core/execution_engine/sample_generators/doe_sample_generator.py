@@ -426,13 +426,16 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             dynamic_inputs (dict): the dynamic input dict to be updated
 
         """
-        # Get possible values for sampling algorithm name
-        available_doe_algorithms = self.get_available_algo_names()
-        dynamic_inputs.update({'sampling_algo':
-                                   {proxy.TYPE: 'string',
-                                    proxy.STRUCTURING: True,
-                                    proxy.POSSIBLE_VALUES: available_doe_algorithms}
-                               })
+        if proxy.sampling_method == proxy.DOE_ALGO:
+            # Get possible values for sampling algorithm name
+            available_doe_algorithms = proxy.sample_generator.get_available_algo_names()
+            dynamic_inputs.update({'sampling_algo':
+                                       {proxy.TYPE: 'string',
+                                        proxy.STRUCTURING: True,
+                                        proxy.POSSIBLE_VALUES: available_doe_algorithms}
+                                   })
+        # FIXME: should not be here
+        proxy.update_eval_inputs_columns(proxy.EVAL_INPUTS_DF_DESC.copy())
 
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs, proxy):
         """

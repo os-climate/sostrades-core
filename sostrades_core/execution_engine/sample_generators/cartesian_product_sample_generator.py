@@ -100,8 +100,6 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         
         return samples_df
 
-
-
     # TODO: REFACTOR IF POSSIBLE W/O PROXY REFs (note for the moment proxy is the wrapper until config. actions moved)
     def setup(self, proxy):
         """
