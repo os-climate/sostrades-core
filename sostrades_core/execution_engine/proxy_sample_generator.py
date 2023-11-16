@@ -141,5 +141,4 @@ class ProxySampleGenerator(ProxyDiscipline):
 
     # TODO: rewrite these functions for ProxySampleGenerator migrating class variables etc.
     def setup_sos_disciplines(self):
-        # NB: the sample generator might be configuring twice when configured by driver and also in standalone
         super().setup_sos_disciplines()
