@@ -34,6 +34,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.sample_generators.simple_sample_generator import SimpleSampleGenerator
+from sostrades_core.execution_engine.sample_generators.grid_search_sample_generator import GridSearchSampleGenerator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
     CartesianProductSampleGenerator
@@ -135,7 +136,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         SIMPLE_SAMPLING_METHOD: SimpleSampleGenerator,
         DOE_ALGO: DoeSampleGenerator,
         CARTESIAN_PRODUCT: CartesianProductSampleGenerator,
-        GRID_SEARCH: CartesianProductSampleGenerator
+        GRID_SEARCH: GridSearchSampleGenerator
     }
 
     SAMPLING_GENERATION_MODE = 'sampling_generation_mode'
@@ -282,7 +283,6 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
                 dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
 
-
             elif self.sampling_method == self.CARTESIAN_PRODUCT:
                 # Reset parameters of the other method to initial values
                 # (cleaning)
@@ -305,9 +305,9 @@ class SampleGeneratorWrapper(SoSWrapp):
                 self.sampling_generation_mode = self.AT_RUN_TIME
                 disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_RUN_TIME
                 # most setup is similar to doe_algo
-                dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
-
-                self.setup_gs(dynamic_inputs)
+                # dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
+                # self.setup_gs(dynamic_inputs)
+                dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
 
             elif self.sampling_method is not None:
                 raise Exception(
@@ -392,20 +392,20 @@ class SampleGeneratorWrapper(SoSWrapp):
                     f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
                     f"introduce one of the available methods from {self.AVAILABLE_SAMPLING_METHODS}.")
 
-    def get_algo_default_options(self, algo_name):
-        """
-            This algo generate the default options to set for a given doe algorithm
-        """
-
-        # In get_options_and_default_values, it is already checked whether the algo_name belongs to the list of possible Gemseo
-        # DoE algorithms
-        if algo_name in get_available_doe_algorithms():
-            algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_and_default_values(
-                algo_name)
-            return algo_options_desc_in
-        else:
-            raise Exception(
-                f"A DoE algorithm which is not available in GEMSEO has been selected.")
+    # def get_algo_default_options(self, algo_name):
+    #     """
+    #         This algo generate the default options to set for a given doe algorithm
+    #     """
+    #
+    #     # In get_options_and_default_values, it is already checked whether the algo_name belongs to the list of possible Gemseo
+    #     # DoE algorithms
+    #     if algo_name in get_available_doe_algorithms():
+    #         algo_options_desc_in, algo_options_descr_dict = self.sample_generator.get_options_and_default_values(
+    #             algo_name)
+    #         return algo_options_desc_in
+    #     else:
+    #         raise Exception(
+    #             f"A DoE algorithm which is not available in GEMSEO has been selected.")
 
     def create_design_space(self, selected_inputs, dspace_df):
         """
@@ -656,6 +656,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     #                                 elem_dict, ignore_index=True)
     #                     disc_in['design_space'][self.VALUE] = final_dataframe
 
+    # TODO: LOOKS UNUSED
     def filter_eval_inputs_types_to_float(self, eval_inputs):
         allowed_types = ['float']
         driverevaluator_ns = self.get_var_full_name(self.EVAL_INPUTS, self.get_data_in()).split('.eval_inputs')[
@@ -811,21 +812,21 @@ class SampleGeneratorWrapper(SoSWrapp):
         elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
             self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
 
-    def setup_gs(self, dynamic_inputs):
-        """
-        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
-        with specificities for the GridSearch sampling method.
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-        """
-        disc_in = self.get_data_in()
-        self.eval_inputs_cp_has_changed = False
-        if self.DESIGN_SPACE in disc_in:
-            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-            # link doe-like inputs to cp attributes in the framework of GridSearch
-            eval_inputs_cp = self.get_eval_inputs_cp_for_gs(eval_inputs, design_space)
-            self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
+    # def setup_gs(self, dynamic_inputs):
+    #     """
+    #     Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
+    #     with specificities for the GridSearch sampling method.
+    #     Arguments:
+    #         dynamic_inputs (dict): the dynamic input dict to be updated
+    #     """
+    #     disc_in = self.get_data_in()
+    #     self.eval_inputs_cp_has_changed = False
+    #     if self.DESIGN_SPACE in disc_in:
+    #         eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+    #         design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+    #         # link doe-like inputs to cp attributes in the framework of GridSearch
+    #         eval_inputs_cp = self.get_eval_inputs_cp_for_gs(eval_inputs, design_space)
+    #         self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
 
     # def setup_eval_inputs_cp_and_generated_samples(self, dynamic_inputs, eval_inputs_cp):
     #     """
@@ -852,30 +853,30 @@ class SampleGeneratorWrapper(SoSWrapp):
     #         if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
     #             self.setup_generated_samples_for_cp(dynamic_inputs)
 
-    def get_eval_inputs_cp_for_gs(self, eval_inputs, design_space):
-        """
-        Method that modifies Doe-type eval_inputs into eval_inputs_cp to use CartesianProduct for GridSearch.
-
-        Arguments:
-            eval_inputs(dataframe): Doe-like eval_inputs.
-            design_space(dataframe): GridSearch design space with nb_points.
-        Returns:
-            eval_inputs_cp(dataframe): with extra column with the values for CartesianProduct SampleGenerator.
-        """
-        if eval_inputs is not None and design_space is not None:
-            lists_of_values = []
-            for idx, var_row in eval_inputs.iterrows():
-                if var_row['selected_input'] is True and var_row['full_name'] in design_space['variable'].tolist():
-                    dspace_row = design_space[design_space['variable'] == var_row['full_name']].iloc[0]
-                    lb = dspace_row['lower_bnd']
-                    ub = dspace_row['upper_bnd']
-                    nb_points = dspace_row['nb_points']
-                    lists_of_values.append(np.linspace(lb, ub, nb_points).tolist())
-                else:
-                    lists_of_values.append([])
-
-            eval_inputs_cp = eval_inputs.assign(list_of_values=lists_of_values)
-            return eval_inputs_cp
+    # def get_eval_inputs_cp_for_gs(self, eval_inputs, design_space):
+    #     """
+    #     Method that modifies Doe-type eval_inputs into eval_inputs_cp to use CartesianProduct for GridSearch.
+    #
+    #     Arguments:
+    #         eval_inputs(dataframe): Doe-like eval_inputs.
+    #         design_space(dataframe): GridSearch design space with nb_points.
+    #     Returns:
+    #         eval_inputs_cp(dataframe): with extra column with the values for CartesianProduct SampleGenerator.
+    #     """
+    #     if eval_inputs is not None and design_space is not None:
+    #         lists_of_values = []
+    #         for idx, var_row in eval_inputs.iterrows():
+    #             if var_row['selected_input'] is True and var_row['full_name'] in design_space['variable'].tolist():
+    #                 dspace_row = design_space[design_space['variable'] == var_row['full_name']].iloc[0]
+    #                 lb = dspace_row['lower_bnd']
+    #                 ub = dspace_row['upper_bnd']
+    #                 nb_points = dspace_row['nb_points']
+    #                 lists_of_values.append(np.linspace(lb, ub, nb_points).tolist())
+    #             else:
+    #                 lists_of_values.append([])
+    #
+    #         eval_inputs_cp = eval_inputs.assign(list_of_values=lists_of_values)
+    #         return eval_inputs_cp
 
     # def setup_dynamic_inputs_which_depend_on_eval_input_cp(self, dynamic_inputs):
     #     """
@@ -999,7 +1000,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         #     generated_samples = self.get_sosdisc_inputs(self.SAMPLES_DF)
         #     samples_df = generated_samples
         if self.sampling_generation_mode == self.AT_RUN_TIME:
-            if self.eval_inputs_cp_validity:
-                if self.eval_inputs_cp_has_changed:
+            if self.sample_generator.eval_inputs_cp_validity:
+                if self.sample_generator.eval_inputs_cp_has_changed:
                     samples_df = self.generate_sample_for_cp()
         return samples_df
