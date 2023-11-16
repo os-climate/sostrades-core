@@ -27,7 +27,6 @@ from numpy import array, ndarray, delete, NaN
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -200,15 +199,15 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         self.sampling_generation_mode = None
 
-        # TODO: MOVE TO DOE
-        self.selected_inputs = []
-        self.dict_desactivated_elem = {}
+        # # TODO: MOVE TO DOE
+        # self.selected_inputs = []
+        # self.dict_desactivated_elem = {}
 
         # TODO: MOVE TO CP
-        self.previous_eval_inputs_cp = None
-        self.eval_inputs_cp_has_changed = False
-        self.eval_inputs_cp_filtered = None
-        self.eval_inputs_cp_validity = True
+        # self.previous_eval_inputs_cp = None
+        # self.eval_inputs_cp_has_changed = False
+        # self.eval_inputs_cp_filtered = None
+        # self.eval_inputs_cp_validity = True
 
         # todo KEEP?
         self.samples_gene_df = None
@@ -236,11 +235,11 @@ class SampleGeneratorWrapper(SoSWrapp):
             if self.sampling_method == self.SIMPLE_SAMPLING_METHOD:
                 # Reset parameters of the other method to initial values (cleaning)
                 # TODO: move all of these to the corresponding tools !
-                self.previous_eval_inputs_cp = None
-                self.eval_inputs_cp_filtered = None
-                self.eval_inputs_cp_validity = True
-                self.selected_inputs = []
-                self.dict_desactivated_elem = {}
+                # self.previous_eval_inputs_cp = None
+                # self.eval_inputs_cp_filtered = None
+                # self.eval_inputs_cp_validity = True
+                # self.selected_inputs = []
+                # self.dict_desactivated_elem = {}
 
                 # 0. force config time sampling
                 self.sampling_generation_mode = self.AT_CONFIGURATION_TIME
@@ -269,9 +268,9 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
                 # Reset parameters of the other method to initial values
                 # (cleaning)
-                self.previous_eval_inputs_cp = None
-                self.eval_inputs_cp_filtered = None
-                self.eval_inputs_cp_validity = True
+                # self.previous_eval_inputs_cp = None
+                # self.eval_inputs_cp_filtered = None
+                # self.eval_inputs_cp_validity = True
 
                 # setup_doe_algo_method
                 # TODO: configuration-time sampling not implemented yet for doe and gridsearch
@@ -288,8 +287,8 @@ class SampleGeneratorWrapper(SoSWrapp):
             elif self.sampling_method == self.CARTESIAN_PRODUCT:
                 # Reset parameters of the other method to initial values
                 # (cleaning)
-                self.selected_inputs = []
-                self.dict_desactivated_elem = {}
+                # self.selected_inputs = []
+                # self.dict_desactivated_elem = {}
 
                 # setup_cp_method
 
@@ -298,7 +297,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # self.sampling_generation_mode = self.AT_RUN_TIME # It was
                 # tested that it also works
 
-                dynamic_inputs, dynamic_outputs = self.setup_cp_method()
+                # dynamic_inputs, dynamic_outputs = self.setup_cp_method()
+                dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
 
             elif self.sampling_method == self.GRID_SEARCH:
                 # setup_cp_method
@@ -477,7 +477,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             # check if variable is enabled to add it or not in the design var
             if enable_var:
 
-                self.dict_desactivated_elem[dv] = {}
+                # self.sample_generator.dict_desactivated_elem[dv] = {}
                 name = dv
                 if type(val) != list and type(val) != ndarray:
                     size = 1
@@ -489,8 +489,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                     # check if there is any False in l_activated
                     if not all(l_activated):
                         index_false = l_activated.index(False)
-                        self.dict_desactivated_elem[dv] = {
-                            'value': val[index_false], 'position': index_false}
+                        # self.sample_generator.dict_desactivated_elem[dv] = {
+                        #     'value': val[index_false], 'position': index_false}
 
                         val = delete(val, index_false)
                         lb = delete(lb, index_false)
@@ -751,31 +751,31 @@ class SampleGeneratorWrapper(SoSWrapp):
         #     samples_df = generated_samples
         return samples_df
 
-    def setup_cp_method(self):
-        """
-        Method that setup the cp method
-        """
-        dynamic_inputs = {}
-        dynamic_outputs = {}
-        # Setup dynamic inputs for CARTESIAN_PRODUCT method: i.e.
-        # EVAL_INPUTS_CP
-        self.setup_dynamic_inputs_for_cp_generator_method(dynamic_inputs)
-        # Setup dynamic inputs which depend on EVAL_INPUTS_CP setting or
-        # update: i.e. GENERATED_SAMPLES
-        self.setup_dynamic_inputs_which_depend_on_eval_input_cp(dynamic_inputs)
+    # def setup_cp_method(self):
+    #     """
+    #     Method that setup the cp method
+    #     """
+    #     dynamic_inputs = {}
+    #     dynamic_outputs = {}
+    #     # Setup dynamic inputs for CARTESIAN_PRODUCT method: i.e.
+    #     # EVAL_INPUTS_CP
+    #     self.setup_dynamic_inputs_for_cp_generator_method(dynamic_inputs)
+    #     # Setup dynamic inputs which depend on EVAL_INPUTS_CP setting or
+    #     # update: i.e. GENERATED_SAMPLES
+    #     self.setup_dynamic_inputs_which_depend_on_eval_input_cp(dynamic_inputs)
+    #
+    #     return dynamic_inputs, dynamic_outputs
 
-        return dynamic_inputs, dynamic_outputs
-
-    def setup_dynamic_inputs_for_cp_generator_method(self, dynamic_inputs):
-        """
-        Method that setup dynamic inputs in case of CARTESIAN_PRODUCT selection: i.e. EVAL_INPUTS_CP
-
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-
-        """
-        # update dataframe descriptor and value of eval_inputs variable for Cartesian Product
-        self.update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy())
+    # def setup_dynamic_inputs_for_cp_generator_method(self, dynamic_inputs):
+    #     """
+    #     Method that setup dynamic inputs in case of CARTESIAN_PRODUCT selection: i.e. EVAL_INPUTS_CP
+    #
+    #     Arguments:
+    #         dynamic_inputs (dict): the dynamic input dict to be updated
+    #
+    #     """
+    #     # update dataframe descriptor and value of eval_inputs variable for Cartesian Product
+    #     self.update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy())
 
     def update_eval_inputs_columns(self, eval_inputs_df_desc, disc_in=None):
         """
@@ -828,30 +828,30 @@ class SampleGeneratorWrapper(SoSWrapp):
             eval_inputs_cp = self.get_eval_inputs_cp_for_gs(eval_inputs, design_space)
             self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
 
-    def setup_eval_inputs_cp_and_generated_samples(self, dynamic_inputs, eval_inputs_cp):
-        """
-        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-            eval_inputs_cp (dataframe): the variables and possible values for the sample
-        """
-        # 1. Manage update status of EVAL_INPUTS_CP
-        # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
-        if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
-            self.eval_inputs_cp_has_changed = True
-            self.previous_eval_inputs_cp = eval_inputs_cp
-        # 2. Manage selection in EVAL_INPUTS_CP
-        if eval_inputs_cp is not None:
-            # reformat eval_inputs_cp to take into account only useful
-            # informations
-            self.eval_inputs_cp_filtered = self.reformat_eval_inputs_cp(
-                eval_inputs_cp)
-            # Check selected input cp validity
-            self.eval_inputs_cp_validity = self.check_eval_inputs_cp(
-                self.eval_inputs_cp_filtered)
-            # Setup GENERATED_SAMPLES for cartesian product
-            if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
-                self.setup_generated_samples_for_cp(dynamic_inputs)
+    # def setup_eval_inputs_cp_and_generated_samples(self, dynamic_inputs, eval_inputs_cp):
+    #     """
+    #     Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
+    #     Arguments:
+    #         dynamic_inputs (dict): the dynamic input dict to be updated
+    #         eval_inputs_cp (dataframe): the variables and possible values for the sample
+    #     """
+    #     # 1. Manage update status of EVAL_INPUTS_CP
+    #     # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
+    #     if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
+    #         self.eval_inputs_cp_has_changed = True
+    #         self.previous_eval_inputs_cp = eval_inputs_cp
+    #     # 2. Manage selection in EVAL_INPUTS_CP
+    #     if eval_inputs_cp is not None:
+    #         # reformat eval_inputs_cp to take into account only useful
+    #         # informations
+    #         self.eval_inputs_cp_filtered = self.reformat_eval_inputs_cp(
+    #             eval_inputs_cp)
+    #         # Check selected input cp validity
+    #         self.eval_inputs_cp_validity = self.check_eval_inputs_cp(
+    #             self.eval_inputs_cp_filtered)
+    #         # Setup GENERATED_SAMPLES for cartesian product
+    #         if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
+    #             self.setup_generated_samples_for_cp(dynamic_inputs)
 
     def get_eval_inputs_cp_for_gs(self, eval_inputs, design_space):
         """
@@ -878,111 +878,111 @@ class SampleGeneratorWrapper(SoSWrapp):
             eval_inputs_cp = eval_inputs.assign(list_of_values=lists_of_values)
             return eval_inputs_cp
 
-    def setup_dynamic_inputs_which_depend_on_eval_input_cp(self, dynamic_inputs):
-        """
-        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-        """
-        # TODO : why is it more complex as in doe_algo ?
-        self.eval_inputs_cp_has_changed = False
-        disc_in = self.get_data_in()
-        if self.EVAL_INPUTS in disc_in:
-            eval_inputs_cp = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
+    # def setup_dynamic_inputs_which_depend_on_eval_input_cp(self, dynamic_inputs):
+    #     """
+    #     Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
+    #     Arguments:
+    #         dynamic_inputs (dict): the dynamic input dict to be updated
+    #     """
+    #     # TODO : why is it more complex as in doe_algo ?
+    #     self.eval_inputs_cp_has_changed = False
+    #     disc_in = self.get_data_in()
+    #     if self.EVAL_INPUTS in disc_in:
+    #         eval_inputs_cp = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+    #         self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp)
 
-    def setup_generated_samples_for_cp(self, dynamic_inputs):
-        """
-        Method that setup GENERATED_SAMPLES for cartesian product at configuration time
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-        """
-        generated_samples_data_description = {self.TYPE: 'dataframe',
-                                              self.DATAFRAME_EDITION_LOCKED: True,
-                                              self.DATAFRAME_DESCRIPTOR: {},
-                                              self.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                              self.STRUCTURING: False,  # needn't be for the sample generator
-                                              self.UNIT: None,
-                                              self.VISIBILITY: self.SHARED_VISIBILITY,
-                                              self.NAMESPACE: self.NS_SAMPLING}
-        if self.eval_inputs_cp_validity:
-            if self.eval_inputs_cp_has_changed:
-                self.samples_gene_df = self.generate_sample_for_cp()
-            df_descriptor = {self.SELECTED_SCENARIO: ('bool', None, False),
-                             self.SCENARIO_NAME: ('string', None, False)}
-            df_descriptor.update(
-                {row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
-                 self.eval_inputs_cp_filtered.iterrows()})
-            generated_samples_data_description.update({self.DATAFRAME_DESCRIPTOR: df_descriptor,
-                                                       self.DYNAMIC_DATAFRAME_COLUMNS: False})
-        else:
-            # if self.eval_inputs_cp_has_changed:
-            self.samples_gene_df = pd.DataFrame()
-
-        self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df)
-        generated_samples_data_description.update({self.DEFAULT: self.samples_gene_df})
-        dynamic_inputs.update({self.SAMPLES_DF: generated_samples_data_description})
-
-        # Set or update GENERATED_SAMPLES in line with selected
-        # eval_inputs_cp
-        disc_in = self.get_data_in()
-        if self.SAMPLES_DF in disc_in and self.samples_gene_df is not None:
-            self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                             'value', self.samples_gene_df, check_value=False)
-            # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+    # def setup_generated_samples_for_cp(self, dynamic_inputs):
+    #     """
+    #     Method that setup GENERATED_SAMPLES for cartesian product at configuration time
+    #     Arguments:
+    #         dynamic_inputs (dict): the dynamic input dict to be updated
+    #     """
+    #     generated_samples_data_description = {self.TYPE: 'dataframe',
+    #                                           self.DATAFRAME_EDITION_LOCKED: True,
+    #                                           self.DATAFRAME_DESCRIPTOR: {},
+    #                                           self.DYNAMIC_DATAFRAME_COLUMNS: True,
+    #                                           self.STRUCTURING: False,  # needn't be for the sample generator
+    #                                           self.UNIT: None,
+    #                                           self.VISIBILITY: self.SHARED_VISIBILITY,
+    #                                           self.NAMESPACE: self.NS_SAMPLING}
+    #     if self.eval_inputs_cp_validity:
+    #         if self.eval_inputs_cp_has_changed:
+    #             self.samples_gene_df = self.generate_sample_for_cp()
+    #         df_descriptor = {self.SELECTED_SCENARIO: ('bool', None, False),
+    #                          self.SCENARIO_NAME: ('string', None, False)}
+    #         df_descriptor.update(
+    #             {row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
+    #              self.eval_inputs_cp_filtered.iterrows()})
+    #         generated_samples_data_description.update({self.DATAFRAME_DESCRIPTOR: df_descriptor,
+    #                                                    self.DYNAMIC_DATAFRAME_COLUMNS: False})
+    #     else:
+    #         # if self.eval_inputs_cp_has_changed:
+    #         self.samples_gene_df = pd.DataFrame()
+    #
+    #     self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df)
+    #     generated_samples_data_description.update({self.DEFAULT: self.samples_gene_df})
+    #     dynamic_inputs.update({self.SAMPLES_DF: generated_samples_data_description})
+    #
+    #     # Set or update GENERATED_SAMPLES in line with selected
+    #     # eval_inputs_cp
+    #     disc_in = self.get_data_in()
+    #     if self.SAMPLES_DF in disc_in and self.samples_gene_df is not None:
+    #         self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
+    #                          'value', self.samples_gene_df, check_value=False)
+    #         # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
 
     def generate_sample_for_cp(self):
         """
         Outputs:
             samples_gene_df (dataframe) : prepared samples for evaluation
         """
-        dict_of_list_values = self.eval_inputs_cp_filtered.set_index(
+        dict_of_list_values = self.sample_generator.eval_inputs_cp_filtered.set_index(
             'full_name').T.to_dict('records')[0]
         samples_gene_df = self.sample_generator.generate_samples(
             dict_of_list_values)
         return samples_gene_df
 
-    def reformat_eval_inputs_cp(self, eval_inputs_cp):
-        """
-        Method that reformat eval_input_cp depending on user's selection
+    # def reformat_eval_inputs_cp(self, eval_inputs_cp):
+    #     """
+    #     Method that reformat eval_input_cp depending on user's selection
+    #
+    #     Arguments:
+    #         eval_inputs_cp (dataframe):
+    #
+    #     Returns:
+    #         eval_inputs_cp_filtered (dataframe) :
+    #
+    #     """
+    #     logic_1 = eval_inputs_cp['selected_input'] == True
+    #     logic_2 = eval_inputs_cp['list_of_values'].isin([[]])
+    #     logic_3 = eval_inputs_cp['full_name'] is None
+    #     logic_4 = eval_inputs_cp['full_name'] == ''
+    #     eval_inputs_cp_filtered = eval_inputs_cp[logic_1 &
+    #                                              ~logic_2 & ~logic_3 & ~logic_4]
+    #     eval_inputs_cp_filtered = eval_inputs_cp_filtered[[
+    #         'full_name', 'list_of_values']]
+    #     return eval_inputs_cp_filtered
 
-        Arguments:
-            eval_inputs_cp (dataframe):
-
-        Returns:
-            eval_inputs_cp_filtered (dataframe) :
-
-        """
-        logic_1 = eval_inputs_cp['selected_input'] == True
-        logic_2 = eval_inputs_cp['list_of_values'].isin([[]])
-        logic_3 = eval_inputs_cp['full_name'] is None
-        logic_4 = eval_inputs_cp['full_name'] == ''
-        eval_inputs_cp_filtered = eval_inputs_cp[logic_1 &
-                                                 ~logic_2 & ~logic_3 & ~logic_4]
-        eval_inputs_cp_filtered = eval_inputs_cp_filtered[[
-            'full_name', 'list_of_values']]
-        return eval_inputs_cp_filtered
-
-    def check_eval_inputs_cp(self, eval_inputs_cp_filtered):
-        """
-        Method that reformat eval_input_cp depending on user's selection
-
-        Arguments:
-            eval_inputs_cp (dataframe):
-
-        Returns:
-            validity (boolean) :
-
-        """
-        is_valid = True
-        selected_inputs_cp = list(eval_inputs_cp_filtered['full_name'])
-        # n_min = 2
-        n_min = 1
-        if len(selected_inputs_cp) < n_min:
-            self.logger.warning(
-                f'Selected_inputs must have at least {n_min} variables to do a cartesian product')
-            is_valid = False
-        return is_valid
+    # def check_eval_inputs_cp(self, eval_inputs_cp_filtered):
+    #     """
+    #     Method that reformat eval_input_cp depending on user's selection
+    #
+    #     Arguments:
+    #         eval_inputs_cp (dataframe):
+    #
+    #     Returns:
+    #         validity (boolean) :
+    #
+    #     """
+    #     is_valid = True
+    #     selected_inputs_cp = list(eval_inputs_cp_filtered['full_name'])
+    #     # n_min = 2
+    #     n_min = 1
+    #     if len(selected_inputs_cp) < n_min:
+    #         self.logger.warning(
+    #             f'Selected_inputs must have at least {n_min} variables to do a cartesian product')
+    #         is_valid = False
+    #     return is_valid
 
     def run_cp(self):
         """

@@ -77,7 +77,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         self._reload()
 
         self.selected_inputs = []
-        self.dict_desactivated_elem = {}
+        # self.dict_desactivated_elem = {}
         
     def _reload(self):
         '''
@@ -400,6 +400,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         #     if type_input in ['int', 'float']:
         #         samples_df[input_name] = samples_df[input_name].astype(type_input)
         return samples_df
+
+
 
     # TODO: REFACTOR IF POSSIBLE W/O PROXY REFs (note for the moment proxy is the wrapper until config. actions moved)
     def setup(self, proxy):
