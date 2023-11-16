@@ -245,24 +245,25 @@ class SampleGeneratorWrapper(SoSWrapp):
                 self.sampling_generation_mode = self.AT_CONFIGURATION_TIME
                 disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_CONFIGURATION_TIME
 
-                # 1. handle dynamic inputs of the mode
-                # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
-                dynamic_inputs, dynamic_outputs = {}, {}
-
-                self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
-                dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
-
-                # 2. retrieve input that configures the sampling tool
-                if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
-                    samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-                    eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                    if eval_inputs is not None and samples_df is not None:
-                        selected_inputs = self.reformat_eval_inputs(eval_inputs).tolist()
-                        if selected_inputs:
-                            # 3. if sampling at config.time set the generated samples
-                            self.samples_gene_df = self.sample_generator.generate_samples(samples_df, selected_inputs)
-                            self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                                             self.VALUE, self.samples_gene_df, check_value=False)
+                dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
+                # # 1. handle dynamic inputs of the mode
+                # # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
+                # dynamic_inputs, dynamic_outputs = {}, {}
+                #
+                # self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
+                # dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
+                #
+                # # 2. retrieve input that configures the sampling tool
+                # if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
+                #     samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+                #     eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+                #     if eval_inputs is not None and samples_df is not None:
+                #         selected_inputs = self.reformat_eval_inputs(eval_inputs).tolist()
+                #         if selected_inputs:
+                #             # 3. if sampling at config.time set the generated samples
+                #             self.samples_gene_df = self.sample_generator.generate_samples(samples_df, selected_inputs)
+                #             self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
+                #                              self.VALUE, self.samples_gene_df, check_value=False)
 
             elif self.sampling_method == self.DOE_ALGO:
                 # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
