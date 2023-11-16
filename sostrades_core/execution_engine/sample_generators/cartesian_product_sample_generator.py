@@ -172,8 +172,8 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         # TODO: implement separation btw config. and sampling at config. time (remaining of the method should go away)
         if self.eval_inputs_cp_validity:
             if self.eval_inputs_cp_has_changed:
+                proxy.samples_gene_df = self.sample(proxy)
 
-                proxy.samples_gene_df = proxy.generate_sample_for_cp()
             df_descriptor = {proxy.SELECTED_SCENARIO: ('bool', None, False),
                              proxy.SCENARIO_NAME: ('string', None, False)}
             df_descriptor.update(
@@ -238,3 +238,8 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
                 f'Selected_inputs must have at least {n_min} variables to do a cartesian product')
             is_valid = False
         return is_valid
+
+    def get_arguments(self, proxy):
+        dict_of_list_values = self.eval_inputs_cp_filtered.set_index(
+            'full_name').T.to_dict('records')[0]
+        return [], {'dict_of_list_values': dict_of_list_values}

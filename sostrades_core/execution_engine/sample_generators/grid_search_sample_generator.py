@@ -58,6 +58,9 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
     def generate_samples(self, *args, **kwargs):
         return self.cp_generator.generate_samples(*args, **kwargs)
 
+    def get_arguments(self, proxy):
+        return self.cp_generator.get_arguments(proxy)
+
     def setup_gs(self, dynamic_inputs, proxy):
         """
         Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES

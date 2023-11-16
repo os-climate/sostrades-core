@@ -82,3 +82,15 @@ class AbstractSampleGenerator(object):
         To be overloaded by subclass
         '''
         pass
+
+    def sample(self, proxy):
+        _args, _kwargs = self.get_arguments(proxy)
+        return self.generate_samples(*_args, **_kwargs)
+
+    def get_arguments(self, proxy):
+        '''
+        Returns the Sample Generator expected inputs for the algo options of the selected algorithm
+        (to be provided to proxy i/o grammars)
+        To be overloaded by subclass
+        '''
+        return [], {}
