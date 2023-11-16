@@ -110,8 +110,13 @@ class DesignVarDiscipline(SoSWrapp):
                             'type': design_var_descriptor[key]['out_type'],
                             'visibility': SoSWrapp.SHARED_VISIBILITY,
                             'namespace': design_var_descriptor[key]['namespace_out']}
-            self.add_inputs(dynamic_inputs)
-            self.add_outputs(dynamic_outputs)
+        if self.WRITE_XVECT in inputs_dict.keys():
+            write_xvect = inputs_dict[self.WRITE_XVECT]
+            if write_xvect:
+                dynamic_outputs['all_iteration_dict'] = {'type': 'dict'}
+
+        self.add_inputs(dynamic_inputs)
+        self.add_outputs(dynamic_outputs)
         self.inst_desc_in = dynamic_inputs
         self.inst_desc_out = dynamic_outputs
 
@@ -121,6 +126,7 @@ class DesignVarDiscipline(SoSWrapp):
         super().init_execution()
         inputs_dict = self.get_sosdisc_inputs()
         self.design = DesignVar(inputs_dict, self.logger)
+        self.all_iterations_dict = {}
         self.dict_last_ite = None
 
     def run(self):
@@ -168,6 +174,10 @@ class DesignVarDiscipline(SoSWrapp):
         # dump design space into a csv
         if self.get_sosdisc_inputs(self.WRITE_XVECT):
             dspace_out.to_csv(f"dspace_ite_{self.iter}.csv", index=False)
+
+            # write all iterations into a dictionnary
+            self.all_iterations_dict.update({f"iteration {self.iter}": dict_current})
+            outputs_dict.update({'all_iteration_dict': self.all_iterations_dict})
 
         self.store_sos_outputs_values(self.design.output_dict)
         self.iter += 1
