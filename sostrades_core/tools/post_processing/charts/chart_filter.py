@@ -29,7 +29,7 @@ class ChartFilter:
     FILTER_KEY = 'filter_key'
     MULTIPLE_SELECTION = 'multiple_selection'
 
-    def __init__(self, name='', filter_values=[], selected_values=[], filter_key=None, multiple_selection=True):
+    def __init__(self, name='', filter_values: list = [], selected_values: list = [], filter_key=None, multiple_selection=True):
         """ Create a filter use to filter post processing building
 
         @param name : string that contains table name
@@ -104,6 +104,23 @@ class ChartFilter:
             {ChartFilter.MULTIPLE_SELECTION: self.multiple_selection})
 
         return dict_obj
+
+    def extend(self, filter_list: list[str]):
+        """add a list of filter and keys"""
+        self.filter_values.extend(filter_list)
+        self.selected_values.extend(filter_list)
+
+    def remove(self, list_to_remove: list[str]):
+        """removes a list of filters"""
+        for filter_to_remove in list_to_remove:
+            try:
+                self.filter_values.remove(filter_to_remove)
+            except:
+                pass
+            try:
+                self.selected_values.remove(filter_to_remove)
+            except:
+                pass
 
     @staticmethod
     def from_dict(dict_obj):
