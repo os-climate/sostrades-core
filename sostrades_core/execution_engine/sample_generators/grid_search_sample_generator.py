@@ -15,8 +15,7 @@ limitations under the License.
 '''
 from builtins import NotImplementedError
 
-from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import CartesianProductSampleGenerator,\
-    CartesianProductSampleTypeError
+from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import CartesianProductSampleGenerator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator, DoeSampleTypeError
 
 import pandas as pd
@@ -47,6 +46,7 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
         Constructor
         '''
         super().__init__(logger=logger)
+        # FIXME: currently it is a doesamplegenerator using cartesianproductsamplegenerator in composition, design might be improved
         self.cp_generator = CartesianProductSampleGenerator(logger=logger)
         self.retreive_cp_generator_attributes() # TODO: improve design
 
