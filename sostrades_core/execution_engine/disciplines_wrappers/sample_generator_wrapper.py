@@ -281,7 +281,9 @@ class SampleGeneratorWrapper(SoSWrapp):
                 # self.sampling_generation_mode = self.AT_CONFIGURATION_TIME #
                 # It was tested that it also works
 
-                dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
+                # dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
+                dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
+
 
             elif self.sampling_method == self.CARTESIAN_PRODUCT:
                 # Reset parameters of the other method to initial values
@@ -503,157 +505,157 @@ class SampleGeneratorWrapper(SoSWrapp):
                     name, size, var_type, l_b, u_b, value)
         return design_space
 
-    def setup_doe_algo_method(self):
-        """        
-        Method that setup the doe_algo method
-        """
-        dynamic_inputs = {}
-        dynamic_outputs = {}
-
-        # Setup dynamic inputs in case of DOE_ALGO selection:
-        # i.e. EVAL_INPUTS and SAMPLING_ALGO
-        self.setup_dynamic_inputs_for_doe_generator_method(dynamic_inputs)
-        # Setup dynamic inputs when EVAL_INPUTS/SAMPLING_ALGO are already set
-        self.setup_dynamic_inputs_algo_options_design_space(dynamic_inputs)
-
-        return dynamic_inputs, dynamic_outputs
-
-    def setup_dynamic_inputs_for_doe_generator_method(self, dynamic_inputs):
-        """
-        Method that setup dynamic inputs in case of DOE_ALGO selection: i.e. EVAL_INPUTS and SAMPLING_ALGO
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-
-        """
-        if self.sampling_method == self.DOE_ALGO:
-            # Get possible values for sampling algorithm name
-            available_doe_algorithms = self.sample_generator.get_available_algo_names()
-            dynamic_inputs.update({'sampling_algo':
-                                       {self.TYPE: 'string',
-                                        self.STRUCTURING: True,
-                                        self.POSSIBLE_VALUES: available_doe_algorithms}
-                                   })
-        self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy())
-
-    def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
-        """
-            Setup dynamic inputs when EVAL_INPUTS/SAMPLING_ALGO are already set
-            Create or update DESIGN_SPACE
-            Create or update ALGO_OPTIONS
-        """
-        self.setup_design_space(dynamic_inputs)
-        self.setup_algo_options(dynamic_inputs)
-        # Setup GENERATED_SAMPLES for cartesian product
-        if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
-            # TODO: manage config-time sample for grid search and test for DoE
-            self.setup_generated_samples_for_doe(dynamic_inputs)
-
-    def setup_algo_options(self, dynamic_inputs):
-        """
-            Method that setup 'algo_options'
-            Arguments:
-                dynamic_inputs (dict): the dynamic input dict to be updated
-        """
-        disc_in = self.get_data_in()
-        # Dynamic input of algo_options
-        if self.ALGO in disc_in:
-            algo_name = self.get_sosdisc_inputs(self.ALGO)
-            if algo_name is not None:  # and algo_name_has_changed:
-                default_dict = self.get_algo_default_options(algo_name)
-                algo_options_dict = {self.ALGO_OPTIONS: {self.TYPE: 'dict', self.DEFAULT: default_dict,
-                                                         self.DATAFRAME_EDITION_LOCKED: False,
-                                                         self.STRUCTURING: True,
-                                                         self.DATAFRAME_DESCRIPTOR: {
-                                                             self.VARIABLES: ('string', None, False),
-                                                             self.VALUES: ('string', None, True)}}}
-                dynamic_inputs.update(algo_options_dict)
-                all_options = list(default_dict.keys())
-                if self.ALGO_OPTIONS in disc_in and disc_in[self.ALGO_OPTIONS][self.VALUE] is not None and list(
-                        disc_in[self.ALGO_OPTIONS][self.VALUE].keys()) != all_options:
-                    options_map = ChainMap(
-                        disc_in[self.ALGO_OPTIONS][self.VALUE], default_dict)
-                    disc_in[self.ALGO_OPTIONS][self.VALUE] = {
-                        key: options_map[key] for key in all_options}
-
-    def setup_design_space(self, dynamic_inputs):
-        """
-        Method that setup 'design_space'
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-        """
-        selected_inputs_has_changed = False
-        disc_in = self.get_data_in()
-        # Dynamic input of default design space
-        if self.EVAL_INPUTS in disc_in:
-            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            if eval_inputs is not None:
-
-                # selected_inputs = eval_inputs[eval_inputs['selected_input']
-                #                               == True]['full_name']
-                selected_inputs = self.reformat_eval_inputs(
-                    eval_inputs).tolist()
-
-                if set(selected_inputs) != set(self.selected_inputs):
-                    selected_inputs_has_changed = True
-                    self.selected_inputs = selected_inputs
-
-                default_design_space = pd.DataFrame()
-                design_space_dataframe_descriptor = {
-                    self.VARIABLES: ('string', None, False),
-                    self.VALUES: ('multiple', None, True),
-                    self.LOWER_BOUND: ('multiple', None, True),
-                    self.UPPER_BOUND: ('multiple', None, True),
-                    self.ENABLE_VARIABLE_BOOL: (
-                        'bool', None, True),
-                    self.LIST_ACTIVATED_ELEM: (
-                        'list', None, True), }
-
-                if self.sampling_method == self.DOE_ALGO:
-                    default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
-                                                         self.LOWER_BOUND: [None] * len(self.selected_inputs),
-                                                         self.UPPER_BOUND: [None] * len(self.selected_inputs)
-                                                         })
-                elif self.sampling_method == self.GRID_SEARCH:
-                    default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
-                                                         self.LOWER_BOUND: [0.0] * len(self.selected_inputs),
-                                                         self.UPPER_BOUND: [100.0] * len(self.selected_inputs),
-                                                         'nb_points': [2] * len(self.selected_inputs)
-                                                         })
-                    design_space_dataframe_descriptor.update({'nb_points': ('int', None, True)})
-                dynamic_inputs.update({'design_space': {self.TYPE: 'dataframe',
-                                                        self.DEFAULT: default_design_space,
-                                                        self.STRUCTURING: True,
-                                                        self.DATAFRAME_DESCRIPTOR: design_space_dataframe_descriptor}})
-
-                # Next lines of code treat the case in which eval inputs change with a previously defined design space,
-                # so that the bound are kept instead of set to default None.
-                if 'design_space' in disc_in:
-                    disc_in['design_space'][self.DEFAULT] = default_design_space
-                    disc_in['design_space'][self.DATAFRAME_DESCRIPTOR] = design_space_dataframe_descriptor
-                    if selected_inputs_has_changed:
-                        from_design_space = list(
-                            disc_in['design_space'][self.VALUE]['variable'])
-                        from_eval_inputs = self.selected_inputs
-
-                        df_cols = ['variable', 'lower_bnd', 'upper_bnd'] + (
-                            ['nb_points'] if self.sampling_method == self.GRID_SEARCH else [])
-                        final_dataframe = pd.DataFrame(
-                            None, columns=df_cols)
-
-                        for element in from_eval_inputs:
-                            if element in from_design_space:
-                                final_dataframe = final_dataframe.append(disc_in['design_space'][self.VALUE]
-                                                                         [disc_in['design_space'][self.VALUE][
-                                                                              'variable'] == element])
-                            else:
-                                elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
-                                if self.sampling_method == self.GRID_SEARCH:
-                                    elem_dict['lower_bnd'] = 0.0
-                                    elem_dict['upper_bnd'] = 100.0
-                                    elem_dict['nb_points'] = 2
-                                final_dataframe = final_dataframe.append(
-                                    elem_dict, ignore_index=True)
-                        disc_in['design_space'][self.VALUE] = final_dataframe
+    # def setup_doe_algo_method(self):
+    #     """
+    #     Method that setup the doe_algo method
+    #     """
+    #     dynamic_inputs = {}
+    #     dynamic_outputs = {}
+    #
+    #     # Setup dynamic inputs in case of DOE_ALGO selection:
+    #     # i.e. EVAL_INPUTS and SAMPLING_ALGO
+    #     self.setup_dynamic_inputs_for_doe_generator_method(dynamic_inputs)
+    #     # Setup dynamic inputs when EVAL_INPUTS/SAMPLING_ALGO are already set
+    #     self.setup_dynamic_inputs_algo_options_design_space(dynamic_inputs)
+    #
+    #     return dynamic_inputs, dynamic_outputs
+    #
+    # def setup_dynamic_inputs_for_doe_generator_method(self, dynamic_inputs):
+    #     """
+    #     Method that setup dynamic inputs in case of DOE_ALGO selection: i.e. EVAL_INPUTS and SAMPLING_ALGO
+    #     Arguments:
+    #         dynamic_inputs (dict): the dynamic input dict to be updated
+    #
+    #     """
+    #     if self.sampling_method == self.DOE_ALGO:
+    #         # Get possible values for sampling algorithm name
+    #         available_doe_algorithms = self.sample_generator.get_available_algo_names()
+    #         dynamic_inputs.update({'sampling_algo':
+    #                                    {self.TYPE: 'string',
+    #                                     self.STRUCTURING: True,
+    #                                     self.POSSIBLE_VALUES: available_doe_algorithms}
+    #                                })
+    #     self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy())
+    #
+    # def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
+    #     """
+    #         Setup dynamic inputs when EVAL_INPUTS/SAMPLING_ALGO are already set
+    #         Create or update DESIGN_SPACE
+    #         Create or update ALGO_OPTIONS
+    #     """
+    #     self.setup_design_space(dynamic_inputs)
+    #     self.setup_algo_options(dynamic_inputs)
+    #     # Setup GENERATED_SAMPLES for cartesian product
+    #     if self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
+    #         # TODO: manage config-time sample for grid search and test for DoE
+    #         self.setup_generated_samples_for_doe(dynamic_inputs)
+    #
+    # def setup_algo_options(self, dynamic_inputs):
+    #     """
+    #         Method that setup 'algo_options'
+    #         Arguments:
+    #             dynamic_inputs (dict): the dynamic input dict to be updated
+    #     """
+    #     disc_in = self.get_data_in()
+    #     # Dynamic input of algo_options
+    #     if self.ALGO in disc_in:
+    #         algo_name = self.get_sosdisc_inputs(self.ALGO)
+    #         if algo_name is not None:  # and algo_name_has_changed:
+    #             default_dict = self.get_algo_default_options(algo_name)
+    #             algo_options_dict = {self.ALGO_OPTIONS: {self.TYPE: 'dict', self.DEFAULT: default_dict,
+    #                                                      self.DATAFRAME_EDITION_LOCKED: False,
+    #                                                      self.STRUCTURING: True,
+    #                                                      self.DATAFRAME_DESCRIPTOR: {
+    #                                                          self.VARIABLES: ('string', None, False),
+    #                                                          self.VALUES: ('string', None, True)}}}
+    #             dynamic_inputs.update(algo_options_dict)
+    #             all_options = list(default_dict.keys())
+    #             if self.ALGO_OPTIONS in disc_in and disc_in[self.ALGO_OPTIONS][self.VALUE] is not None and list(
+    #                     disc_in[self.ALGO_OPTIONS][self.VALUE].keys()) != all_options:
+    #                 options_map = ChainMap(
+    #                     disc_in[self.ALGO_OPTIONS][self.VALUE], default_dict)
+    #                 disc_in[self.ALGO_OPTIONS][self.VALUE] = {
+    #                     key: options_map[key] for key in all_options}
+    #
+    # def setup_design_space(self, dynamic_inputs):
+    #     """
+    #     Method that setup 'design_space'
+    #     Arguments:
+    #         dynamic_inputs (dict): the dynamic input dict to be updated
+    #     """
+    #     selected_inputs_has_changed = False
+    #     disc_in = self.get_data_in()
+    #     # Dynamic input of default design space
+    #     if self.EVAL_INPUTS in disc_in:
+    #         eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+    #         if eval_inputs is not None:
+    #
+    #             # selected_inputs = eval_inputs[eval_inputs['selected_input']
+    #             #                               == True]['full_name']
+    #             selected_inputs = self.reformat_eval_inputs(
+    #                 eval_inputs).tolist()
+    #
+    #             if set(selected_inputs) != set(self.selected_inputs):
+    #                 selected_inputs_has_changed = True
+    #                 self.selected_inputs = selected_inputs
+    #
+    #             default_design_space = pd.DataFrame()
+    #             design_space_dataframe_descriptor = {
+    #                 self.VARIABLES: ('string', None, False),
+    #                 self.VALUES: ('multiple', None, True),
+    #                 self.LOWER_BOUND: ('multiple', None, True),
+    #                 self.UPPER_BOUND: ('multiple', None, True),
+    #                 self.ENABLE_VARIABLE_BOOL: (
+    #                     'bool', None, True),
+    #                 self.LIST_ACTIVATED_ELEM: (
+    #                     'list', None, True), }
+    #
+    #             if self.sampling_method == self.DOE_ALGO:
+    #                 default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
+    #                                                      self.LOWER_BOUND: [None] * len(self.selected_inputs),
+    #                                                      self.UPPER_BOUND: [None] * len(self.selected_inputs)
+    #                                                      })
+    #             elif self.sampling_method == self.GRID_SEARCH:
+    #                 default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
+    #                                                      self.LOWER_BOUND: [0.0] * len(self.selected_inputs),
+    #                                                      self.UPPER_BOUND: [100.0] * len(self.selected_inputs),
+    #                                                      'nb_points': [2] * len(self.selected_inputs)
+    #                                                      })
+    #                 design_space_dataframe_descriptor.update({'nb_points': ('int', None, True)})
+    #             dynamic_inputs.update({'design_space': {self.TYPE: 'dataframe',
+    #                                                     self.DEFAULT: default_design_space,
+    #                                                     self.STRUCTURING: True,
+    #                                                     self.DATAFRAME_DESCRIPTOR: design_space_dataframe_descriptor}})
+    #
+    #             # Next lines of code treat the case in which eval inputs change with a previously defined design space,
+    #             # so that the bound are kept instead of set to default None.
+    #             if 'design_space' in disc_in:
+    #                 disc_in['design_space'][self.DEFAULT] = default_design_space
+    #                 disc_in['design_space'][self.DATAFRAME_DESCRIPTOR] = design_space_dataframe_descriptor
+    #                 if selected_inputs_has_changed:
+    #                     from_design_space = list(
+    #                         disc_in['design_space'][self.VALUE]['variable'])
+    #                     from_eval_inputs = self.selected_inputs
+    #
+    #                     df_cols = ['variable', 'lower_bnd', 'upper_bnd'] + (
+    #                         ['nb_points'] if self.sampling_method == self.GRID_SEARCH else [])
+    #                     final_dataframe = pd.DataFrame(
+    #                         None, columns=df_cols)
+    #
+    #                     for element in from_eval_inputs:
+    #                         if element in from_design_space:
+    #                             final_dataframe = final_dataframe.append(disc_in['design_space'][self.VALUE]
+    #                                                                      [disc_in['design_space'][self.VALUE][
+    #                                                                           'variable'] == element])
+    #                         else:
+    #                             elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
+    #                             if self.sampling_method == self.GRID_SEARCH:
+    #                                 elem_dict['lower_bnd'] = 0.0
+    #                                 elem_dict['upper_bnd'] = 100.0
+    #                                 elem_dict['nb_points'] = 2
+    #                             final_dataframe = final_dataframe.append(
+    #                                 elem_dict, ignore_index=True)
+    #                     disc_in['design_space'][self.VALUE] = final_dataframe
 
     def filter_eval_inputs_types_to_float(self, eval_inputs):
         allowed_types = ['float']
@@ -682,39 +684,39 @@ class SampleGeneratorWrapper(SoSWrapp):
         eval_inputs_filtered = eval_inputs_filtered['full_name']
         return eval_inputs_filtered
 
-    def setup_generated_samples_for_doe(self, dynamic_inputs):
-        """
-         Method that setup GENERATED_SAMPLES for doe_algo at configuration time
-         Arguments:
-             dynamic_inputs (dict): the dynamic input dict to be updated
-         """
-        # if self.eval_inputs_validity:
-        #    if self.eval_inputs_has_changed:
-        disc_in = self.get_data_in()
-        if self.ALGO in disc_in and self.ALGO_OPTIONS in disc_in and self.DESIGN_SPACE in disc_in and self.selected_inputs is not None:
-            algo_name = self.get_sosdisc_inputs(self.ALGO)
-            algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
-            dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-
-            self.samples_gene_df = self.generate_sample_for_doe(
-                algo_name, algo_options, dspace_df)
-            self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df)
-
-            dynamic_inputs.update({self.SAMPLES_DF: {self.TYPE: 'dataframe',
-                                                     self.DATAFRAME_DESCRIPTOR: {},
-                                                     self.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                                     self.DATAFRAME_EDITION_LOCKED: True,
-                                                     self.STRUCTURING: False,
-                                                     self.UNIT: None,
-                                                     self.VISIBILITY: self.SHARED_VISIBILITY,
-                                                     self.NAMESPACE: self.NS_SAMPLING,
-                                                     self.DEFAULT: self.samples_gene_df}})
-
-        # Set or update GENERATED_SAMPLES in line with selected
-        # eval_inputs_cp
-        disc_in = self.get_data_in()
-        if self.SAMPLES_DF in disc_in:
-            disc_in[self.SAMPLES_DF][self.VALUE] = self.samples_gene_df
+    # def setup_generated_samples_for_doe(self, dynamic_inputs):
+    #     """
+    #      Method that setup GENERATED_SAMPLES for doe_algo at configuration time
+    #      Arguments:
+    #          dynamic_inputs (dict): the dynamic input dict to be updated
+    #      """
+    #     # if self.eval_inputs_validity:
+    #     #    if self.eval_inputs_has_changed:
+    #     disc_in = self.get_data_in()
+    #     if self.ALGO in disc_in and self.ALGO_OPTIONS in disc_in and self.DESIGN_SPACE in disc_in and self.selected_inputs is not None:
+    #         algo_name = self.get_sosdisc_inputs(self.ALGO)
+    #         algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
+    #         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+    #
+    #         self.samples_gene_df = self.generate_sample_for_doe(
+    #             algo_name, algo_options, dspace_df)
+    #         self.samples_gene_df = self.set_scenario_columns(self.samples_gene_df)
+    #
+    #         dynamic_inputs.update({self.SAMPLES_DF: {self.TYPE: 'dataframe',
+    #                                                  self.DATAFRAME_DESCRIPTOR: {},
+    #                                                  self.DYNAMIC_DATAFRAME_COLUMNS: True,
+    #                                                  self.DATAFRAME_EDITION_LOCKED: True,
+    #                                                  self.STRUCTURING: False,
+    #                                                  self.UNIT: None,
+    #                                                  self.VISIBILITY: self.SHARED_VISIBILITY,
+    #                                                  self.NAMESPACE: self.NS_SAMPLING,
+    #                                                  self.DEFAULT: self.samples_gene_df}})
+    #
+    #     # Set or update GENERATED_SAMPLES in line with selected
+    #     # eval_inputs_cp
+    #     disc_in = self.get_data_in()
+    #     if self.SAMPLES_DF in disc_in:
+    #         disc_in[self.SAMPLES_DF][self.VALUE] = self.samples_gene_df
 
     def generate_sample_for_doe(self, algo_name, algo_options, dspace_df):
         """
@@ -723,7 +725,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         """
         # Dynamic input of default design space
         design_space = self.create_design_space(
-            self.selected_inputs, dspace_df)
+            self.sample_generator.selected_inputs, dspace_df)
 
         samples_gene_df = self.sample_generator.generate_samples(
             algo_name, algo_options, design_space)
