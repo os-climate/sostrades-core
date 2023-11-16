@@ -73,9 +73,8 @@ class DesignVarDiscipline(SoSWrapp):
                                                                      ENABLE_VARIABLE_BOOL: ('bool', None, True),
                                                                      LIST_ACTIVATED_ELEM: ('list', None, True), },
                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_optim'},
-
-        WRITE_XVECT: {'type': 'bool', 'default': False, 'user_level': 3},
         LOG_DVAR: {'type': 'bool', 'default': False, 'user_level': 3},
+        WRITE_XVECT: {'type': 'bool', 'default': False, 'user_level': 3},
     }
 
     DESC_OUT = {
