@@ -24,6 +24,10 @@ from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.api import get_available_doe_algorithms
 from gemseo.api import get_algorithm_options_schema
 from gemseo.api import compute_doe
+from numpy import array, ndarray, delete, NaN
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.doe_factory import DOEFactory
 
 import pandas as pd
 from gemseo.utils.source_parsing import get_options_doc
@@ -43,6 +47,12 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     Abstract class that generates sampling
     '''
     GENERATOR_NAME = "DOE_GENERATOR"
+    VARIABLES = "variable"
+    VALUES = "value"
+    UPPER_BOUND = "upper_bnd"
+    LOWER_BOUND = "lower_bnd"
+    ENABLE_VARIABLE_BOOL = "enable_variable"
+    LIST_ACTIVATED_ELEM = "activated_elem"
 
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
@@ -461,12 +471,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         #    if self.eval_inputs_has_changed:
         disc_in = proxy.get_data_in()
         if proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in and self.selected_inputs is not None:
-            algo_name = proxy.get_sosdisc_inputs(proxy.ALGO)
-            algo_options = proxy.get_sosdisc_inputs(proxy.ALGO_OPTIONS)
-            dspace_df = proxy.get_sosdisc_inputs(proxy.DESIGN_SPACE)
+            proxy.samples_gene_df = self.sample(proxy)
 
-            proxy.samples_gene_df = proxy.generate_sample_for_doe(
-                algo_name, algo_options, dspace_df)
             proxy.samples_gene_df = proxy.set_scenario_columns(proxy.samples_gene_df)
 
             dynamic_inputs.update({proxy.SAMPLES_DF: {proxy.TYPE: 'dataframe',
@@ -497,11 +503,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         if proxy.EVAL_INPUTS in disc_in:
             eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
             if eval_inputs is not None:
-
-                # selected_inputs = eval_inputs[eval_inputs['selected_input']
-                #                               == True]['full_name']
-                selected_inputs = proxy.reformat_eval_inputs(
-                    eval_inputs).tolist()
+                selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
 
                 if set(selected_inputs) != set(self.selected_inputs):
                     selected_inputs_has_changed = True
@@ -509,24 +511,24 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
                 default_design_space = pd.DataFrame()
                 design_space_dataframe_descriptor = {
-                    proxy.VARIABLES: ('string', None, False),
-                    proxy.VALUES: ('multiple', None, True),
-                    proxy.LOWER_BOUND: ('multiple', None, True),
-                    proxy.UPPER_BOUND: ('multiple', None, True),
-                    proxy.ENABLE_VARIABLE_BOOL: (
+                    self.VARIABLES: ('string', None, False),
+                    self.VALUES: ('multiple', None, True),
+                    self.LOWER_BOUND: ('multiple', None, True),
+                    self.UPPER_BOUND: ('multiple', None, True),
+                    self.ENABLE_VARIABLE_BOOL: (
                         'bool', None, True),
-                    proxy.LIST_ACTIVATED_ELEM: (
+                    self.LIST_ACTIVATED_ELEM: (
                         'list', None, True), }
 
                 if proxy.sampling_method == proxy.DOE_ALGO:
-                    default_design_space = pd.DataFrame({proxy.VARIABLES: self.selected_inputs,
-                                                         proxy.LOWER_BOUND: [None] * len(self.selected_inputs),
-                                                         proxy.UPPER_BOUND: [None] * len(self.selected_inputs)
+                    default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
+                                                         self.LOWER_BOUND: [None] * len(self.selected_inputs),
+                                                         self.UPPER_BOUND: [None] * len(self.selected_inputs)
                                                          })
                 elif proxy.sampling_method == proxy.GRID_SEARCH:
-                    default_design_space = pd.DataFrame({proxy.VARIABLES: self.selected_inputs,
-                                                         proxy.LOWER_BOUND: [0.0] * len(self.selected_inputs),
-                                                         proxy.UPPER_BOUND: [100.0] * len(self.selected_inputs),
+                    default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
+                                                         self.LOWER_BOUND: [0.0] * len(self.selected_inputs),
+                                                         self.UPPER_BOUND: [100.0] * len(self.selected_inputs),
                                                          'nb_points': [2] * len(self.selected_inputs)
                                                          })
                     design_space_dataframe_descriptor.update({'nb_points': ('int', None, True)})
@@ -581,8 +583,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                                          proxy.DATAFRAME_EDITION_LOCKED: False,
                                                          proxy.STRUCTURING: True,
                                                          proxy.DATAFRAME_DESCRIPTOR: {
-                                                             proxy.VARIABLES: ('string', None, False),
-                                                             proxy.VALUES: ('string', None, True)}}}
+                                                             self.VARIABLES: ('string', None, False),
+                                                             self.VALUES: ('string', None, True)}}}
                 dynamic_inputs.update(algo_options_dict)
                 all_options = list(default_dict.keys())
                 if proxy.ALGO_OPTIONS in disc_in and disc_in[proxy.ALGO_OPTIONS][proxy.VALUE] is not None and list(
@@ -605,3 +607,113 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         else:
             raise Exception(
                 f"A DoE algorithm which is not available in GEMSEO has been selected.")
+
+
+
+    def get_arguments(self, proxy):
+        # Dynamic input of default design space
+        algo_name = proxy.get_sosdisc_inputs(proxy.ALGO)
+        algo_options = proxy.get_sosdisc_inputs(proxy.ALGO_OPTIONS)
+        dspace_df = proxy.get_sosdisc_inputs(proxy.DESIGN_SPACE)
+        design_space = self.create_design_space(self.selected_inputs, dspace_df)
+        doe_kwargs = {'sampling_algo_name': algo_name,
+                      'algo_options': algo_options,
+                      'design_space': design_space}
+        return [], doe_kwargs
+
+    def create_design_space(self, selected_inputs, dspace_df):
+        """
+        create_design_space with variables names based on selected_inputs (if dspace_df is not None)
+
+        Arguments:
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
+            dspace_df (dataframe): design space in Desc_in format
+
+        Returns:
+             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
+        """
+
+        design_space = None
+        if dspace_df is not None:
+            dspace_df_updated = self.update_design_space(
+                selected_inputs, dspace_df)
+            design_space = self.create_gemseo_dspace_from_dspace_df(
+                dspace_df_updated)
+        return design_space
+
+    def update_design_space(self, selected_inputs, dspace_df):
+        """
+        update dspace_df (design space in Desc_in format)
+
+        Arguments:
+            selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
+            dspace_df (dataframe): design space in Desc_in format
+
+        Returns:
+             dspace_df_updated (dataframe): updated dspace_df
+
+        """
+        lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
+        upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
+        values = lower_bounds
+        enable_variables = [True for _ in selected_inputs]
+        dspace_df_updated = pd.DataFrame({self.VARIABLES: selected_inputs,
+                                          self.VALUES: values,
+                                          self.LOWER_BOUND: lower_bounds,
+                                          self.UPPER_BOUND: upper_bounds,
+                                          self.ENABLE_VARIABLE_BOOL: enable_variables,
+                                          self.LIST_ACTIVATED_ELEM: [[True] for _ in selected_inputs]})
+        # TODO: Hardcoded as in EEV3, but not differenciating between array or not.
+        return dspace_df_updated
+
+    def create_gemseo_dspace_from_dspace_df(self, dspace_df):
+        """
+        Create gemseo dspace from sostrades updated dspace_df
+        It parses the dspace_df DataFrame to create the gemseo DesignSpace
+
+        Arguments:
+            dspace_df (dataframe): updated dspace_df
+
+        Returns:
+            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
+        """
+        names = list(dspace_df[self.VARIABLES])
+        values = list(dspace_df[self.VALUES])
+        l_bounds = list(dspace_df[self.LOWER_BOUND])
+        u_bounds = list(dspace_df[self.UPPER_BOUND])
+        enabled_variable = list(dspace_df[self.ENABLE_VARIABLE_BOOL])
+        list_activated_elem = list(dspace_df[self.LIST_ACTIVATED_ELEM])
+        design_space = DesignSpace()
+        for dv, val, lb, ub, l_activated, enable_var in zip(names, values, l_bounds, u_bounds, list_activated_elem,
+                                                            enabled_variable):
+
+            # check if variable is enabled to add it or not in the design var
+            if enable_var:
+
+                # self.sample_generator.dict_desactivated_elem[dv] = {}
+                name = dv
+                if type(val) != list and type(val) != ndarray:
+                    size = 1
+                    var_type = ['float']
+                    l_b = array([lb])
+                    u_b = array([ub])
+                    value = array([val])
+                else:
+                    # check if there is any False in l_activated
+                    if not all(l_activated):
+                        index_false = l_activated.index(False)
+                        # self.sample_generator.dict_desactivated_elem[dv] = {
+                        #     'value': val[index_false], 'position': index_false}
+
+                        val = delete(val, index_false)
+                        lb = delete(lb, index_false)
+                        ub = delete(ub, index_false)
+
+                    size = len(val)
+                    var_type = ['float'] * size
+                    l_b = array(lb)
+                    u_b = array(ub)
+                    value = array(val)
+                design_space.add_variable(
+                    name, size, var_type, l_b, u_b, value)
+        return design_space
