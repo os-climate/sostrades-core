@@ -127,6 +127,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     FULLFACT = 'fullfact'
     AVAILABLE_SAMPLING_METHODS = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
 
+    # classes of the sample generator tools associated to each method in AVAILABLE_SAMPLING_METHODS
     SAMPLE_GENERATOR_CLS = {
         SIMPLE_SAMPLING_METHOD: SimpleSampleGenerator,
         DOE_ALGO: DoeSampleGenerator,
@@ -214,140 +215,53 @@ class SampleGeneratorWrapper(SoSWrapp):
         '''
 
         disc_in = self.get_data_in()
-
-        if len(disc_in) != 0:
+        if disc_in:
             self.sampling_method = self.get_sosdisc_inputs(self.SAMPLING_METHOD)
+            self.sampling_generation_mode = self.configure_generation_mode(disc_in)
             self.instantiate_sampling_tool()
+            self.manage_eval_inputs_columns(disc_in)
+            dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self) # TODO: separate the sample generation from setup
 
-            # # handle editability of generation mode only for mode simple
-            # self.sampling_generation_mode = self.get_sampling_generation_mode(disc_in)
-            #
-            # # manage eval_inputs additional column for Cartesian product
-            # self.manage_eval_inputs_columns(disc_in)
-            #
-            # # get the mode dynamic input
-            # dynamic_inputs, dynamic_outputs = self.sample_generator.get_dynamic_input(disc_in)
+            # 4. if sampling at run-time add the corresponding output
+            if self.sampling_generation_mode == self.AT_RUN_TIME:
+                dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED.copy()
+            # elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME: # TODO: separate the sample generation from setup
+            #     self.sample_at_config_time()
 
-            if self.sampling_method == self.SIMPLE_SAMPLING_METHOD:
-                # Reset parameters of the other method to initial values (cleaning)
-                # TODO: move all of these to the corresponding tools !
-                # self.previous_eval_inputs_cp = None
-                # self.eval_inputs_cp_filtered = None
-                # self.eval_inputs_cp_validity = True
-                # self.selected_inputs = []
-                # self.dict_desactivated_elem = {}
+            self.add_inputs(dynamic_inputs)
+            self.add_outputs(dynamic_outputs)
 
-                # 0. force config time sampling
-                self.sampling_generation_mode = self.AT_CONFIGURATION_TIME
-                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_CONFIGURATION_TIME
-
-                dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
-                # # 1. handle dynamic inputs of the mode
-                # # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
-                # dynamic_inputs, dynamic_outputs = {}, {}
-                #
-                # self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
-                # dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
-                #
-                # # 2. retrieve input that configures the sampling tool
-                # if self.EVAL_INPUTS in disc_in and self.SAMPLES_DF in disc_in:
-                #     samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-                #     eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                #     if eval_inputs is not None and samples_df is not None:
-                #         selected_inputs = self.reformat_eval_inputs(eval_inputs).tolist()
-                #         if selected_inputs:
-                #             # 3. if sampling at config.time set the generated samples
-                #             self.samples_gene_df = self.sample_generator.generate_samples(samples_df, selected_inputs)
-                #             self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                #                              self.VALUE, self.samples_gene_df, check_value=False)
-
-            elif self.sampling_method == self.DOE_ALGO:
-                # TODO: consider refactoring this in object-oriented fashion before implementing the more complex modes
-                # Reset parameters of the other method to initial values
-                # (cleaning)
-                # self.previous_eval_inputs_cp = None
-                # self.eval_inputs_cp_filtered = None
-                # self.eval_inputs_cp_validity = True
-
-                # setup_doe_algo_method
-                # TODO: configuration-time sampling not implemented yet for doe and gridsearch
-                self.sampling_generation_mode = self.AT_RUN_TIME
-                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_RUN_TIME
-
-                # self.sampling_generation_mode = self.AT_CONFIGURATION_TIME #
-                # It was tested that it also works
-
-                # dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
-                dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
-
-            elif self.sampling_method == self.CARTESIAN_PRODUCT:
-                # Reset parameters of the other method to initial values
-                # (cleaning)
-                # self.selected_inputs = []
-                # self.dict_desactivated_elem = {}
-
-                # setup_cp_method
-
-                self.sampling_generation_mode = self.AT_CONFIGURATION_TIME
-                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_CONFIGURATION_TIME
-                # self.sampling_generation_mode = self.AT_RUN_TIME # It was
-                # tested that it also works
-
-                # dynamic_inputs, dynamic_outputs = self.setup_cp_method()
-                dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
-
-            elif self.sampling_method == self.GRID_SEARCH:
-                # setup_cp_method
-                # TODO: configuration-time sampling not implemented yet for doe and gridsearch
-                self.sampling_generation_mode = self.AT_RUN_TIME
-                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_RUN_TIME
-                # most setup is similar to doe_algo
-                # dynamic_inputs, dynamic_outputs = self.setup_doe_algo_method()
-                # self.setup_gs(dynamic_inputs)
-                dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self)
-
-            elif self.sampling_method is not None:
-                raise Exception(
-                    f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
-                    f"introduce one of the available methods from {self.AVAILABLE_SAMPLING_METHODS}.")
-            else:
-                dynamic_inputs = {}
-                dynamic_outputs = {}
-        else:
-            dynamic_inputs = {}
-            dynamic_outputs = {}
-
-        # 4. if sampling at run-time add the corresponding output
-        if self.sampling_generation_mode == self.AT_RUN_TIME:
-            dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED.copy()
-
-        self.add_inputs(dynamic_inputs)
-        self.add_outputs(dynamic_outputs)
-
-    def get_sampling_generation_mode(self, disc_in):
-        if self.sampling_method == self.SIMPLE_SAMPLING_METHOD:
-            # force config time sampling
-            disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = self.AT_CONFIGURATION_TIME
+    def configure_generation_mode(self, disc_in):
+        sampling_generation_mode = self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE)
+        # variable needs to be made non-editable for special cases (namely simple_sample_generator => at config. time)
+        forced_methods_modes = {self.SIMPLE_SAMPLING_METHOD: self.AT_CONFIGURATION_TIME,
+                                # FIXME: delete next 3 lines and handle errors !
+                                self.DOE_ALGO: self.AT_RUN_TIME,
+                                self.CARTESIAN_PRODUCT: self.AT_CONFIGURATION_TIME,
+                                self.GRID_SEARCH: self.AT_RUN_TIME,
+                                }
+        if self.sampling_method in forced_methods_modes:
             disc_in[self.SAMPLING_GENERATION_MODE][self.EDITABLE] = False
-            return self.AT_CONFIGURATION_TIME
-        elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
+            expected_mode = forced_methods_modes[self.sampling_method]
+            if sampling_generation_mode != expected_mode:
+                # TODO: discuss and review exception handlings
+                # warn and force config time sampling
+                self.logger.warning(f'Setting {self.SAMPLING_GENERATION_MODE} to {expected_mode} for '
+                                    f'{self.sampling_method} {self.SAMPLING_METHOD}.')
+                disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = sampling_generation_mode = expected_mode
+        else:
             disc_in[self.SAMPLING_GENERATION_MODE][self.EDITABLE] = True
-            return self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE)
+        return sampling_generation_mode
 
     def instantiate_sampling_tool(self):
         """
-           Instantiate SampleGenerator only if needed
+           Instantiate a new SampleGenerator only if needed
         """
         if self.sampling_method is not None:
             if self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
                 sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
                 if self.sample_generator.__class__ != sample_generator_cls:
                     self.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
-            else:
-                # TODO: self.logger.error ?
-                raise ValueError(
-                    f"The selected sampling method {self.sampling_method} is not allowed in the sample generator. Please "
-                    f"introduce one of the available methods from {self.AVAILABLE_SAMPLING_METHODS}.")
 
     def run(self):
         if self.sampling_generation_mode == self.AT_RUN_TIME: # TODO: soon to be (non-)instantiation of the GEMSEO object
