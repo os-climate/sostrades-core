@@ -445,7 +445,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                         proxy.POSSIBLE_VALUES: available_doe_algorithms}
                                    })
         # FIXME: should not be here
-        proxy.update_eval_inputs_columns(proxy.EVAL_INPUTS_DF_DESC.copy())
+        # proxy.update_eval_inputs_columns(proxy.EVAL_INPUTS_DF_DESC.copy())
 
     def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs, proxy):
         """

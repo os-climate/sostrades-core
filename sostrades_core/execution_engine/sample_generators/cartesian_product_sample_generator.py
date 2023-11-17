@@ -109,7 +109,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         dynamic_outputs = {}
         # Setup dynamic inputs for CARTESIAN_PRODUCT method: i.e.
         # EVAL_INPUTS_CP # TODO: generalize
-        proxy.update_eval_inputs_columns(proxy.EVAL_INPUTS_CP_DF_DESC.copy())
+        # proxy.update_eval_inputs_columns(proxy.EVAL_INPUTS_CP_DF_DESC.copy())
         # Setup dynamic inputs which depend on EVAL_INPUTS_CP setting or
         # update: i.e. GENERATED_SAMPLES
         self.setup_dynamic_inputs_which_depend_on_eval_input_cp(dynamic_inputs, proxy)
