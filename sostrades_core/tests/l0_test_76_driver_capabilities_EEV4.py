@@ -934,7 +934,6 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.load_study_from_input_dict(values_dict[0])
         # print(exec_eng.display_treeview_nodes(exec_display=True))
-        # print('=====')
         # print(exec_eng.root_process.display_proxy_subtree(
         #     callback=lambda x: x.is_configured()))
         exp_ns_tree = 'Nodes representation for Treeview root\n' \
