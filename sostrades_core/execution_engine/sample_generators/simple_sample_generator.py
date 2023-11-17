@@ -81,7 +81,6 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
         dynamic_inputs, dynamic_outputs = {}, {}
         disc_in = proxy.get_data_in()
 
-        # proxy.update_eval_inputs_columns(proxy.EVAL_INPUTS_DF_DESC.copy(), disc_in)
         dynamic_inputs.update({proxy.SAMPLES_DF: proxy.SAMPLES_DF_DESC_SHARED.copy()})
 
         # FIXME: refacto with a call to self.sample (when modifying setup_sos_disciplines)
