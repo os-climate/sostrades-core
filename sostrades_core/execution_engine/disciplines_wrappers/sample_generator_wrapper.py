@@ -207,6 +207,8 @@ class SampleGeneratorWrapper(SoSWrapp):
 
         # todo KEEP?
         self.samples_gene_df = None
+        # todo: generalise management of sample_pending when decoupling sampling from setup
+        self.sample_pending = False
 
     def setup_sos_disciplines(self):
         '''
@@ -321,6 +323,9 @@ class SampleGeneratorWrapper(SoSWrapp):
             self._update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy(), disc_in)
         elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
             self._update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
+
+    def is_configured(self):
+        return not self.sample_pending
 
     # def run(self):
     #     '''
