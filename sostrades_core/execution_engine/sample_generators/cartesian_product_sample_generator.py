@@ -188,11 +188,17 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
         # Set or update GENERATED_SAMPLES in line with selected
         # eval_inputs_cp
-        disc_in = proxy.get_data_in()
-        if proxy.SAMPLES_DF in disc_in and proxy.samples_gene_df is not None:
-            proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
-                             'value', proxy.samples_gene_df, check_value=False)
-            # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+        disc_in = proxy.get_data_in()  #FIXME: pass disc_in
+        if proxy.samples_gene_df is not None:
+            if proxy.SAMPLES_DF in disc_in :
+                proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
+                                 'value', proxy.samples_gene_df, check_value=False)
+                proxy.sample_pending = False
+                # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+            else:
+                # TODO: generalise to all methods sampling at config-time (when decoupling setup from sampling) or
+                #  otherwise there will be issues when generator tries to sample before samples_df is added in disc_in
+                proxy.sample_pending = True
 
     def reformat_eval_inputs_cp(self, eval_inputs_cp):
         """
