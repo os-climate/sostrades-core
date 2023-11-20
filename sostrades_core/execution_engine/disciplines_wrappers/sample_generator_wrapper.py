@@ -184,8 +184,8 @@ class SampleGeneratorWrapper(SoSWrapp):
                SAMPLING_GENERATION_MODE: {'type': 'string',
                                           'structuring': True,
                                           'possible_values': available_sampling_generation_modes,
-                                          'default': AT_RUN_TIME,
-                                          'editable': False},  # TODO: render editable
+                                          'default': AT_CONFIGURATION_TIME,
+                                          'editable': True},  # TODO: render editable
                EVAL_INPUTS: EVAL_INPUTS_DESC.copy()
                }
 
@@ -219,7 +219,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             self.sampling_method = self.get_sosdisc_inputs(self.SAMPLING_METHOD)
             self.sampling_generation_mode = self.configure_generation_mode(disc_in)
             self.instantiate_sampling_tool()
-            self.manage_eval_inputs_columns(disc_in)
+            self.update_eval_inputs_columns(disc_in)
             dynamic_inputs, dynamic_outputs = self.sample_generator.setup(self) # TODO: separate the sample generation from setup
 
             # 4. if sampling at run-time add the corresponding output
@@ -234,12 +234,9 @@ class SampleGeneratorWrapper(SoSWrapp):
     def configure_generation_mode(self, disc_in):
         sampling_generation_mode = self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE)
         # variable needs to be made non-editable for special cases (namely simple_sample_generator => at config. time)
-        forced_methods_modes = {self.SIMPLE_SAMPLING_METHOD: self.AT_CONFIGURATION_TIME,
-                                # FIXME: delete next 3 lines and handle errors !
-                                self.DOE_ALGO: self.AT_RUN_TIME,
-                                self.CARTESIAN_PRODUCT: self.AT_CONFIGURATION_TIME,
-                                self.GRID_SEARCH: self.AT_RUN_TIME,
-                                }
+        forced_methods_modes = {
+            self.SIMPLE_SAMPLING_METHOD: self.AT_CONFIGURATION_TIME
+        }
         if self.sampling_method in forced_methods_modes:
             disc_in[self.SAMPLING_GENERATION_MODE][self.EDITABLE] = False
             expected_mode = forced_methods_modes[self.sampling_method]
@@ -291,7 +288,7 @@ class SampleGeneratorWrapper(SoSWrapp):
             samples_df = samples_df[ordered_columns]
         return samples_df
 
-    def update_eval_inputs_columns(self, eval_inputs_df_desc, disc_in=None):
+    def _update_eval_inputs_columns(self, eval_inputs_df_desc, disc_in=None):
         """
         Method to update eval_inputs dataframe descriptor and variable columns in accordance when the first changes
         (i.e. when changing sampling_method).
@@ -320,11 +317,11 @@ class SampleGeneratorWrapper(SoSWrapp):
                                  eval_inputs,
                                  check_value=False)
 
-    def manage_eval_inputs_columns(self, disc_in):
+    def update_eval_inputs_columns(self, disc_in):
         if self.sampling_method == self.CARTESIAN_PRODUCT:
-            self.update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy(), disc_in)
+            self._update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy(), disc_in)
         elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
-            self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
+            self._update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
 
     # def run(self):
     #     '''
@@ -560,7 +557,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     #                                     self.STRUCTURING: True,
     #                                     self.POSSIBLE_VALUES: available_doe_algorithms}
     #                                })
-    #     self.update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy())
+    #     self._update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy())
     #
     # def setup_dynamic_inputs_algo_options_design_space(self, dynamic_inputs):
     #     """
@@ -768,7 +765,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     #
     #     """
     #     # update dataframe descriptor and value of eval_inputs variable for Cartesian Product
-    #     self.update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy())
+    #     self._update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy())
 
     # def setup_gs(self, dynamic_inputs):
     #     """
