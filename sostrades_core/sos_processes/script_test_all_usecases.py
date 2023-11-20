@@ -116,7 +116,7 @@ def manage_process_launch(process_list, message_queue) -> tuple[str, str]:
     return global_test_passed, global_output_msg
 
 
-def test_all_usecases(processes_repo: str, force_run=False):
+def _test_all_usecases(processes_repo: str, force_run=False):
     """
     Test all usecases in a repo.
     Each usecase is tested in a process.

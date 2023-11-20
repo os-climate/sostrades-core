@@ -170,9 +170,9 @@ class DesignVarDiscipline(SoSWrapp):
         # update output dictionary with dspace
         outputs_dict.update({'design_space_last_ite': dspace_out})
 
-        # dump design space into a csv
+
         if self.get_sosdisc_inputs(self.WRITE_XVECT):
-            dspace_out.to_csv(f"dspace_ite_{self.iter}.csv", index=False)
+            #dspace_out.to_csv(f"dspace_ite_{self.iter}.csv", index=False)
 
             # write all iterations into a dictionnary
             self.all_iterations_dict.update({f"iteration {self.iter}": dict_current})

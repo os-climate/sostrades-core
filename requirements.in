@@ -28,4 +28,7 @@ trino==0.327.0
 
 # Development requirements
 nose2==0.9.1
-pytest==7.4.0
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-xdist==3.4.0
+pytest-durations==1.2.0
