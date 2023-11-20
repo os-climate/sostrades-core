@@ -56,6 +56,7 @@ class TestSoSDOEScenario(unittest.TestCase):
     def setUp(self):
 
         self.sampling_method_doe = 'doe_algo'
+        self.sampling_gen_mode = SampleGeneratorWrapper.AT_RUN_TIME
         self.study_name = 'doe'
         self.ns = f'{self.study_name}'
         self.sc_name = "SellarDoeScenario"
@@ -151,6 +152,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
@@ -330,6 +332,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
@@ -478,6 +481,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         algo_name = "lhs"
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
+
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = algo_name
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj
@@ -722,6 +727,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE + Eval
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
+
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'face': 'faced'}
@@ -902,6 +909,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         output_selection_z_z = pd.DataFrame(output_selection_z_z)
 
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
+                     f'{self.ns}.SampleGenerator.sampling_generation_mode': self.sampling_gen_mode,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
                      f'{self.ns}.Eval.eval_inputs': input_selection_x_a,
                      f'{self.ns}.Eval.gather_outputs': output_selection_z_z,
@@ -1241,6 +1249,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
+                     f'{self.ns}.SampleGenerator.sampling_generation_mode': self.sampling_gen_mode,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
                      f'{self.ns}.Eval.eval_inputs': input_selection_a,
                      f'{self.ns}.Eval.gather_outputs': output_selection_ind}
@@ -1317,6 +1326,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         levels = [0.25, 0.5, 0.75]
         centers = [5]
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
         disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = 'OT_FACTORIAL'
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace_a
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {

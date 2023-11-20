@@ -63,6 +63,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
     def setUp_doe(self):
 
         self.sampling_method_doe = 'doe_algo'
+        self.sampling_generation_mode_doe = 'at_run_time'
         self.study_name_doe = 'doe'
 
         self.ref_dir = join(dirname(__file__), 'data')
@@ -223,6 +224,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         disc_dict = {}
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_generation_mode_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
@@ -344,6 +346,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # equal to None).
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = "doe_algo"
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_generation_mode_doe
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = pydoe_algo_used_options
@@ -499,6 +502,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # equal to None).
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = "doe_algo"
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_generation_mode_doe
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = OT_algo_used_options

@@ -456,7 +456,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         # Setup GENERATED_SAMPLES for cartesian product
         if proxy.sampling_generation_mode == proxy.AT_CONFIGURATION_TIME:
             # TODO: manage config-time sample for grid search and test for DoE
-            self.setup_generated_samples_for_doe(dynamic_inputs)
+            self.setup_generated_samples_for_doe(dynamic_inputs, proxy)
 
     def setup_generated_samples_for_doe(self, dynamic_inputs, proxy):
         """
