@@ -325,12 +325,13 @@ class ProxySampleGenerator(ProxyDiscipline):
         if self.sampling_generation_mode == self.AT_RUN_TIME:
             super().prepare_execution()
         else:
+            # Note that self.mdo_discipline_wrapp.wrapper exists but self.mdo_discipline_wrapp.mdo_discipline is None
             self._update_status_dm(self.STATUS_DONE)
 
     # FIXME: methods below constitute a quickfix that should be substituted by an improvement in design of self.sample_generator.setup(self)
     @property
     def samples_gene_df(self):
-        return self.mdo_discipline_wrapp.wrapper.samples_gene_df    \
+        return self.mdo_discipline_wrapp.wrapper.samples_gene_df
 
     @samples_gene_df.setter
     def samples_gene_df(self, s):
