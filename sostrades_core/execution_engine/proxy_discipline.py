@@ -682,21 +682,15 @@ class ProxyDiscipline:
             io_type : 'string' . indicates whether we are interested in desc_in or desc_out
         """
         if io_type == self.IO_TYPE_IN:
-            desc = deepcopy(self.DESC_IN) if self.DESC_IN else {}
-            try:
-                if self.mdo_discipline_wrapp.wrapper.DESC_IN:
-                    desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN))
-            except AttributeError:
-                pass
-            return desc
+            _desc = deepcopy(self.DESC_IN) if self.DESC_IN else {}
+            if self.mdo_discipline_wrapp and self.mdo_discipline_wrapp.wrapper and self.mdo_discipline_wrapp.wrapper.DESC_IN:
+                _desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN))
+            return _desc
         elif io_type == self.IO_TYPE_OUT:
-            desc = deepcopy(self.DESC_OUT) if self.DESC_OUT else {}
-            try:
-                if self.mdo_discipline_wrapp.wrapper.DESC_OUT:
-                    desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT))
-            except AttributeError:
-                pass
-            return desc
+            _desc = deepcopy(self.DESC_OUT) if self.DESC_OUT else {}
+            if self.mdo_discipline_wrapp and self.mdo_discipline_wrapp.wrapper and self.mdo_discipline_wrapp.wrapper.DESC_OUT:
+                _desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT))
+            return _desc
         else:
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
