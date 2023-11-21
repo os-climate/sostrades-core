@@ -92,17 +92,16 @@ class SampleGeneratorWrapper(SoSWrapp):
         self.samples_gene_df = None
 
     def run(self):
-        if self.get_sosdisc_inputs('sampling_generation_mode') == 'at_run_time': # TODO: soon to be (non-)instantiation of the GEMSEO object
-            samples_df = self.sample_generator.sample(self)
-            # TODO: rethink management of this below
-            samples_df = self.set_scenario_columns(samples_df)
-            # TODO: is this the place for this exception ?
-            if isinstance(samples_df, pd.DataFrame):
-                pass
-            else:
-                raise Exception(
-                    f"Sampling has not been made")
-            self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
+        samples_df = self.sample_generator.sample(self)
+        # TODO: rethink management of this below (see todo set_scenario_columns)
+        samples_df = self.set_scenario_columns(samples_df)
+        # TODO: is this the place for this exception ?
+        if isinstance(samples_df, pd.DataFrame):
+            pass
+        else:
+            raise Exception(
+                f"Sampling has not been made")
+        self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     # TODO: maybe move to AbstractSampleGenerator ? or render private then create a SampleGeneratorWrapper.sample() method calling this one?
     def set_scenario_columns(self, samples_df, scenario_names=None):

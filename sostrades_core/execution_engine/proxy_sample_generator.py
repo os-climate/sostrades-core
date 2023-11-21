@@ -317,6 +317,16 @@ class ProxySampleGenerator(ProxyDiscipline):
         elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
             self._update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
 
+    def prepare_execution(self):
+        """
+        Overload of the prepare_execution allowing to instantiate a gemseo object only if the sampling generation is at
+        run-time.
+        """
+        if self.sampling_generation_mode == self.AT_RUN_TIME:
+            super().prepare_execution()
+        else:
+            self._update_status_dm(self.STATUS_DONE)
+
     # FIXME: methods below constitute a quickfix that should be substituted by an improvement in design of self.sample_generator.setup(self)
     @property
     def samples_gene_df(self):
