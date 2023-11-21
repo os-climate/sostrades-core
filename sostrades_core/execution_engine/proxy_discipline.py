@@ -676,16 +676,27 @@ class ProxyDiscipline:
 
     def get_desc_in_out(self, io_type):
         """
-        Retrieves information from wrapper or ProxyDiscipline DESC_IN to fill data_in
-        To be overloaded by special proxies ( coupling, scatter,...)
+        Retrieves information from ProxyDiscipline and/or wrapper DESC_IN to fill data_in
 
         Argument:
             io_type : 'string' . indicates whether we are interested in desc_in or desc_out
         """
         if io_type == self.IO_TYPE_IN:
-            return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
+            desc = deepcopy(self.DESC_IN) if self.DESC_IN else {}
+            try:
+                if self.mdo_discipline_wrapp.wrapper.DESC_IN:
+                    desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN))
+            except AttributeError:
+                pass
+            return desc
         elif io_type == self.IO_TYPE_OUT:
-            return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT) or {}
+            desc = deepcopy(self.DESC_OUT) if self.DESC_OUT else {}
+            try:
+                if self.mdo_discipline_wrapp.wrapper.DESC_OUT:
+                    desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT))
+            except AttributeError:
+                pass
+            return desc
         else:
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
