@@ -25,7 +25,6 @@ from sostrades_core.execution_engine.sample_generators.doe_sample_generator impo
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
     CartesianProductSampleGenerator
 from sostrades_core.tools.gather.gather_tool import check_eval_io
-from sostrades_core.execution_engine.ns_manager import NS_SEP
 import pandas as pd
 
 class ProxySampleGeneratorException(Exception):
@@ -51,9 +50,16 @@ class ProxySampleGenerator(ProxyDiscipline):
         'version': '',
     }
 
-    NS_SEP = '.'
     INPUT_TYPE = ['float', 'array', 'int', 'string']
 
+    MULTIPLIER_PARTICULE = "__MULTIPLIER__" # todo: to delete
+
+    SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
+    SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
+    SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
+    REFERENCE_SCENARIO_NAME = 'Reference Scenario'
+
+    # TODO: move to tools ?
     N_SAMPLES = "n_samples"
     ALGO = SampleGeneratorWrapper.ALGO
     ALGO_OPTIONS = SampleGeneratorWrapper.ALGO_OPTIONS
@@ -62,33 +68,7 @@ class ProxySampleGenerator(ProxyDiscipline):
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
 
-    # USER_GRAD = 'user'
-
-    # To be defined in the heritage
-    # is_constraints = None
-    # INEQ_CONSTRAINTS = 'ineq_constraints'
-    # EQ_CONSTRAINTS = 'eq_constraints'
-    # DESC_I/O
-    # PARALLEL_OPTIONS = 'parallel_options'
-
-    # FULLFACT = 'fullfact'
-
-    REFERENCE_SCENARIO_NAME = 'Reference Scenario'
-
-    MULTIPLIER_PARTICULE = "__MULTIPLIER__" # todo: to delete
-    # EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
-    SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
-    # SAMPLES_DF_DESC_SHARED = SampleGeneratorWrapper.SAMPLES_DF_DESC_SHARED
-
-    SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
-    SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
-
-
-    # SAMPLES_DF = 'samples_df'
-    # SELECTED_SCENARIO = 'selected_scenario'
-    # SCENARIO_NAME = 'scenario_name'
     NS_SAMPLING = 'ns_sampling'
-    # REFERENCE_SCENARIO_NAME = 'Reference Scenario'
     SAMPLES_DF_DESC = {
         ProxyDiscipline.TYPE: 'dataframe',
         ProxyDiscipline.DEFAULT: pd.DataFrame({SELECTED_SCENARIO: [True],
@@ -337,7 +317,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
             self._update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
 
-    # TODO: functions below constitute a quickfix that should be substituted by an improvement in design of self.sample_generator.setup(self)
+    # FIXME: methods below constitute a quickfix that should be substituted by an improvement in design of self.sample_generator.setup(self)
     @property
     def samples_gene_df(self):
         return self.mdo_discipline_wrapp.wrapper.samples_gene_df    \
