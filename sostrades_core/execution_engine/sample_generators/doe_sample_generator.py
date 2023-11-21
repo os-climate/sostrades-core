@@ -438,7 +438,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         """
         if proxy.sampling_method == proxy.DOE_ALGO:
             # Get possible values for sampling algorithm name
-            available_doe_algorithms = proxy.sample_generator.get_available_algo_names()
+            available_doe_algorithms = self.get_available_algo_names()
             dynamic_inputs.update({'sampling_algo':
                                        {proxy.TYPE: 'string',
                                         proxy.STRUCTURING: True,

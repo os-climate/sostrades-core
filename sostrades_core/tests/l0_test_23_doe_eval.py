@@ -33,7 +33,7 @@ from numpy import array
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 import os
 from os.path import dirname, join
 
@@ -56,7 +56,7 @@ class TestSoSDOEScenario(unittest.TestCase):
     def setUp(self):
 
         self.sampling_method_doe = 'doe_algo'
-        self.sampling_gen_mode = SampleGeneratorWrapper.AT_RUN_TIME
+        self.sampling_gen_mode = ProxySampleGenerator.AT_RUN_TIME
         self.study_name = 'doe'
         self.ns = f'{self.study_name}'
         self.sc_name = "SellarDoeScenario"
@@ -237,8 +237,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values, 'z': z_values}
         # samples_dict = {'z': z_values, 'x': x_values,
         #                 'wrong_values': wrong_values}
@@ -608,16 +608,16 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value(
             'doe.Eval.samples_df').columns.tolist(),
-                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME, 'x'])
+                             [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME, 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,
+                             [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME,
                               'subprocess.Sellar_Problem.local_dv', 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,
+                             [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME,
                               'subprocess.Sellar_Problem.local_dv'])
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
@@ -631,8 +631,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{self.ns}.Eval.samples_df'] = samples_df
@@ -804,8 +804,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574,
                            6.954954792150857]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values,
                         'subprocess.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -1045,8 +1045,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         wrong_values = 5 * [0.0]
 
         # samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
                                                                'scenario_5'],
                         'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
@@ -1067,8 +1067,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         error_message = f"Variable root.Eval.samples_df : Dataframe value has a column wrong_values but the dataframe descriptor has not, df_descriptor keys : dict_keys(['x', 'z'])"
 
         self.assertEqual(str(cm.exception), error_message)
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
                                                                'scenario_5'],
                         'z': z_values, 'x': x_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -1403,8 +1403,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
