@@ -560,9 +560,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
             # Exclude non executable proxy Disciplines
-            if disc.mdo_discipline_wrapp is not None and not isinstance(disc, ArchiBuilder):
-                sub_mdo_disciplines.append(
-                    disc.mdo_discipline_wrapp.mdo_discipline)
+            if disc.mdo_discipline_wrapp is not None and disc.mdo_discipline_wrapp.mdo_discipline is not None:
+                    sub_mdo_disciplines.append(
+                        disc.mdo_discipline_wrapp.mdo_discipline)
 
         # store cache and n_calls before MDAChain reset, if prepare_execution
         # has already been called
