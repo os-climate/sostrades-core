@@ -84,10 +84,10 @@ class ProxySampleGenerator(ProxyDiscipline):
     SAMPLES_DF_DESC_SHARED[ProxyDiscipline.NAMESPACE] = NS_SAMPLING
     SAMPLES_DF_DESC_SHARED[ProxyDiscipline.VISIBILITY] = ProxyDiscipline.SHARED_VISIBILITY
 
+    # TODO: 'full_name', 'selected_input' etc. class variables which probably belong in the tools rather than here.
     EVAL_INPUTS = 'eval_inputs'
     EVAL_INPUTS_DF_DESC = {'selected_input': ('bool', None, True),
-                           'full_name': (
-                           'string', None, False)}  # FIXME: should not be non-editable in standalone sample
+                           'full_name': ('string', None, True)}
     EVAL_INPUTS_DESC = {ProxyDiscipline.TYPE: 'dataframe',
                         ProxyDiscipline.DATAFRAME_DESCRIPTOR: EVAL_INPUTS_DF_DESC.copy(),
                         ProxyDiscipline.DATAFRAME_EDITION_LOCKED: False,
@@ -229,11 +229,17 @@ class ProxySampleGenerator(ProxyDiscipline):
                     driver_is_configured = False
         return driver_is_configured
 
-    # TODO: refactor all below to assure the instance attributes & class variables are in good place (proxy vs. wrapper)
+    # TODO: refactor all below to assure the attributes are in good place (proxy/wrapper/tool)
     def is_configured(self):
+        """
+        Configuration criterion including whether a configuration-time sample is pending.
+        """
         return super().is_configured() and not self.sample_pending
 
     def setup_sos_disciplines(self):
+        """
+        Dynamic i/o of the sample generator.
+        """
         disc_in = self.get_data_in()
         if disc_in:
             self.sampling_method = self.get_sosdisc_inputs(self.SAMPLING_METHOD)
@@ -248,7 +254,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                 dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED.copy()
             # elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME: # TODO: separate the sample generation from setup
             #     self.sample_at_config_time()
-            # TODO: manage config-time sample for grid search and test for DoE
+            # TODO: manage config-time sample for grid search and test for DoE as well as coupled run-time sampling for CP
 
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
@@ -312,10 +318,23 @@ class ProxySampleGenerator(ProxyDiscipline):
                                  check_value=False)
 
     def update_eval_inputs_columns(self, disc_in):
+        """
+        Method to update the dataframe descriptor and columns of eval_inputs depending on the sampling method and handle
+        whether the column with variable names is editable (i.e. not when these are set by the driver as configurator).
+
+        Arguments:
+            disc_in (dict): input data dict of the discipline obtained via self.get_data_in()
+        """
+        _df_desc = None
         if self.sampling_method == self.CARTESIAN_PRODUCT:
-            self._update_eval_inputs_columns(self.EVAL_INPUTS_CP_DF_DESC.copy(), disc_in)
+            _df_desc = self.EVAL_INPUTS_CP_DF_DESC.copy()
         elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
-            self._update_eval_inputs_columns(self.EVAL_INPUTS_DF_DESC.copy(), disc_in)
+            _df_desc = self.EVAL_INPUTS_DF_DESC.copy()
+        if _df_desc:
+            # handle editability of the dataframe column with variable names when these are set by the driver
+            if self.configurator:
+                _df_desc['full_name'] = ('string', None, False)
+            self._update_eval_inputs_columns(_df_desc, disc_in)
 
     def prepare_execution(self):
         """
