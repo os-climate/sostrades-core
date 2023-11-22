@@ -161,7 +161,6 @@ class ProxySampleGenerator(ProxyDiscipline):
             driver_is_configured = False
             disc_in = self.get_data_in()
             if self.EVAL_INPUTS in disc_in:
-                # FIXME: REWRITE THIS PART SO IT CAN WORK WITH EVAL_INPUTS_CP
                 driver_is_configured = True
                 default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_values],
                                                      'full_name': possible_values})
@@ -304,7 +303,6 @@ class ProxySampleGenerator(ProxyDiscipline):
         if self.EVAL_INPUTS in d_in:
             eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, d_in)
             # update dataframe descriptor
-            # TODO: when moving to proxy implement -> if self.configurator: df_desc['full_name'] non-editable else editable
             self.dm.set_data(eval_inputs_f_name,
                              self.DATAFRAME_DESCRIPTOR,
                              eval_inputs_df_desc,
