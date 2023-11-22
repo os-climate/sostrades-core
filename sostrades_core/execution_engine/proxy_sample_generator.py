@@ -358,3 +358,8 @@ class ProxySampleGenerator(ProxyDiscipline):
 
     def set_scenario_columns(self, *args, **kwargs):
         return self.mdo_discipline_wrapp.wrapper.set_scenario_columns(*args, **kwargs)
+
+    # TODO: DISCUSS IMPLEMENTATION
+    def _get_non_structuring_variables_keys(self):
+        # need to exclude samples_df to avoid config-time resampling when scenarios are edited on driver after sampling
+        return super()._get_non_structuring_variables_keys() - {self.SAMPLES_DF}
