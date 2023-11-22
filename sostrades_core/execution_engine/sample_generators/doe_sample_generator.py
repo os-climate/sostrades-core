@@ -532,7 +532,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                     design_space_dataframe_descriptor.update({'nb_points': ('int', None, True)})
                 dynamic_inputs.update({'design_space': {proxy.TYPE: 'dataframe',
                                                         proxy.DEFAULT: default_design_space,
-                                                        proxy.STRUCTURING: True,
+                                                        proxy.STRUCTURING: False,
                                                         proxy.DATAFRAME_DESCRIPTOR: design_space_dataframe_descriptor}})
 
                 # Next lines of code treat the case in which eval inputs change with a previously defined design space,
