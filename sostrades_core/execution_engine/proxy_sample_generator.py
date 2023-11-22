@@ -252,8 +252,10 @@ class ProxySampleGenerator(ProxyDiscipline):
             # 4. if sampling at run-time add the corresponding output
             if self.sampling_generation_mode == self.AT_RUN_TIME:
                 dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED.copy()
-            # elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME: # TODO: separate the sample generation from setup
-            #     self.sample_at_config_time()
+                self.all_input_structuring = False
+            elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
+                self.all_input_structuring = True
+                # self.sample_at_config_time()  # TODO: separate the sample generation from setup
             # TODO: manage config-time sample for grid search and test for DoE as well as coupled run-time sampling for CP
 
             self.add_inputs(dynamic_inputs)

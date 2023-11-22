@@ -450,6 +450,7 @@ class ProxyDiscipline:
         if self.__all_input_structuring is all_inp_struct:
             pass
         elif all_inp_struct is True:
+            self._non_structuring_variables = {}
             self._set_structuring_variables_values(variables_dict=self._non_structuring_variables,
                                                    variables_keys=self._get_non_structuring_variables_keys(),
                                                    clear_variables_dict=True)
@@ -2226,13 +2227,13 @@ class ProxyDiscipline:
     def check_configured_dependency_disciplines(self):
         '''
         Check if config_dependency_disciplines are configured to know if i am configured
-        Be careful using this capability to avoid endless loop of configuration 
+        Be careful using this capability to avoid endless loop of configuration
         '''
         return all([disc.is_configured() for disc in self.config_dependency_disciplines])
 
     def add_disc_to_config_dependency_disciplines(self, disc):
         '''
-        Add a discipline to config_dependency_disciplines 
+        Add a discipline to config_dependency_disciplines
         Be careful to endless configuraiton loop (small loops are checked but not with more than two disciplines)
         Do not add twice the same dsicipline
         '''
@@ -2314,7 +2315,7 @@ class ProxyDiscipline:
 
     def _check_structuring_variables_changes(self, variables_dict, variables_keys=None):
         dict_values_dm = {key: self.get_sosdisc_inputs(key) for
-                          key in variables_keys or variables_dict}
+                          key in variables_keys or variables_dict.keys()}
         try:
             return dict_values_dm != variables_dict
         except ValueError:  # TODO: check this more specific exception handling gives no problems
@@ -2322,9 +2323,9 @@ class ProxyDiscipline:
 
     def _set_structuring_variables_values(self, variables_dict, variables_keys=None, clear_variables_dict=False):
         disc_in = self.get_data_in()
-        keys_to_check = variables_keys or variables_dict.keys()
+        keys_to_check = list(variables_keys or variables_dict.keys())  # copy necessary in case dict is cleared
         if clear_variables_dict:
-            variables_dict = {}
+            variables_dict.clear()
         for struct_var in keys_to_check:
             if struct_var in disc_in:
                 variables_dict[struct_var] = deepcopy(self.get_sosdisc_inputs(struct_var))
