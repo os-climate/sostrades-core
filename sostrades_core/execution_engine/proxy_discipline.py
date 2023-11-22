@@ -363,6 +363,10 @@ class ProxyDiscipline:
         self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDriverEvaluator
         self._structuring_variables = None
         self.reset_data()
+
+        self._non_structuring_variables = None
+        self.__all_input_structuring = False
+
         # -- Maturity attribute
         self._maturity = self.get_maturity()
 
@@ -436,6 +440,25 @@ class ProxyDiscipline:
         setter of status
         """
         self._update_status_dm(status)
+
+    @property
+    def all_input_structuring(self):
+        return self.__all_input_structuring
+
+    @all_input_structuring.setter
+    def all_input_structuring(self, all_inp_struct: bool):
+        if self.__all_input_structuring is all_inp_struct:
+            pass
+        elif all_inp_struct is True:
+            self._set_structuring_variables_values(variables_dict=self._non_structuring_variables,
+                                                   variables_keys=self._get_non_structuring_variables_keys(),
+                                                   clear_variables_dict=True)
+            self.__all_input_structuring = True
+        elif all_inp_struct is False:
+            self._non_structuring_variables = None
+            self.__all_input_structuring = False
+        else:
+            raise ValueError('all_input_structuring should be a boolean')
 
     def prepare_execution(self):
         '''
@@ -2273,20 +2296,28 @@ class ProxyDiscipline:
         Compare structuring variables stored in discipline with values in dm
         Return True if at least one structuring variable value has changed, False if not
         '''
-        return self._check_structuring_variables_changes(self._structuring_variables)
+        _struct_var_changes = self._check_structuring_variables_changes(self._structuring_variables)
+        if self.all_input_structuring:
+            _struct_var_changes = _struct_var_changes or self._check_structuring_variables_changes(
+                self._non_structuring_variables, variables_keys=self._get_non_structuring_variables_keys())
+        return _struct_var_changes
 
     def set_structuring_variables_values(self):
         '''
         Store structuring variables values from dm in self._structuring_variables
         '''
         self._set_structuring_variables_values(self._structuring_variables)
+        if self.all_input_structuring:
+            self._set_structuring_variables_values(self._non_structuring_variables,
+                                                   variables_keys=self._get_non_structuring_variables_keys(),
+                                                   clear_variables_dict=True)
 
     def _check_structuring_variables_changes(self, variables_dict, variables_keys=None):
         dict_values_dm = {key: self.get_sosdisc_inputs(key) for
                           key in variables_keys or variables_dict}
         try:
             return dict_values_dm != variables_dict
-        except ValueError:  # TODO: check that more specific exception handling gives no problems
+        except ValueError:  # TODO: check this more specific exception handling gives no problems
             return not dict_are_equal(dict_values_dm, variables_dict)
 
     def _set_structuring_variables_values(self, variables_dict, variables_keys=None, clear_variables_dict=False):
@@ -2297,6 +2328,9 @@ class ProxyDiscipline:
         for struct_var in keys_to_check:
             if struct_var in disc_in:
                 variables_dict[struct_var] = deepcopy(self.get_sosdisc_inputs(struct_var))
+
+    def _get_non_structuring_variables_keys(self):
+        return self.get_data_in().keys() - self._structuring_variables.keys()
 
     # ----------------------------------------------------
     # ----------------------------------------------------
