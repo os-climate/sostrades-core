@@ -2273,23 +2273,30 @@ class ProxyDiscipline:
         Compare structuring variables stored in discipline with values in dm
         Return True if at least one structuring variable value has changed, False if not
         '''
-        dict_values_dm = {key: self.get_sosdisc_inputs(
-            key) for key in self._structuring_variables.keys()}
-        try:
-            return dict_values_dm != self._structuring_variables
-        except:
-            return not dict_are_equal(dict_values_dm,
-                                      self._structuring_variables)
+        return self._check_structuring_variables_changes(self._structuring_variables)
 
     def set_structuring_variables_values(self):
         '''
         Store structuring variables values from dm in self._structuring_variables
         '''
+        self._set_structuring_variables_values(self._structuring_variables)
+
+    def _check_structuring_variables_changes(self, variables_dict, variables_keys=None):
+        dict_values_dm = {key: self.get_sosdisc_inputs(key) for
+                          key in variables_keys or variables_dict}
+        try:
+            return dict_values_dm != variables_dict
+        except ValueError:  # TODO: check that more specific exception handling gives no problems
+            return not dict_are_equal(dict_values_dm, variables_dict)
+
+    def _set_structuring_variables_values(self, variables_dict, variables_keys=None, clear_variables_dict=False):
         disc_in = self.get_data_in()
-        for struct_var in list(self._structuring_variables.keys()):
+        keys_to_check = variables_keys or variables_dict.keys()
+        if clear_variables_dict:
+            variables_dict = {}
+        for struct_var in keys_to_check:
             if struct_var in disc_in:
-                self._structuring_variables[struct_var] = deepcopy(
-                    self.get_sosdisc_inputs(struct_var))
+                variables_dict[struct_var] = deepcopy(self.get_sosdisc_inputs(struct_var))
 
     # ----------------------------------------------------
     # ----------------------------------------------------
