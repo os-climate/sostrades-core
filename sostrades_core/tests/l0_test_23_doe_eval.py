@@ -1465,6 +1465,87 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertAlmostEqual(
                 doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
 
+    def test_17_doe_and_eval_execution_lhs_on_1_var_run_time_vs_config_time_sampling(self):
+        """
+        Check that a DoE setup to sample at run-time does properly fill samples_df at run-time, and not before.
+        Then check that,by changing to sampling at configuration-time + changing a non-structuring input of the DoE, a
+        resampling effectively takes place at configuration-time.
+        """
+        lb1 = 0.
+        ub1 = 100.
+        lb2 = -10.
+        ub2 = 10.
+        dspace_dict_x = {'variable': ['x'],
+                         'lower_bnd': [lb1],
+                         'upper_bnd': [ub1],
+                         }
+        dspace_x = pd.DataFrame(dspace_dict_x)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_mono_driver_with_sample_option_sellar"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+        initial_input = {f'{self.ns}.Eval.with_sample_generator': True}
+        exec_eng.load_study_from_input_dict(initial_input)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
+        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
+            'n_samples': n_samples}
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+
+        # Eval inputs
+        # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        # array([1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df')
+        self.assertEqual(samples_df['x'].values.tolist(), [None])
+
+        exec_eng.execute()
+        ref_doe_x_unit = [.9538816734003358, .61862602113776724, .1720324493442158, .0417022004702574, .8396767474230671,
+                          .7345560727043048, .33023325726318404, .4146755890817113, .2000114374817345, .5092338594768798]
+
+        ref_doe_x_1 = array(ref_doe_x_unit)*(ub1 - lb1) + lb1
+        ref_doe_x_2 = array(ref_doe_x_unit)*(ub2 - lb2) + lb2
+
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df').copy()
+        for ref, truth in zip(ref_doe_x_1.tolist(), samples_df['x'].values.tolist()):
+            self.assertAlmostEqual(ref, float(truth))
+
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = ProxySampleGenerator.AT_CONFIGURATION_TIME
+        dspace_x['lower_bnd'] = lb2
+        dspace_x['upper_bnd'] = ub2
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df').copy()
+        for ref, truth in zip(ref_doe_x_2.tolist(), samples_df['x'].values.tolist()):
+            self.assertAlmostEqual(ref, float(truth))
+
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
