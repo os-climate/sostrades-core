@@ -1508,7 +1508,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
 
         # Eval inputs
-        # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 

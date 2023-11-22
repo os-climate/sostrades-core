@@ -100,7 +100,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         
         return samples_df
 
-    # TODO: REFACTOR IF POSSIBLE W/O PROXY REFs (note for the moment proxy is the wrapper until config. actions moved)
+    # TODO: REFACTOR IF POSSIBLE W/O PROXY REFs
     def setup(self, proxy):
         """
         Method that setup the cp method
@@ -119,7 +119,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
         """
-        # TODO : why is it more complex as in doe_algo ?
+        # TODO : why is it more complex as in doe_algo ? [???]
         self.eval_inputs_cp_has_changed = False
         disc_in = proxy.get_data_in()
         if proxy.EVAL_INPUTS in disc_in:

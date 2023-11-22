@@ -77,7 +77,6 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
 
     def setup(self, proxy):
         # 1. handle dynamic inputs of the mode
-        # TODO: a dedicated dynamic io method but Q: should be moved to the tool ?
         dynamic_inputs, dynamic_outputs = {}, {}
         disc_in = proxy.get_data_in()
 
