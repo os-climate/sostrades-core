@@ -352,12 +352,13 @@ class ProxySampleGenerator(ProxyDiscipline):
         if self.sampling_generation_mode == self.AT_RUN_TIME:
             super().prepare_execution()
         else:
-            # Note that self.mdo_discipline_wrapp.wrapper exists but self.mdo_discipline_wrapp.mdo_discipline is None
+            # Here self.mdo_discipline_wrapp.wrapper exists during configuration, but it is not associated to any gemseo
+            # object during execution (self.mdo_discipline_wrapp.mdo_discipline is None).
             self._update_status_dm(self.STATUS_DONE)
 
-    # TODO: DISCUSS IMPLEMENTATION
     def _get_non_structuring_variables_keys(self):
-        # need to exclude samples_df to avoid config-time resampling when scenarios are edited on driver after sampling
+        # Here we exclude samples_df from the non-structuring variables that are made structuring when sampling at
+        # configuration-time. This avoids resampling when some scenarios are edited on the driver after a 1st sampling
         return super()._get_non_structuring_variables_keys() - {self.SAMPLES_DF}
 
     def set_sample(self):  # TODO: check implementation when splitting sampling at config-time from setup
