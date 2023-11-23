@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/05/12-2023/11/02 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +17,7 @@ limitations under the License.
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 #-- process configuration class
 from typing import Optional
+import traceback
 import logging
 from importlib import import_module
 from pathlib import Path
@@ -156,6 +158,7 @@ class SoSProcessFactory:
         
         # check for PYTHONPATH environment variable
         python_path_libraries = environ.get('PYTHONPATH')
+        self.logger.info('Adding PYTHONPATH processes')
 
         if python_path_libraries is not None and len(python_path_libraries) > 0:
 
@@ -163,6 +166,7 @@ class SoSProcessFactory:
             libraries = python_path_libraries.split(pathsep)
 
             for library in libraries:
+                self.logger.info(f"Scanning Library {library}. Paths {list(Path(library).rglob(f'*/{PROCESSES_MODULE_NAME}/'))}.")
                 processes_modules = [relpath(p, library).replace(sep, '.') for p in Path(
                     library).rglob(f'*/{PROCESSES_MODULE_NAME}/')]
 
@@ -235,10 +239,12 @@ class SoSProcessFactory:
                     f'Unable to load the following module {repository_module_name}')
 
         except ModuleNotFoundError as error:
+            traceback.print_stack()
             self.logger.critical(
-                f'Unable to load the following module {repository_module_name} : {str(error)}')
+                f'Unable to load the following module {repository_module_name} : {str(error)}', exc_info=error)
         except TypeError as error:
+            traceback.print_stack()
             self.logger.critical(
-                f'Unable to load the following module {repository_module_name} : {str(error)}')
+                f'Unable to load the following module {repository_module_name} : {str(error)}', exc_info=error)
 
         return repositories_by_process
