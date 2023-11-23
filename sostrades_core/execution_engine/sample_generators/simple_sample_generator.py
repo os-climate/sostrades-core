@@ -74,3 +74,24 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
                 self.__class__.__name__)
             msg += "is <%s> " % str(type(samples_df))
             raise SimpleSampleGeneratorTypeError()
+
+    def setup(self, proxy):
+        # 1. handle dynamic inputs of the mode
+        dynamic_inputs, dynamic_outputs = {}, {}
+        disc_in = proxy.get_data_in()
+
+        dynamic_inputs.update({proxy.SAMPLES_DF: proxy.SAMPLES_DF_DESC_SHARED.copy()})
+
+        # FIXME: refacto with a call to self.sample (when modifying setup_sos_disciplines)
+        # 2. retrieve input that configures the sampling tool
+        if proxy.EVAL_INPUTS in disc_in and proxy.SAMPLES_DF in disc_in:
+            samples_df = proxy.get_sosdisc_inputs(proxy.SAMPLES_DF)
+            eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
+            if eval_inputs is not None and samples_df is not None:
+                selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
+                if selected_inputs:
+                    # 3. if sampling at config.time set the generated samples
+                    proxy.samples_gene_df = self.generate_samples(samples_df, selected_inputs)
+                    proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
+                                      proxy.VALUE, proxy.samples_gene_df, check_value=False)
+        return dynamic_inputs, dynamic_outputs

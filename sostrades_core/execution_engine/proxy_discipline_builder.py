@@ -170,22 +170,6 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
 
         return disc_builder
 
-    def get_desc_in_out(self, io_type):
-        """
-        Retrieves information from wrapper or ProxyDiscipline DESC_IN to fill data_in
-        Overload of proxyDiscipline
-
-        Argument:
-                io_type : 'string' . indicates whether we are interested in desc_in or desc_out
-        """
-        if io_type == self.IO_TYPE_IN:
-            return deepcopy(self.DESC_IN) or {}
-        elif io_type == self.IO_TYPE_OUT:
-            return deepcopy(self.DESC_OUT) or {}
-        else:
-            raise Exception(
-                f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
-
     def set_children_numerical_inputs(self):
         """
         Set numerical inputs values (cache_type, cache_file_path, debug_mode, linearization_mode) for those who have

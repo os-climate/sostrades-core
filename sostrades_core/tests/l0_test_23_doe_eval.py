@@ -33,7 +33,7 @@ from numpy import array
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 import os
 from os.path import dirname, join
 
@@ -56,6 +56,7 @@ class TestSoSDOEScenario(unittest.TestCase):
     def setUp(self):
 
         self.sampling_method_doe = 'doe_algo'
+        self.sampling_gen_mode = ProxySampleGenerator.AT_RUN_TIME
         self.study_name = 'doe'
         self.ns = f'{self.study_name}'
         self.sc_name = "SellarDoeScenario"
@@ -151,6 +152,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
@@ -235,8 +237,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values, 'z': z_values}
         # samples_dict = {'z': z_values, 'x': x_values,
         #                 'wrong_values': wrong_values}
@@ -330,6 +332,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
@@ -478,6 +481,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         algo_name = "lhs"
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
+
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = algo_name
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj
@@ -603,16 +608,16 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value(
             'doe.Eval.samples_df').columns.tolist(),
-                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME, 'x'])
+                             [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME, 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,
+                             [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME,
                               'subprocess.Sellar_Problem.local_dv', 'x'])
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
-                             [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME,
+                             [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME,
                               'subprocess.Sellar_Problem.local_dv'])
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
@@ -626,8 +631,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{self.ns}.Eval.samples_df'] = samples_df
@@ -722,6 +727,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE + Eval
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
+
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'face': 'faced'}
@@ -797,8 +804,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv_values = [9.379763880395856, 8.88644794300546, 3.7137135749628882, 0.0417022004702574,
                            6.954954792150857]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values,
                         'subprocess.Sellar_Problem.local_dv': local_dv_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -902,6 +909,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         output_selection_z_z = pd.DataFrame(output_selection_z_z)
 
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
+                     f'{self.ns}.SampleGenerator.sampling_generation_mode': self.sampling_gen_mode,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
                      f'{self.ns}.Eval.eval_inputs': input_selection_x_a,
                      f'{self.ns}.Eval.gather_outputs': output_selection_z_z,
@@ -1037,8 +1045,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         wrong_values = 5 * [0.0]
 
         # samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
                                                                'scenario_5'],
                         'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
@@ -1059,8 +1067,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         error_message = f"Variable root.Eval.samples_df : Dataframe value has a column wrong_values but the dataframe descriptor has not, df_descriptor keys : dict_keys(['x', 'z'])"
 
         self.assertEqual(str(cm.exception), error_message)
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
                                                                'scenario_5'],
                         'z': z_values, 'x': x_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -1241,6 +1249,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
+                     f'{self.ns}.SampleGenerator.sampling_generation_mode': self.sampling_gen_mode,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
                      f'{self.ns}.Eval.eval_inputs': input_selection_a,
                      f'{self.ns}.Eval.gather_outputs': output_selection_ind}
@@ -1317,6 +1326,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         levels = [0.25, 0.5, 0.75]
         centers = [5]
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
         disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = 'OT_FACTORIAL'
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace_a
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
@@ -1393,8 +1403,8 @@ class TestSoSDOEScenario(unittest.TestCase):
                           ), array([1.7490668861813, 3.617234050834533]),
                     array([-9.316161097119341, 9.918161285133076])]
 
-        samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
-                        SampleGeneratorWrapper.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
+        samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
+                        ProxySampleGenerator.SCENARIO_NAME: [f'scenario_{i}' for i in range(1, 6)],
                         'x': x_values, 'z': z_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -1454,6 +1464,86 @@ class TestSoSDOEScenario(unittest.TestCase):
         for key in doe_disc_y2.keys():
             self.assertAlmostEqual(
                 doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+
+    def test_17_doe_and_eval_execution_lhs_on_1_var_run_time_vs_config_time_sampling(self):
+        """
+        Check that a DoE setup to sample at run-time does properly fill samples_df at run-time, and not before.
+        Then check that,by changing to sampling at configuration-time + changing a non-structuring input of the DoE, a
+        resampling effectively takes place at configuration-time.
+        """
+        lb1 = 0.
+        ub1 = 100.
+        lb2 = -10.
+        ub2 = 10.
+        dspace_dict_x = {'variable': ['x'],
+                         'lower_bnd': [lb1],
+                         'upper_bnd': [ub1],
+                         }
+        dspace_x = pd.DataFrame(dspace_dict_x)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_mono_driver_with_sample_option_sellar"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+        initial_input = {f'{self.ns}.Eval.with_sample_generator': True}
+        exec_eng.load_study_from_input_dict(initial_input)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
+        disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
+            'n_samples': n_samples}
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+
+        # Eval inputs
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        # array([1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df')
+        self.assertEqual(samples_df['x'].values.tolist(), [None])
+
+        exec_eng.execute()
+        ref_doe_x_unit = [.9538816734003358, .61862602113776724, .1720324493442158, .0417022004702574, .8396767474230671,
+                          .7345560727043048, .33023325726318404, .4146755890817113, .2000114374817345, .5092338594768798]
+
+        ref_doe_x_1 = array(ref_doe_x_unit)*(ub1 - lb1) + lb1
+        ref_doe_x_2 = array(ref_doe_x_unit)*(ub2 - lb2) + lb2
+
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df').copy()
+        for ref, truth in zip(ref_doe_x_1.tolist(), samples_df['x'].values.tolist()):
+            self.assertAlmostEqual(ref, float(truth))
+
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = ProxySampleGenerator.AT_CONFIGURATION_TIME
+        dspace_x['lower_bnd'] = lb2
+        dspace_x['upper_bnd'] = ub2
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df').copy()
+        for ref, truth in zip(ref_doe_x_2.tolist(), samples_df['x'].values.tolist()):
+            self.assertAlmostEqual(ref, float(truth))
 
 
 if '__main__' == __name__:

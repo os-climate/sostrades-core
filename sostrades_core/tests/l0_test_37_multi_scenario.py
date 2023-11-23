@@ -602,7 +602,7 @@ class TestMultiScenario(unittest.TestCase):
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
         gen = self.exec_eng.root_process.proxy_disciplines[2]
-        print(gen.mdo_discipline_wrapp.wrapper.samples_gene_df)
+        print(gen.samples_gene_df)
         self.assertTrue(samples_df.empty)
 
         # change the trade variables values

@@ -363,6 +363,10 @@ class ProxyDiscipline:
         self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDriverEvaluator
         self._structuring_variables = None
         self.reset_data()
+
+        self._non_structuring_variables = None
+        self.__all_input_structuring = False
+
         # -- Maturity attribute
         self._maturity = self.get_maturity()
 
@@ -436,6 +440,26 @@ class ProxyDiscipline:
         setter of status
         """
         self._update_status_dm(status)
+
+    @property
+    def all_input_structuring(self):
+        return self.__all_input_structuring
+
+    @all_input_structuring.setter
+    def all_input_structuring(self, all_inp_struct: bool):
+        if self.__all_input_structuring is all_inp_struct:
+            pass
+        elif all_inp_struct is True:
+            self._non_structuring_variables = {}
+            self._set_structuring_variables_values(variables_dict=self._non_structuring_variables,
+                                                   variables_keys=self._get_non_structuring_variables_keys(),
+                                                   clear_variables_dict=True)
+            self.__all_input_structuring = True
+        elif all_inp_struct is False:
+            self._non_structuring_variables = None
+            self.__all_input_structuring = False
+        else:
+            raise ValueError('all_input_structuring should be a boolean')
 
     def prepare_execution(self):
         '''
@@ -676,16 +700,21 @@ class ProxyDiscipline:
 
     def get_desc_in_out(self, io_type):
         """
-        Retrieves information from wrapper or ProxyDiscipline DESC_IN to fill data_in
-        To be overloaded by special proxies ( coupling, scatter,...)
+        Retrieves information from ProxyDiscipline and/or wrapper DESC_IN to fill data_in
 
         Argument:
             io_type : 'string' . indicates whether we are interested in desc_in or desc_out
         """
         if io_type == self.IO_TYPE_IN:
-            return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
+            _desc = deepcopy(self.DESC_IN) if self.DESC_IN else {}
+            if self.mdo_discipline_wrapp and self.mdo_discipline_wrapp.wrapper and self.mdo_discipline_wrapp.wrapper.DESC_IN:
+                _desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN))
+            return _desc
         elif io_type == self.IO_TYPE_OUT:
-            return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT) or {}
+            _desc = deepcopy(self.DESC_OUT) if self.DESC_OUT else {}
+            if self.mdo_discipline_wrapp and self.mdo_discipline_wrapp.wrapper and self.mdo_discipline_wrapp.wrapper.DESC_OUT:
+                _desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT))
+            return _desc
         else:
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
@@ -2198,13 +2227,13 @@ class ProxyDiscipline:
     def check_configured_dependency_disciplines(self):
         '''
         Check if config_dependency_disciplines are configured to know if i am configured
-        Be careful using this capability to avoid endless loop of configuration 
+        Be careful using this capability to avoid endless loop of configuration
         '''
         return all([disc.is_configured() for disc in self.config_dependency_disciplines])
 
     def add_disc_to_config_dependency_disciplines(self, disc):
         '''
-        Add a discipline to config_dependency_disciplines 
+        Add a discipline to config_dependency_disciplines
         Be careful to endless configuraiton loop (small loops are checked but not with more than two disciplines)
         Do not add twice the same dsicipline
         '''
@@ -2268,23 +2297,41 @@ class ProxyDiscipline:
         Compare structuring variables stored in discipline with values in dm
         Return True if at least one structuring variable value has changed, False if not
         '''
-        dict_values_dm = {key: self.get_sosdisc_inputs(
-            key) for key in self._structuring_variables.keys()}
-        try:
-            return dict_values_dm != self._structuring_variables
-        except:
-            return not dict_are_equal(dict_values_dm,
-                                      self._structuring_variables)
+        _struct_var_changes = self._check_structuring_variables_changes(self._structuring_variables)
+        if self.all_input_structuring:
+            _struct_var_changes = _struct_var_changes or self._check_structuring_variables_changes(
+                self._non_structuring_variables, variables_keys=self._get_non_structuring_variables_keys())
+        return _struct_var_changes
 
     def set_structuring_variables_values(self):
         '''
         Store structuring variables values from dm in self._structuring_variables
         '''
+        self._set_structuring_variables_values(self._structuring_variables)
+        if self.all_input_structuring:
+            self._set_structuring_variables_values(self._non_structuring_variables,
+                                                   variables_keys=self._get_non_structuring_variables_keys(),
+                                                   clear_variables_dict=True)
+
+    def _check_structuring_variables_changes(self, variables_dict, variables_keys=None):
+        dict_values_dm = {key: self.get_sosdisc_inputs(key) for
+                          key in variables_keys or variables_dict.keys()}
+        try:
+            return dict_values_dm != variables_dict
+        except ValueError:  # TODO: check this more specific exception handling gives no problems
+            return not dict_are_equal(dict_values_dm, variables_dict)
+
+    def _set_structuring_variables_values(self, variables_dict, variables_keys=None, clear_variables_dict=False):
         disc_in = self.get_data_in()
-        for struct_var in list(self._structuring_variables.keys()):
+        keys_to_check = list(variables_keys or variables_dict.keys())  # copy necessary in case dict is cleared
+        if clear_variables_dict:
+            variables_dict.clear()
+        for struct_var in keys_to_check:
             if struct_var in disc_in:
-                self._structuring_variables[struct_var] = deepcopy(
-                    self.get_sosdisc_inputs(struct_var))
+                variables_dict[struct_var] = deepcopy(self.get_sosdisc_inputs(struct_var))
+
+    def _get_non_structuring_variables_keys(self):
+        return self.get_data_in().keys() - self._structuring_variables.keys()
 
     # ----------------------------------------------------
     # ----------------------------------------------------

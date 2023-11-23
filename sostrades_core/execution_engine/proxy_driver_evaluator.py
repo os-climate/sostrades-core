@@ -26,9 +26,10 @@ import pandas as pd
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+# from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import ProxySampleGenerator
 from sostrades_core.tools.gather.gather_tool import check_eval_io, get_eval_output
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
@@ -93,13 +94,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         'version': '',
     }
 
-    EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
+    EVAL_INPUTS = ProxySampleGenerator.EVAL_INPUTS
 
-    SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
-    SAMPLES_DF_DESC = SampleGeneratorWrapper.SAMPLES_DF_DESC.copy()
+    SAMPLES_DF = ProxySampleGenerator.SAMPLES_DF
+    SAMPLES_DF_DESC = ProxySampleGenerator.SAMPLES_DF_DESC.copy()
     SAMPLES_DF_DESC[ProxyDiscipline.STRUCTURING] = True
-    SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
-    SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
+    SELECTED_SCENARIO = ProxySampleGenerator.SELECTED_SCENARIO
+    SCENARIO_NAME = ProxySampleGenerator.SCENARIO_NAME
     WITH_SAMPLE_GENERATOR = 'with_sample_generator'
     WITH_SAMPLE_GENERATOR_DESC = {
         ProxyDiscipline.TYPE: 'bool',
@@ -246,7 +247,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # 3. specific configure depending on the driver
             self.configure_driver()
             # 4. configure the sample generator if there is one
-            self.configure_sample_generator()
+            if self.sample_generator_disc:
+                self.configure_sample_generator()
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
@@ -259,22 +261,21 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         The driver is not fully configured for eval inputs possible value and the sample generator send the info to the driver (via driver_config_status)
 
         '''
-        if self.sample_generator_disc:
-            driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+        driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
 
-            # TODO: this might be improved (see SampleGenerator.set_eval_in_possible_values)
-            if driver_config_status is False:
-                self.set_configure_status(False)
+        # TODO: this might be improved (see SampleGenerator.set_eval_in_possible_values)
+        if driver_config_status is False:
+            self.set_configure_status(False)
 
-            if not self.sample_generator_disc.is_configured():
-                self.sample_generator_disc.configure()
+        if not self.sample_generator_disc.is_configured():
+            self.sample_generator_disc.configure()
 
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
         exploited for couplings etc.
         """
-        # FIXME: check if move to mono-instance side as no longer really useful in multi
+        # TODO: [to discuss] move to mono-instance side ? as no longer really useful in multi because flatten_subprocess
         self._restart_data_io_to_disc_io()
         for proxy_disc in self.proxy_disciplines:
             # if not isinstance(proxy_disc, ProxyDisciplineGather):
@@ -319,7 +320,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # create the builder of a ProxySampleGenerator
         sampling_builder = self.ee.factory.create_sample_generator('SampleGenerator')
         # associate ns_sampling and 
-        ns_sampling = self.ee.ns_manager.add_ns(SampleGeneratorWrapper.NS_SAMPLING,
+        ns_sampling = self.ee.ns_manager.add_ns(ProxySampleGenerator.NS_SAMPLING,
                                                 self.ee.ns_manager.get_local_namespace_value(self))
         sampling_builder.associate_namespaces(ns_sampling)
         # create discipline in factory as sister not daughter

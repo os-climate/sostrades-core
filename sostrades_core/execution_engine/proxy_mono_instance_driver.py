@@ -13,10 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import pandas as pd
-from numpy import NaN
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
 
@@ -70,12 +66,12 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
                 if samples_df is not None:
                     selected_inputs = set(samples_df.columns)
-                    selected_inputs -= SampleGeneratorWrapper.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR].keys()
+                    selected_inputs -= self.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR].keys()
                     if selected_inputs != set(self.selected_inputs):
                         self.selected_inputs = list(selected_inputs)
                         self.eval_in_list = [
                             f'{self.get_disc_full_name()}.{element}' for element in self.selected_inputs]
-                        dataframe_descriptor = SampleGeneratorWrapper.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
+                        dataframe_descriptor = self.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
                         for key, var_f_name in zip(self.selected_inputs, self.eval_in_list):
                             if var_f_name in self.ee.dm.data_id_map:
                                 var = tuple([self.ee.dm.get_data(
