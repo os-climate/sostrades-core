@@ -83,6 +83,13 @@ class AbstractSampleGenerator(object):
         '''
         pass
 
+    def setup(self, proxy):
+        """
+        Method used in combination with the ProxySampleGenerator in order to configure a given generation method.
+        """
+        pass
+
+    # TODO: renaming proxy / wrapper / proxy_or_wrapper for clarity when impl. is fixed in next 2 methods
     def sample(self, proxy):
         _args, _kwargs = self.get_arguments(proxy)
         return self.generate_samples(*_args, **_kwargs)
@@ -94,3 +101,5 @@ class AbstractSampleGenerator(object):
         To be overloaded by subclass
         '''
         return [], {}
+
+

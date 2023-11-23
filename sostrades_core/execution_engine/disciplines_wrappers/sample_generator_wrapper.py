@@ -84,17 +84,10 @@ class SampleGeneratorWrapper(SoSWrapp):
 
     def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name=sos_name, logger=logger)
-        # self.sampling_method = None
-        # self.sampling_generation_mode = None
         self.sample_generator = None  # sample generator tool
 
-        # todo KEEP?
-        self.samples_gene_df = None
-
     def run(self):
-        samples_df = self.sample_generator.sample(self)
-        # TODO: rethink management of this below (see todo set_scenario_columns)
-        samples_df = self.set_scenario_columns(samples_df)
+        samples_df = self.sample()
         # TODO: is this the place for this exception ?
         if isinstance(samples_df, pd.DataFrame):
             pass
@@ -102,6 +95,9 @@ class SampleGeneratorWrapper(SoSWrapp):
             raise Exception(
                 f"Sampling has not been made")
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
+
+    def sample(self):
+        return self.set_scenario_columns(self.sample_generator.sample(self))
 
     # TODO: maybe move to AbstractSampleGenerator ? or render private then create a SampleGeneratorWrapper.sample() method calling this one?
     def set_scenario_columns(self, samples_df, scenario_names=None):
