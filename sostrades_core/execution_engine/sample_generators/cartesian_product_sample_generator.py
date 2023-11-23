@@ -169,7 +169,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         # TODO: implement separation btw config. and sampling at config. time (remaining of the method should go away)
         if self.eval_inputs_cp_validity:
             if self.eval_inputs_cp_has_changed:
-                proxy.samples_gene_df = self.sample(proxy)
+                proxy.set_sample()
 
             df_descriptor = {proxy.SELECTED_SCENARIO: ('bool', None, False),
                              proxy.SCENARIO_NAME: ('string', None, False)}
@@ -179,10 +179,9 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             generated_samples_data_description.update({proxy.DATAFRAME_DESCRIPTOR: df_descriptor,
                                                        proxy.DYNAMIC_DATAFRAME_COLUMNS: False})
         else:
-            # if self.eval_inputs_cp_has_changed:
-            proxy.samples_gene_df = pd.DataFrame()
+            # TODO: better handling of wrong input for CP
+            proxy.samples_gene_df = pd.DataFrame(columns=[proxy.SELECTED_SCENARIO, proxy.SCENARIO_NAME])
 
-        proxy.samples_gene_df = proxy.set_scenario_columns(proxy.samples_gene_df)
         generated_samples_data_description.update({proxy.DEFAULT: proxy.samples_gene_df})
         dynamic_inputs.update({proxy.SAMPLES_DF: generated_samples_data_description})
 
@@ -232,6 +231,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             validity (boolean) :
 
         """
+        # TODO: better handling of CartesianProduct wrong input...
         is_valid = True
         selected_inputs_cp = list(eval_inputs_cp_filtered['full_name'])
         # n_min = 2

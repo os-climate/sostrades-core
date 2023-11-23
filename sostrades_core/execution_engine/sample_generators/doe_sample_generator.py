@@ -469,10 +469,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         #    if self.eval_inputs_has_changed:
         disc_in = proxy.get_data_in()
         if proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in and self.selected_inputs is not None:
-            proxy.samples_gene_df = self.sample(proxy)
-
-            proxy.samples_gene_df = proxy.set_scenario_columns(proxy.samples_gene_df)
-
+            proxy.set_sample()
             dynamic_inputs.update({proxy.SAMPLES_DF: {proxy.TYPE: 'dataframe',
                                                       proxy.DATAFRAME_DESCRIPTOR: {},
                                                       proxy.DYNAMIC_DATAFRAME_COLUMNS: True,

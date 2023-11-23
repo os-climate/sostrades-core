@@ -140,6 +140,9 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.sampling_generation_mode = None
         # TODO: generalise management of self.sample_pending when decoupling sampling from setup
         self.sample_pending = False
+        # sample generated at configuration-time
+        self.samples_gene_df = None
+
 
     def set_eval_in_possible_values(self, possible_values: list[str]) -> bool:
         """
@@ -352,15 +355,9 @@ class ProxySampleGenerator(ProxyDiscipline):
         # need to exclude samples_df to avoid config-time resampling when scenarios are edited on driver after sampling
         return super()._get_non_structuring_variables_keys() - {self.SAMPLES_DF}
 
-    # FIXME: methods below constitute a quickfix that should be substituted by an improvement in design of self.sample_generator.setup(self)
-    @property
-    def samples_gene_df(self):  # TODO: I don't see why this attribute/property should exist
-        return self.mdo_discipline_wrapp.wrapper.samples_gene_df
+    def set_sample(self):  # TODO: check implementation when splitting sampling at config-time from setup
+        self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
+        # self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.set_scenario_columns(
+        #     self.mdo_discipline_wrapp.wrapper.sample(self))
 
-    @samples_gene_df.setter
-    def samples_gene_df(self, s):
-        self.mdo_discipline_wrapp.wrapper.samples_gene_df = s
-
-    def set_scenario_columns(self, *args, **kwargs):  # TODO: this belongs in the wrapper sample method probably, certainly not here
-        return self.mdo_discipline_wrapp.wrapper.set_scenario_columns(*args, **kwargs)
 
