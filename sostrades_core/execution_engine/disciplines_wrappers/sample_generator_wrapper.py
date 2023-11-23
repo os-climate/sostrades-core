@@ -88,7 +88,7 @@ class SampleGeneratorWrapper(SoSWrapp):
 
     def run(self):
         samples_df = self.sample()
-        # TODO: is this the place for this exception ?
+        # TODO [to discuss]: is this the place for this exception ?
         if isinstance(samples_df, pd.DataFrame):
             pass
         else:
@@ -99,8 +99,8 @@ class SampleGeneratorWrapper(SoSWrapp):
     def sample(self):
         return self.set_scenario_columns(self.sample_generator.sample(self))
 
-    # TODO: [to discuss] move to AbstractSampleGenerator ?
     def set_scenario_columns(self, samples_df, scenario_names=None):
+        # TODO: [to discuss] move to AbstractSampleGenerator ?
         '''
         Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df dataframe
         '''
