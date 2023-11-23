@@ -247,7 +247,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # 3. specific configure depending on the driver
             self.configure_driver()
             # 4. configure the sample generator if there is one
-            self.configure_sample_generator()
+            if self.sample_generator_disc:
+                self.configure_sample_generator()
 
         if self.subprocess_is_configured():
             self.update_data_io_with_subprocess_io()
@@ -260,22 +261,21 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         The driver is not fully configured for eval inputs possible value and the sample generator send the info to the driver (via driver_config_status)
 
         '''
-        if self.sample_generator_disc:
-            driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
+        driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
 
-            # TODO: this might be improved (see SampleGenerator.set_eval_in_possible_values)
-            if driver_config_status is False:
-                self.set_configure_status(False)
+        # TODO: this might be improved (see SampleGenerator.set_eval_in_possible_values)
+        if driver_config_status is False:
+            self.set_configure_status(False)
 
-            if not self.sample_generator_disc.is_configured():
-                self.sample_generator_disc.configure()
+        if not self.sample_generator_disc.is_configured():
+            self.sample_generator_disc.configure()
 
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
         exploited for couplings etc.
         """
-        # FIXME: check if move to mono-instance side as no longer really useful in multi
+        # TODO: [to discuss] move to mono-instance side ? as no longer really useful in multi because flatten_subprocess
         self._restart_data_io_to_disc_io()
         for proxy_disc in self.proxy_disciplines:
             # if not isinstance(proxy_disc, ProxyDisciplineGather):

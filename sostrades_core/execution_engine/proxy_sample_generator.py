@@ -138,11 +138,13 @@ class ProxySampleGenerator(ProxyDiscipline):
 
         self.sampling_method = None
         self.sampling_generation_mode = None
-        # TODO: generalise management of self.sample_pending when decoupling sampling from setup
+
+        # TODO: generalise management of self.sample_pending (implemented on CP), when decoupling sampling from setup
         self.sample_pending = False
         # sample generated at configuration-time
         self.samples_gene_df = None
 
+        self.force_sampling_at_config_time = False
 
     def set_eval_in_possible_values(self, possible_values: list[str]) -> bool:
         """
@@ -275,17 +277,20 @@ class ProxySampleGenerator(ProxyDiscipline):
 
     def configure_generation_mode(self, disc_in):
         sampling_generation_mode = self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE)
-        # variable needs to be made non-editable for special cases (namely simple_sample_generator => at config. time)
+        # variable needs to be made non-editable for special cases namely: simple_sample_generator => at config. time,
+        # self.force_sampling_at_config_time (i.e. working with multi-instance driver) => at config. time
         forced_methods_modes = {
             self.SIMPLE_SAMPLING_METHOD: self.AT_CONFIGURATION_TIME
+        } if not self.force_sampling_at_config_time else {
+            k: self.AT_CONFIGURATION_TIME for k in self.AVAILABLE_SAMPLING_METHODS
         }
         if self.sampling_method in forced_methods_modes:
             disc_in[self.SAMPLING_GENERATION_MODE][self.EDITABLE] = False
             expected_mode = forced_methods_modes[self.sampling_method]
             if sampling_generation_mode != expected_mode:
-                # TODO: discuss and review exception handlings
+                # TODO: discuss warnings and exception handlings
                 # warn and force config time sampling
-                self.logger.warning(f'Setting {self.SAMPLING_GENERATION_MODE} to {expected_mode} for '
+                self.logger.warning(f'Forcing {self.SAMPLING_GENERATION_MODE} to {expected_mode} for '
                                     f'{self.sampling_method} {self.SAMPLING_METHOD}.')
                 disc_in[self.SAMPLING_GENERATION_MODE][self.VALUE] = sampling_generation_mode = expected_mode
         else:

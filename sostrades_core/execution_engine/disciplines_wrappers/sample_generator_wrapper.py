@@ -99,7 +99,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     def sample(self):
         return self.set_scenario_columns(self.sample_generator.sample(self))
 
-    # TODO: maybe move to AbstractSampleGenerator ? or render private then create a SampleGeneratorWrapper.sample() method calling this one?
+    # TODO: [to discuss] move to AbstractSampleGenerator ?
     def set_scenario_columns(self, samples_df, scenario_names=None):
         '''
         Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df dataframe
