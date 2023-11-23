@@ -465,8 +465,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
              dynamic_inputs (dict): the dynamic input dict to be updated
          """
         # TODO: implement a separation between the setup and the sample generation
-        # if self.eval_inputs_validity:
-        #    if self.eval_inputs_has_changed:
         disc_in = proxy.get_data_in()
         if proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in and self.selected_inputs is not None:
             proxy.set_sample()
@@ -480,9 +478,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                                       proxy.NAMESPACE: proxy.NS_SAMPLING,
                                                       proxy.DEFAULT: proxy.samples_gene_df}})
 
-        # Set or update GENERATED_SAMPLES in line with selected
-        # eval_inputs_cp
-        disc_in = proxy.get_data_in()
         if proxy.SAMPLES_DF in disc_in:
             disc_in[proxy.SAMPLES_DF][proxy.VALUE] = proxy.samples_gene_df
 
@@ -602,8 +597,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         else:
             raise Exception(
                 f"A DoE algorithm which is not available in GEMSEO has been selected.")
-
-
 
     def get_arguments(self, proxy):
         # Dynamic input of default design space
