@@ -154,47 +154,47 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             self.eval_inputs_cp_validity = False
 
 
-    def setup_generated_sample(self, dynamic_inputs, proxy):
-        """
-        Method that setup GENERATED_SAMPLES for cartesian product at configuration time
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-        """
-        generated_samples_data_description = proxy.SAMPLES_DF_DESC_SHARED.copy()
-
-        # TODO: implement separation btw config. and sampling at config. time (remaining of the method should go away)
-        if self.eval_inputs_cp_validity:
-            if self.eval_inputs_cp_has_changed:
-                proxy.set_sample()
-
-            # df_descriptor = {proxy.SELECTED_SCENARIO: ('bool', None, False),
-            #                  proxy.SCENARIO_NAME: ('string', None, False)}
-            # df_descriptor.update(
-            #     {row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
-            #      self.eval_inputs_cp_filtered.iterrows()})  # FIXME: no good
-            # generated_samples_data_description.update({proxy.DATAFRAME_DESCRIPTOR: df_descriptor,
-            #                                            proxy.DYNAMIC_DATAFRAME_COLUMNS: False})
-        else:
-            # TODO: better handling of wrong input for CP
-            proxy.samples_gene_df = pd.DataFrame(columns=[proxy.SELECTED_SCENARIO, proxy.SCENARIO_NAME])
-
-        # generated_samples_data_description.update({proxy.DEFAULT: proxy.samples_gene_df})
-        dynamic_inputs.update({proxy.SAMPLES_DF: generated_samples_data_description})
-
-        # Set or update GENERATED_SAMPLES in line with selected
-        # eval_inputs_cp
-        disc_in = proxy.get_data_in()  #FIXME: pass disc_in
-        if proxy.SAMPLES_DF in disc_in:
-            # proxy.set_sample()
-            if proxy.samples_gene_df is not None:
-                proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
-                                  'value', proxy.samples_gene_df, check_value=False)
-            proxy.sample_pending = False
-            # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
-        else:
-            # TODO: generalise to all methods sampling at config-time (when decoupling setup from sampling) or
-            #  otherwise there will be issues when generator tries to sample before samples_df is added in disc_in
-            proxy.sample_pending = True
+    # def setup_generated_sample(self, dynamic_inputs, proxy):
+    #     """
+    #     Method that setup GENERATED_SAMPLES for cartesian product at configuration time
+    #     Arguments:
+    #         dynamic_inputs (dict): the dynamic input dict to be updated
+    #     """
+    #     generated_samples_data_description = proxy.SAMPLES_DF_DESC_SHARED.copy()
+    #
+    #     # TODO: implement separation btw config. and sampling at config. time (remaining of the method should go away)
+    #     if self.eval_inputs_cp_validity:
+    #         if self.eval_inputs_cp_has_changed:
+    #             proxy.set_sample()
+    #
+    #         # df_descriptor = {proxy.SELECTED_SCENARIO: ('bool', None, False),
+    #         #                  proxy.SCENARIO_NAME: ('string', None, False)}
+    #         # df_descriptor.update(
+    #         #     {row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
+    #         #      self.eval_inputs_cp_filtered.iterrows()})  # FIXME: no good
+    #         # generated_samples_data_description.update({proxy.DATAFRAME_DESCRIPTOR: df_descriptor,
+    #         #                                            proxy.DYNAMIC_DATAFRAME_COLUMNS: False})
+    #     else:
+    #         # TODO: better handling of wrong input for CP
+    #         proxy.samples_gene_df = pd.DataFrame(columns=[proxy.SELECTED_SCENARIO, proxy.SCENARIO_NAME])
+    #
+    #     # generated_samples_data_description.update({proxy.DEFAULT: proxy.samples_gene_df})
+    #     dynamic_inputs.update({proxy.SAMPLES_DF: generated_samples_data_description})
+    #
+    #     # Set or update GENERATED_SAMPLES in line with selected
+    #     # eval_inputs_cp
+    #     disc_in = proxy.get_data_in()  #FIXME: pass disc_in
+    #     if proxy.SAMPLES_DF in disc_in:
+    #         # proxy.set_sample()
+    #         if proxy.samples_gene_df is not None:
+    #             proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
+    #                               'value', proxy.samples_gene_df, check_value=False)
+    #         proxy.sample_pending = False
+    #         # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+    #     else:
+    #         # TODO: generalise to all methods sampling at config-time (when decoupling setup from sampling) or
+    #         #  otherwise there will be issues when generator tries to sample before samples_df is added in disc_in
+    #         proxy.sample_pending = True
 
     def reformat_eval_inputs_cp(self, eval_inputs_cp):
         """
@@ -243,3 +243,6 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         dict_of_list_values = self.eval_inputs_cp_filtered.set_index(
             'full_name').T.to_dict('records')[0]
         return [], {'dict_of_list_values': dict_of_list_values}
+
+    def is_ready_to_sample(self, proxy):
+        return self.eval_inputs_cp_validity and self.eval_inputs_cp_has_changed
