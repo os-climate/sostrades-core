@@ -106,7 +106,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         Configuration of the associated sample generator discipline for multi-instance driver is as in the general case
         except that run-time sampling is not allowed as the sample is needed for scenarios configuration.
         """
-        self.sample_generator_disc.force_config_time_sampling = True
+        self.sample_generator_disc.force_sampling_at_configuration_time = True
         super().configure_sample_generator()
 
     def set_generated_samples_values(self, disc_in):
