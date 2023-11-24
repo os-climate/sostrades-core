@@ -293,8 +293,8 @@ class TestMultiScenario(unittest.TestCase):
         Checks if switching io type for samples_df is OK in the DM and the treeview
         """
         # simple 2-disc process
-        repo_name = self.repo + ".tests_driver_eval.multi"
-        proc_name = 'test_multi_driver_simple'
+        repo_name = self.repo + ".tests_driver_eval.mono"
+        proc_name = 'test_mono_driver_simple'
         builders = self.exec_eng.factory.get_builder_from_process(repo_name,
                                                                   proc_name)
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
@@ -302,7 +302,7 @@ class TestMultiScenario(unittest.TestCase):
 
         # setup the driver and the sample generator mode
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
+        dict_values[f'{self.study_name}.Eval.with_sample_generator'] = True
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'doe_algo'
         dict_values[f'{self.study_name}.SampleGenerator.sampling_generation_mode'] = 'at_run_time'
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -312,7 +312,7 @@ class TestMultiScenario(unittest.TestCase):
 
         # only 1 samples_df exists to connect results from sample generator with driver
         self.assertEqual(len(self.exec_eng.dm.get_all_namespaces_from_var_name('samples_df')), 1)
-        samples_df_data = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df')
+        samples_df_data = self.exec_eng.dm.get_data(f'{self.study_name}.Eval.samples_df')
 
         disc_dependencies = samples_df_data['disciplines_dependencies']
         # Sample generator and Driver have samples_df in their data_io
@@ -331,7 +331,7 @@ class TestMultiScenario(unittest.TestCase):
         # only 1 samples_df exists to connect results from sample generator with driver
         self.assertEqual(len(self.exec_eng.dm.get_all_namespaces_from_var_name('samples_df')), 1)
 
-        samples_df_data = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df')
+        samples_df_data = self.exec_eng.dm.get_data(f'{self.study_name}.Eval.samples_df')
 
         disc_dependencies = samples_df_data['disciplines_dependencies']
         # Sample generator and Driver have samples_df in their data_in
