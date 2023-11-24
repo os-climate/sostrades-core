@@ -487,6 +487,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
         """
+        # TODO: might want to refactor to simplify GridSearch
         selected_inputs_has_changed = False
         disc_in = proxy.get_data_in()
         # Dynamic input of default design space
@@ -521,7 +522,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                                          self.UPPER_BOUND: [100.0] * len(self.selected_inputs),
                                                          'nb_points': [2] * len(self.selected_inputs)
                                                          })
+                    default_design_space['nb_points'] = default_design_space['nb_points'].astype(int)
                     design_space_dataframe_descriptor.update({'nb_points': ('int', None, True)})
+
                 dynamic_inputs.update({'design_space': {proxy.TYPE: 'dataframe',
                                                         proxy.DEFAULT: default_design_space,
                                                         proxy.STRUCTURING: False,
@@ -531,7 +534,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                 # so that the bound are kept instead of set to default None.
                 if 'design_space' in disc_in:
                     disc_in['design_space'][proxy.DEFAULT] = default_design_space
-                    disc_in['design_space'][proxy.DATAFRAME_DESCRIPTOR] = design_space_dataframe_descriptor
+                    proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
+                                      proxy.DATAFRAME_DESCRIPTOR, design_space_dataframe_descriptor, check_value=False)
+
                     if selected_inputs_has_changed:
                         from_design_space = list(
                             disc_in['design_space'][proxy.VALUE]['variable'])
@@ -544,9 +549,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
                         for element in from_eval_inputs:
                             if element in from_design_space:
-                                final_dataframe = final_dataframe.append(disc_in['design_space'][proxy.VALUE]
-                                                                         [disc_in['design_space'][proxy.VALUE][
-                                                                              'variable'] == element])
+                                to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
+                                                                              'variable'] == element]
+                                if proxy.sampling_method == proxy.DOE_ALGO:
+                                    to_append = to_append.loc[:, to_append.columns != 'nb_points']
+                                final_dataframe = final_dataframe.append(to_append)
                             else:
                                 elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
                                 if proxy.sampling_method == proxy.GRID_SEARCH:
