@@ -2315,7 +2315,7 @@ class ProxyDiscipline:
 
     def _check_structuring_variables_changes(self, variables_dict, variables_keys=None):
         dict_values_dm = {key: self.get_sosdisc_inputs(key) for
-                          key in variables_keys or variables_dict.keys()}
+                          key in (variables_dict.keys() if variables_keys is None else variables_keys)}
         try:
             return dict_values_dm != variables_dict
         except ValueError:  # TODO: check this more specific exception handling gives no problems
@@ -2323,7 +2323,7 @@ class ProxyDiscipline:
 
     def _set_structuring_variables_values(self, variables_dict, variables_keys=None, clear_variables_dict=False):
         disc_in = self.get_data_in()
-        keys_to_check = list(variables_keys or variables_dict.keys())  # copy necessary in case dict is cleared
+        keys_to_check = list(variables_dict.keys() if variables_keys is None else variables_keys)  # copy necessary in case dict is cleared
         if clear_variables_dict:
             variables_dict.clear()
         for struct_var in keys_to_check:
