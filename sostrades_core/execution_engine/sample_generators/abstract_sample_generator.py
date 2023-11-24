@@ -86,8 +86,13 @@ class AbstractSampleGenerator(object):
     def setup(self, proxy):
         """
         Method used in combination with the ProxySampleGenerator in order to configure a given generation method.
+        Arguments:
+            proxy (ProxySampleGenerator) : associated proxy discipline
+        Returns:
+            dynamic_inputs (dict) : dynamic inputs of the sample generation method
+            dynamic_outputs (dict( : dynamic outputs of the sample generation method
         """
-        pass
+        return {}, {}
 
     # TODO: renaming proxy / wrapper / proxy_or_wrapper for clarity when impl. is fixed in next 2 methods
     def sample(self, proxy):
@@ -102,4 +107,6 @@ class AbstractSampleGenerator(object):
         '''
         return [], {}
 
-
+    def setup_generated_sample(self, dynamic_inputs, proxy):
+        # FIXME: delete
+        pass
