@@ -454,32 +454,32 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         self.setup_design_space(dynamic_inputs, proxy)
         self.setup_algo_options(dynamic_inputs, proxy)
         # Setup GENERATED_SAMPLES for cartesian product
-        if proxy.sampling_generation_mode == proxy.AT_CONFIGURATION_TIME:
-            # TODO: manage config-time sample for grid search and test for DoE
-            self.setup_generated_samples_for_doe(dynamic_inputs, proxy)
+        # if proxy.sampling_generation_mode == proxy.AT_CONFIGURATION_TIME:
+        #     # TODO: manage config-time sample for grid search and test for DoE
+        #     self.setup_generated_samples_for_doe(dynamic_inputs, proxy)
 
-    def setup_generated_samples_for_doe(self, dynamic_inputs, proxy):
+    def setup_generated_sample(self, dynamic_inputs, proxy):
         """
          Method that setup GENERATED_SAMPLES for doe_algo at configuration time
          Arguments:
              dynamic_inputs (dict): the dynamic input dict to be updated
          """
-        # TODO: implement a separation between the setup and the sample generation
+        # TODO: implement a separation between the setup and the sample generation IN PROGRESS --> move method to proxy generic
         disc_in = proxy.get_data_in()
+        dynamic_inputs.update({proxy.SAMPLES_DF: proxy.SAMPLES_DF_DESC_SHARED.copy()})
         if proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in and self.selected_inputs is not None:
-            proxy.set_sample()
-            dynamic_inputs.update({proxy.SAMPLES_DF: {proxy.TYPE: 'dataframe',
-                                                      proxy.DATAFRAME_DESCRIPTOR: {},
-                                                      proxy.DYNAMIC_DATAFRAME_COLUMNS: True,
-                                                      proxy.DATAFRAME_EDITION_LOCKED: True,
-                                                      proxy.STRUCTURING: False,
-                                                      proxy.UNIT: None,
-                                                      proxy.VISIBILITY: proxy.SHARED_VISIBILITY,
-                                                      proxy.NAMESPACE: proxy.NS_SAMPLING,
-                                                      proxy.DEFAULT: proxy.samples_gene_df}})
+            if proxy.SAMPLES_DF in disc_in:
+                proxy.set_sample()
+                if proxy.samples_gene_df is not None:
 
-        if proxy.SAMPLES_DF in disc_in:
-            disc_in[proxy.SAMPLES_DF][proxy.VALUE] = proxy.samples_gene_df
+                    proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
+                                      'value', proxy.samples_gene_df, check_value=False)
+                proxy.sample_pending = False
+                # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+            else:
+                # TODO: generalise to all methods sampling at config-time (when decoupling setup from sampling) or
+                #  otherwise there will be issues when generator tries to sample before samples_df is added in disc_in
+                proxy.sample_pending = True
 
     def setup_design_space(self, dynamic_inputs, proxy):
         """
