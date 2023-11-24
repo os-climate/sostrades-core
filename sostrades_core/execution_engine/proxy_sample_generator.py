@@ -370,7 +370,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                 self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
                 if self.samples_gene_df is not None:
                     self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                                      'value', self.samples_gene_df, check_value=False)
+                                     self.VALUE, self.samples_gene_df, check_value=False)
                 self.sample_pending = False
                 # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
             else:
