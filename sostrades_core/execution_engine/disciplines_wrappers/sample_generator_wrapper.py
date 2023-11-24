@@ -74,6 +74,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         'icon': 'fas fa-grid-4 fa-fw',
         'version': ''
     }
+    EVAL_INPUTS = 'eval_inputs'
     SAMPLES_DF = 'samples_df'
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
@@ -92,8 +93,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         if isinstance(samples_df, pd.DataFrame):
             pass
         else:
-            raise Exception(
-                f"Sampling has not been made")
+            raise Exception( f"Sampling has not been made")
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def sample(self):

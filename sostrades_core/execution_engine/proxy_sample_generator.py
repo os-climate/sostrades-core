@@ -85,7 +85,7 @@ class ProxySampleGenerator(ProxyDiscipline):
     SAMPLES_DF_DESC_SHARED[ProxyDiscipline.VISIBILITY] = ProxyDiscipline.SHARED_VISIBILITY
 
     # TODO: 'full_name', 'selected_input' etc. class variables which probably belong in the tools rather than here.
-    EVAL_INPUTS = 'eval_inputs'
+    EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
     EVAL_INPUTS_DF_DESC = {'selected_input': ('bool', None, True),
                            'full_name': ('string', None, True)}
     EVAL_INPUTS_DESC = {ProxyDiscipline.TYPE: 'dataframe',
@@ -251,7 +251,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.instantiate_sampling_tool()
             self.update_eval_inputs_columns(disc_in)
             dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(
-                self)  # TODO: separate the sample generation from setup
+                self)
 
             # 4. if sampling at run-time add the corresponding output
             if self.sampling_generation_mode == self.AT_RUN_TIME:
@@ -259,10 +259,8 @@ class ProxySampleGenerator(ProxyDiscipline):
                 self.all_input_structuring = False
             elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
                 self.all_input_structuring = True
-                # self.sample_at_config_time()  # TODO: separate the sample generation from setup
-
+                self.sample_at_configuration_time(dynamic_inputs, disc_in)
             # TODO: manage config-time sample for grid search and test for DoE as well as coupled run-time sampling for CP
-
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
@@ -362,9 +360,16 @@ class ProxySampleGenerator(ProxyDiscipline):
         # configuration-time. This avoids resampling when some scenarios are edited on the driver after a 1st sampling
         return super()._get_non_structuring_variables_keys() - {self.SAMPLES_DF}
 
-    def set_sample(self):  # TODO: check implementation when splitting sampling at config-time from setup
-        self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
-        # self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.set_scenario_columns(
-        #     self.mdo_discipline_wrapp.wrapper.sample(self))
-
-
+    def sample_at_configuration_time(self, dynamic_inputs, disc_in):
+        # TODO : discuss implementation.
+        dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
+        if self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
+            if self.SAMPLES_DF in disc_in:
+                self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
+                if self.samples_gene_df is not None:
+                    self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
+                                     self.VALUE, self.samples_gene_df, check_value=False)
+                self.sample_pending = False
+                # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+            else:
+                self.sample_pending = True
