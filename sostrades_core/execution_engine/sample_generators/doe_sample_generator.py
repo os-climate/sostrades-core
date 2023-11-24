@@ -458,28 +458,28 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         #     # TODO: manage config-time sample for grid search and test for DoE
         #     self.setup_generated_samples_for_doe(dynamic_inputs, proxy)
 
-    def setup_generated_sample(self, dynamic_inputs, proxy):
-        """
-         Method that setup GENERATED_SAMPLES for doe_algo at configuration time
-         Arguments:
-             dynamic_inputs (dict): the dynamic input dict to be updated
-         """
-        # TODO: implement a separation between the setup and the sample generation IN PROGRESS --> move method to proxy generic
-        disc_in = proxy.get_data_in()
-        dynamic_inputs.update({proxy.SAMPLES_DF: proxy.SAMPLES_DF_DESC_SHARED.copy()})
-        if proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in and self.selected_inputs is not None:
-            if proxy.SAMPLES_DF in disc_in:
-                proxy.set_sample()
-                if proxy.samples_gene_df is not None:
-
-                    proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
-                                      'value', proxy.samples_gene_df, check_value=False)
-                proxy.sample_pending = False
-                # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
-            else:
-                # TODO: generalise to all methods sampling at config-time (when decoupling setup from sampling) or
-                #  otherwise there will be issues when generator tries to sample before samples_df is added in disc_in
-                proxy.sample_pending = True
+    # def setup_generated_sample(self, dynamic_inputs, proxy):
+    #     """
+    #      Method that setup GENERATED_SAMPLES for doe_algo at configuration time
+    #      Arguments:
+    #          dynamic_inputs (dict): the dynamic input dict to be updated
+    #      """
+    #     # TODO: implement a separation between the setup and the sample generation IN PROGRESS --> move method to proxy generic
+    #     disc_in = proxy.get_data_in()
+    #     dynamic_inputs.update({proxy.SAMPLES_DF: proxy.SAMPLES_DF_DESC_SHARED.copy()})
+    #     if proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in and self.selected_inputs is not None:
+    #         if proxy.SAMPLES_DF in disc_in:
+    #             proxy.set_sample()
+    #             if proxy.samples_gene_df is not None:
+    #
+    #                 proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
+    #                                   'value', proxy.samples_gene_df, check_value=False)
+    #             proxy.sample_pending = False
+    #             # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
+    #         else:
+    #             # TODO: generalise to all methods sampling at config-time (when decoupling setup from sampling) or
+    #             #  otherwise there will be issues when generator tries to sample before samples_df is added in disc_in
+    #             proxy.sample_pending = True
 
     def setup_design_space(self, dynamic_inputs, proxy):
         """
@@ -705,3 +705,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                 design_space.add_variable(
                     name, size, var_type, l_b, u_b, value)
         return design_space
+
+    def is_ready_to_sample(self, proxy):
+        disc_in = proxy.get_data_in()
+        return proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in and self.selected_inputs is not None

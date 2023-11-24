@@ -106,7 +106,10 @@ class AbstractSampleGenerator(object):
         To be overloaded by subclass
         '''
         return [], {}
+    #
+    # def setup_generated_sample(self, dynamic_inputs, proxy):
+    #     # FIXME: delete
+    #     pass
 
-    def setup_generated_sample(self, dynamic_inputs, proxy):
-        # FIXME: delete
-        pass
+    def is_ready_to_sample(self, proxy):
+        return True

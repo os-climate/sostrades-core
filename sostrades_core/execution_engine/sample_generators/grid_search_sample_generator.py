@@ -78,8 +78,8 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
             self.cp_generator.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp, proxy)
             self.retreive_cp_generator_attributes()
 
-    def setup_generated_sample(self, dynamic_inputs, proxy):
-        self.cp_generator.setup_generated_sample(dynamic_inputs, proxy)
+    # def setup_generated_sample(self, dynamic_inputs, proxy):
+    #     self.cp_generator.setup_generated_sample(dynamic_inputs, proxy)
 
     def retreive_cp_generator_attributes(self): # TODO: improve design
         self.previous_eval_inputs_cp = self.cp_generator.previous_eval_inputs_cp
@@ -111,3 +111,6 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
 
             eval_inputs_cp = eval_inputs.assign(list_of_values=lists_of_values)
             return eval_inputs_cp
+
+    def is_ready_to_sample(self, proxy):
+        return self.cp_generator.is_ready_to_sample(proxy)
