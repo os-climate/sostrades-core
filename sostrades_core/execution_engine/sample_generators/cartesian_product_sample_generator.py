@@ -171,7 +171,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     #         #                  proxy.SCENARIO_NAME: ('string', None, False)}
     #         # df_descriptor.update(
     #         #     {row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
-    #         #      self.eval_inputs_cp_filtered.iterrows()})  # FIXME: no good
+    #         #      self.eval_inputs_cp_filtered.iterrows()})  # FIXME: no good, handle DATAFRAME_DESCRIPTOR
     #         # generated_samples_data_description.update({proxy.DATAFRAME_DESCRIPTOR: df_descriptor,
     #         #                                            proxy.DYNAMIC_DATAFRAME_COLUMNS: False})
     #     else:
