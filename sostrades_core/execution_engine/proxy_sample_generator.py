@@ -144,7 +144,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         # sample generated at configuration-time
         self.samples_gene_df = None
 
-        self.force_sampling_at_config_time = False
+        self.force_sampling_at_configuration_time = False
 
     def set_eval_in_possible_values(self, possible_values: list[str]) -> bool:
         """
@@ -280,7 +280,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         # self.force_sampling_at_config_time (i.e. working with multi-instance driver) => at config. time
         forced_methods_modes = {
             self.SIMPLE_SAMPLING_METHOD: self.AT_CONFIGURATION_TIME
-        } if not self.force_sampling_at_config_time else {
+        } if not self.force_sampling_at_configuration_time else {
             k: self.AT_CONFIGURATION_TIME for k in self.AVAILABLE_SAMPLING_METHODS
         }
         if self.sampling_method in forced_methods_modes:
