@@ -135,7 +135,8 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         """
         # 1. Manage update status of EVAL_INPUTS_CP
         # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
-        if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
+        if not dict_are_equal({'_': eval_inputs_cp},
+                              {'_': self.previous_eval_inputs_cp}):
             self.eval_inputs_cp_has_changed = True
             self.previous_eval_inputs_cp = eval_inputs_cp
         # 2. Manage selection in EVAL_INPUTS_CP
