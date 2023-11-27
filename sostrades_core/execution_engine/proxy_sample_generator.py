@@ -361,7 +361,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         return super()._get_non_structuring_variables_keys() - {self.SAMPLES_DF}
 
     def sample_at_configuration_time(self, dynamic_inputs, disc_in):
-        # TODO : discuss implementation.
+        # TODO : discuss implementation (is_ready_to_sample)
         dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
         if self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
             if self.SAMPLES_DF in disc_in:

@@ -412,7 +412,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         return samples_df
 
 
-
     # TODO: REFACTOR IF POSSIBLE W/O PROXY REFs (note for the moment proxy is the wrapper until config. actions moved)
     def setup(self, proxy):
         """
@@ -525,9 +524,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                     default_design_space['nb_points'] = default_design_space['nb_points'].astype(int)
                     design_space_dataframe_descriptor.update({'nb_points': ('int', None, True)})
 
-                dynamic_inputs.update({'design_space': {proxy.TYPE: 'dataframe',
+                dynamic_inputs.update({proxy.DESIGN_SPACE: {proxy.TYPE: 'dataframe',
                                                         proxy.DEFAULT: default_design_space,
-                                                        proxy.STRUCTURING: False,
+                                                        proxy.STRUCTURING: True,  # FIXME: this is True so that GridSearch works with current CartesianProduct implementation should be False
                                                         proxy.DATAFRAME_DESCRIPTOR: design_space_dataframe_descriptor}})
 
                 # Next lines of code treat the case in which eval inputs change with a previously defined design space,

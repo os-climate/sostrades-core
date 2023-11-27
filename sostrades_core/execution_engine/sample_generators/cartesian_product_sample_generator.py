@@ -133,10 +133,12 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             dynamic_inputs (dict): the dynamic input dict to be updated
             eval_inputs_cp (dataframe): the variables and possible values for the sample
         """
+        # TODO: this way of working with setting attributes should be reviewed
         # 1. Manage update status of EVAL_INPUTS_CP
         # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
-        if not dict_are_equal({'_': eval_inputs_cp},
-                              {'_': self.previous_eval_inputs_cp}):
+        # if not dict_are_equal({'_': eval_inputs_cp},
+        #                       {'_': self.previous_eval_inputs_cp}):
+        if not dict_are_equal( eval_inputs_cp, self.previous_eval_inputs_cp):
             self.eval_inputs_cp_has_changed = True
             self.previous_eval_inputs_cp = eval_inputs_cp
         # 2. Manage selection in EVAL_INPUTS_CP
@@ -246,4 +248,4 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         return [], {'dict_of_list_values': dict_of_list_values}
 
     def is_ready_to_sample(self, proxy):
-        return self.eval_inputs_cp_validity and self.eval_inputs_cp_has_changed
+        return self.eval_inputs_cp_validity and self.eval_inputs_cp_filtered is not None # and self.eval_inputs_cp_has_changed # should come from structuring checks
