@@ -176,6 +176,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = "at_run_time"
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
@@ -317,6 +318,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE + Eval inputs
         n_samples = 10
         values_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        values_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = "at_run_time"
         values_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         # values_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
         values_dict[f'{self.ns}.Simple_Disc1.added_algo_options'] = {
@@ -437,6 +439,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # DoE inputs
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = "at_run_time"
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {

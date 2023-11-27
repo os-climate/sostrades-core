@@ -50,6 +50,7 @@ class Study(StudyManager):
         # DoE inputs
         n_samples = 100
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
+        disc_dict[f'{ns}.SampleGenerator.sampling_generation_mode'] = 'at_run_time'
         disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
