@@ -81,6 +81,7 @@ class TestGridSearchEval(unittest.TestCase):
         initial_input = {
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
             f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
+            f'{self.study_name}.{self.sample_generator}.sampling_generation_mode': 'at_run_time',
         }
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
@@ -286,6 +287,8 @@ class TestGridSearchEval(unittest.TestCase):
         initial_input = {
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
             f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
+            f'{self.study_name}.{self.sample_generator}.sampling_generation_mode': 'at_run_time',
+
         }
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
@@ -410,6 +413,8 @@ class TestGridSearchEval(unittest.TestCase):
         initial_input = {
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
             f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
+            f'{self.study_name}.{self.sample_generator}.sampling_generation_mode': 'at_run_time',
+
         }
         exec_eng.load_study_from_input_dict(initial_input)
 
@@ -502,6 +507,8 @@ class TestGridSearchEval(unittest.TestCase):
         initial_input = {
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
             f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
+            f'{self.study_name}.{self.sample_generator}.sampling_generation_mode': 'at_run_time',
+
         }
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
@@ -604,6 +611,8 @@ class TestGridSearchEval(unittest.TestCase):
         initial_input = {
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
             f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
+            f'{self.study_name}.{self.sample_generator}.sampling_generation_mode': 'at_run_time',
+
         }
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
@@ -702,6 +711,8 @@ class TestGridSearchEval(unittest.TestCase):
         initial_input = {
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
             f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
+            f'{self.study_name}.{self.sample_generator}.sampling_generation_mode': 'at_run_time',
+
         }
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
@@ -799,6 +810,8 @@ class TestGridSearchEval(unittest.TestCase):
         initial_input = {
             f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
             f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
+            f'{self.study_name}.{self.sample_generator}.sampling_generation_mode': 'at_run_time',
+
         }
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
