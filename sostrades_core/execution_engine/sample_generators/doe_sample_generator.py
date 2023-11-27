@@ -551,8 +551,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                             if element in from_design_space:
                                 to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
                                                                               'variable'] == element]
+                                # TODO: in the current implementation it would be more proper that GridSearch setup its
+                                #  own design space instead of having particular cases in the Doe sample generator.
                                 if proxy.sampling_method == proxy.DOE_ALGO:
+                                    # for DoE need to dismiss 'nb_points'
                                     to_append = to_append.loc[:, to_append.columns != 'nb_points']
+                                elif proxy.sampling_method == proxy.GRID_SEARCH and 'nb_points' not in to_append.columns:
+                                    # for GridSearch need to eventually insert the 'nb_points' column
+                                    to_append.insert(3, 'nb_points', 2)
                                 final_dataframe = final_dataframe.append(to_append)
                             else:
                                 elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
