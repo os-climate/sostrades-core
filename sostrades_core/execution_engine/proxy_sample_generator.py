@@ -253,11 +253,12 @@ class ProxySampleGenerator(ProxyDiscipline):
             dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(
                 self)
 
-            # 4. if sampling at run-time add the corresponding output
             if self.sampling_generation_mode == self.AT_RUN_TIME:
+                # if sampling at run-time add the corresponding output
                 dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED.copy()
                 self.all_input_structuring = False
             elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
+                # if sampling is at config-time, set all input structuring and add samples_df input
                 self.all_input_structuring = True
                 self.sample_at_configuration_time(dynamic_inputs, disc_in)
             # TODO: manage config-time sample for grid search and test for DoE as well as coupled run-time sampling for CP
