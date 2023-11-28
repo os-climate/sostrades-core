@@ -883,6 +883,78 @@ class TestGridSearchEval(unittest.TestCase):
         #     #     pass
         #     graph.to_plotly().show()
 
+    def test_10_grid_search_at_configuration_time(self):
+        """
+        GridSearch sampling at configuration-time with 2 inputs and default design space.
+        """
+        sa_builder = self.exec_eng.factory.get_builder_from_process(
+            self.repo, self.proc_name)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            sa_builder)
+
+        self.exec_eng.configure()
+        initial_input = {
+            f'{self.study_name}.{self.sample_generator}.sampling_method': 'grid_search',
+            f'{self.study_name}.{self.evaluator}.with_sample_generator': True,
+            f'{self.study_name}.{self.sample_generator}.sampling_generation_mode': 'at_configuration_time',
+
+        }
+        self.exec_eng.load_study_from_input_dict(initial_input)
+        self.exec_eng.display_treeview_nodes()
+
+        self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.eval_inputs')
+
+        eval_inputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.eval_inputs')
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        'Disc1.b', ['selected_input']] = True
+        eval_inputs.loc[eval_inputs['full_name'] ==
+                        'Disc1.x', ['selected_input']] = True
+
+        gather_outputs = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.evaluator}.gather_outputs')
+        gather_outputs.loc[gather_outputs['full_name'] ==
+                         'Disc1.y', ['selected_output']] = True
+
+        dict_values = {
+            # GRID SEARCH INPUTS
+            f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
+
+            # DISC1 INPUTS
+            f'{self.study_name}.{self.evaluator}.Disc1.name': 'A1',
+            f'{self.study_name}.{self.evaluator}.Disc1.a': 20,
+            f'{self.study_name}.{self.evaluator}.Disc1.b': 2,
+            f'{self.study_name}.{self.evaluator}.Disc1.x': 3.,
+            f'{self.study_name}.{self.evaluator}.Disc1.d': 3.,
+            f'{self.study_name}.{self.evaluator}.Disc1.f': 3.,
+            f'{self.study_name}.{self.evaluator}.Disc1.g': 3.,
+            f'{self.study_name}.{self.evaluator}.Disc1.h': 3.,
+            f'{self.study_name}.{self.evaluator}.Disc1.j': 3.,
+        }
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        ds = self.exec_eng.dm.get_value(
+            f'{self.study_name}.{self.sample_generator}.design_space')
+        samples = self.exec_eng.dm.get_value(f'{self.study_name}.{self.evaluator}.samples_df')
+
+        expected_ds = {'variable': {0: 'Disc1.b', 1: 'Disc1.x'},
+                       'lower_bnd': {0: 0.0, 1: 0.0},
+                       'upper_bnd': {0: 100.0, 1: 100.0},
+                       'nb_points': {0: 2, 1: 2}}
+        expected_samples = {'selected_scenario': {0: True, 1: True, 2: True, 3: True},
+                            'scenario_name': {0: 'scenario_1', 1: 'scenario_2', 2: 'scenario_3', 3: 'scenario_4'},
+                            'Disc1.b': {0: 0.0, 1: 0.0, 2: 100.0, 3: 100.0},
+                            'Disc1.x': {0: 0.0, 1: 100.0, 2: 0.0, 3: 100.0}}
+
+        print(f'Second configure with design_space creation: \n {ds}')
+
+        self.assertEqual(expected_ds, ds.to_dict())
+        self.assertEqual(expected_samples, samples.to_dict())
+
 
 if '__main__' == __name__:
     cls = TestGridSearchEval()

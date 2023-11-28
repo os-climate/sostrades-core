@@ -56,6 +56,7 @@ class TestSoSDOEScenario(unittest.TestCase):
     def setUp(self):
 
         self.sampling_method_doe = 'doe_algo'
+        self.sampling_method_cp = 'cartesian_product'
         self.sampling_gen_mode = ProxySampleGenerator.AT_RUN_TIME
         self.study_name = 'doe'
         self.ns = f'{self.study_name}'
@@ -96,6 +97,13 @@ class TestSoSDOEScenario(unittest.TestCase):
                                              'y_2',
                                              'z']}
         self.input_selection_x_z = pd.DataFrame(input_selection_x_z)
+
+        # inputs for cp at run-time
+        self.x_values_cp = [array([1.]), array([2.])]
+        self.z_values_cp = [array([3., 3.]), array([4., 4.]), array([5., 5.])]
+        input_selection_x_z_cp = input_selection_x_z.copy()
+        input_selection_x_z_cp['list_of_values'] = [[], self.x_values_cp, [], [], self.z_values_cp]
+        self.input_selection_x_z_cp = pd.DataFrame(input_selection_x_z_cp)
 
         input_selection_x = {'selected_input': [False, True, False, False, False],
                              'full_name': ['subprocess.Sellar_Problem.local_dv', 'x', 'y_1',
@@ -1468,7 +1476,7 @@ class TestSoSDOEScenario(unittest.TestCase):
     def test_17_doe_and_eval_execution_lhs_on_1_var_run_time_vs_config_time_sampling(self):
         """
         Check that a DoE setup to sample at run-time does properly fill samples_df at run-time, and not before.
-        Then check that,by changing to sampling at configuration-time + changing a non-structuring input of the DoE, a
+        Then check that,by changing to sampling at configuration-time + changing the design space input of the DoE, a
         resampling effectively takes place at configuration-time.
         """
         lb1 = 0.
@@ -1545,6 +1553,63 @@ class TestSoSDOEScenario(unittest.TestCase):
         for ref, truth in zip(ref_doe_x_2.tolist(), samples_df['x'].values.tolist()):
             self.assertAlmostEqual(ref, float(truth))
 
+    def test_18_mono_instance_driver_execution_with_cartesian_product_generated_at_run_time(self):
+        """
+        This test checks the execution of a CartesianProduct at run-time independent of GridSearch execution.
+        First it is checked that the sampling is not performed before execution, then the correctness of the sample
+        is checked after execution.
+        """
+        from itertools import product
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_mono_driver_with_sample_option_sellar"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+        values_dict = {f'{self.ns}.Eval.with_sample_generator': True}
+        values_dict[f'{self.ns}.SampleGenerator.sampling_method'] = "cartesian_product"
+        values_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = "at_run_time"
+
+        values_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z_cp
+
+        # Eval inputs
+        values_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        # array([1.])
+        values_dict[f'{self.ns}.Eval.x'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
+        values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1., 1.])
+        values_dict[f'{self.ns}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df').copy()
+
+        # check that it did not sample at configuration-time
+        self.assertEqual(len(samples_df), 1)
+        exec_eng.execute()
+        # check the sample at run-time is as expected
+        ref_x, ref_z = zip(*product(self.x_values_cp, self.z_values_cp))
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df')
+
+        self.assertEqual(len(samples_df), len(self.x_values_cp) * len(self.z_values_cp))
+        samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df').copy()
+        for ref_x, truth_x, ref_z, truth_z in zip(ref_x,
+                                                  samples_df['x'].values.tolist(),
+                                                  ref_z,
+                                                  samples_df['z'].values.tolist(),
+                                                  ):
+            self.assertAlmostEqual(ref_x[0], float(truth_x[0]))
+            self.assertAlmostEqual(ref_z[0], float(truth_z[0]))
+            self.assertAlmostEqual(ref_z[1], float(truth_z[1]))
 
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
