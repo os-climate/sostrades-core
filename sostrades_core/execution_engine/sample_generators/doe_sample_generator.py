@@ -567,7 +567,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                     elem_dict['nb_points'] = 2
                                 final_dataframe = final_dataframe.append(
                                     elem_dict, ignore_index=True)
-                        disc_in['design_space'][proxy.VALUE] = final_dataframe
+                        proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
+                                          proxy.VALUE, final_dataframe, check_value=False)
 
     def setup_algo_options(self, dynamic_inputs, proxy):
         """
