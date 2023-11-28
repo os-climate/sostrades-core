@@ -616,7 +616,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         algo_name = proxy.get_sosdisc_inputs(proxy.ALGO)
         algo_options = proxy.get_sosdisc_inputs(proxy.ALGO_OPTIONS)
         dspace_df = proxy.get_sosdisc_inputs(proxy.DESIGN_SPACE)
-        design_space = self.create_design_space(self.selected_inputs, dspace_df)
+        design_space = self.create_design_space(self.selected_inputs, dspace_df)  # FIXME: avoid using generator attributes for real sample generation at run-time
         doe_kwargs = {'sampling_algo_name': algo_name,
                       'algo_options': algo_options,
                       'design_space': design_space}
