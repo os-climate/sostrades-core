@@ -819,6 +819,114 @@ class TestMultiScenario(unittest.TestCase):
         self.dirs_to_del.append(
             join(self.root_dir, self.namespace))
 
+    def test_08_multi_instance_with_gridsearch_plus_change_samples_df(self):
+        """
+        Test the creation of a multi-instance using a grid search sampling at configuration-time. Then check that, when
+        samples_df is changed (scenario name and values), the changes properly propagate to the subprocess (i.e. without
+        resampling taking place and crashing user-input samples_df).
+        """
+        # # simple 2-disc process NOT USING nested scatters
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_sample_generator_simple'
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
+                                                                  proc_name)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        self.exec_eng.configure()
+
+        # get the sample generator inputs
+        input_selection_cp_b_z = pd.DataFrame({
+            'selected_input': [False, True, False, False, True],
+            'full_name': ['', 'Disc1.b', '', '', 'z']
+        })
+        # setup the driver and the sample generator jointly
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'grid_search'
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_generation_mode'] = 'at_configuration_time'
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = input_selection_cp_b_z
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.samples_df')['scenario_name'].values.tolist(), ['scenario_1',
+                                                                                    'scenario_2',
+                                                                                    'scenario_3',
+                                                                                    'scenario_4'])
+
+        # manually configure the scenarios non-varying values (~reference)
+        scenario_list = ['scenario_1', 'scenario_2', 'W', 'scenario_4']
+        dict_values = {}
+        for scenario in scenario_list:
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+        # activate some of the scenarios, deactivated by default
+        samples_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.samples_df')
+        samples_df['selected_scenario'] = [True, True, True, True]
+        samples_df['scenario_name'] = scenario_list
+
+        b = [0., 0., 100., 100.]    # default gridsearch values for b
+        new_z = [0., 100., 5., 5.]  # modify default gridsearch values for z
+        samples_df['z'] = new_z
+
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        samples_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.samples_df')
+
+        self.assertListEqual(scenario_list, samples_df['scenario_name'].values.tolist())
+        self.assertListEqual(b, samples_df['Disc1.b'].values.tolist())
+        self.assertListEqual(new_z, samples_df['z'].values.tolist())
+
+        self.exec_eng.execute()
+
+        y1, o1 = (self.a1 * self.x1 + b[0],
+                  self.constant + new_z[0] ** self.power)
+        y2, o2 = (self.a1 * self.x1 + b[1],
+                  self.constant + new_z[1] ** self.power)
+        y3, o3 = (self.a1 * self.x1 + b[2],
+                  self.constant + new_z[2] ** self.power)
+        y4, o4 = (self.a1 * self.x1 + b[3],
+                  self.constant + new_z[3] ** self.power)
+
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_1.y'), y1)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_2.y'), y2)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.W.y'), y3)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_4.y'), y4)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_1.o'), o1)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_2.o'), o2)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.W.o'), o3)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.scenario_4.o'), o4)
+
+        exp_tv_tree = ('\n').join([
+            "Nodes representation for Treeview MyCase",
+            "|_ MyCase",
+            "	|_ multi_scenarios",
+            "		|_ scenario_1",
+            "			|_ Disc1",
+            "			|_ Disc3",
+            "		|_ scenario_2",
+            "			|_ Disc1",
+            "			|_ Disc3",
+            "		|_ scenario_4",
+            "			|_ Disc1",
+            "			|_ Disc3",
+            "		|_ W",
+            "			|_ Disc1",
+            "			|_ Disc3",
+            "	|_ SampleGenerator",
+        ])
+        self.assertEqual(exp_tv_tree, self.exec_eng.display_treeview_nodes())
 
 if '__main__' == __name__:
     cls = TestMultiScenario()
