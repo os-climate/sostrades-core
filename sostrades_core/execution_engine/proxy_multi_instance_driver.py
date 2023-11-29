@@ -149,6 +149,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                         samples_df[self.SELECTED_SCENARIO] = True
                     else:
                         # FIXME: the checks below are no longer performed by anyone, to be migrated to SampleGenerator
+                        #  then DELETE the method
                         self.logger.warning(
                             f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
                         samples_df[self.SELECTED_SCENARIO] = False

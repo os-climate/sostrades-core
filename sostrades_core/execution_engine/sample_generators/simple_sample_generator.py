@@ -103,9 +103,9 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
             proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS) is not None and \
             proxy.get_sosdisc_inputs(proxy.SAMPLES_DF) is not None
 
-    def get_arguments(self, proxy):
-        eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
-        samples_df = proxy.get_sosdisc_inputs(proxy.SAMPLES_DF)
+    def get_arguments(self, wrapper):
+        eval_inputs = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
+        samples_df = wrapper.get_sosdisc_inputs(wrapper.SAMPLES_DF)
         selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
         simple_kwargs = {'samples_df': samples_df, 'var_names': selected_inputs}
         return [], simple_kwargs

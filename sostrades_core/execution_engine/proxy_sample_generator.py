@@ -276,6 +276,10 @@ class ProxySampleGenerator(ProxyDiscipline):
                     self.mdo_discipline_wrapp.wrapper.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
 
     def configure_generation_mode(self, disc_in):
+        """
+        Return a generation mode at_configuration_time/at_run_time taking into account editability constraints and user
+        input. Set the editability of the corresponding variables.
+        """
         sampling_generation_mode = self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE)
         # variable needs to be made non-editable for special cases namely: simple_sample_generator => at config. time,
         # self.force_sampling_at_config_time (i.e. working with multi-instance driver) => at config. time
@@ -357,6 +361,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self._update_status_dm(self.STATUS_DONE)
 
     def _get_non_structuring_variables_keys(self):
+        # Configuration-time sampling uses the flag self.all_variables_are_structuring.
         # Here we exclude samples_df from the non-structuring variables that are made structuring when sampling at
         # configuration-time. This avoids resampling when some scenarios are edited on the driver after a 1st sampling
         return super()._get_non_structuring_variables_keys() - {self.SAMPLES_DF}
