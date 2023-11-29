@@ -233,7 +233,6 @@ class ProxySampleGenerator(ProxyDiscipline):
                     driver_is_configured = False
         return driver_is_configured
 
-    # TODO: refactor all below to assure the attributes are in good place (proxy/wrapper/tool)
     def is_configured(self):
         """
         Configuration criterion including whether a configuration-time sample is pending.
@@ -261,6 +260,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                 # if sampling is at config-time, set all input structuring and add samples_df input
                 self.all_input_structuring = True
                 self.sample_at_configuration_time(dynamic_inputs, disc_in)
+
             # TODO: manage config-time sample for grid search and test for DoE as well as coupled run-time sampling for CP
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
@@ -367,6 +367,10 @@ class ProxySampleGenerator(ProxyDiscipline):
         return super()._get_non_structuring_variables_keys() - {self.SAMPLES_DF}
 
     def sample_at_configuration_time(self, dynamic_inputs, disc_in):
+        """
+        Method used to ask the sample generator to sample and push the samples_df into the data manager when a sampling
+        at configuration time is performed.
+        """
         # TODO : discuss implementation (is_ready_to_sample)
         dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
         if self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
