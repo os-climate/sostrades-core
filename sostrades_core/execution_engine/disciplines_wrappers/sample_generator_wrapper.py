@@ -27,37 +27,7 @@ import pandas as pd
 class SampleGeneratorWrapper(SoSWrapp):
     # TODO: docstring is not up to date
     '''
-    Generic SampleGenerator class
-    1) Strucrure of Desc_in/Desc_out:
-        |_ DESC_IN
-            |_ SAMPLING_METHOD (structuring)
-                |_ EVAL_INPUTS (namespace: 'ns_sampling', structuring, dynamic : SAMPLING_METHOD == self.DOE_ALGO)
-                        |_ DESIGN_SPACE (dynamic: SAMPLING_ALGO != None) NB: default DESIGN_SPACE depends on EVAL_INPUTS (Has to be "Not empty")
-                |_ SAMPLING_ALGO (structuring, dynamic : SAMPLING_METHOD == self.DOE_ALGO)
-                        |_ ALGO_OPTIONS (structuring, dynamic: SAMPLING_ALGO != None)
-                            |_ GENERATED_SAMPLES (namespace: 'ns_sampling', structuring,
-                                                 dynamic: EVAL_INPUTS_CP != None and ALGO_OPTIONS set
-                                                     and SAMPLING_GENERATION_MODE == 'at_configuration_time')
-                |_ EVAL_INPUTS_CP (namespace: 'ns_sampling', structuring, dynamic : SAMPLING_METHOD == self.CARTESIAN_PRODUCT)
-                        |_ GENERATED_SAMPLES (namespace: 'ns_sampling', structuring,
-                                               dynamic: EVAL_INPUTS_CP != None and SAMPLING_GENERATION_MODE == 'at_configuration_time')
-            |_ SAMPLING_GENERATION_MODE ('editable': False)
-        |_ DESC_OUT
-            |_ SAMPLES_DF (namespace: 'ns_sampling')
-
-    2) Description of DESC parameters:
-        |_ DESC_IN
-            |_ SAMPLING_METHOD
-                |_ EVAL_INPUTS
-                        |_ DESIGN_SPACE
-                |_ SAMPLING_ALGO
-                        |_ ALGO_OPTIONS
-                            |_ GENERATED_SAMPLES
-                |_ EVAL_INPUTS_CP
-                        |_ GENERATED_SAMPLES
-        |_ DESC_OUT
-            |_ SAMPLES_DF
-
+    SampleGeneratorWrapper for ProxySampleGenerator discipline sampling at run-time.
     '''
 
     _ontology_data = {
@@ -97,6 +67,9 @@ class SampleGeneratorWrapper(SoSWrapp):
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def sample(self):
+        """
+        Ask sample generator to sample using wrapper object to retrieve inputs.
+        """
         return self.set_scenario_columns(self.sample_generator.sample(self))
 
     def set_scenario_columns(self, samples_df, scenario_names=None):

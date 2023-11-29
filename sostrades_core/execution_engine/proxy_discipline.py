@@ -443,10 +443,16 @@ class ProxyDiscipline:
 
     @property
     def all_input_structuring(self):
+        """
+        Property that is used to turn non-structuring variables into structuring when the flag is True.
+        """
         return self.__all_input_structuring
 
     @all_input_structuring.setter
     def all_input_structuring(self, all_inp_struct: bool):
+        """
+        Setter of the all_input_structuring flag including a save of non-structuring variables values.
+        """
         if self.__all_input_structuring is all_inp_struct:
             pass
         elif all_inp_struct is True:
@@ -2318,7 +2324,7 @@ class ProxyDiscipline:
                           key in (variables_dict.keys() if variables_keys is None else variables_keys)}
         try:
             return dict_values_dm != variables_dict
-        except ValueError:  # TODO: check this more specific exception handling gives no problems
+        except ValueError:
             return not dict_are_equal(dict_values_dm, variables_dict)
 
     def _set_structuring_variables_values(self, variables_dict, variables_keys=None, clear_variables_dict=False):
@@ -2331,6 +2337,10 @@ class ProxyDiscipline:
                 variables_dict[struct_var] = deepcopy(self.get_sosdisc_inputs(struct_var))
 
     def _get_non_structuring_variables_keys(self):
+        """
+        Method used to return the non-structuring variables of a discipline. Can be overloaded to add exceptions i.e.
+        variables that should never be considered structuring even if the all_input_structuring flag is set to True.
+        """
         return self.get_data_in().keys() - self._structuring_variables.keys()
 
     # ----------------------------------------------------
@@ -2512,6 +2522,13 @@ class ProxyDiscipline:
         return disc_full_path
 
     def display_proxy_subtree(self, callback=None):
+        """
+        Display in a treeview fashion the subtree of proxy_disciplines of the discipline, usually called from the
+        root_process.
+        Example: ee.root_process.display_proxy_subtree(callback=lambda disc: disc.is_configured())
+        Arguments:
+            callback (method taking ProxyDiscipline as input) : callback function to show for each ProxyDiscipline in []
+        """
         proxy_subtree = []
         self.get_proxy_subtree_rec(proxy_subtree, 0, callback)
         return '\n'.join(proxy_subtree)

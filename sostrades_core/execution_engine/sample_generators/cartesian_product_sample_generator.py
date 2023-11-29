@@ -242,10 +242,12 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             is_valid = False
         return is_valid
 
-    def get_arguments(self, proxy):
+    def get_arguments(self, wrapper):
+        # TODO: should actually use get_sosdisc_inputs instead of wrapper attributes
         dict_of_list_values = self.eval_inputs_cp_filtered.set_index(
             'full_name').T.to_dict('records')[0]
         return [], {'dict_of_list_values': dict_of_list_values}
 
     def is_ready_to_sample(self, proxy):
-        return self.eval_inputs_cp_validity and (self.eval_inputs_cp_has_changed or proxy.sample_pending)# should come from structuring checks
+        return self.eval_inputs_cp_validity and (self.eval_inputs_cp_has_changed or proxy.sample_pending)
+        # TODO: [BUG] should come from structuring checks but not working on GUI because configure_statuses are set to False.

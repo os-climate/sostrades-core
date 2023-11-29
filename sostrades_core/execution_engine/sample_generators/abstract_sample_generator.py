@@ -95,21 +95,25 @@ class AbstractSampleGenerator(object):
         return {}, {}
 
     # TODO: renaming proxy / wrapper / proxy_or_wrapper for clarity when impl. is fixed in next 2 methods
-    def sample(self, proxy):
-        _args, _kwargs = self.get_arguments(proxy)
+    def sample(self, wrapper):
+        """
+        Method that takes the wrapper as input and returns the output of generate_samples.
+        """
+        _args, _kwargs = self.get_arguments(wrapper)
         return self.generate_samples(*_args, **_kwargs)
 
-    def get_arguments(self, proxy):
-        '''
+    def get_arguments(self, wrapper):
+        """
         Returns the Sample Generator expected inputs for the algo options of the selected algorithm
         (to be provided to proxy i/o grammars)
         To be overloaded by subclass
-        '''
+        """
         return [], {}
-    #
-    # def setup_generated_sample(self, dynamic_inputs, proxy):
-    #     # FIXME: delete
-    #     pass
 
     def is_ready_to_sample(self, proxy):
+        """
+        Method that takes the ProxySampleGenerator as input and returns whether the configuration sequence is ready for
+        sample generation, notably to avoid asking for sample generation before the corresponding inputs are added and
+        loaded in the dm.
+        """
         return True

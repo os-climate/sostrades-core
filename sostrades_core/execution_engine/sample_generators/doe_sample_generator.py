@@ -611,11 +611,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             raise Exception(
                 f"A DoE algorithm which is not available in GEMSEO has been selected.")
 
-    def get_arguments(self, proxy):
+    def get_arguments(self, wrapper):
         # Dynamic input of default design space
-        algo_name = proxy.get_sosdisc_inputs(proxy.ALGO)
-        algo_options = proxy.get_sosdisc_inputs(proxy.ALGO_OPTIONS)
-        dspace_df = proxy.get_sosdisc_inputs(proxy.DESIGN_SPACE)
+        algo_name = wrapper.get_sosdisc_inputs(wrapper.ALGO)
+        algo_options = wrapper.get_sosdisc_inputs(wrapper.ALGO_OPTIONS)
+        dspace_df = wrapper.get_sosdisc_inputs(wrapper.DESIGN_SPACE)
         design_space = self.create_design_space(self.selected_inputs, dspace_df)  # FIXME: avoid using generator attributes for real sample generation at run-time
         doe_kwargs = {'sampling_algo_name': algo_name,
                       'algo_options': algo_options,
