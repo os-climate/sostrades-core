@@ -402,8 +402,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # - build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
         subprocess_data_in, subprocess_data_out = self.__compute_mdachain_gemseo_based_data_io()
         self._restart_data_io_to_disc_io()
-        self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
-        self._update_data_io(subprocess_data_out, self.IO_TYPE_OUT)
+        self.update_data_io_with_child(subprocess_data_in, subprocess_data_out)
 
     def __compute_mdachain_gemseo_based_data_io(self):
         ''' mimics the definition of MDAChain i/o grammar
@@ -561,8 +560,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             disc.prepare_execution()
             # Exclude non executable proxy Disciplines
             if disc.mdo_discipline_wrapp is not None and disc.mdo_discipline_wrapp.mdo_discipline is not None:
-                    sub_mdo_disciplines.append(
-                        disc.mdo_discipline_wrapp.mdo_discipline)
+                sub_mdo_disciplines.append(
+                    disc.mdo_discipline_wrapp.mdo_discipline)
 
         # store cache and n_calls before MDAChain reset, if prepare_execution
         # has already been called

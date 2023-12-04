@@ -283,8 +283,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.IO_TYPE_IN, as_namespaced_tuple=True)
             subprocess_data_out = proxy_disc.get_data_io_with_full_name(
                 self.IO_TYPE_OUT, as_namespaced_tuple=True)
-            self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
-            self._update_data_io(subprocess_data_out, self.IO_TYPE_OUT)
+            self.update_data_io_with_child(subprocess_data_in, subprocess_data_out)
 
     def configure_driver(self):
         """
