@@ -672,11 +672,32 @@ class ProxyDiscipline:
         Create the data_in and data_out of the discipline with the DESC_IN/DESC_OUT, inst_desc_in/inst_desc_out
         and initialize GEMS grammar with it (with a filter for specific variable types)
         '''
-        # set input/output data descriptions if data_in and data_out are empty
-        self.create_data_io_from_desc_io()
 
-        # update data_in/data_out with inst_desc_in/inst_desc_out
-        self.update_data_io_with_inst_desc_io()
+        # get new variables from inst_desc_in (dynamic variables)
+        new_inputs = self.get_new_variables_in_dict(self.inst_desc_in, self.IO_TYPE_IN)
+
+        # get variables from desc_in if it is the first configure (data_in is empty) : static variables
+        if self._data_in == {}:
+            desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
+            new_inputs.update(desc_in)
+            # add numerical variables to the new inputs dict
+            num_data_in = deepcopy(self.NUM_DESC_IN)
+            new_inputs.update(num_data_in)
+
+        if len(new_inputs) > 0:
+            self.update_data_io_and_nsmap(new_inputs, self.IO_TYPE_IN)
+
+        # get new variables from inst_desc_out (dynamic variables)
+        new_outputs = self.get_new_variables_in_dict(self.inst_desc_out, self.IO_TYPE_OUT)
+        # get variables from desc_out if it is the first configure (data_out is empty) : static variables
+        if self._data_out == {}:
+            desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
+
+            new_outputs.update(desc_out)
+
+        # add new outputs from inst_desc_out to data_out
+        if len(new_outputs) > 0:
+            self.update_data_io_and_nsmap(new_outputs, self.IO_TYPE_OUT)
 
     def update_dm_with_data_dict(self, data_dict):
         """
@@ -687,24 +708,6 @@ class ProxyDiscipline:
         """
         self.dm.update_with_discipline_dict(
             self.disc_id, data_dict)
-
-    def create_data_io_from_desc_io(self):
-        """
-        Create data_in and data_out from DESC_IN and DESC_OUT if empty
-        """
-        if self._data_in == {}:
-            desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
-            # TODO: check if it is OK to update dm during config. rather than
-            # at the very end of it (dynamic ns)
-
-            self.update_data_io_and_nsmap(desc_in, self.IO_TYPE_IN)
-
-            # Deal with numerical parameters inside the sosdiscipline
-            self.add_numerical_param_to_data_in()
-
-        if self._data_out == {}:
-            desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
-            self.update_data_io_and_nsmap(desc_out, self.IO_TYPE_OUT)
 
     def get_desc_in_out(self, io_type):
         """
@@ -810,32 +813,8 @@ class ProxyDiscipline:
             error_msg = 'data_dict_in_short_names for uodate_data_io not implemented'
             self.logger.error(error_msg)
             raise Exception(error_msg)
-        #             data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type),  # keys are ns tuples
-        # data_dict.values()))                             # values are values
-        # i.e. var dicts
         else:
             data_io.update(data_dict)
-
-    def add_numerical_param_to_data_in(self):
-        """
-        Add numerical parameters to the data_in
-        """
-        num_data_in = deepcopy(self.NUM_DESC_IN)
-        self.update_data_io_and_nsmap(num_data_in, self.IO_TYPE_IN)
-
-    def update_data_io_with_inst_desc_io(self):
-        """
-        Update data_in and data_out with inst_desc_in and inst_desc_out
-        """
-        new_inputs = self.get_new_variables_in_dict(self.inst_desc_in, self.IO_TYPE_IN)
-        new_outputs = self.get_new_variables_in_dict(self.inst_desc_out, self.IO_TYPE_OUT)
-
-        if len(new_inputs) > 0:
-            self.update_data_io_and_nsmap(new_inputs, self.IO_TYPE_IN)
-
-        # add new outputs from inst_desc_out to data_out
-        if len(new_outputs) > 0:
-            self.update_data_io_and_nsmap(new_outputs, self.IO_TYPE_OUT)
 
     def get_new_variables_in_dict(self, var_dict, io_type):
         '''
@@ -1454,17 +1433,6 @@ class ProxyDiscipline:
                 curr_data[self.IS_EVAL] = False
 
         return data_dict
-
-    # def get_non_numerical_variables_and_values_dict(self):
-    #
-    #     non_num_dict = {}
-    #     data_in = self.get_data_in()
-    #
-    #     for var in data_in.keys():
-    #         if not data_in[var]['numerical']:
-    #             non_num_dict[self.get_var_full_name(var,data_in)] = data_in[var]['value']
-    #
-    #     return non_num_dict
 
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
