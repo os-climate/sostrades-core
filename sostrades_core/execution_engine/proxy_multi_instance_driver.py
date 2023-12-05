@@ -51,17 +51,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             ProxyDriverEvaluator.POSSIBLE_VALUES: [True, False],
             ProxyDriverEvaluator.STRUCTURING: True
         },
-        # ProxyDriverEvaluator.GENERATED_SAMPLES: {ProxyDriverEvaluator.TYPE: 'dataframe',
-        #                                          ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
-        #                                              ProxyDriverEvaluator.SELECTED_SCENARIO: ('bool', None, False),
-        #                                              ProxyDriverEvaluator.SCENARIO_NAME: ('string', None, False)},
-        #                                          ProxyDriverEvaluator.DYNAMIC_DATAFRAME_COLUMNS: True,
-        #                                          ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: True,
-        #                                          ProxyDriverEvaluator.STRUCTURING: True,
-        #                                          ProxyDriverEvaluator.UNIT: None,
-        #                                          ProxyDriverEvaluator.DEFAULT: pd.DataFrame(),
-        #                                          ProxyDriverEvaluator.USER_LEVEL: 3
-        #                                          },
         DISPLAY_OPTIONS: {ProxyDriverEvaluator.TYPE: 'dict',
                           ProxyDriverEvaluator.STRUCTURING: True,
                           ProxyDriverEvaluator.DEFAULT: DISPLAY_OPTIONS_DEFAULT,
@@ -98,7 +87,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
         self.add_reference_mode(disc_in)
-        self.add_gather_outputs(disc_in)
+        self.add_gather_outputs()
         # self.set_generated_samples_values(disc_in)
 
     def configure_sample_generator(self):
@@ -235,7 +224,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         self.add_inputs(dynamic_inputs)
 
-    def add_gather_outputs(self, disc_in):
+    def add_gather_outputs(self):
         '''
 
         Add gather output variables to dynamic desc_out to deal with gather option (autogather and gather_outputs)
@@ -252,6 +241,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     def configure_tool(self):
         '''
         Instantiate the tool if it does not and prepare it with data that he needs (the tool know what he needs)
+        Prepare the tool only if data integrity is OK
         '''
         if self.builder_tool is None:
             builder_tool_cls = self.ee.factory.create_scatter_tool_builder(
@@ -259,43 +249,18 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
-        self.scenario_list_valid, self.scenario_list_integrity_msg = self.check_scenario_list_validity()
-        if self.scenario_list_valid:
+
+        if self.driver_data_integrity:
             self.builder_tool.prepare_tool()
-        else:
-            self.logger.error(self.scenario_list_integrity_msg)
 
     def build_tool(self):
         '''
 
-        Build the tool if the list of scenario is valid
+        Build the tool if the driver data integrity is OK
 
         '''
-        if self.builder_tool is not None and self.scenario_list_valid:
+        if self.builder_tool is not None and self.driver_data_integrity:
             self.builder_tool.build()
-
-    def check_scenario_list_validity(self):
-        # checking for duplicates
-        msg = ''
-        if self.SAMPLES_DF in self.get_data_in():
-            samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-            if len(samples_df) > 0:
-                scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]
-                                            == True][self.SCENARIO_NAME].values.tolist()
-            else:
-                scenario_names = []
-            set_sc_names = set(scenario_names)
-            if len(scenario_names) != len(set_sc_names):
-                repeated_elements = [
-                    sc for sc in set_sc_names if scenario_names.count(sc) > 1]
-                msg = 'Cannot activate several scenarios with the same name (' + \
-                      repeated_elements[0]
-                for sc in repeated_elements[1:]:
-                    msg += ', ' + sc
-                msg += ').'
-                return False, msg
-        # in any other case the list is valid
-        return True, msg
 
     def subprocesses_built(self, scenario_names):
         """

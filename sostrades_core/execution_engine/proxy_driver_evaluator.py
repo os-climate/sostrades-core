@@ -101,6 +101,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SAMPLES_DF_DESC[ProxyDiscipline.STRUCTURING] = True
     SELECTED_SCENARIO = ProxySampleGenerator.SELECTED_SCENARIO
     SCENARIO_NAME = ProxySampleGenerator.SCENARIO_NAME
+    SAMPLES_DF_COLUMNS_LIST = [SELECTED_SCENARIO, SCENARIO_NAME]
     WITH_SAMPLE_GENERATOR = 'with_sample_generator'
     WITH_SAMPLE_GENERATOR_DESC = {
         ProxyDiscipline.TYPE: 'bool',
@@ -195,8 +196,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_out_list_size = []
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
-        self.scenario_list_valid = True
-        self.scenario_list_integrity_msg = ''
+        self.driver_data_integrity = True
 
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
@@ -394,18 +394,60 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def check_data_integrity(self):
         '''
-
-        Set the check_integrity message following the scenario_list integrity message
-        TODO : Refacto the message in the US Lock the use of samples_df in the GUI
-
+        Check the data integrity of the input variabels of the driver
         '''
         # checking for duplicates
         self.check_integrity_msg_list = []
         disc_in = self.get_data_in()
-        if self.SAMPLES_DF in disc_in and not self.scenario_list_valid:
+
+        if self.SAMPLES_DF in disc_in:
+            self.check_data_integrity_samples_df()
+
+        if self.SAMPLES_DF in disc_in and len(self.check_integrity_msg_list) != 0:
+            self.driver_data_integrity = False
+            data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
             self.dm.set_data(
                 self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                self.CHECK_INTEGRITY_MSG, self.scenario_list_integrity_msg)
+                self.CHECK_INTEGRITY_MSG, data_integrity_msg)
+
+    def check_data_integrity_samples_df(self):
+        '''
+
+        Check the data integrity of the samples_df :
+        - if two scenario have the same names
+        - if no scenario are selected
+        - if a None is in the samples_df
+        - if column names are not coherent with subprocess
+        - if value to describe the scenario has not the type in line with the subprocess
+        '''
+
+        samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+        if len(samples_df) > 0:
+            scenario_names = samples_df[self.SCENARIO_NAME].values.tolist()
+        else:
+            scenario_names = []
+        # Check if two scenario have the same names
+        if len(set(scenario_names)) != len(scenario_names):
+            warning_msg = f'Two scenarios have same names in the samples_df, check the {self.SCENARIO_NAME} column'
+            self.check_integrity_msg_list.append(warning_msg)
+
+        # Check if no scenario are selected
+        selected_scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]][self.SCENARIO_NAME].values.tolist()
+        if len(selected_scenario_names) == 0:
+            warning_msg = f'You need to select at least one scenario to execute your driver'
+            self.check_integrity_msg_list.append(warning_msg)
+
+        # Check if a None is in the samples_df
+        if samples_df.isnull().values.any():
+            columns_with_none = samples_df.columns[samples_df.isnull().any()].tolist()
+            warning_msg = f'There is a None in the samples_df, check the columns {columns_with_none} '
+            self.check_integrity_msg_list.append(warning_msg)
+
+        # Check if column names are not coherent with subprocess
+        # Check if value to describe the scenario has not the type in line with the subprocess
+        variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
+        # for column in variables_column:
+        #     pass
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
