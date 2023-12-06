@@ -139,7 +139,11 @@ class TestDriverDataIntegrity(unittest.TestCase):
             self.exec_eng.execute()
         self.assertTrue(runtime_error_message in str(cm.exception))
 
-    def test_01_two_scenarios_with_same_name(self):
+    def test_03_no_scenario_selected(self):
+        '''
+        Check if no scenario are selected that data integrity is not OK
+        Check if empty scenario_df that data integrity is not OK
+        '''
         proc_name = 'test_multi_driver_simple'
         repo_name = self.repo + ".tests_driver_eval.multi"
         builders = self.exec_eng.factory.get_builder_from_process(repo_name,
@@ -147,28 +151,54 @@ class TestDriverDataIntegrity(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builders)
         self.exec_eng.configure()
 
-        samples_df = pd.DataFrame(
-            [['scenario_1', True, self.b1], ['scenario_2', False, 0], ['scenario_1', True, self.b2]],
-            columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
+        samples_df = pd.DataFrame({'scenario_name': ['scenario_1', 'scenario_2'],
+                                   'selected_scenario': False})
         dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
 
+        # confgiure
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # Still reference scenario because new scenario_df is not ok with data integrity
         exp_tv = 'Nodes representation for Treeview MyCase\n' \
                  '|_ MyCase\n' \
                  '\t|_ multi_scenarios\n' \
                  '\t\t|_ Reference Scenario\n' \
                  '\t\t\t|_ Disc1\n' \
                  '\t\t\t|_ Disc3'
-
-        # Logging only
-        self.exec_eng.load_study_from_input_dict(dict_values)
         self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
 
-        runtime_error_message = 'Variable MyCase.multi_scenarios.samples_df : Two scenarios have same names in the samples_df, check the scenario_name column'
+        check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df',
+                                                        'check_integrity_msg')
+        data_integrity_error_message = 'You need to select at least one scenario to execute your driver'
+        self.assertEqual(check_integrity_msg, data_integrity_error_message)
+
+        ### And now empty dataframe
+        samples_df = pd.DataFrame({}, columns=['scenario_name', 'selected_scenario'])
+        dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
+
+        # confgiure
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # Still reference scenario because new scenario_df is not ok with data integrity
+        exp_tv = 'Nodes representation for Treeview MyCase\n' \
+                 '|_ MyCase\n' \
+                 '\t|_ multi_scenarios\n' \
+                 '\t\t|_ Reference Scenario\n' \
+                 '\t\t\t|_ Disc1\n' \
+                 '\t\t\t|_ Disc3'
+        self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
+
+        check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df',
+                                                        'check_integrity_msg')
+        data_integrity_error_message = 'Your samples_df is empty, the driver cannot be configured'
+        self.assertEqual(check_integrity_msg, data_integrity_error_message)
+
+        runtime_error_message = f'Variable MyCase.multi_scenarios.samples_df : {data_integrity_error_message}'
         # data integrity Exception
         with self.assertRaises(ValueError) as cm:
             self.exec_eng.execute()
         self.assertTrue(runtime_error_message in str(cm.exception))
-        
+
 
 if '__main__' == __name__:
     cls = TestDriverDataIntegrity()

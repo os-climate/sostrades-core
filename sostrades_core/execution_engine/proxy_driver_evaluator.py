@@ -429,7 +429,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         # Check if no scenario are selected
         if samples_df.empty:
-            warning_msg = f'Your samples_df is empty'
+            warning_msg = f'Your samples_df is empty, the driver cannot be configured'
             self.check_integrity_msg_list.append(warning_msg)
         else:
             selected_scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]][self.SCENARIO_NAME].values.tolist()
