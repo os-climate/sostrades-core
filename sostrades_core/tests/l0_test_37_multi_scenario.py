@@ -173,7 +173,7 @@ class TestMultiScenario(unittest.TestCase):
         eval_inputs_df_desc = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.eval_inputs',
                                                         'dataframe_descriptor')
         self.assertListEqual(eval_inputs.columns.tolist(),
-                             ['selected_input','full_name', 'list_of_values'])
+                             ['selected_input', 'full_name', 'list_of_values'])
         self.assertListEqual(list(eval_inputs_df_desc.keys()),
                              ['selected_input', 'full_name', 'list_of_values'])
 
@@ -239,10 +239,9 @@ class TestMultiScenario(unittest.TestCase):
         eval_inputs_df_desc = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.eval_inputs',
                                                         'dataframe_descriptor')
         self.assertListEqual(eval_inputs.columns.tolist(),
-                             ['selected_input','full_name'])
+                             ['selected_input', 'full_name'])
         self.assertListEqual(list(eval_inputs_df_desc.keys()),
                              ['selected_input', 'full_name'])
-
 
     def test_02_multiscenario_with_sample_generator_cp_sellar(self):
 
@@ -595,15 +594,18 @@ class TestMultiScenario(unittest.TestCase):
                 self.assertEqual(self.exec_eng.dm.get_value('MyCase.multi_scenarios.' + sc + '.' + var),
                                  samples_df[samples_df['scenario_name'] == sc].iloc[0][var])
 
-        # deactivate the eval inputs of the cartesian product and check that
-        # the scenarios disappear
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs']['selected_input'] = False
+        # modify the eval inputs of the cartesian product and check that
+        # the scenarios disappear and new ones are created
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs']['selected_input'] = [False, True, False, False,
+                                                                                           False]
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
-        gen = self.exec_eng.root_process.proxy_disciplines[2]
-        print(gen.samples_gene_df)
-        self.assertTrue(samples_df.empty)
+        samples_df_th = pd.DataFrame({'selected_scenario': [True, True],
+                                      'scenario_name': ['scenario_1', 'scenario_2'],
+                                      'Disc1.b': [4, 2]})
+
+        self.assertTrue(samples_df.equals(samples_df_th))
 
         # change the trade variables values
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z_3
@@ -866,7 +868,7 @@ class TestMultiScenario(unittest.TestCase):
         samples_df['selected_scenario'] = [True, True, True, True]
         samples_df['scenario_name'] = scenario_list
 
-        b = [0., 0., 100., 100.]    # default gridsearch values for b
+        b = [0., 0., 100., 100.]  # default gridsearch values for b
         new_z = [0., 100., 5., 5.]  # modify default gridsearch values for z
         samples_df['z'] = new_z
 

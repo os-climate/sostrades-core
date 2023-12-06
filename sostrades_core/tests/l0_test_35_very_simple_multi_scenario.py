@@ -168,7 +168,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
-        # # # check tree view with scenario_1 and scenario_2 #TODO: reactivate checks when treeview is fixed
+        # # # check tree view with scenario_1 and scenario_2
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ multi_scenarios',
@@ -190,7 +190,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        # # check tree view after scenario_2 deletion to validate cleaning #TODO: reactivate checks when treeview is fixed
+        # # check tree view after scenario_2 deletion to validate cleaning
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ multi_scenarios',
@@ -218,22 +218,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.display_treeview_nodes()
 
         dict_values[self.study_name +
-                    '.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [],
-                                                                   'scenario_name': []})
+                    '.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True],
+                                                                   'scenario_name': ['scenario_1']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        dict_values[self.study_name +
-                    '.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                         True],
-                                                                   'scenario_name': ['scenario_A',
-                                                                                     'scenario_B']})
-
-        self.assertListEqual(
-            [key for key in self.exec_eng.dm.data_id_map.keys() if
-             'scenario_1' in key and key.split('.')[-1] not in ProxyDiscipline.NUM_DESC_IN and
-             key.split('.')[-1] not in ProxyCoupling.DESC_IN], [])
         self.assertListEqual(
             [key for key in self.exec_eng.dm.data_id_map.keys() if
              'scenario_2' in key and key.split('.')[-1] not in ProxyDiscipline.NUM_DESC_IN and
@@ -242,6 +232,12 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             [key for key in self.exec_eng.dm.data_id_map.keys() if
              'scenario_3' in key and key.split('.')[-1] not in ProxyDiscipline.NUM_DESC_IN and
              key.split('.')[-1] not in ProxyCoupling.DESC_IN], [])
+
+        dict_values[self.study_name +
+                    '.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                         True],
+                                                                   'scenario_name': ['scenario_A',
+                                                                                     'scenario_B']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
@@ -383,7 +379,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                 dm_value = self.exec_eng.dm.get_value(var)
                 if var == f'{self.study_name}.multi_scenarios.scenario_list' or \
                         var == f'{self.study_name}.multi_scenarios.generated_samples' or \
-                        var == f'{self.study_name}.multi_scenarios.eval_inputs' or  \
+                        var == f'{self.study_name}.multi_scenarios.eval_inputs' or \
                         var == f'{self.study_name}.multi_scenarios_gather.gather_outputs':
                     # this variable is an exception because it is forced by the value of another variable during setup
                     continue

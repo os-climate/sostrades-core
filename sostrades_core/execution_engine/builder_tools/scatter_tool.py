@@ -68,7 +68,7 @@ class ScatterTool(SosTool):
 
     @property
     def has_built(self):
-        return self.__scattered_disciplines.keys() == set(self.__scatter_list)
+        return self.scatter_list is not None and self.__scattered_disciplines.keys() == set(self.scatter_list)
 
     @property
     def scatter_list(self):

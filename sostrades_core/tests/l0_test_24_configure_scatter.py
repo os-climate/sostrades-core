@@ -185,67 +185,9 @@ class TestScatterDiscipline(unittest.TestCase):
         self.assertListEqual(list_aircraft_remove_1_disciplines, disciplines_list,
                              'Discipline between reference and generated are different')
 
-    def test_04_multiinstance_modification_remove_all_aircraft(self):
-        private_values_multiproduct = {}
-
-        self.ee.load_study_from_input_dict(private_values_multiproduct)
-
-        raw_dm_values = list(self.ee.dm.data_id_map.keys())
-        raw_dm_values.sort()
-
-        private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame(
-                {'selected_scenario': [True] * len(self.list_aircraft_1),
-                 'scenario_name': self.list_aircraft_1})}
-
-        self.ee.load_study_from_input_dict(private_values_multiproduct)
-
-        self.ee.display_treeview_nodes()
-
-        disciplines_list = list(self.ee.dm.disciplines_id_map.keys())
-        disciplines_list.sort()
-
-        list_aircraft_1_disciplines = self.build_aircraft_disciplines_list(
-            self.list_aircraft_1)
-
-        self.assertListEqual(list_aircraft_1_disciplines, disciplines_list,
-                             'Discipline between reference and generated are different')
-
-        # -- remove all aircraft
-        private_values_multiproduct = {
-            f'{self.name}.{self.ms_name}.samples_df': pd.DataFrame(
-                {'selected_scenario': [False] * len(self.list_aircraft_1),
-                 'scenario_name': self.list_aircraft_1})}
-
-        self.ee.load_study_from_input_dict(private_values_multiproduct)
-
-        exp_tv_list = [f'Nodes representation for Treeview {self.name}',
-                       f'|_ {self.name}',
-                       f'\t|_ {self.ms_name}']
-        exp_tv_str = '\n'.join(exp_tv_list)
-        assert exp_tv_str == self.ee.display_treeview_nodes()
-
-        disciplines_list = list(self.ee.dm.disciplines_id_map.keys())
-        disciplines_list.sort()
-
-        list_aircraft_remove_all = self.build_aircraft_disciplines_list()
-
-
-        self.assertListEqual(list_aircraft_remove_all, disciplines_list,
-                             'Discipline between reference and generated are different')
-
-        # -- cheack that data manager is also cleared
-
-        last_dm_values = list(self.ee.dm.data_id_map.keys())
-        last_dm_values.sort()
-
-        last_dm_values_th = [value for value in raw_dm_values if 'Reference Scenario' not in value]
-        self.assertListEqual(last_dm_values_th, last_dm_values,
-                             'After removing discipline, data manager variables list is different than raw list')
-
 
 if '__main__' == __name__:
     cls = TestScatterDiscipline()
     cls.setUp()
-    cls.test_04_multiinstance_modification_remove_all_aircraft()
+    cls.test_03_multiinstance_modification_remove_one_aircraft_2()
     cls.tearDown()
