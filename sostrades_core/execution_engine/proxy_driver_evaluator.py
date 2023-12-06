@@ -439,6 +439,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         # Check if a None is in the samples_df
         value_check = True
+        no_None_in_df = True
         if self.sample_generator_disc is not None:
             sampling_generation_mode = self.sample_generator_disc.sampling_generation_mode
             if sampling_generation_mode == ProxySampleGenerator.AT_RUN_TIME:
@@ -447,12 +448,28 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             columns_with_none = samples_df.columns[samples_df.isnull().any()].tolist()
             warning_msg = f'There is a None in the samples_df, check the columns {columns_with_none} '
             self.check_integrity_msg_list.append(warning_msg)
+            no_None_in_df = False
 
         # Check if column names are not coherent with subprocess
         # Check if value to describe the scenario has not the type in line with the subprocess
-        variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
-        # for column in variables_column:
-        #     pass
+        if value_check and no_None_in_df:
+            variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
+            samples_df_full_name = self.get_input_var_full_name(self.SAMPLES_DF)
+            samples_df_descriptor = self.ee.dm.get_data(samples_df_full_name, self.DATAFRAME_DESCRIPTOR)
+            for col in variables_column:
+
+                if not col in self.eval_in_possible_values:
+                    warning_msg = f'The variable {col} is not in the subprocess eval input values: It cannot be a column of the {self.SAMPLES_DF} '
+                    self.check_integrity_msg_list.append(warning_msg)
+                else:
+                    var_type = self.eval_in_possible_types[col]
+                    df_desc_tuple = tuple([var_type, None, True])
+
+                    if not samples_df[col].apply(lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).any():
+                        warning_msg = f'Some value has wrong types in column {col}, the subprocess variable is of type {var_type} and all variables in the column should be the same'
+                        self.check_integrity_msg_list.append(warning_msg)
+                    else:
+                        samples_df_descriptor[col] = df_desc_tuple
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
@@ -641,14 +658,15 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             strip_first_ns (bool): whether to strip the scenario name (multi-instance case) from the variable name
         '''
 
-        possible_in_values, possible_out_values = find_possible_values(self, io_type_in=io_type_in,
-                                                                       io_type_out=io_type_out,
-                                                                       strip_first_ns=strip_first_ns)
+        possible_in_types, possible_out_values = find_possible_values(self, io_type_in=io_type_in,
+                                                                      io_type_out=io_type_out,
+                                                                      strip_first_ns=strip_first_ns)
 
         disc_in = self.get_data_in()
-        if possible_in_values and io_type_in:
-            # Convert sets into lists
-            possible_in_values = list(possible_in_values)
+        if possible_in_types and io_type_in:
+            self.eval_in_possible_types = possible_in_types
+            # Build names with keys dict
+            possible_in_values = list(possible_in_types.keys())
             # these sorts are just for aesthetics
             possible_in_values.sort()
             self.eval_in_possible_values = possible_in_values

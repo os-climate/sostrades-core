@@ -493,15 +493,14 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # manually configure the scenarios non-varying values (~reference)
-        private_val = {}
         scenario_list = ['scenario_1', 'scenario_2']
         for scenario in scenario_list:
-            private_val[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
-            private_val[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
-            private_val[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
-            private_val[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
-            private_val[f'{self.study_name}.multi_scenarios.{scenario}.z'] = self.z1
-        self.exec_eng.load_study_from_input_dict(private_val)
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = self.a1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = self.x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = self.constant
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = self.power
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.z'] = self.z1
+        self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.execute()
 
         y1, o1 = (self.a1 * self.x1 + self.b1,
