@@ -38,8 +38,8 @@ class Study(StudyManager):
             'SellarCoupling.x': [array([3.]), array([4.])],
             'SellarCoupling.z': [array([-10., 0.])],
             'SellarCoupling.Sellar_Problem.local_dv': [10.],
-            'SellarCoupling.y_1': [[1.]],
-            'SellarCoupling.y_2': [[1.]]
+            'SellarCoupling.y_1': [array([1.])],
+            'SellarCoupling.y_2': [array([1.])]
         }
         # ======================================================================
 

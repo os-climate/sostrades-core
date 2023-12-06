@@ -29,7 +29,7 @@ def find_possible_input_values(disc, prefix_name_to_delete=None, strip_first_ns=
         strip_first_ns: If True will strip the first prefix by splitting with the point delimiter
 
     Returns:
-        A set of possible input_values
+        A dict of possible input_values and its types
     '''
     return find_possible_values(disc, prefix_name_to_delete=prefix_name_to_delete,
                                 io_type_in=True, io_type_out=False, strip_first_ns=strip_first_ns)[0]
@@ -59,17 +59,18 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
         strip_first_ns: If True will strip the first prefix by splitting with the point delimiter
 
     Returns:
-        A set of possible input_values
+        A dict of possible input_values and its types
         A set of possible output_values
     '''
     # if no prefix_name to delete has been filled we use the full_name of the disc
     if prefix_name_to_delete is None:
         prefix_name_to_delete = disc.get_disc_full_name()
 
-    possible_in_values, possible_out_values = set(), set()
+    possible_in_types, possible_out_values = {}, set()
+
     # fill possiblee values set for the high level disc
     if disc.get_disc_full_name() != prefix_name_to_delete:
-        possible_in_values, possible_out_values = fill_possible_values(
+        possible_in_types, possible_out_values = fill_possible_values(
             disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
 
     # find sub_disciplines if it's a driver then subdisciplines are stored in scenarios (proxy in run with flatten subprocess)
@@ -80,22 +81,22 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
 
     # loop over all subdisciplines to find possible i/O values
     for sub_disc in sub_disciplines:
-        sub_in_values, sub_out_values = fill_possible_values(
+        sub_in_types, sub_out_values = fill_possible_values(
             sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
-        possible_in_values.update(sub_in_values)
+        possible_in_types.update(sub_in_types)
         possible_out_values.update(sub_out_values)
         # Recursively if there is multiple levels
-        sub_in_values, sub_out_values = find_possible_values(
+        sub_in_types, sub_out_values = find_possible_values(
             sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
-        possible_in_values.update(sub_in_values)
+        possible_in_types.update(sub_in_types)
         possible_out_values.update(sub_out_values)
-
     # strip the scenario name to have just one entry for repeated variables in scenario instances
     if strip_first_ns:
-        return {_var.split('.', 1)[-1] for _var in possible_in_values}, {_var.split('.', 1)[-1] for _var in
-                                                                         possible_out_values}
+        return {_var.split('.', 1)[-1]: value for _var, value in possible_in_types.items()}, {_var.split('.', 1)[-1]
+                                                                                              for _var in
+                                                                                              possible_out_values}
     else:
-        return possible_in_values, possible_out_values
+        return possible_in_types, possible_out_values
 
 
 def fill_possible_values(disc, prefix_name_to_delete, io_type_in=False, io_type_out=True):
@@ -105,23 +106,23 @@ def fill_possible_values(disc, prefix_name_to_delete, io_type_in=False, io_type_
         and not a default variable
         an output variable must be any data from a data_out discipline
     '''
-    poss_in_values_full = set()
+    poss_in_types_full = {}
     poss_out_values_full = set()
     if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
-        poss_in_values_full = fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
+        poss_in_types_full = fill_possible_input_values(disc, poss_in_types_full, prefix_name_to_delete)
 
     if io_type_out:
         poss_out_values_full = fill_possible_output_values(disc, poss_out_values_full, prefix_name_to_delete)
 
-    return poss_in_values_full, poss_out_values_full
+    return poss_in_types_full, poss_out_values_full
 
 
-def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete):
+def fill_possible_input_values(disc, poss_in_types_full, prefix_name_to_delete):
     '''
 
     Args:
         disc: discipline where to find input values
-        poss_in_values_full: list where to store input values
+        poss_in_types_full: dict where to store input values name and types
         prefix_name_to_delete: prefix_name_to_delete to delete from the name of the input value
 
     Returns:
@@ -129,7 +130,8 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
     '''
     disc_in = disc.get_data_in()
     for key, data_dict in disc_in.items():
-        is_input_type = data_dict[ProxyCoupling.TYPE] in EVAL_INPUT_TYPE
+        data_type = data_dict[ProxyCoupling.TYPE]
+        is_input_type = data_type in EVAL_INPUT_TYPE
         is_structuring = data_dict.get(
             ProxyCoupling.STRUCTURING, False)
         full_id = disc.get_var_full_name(
@@ -138,9 +140,6 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
                      ]['io_type'] == 'in'
         is_editable = data_dict['editable']
         is_a_multiplier = MULTIPLIER_PARTICULE in key
-        # is_numerical = data_dict.get(
-        #             ProxyCoupling.NUMERICAL, False)
-
         # a possible input value must :
         #           - be a ['float', 'array', 'int', 'string']
         #           - be an input (not a coupling variable)
@@ -154,9 +153,9 @@ def fill_possible_input_values(disc, poss_in_values_full, prefix_name_to_delete)
             # we remove the disc_full_name name from the variable full  name for a
             # sake of simplicity
 
-            poss_in_values_full.add(full_id.removeprefix(f'{prefix_name_to_delete}.'))
+            poss_in_types_full[full_id.removeprefix(f'{prefix_name_to_delete}.')] = data_type
 
-    return poss_in_values_full
+    return poss_in_types_full
 
 
 def fill_possible_output_values(disc, poss_out_values_full, prefix_name_to_delete):
