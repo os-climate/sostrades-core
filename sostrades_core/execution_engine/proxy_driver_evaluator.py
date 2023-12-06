@@ -196,7 +196,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.eval_out_list_size = []
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
-        self.driver_data_integrity = True
+        self.driver_data_integrity = False
 
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
@@ -395,7 +395,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # checking for duplicates
         self.check_integrity_msg_list = []
         disc_in = self.get_data_in()
-
+        self.driver_data_integrity = True
         if self.SAMPLES_DF in disc_in:
             self.check_data_integrity_samples_df()
 
@@ -428,13 +428,22 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.check_integrity_msg_list.append(warning_msg)
 
         # Check if no scenario are selected
-        selected_scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]][self.SCENARIO_NAME].values.tolist()
-        if len(selected_scenario_names) == 0:
-            warning_msg = f'You need to select at least one scenario to execute your driver'
+        if samples_df.empty:
+            warning_msg = f'Your samples_df is empty'
             self.check_integrity_msg_list.append(warning_msg)
+        else:
+            selected_scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]][self.SCENARIO_NAME].values.tolist()
+            if len(selected_scenario_names) == 0:
+                warning_msg = f'You need to select at least one scenario to execute your driver'
+                self.check_integrity_msg_list.append(warning_msg)
 
         # Check if a None is in the samples_df
-        if samples_df.isnull().values.any():
+        value_check = True
+        if self.sample_generator_disc is not None:
+            sampling_generation_mode = self.sample_generator_disc.sampling_generation_mode
+            if sampling_generation_mode == ProxySampleGenerator.AT_RUN_TIME:
+                value_check = False
+        if samples_df.isnull().values.any() and value_check:
             columns_with_none = samples_df.columns[samples_df.isnull().any()].tolist()
             warning_msg = f'There is a None in the samples_df, check the columns {columns_with_none} '
             self.check_integrity_msg_list.append(warning_msg)
