@@ -250,4 +250,4 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
     def is_ready_to_sample(self, proxy):
         return self.eval_inputs_cp_validity and (self.eval_inputs_cp_has_changed or proxy.sample_pending)
-        # TODO: [BUG] should come from structuring checks but not working on GUI because configure_statuses are set to False.
+        # TODO: [BUG] should come from structuring checks but not always working on GUI because study is reload
