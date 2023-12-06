@@ -41,7 +41,6 @@ class TestVBArchiBuilder(unittest.TestCase):
         self.root_dir = gettempdir()
 
     def test_01_configure_data_io_for_vb_discipline(self):
-
         vb_type_list = ['ValueBlockDiscipline',
                         'SumValueBlockDiscipline',
                         'FakeValueBlockDiscipline',
@@ -50,8 +49,8 @@ class TestVBArchiBuilder(unittest.TestCase):
         vb_builder_name = 'Business'
 
         architecture_df = pd.DataFrame(
-            {'Parent': ['Business', 'Business', 'Remy',  'Tomato', 'Tomato', ],
-             'Current': ['Remy', 'Tomato', 'CAPEX',  'CAPEX', 'OPEX', ],
+            {'Parent': ['Business', 'Business', 'Remy', 'Tomato', 'Tomato', ],
+             'Current': ['Remy', 'Tomato', 'CAPEX', 'CAPEX', 'OPEX', ],
              'Type': vb_type_list,
              'Action': [('standard'), ('standard'), ('standard'), ('standard'), ('standard')],
              'Activation': [True, True, False, False, False], })
@@ -65,7 +64,7 @@ class TestVBArchiBuilder(unittest.TestCase):
         self.exec_eng.configure()
 
         activation_df = pd.DataFrame(
-            {'Business': ['Remy',  'Tomato'],
+            {'Business': ['Remy', 'Tomato'],
              'CAPEX': [True, True],
              'OPEX': [False, True]})
 
@@ -79,29 +78,28 @@ class TestVBArchiBuilder(unittest.TestCase):
         disc_Remy = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Business.Remy')[0]
         self.maxDiff = None
-        data_in_th_list = ['linearization_mode',
-                           'cache_type', 'cache_file_path', 'debug_mode', ('output', 'CAPEX')]
-        self.assertListEqual(
-            list(disc_Remy.get_data_in().keys()), data_in_th_list)
+        data_in_th_list = set(['linearization_mode',
+                               'cache_type', 'cache_file_path', 'debug_mode', ('output', 'CAPEX')])
+        self.assertTrue(
+            set(disc_Remy.get_data_in().keys()) == data_in_th_list)
 
-        data_out_th_list = ['output_gather']
-        self.assertListEqual(
-            list(disc_Remy.get_data_out().keys()), data_out_th_list)
+        data_out_th_list = set(['output_gather'])
+        self.assertTrue(
+            set(disc_Remy.get_data_out().keys()) == data_out_th_list)
 
         # Tomato is a sumvalueblock
         disc_Tomato = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Business.Tomato')[0]
         self.maxDiff = None
-        data_in_th_list = ['linearization_mode', 'cache_type',
-                           'cache_file_path', 'debug_mode', ('output', 'CAPEX'), ('output', 'OPEX')]
-        self.assertListEqual(
-            list(disc_Tomato.get_data_in().keys()), data_in_th_list)
-        data_out_th_list = ['output_gather', 'output']
-        self.assertListEqual(
-            list(disc_Tomato.get_data_out().keys()), data_out_th_list)
+        data_in_th_list = set(['linearization_mode', 'cache_type',
+                               'cache_file_path', 'debug_mode', ('output', 'CAPEX'), ('output', 'OPEX')])
+        self.assertTrue(
+            set(disc_Tomato.get_data_in().keys()) == data_in_th_list)
+        data_out_th_list = set(['output_gather', 'output'])
+        self.assertTrue(
+            set(disc_Tomato.get_data_out().keys()) == data_out_th_list)
 
     def test_02_configure_data_io_for_multiple_vb_discipline(self):
-
         vb_type_list = ['ValueBlockDiscipline',
                         'SumValueBlockDiscipline',
                         'ValueBlockDiscipline',
@@ -114,9 +112,10 @@ class TestVBArchiBuilder(unittest.TestCase):
 
         architecture_df = pd.DataFrame(
             {'Parent': ['Business', 'Business', 'Remy', 'CAPEX', 'CAPEX', 'Tomato', 'OPEX', 'OPEX'],
-             'Current': ['Remy', 'Tomato', 'CAPEX',  'CAPEX1', 'CAPEX2', 'OPEX', 'OPEX1', 'OPEX2'],
+             'Current': ['Remy', 'Tomato', 'CAPEX', 'CAPEX1', 'CAPEX2', 'OPEX', 'OPEX1', 'OPEX2'],
              'Type': vb_type_list,
-             'Action': [('standard'), ('standard'), ('standard'), ('standard'), ('standard'), ('standard'), ('standard'), ('standard')],
+             'Action': [('standard'), ('standard'), ('standard'), ('standard'), ('standard'), ('standard'),
+                        ('standard'), ('standard')],
              'Activation': [True, True, False, False, False, False, False, False], })
 
         builder = self.factory.create_architecture_builder(
@@ -128,7 +127,7 @@ class TestVBArchiBuilder(unittest.TestCase):
         self.exec_eng.configure()
 
         activation_df = pd.DataFrame(
-            {'Business': ['Remy',  'Tomato'],
+            {'Business': ['Remy', 'Tomato'],
              'CAPEX': [True, True],
              'OPEX': [False, True]})
 
@@ -142,29 +141,28 @@ class TestVBArchiBuilder(unittest.TestCase):
         disc_Remy = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Business.Remy')[0]
         self.maxDiff = None
-        data_in_th_list = ['linearization_mode',
-                           'cache_type', 'cache_file_path', 'debug_mode',('output_gather', 'CAPEX')]
-        self.assertListEqual(
-            list(disc_Remy.get_data_in().keys()), data_in_th_list)
+        data_in_th_list = set(['linearization_mode',
+                               'cache_type', 'cache_file_path', 'debug_mode', ('output_gather', 'CAPEX')])
+        self.assertTrue(
+            set(disc_Remy.get_data_in().keys()) == data_in_th_list)
 
-        data_out_th_list = ['output_gather']
-        self.assertListEqual(
-            list(disc_Remy.get_data_out().keys()), data_out_th_list)
+        data_out_th_list = set(['output_gather'])
+        self.assertTrue(
+            set(disc_Remy.get_data_out().keys()) == data_out_th_list)
 
         # Tomato is a sumvalueblock
         disc_Tomato = self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Business.Tomato')[0]
         self.maxDiff = None
-        data_in_th_list = ['linearization_mode', 'cache_type',
-                           'cache_file_path', 'debug_mode', ('output_gather', 'OPEX'), ('output', 'OPEX')]
-        self.assertListEqual(
-            list(disc_Tomato.get_data_in().keys()), data_in_th_list)
-        data_out_th_list = ['output_gather', 'output']
-        self.assertListEqual(
-            list(disc_Tomato.get_data_out().keys()), data_out_th_list)
+        data_in_th_list = set(['linearization_mode', 'cache_type',
+                               'cache_file_path', 'debug_mode', ('output_gather', 'OPEX'), ('output', 'OPEX')])
+        self.assertTrue(
+            set(disc_Tomato.get_data_in().keys()) == data_in_th_list)
+        data_out_th_list = set(['output_gather', 'output'])
+        self.assertTrue(
+            set(disc_Tomato.get_data_out().keys()) == data_out_th_list)
 
     def test_03_run_sum_vb_disciplines(self):
-
         vb_type_list = ['SumValueBlockDiscipline',
                         'ValueBlockDiscipline',
                         'FakeValueBlockDiscipline',

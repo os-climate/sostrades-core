@@ -127,6 +127,24 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         """
         return self.cls_builder
 
+    def update_data_io_with_child(self, sub_data_in, sub_data_out):
+        '''
+
+        Args:
+            sub_data_in: data_in of the child under the builder
+            sub_data_out: data_out of the child under the builder
+
+        Returns:
+            Update the _data_io and the _simple_data_io of the proxydisciplinecbuilder accridng to its children
+
+        '''
+        if sub_data_in != {}:
+            self._update_data_io(sub_data_in, self.IO_TYPE_IN)
+            self.build_simple_data_io(self.IO_TYPE_IN)
+        if sub_data_out != {}:
+            self._update_data_io(sub_data_out, self.IO_TYPE_OUT)
+            self.build_simple_data_io(self.IO_TYPE_OUT)
+
     def clean(self):
         """
         This method cleans a sos_discipline_builder, which is a discipline that can build other disciplines;

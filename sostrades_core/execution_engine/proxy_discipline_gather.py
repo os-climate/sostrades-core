@@ -73,7 +73,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
     def gather_data_map(self):
         return self.__gather_data_map
 
-
     def get_gather_variable(self):
         '''
         Variables to gather are the variable in the DESC_OUT of the instantiator which are shared 
@@ -99,7 +98,9 @@ class ProxyDisciplineGather(ProxyDiscipline):
         input_ns = self.sc_map.get_input_ns()
 
         scatter_desc_in = {input_name: {
-            ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor, ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY, ProxyDiscipline.NAMESPACE: input_ns, ProxyDiscipline.STRUCTURING: True}}
+            ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor,
+            ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY, ProxyDiscipline.NAMESPACE: input_ns,
+            ProxyDiscipline.STRUCTURING: True}}
         self.inst_desc_in.update(scatter_desc_in)
 
     def build_dynamic_inst_desc_in_gather_variables(self):
@@ -122,7 +123,8 @@ class ProxyDisciplineGather(ProxyDiscipline):
                 # Check if we need to add new variables by cross checking
                 # sub_names and var_to_gather
                 new_variables = {
-                    f'{key}.{var_name}': value for var_name, value in self.var_to_gather.items() for key in sub_names if f'{key}.{var_name}' not in self.inst_desc_in.keys()}
+                    f'{key}.{var_name}': value for var_name, value in self.var_to_gather.items() for key in sub_names if
+                    f'{key}.{var_name}' not in self.inst_desc_in.keys()}
 
                 if len(new_variables) != 0:
                     self.add_new_variables_in_inst_desc_in(
@@ -163,11 +165,11 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
             if var_name_dict not in self.inst_desc_out:
                 var_name_dict = {var_name_dict:
-                                 {ProxyDiscipline.TYPE: 'dict',
-                                  ProxyDiscipline.IO_TYPE: ProxyDiscipline.IO_TYPE_OUT,
-                                  ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
-                                  ProxyDiscipline.NAMESPACE: gather_ns_out,
-                                  ProxyDiscipline.USER_LEVEL: 3}}
+                                     {ProxyDiscipline.TYPE: 'dict',
+                                      ProxyDiscipline.IO_TYPE: ProxyDiscipline.IO_TYPE_OUT,
+                                      ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
+                                      ProxyDiscipline.NAMESPACE: gather_ns_out,
+                                      ProxyDiscipline.USER_LEVEL: 3}}
                 self.inst_desc_out.update(var_name_dict)
 
     def configure(self):
@@ -253,14 +255,14 @@ class ProxyDisciplineGather(ProxyDiscipline):
             inputs_var_ns_tuples = self._extract_var_ns_tuples(completed_modified_inputs)
             self._update_io_ns_map(inputs_var_ns_tuples, self.IO_TYPE_IN)
             self._update_data_io(zip(inputs_var_ns_tuples, completed_modified_inputs.values()), self.IO_TYPE_IN)
-
+            self.build_simple_data_io(self.IO_TYPE_IN)
         if len(modified_outputs) > 0:
             completed_modified_outputs = self._prepare_data_dict(
                 self.IO_TYPE_OUT, modified_outputs)
             outputs_var_ns_tuples = self._extract_var_ns_tuples(completed_modified_outputs)
             self._update_io_ns_map(outputs_var_ns_tuples, self.IO_TYPE_OUT)
             self._update_data_io(zip(outputs_var_ns_tuples, completed_modified_outputs.values()), self.IO_TYPE_OUT)
-
+            self.build_simple_data_io(self.IO_TYPE_OUT)
 
     def clean_inst_desc_in_with_sub_names(self, sub_names):
         '''
@@ -272,7 +274,9 @@ class ProxyDisciplineGather(ProxyDiscipline):
         for var_in in self.inst_desc_in:
             if NS_SEP in var_in:
                 full_key = self.get_var_full_name(var_in, disc_in)
-                if var_in.split(NS_SEP)[0] not in sub_names or self.ee.dm.get_data(full_key, self.DISCIPLINES_DEPENDENCIES) == [self.disc_id]:
+                if var_in.split(NS_SEP)[0] not in sub_names or self.ee.dm.get_data(full_key,
+                                                                                   self.DISCIPLINES_DEPENDENCIES) == [
+                    self.disc_id]:
                     keys_to_delete.append(var_in)
 
         self.clean_variables(keys_to_delete, self.IO_TYPE_IN)
@@ -301,5 +305,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
                              'builder_cls': self.builder.cls,
                              'var_gather': self.var_to_gather,
                              'cls_gather': self.cls_gather,
-                             'gather_ns': self.ee.ns_manager.get_shared_namespace_value(self, self.sc_map.get_gather_ns())}
+                             'gather_ns': self.ee.ns_manager.get_shared_namespace_value(self,
+                                                                                        self.sc_map.get_gather_ns())}
         wrapper.attributes.update(gather_attributes)
