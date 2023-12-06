@@ -249,7 +249,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.builder_tool = builder_tool_cls.instantiate()
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
-
+        self.check_data_integrity()
         if self.driver_data_integrity:
             self.builder_tool.prepare_tool()
 
