@@ -598,6 +598,7 @@ class TestMultiScenario(unittest.TestCase):
         # the scenarios disappear and new ones are created
         dict_values[f'{self.study_name}.multi_scenarios.eval_inputs']['selected_input'] = [False, True, False, False,
                                                                                            False]
+        dict_values[f'{self.study_name}.SampleGenerator.overwrite_samples_df'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')

@@ -183,6 +183,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = pd.DataFrame(
             {'selected_input': [True, True, False],
              'full_name': var_names + ['blabla']})
+        dict_values[f'{self.study_name}.SampleGenerator.overwrite_samples_df'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # check the columns have been added
