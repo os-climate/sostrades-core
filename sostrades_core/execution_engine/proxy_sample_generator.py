@@ -69,10 +69,12 @@ class ProxySampleGenerator(ProxyDiscipline):
     _VARIABLES_SIZES = "variables_sizes"
 
     NS_SAMPLING = 'ns_sampling'
+
+    SAMPLES_DF_DEFAULT = pd.DataFrame({SELECTED_SCENARIO: [True],
+                                       SCENARIO_NAME: REFERENCE_SCENARIO_NAME})
     SAMPLES_DF_DESC = {
         ProxyDiscipline.TYPE: 'dataframe',
-        ProxyDiscipline.DEFAULT: pd.DataFrame({SELECTED_SCENARIO: [True],
-                                               SCENARIO_NAME: REFERENCE_SCENARIO_NAME}),
+        ProxyDiscipline.DEFAULT: SAMPLES_DF_DEFAULT.copy(),
         ProxyDiscipline.DATAFRAME_DESCRIPTOR: {SELECTED_SCENARIO: ('bool', None, True),
                                                SCENARIO_NAME: ('string', None, True)},
         ProxyDiscipline.DYNAMIC_DATAFRAME_COLUMNS: True,
@@ -117,6 +119,14 @@ class ProxySampleGenerator(ProxyDiscipline):
     AT_CONFIGURATION_TIME = 'at_configuration_time'
     AT_RUN_TIME = 'at_run_time'
     available_sampling_generation_modes = [AT_CONFIGURATION_TIME, AT_RUN_TIME]
+
+    OVERWRITE_SAMPLES_DF = 'overwrite_samples_df'
+    OVERWRITE_SAMPLES_DF_DESC = {
+        ProxyDiscipline.TYPE: 'bool',
+        ProxyDiscipline.STRUCTURING: True,
+        ProxyDiscipline.DEFAULT: False,  # TODO: think about
+    }
+
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -257,6 +267,9 @@ class ProxySampleGenerator(ProxyDiscipline):
                 dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED.copy()
                 self.all_input_structuring = False
             elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
+                dynamic_inputs.update({
+                    self.OVERWRITE_SAMPLES_DF: self.OVERWRITE_SAMPLES_DF_DESC.copy()
+                })
                 # if sampling is at config-time, set all input structuring and add samples_df input
                 self.all_input_structuring = True
                 self.sample_at_configuration_time(dynamic_inputs, disc_in)
@@ -375,8 +388,14 @@ class ProxySampleGenerator(ProxyDiscipline):
         dynamic_inputs.update({self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy()})
         if self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
             if self.SAMPLES_DF in disc_in:
+                self.old_value = self.dm.get_value(self.get_input_var_full_name(self.SAMPLES_DF))
+                if self.old_value[self.SCENARIO_NAME].equals(self.SAMPLES_DF_DEFAULT[self.SCENARIO_NAME]) \
+                        or (self.OVERWRITE_SAMPLES_DF in disc_in and self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)):
+                    overwrite_samples_df = True
+                else:
+                    overwrite_samples_df = False
                 self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
-                if self.samples_gene_df is not None:
+                if self.samples_gene_df is not None and overwrite_samples_df:
                     self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
                                      self.VALUE, self.samples_gene_df, check_value=False)
                 self.sample_pending = False

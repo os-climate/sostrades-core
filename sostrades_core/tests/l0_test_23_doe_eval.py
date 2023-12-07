@@ -1546,6 +1546,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             self.assertAlmostEqual(ref, float(truth))
 
         disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = ProxySampleGenerator.AT_CONFIGURATION_TIME
+        disc_dict[f'{self.ns}.SampleGenerator.overwrite_samples_df'] = True
         dspace_x['lower_bnd'] = lb2
         dspace_x['upper_bnd'] = ub2
         exec_eng.load_study_from_input_dict(disc_dict)
