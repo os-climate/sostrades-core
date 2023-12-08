@@ -388,12 +388,13 @@ class ProxySampleGenerator(ProxyDiscipline):
         # TODO : discuss implementation (is_ready_to_sample)
         if self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
             if self.SAMPLES_DF in disc_in:
-                self.old_value = self.dm.get_value(self.get_input_var_full_name(self.SAMPLES_DF))
-                if self.old_value[self.SCENARIO_NAME].equals(self.SAMPLES_DF_DEFAULT[self.SCENARIO_NAME]) \
-                        or (self.OVERWRITE_SAMPLES_DF in disc_in and self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)):
-                    overwrite_samples_df = True
-                else:
-                    overwrite_samples_df = False
+                samples_df_dm = self.dm.get_value(self.get_input_var_full_name(self.SAMPLES_DF))
+                # sample but avoid pushing the generated samples_df into the dm, UNLESS:
+                # - the current scenario names are the default (i.e. no previous modification or sampling made), or
+                # - the user asked to force re-sampling on reconfiguration using input flag overwrite_samples_df
+                overwrite_samples_df =\
+                    samples_df_dm[self.SCENARIO_NAME].equals(self.SAMPLES_DF_DEFAULT[self.SCENARIO_NAME]) or \
+                    self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)
                 self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
                 if self.samples_gene_df is not None and overwrite_samples_df:
                     self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
