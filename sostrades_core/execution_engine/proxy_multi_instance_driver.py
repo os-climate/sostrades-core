@@ -250,7 +250,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.builder_tool.associate_tool_to_driver(
                 self, cls_builder=self.cls_builder, associated_namespaces=self.associated_namespaces)
         self.check_data_integrity()
-        if self.driver_data_integrity:
+        if self.scatter_list_validity:
             self.builder_tool.prepare_tool()
 
     def build_tool(self):
@@ -259,7 +259,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         Build the tool if the driver data integrity is OK
 
         '''
-        if self.builder_tool is not None and self.driver_data_integrity:
+        if self.builder_tool is not None and self.scatter_list_validity:
             self.builder_tool.build()
 
     def subprocesses_built(self, scenario_names):
