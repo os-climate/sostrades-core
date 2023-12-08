@@ -197,6 +197,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         self.old_samples_df, self.old_scenario_df = ({}, {})
         self.driver_data_integrity = False
+        self.scatter_list_validity = True
 
         self.previous_sub_process_usecase_name = 'Empty'
         self.previous_sub_process_usecase_data = {}
@@ -422,20 +423,29 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             scenario_names = samples_df[self.SCENARIO_NAME].values.tolist()
         else:
             scenario_names = []
+
+        scatter_list_validity = True
         # Check if two scenario have the same names
         if len(set(scenario_names)) != len(scenario_names):
             warning_msg = f'Two scenarios have same names in the samples_df, check the {self.SCENARIO_NAME} column'
             self.check_integrity_msg_list.append(warning_msg)
+            scatter_list_validity = False
 
         # Check if no scenario are selected
         if samples_df.empty:
             warning_msg = f'Your samples_df is empty, the driver cannot be configured'
             self.check_integrity_msg_list.append(warning_msg)
+            scatter_list_validity = False
         else:
             selected_scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]][self.SCENARIO_NAME].values.tolist()
             if len(selected_scenario_names) == 0:
                 warning_msg = f'You need to select at least one scenario to execute your driver'
                 self.check_integrity_msg_list.append(warning_msg)
+                scatter_list_validity = False
+
+        # in MultiInstance, flag self.scatter_list_validity detects specifically whether scenarios can be built (whereas
+        # other data_integrity checks concern i/o configuration or execution but do not impeach building the scenarios)
+        self.scatter_list_validity = scatter_list_validity
 
         # Check if a None is in the samples_df
         value_check = True
