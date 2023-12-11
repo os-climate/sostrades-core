@@ -265,12 +265,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         The driver is not fully configured for eval inputs possible value and the sample generator send the info to the driver (via driver_config_status)
 
         '''
-        driver_config_status = self.sample_generator_disc.set_eval_in_possible_values(self.eval_in_possible_values)
-
-        # TODO: this might be improved (see SampleGenerator.set_eval_in_possible_values)
-        if driver_config_status is False:
-            self.set_configure_status(False)
-
+        self.sample_generator_disc.set_eval_in_possible_values(possible_values=self.eval_in_possible_values,
+                                                               possible_types=self.eval_in_possible_types)
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
 

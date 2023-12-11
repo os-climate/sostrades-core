@@ -155,8 +155,13 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.samples_gene_df = None
 
         self.force_sampling_at_configuration_time = False
+        # FIXME: no need for duplication with a sorted dict
+        self.eval_in_possible_values = []
+        self.eval_in_possible_types = {}
 
-    def set_eval_in_possible_values(self, possible_values: list[str]) -> bool:
+    def set_eval_in_possible_values(self,
+                                    possible_values: list[str],
+                                    possible_types: dict[str]):
         """
         Method used by a driver in composition with a sample generator to pass the set of inputs of the subprocess
         that can be selected in eval_inputs.
@@ -167,81 +172,129 @@ class ProxySampleGenerator(ProxyDiscipline):
              driver_is_configured (bool): flag to detect whether driver could ask sample generator for necessary
                 configuration actions
         """
-        driver_is_configured = True
-        # TODO: might want to refactor this eventually. If so, take into account that this "driver_is_configured" flag
-        #  is a quick fix. The proper way is probably as follows: in this method just set the attribute eval_in_possible_values
-        #  and handle SampleGenerator configuration status if it has changed. Then in SampleGenerator configuration do the
-        #  remaining actions in the code below (set eval_inputs and handle corresponding samples_df columns update).
-        if possible_values:
-            driver_is_configured = False
-            disc_in = self.get_data_in()
-            if self.EVAL_INPUTS in disc_in:
-                driver_is_configured = True
-                default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_values],
-                                                     'full_name': possible_values})
-                eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
+        if self.eval_in_possible_types.keys() != possible_types.keys():
+            self.eval_in_possible_values = possible_values
+            self.eval_in_possible_types = possible_types
+            self.set_configure_status(False)
 
-                if eval_input_new_dm is None:
-                    self.dm.set_data(eval_inputs_f_name,
-                                     'value', default_in_dataframe, check_value=False)
-                # check if the eval_inputs need to be updated after a subprocess
-                # configureon s'ap
-                elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-                    error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
-                                       is_eval_input=True)
-                    for msg in error_msg:
-                        self.logger.warning(msg)
+    def update_eval_inputs_with_possible_values(self, disc_in):
+        if self.eval_in_possible_values and self.EVAL_INPUTS in disc_in:
+            default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in self.eval_in_possible_values],
+                                                 'full_name': self.eval_in_possible_values})
+            eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
 
-                    # reindex eval_inputs to the possible values keeping other values and columns of the df
-                    eval_input_new_dm = eval_input_new_dm.\
-                        drop_duplicates('full_name').set_index('full_name').reindex(possible_values).\
-                        reset_index().reindex(columns=eval_input_new_dm.columns)
-                    eval_input_new_dm['selected_input'] = eval_input_new_dm['selected_input'].fillna(False).astype('bool')
-                    # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
-                    if 'list_of_values' in eval_input_new_dm.columns:
-                        new_in = eval_input_new_dm['list_of_values'].isna()
-                        eval_input_new_dm.loc[new_in, 'list_of_values'] = pd.Series([[]] * new_in.sum()).values
+            if eval_input_new_dm is None:
+                self.dm.set_data(eval_inputs_f_name,
+                                 'value', default_in_dataframe, check_value=False)
+            # check if the eval_inputs need to be updated after a subprocess
+            # configureon s'ap
+            elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+                # TODO: double-check but in principle these checks are in the data_integrity of driver eval
+                # error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                #                    is_eval_input=True)
+                # for msg in error_msg:
+                #     self.logger.warning(msg)
 
-                    self.dm.set_data(eval_inputs_f_name,
-                                     'value', eval_input_new_dm, check_value=False)
+                # reindex eval_inputs to the possible values keeping other values and columns of the df
+                eval_input_new_dm = eval_input_new_dm.\
+                    drop_duplicates('full_name').set_index('full_name').reindex(self.eval_in_possible_values).\
+                    reset_index().reindex(columns=eval_input_new_dm.columns)
+                eval_input_new_dm['selected_input'] = eval_input_new_dm['selected_input'].fillna(False).astype('bool')
+                # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
+                if 'list_of_values' in eval_input_new_dm.columns:
+                    new_in = eval_input_new_dm['list_of_values'].isna()
+                    eval_input_new_dm.loc[new_in, 'list_of_values'] = pd.Series([[]] * new_in.sum()).values
 
-                selected_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-                selected_inputs = selected_inputs[selected_inputs['selected_input'] == True]['full_name'].tolist()
-                all_columns = [self.SELECTED_SCENARIO,
-                               self.SCENARIO_NAME] + selected_inputs
-                default_custom_dataframe = pd.DataFrame(
-                    [[None for _ in range(len(all_columns))]], columns=all_columns)
-                dataframe_descriptor = self.SAMPLES_DF_DESC_SHARED['dataframe_descriptor'].copy()
-                # This reflects 'samples_df' dynamic input has been configured and that
-                # eval_inputs have changed
-                if self.SAMPLES_DF in disc_in:
-                    final_dataframe = pd.DataFrame(None, columns=all_columns)
-                    samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-                    if samples_df is not None:
-                        from_samples = list(samples_df.keys())
-                        from_eval_inputs = list(default_custom_dataframe.keys())
-                        len_df = 1
-                        for element in from_eval_inputs:
-                            if element in from_samples:
-                                len_df = len(samples_df)
+                self.dm.set_data(eval_inputs_f_name,
+                                 'value', eval_input_new_dm, check_value=False)
 
-                        for element in from_eval_inputs:
-                            if element in from_samples:
-                                final_dataframe[element] = samples_df[element]
-                                dataframe_descriptor[element] = ('multiple', None, True)
-                                # TODO: dataframe descriptor should be corrected by driver based on samples_df so that
-                                #  it can properly work in standalone driver. Currently multi-instance driver does not
-                                #  have the mechanism..
-                            else:
-                                final_dataframe[element] = [None for _ in range(len_df)]
-                                dataframe_descriptor[element] = ('multiple', None, True)
-                    samples_df_f_name = self.get_var_full_name(self.SAMPLES_DF, disc_in)
-                    self.dm.set_data(samples_df_f_name, self.VALUE, final_dataframe, check_value=False)
-                    self.dm.set_data(samples_df_f_name, self.DATAFRAME_DESCRIPTOR, dataframe_descriptor, check_value=False)
-                elif self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE) == self.AT_CONFIGURATION_TIME:
-                    driver_is_configured = False
-        return driver_is_configured
+    # def set_eval_in_possible_values(self, possible_values: list[str]) -> bool:
+    #     """
+    #     Method used by a driver in composition with a sample generator to pass the set of inputs of the subprocess
+    #     that can be selected in eval_inputs.
+    #
+    #     Arguments:
+    #         possible_values (list(string)): possible values of the eval_inputs variable names
+    #     Returns:
+    #          driver_is_configured (bool): flag to detect whether driver could ask sample generator for necessary
+    #             configuration actions
+    #     """
+    #     driver_is_configured = True
+    #     # TODO: might want to refactor this eventually. If so, take into account that this "driver_is_configured" flag
+    #     #  is a quick fix. The proper way is probably as follows: in this method just set the attribute eval_in_possible_values
+    #     #  and handle SampleGenerator configuration status if it has changed. Then in SampleGenerator configuration do the
+    #     #  remaining actions in the code below (set eval_inputs and handle corresponding samples_df columns update).
+    #     if possible_values:
+    #         driver_is_configured = False
+    #         disc_in = self.get_data_in()
+    #         if self.EVAL_INPUTS in disc_in:
+    #             driver_is_configured = True
+    #             default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_values],
+    #                                                  'full_name': possible_values})
+    #             eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+    #             eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
+    #
+    #             if eval_input_new_dm is None:
+    #                 self.dm.set_data(eval_inputs_f_name,
+    #                                  'value', default_in_dataframe, check_value=False)
+    #             # check if the eval_inputs need to be updated after a subprocess
+    #             # configureon s'ap
+    #             elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+    #                 error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+    #                                    is_eval_input=True)
+    #                 for msg in error_msg:
+    #                     self.logger.warning(msg)
+    #
+    #                 # reindex eval_inputs to the possible values keeping other values and columns of the df
+    #                 eval_input_new_dm = eval_input_new_dm.\
+    #                     drop_duplicates('full_name').set_index('full_name').reindex(possible_values).\
+    #                     reset_index().reindex(columns=eval_input_new_dm.columns)
+    #                 eval_input_new_dm['selected_input'] = eval_input_new_dm['selected_input'].fillna(False).astype('bool')
+    #                 # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
+    #                 if 'list_of_values' in eval_input_new_dm.columns:
+    #                     new_in = eval_input_new_dm['list_of_values'].isna()
+    #                     eval_input_new_dm.loc[new_in, 'list_of_values'] = pd.Series([[]] * new_in.sum()).values
+    #
+    #                 self.dm.set_data(eval_inputs_f_name,
+    #                                  'value', eval_input_new_dm, check_value=False)
+    #
+    #             selected_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+    #             selected_inputs = selected_inputs[selected_inputs['selected_input'] == True]['full_name'].tolist()
+    #             all_columns = [self.SELECTED_SCENARIO,
+    #                            self.SCENARIO_NAME] + selected_inputs
+    #             default_custom_dataframe = pd.DataFrame(
+    #                 [[None for _ in range(len(all_columns))]], columns=all_columns)
+    #             dataframe_descriptor = self.SAMPLES_DF_DESC_SHARED['dataframe_descriptor'].copy()
+    #             # This reflects 'samples_df' dynamic input has been configured and that
+    #             # eval_inputs have changed
+    #             if self.SAMPLES_DF in disc_in:
+    #                 final_dataframe = pd.DataFrame(None, columns=all_columns)
+    #                 samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+    #                 if samples_df is not None:
+    #                     from_samples = list(samples_df.keys())
+    #                     from_eval_inputs = list(default_custom_dataframe.keys())
+    #                     len_df = 1
+    #                     for element in from_eval_inputs:
+    #                         if element in from_samples:
+    #                             len_df = len(samples_df)
+    #
+    #                     for element in from_eval_inputs:
+    #                         if element in from_samples:
+    #                             final_dataframe[element] = samples_df[element]
+    #                             dataframe_descriptor[element] = ('multiple', None, True)
+    #                             # TODO: dataframe descriptor should be corrected by driver based on samples_df so that
+    #                             #  it can properly work in standalone driver. Currently multi-instance driver does not
+    #                             #  have the mechanism..
+    #                         else:
+    #                             final_dataframe[element] = [None for _ in range(len_df)]
+    #                             dataframe_descriptor[element] = ('multiple', None, True)
+    #                 samples_df_f_name = self.get_var_full_name(self.SAMPLES_DF, disc_in)
+    #                 self.dm.set_data(samples_df_f_name, self.VALUE, final_dataframe, check_value=False)
+    #                 self.dm.set_data(samples_df_f_name, self.DATAFRAME_DESCRIPTOR, dataframe_descriptor, check_value=False)
+    #             elif self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE) == self.AT_CONFIGURATION_TIME:
+    #                 driver_is_configured = False
+    #     return driver_is_configured
 
     def is_configured(self):
         """
@@ -259,8 +312,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.sampling_generation_mode = self.configure_generation_mode(disc_in)
             self.instantiate_sampling_tool()
             self.update_eval_inputs_columns(disc_in)
-            dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(
-                self)
+            dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(self)
 
             if self.sampling_generation_mode == self.AT_RUN_TIME:
                 # if sampling at run-time add the corresponding output
@@ -361,6 +413,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if self.configurator:
                 _df_desc['full_name'] = ('string', None, False)
             self._update_eval_inputs_columns(_df_desc, disc_in)
+        self.update_eval_inputs_with_possible_values(disc_in)
 
     def prepare_execution(self):
         """
