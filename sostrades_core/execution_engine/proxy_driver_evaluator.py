@@ -458,12 +458,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         # Check if column names are not coherent with subprocess
         # Check if value to describe the scenario has not the type in line with the subprocess
-        if value_check and no_None_in_df:
+        # Also build a dataframe descriptor for samples_df and push it into the dm
+        if value_check:
             variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
             samples_df_full_name = self.get_input_var_full_name(self.SAMPLES_DF)
-            samples_df_descriptor = self.ee.dm.get_data(samples_df_full_name, self.DATAFRAME_DESCRIPTOR)
+            samples_df_descriptor = copy.deepcopy(self.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR])
+            # samples_df_descriptor = self.ee.dm.get_data(samples_df_full_name, self.DATAFRAME_DESCRIPTOR)
             for col in variables_column:
-
                 if not col in self.eval_in_possible_values:
                     warning_msg = f'The variable {col} is not in the subprocess eval input values: It cannot be a column of the {self.SAMPLES_DF} '
                     self.check_integrity_msg_list.append(warning_msg)
@@ -471,11 +472,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     var_type = self.eval_in_possible_types[col]
                     df_desc_tuple = tuple([var_type, None, True])
 
-                    if not samples_df[col].apply(lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).any():
+                    if no_None_in_df and not samples_df[col].apply(lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).any():
                         warning_msg = f'Some value has wrong types in column {col}, the subprocess variable is of type {var_type} and all variables in the column should be the same'
                         self.check_integrity_msg_list.append(warning_msg)
                     else:
                         samples_df_descriptor[col] = df_desc_tuple
+            self.ee.dm.set_data(samples_df_full_name, self.DATAFRAME_DESCRIPTOR,
+                                samples_df_descriptor, check_value=False)
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
         """
