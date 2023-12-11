@@ -61,7 +61,8 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                     dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe'}})
 
                     self.add_outputs(dynamic_outputs)
-            # These is check data integrity that is move to driver check data integrity
+
+            # TODO: These is check data integrity that is move to driver check data integrity
             if self.SAMPLES_DF in disc_in:
                 samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
                 if samples_df is not None:
