@@ -586,7 +586,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             chart_name = 'Objective function optimization'
 
             new_chart = TwoAxesInstanciatedChart('Iterations', 'Fitness function',
-                                                 chart_name=chart_name, y_axis_log=True)
+                                                 chart_name=chart_name)
 
             for series in to_series(
                     varname="Fitness function", x=iterations, y=fitness_func_through_iterations):
