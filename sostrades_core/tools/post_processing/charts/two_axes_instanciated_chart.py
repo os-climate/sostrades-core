@@ -159,6 +159,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
             yaxis.update({'range': self.primary_ordinate_axis_range})
         yaxis.update({'title': self.primary_ordinate_axis_name})
         yaxis.update({'automargin': True})
+        if self.y_axis_log:
+            fig.update_yaxes(type='log')
 
         yaxis2 = {}
         if len(self.secondary_ordinate_axis_range) > 0:
