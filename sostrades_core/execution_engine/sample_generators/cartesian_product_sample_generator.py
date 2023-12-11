@@ -165,7 +165,6 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     #     """
     #     generated_samples_data_description = proxy.SAMPLES_DF_DESC_SHARED.copy()
     #
-    #     # TODO: implement separation btw config. and sampling at config. time (remaining of the method should go away)
     #     if self.eval_inputs_cp_validity:
     #         if self.eval_inputs_cp_has_changed:
     #             proxy.set_sample()
@@ -174,7 +173,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     #         #                  proxy.SCENARIO_NAME: ('string', None, False)}
     #         # df_descriptor.update(
     #         #     {row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
-    #         #      self.eval_inputs_cp_filtered.iterrows()})  # FIXME: no good, handle DATAFRAME_DESCRIPTOR
+    #         #      self.eval_inputs_cp_filtered.iterrows()})  # FIXME: no good, handle DATAFRAME_DESCRIPTOR --> done by driver
     #         # generated_samples_data_description.update({proxy.DATAFRAME_DESCRIPTOR: df_descriptor,
     #         #                                            proxy.DYNAMIC_DATAFRAME_COLUMNS: False})
     #     else:
@@ -186,7 +185,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     #
     #     # Set or update GENERATED_SAMPLES in line with selected
     #     # eval_inputs_cp
-    #     disc_in = proxy.get_data_in()  #FIXME: pass disc_in
+    #     disc_in = proxy.get_data_in()
     #     if proxy.SAMPLES_DF in disc_in:
     #         # proxy.set_sample()
     #         if proxy.samples_gene_df is not None:
@@ -195,8 +194,6 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     #         proxy.sample_pending = False
     #         # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
     #     else:
-    #         # TODO: generalise to all methods sampling at config-time (when decoupling setup from sampling) or
-    #         #  otherwise there will be issues when generator tries to sample before samples_df is added in disc_in
     #         proxy.sample_pending = True
 
     def reformat_eval_inputs_cp(self, eval_inputs_cp):
