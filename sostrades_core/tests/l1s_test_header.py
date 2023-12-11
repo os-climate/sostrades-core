@@ -30,7 +30,7 @@ class Testheader(unittest.TestCase):
         Initialize third data needed for testing
         '''
         self.pp = pprint.PrettyPrinter(indent=4, compact=True)
-        self.ExtensionToIgnore = ["pkl", "png", "jpg", "csv", "md", "markdown", "avif", "json", "in", "gitignore", "cfg", "puml", "pdf", "txt", "ipynb", "zip", "rst"]
+        self.ExtensionToIgnore = ["pkl", "png", "jpg", "csv", "md", "markdown", "avif", "json", "in", "gitignore", "cfg", "puml", "pdf", "txt", "ipynb", "zip", "rst", "ini"]
         #Add here the files to ignore       
         self.FilesToIgnore = ["sostrades_core/execution_engine/sample_generators/__init__.py",
                               "sostrades_core/sos_processes/test/sellar/__init__.py",
