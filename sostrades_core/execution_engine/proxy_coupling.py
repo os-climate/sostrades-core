@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/04/17-2023/11/02 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -909,19 +910,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 residuals_through_iterations = np.asarray(
                     list(map(lambda x: [x[0]], post_processing_mda_data[sub_mda_class])))
                 iterations = list(range(len(residuals_through_iterations)))
-                min_y, max_y = inf, - inf
-                min_value, max_value = residuals_through_iterations.min(), residuals_through_iterations.max()
-                if max_value > max_y:
-                    max_y = max_value
-                if min_value < min_y:
-                    min_y = min_value
                 chart_name = 'Residuals History'
 
                 new_chart = TwoAxesInstanciatedChart('Iterations', 'Residuals',
-                                                     [min(iterations), max(iterations)], [
-                                                         min_y - (max_y - min_y) * 0.1
-                                                         , max_y + (max_y - min_y) * 0.1],
-                                                     chart_name)
+                                                     chart_name=chart_name,
+                                                     y_axis_log=True)
 
                 for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
                     new_chart.series.append(series)

@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/04/06-2023/11/02 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -581,17 +582,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         if select_all or "Fitness function" in chart_list:
             fitness_func_through_iterations = post_processing_mdo_data["objective"]
             iterations = list(range(len(fitness_func_through_iterations)))
-            min_y, max_y = inf, - inf
-            min_value, max_value = fitness_func_through_iterations.min(), fitness_func_through_iterations.max()
-            if max_value > max_y: max_y = max_value
-            if min_value < min_y: min_y = min_value
+
             chart_name = 'Objective function optimization'
 
             new_chart = TwoAxesInstanciatedChart('Iterations', 'Fitness function',
-                                                 [min(iterations), max(iterations)], [
-                                                     min_y - (max_y - min_y) * 0.1
-                                                     , max_y + (max_y - min_y) * 0.1],
-                                                 chart_name)
+                                                 chart_name=chart_name)
 
             for series in to_series(
                     varname="Fitness function", x=iterations, y=fitness_func_through_iterations):

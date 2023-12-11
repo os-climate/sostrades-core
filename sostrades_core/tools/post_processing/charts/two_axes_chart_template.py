@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/05/17-2023/11/02 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -273,7 +274,8 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
 
     def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
                  primary_ordinate_axis_range=[], chart_name='', stacked_bar=False, bar_orientation='v',
-                 cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[]):
+                 cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[],
+                 y_axis_log: bool = False):
         """
          Create a new chart definition
 
@@ -297,6 +299,7 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         :type secondary_ordinate_axis_name: str
         :param secondary_ordinate_axis_range: array(2) with min and max value range for secondary ordinate axes
         :type secondary_ordinate_axis_range: list [min, max]
+        :param y_axis_log: bool indicating wheter y axis is logarithmic or not
         """
 
         super().__init__()
@@ -333,6 +336,8 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
 
         # Cumulative surface display
         self.cumulative_surface = cumulative_surface
+
+        self.y_axis_log = y_axis_log
 
     def add_series(self, series):
         """

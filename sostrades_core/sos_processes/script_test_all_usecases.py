@@ -1,5 +1,5 @@
-"""
-Copyright 2022 Airbus SAS
+'''
+Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-"""
+'''
 from typing import Union, Optional
 
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
@@ -116,7 +116,7 @@ def manage_process_launch(process_list, message_queue) -> tuple[str, str]:
     return global_test_passed, global_output_msg
 
 
-def test_all_usecases(processes_repo: str, force_run=False):
+def _test_all_usecases(processes_repo: str, force_run=False):
     """
     Test all usecases in a repo.
     Each usecase is tested in a process.
