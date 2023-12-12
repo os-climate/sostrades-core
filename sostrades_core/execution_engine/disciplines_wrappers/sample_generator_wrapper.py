@@ -44,7 +44,12 @@ class SampleGeneratorWrapper(SoSWrapp):
         'icon': 'fas fa-grid-4 fa-fw',
         'version': ''
     }
+    # eval_inputs and columns
     EVAL_INPUTS = 'eval_inputs'
+    SELECTED_INPUT = 'selected_input'
+    FULL_NAME = 'full_name'
+    LIST_OF_VALUES = 'list_of_values'
+    # samples_df and columns
     SAMPLES_DF = 'samples_df'
     SELECTED_SCENARIO = 'selected_scenario'
     SCENARIO_NAME = 'scenario_name'
