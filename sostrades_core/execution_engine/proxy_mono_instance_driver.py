@@ -178,4 +178,39 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             self).get_display_value()
         self.ee.ns_manager.add_display_ns_to_builder(
             disc_builder, driver_display_value)
+        
+
+    def check_data_integrity(self):
+        '''
+        Check the data integrity of the driver (from super) and there should be at least one trades variables
+        and at least one gather output should be selected
+        '''
+        super().check_data_integrity()
+        disc_in = self.get_data_in()
+
+        if self.SAMPLES_DF in disc_in :
+            has_new_warning = False
+            # check that there is at least one trade variables 
+            # (the trades variables are column with variable names in samples_df)
+            samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+            variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
+            if len(variables_column) == 0:
+                warning_msg = f'There should be at least one trade variable column in samples_df'
+                self.check_integrity_msg_list.append(warning_msg)
+                #save inetrgity message on samples_df
+                self.driver_data_integrity = False
+                data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
+                self.dm.set_data(
+                    self.get_var_full_name(self.SAMPLES_DF, disc_in),
+                    self.CHECK_INTEGRITY_MSG, data_integrity_msg)
+
+            #check that there is at least one gather output selected
+            gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
+            selected_outputs_dict = gather_selected_outputs(gather_outputs, self.GATHER_DEFAULT_SUFFIX)
+            if selected_outputs_dict is None or len(selected_outputs_dict) == 0:
+                self.dm.set_data(
+                    self.get_var_full_name(self.GATHER_OUTPUTS, disc_in),
+                    self.CHECK_INTEGRITY_MSG, "There should be at least one selected output")
+            
+            
 

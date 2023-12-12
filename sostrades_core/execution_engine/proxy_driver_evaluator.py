@@ -391,7 +391,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def check_data_integrity(self):
         '''
-        Check the data integrity of the input variabels of the driver
+        Check the data integrity of the input variables of the driver
         '''
         # checking for duplicates
         self.check_integrity_msg_list = []
