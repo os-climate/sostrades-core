@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
 
 
@@ -62,28 +63,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
                     self.add_outputs(dynamic_outputs)
 
-            # TODO: These is check data integrity that is move to driver check data integrity
-            if self.SAMPLES_DF in disc_in:
-                samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-                if samples_df is not None:
-                    selected_inputs = set(samples_df.columns)
-                    selected_inputs -= self.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR].keys()
-                    if selected_inputs != set(self.selected_inputs):
-                        self.selected_inputs = list(selected_inputs)
-                        self.eval_in_list = [
-                            f'{self.get_disc_full_name()}.{element}' for element in self.selected_inputs]
-                        dataframe_descriptor = self.SAMPLES_DF_DESC['dataframe_descriptor'].copy()
-                        for key, var_f_name in zip(self.selected_inputs, self.eval_in_list):
-                            if var_f_name in self.ee.dm.data_id_map:
-                                var = tuple([self.ee.dm.get_data(
-                                    var_f_name, self.TYPE), None, True])
-                                dataframe_descriptor[key] = var
-                            elif self.MULTIPLIER_PARTICULE in var_f_name:
-                                # for multipliers assume it is a float
-                                dataframe_descriptor[key] = ('float', None, True)
-                            else:
-                                raise KeyError(f'Selected input {var_f_name} is not in the Data Manager')
-
+            
     def configure_driver(self):
         if len(self.proxy_disciplines) > 0:
             # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
@@ -189,20 +169,27 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         disc_in = self.get_data_in()
 
         if self.SAMPLES_DF in disc_in :
-            has_new_warning = False
-            # check that there is at least one trade variables 
-            # (the trades variables are column with variable names in samples_df)
-            samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-            variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
-            if len(variables_column) == 0:
-                warning_msg = f'There should be at least one trade variable column in samples_df'
-                self.check_integrity_msg_list.append(warning_msg)
-                #save inetrgity message on samples_df
-                self.driver_data_integrity = False
-                data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
-                self.dm.set_data(
-                    self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                    self.CHECK_INTEGRITY_MSG, data_integrity_msg)
+            value_check = True
+            # if we are at run time no need to check the samples and output
+            if self.sample_generator_disc is not None:
+                sampling_generation_mode = self.sample_generator_disc.sampling_generation_mode
+                if sampling_generation_mode == ProxySampleGenerator.AT_RUN_TIME:
+                    value_check = False
+            if value_check:        
+                # check that there is at least one trade variables 
+                # (the trades variables are column with variable names in samples_df)
+                samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
+                variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
+                if len(variables_column) == 0:
+                    
+                    warning_msg = f'There should be at least one trade variable column in samples_df'
+                    self.check_integrity_msg_list.append(warning_msg)
+                    #save inetrgity message on samples_df
+                    self.driver_data_integrity = False
+                    data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
+                    self.dm.set_data(
+                        self.get_var_full_name(self.SAMPLES_DF, disc_in),
+                        self.CHECK_INTEGRITY_MSG, data_integrity_msg)
 
             #check that there is at least one gather output selected
             gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)

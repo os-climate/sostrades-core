@@ -165,10 +165,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z.copy()
 
         # Eval inputs
-        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
+        disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2.copy()
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # Sellar inputs
@@ -1075,7 +1075,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             exec_eng.execute()
 
-        error_message = f"Variable root.Eval.samples_df : Dataframe value has a column wrong_values but the dataframe descriptor has not, df_descriptor keys : dict_keys(['x', 'z'])"
+        error_message = f"Variable root.Eval.samples_df : The variable wrong_values is not in the subprocess eval input values: It cannot be a column of the samples_df "
 
         self.assertEqual(str(cm.exception), error_message)
         samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
@@ -1691,4 +1691,5 @@ class TestSoSDOEScenario(unittest.TestCase):
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_13_sameusecase_name_as_doe_eval()
+    cls.test_12_Eval_User_Defined_samples_non_alpha()
+()
