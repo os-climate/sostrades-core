@@ -50,7 +50,7 @@ def find_possible_output_values(disc, prefix_name_to_delete=None, strip_first_ns
                                 io_type_in=False, io_type_out=True, strip_first_ns=strip_first_ns)[1]
 
 
-def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_type_out=True, strip_first_ns=False):
+def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_type_out=True, strip_first_ns=False, original_editable_state_dict=None):
     '''
         his method will find all possible output and inputs values under disc and all subdisciplines recursively
         Args:
@@ -71,7 +71,7 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
     # fill possiblee values set for the high level disc
     if disc.get_disc_full_name() != prefix_name_to_delete:
         possible_in_types, possible_out_values = fill_possible_values(
-            disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
+            disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out, original_editable_state_dict=original_editable_state_dict)
 
     # find sub_disciplines if it's a driver then subdisciplines are stored in scenarios (proxy in run with flatten subprocess)
     if hasattr(disc, 'scenarios'):
@@ -82,12 +82,12 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
     # loop over all subdisciplines to find possible i/O values
     for sub_disc in sub_disciplines:
         sub_in_types, sub_out_values = fill_possible_values(
-            sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
+            sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out, original_editable_state_dict=original_editable_state_dict)
         possible_in_types.update(sub_in_types)
         possible_out_values.update(sub_out_values)
         # Recursively if there is multiple levels
         sub_in_types, sub_out_values = find_possible_values(
-            sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out)
+            sub_disc, prefix_name_to_delete, io_type_in=io_type_in, io_type_out=io_type_out, original_editable_state_dict=original_editable_state_dict)
         possible_in_types.update(sub_in_types)
         possible_out_values.update(sub_out_values)
     # strip the scenario name to have just one entry for repeated variables in scenario instances
@@ -99,7 +99,7 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
         return possible_in_types, possible_out_values
 
 
-def fill_possible_values(disc, prefix_name_to_delete, io_type_in=False, io_type_out=True):
+def fill_possible_values(disc, prefix_name_to_delete, io_type_in=False, io_type_out=True, original_editable_state_dict=None):
     '''
         Fill possible values lists for eval inputs and outputs
         an input variable must be a float coming from a data_in of a discipline in all the process
@@ -109,7 +109,7 @@ def fill_possible_values(disc, prefix_name_to_delete, io_type_in=False, io_type_
     poss_in_types_full = {}
     poss_out_values_full = set()
     if io_type_in:  # TODO: edit this code if adding multi-instance eval_inputs in order to take structuring vars
-        poss_in_types_full = fill_possible_input_values(disc, poss_in_types_full, prefix_name_to_delete)
+        poss_in_types_full = fill_possible_input_values(disc, poss_in_types_full, prefix_name_to_delete, original_editable_state_dict)
 
     if io_type_out:
         poss_out_values_full = fill_possible_output_values(disc, poss_out_values_full, prefix_name_to_delete)
@@ -117,7 +117,7 @@ def fill_possible_values(disc, prefix_name_to_delete, io_type_in=False, io_type_
     return poss_in_types_full, poss_out_values_full
 
 
-def fill_possible_input_values(disc, poss_in_types_full, prefix_name_to_delete):
+def fill_possible_input_values(disc, poss_in_types_full, prefix_name_to_delete, original_editable_state_dict):
     '''
 
     Args:
@@ -139,6 +139,9 @@ def fill_possible_input_values(disc, poss_in_types_full, prefix_name_to_delete):
         is_in_type = disc.dm.data_dict[disc.dm.data_id_map[full_id]
                      ]['io_type'] == 'in'
         is_editable = data_dict['editable']
+        if original_editable_state_dict is not None \
+            and full_id in original_editable_state_dict.keys():
+            is_editable = original_editable_state_dict[full_id]
         is_a_multiplier = MULTIPLIER_PARTICULE in key
         # a possible input value must :
         #           - be a ['float', 'array', 'int', 'string']

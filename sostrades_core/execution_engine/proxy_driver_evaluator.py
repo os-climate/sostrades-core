@@ -210,6 +210,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.original_editability_dict = {}
         self.original_editable_dict_ref = {}
         self.original_editable_dict_non_ref = {}
+        self.original_editable_dict_trade_variables = {}
         self.there_are_new_scenarios = False
 
         self.gather_names = None
@@ -669,7 +670,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         possible_in_types, possible_out_values = find_possible_values(self, io_type_in=io_type_in,
                                                                       io_type_out=io_type_out,
-                                                                      strip_first_ns=strip_first_ns)
+                                                                      strip_first_ns=strip_first_ns,
+                                                                      original_editable_state_dict=self.original_editable_dict_trade_variables)
 
         disc_in = self.get_data_in()
         if possible_in_types and io_type_in:
