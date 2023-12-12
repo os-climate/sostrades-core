@@ -86,20 +86,22 @@ class ProxySampleGenerator(ProxyDiscipline):
     SAMPLES_DF_DESC_SHARED[ProxyDiscipline.NAMESPACE] = NS_SAMPLING
     SAMPLES_DF_DESC_SHARED[ProxyDiscipline.VISIBILITY] = ProxyDiscipline.SHARED_VISIBILITY
 
-    # TODO: 'full_name', 'selected_input' etc. class variables which probably belong in the tools rather than here.
     EVAL_INPUTS = SampleGeneratorWrapper.EVAL_INPUTS
-    EVAL_INPUTS_DF_DESC = {'selected_input': ('bool', None, True),
-                           'full_name': ('string', None, True)}
+    SELECTED_INPUT = SampleGeneratorWrapper.SELECTED_INPUT
+    FULL_NAME = SampleGeneratorWrapper.FULL_NAME
+    EVAL_INPUTS_DF_DESC = {SELECTED_INPUT: ('bool', None, True),
+                           FULL_NAME: ('string', None, True)}
     EVAL_INPUTS_DESC = {ProxyDiscipline.TYPE: 'dataframe',
                         ProxyDiscipline.DATAFRAME_DESCRIPTOR: EVAL_INPUTS_DF_DESC.copy(),
                         ProxyDiscipline.DATAFRAME_EDITION_LOCKED: False,
                         ProxyDiscipline.STRUCTURING: True,
-                        ProxyDiscipline.DEFAULT: pd.DataFrame(columns=['selected_input', 'full_name']),
+                        ProxyDiscipline.DEFAULT: pd.DataFrame(columns=[SELECTED_INPUT, FULL_NAME]),
                         ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
                         ProxyDiscipline.NAMESPACE: NS_SAMPLING,
                         }
     EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
-    EVAL_INPUTS_CP_DF_DESC.update({'list_of_values': ('list', None, True)})
+    LIST_OF_VALUES = SampleGeneratorWrapper.LIST_OF_VALUES
+    EVAL_INPUTS_CP_DF_DESC.update({LIST_OF_VALUES: ('list', None, True)})
 
     SAMPLING_METHOD = 'sampling_method'
     SIMPLE_SAMPLING_METHOD = 'simple'
@@ -179,8 +181,8 @@ class ProxySampleGenerator(ProxyDiscipline):
 
     def update_eval_inputs_with_possible_values(self, disc_in):
         if self.eval_in_possible_values and self.EVAL_INPUTS in disc_in:
-            default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in self.eval_in_possible_values],
-                                                 'full_name': self.eval_in_possible_values})
+            default_in_dataframe = pd.DataFrame({self.SELECTED_INPUT: [False for _ in self.eval_in_possible_values],
+                                                 self.FULL_NAME: self.eval_in_possible_values})
             eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
             eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
 
@@ -189,22 +191,22 @@ class ProxySampleGenerator(ProxyDiscipline):
                                  'value', default_in_dataframe, check_value=False)
             # check if the eval_inputs need to be updated after a subprocess
             # configureon s'ap
-            elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
+            elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (set(default_in_dataframe[self.FULL_NAME].tolist())):
                 # TODO: double-check but in principle these checks are in the data_integrity of driver eval
-                # error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+                # error_msg = check_eval_io(eval_input_new_dm[self.FULL_NAME].tolist(), default_in_dataframe[self.FULL_NAME].tolist(),
                 #                    is_eval_input=True)
                 # for msg in error_msg:
                 #     self.logger.warning(msg)
 
                 # reindex eval_inputs to the possible values keeping other values and columns of the df
                 eval_input_new_dm = eval_input_new_dm.\
-                    drop_duplicates('full_name').set_index('full_name').reindex(self.eval_in_possible_values).\
+                    drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(self.eval_in_possible_values).\
                     reset_index().reindex(columns=eval_input_new_dm.columns)
-                eval_input_new_dm['selected_input'] = eval_input_new_dm['selected_input'].fillna(False).astype('bool')
+                eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype('bool')
                 # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
-                if 'list_of_values' in eval_input_new_dm.columns:
-                    new_in = eval_input_new_dm['list_of_values'].isna()
-                    eval_input_new_dm.loc[new_in, 'list_of_values'] = pd.Series([[]] * new_in.sum()).values
+                if self.LIST_OF_VALUES in eval_input_new_dm.columns:
+                    new_in = eval_input_new_dm[self.LIST_OF_VALUES].isna()
+                    eval_input_new_dm.loc[new_in, self.LIST_OF_VALUES] = pd.Series([[]] * new_in.sum()).values
 
                 self.dm.set_data(eval_inputs_f_name,
                                  'value', eval_input_new_dm, check_value=False)
@@ -230,8 +232,8 @@ class ProxySampleGenerator(ProxyDiscipline):
     #         disc_in = self.get_data_in()
     #         if self.EVAL_INPUTS in disc_in:
     #             driver_is_configured = True
-    #             default_in_dataframe = pd.DataFrame({'selected_input': [False for _ in possible_values],
-    #                                                  'full_name': possible_values})
+    #             default_in_dataframe = pd.DataFrame({self.SELECTED_INPUT: [False for _ in possible_values],
+    #                                                  self.FULL_NAME: possible_values})
     #             eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
     #             eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
     #
@@ -240,27 +242,27 @@ class ProxySampleGenerator(ProxyDiscipline):
     #                                  'value', default_in_dataframe, check_value=False)
     #             # check if the eval_inputs need to be updated after a subprocess
     #             # configureon s'ap
-    #             elif set(eval_input_new_dm['full_name'].tolist()) != (set(default_in_dataframe['full_name'].tolist())):
-    #                 error_msg = check_eval_io(eval_input_new_dm['full_name'].tolist(), default_in_dataframe['full_name'].tolist(),
+    #             elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (set(default_in_dataframe[self.FULL_NAME].tolist())):
+    #                 error_msg = check_eval_io(eval_input_new_dm[self.FULL_NAME].tolist(), default_in_dataframe[self.FULL_NAME].tolist(),
     #                                    is_eval_input=True)
     #                 for msg in error_msg:
     #                     self.logger.warning(msg)
     #
     #                 # reindex eval_inputs to the possible values keeping other values and columns of the df
     #                 eval_input_new_dm = eval_input_new_dm.\
-    #                     drop_duplicates('full_name').set_index('full_name').reindex(possible_values).\
+    #                     drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(possible_values).\
     #                     reset_index().reindex(columns=eval_input_new_dm.columns)
-    #                 eval_input_new_dm['selected_input'] = eval_input_new_dm['selected_input'].fillna(False).astype('bool')
+    #                 eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype('bool')
     #                 # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
-    #                 if 'list_of_values' in eval_input_new_dm.columns:
-    #                     new_in = eval_input_new_dm['list_of_values'].isna()
-    #                     eval_input_new_dm.loc[new_in, 'list_of_values'] = pd.Series([[]] * new_in.sum()).values
+    #                 if self.LIST_OF_VALUES in eval_input_new_dm.columns:
+    #                     new_in = eval_input_new_dm[self.LIST_OF_VALUES].isna()
+    #                     eval_input_new_dm.loc[new_in, self.LIST_OF_VALUES] = pd.Series([[]] * new_in.sum()).values
     #
     #                 self.dm.set_data(eval_inputs_f_name,
     #                                  'value', eval_input_new_dm, check_value=False)
     #
     #             selected_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-    #             selected_inputs = selected_inputs[selected_inputs['selected_input'] == True]['full_name'].tolist()
+    #             selected_inputs = selected_inputs[selected_inputs[self.SELECTED_INPUT] == True][self.FULL_NAME].tolist()
     #             all_columns = [self.SELECTED_SCENARIO,
     #                            self.SCENARIO_NAME] + selected_inputs
     #             default_custom_dataframe = pd.DataFrame(
@@ -411,7 +413,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         if _df_desc:
             # handle editability of the dataframe column with variable names when these are set by the driver
             if self.configurator:
-                _df_desc['full_name'] = ('string', None, False)
+                _df_desc[self.FULL_NAME] = ('string', None, False)
             self._update_eval_inputs_columns(_df_desc, disc_in)
         self.update_eval_inputs_with_possible_values(disc_in)
 

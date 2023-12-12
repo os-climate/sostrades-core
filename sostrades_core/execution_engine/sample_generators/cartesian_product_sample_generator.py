@@ -241,8 +241,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
     def get_arguments(self, wrapper):
         # TODO: should actually use get_sosdisc_inputs instead of wrapper attributes
-        dict_of_list_values = self.eval_inputs_cp_filtered.set_index(
-            'full_name').T.to_dict('records')[0]
+        dict_of_list_values = self.eval_inputs_cp_filtered.set_index(wrapper.FULL_NAME)[wrapper.LIST_OF_VALUES].to_dict()
         return [], {'dict_of_list_values': dict_of_list_values}
 
     def is_ready_to_sample(self, proxy):
