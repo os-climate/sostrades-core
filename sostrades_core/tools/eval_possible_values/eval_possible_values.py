@@ -57,6 +57,7 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
         disc: disc where to find possible output values
         prefix_name_to_delete: prefix to delete before all output values name if None then prefix is disc.get_disc_full_name()
         strip_first_ns: If True will strip the first prefix by splitting with the point delimiter
+        original_editable_state_dict: original editable state of trade variables because they are not editable if selected in eval_input
 
     Returns:
         A dict of possible input_values and its types
