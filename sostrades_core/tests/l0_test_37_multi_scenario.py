@@ -1080,6 +1080,102 @@ class TestMultiScenario(unittest.TestCase):
         ])
         self.assertEqual(exp_tv_tree, exec_eng2.display_treeview_nodes())
 
+    def test_10_cartesian_product_sampling_then_configuration_then_sampling_respecting_overwrite_flag(self):
+        """
+        Test that checks that after sampling with CartesianProduct, we can modify eval_inputs without rewriting the
+        samples_df as long as we don't set the overwrite_samples_df flag to True. After re-configuration, setting this
+        flag to true and saving should lead to sampling.
+        """
+        repo_name = self.repo + ".tests_driver_eval.multi"
+        proc_name = 'test_multi_driver_sample_generator_simple'
+        builders = self.exec_eng.factory.get_builder_from_process(repo_name,
+                                                                  proc_name)
+        self.exec_eng.factory.set_builders_to_coupling_builder(builders)
+        self.exec_eng.configure()
+
+        # get the sample generator inputs
+        self.setUp_cp()
+        # setup the driver and the sample generator jointly
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
+        self.exec_eng.load_study_from_input_dict(dict_values)
+
+        # same input selection as first test, all scenarios activated
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        samples_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.samples_df')
+        scenario_names = ['scenario_1',
+                          'scenario_2', 'scenario_3', 'scenario_4']
+        self.assertEqual(
+            samples_df['scenario_name'].values.tolist(), scenario_names)
+        self.assertEqual(samples_df['Disc1.b'].values.tolist(), [self.b1,
+                                                                 self.b1,
+                                                                 self.b2,
+                                                                 self.b2])
+        self.assertEqual(samples_df['z'].values.tolist(), [self.z1,
+                                                           self.z2,
+                                                           self.z1,
+                                                           self.z2])
+
+        # first a change in eval_inputs should not resample because overwrite_samples_df flag is off
+        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z_p
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        samples_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.samples_df')
+        scenario_vars = ['Disc1.b', 'z']
+        self.assertEqual(
+            samples_df['scenario_name'].values.tolist(), scenario_names)
+        self.assertEqual(samples_df['Disc1.b'].values.tolist(), [self.b1,
+                                                                 self.b1,
+                                                                 self.b2,
+                                                                 self.b2])
+        self.assertEqual(samples_df['z'].values.tolist(), [self.z1,
+                                                           self.z2,
+                                                           self.z1,
+                                                           self.z2])
+
+        # then activating the flag only should provoke a sampling
+        dict_values[f'{self.study_name}.SampleGenerator.overwrite_samples_df'] = True
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        samples_df = self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.samples_df')
+        scenario_names = ['scenario_1', 'scenario_2', 'scenario_3',
+                          'scenario_4', 'scenario_5', 'scenario_6',
+                          'scenario_7', 'scenario_8']
+        self.assertEqual(
+            samples_df['scenario_name'].values.tolist(), scenario_names)
+        self.assertEqual(samples_df['Disc1.b'].values.tolist(), [self.b1,
+                                                                 self.b1,
+                                                                 self.b1,
+                                                                 self.b1,
+                                                                 self.b2,
+                                                                 self.b2,
+                                                                 self.b2,
+                                                                 self.b2
+                                                                 ])
+
+        self.assertEqual(samples_df['Disc3.power'].values.tolist(), [self.power1,
+                                                                     self.power1,
+                                                                     self.power2,
+                                                                     self.power2,
+                                                                     self.power1,
+                                                                     self.power1,
+                                                                     self.power2,
+                                                                     self.power2,
+                                                                     ])
+
+        self.assertEqual(samples_df['z'].values.tolist(), [self.z1,
+                                                           self.z2,
+                                                           self.z1,
+                                                           self.z2,
+                                                           self.z1,
+                                                           self.z2,
+                                                           self.z1,
+                                                           self.z2,
+                                                           ])
+
 if '__main__' == __name__:
     cls = TestMultiScenario()
     cls.setUp()
