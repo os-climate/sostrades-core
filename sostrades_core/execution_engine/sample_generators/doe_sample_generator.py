@@ -589,7 +589,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         algo_name = wrapper.get_sosdisc_inputs(wrapper.ALGO)
         algo_options = wrapper.get_sosdisc_inputs(wrapper.ALGO_OPTIONS)
         dspace_df = wrapper.get_sosdisc_inputs(wrapper.DESIGN_SPACE)
-        design_space = self.create_design_space(self.selected_inputs, dspace_df)  # FIXME: avoid using generator attributes for real sample generation at run-time
+        eval_inputs = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
+        selected_inputs = eval_inputs[eval_inputs[wrapper.SELECTED_INPUT] == True][wrapper.FULL_NAME].tolist()
+        design_space = self.create_design_space(selected_inputs, dspace_df)
         doe_kwargs = {'sampling_algo_name': algo_name,
                       'algo_options': algo_options,
                       'design_space': design_space}
@@ -694,4 +696,5 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     def is_ready_to_sample(self, proxy):
         disc_in = proxy.get_data_in()
-        return proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in and self.selected_inputs is not None
+        return self.selected_inputs and \
+            proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in
