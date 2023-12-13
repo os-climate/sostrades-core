@@ -84,7 +84,10 @@ class SampleGeneratorWrapper(SoSWrapp):
         '''
         if self.SELECTED_SCENARIO not in samples_df:
             ordered_columns = [self.SELECTED_SCENARIO, self.SCENARIO_NAME] + samples_df.columns.tolist()
-            if scenario_names is None:
+            if samples_df.empty:
+                # this return avoids adding a spurious scenario_1 in case of empty sample at run-time
+                return pd.DataFrame(columns=ordered_columns)
+            elif scenario_names is None:
                 samples_df[self.SCENARIO_NAME] = [f'scenario_{i}' for i in range(1, len(samples_df) + 1)]
             else:
                 samples_df[self.SCENARIO_NAME] = scenario_names
