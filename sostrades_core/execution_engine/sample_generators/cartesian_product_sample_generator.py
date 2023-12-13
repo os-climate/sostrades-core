@@ -56,10 +56,6 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         Constructor
         '''
         super().__init__(self.GENERATOR_NAME, logger=logger)
-        self.previous_eval_inputs_cp = None
-        self.eval_inputs_cp_has_changed = False
-        self.eval_inputs_cp_filtered = None
-        self.eval_inputs_cp_validity = True
 
     def _check_samples(self, samples_df):
         '''
@@ -100,103 +96,8 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         
         return samples_df
 
-    # TODO: REFACTOR IF POSSIBLE W/O PROXY REFs
-    def setup(self, proxy):
-        """
-        Method that setup the cp method
-        """
-        dynamic_inputs = {}
-        dynamic_outputs = {}
-        # Setup dynamic inputs which depend on EVAL_INPUTS_CP setting or
-        # update: i.e. GENERATED_SAMPLES
-        self.setup_dynamic_inputs_which_depend_on_eval_input_cp(dynamic_inputs, proxy)
-
-        return dynamic_inputs, dynamic_outputs
-
-    def setup_dynamic_inputs_which_depend_on_eval_input_cp(self, dynamic_inputs, proxy):
-        """
-        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-        """
-        # TODO : why is it more complex as in doe_algo ? [???]
-        self.eval_inputs_cp_has_changed = False
-        disc_in = proxy.get_data_in()
-        if proxy.EVAL_INPUTS in disc_in:
-            eval_inputs_cp = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
-            self.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp, proxy)
-
-    def setup_eval_inputs_cp_and_generated_samples(self, dynamic_inputs, eval_inputs_cp, proxy):
-        """
-        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-            eval_inputs_cp (dataframe): the variables and possible values for the sample
-        """
-        # TODO: this way of working with setting attributes should be reviewed
-        # 1. Manage update status of EVAL_INPUTS_CP
-        # if not (eval_inputs_cp.equals(self.previous_eval_inputs_cp)):
-        if not dict_are_equal({'_': eval_inputs_cp},
-                              {'_': self.previous_eval_inputs_cp}):
-        # if not dict_are_equal(eval_inputs_cp, self.previous_eval_inputs_cp):
-            self.eval_inputs_cp_has_changed = True
-            self.previous_eval_inputs_cp = eval_inputs_cp
-        # 2. Manage selection in EVAL_INPUTS_CP
-        if eval_inputs_cp is not None:
-            # reformat eval_inputs_cp to take into account only useful
-            # informations
-            self.eval_inputs_cp_filtered = self.reformat_eval_inputs_cp(
-                eval_inputs_cp)
-            # Check selected input cp validity
-            self.eval_inputs_cp_validity = self.check_eval_inputs_cp(
-                self.eval_inputs_cp_filtered)
-            # # Setup GENERATED_SAMPLES for cartesian product
-            # if proxy.sampling_generation_mode == proxy.AT_CONFIGURATION_TIME:
-            #     self.setup_generated_samples_for_cp(dynamic_inputs, proxy)
-        else:
-            self.eval_inputs_cp_validity = False
-
-
-    # def setup_generated_sample(self, dynamic_inputs, proxy):
-    #     """
-    #     Method that setup GENERATED_SAMPLES for cartesian product at configuration time
-    #     Arguments:
-    #         dynamic_inputs (dict): the dynamic input dict to be updated
-    #     """
-    #     generated_samples_data_description = proxy.SAMPLES_DF_DESC_SHARED.copy()
-    #
-    #     if self.eval_inputs_cp_validity:
-    #         if self.eval_inputs_cp_has_changed:
-    #             proxy.set_sample()
-    #
-    #         # df_descriptor = {proxy.SELECTED_SCENARIO: ('bool', None, False),
-    #         #                  proxy.SCENARIO_NAME: ('string', None, False)}
-    #         # df_descriptor.update(
-    #         #     {row['full_name']: (type(row['list_of_values'][0]).__name__, None, False) for index, row in
-    #         #      self.eval_inputs_cp_filtered.iterrows()})  # FIXME: no good, handle DATAFRAME_DESCRIPTOR --> done by driver
-    #         # generated_samples_data_description.update({proxy.DATAFRAME_DESCRIPTOR: df_descriptor,
-    #         #                                            proxy.DYNAMIC_DATAFRAME_COLUMNS: False})
-    #     else:
-    #         # TODO: better handling of wrong input for CP
-    #         proxy.samples_gene_df = pd.DataFrame(columns=[proxy.SELECTED_SCENARIO, proxy.SCENARIO_NAME])
-    #
-    #     # generated_samples_data_description.update({proxy.DEFAULT: proxy.samples_gene_df})
-    #     dynamic_inputs.update({proxy.SAMPLES_DF: generated_samples_data_description})
-    #
-    #     # Set or update GENERATED_SAMPLES in line with selected
-    #     # eval_inputs_cp
-    #     disc_in = proxy.get_data_in()
-    #     if proxy.SAMPLES_DF in disc_in:
-    #         # proxy.set_sample()
-    #         if proxy.samples_gene_df is not None:
-    #             proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
-    #                               'value', proxy.samples_gene_df, check_value=False)
-    #         proxy.sample_pending = False
-    #         # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
-    #     else:
-    #         proxy.sample_pending = True
-
-    def reformat_eval_inputs_cp(self, eval_inputs_cp):
+    @staticmethod
+    def filter_eval_inputs_cp(eval_inputs_cp, wrapper):
         """
         Method that reformat eval_input_cp depending on user's selection
 
@@ -207,43 +108,21 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             eval_inputs_cp_filtered (dataframe) :
 
         """
-        logic_1 = eval_inputs_cp['selected_input'] == True
-        logic_2 = eval_inputs_cp['list_of_values'].isin([[]])
-        logic_3 = eval_inputs_cp['full_name'] is None
-        logic_4 = eval_inputs_cp['full_name'] == ''
+        if eval_inputs_cp is None or eval_inputs_cp.empty:
+            return {}
+        logic_1 = eval_inputs_cp[wrapper.SELECTED_INPUT] == True
+        logic_2 = eval_inputs_cp[wrapper.LIST_OF_VALUES].isin([[]])
+        logic_3 = eval_inputs_cp[wrapper.FULL_NAME] is None
+        logic_4 = eval_inputs_cp[wrapper.FULL_NAME] == ''
         eval_inputs_cp_filtered = eval_inputs_cp[logic_1 &
                                                  ~logic_2 & ~logic_3 & ~logic_4]
-        eval_inputs_cp_filtered = eval_inputs_cp_filtered[[
-            'full_name', 'list_of_values']]
-        return eval_inputs_cp_filtered
-
-    def check_eval_inputs_cp(self, eval_inputs_cp_filtered):
-        """
-        Method that reformat eval_input_cp depending on user's selection
-
-        Arguments:
-            eval_inputs_cp (dataframe):
-
-        Returns:
-            validity (boolean) :
-
-        """
-        # TODO: better handling of CartesianProduct wrong input...
-        is_valid = True
-        selected_inputs_cp = list(eval_inputs_cp_filtered['full_name'])
-        # n_min = 2
-        n_min = 1
-        if len(selected_inputs_cp) < n_min:
-            self.logger.warning(
-                f'Selected_inputs must have at least {n_min} variables to do a cartesian product')
-            is_valid = False
-        return is_valid
+        eval_inputs_cp_filtered = eval_inputs_cp_filtered[[wrapper.FULL_NAME, wrapper.LIST_OF_VALUES]]
+        return eval_inputs_cp_filtered.set_index(wrapper.FULL_NAME)[wrapper.LIST_OF_VALUES].to_dict()
 
     def get_arguments(self, wrapper):
-        # TODO: should actually use get_sosdisc_inputs instead of wrapper attributes
-        dict_of_list_values = self.eval_inputs_cp_filtered.set_index(wrapper.FULL_NAME)[wrapper.LIST_OF_VALUES].to_dict()
+        eval_inputs_cp = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
+        dict_of_list_values = self.filter_eval_inputs_cp(eval_inputs_cp, wrapper)
         return [], {'dict_of_list_values': dict_of_list_values}
 
     def is_ready_to_sample(self, proxy):
-        return self.eval_inputs_cp_validity and (self.eval_inputs_cp_has_changed or proxy.sample_pending)
-        # TODO: [BUG] should come from structuring checks but not always working on GUI because study is reload
+        return bool(self.get_arguments(proxy)[1]['dict_of_list_values'])
