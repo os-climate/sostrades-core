@@ -46,46 +46,23 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
         Constructor
         '''
         super().__init__(logger=logger)
-        # FIXME: currently it is a doesamplegenerator using cartesianproductsamplegenerator in composition, design might be improved
+        # TODO: currently it is a doesamplegenerator using cartesianproductsamplegenerator in composition,
+        #  design might be improved as only need to setup a design space so it could be detached from DoE setup
         self.cp_generator = CartesianProductSampleGenerator(logger=logger)
-        self.retreive_cp_generator_attributes() # TODO: improve design
 
     def setup(self, proxy):
         dynamic_inputs, dynamic_outputs = super().setup(proxy)
-        self.setup_gs(dynamic_inputs, proxy)
         return dynamic_inputs, dynamic_outputs
 
     def generate_samples(self, *args, **kwargs):
         return self.cp_generator.generate_samples(*args, **kwargs)
 
     def get_arguments(self, wrapper):
-        return self.cp_generator.get_arguments(wrapper)
-
-    def setup_gs(self, dynamic_inputs, proxy):
-        """
-        Method that setup dynamic inputs which depend on EVAL_INPUTS_CP setting or update: i.e. GENERATED_SAMPLES
-        with specificities for the GridSearch sampling method.
-        Arguments:
-            dynamic_inputs (dict): the dynamic input dict to be updated
-        """
-        disc_in = proxy.get_data_in()
-        self.cp_generator.eval_inputs_cp_has_changed = False
-        if proxy.DESIGN_SPACE in disc_in:
-            eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
-            design_space = proxy.get_sosdisc_inputs(proxy.DESIGN_SPACE)
-            # link doe-like inputs to cp attributes in the framework of GridSearch
-            eval_inputs_cp = self.get_eval_inputs_cp_for_gs(eval_inputs, design_space)
-            self.cp_generator.setup_eval_inputs_cp_and_generated_samples(dynamic_inputs, eval_inputs_cp, proxy)
-            self.retreive_cp_generator_attributes()
-
-    # def setup_generated_sample(self, dynamic_inputs, proxy):
-    #     self.cp_generator.setup_generated_sample(dynamic_inputs, proxy)
-
-    def retreive_cp_generator_attributes(self): # TODO: improve design
-        self.previous_eval_inputs_cp = self.cp_generator.previous_eval_inputs_cp
-        self.eval_inputs_cp_has_changed = self.cp_generator.eval_inputs_cp_has_changed
-        self.eval_inputs_cp_filtered = self.cp_generator.eval_inputs_cp_filtered
-        self.eval_inputs_cp_validity = self.cp_generator.eval_inputs_cp_validity
+        design_space = wrapper.get_sosdisc_inputs(wrapper.DESIGN_SPACE)
+        eval_inputs = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
+        eval_inputs_cp = self.get_eval_inputs_cp_for_gs(eval_inputs, design_space)
+        dict_of_list_values = self.cp_generator.filter_eval_inputs_cp(eval_inputs_cp, wrapper)
+        return [], {"dict_of_list_values": dict_of_list_values}
 
     def get_eval_inputs_cp_for_gs(self, eval_inputs, design_space): # FIXME: use class variables
         """
@@ -113,4 +90,11 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
             return eval_inputs_cp
 
     def is_ready_to_sample(self, proxy):
-        return self.cp_generator.is_ready_to_sample(proxy)
+        disc_in = proxy.get_data_in()
+        if proxy.DESIGN_SPACE in disc_in:
+            # avoid empty sampling
+            _args, _kwargs = self.get_arguments(proxy)
+            return bool(_kwargs["dict_of_list_values"])
+        else:
+            # otherwise it is intermediate config. stage
+            return False
