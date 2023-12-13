@@ -53,7 +53,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     LOWER_BOUND = "lower_bnd"
     ENABLE_VARIABLE_BOOL = "enable_variable"
     LIST_ACTIVATED_ELEM = "activated_elem"
-
+    NB_POINTS = "nb_points"
+    
+    
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
@@ -475,9 +477,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                 default_design_space = pd.DataFrame()
                 design_space_dataframe_descriptor = {
                     self.VARIABLES: ('string', None, False),
-                    self.VALUES: ('multiple', None, True),
                     self.LOWER_BOUND: ('multiple', None, True),
                     self.UPPER_BOUND: ('multiple', None, True),
+                    self.VALUES: ('multiple', None, True),
                     self.ENABLE_VARIABLE_BOOL: (
                         'bool', None, True),
                     self.LIST_ACTIVATED_ELEM: (
@@ -486,21 +488,27 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                 if proxy.sampling_method == proxy.DOE_ALGO:
                     default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
                                                          self.LOWER_BOUND: [None] * len(self.selected_inputs),
-                                                         self.UPPER_BOUND: [None] * len(self.selected_inputs)
+                                                         self.UPPER_BOUND: [None] * len(self.selected_inputs),
+                                                         self.LIST_ACTIVATED_ELEM: [[]] * len(self.selected_inputs),
+                                                         self.ENABLE_VARIABLE_BOOL: [False] * len(self.selected_inputs),
+                                                         self.VALUES: [None] * len(self.selected_inputs),
                                                          })
                 elif proxy.sampling_method == proxy.GRID_SEARCH:
                     default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
                                                          self.LOWER_BOUND: [0.0] * len(self.selected_inputs),
                                                          self.UPPER_BOUND: [100.0] * len(self.selected_inputs),
-                                                         'nb_points': [2] * len(self.selected_inputs)
+                                                         self.NB_POINTS: [2] * len(self.selected_inputs),
+                                                         self.LIST_ACTIVATED_ELEM: [[]] * len(self.selected_inputs),
+                                                         self.ENABLE_VARIABLE_BOOL: [False] * len(self.selected_inputs),
+                                                         self.VALUES: [None] * len(self.selected_inputs),
                                                          })
-                    default_design_space['nb_points'] = default_design_space['nb_points'].astype(int)
-                    design_space_dataframe_descriptor.update({'nb_points': ('int', None, True)})
+                    default_design_space[self.NB_POINTS] = default_design_space[self.NB_POINTS].astype(int)
+                    design_space_dataframe_descriptor.update({self.NB_POINTS: ('int', None, True)})
 
                 dynamic_inputs.update({proxy.DESIGN_SPACE: {proxy.TYPE: 'dataframe',
-                                                        proxy.DEFAULT: default_design_space,
-                                                        proxy.STRUCTURING: False,
-                                                        proxy.DATAFRAME_DESCRIPTOR: design_space_dataframe_descriptor}})
+                                                            proxy.DEFAULT: default_design_space,
+                                                            proxy.STRUCTURING: False,
+                                                            proxy.DATAFRAME_DESCRIPTOR: design_space_dataframe_descriptor}})
 
                 # Next lines of code treat the case in which eval inputs change with a previously defined design space,
                 # so that the bound are kept instead of set to default None.
@@ -511,35 +519,31 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
                     if selected_inputs_has_changed:
                         from_design_space = list(
-                            disc_in['design_space'][proxy.VALUE]['variable'])
+                            disc_in['design_space'][proxy.VALUE][self.VARIABLES])
                         from_eval_inputs = self.selected_inputs
 
-                        df_cols = ['variable', 'lower_bnd', 'upper_bnd'] + (
-                            ['nb_points'] if proxy.sampling_method == proxy.GRID_SEARCH else [])
-                        final_dataframe = pd.DataFrame(
-                            None, columns=df_cols)
+                        df_cols = [self.VARIABLES, self.LOWER_BOUND, self.UPPER_BOUND] + (
+                            [self.NB_POINTS] if proxy.sampling_method == proxy.GRID_SEARCH else []) + (
+                            [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
+                        final_dataframe = pd.DataFrame(columns=df_cols)
 
                         for element in from_eval_inputs:
                             if element in from_design_space:
                                 to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
-                                                                              'variable'] == element]
+                                                                              self.VARIABLES] == element]
                                 # TODO: in the current implementation it would be more proper that GridSearch setup its
                                 #  own design space instead of having particular cases in the Doe sample generator.
                                 if proxy.sampling_method == proxy.DOE_ALGO:
-                                    # for DoE need to dismiss 'nb_points'
-                                    to_append = to_append.loc[:, to_append.columns != 'nb_points']
-                                elif proxy.sampling_method == proxy.GRID_SEARCH and 'nb_points' not in to_append.columns:
-                                    # for GridSearch need to eventually insert the 'nb_points' column
-                                    to_append.insert(3, 'nb_points', 2)
+                                    # for DoE need to dismiss self.NB_POINTS
+                                    to_append = to_append.loc[:, to_append.columns != self.NB_POINTS]
+                                elif proxy.sampling_method == proxy.GRID_SEARCH and self.NB_POINTS not in to_append.columns:
+                                    # for GridSearch need to eventually insert the self.NB_POINTS column
+                                    to_append.insert(3, self.NB_POINTS, 2)
                                 final_dataframe = final_dataframe.append(to_append)
                             else:
-                                elem_dict = {'variable': element, 'lower_bnd': None, 'upper_bnd': None}
-                                if proxy.sampling_method == proxy.GRID_SEARCH:
-                                    elem_dict['lower_bnd'] = 0.0
-                                    elem_dict['upper_bnd'] = 100.0
-                                    elem_dict['nb_points'] = 2
                                 final_dataframe = final_dataframe.append(
-                                    elem_dict, ignore_index=True)
+                                    default_design_space[default_design_space[self.VARIABLES] == element],
+                                    ignore_index=True)
                         proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
                                           proxy.VALUE, final_dataframe, check_value=False)
 
