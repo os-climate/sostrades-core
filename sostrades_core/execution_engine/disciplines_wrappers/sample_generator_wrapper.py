@@ -80,7 +80,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     def set_scenario_columns(self, samples_df, scenario_names=None):
         # TODO: [to discuss] move to AbstractSampleGenerator ?
         '''
-        Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df dataframe
+        Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df, by default selecting all scenarios.
         '''
         if self.SELECTED_SCENARIO not in samples_df:
             ordered_columns = [self.SELECTED_SCENARIO, self.SCENARIO_NAME] + samples_df.columns.tolist()

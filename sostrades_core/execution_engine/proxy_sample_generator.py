@@ -128,7 +128,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         ProxyDiscipline.STRUCTURING: True,
         ProxyDiscipline.DEFAULT: False,  # TODO: think about
     }
-
+    MAX_AUTO_SELECT_SCENARIOS = 1024  # maximum number of scenarios to be auto-selected after a sampling at config. time
 
     DESC_IN = {SAMPLING_METHOD: {'type': 'string',
                                  'structuring': True,
@@ -151,13 +151,11 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.sampling_method = None
         self.sampling_generation_mode = None
 
-        # TODO: generalise management of self.sample_pending (implemented on CP), when decoupling sampling from setup
         self.sample_pending = False
-        # sample generated at configuration-time
-        self.samples_gene_df = None
+        self.samples_gene_df = None   # sample generated at configuration-time
 
         self.force_sampling_at_configuration_time = False
-        # FIXME: no need for duplication with a sorted dict
+        # TODO: actually no need for two variables as the type dict could be sorted and its keys be the possible_values
         self.eval_in_possible_values = []
         self.eval_in_possible_types = {}
 
@@ -192,12 +190,6 @@ class ProxySampleGenerator(ProxyDiscipline):
             # check if the eval_inputs need to be updated after a subprocess
             # configureon s'ap
             elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (set(default_in_dataframe[self.FULL_NAME].tolist())):
-                # TODO: double-check but in principle these checks are in the data_integrity of driver eval
-                # error_msg = check_eval_io(eval_input_new_dm[self.FULL_NAME].tolist(), default_in_dataframe[self.FULL_NAME].tolist(),
-                #                    is_eval_input=True)
-                # for msg in error_msg:
-                #     self.logger.warning(msg)
-
                 # reindex eval_inputs to the possible values keeping other values and columns of the df
                 eval_input_new_dm = eval_input_new_dm.\
                     drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(self.eval_in_possible_values).\
@@ -210,93 +202,6 @@ class ProxySampleGenerator(ProxyDiscipline):
 
                 self.dm.set_data(eval_inputs_f_name,
                                  'value', eval_input_new_dm, check_value=False)
-
-    # def set_eval_in_possible_values(self, possible_values: list[str]) -> bool:
-    #     """
-    #     Method used by a driver in composition with a sample generator to pass the set of inputs of the subprocess
-    #     that can be selected in eval_inputs.
-    #
-    #     Arguments:
-    #         possible_values (list(string)): possible values of the eval_inputs variable names
-    #     Returns:
-    #          driver_is_configured (bool): flag to detect whether driver could ask sample generator for necessary
-    #             configuration actions
-    #     """
-    #     driver_is_configured = True
-    #     # TODO: might want to refactor this eventually. If so, take into account that this "driver_is_configured" flag
-    #     #  is a quick fix. The proper way is probably as follows: in this method just set the attribute eval_in_possible_values
-    #     #  and handle SampleGenerator configuration status if it has changed. Then in SampleGenerator configuration do the
-    #     #  remaining actions in the code below (set eval_inputs and handle corresponding samples_df columns update).
-    #     if possible_values:
-    #         driver_is_configured = False
-    #         disc_in = self.get_data_in()
-    #         if self.EVAL_INPUTS in disc_in:
-    #             driver_is_configured = True
-    #             default_in_dataframe = pd.DataFrame({self.SELECTED_INPUT: [False for _ in possible_values],
-    #                                                  self.FULL_NAME: possible_values})
-    #             eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-    #             eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
-    #
-    #             if eval_input_new_dm is None:
-    #                 self.dm.set_data(eval_inputs_f_name,
-    #                                  'value', default_in_dataframe, check_value=False)
-    #             # check if the eval_inputs need to be updated after a subprocess
-    #             # configureon s'ap
-    #             elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (set(default_in_dataframe[self.FULL_NAME].tolist())):
-    #                 error_msg = check_eval_io(eval_input_new_dm[self.FULL_NAME].tolist(), default_in_dataframe[self.FULL_NAME].tolist(),
-    #                                    is_eval_input=True)
-    #                 for msg in error_msg:
-    #                     self.logger.warning(msg)
-    #
-    #                 # reindex eval_inputs to the possible values keeping other values and columns of the df
-    #                 eval_input_new_dm = eval_input_new_dm.\
-    #                     drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(possible_values).\
-    #                     reset_index().reindex(columns=eval_input_new_dm.columns)
-    #                 eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype('bool')
-    #                 # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
-    #                 if self.LIST_OF_VALUES in eval_input_new_dm.columns:
-    #                     new_in = eval_input_new_dm[self.LIST_OF_VALUES].isna()
-    #                     eval_input_new_dm.loc[new_in, self.LIST_OF_VALUES] = pd.Series([[]] * new_in.sum()).values
-    #
-    #                 self.dm.set_data(eval_inputs_f_name,
-    #                                  'value', eval_input_new_dm, check_value=False)
-    #
-    #             selected_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-    #             selected_inputs = selected_inputs[selected_inputs[self.SELECTED_INPUT] == True][self.FULL_NAME].tolist()
-    #             all_columns = [self.SELECTED_SCENARIO,
-    #                            self.SCENARIO_NAME] + selected_inputs
-    #             default_custom_dataframe = pd.DataFrame(
-    #                 [[None for _ in range(len(all_columns))]], columns=all_columns)
-    #             dataframe_descriptor = self.SAMPLES_DF_DESC_SHARED['dataframe_descriptor'].copy()
-    #             # This reflects 'samples_df' dynamic input has been configured and that
-    #             # eval_inputs have changed
-    #             if self.SAMPLES_DF in disc_in:
-    #                 final_dataframe = pd.DataFrame(None, columns=all_columns)
-    #                 samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-    #                 if samples_df is not None:
-    #                     from_samples = list(samples_df.keys())
-    #                     from_eval_inputs = list(default_custom_dataframe.keys())
-    #                     len_df = 1
-    #                     for element in from_eval_inputs:
-    #                         if element in from_samples:
-    #                             len_df = len(samples_df)
-    #
-    #                     for element in from_eval_inputs:
-    #                         if element in from_samples:
-    #                             final_dataframe[element] = samples_df[element]
-    #                             dataframe_descriptor[element] = ('multiple', None, True)
-    #                             # TODO: dataframe descriptor should be corrected by driver based on samples_df so that
-    #                             #  it can properly work in standalone driver. Currently multi-instance driver does not
-    #                             #  have the mechanism..
-    #                         else:
-    #                             final_dataframe[element] = [None for _ in range(len_df)]
-    #                             dataframe_descriptor[element] = ('multiple', None, True)
-    #                 samples_df_f_name = self.get_var_full_name(self.SAMPLES_DF, disc_in)
-    #                 self.dm.set_data(samples_df_f_name, self.VALUE, final_dataframe, check_value=False)
-    #                 self.dm.set_data(samples_df_f_name, self.DATAFRAME_DESCRIPTOR, dataframe_descriptor, check_value=False)
-    #             elif self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE) == self.AT_CONFIGURATION_TIME:
-    #                 driver_is_configured = False
-    #     return driver_is_configured
 
     def is_configured(self):
         """
@@ -451,12 +356,25 @@ class ProxySampleGenerator(ProxyDiscipline):
                     samples_df_dm[self.SCENARIO_NAME].equals(self.SAMPLES_DF_DEFAULT[self.SCENARIO_NAME]) or \
                     self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)
                 self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
-                if self.samples_gene_df is not None and overwrite_samples_df:
+                if self.samples_gene_df is not None and not self.samples_gene_df.empty and overwrite_samples_df:
+                    self.max_auto_select_scenarios_warning()
                     self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
                                      self.VALUE, self.samples_gene_df, check_value=False)
                     self.dm.set_data(self.get_var_full_name(self.OVERWRITE_SAMPLES_DF, disc_in),
                                      self.VALUE, False, check_value=False)
                 self.sample_pending = False
-                # disc_in[self.GENERATED_SAMPLES][self.VALUE] = self.samples_gene_df
             else:
                 self.sample_pending = True
+
+    def max_auto_select_scenarios_warning(self):
+        """
+        In the scope of a sampling at configuration time, before pushing to dm a generated sample too big, potentially
+        engaging in a long configuration or run, warn user and ask to manually select which scenarios are to be built
+        and/or evaluated. Note that otherwise after a sampling all scenarios are selected automatically, which needs to
+        be the case for run-time sampling to work normally.
+        """
+        if self.MAX_AUTO_SELECT_SCENARIOS is not None and len(self.samples_gene_df) > self.MAX_AUTO_SELECT_SCENARIOS:
+            self.samples_gene_df[self.SELECTED_SCENARIO] = False
+            self.logger.warning(
+                f'Sampled over {self.MAX_AUTO_SELECT_SCENARIOS} scenarios, please select manually which ones are'
+                f'to be built and/or evaluated using input samples dataframe ({self.SELECTED_SCENARIO} column).')

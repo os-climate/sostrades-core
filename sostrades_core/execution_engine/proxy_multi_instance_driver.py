@@ -88,7 +88,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         disc_in = self.get_data_in()
         self.add_reference_mode(disc_in)
         self.add_gather_outputs()
-        # self.set_generated_samples_values(disc_in)
 
     def configure_sample_generator(self):
         """
@@ -97,59 +96,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         """
         self.sample_generator_disc.force_sampling_at_configuration_time = True
         super().configure_sample_generator()
-
-    def set_generated_samples_values(self, disc_in):
-        '''
-    
-        Args:
-            disc_in: input dictionary with values
-    
-        if generated samples modify the selection of scenario in the samples_df
-        OPEN QUESTION : Do we need that ?
-    
-        '''
-        if self.GENERATED_SAMPLES in disc_in:
-            generated_samples = self.get_sosdisc_inputs(
-                self.GENERATED_SAMPLES)
-            generated_samples_dict = {
-                self.GENERATED_SAMPLES: generated_samples}
-            samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
-            # checking whether generated_samples has changed
-            # NB also doing nothing with an empty dataframe, which means sample needs to be regenerated to renew
-            # samples_df on 2nd config. The reason of this choice is that using an optional generated_samples
-            # gives problems with structuring variables checks leading
-            # to incomplete configuration sometimes
-            if not (generated_samples.empty and not self.old_samples_df) \
-                    and not dict_are_equal(generated_samples_dict, self.old_samples_df):
-                # checking whether the dataframes are already coherent in which case the changes come probably
-                # from a load and there is no need to crush the truth
-                # values
-                if not generated_samples.equals(samples_df):
-                    self.old_samples_df = copy.deepcopy(
-                        generated_samples_dict)
-                    # we crush old samples_df and propose a df with
-                    # all scenarios imposed by new sample, all
-                    # de-activated
-                    samples_df = generated_samples
-                    n_scenarios = len(samples_df.index)
-                    # check whether the number of generated scenarios
-                    # is not too high to auto-activate them
-                    if self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS is None or n_scenarios <= self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS:
-                        samples_df[self.SELECTED_SCENARIO] = True
-                    else:
-                        # FIXME: the checks below are no longer performed by anyone, to be migrated to SampleGenerator
-                        #  then DELETE the method
-                        self.logger.warning(
-                            f'Sampled over {self.MAX_SAMPLE_AUTO_BUILD_SCENARIOS} scenarios, please select which to build. ')
-                        samples_df[self.SELECTED_SCENARIO] = False
-                    scenario_name = samples_df[self.SCENARIO_NAME]
-                    # for i in scenario_name.index.tolist():
-                    #     scenario_name.iloc[i] = 'scenario_' + \
-                    #                             str(i + 1)
-                    self.logger.info(
-                        'Generated sample has changed, updating scenarios to select.')
-                    self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                                     'value', samples_df, check_value=False)
 
     def configure_driver(self):
         disc_in = self.get_data_in()
