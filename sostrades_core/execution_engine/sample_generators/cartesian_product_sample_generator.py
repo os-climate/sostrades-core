@@ -105,7 +105,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             eval_inputs_cp (dataframe):
 
         Returns:
-            eval_inputs_cp_filtered (dataframe) :
+            dict_of_list_values (dict[list]) : dictionary {'var': [var_cp_values]} ignoring empty lists
 
         """
         if eval_inputs_cp is None or eval_inputs_cp.empty:
@@ -125,4 +125,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         return [], {'dict_of_list_values': dict_of_list_values}
 
     def is_ready_to_sample(self, proxy):
-        return bool(self.get_arguments(proxy)[1]['dict_of_list_values'])
+        # the generator is ready to sample if there are items in the dict_of_list_values, which is a dictionary
+        # {'var': [var_cp_values]} that is assured to contain no empty lists due to filter_eval_inputs_cp
+        _args, _kwargs = self.get_arguments(proxy)
+        return bool(_kwargs['dict_of_list_values'])
