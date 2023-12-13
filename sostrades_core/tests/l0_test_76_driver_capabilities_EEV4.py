@@ -653,7 +653,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         This test checks that samples dataframe is properly modified and generated when eval_inputs is modified and
         , consequently, a reconfiguration is undertaken (since eval_inputs is a structuring variable).
         """
-        # TODO: review test with data integrity logic
+        # FIXME: review test with data integrity logic and overwrite_samples_df
         study_name = 'root'
         ns = study_name
 
