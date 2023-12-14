@@ -148,6 +148,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                          cls_builder=cls_builder,
                          associated_namespaces=associated_namespaces)
 
+        self.check_integrity_msg_list = []
         self.sampling_method = None
         self.sampling_generation_mode = None
 
@@ -177,31 +178,11 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.eval_in_possible_types = possible_types
             self.set_configure_status(False)
 
-    def update_eval_inputs_with_possible_values(self, disc_in):
-        if self.eval_in_possible_values and self.EVAL_INPUTS in disc_in:
-            default_in_dataframe = pd.DataFrame({self.SELECTED_INPUT: [False for _ in self.eval_in_possible_values],
-                                                 self.FULL_NAME: self.eval_in_possible_values})
-            eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
-            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
-
-            if eval_input_new_dm is None:
-                self.dm.set_data(eval_inputs_f_name,
-                                 'value', default_in_dataframe, check_value=False)
-            # check if the eval_inputs need to be updated after a subprocess
-            # configureon s'ap
-            elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (set(default_in_dataframe[self.FULL_NAME].tolist())):
-                # reindex eval_inputs to the possible values keeping other values and columns of the df
-                eval_input_new_dm = eval_input_new_dm.\
-                    drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(self.eval_in_possible_values).\
-                    reset_index().reindex(columns=eval_input_new_dm.columns)
-                eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype('bool')
-                # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
-                if self.LIST_OF_VALUES in eval_input_new_dm.columns:
-                    new_in = eval_input_new_dm[self.LIST_OF_VALUES].isna()
-                    eval_input_new_dm.loc[new_in, self.LIST_OF_VALUES] = pd.Series([[]] * new_in.sum()).values
-
-                self.dm.set_data(eval_inputs_f_name,
-                                 'value', eval_input_new_dm, check_value=False)
+    def check_data_integrity(self):
+        self.check_integrity_msg_list = []
+        self.sample_generator_data_integrity = True
+        # TODO: implement integrity for eval_inputs['list_of_values'] depending on types
+        # TODO: implement generator-specific integrity checks e.g. design space?
 
     def is_configured(self):
         """
@@ -218,7 +199,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.sampling_method = self.get_sosdisc_inputs(self.SAMPLING_METHOD)
             self.sampling_generation_mode = self.configure_generation_mode(disc_in)
             self.instantiate_sampling_tool()
-            self.update_eval_inputs_columns(disc_in)
+            self.update_eval_inputs(disc_in)
             dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(self)
 
             if self.sampling_generation_mode == self.AT_RUN_TIME:
@@ -274,6 +255,27 @@ class ProxySampleGenerator(ProxyDiscipline):
             disc_in[self.SAMPLING_GENERATION_MODE][self.EDITABLE] = True
         return sampling_generation_mode
 
+    def update_eval_inputs(self, disc_in):
+        """
+        Method to update the dataframe descriptor and columns of eval_inputs depending on the sampling method and handle
+        whether the column with variable names is editable (i.e. not when these are set by the driver as configurator).
+
+        Arguments:
+            disc_in (dict): input data dict of the discipline obtained via self.get_data_in()
+        """
+        _df_desc = None
+        # build right dataframe descriptor
+        if self.sampling_method == self.CARTESIAN_PRODUCT:
+            _df_desc = self.EVAL_INPUTS_CP_DF_DESC.copy()
+        elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
+            _df_desc = self.EVAL_INPUTS_DF_DESC.copy()
+        if _df_desc:
+            # handle editability of the dataframe column with variable names when these are set by the driver
+            if self.configurator:
+                _df_desc[self.FULL_NAME] = ('string', None, False)
+            self._update_eval_inputs_columns(_df_desc, disc_in)
+        self._update_eval_inputs_with_possible_values(disc_in)
+
     def _update_eval_inputs_columns(self, eval_inputs_df_desc, disc_in=None):
         """
         Method to update eval_inputs dataframe descriptor and variable columns in accordance when the first changes
@@ -302,25 +304,35 @@ class ProxySampleGenerator(ProxyDiscipline):
                                  eval_inputs,
                                  check_value=False)
 
-    def update_eval_inputs_columns(self, disc_in):
+    def _update_eval_inputs_with_possible_values(self, disc_in):
         """
-        Method to update the dataframe descriptor and columns of eval_inputs depending on the sampling method and handle
-        whether the column with variable names is editable (i.e. not when these are set by the driver as configurator).
+        Method to update eval_inputs['full_name'] column with the subprocess possible inputs as set by the configurator
+        using set_eval_in_possible_values method.
 
         Arguments:
-            disc_in (dict): input data dict of the discipline obtained via self.get_data_in()
+            disc_in (dict): the discipline inputs dict (to avoid an extra call to self.get_data_in())
         """
-        _df_desc = None
-        if self.sampling_method == self.CARTESIAN_PRODUCT:
-            _df_desc = self.EVAL_INPUTS_CP_DF_DESC.copy()
-        elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
-            _df_desc = self.EVAL_INPUTS_DF_DESC.copy()
-        if _df_desc:
-            # handle editability of the dataframe column with variable names when these are set by the driver
-            if self.configurator:
-                _df_desc[self.FULL_NAME] = ('string', None, False)
-            self._update_eval_inputs_columns(_df_desc, disc_in)
-        self.update_eval_inputs_with_possible_values(disc_in)
+        if self.eval_in_possible_values and self.EVAL_INPUTS in disc_in:
+            default_in_dataframe = pd.DataFrame({self.SELECTED_INPUT: [False for _ in self.eval_in_possible_values],
+                                                 self.FULL_NAME: self.eval_in_possible_values})
+            eval_input_new_dm = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+            eval_inputs_f_name = self.get_var_full_name(self.EVAL_INPUTS, disc_in)
+            if eval_input_new_dm is None:
+                self.dm.set_data(eval_inputs_f_name,
+                                 'value', default_in_dataframe, check_value=False)
+            # check if the eval_inputs need to be updated after a subprocess input change
+            elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (set(default_in_dataframe[self.FULL_NAME].tolist())):
+                # reindex eval_inputs to the possible values keeping other values and columns of the df
+                eval_input_new_dm = eval_input_new_dm.\
+                    drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(self.eval_in_possible_values).\
+                    reset_index().reindex(columns=eval_input_new_dm.columns)
+                eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype('bool')
+                # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
+                if self.LIST_OF_VALUES in eval_input_new_dm.columns:
+                    new_in = eval_input_new_dm[self.LIST_OF_VALUES].isna()
+                    eval_input_new_dm.loc[new_in, self.LIST_OF_VALUES] = pd.Series([[]] * new_in.sum()).values
+                self.dm.set_data(eval_inputs_f_name,
+                                 'value', eval_input_new_dm, check_value=False)
 
     def prepare_execution(self):
         """

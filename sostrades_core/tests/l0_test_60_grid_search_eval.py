@@ -944,7 +944,11 @@ class TestGridSearchEval(unittest.TestCase):
         expected_ds = {'variable': {0: 'Disc1.b', 1: 'Disc1.x'},
                        'lower_bnd': {0: 0.0, 1: 0.0},
                        'upper_bnd': {0: 100.0, 1: 100.0},
-                       'nb_points': {0: 2, 1: 2}}
+                       'nb_points': {0: 2, 1: 2},
+                       'activated_elem': {0: [], 1: []},
+                       'enable_variable': {0: False, 1: False},
+                       'value': {0: None, 1: None}}
+
         expected_samples = {'selected_scenario': {0: True, 1: True, 2: True, 3: True},
                             'scenario_name': {0: 'scenario_1', 1: 'scenario_2', 2: 'scenario_3', 3: 'scenario_4'},
                             'Disc1.b': {0: 0.0, 1: 0.0, 2: 100.0, 3: 100.0},
