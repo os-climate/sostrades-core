@@ -308,7 +308,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         # (configuration sequence allows the opposite)
 
         trade_vars = [col for col in samples_df.columns if col not in
-                      [self.SELECTED_SCENARIO, self.SCENARIO_NAME]]
+                      [self.SELECTED_SCENARIO, self.SCENARIO_NAME] and col in self.eval_in_possible_values]
         return samples_df, instance_reference, trade_vars, scenario_names
 
     def configure_subprocesses_with_driver_input(self):
