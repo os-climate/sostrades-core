@@ -482,7 +482,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     var_type = self.eval_in_possible_types[col]
                     df_desc_tuple = tuple([var_type, None, True])
 
-                    if no_None_in_df and not samples_df[col].apply(lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).any():
+                    if no_None_in_df and not samples_df[col].apply(lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).all():
                         warning_msg = f'Some value has wrong types in column {col}, the subprocess variable is of type {var_type} and all variables in the column should be the same'
                         self.check_integrity_msg_list.append(warning_msg)
                     else:
