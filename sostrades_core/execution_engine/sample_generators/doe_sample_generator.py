@@ -527,7 +527,10 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                             [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
                         final_dataframe = pd.DataFrame(columns=df_cols)
 
+                        ds_idx = 0
                         for element in from_eval_inputs:
+                            default_row = default_design_space[default_design_space[self.VARIABLES] == element].iloc[0]
+                            final_dataframe = final_dataframe.append(default_row, ignore_index=True)
                             if element in from_design_space:
                                 to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
                                                                               self.VARIABLES] == element]
@@ -539,11 +542,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                 elif proxy.sampling_method == proxy.GRID_SEARCH and self.NB_POINTS not in to_append.columns:
                                     # for GridSearch need to eventually insert the self.NB_POINTS column
                                     to_append.insert(3, self.NB_POINTS, 2)
-                                final_dataframe = final_dataframe.append(to_append)
-                            else:
-                                final_dataframe = final_dataframe.append(
-                                    default_design_space[default_design_space[self.VARIABLES] == element],
-                                    ignore_index=True)
+                                final_dataframe.loc[len(final_dataframe)-1, to_append.columns] = to_append.iloc[0]
                         proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
                                           proxy.VALUE, final_dataframe, check_value=False)
 
@@ -637,13 +636,13 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
         enable_variables = [True for _ in selected_inputs]
+        # FIXME: why are we dismissing user-input values ?
         dspace_df_updated = pd.DataFrame({self.VARIABLES: selected_inputs,
                                           self.VALUES: values,
                                           self.LOWER_BOUND: lower_bounds,
                                           self.UPPER_BOUND: upper_bounds,
                                           self.ENABLE_VARIABLE_BOOL: enable_variables,
                                           self.LIST_ACTIVATED_ELEM: [[True] for _ in selected_inputs]})
-        # TODO: Hardcoded as in EEV3, but not differenciating between array or not.
         return dspace_df_updated
 
     def create_gemseo_dspace_from_dspace_df(self, dspace_df):
