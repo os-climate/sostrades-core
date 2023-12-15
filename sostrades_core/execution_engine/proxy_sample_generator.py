@@ -149,6 +149,8 @@ class ProxySampleGenerator(ProxyDiscipline):
                          associated_namespaces=associated_namespaces)
 
         self.check_integrity_msg_list = []
+        self.sg_data_integrity = True
+
         self.sampling_method = None
         self.sampling_generation_mode = None
 
@@ -178,11 +180,58 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.eval_in_possible_types = possible_types
             self.set_configure_status(False)
 
+    def _check_eval_inputs_types_for_one_variable(self, eval_inputs_row):
+        var_name = eval_inputs_row[self.FULL_NAME]
+        var_type = self.eval_in_possible_types[var_name]
+        list_of_values = eval_inputs_row[self.LIST_OF_VALUES]
+        return isinstance(list_of_values, list) and all(map(lambda _val: isinstance(_val, self.VAR_TYPE_MAP[var_type]),
+                                                            list_of_values))
+
+    def _check_design_space_types_for_one_variable(self, design_space_row):
+        var_name = design_space_row[self.FULL_NAME]
+        var_type = self.eval_in_possible_types[var_name]
+
     def check_data_integrity(self):
-        self.check_integrity_msg_list = []
-        self.sample_generator_data_integrity = True
-        # TODO: implement integrity for eval_inputs['list_of_values'] depending on types
-        # TODO: implement generator-specific integrity checks e.g. design space?
+        super().check_data_integrity()
+        self.sg_data_integrity = True
+        disc_in = self.get_data_in()
+
+        # check integrity for eval_inputs
+        eval_inputs_integrity_msg = []
+        if self.configurator and self.EVAL_INPUTS in disc_in:
+            eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
+            if eval_inputs is not None:
+                # possible value checks (with current implementation should be OK by construction)
+                vars_not_possible = eval_inputs[self.FULL_NAME][
+                        ~eval_inputs[self.FULL_NAME].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
+                for var_not_possible in vars_not_possible:
+                    eval_inputs_integrity_msg.append(
+                        f'Variable {var_not_possible} is not among the possible input values.'
+                    )
+                # for cartesian product check that factors' values have the right type. NB: this also checks that
+                # list_of_values is a list (redundantly with dataframe descriptor) as to avoid spurious sampling
+                if self.LIST_OF_VALUES in eval_inputs.columns:
+                    wrong_type_vars = eval_inputs[self.FULL_NAME][
+                        ~eval_inputs.apply(self._check_eval_inputs_types_for_one_variable, axis=1)].to_list()
+                    for wrong_type_var in wrong_type_vars:
+                        eval_inputs_integrity_msg.append(
+                            f'Column {self.LIST_OF_VALUES} should be a list of '
+                            f'{self.eval_in_possible_types[wrong_type_var]} for variable {wrong_type_var}.')
+        if eval_inputs_integrity_msg:
+            self.sg_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
+                                self.CHECK_INTEGRITY_MSG, '\n'.join(eval_inputs_integrity_msg))
+
+        # check integrity for design space # todo: to be discussed
+        design_space_integrity_msg = []
+        if self.DESIGN_SPACE in disc_in:
+            design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+            if design_space is not None:
+
+        if design_space_integrity_msg:
+            self.sg_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.DESIGN_SPACE, disc_in),
+                                self.CHECK_INTEGRITY_MSG, '\n'.join(design_space_integrity_msg))
 
     def is_configured(self):
         """
@@ -201,7 +250,8 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.instantiate_sampling_tool()
             self.update_eval_inputs(disc_in)
             dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(self)
-
+            
+            self.check_data_integrity()
             if self.sampling_generation_mode == self.AT_RUN_TIME:
                 # if sampling at run-time add the corresponding output
                 dynamic_outputs[self.SAMPLES_DF] = self.SAMPLES_DF_DESC_SHARED.copy()
@@ -357,8 +407,8 @@ class ProxySampleGenerator(ProxyDiscipline):
         Method used to ask the sample generator to sample and push the samples_df into the data manager when a sampling
         at configuration time is performed.
         """
-        # TODO : discuss implementation (is_ready_to_sample)
-        if self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
+        # TODO: discuss implementation as is_ready_to_sample ~= data_integrity
+        if self.sg_data_integrity and self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
             if self.SAMPLES_DF in disc_in:
                 samples_df_dm = self.dm.get_value(self.get_input_var_full_name(self.SAMPLES_DF))
                 # sample but avoid pushing the generated samples_df into the dm, UNLESS:
