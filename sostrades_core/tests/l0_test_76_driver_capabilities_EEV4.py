@@ -202,12 +202,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
                        f'\t|_ Simple_Disc',
+                       f'\t|_ SampleGenerator',
                        f'\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -464,18 +464,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
                        f'\t|_ Simple_Disc',
+                       f'\t|_ SampleGenerator',
                        f'\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         proxy_disc2 = exec_eng.root_process.proxy_disciplines[
-            1].proxy_disciplines[0].proxy_disciplines[1]
+            2].proxy_disciplines[0].proxy_disciplines[1]
         ns_id_cache_disc2_own_data_structure = proxy_disc2._io_ns_map_in['cache_type']
         ns_id_cache_disc2_ns_manager = id(
             exec_eng.ns_manager.get_local_namespace(proxy_disc2))
@@ -493,7 +493,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(var_dict_dm_in, var_dict_data_in_root)
 
         proxy_disc_sellar_problem = exec_eng.root_process.proxy_disciplines[
-            1].proxy_disciplines[0].proxy_disciplines[0]
+            2].proxy_disciplines[0].proxy_disciplines[0]
         ns_id_cache_disc_sellar_problem_own_data_structure = proxy_disc_sellar_problem._io_ns_map_out[
             'c_1']
         # ns_id_cache_disc_sellar_problem_ns_manager = id(
@@ -674,14 +674,15 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ root',
+                       '\t|_ SampleGenerator',
                        f'\t|_ Eval',
                        '\t\t|_ Disc1',
-                       '\t|_ SampleGenerator']
+                       ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
-        assert not exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
+        assert not exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].is_sos_coupling
 
         # -- Eval inputs
         input_selection_a = {'selected_input': [False, True, False],
@@ -1861,7 +1862,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # check that the namespace treeview is proper
         exp_ns_tv = 'Nodes representation for Treeview usecase1_cp_multi_with_ref\n' \
-                    '|_ usecase1_cp_multi_with_ref\n' \
+                    '|_ usecase1_cp_multi_with_ref\n'  \
+                    '\t|_ SampleGenerator\n' \
                     '\t|_ Eval\n' \
                     '\t\t|_ ReferenceScenario\n' \
                     '\t\t\t|_ SellarCoupling\n' \
@@ -1877,17 +1879,16 @@ class TestSoSDOEScenario(unittest.TestCase):
                     '\t\t\t|_ SellarCoupling\n' \
                     '\t\t\t\t|_ Sellar_Problem\n' \
                     '\t\t\t\t|_ Sellar_2\n' \
-                    '\t\t\t\t|_ Sellar_1\n' \
-                    '\t|_ SampleGenerator'
+                    '\t\t\t\t|_ Sellar_1'
 
         self.assertEqual(study_dump.ee.display_treeview_nodes(), exp_ns_tv)
 
         # check that the proxy tree has put the subprocess at the same level as
         # the evaluator and all proxies have run
         exp_proxy_tv_with_status = '|_ usecase1_cp_multi_with_ref  (ProxyCoupling) [DONE]\n' \
-                                   '    |_ usecase1_cp_multi_with_ref.Eval  (ProxyMultiInstanceDriver) [DONE]\n' \
-                                   '    |_ usecase1_cp_multi_with_ref.Eval_gather  (ProxyDiscipline) [DONE]\n' \
                                    '    |_ usecase1_cp_multi_with_ref.SampleGenerator  (ProxySampleGenerator) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.Eval_gather  (ProxyDiscipline) [DONE]\n' \
+                                   '    |_ usecase1_cp_multi_with_ref.Eval  (ProxyMultiInstanceDriver) [DONE]\n' \
                                    '    |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling  (ProxyCoupling) [DONE]\n' \
                                    '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem  (ProxyDiscipline) [DONE]\n' \
                                    '        |_ usecase1_cp_multi_with_ref.Eval.ReferenceScenario.SellarCoupling.Sellar_2  (ProxyDiscipline) [DONE]\n' \

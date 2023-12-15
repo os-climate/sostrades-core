@@ -420,11 +420,11 @@ class TestGridSearchEval(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ MyCase',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ Sellar_Problem',
                        '\t\t|_ Sellar_2',
-                       '\t\t|_ Sellar_1',
-                       '\t|_ SampleGenerator']
+                       '\t\t|_ Sellar_1',]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()

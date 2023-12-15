@@ -325,6 +325,12 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         sampling_disc = sampling_builder.build()
         sampling_disc.configurator = self
         self.ee.factory.add_discipline(sampling_disc)
+        # perform a reference switch so that the SampleGenerator discipline shows in treeview before driver
+        # TODO: [discuss] whether there is a cleaner way
+        sister_proxies = self.father_executor.proxy_disciplines
+        driver_idx = sister_proxies.index(self)
+        sg_idx = sister_proxies.index(sampling_disc)
+        sister_proxies[driver_idx], sister_proxies[sg_idx] = sister_proxies[sg_idx], sister_proxies[driver_idx]
         # return discipline for association in driver
         return sampling_disc
 

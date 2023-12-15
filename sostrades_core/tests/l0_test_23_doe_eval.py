@@ -186,12 +186,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
+                       f'\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -367,12 +367,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
+                       f'\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -463,12 +463,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -597,12 +597,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
+                       f'\t|_ SampleGenerator',
                        f'\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -712,12 +712,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
+                       f'\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -888,11 +888,11 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Disc2',
                        '\t\t\t|_ Disc1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -931,18 +931,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(exec_eng.dm.get_value('doe.Eval.z_dict')), 11)
 
         # Check coherence between ProxyCoupling of Eval and SoSMDAChain:
-        self.assertEqual(set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_output_data_names()),
-                         set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[
+        self.assertEqual(set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_output_data_names()),
+                         set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[
                                  0].mdo_discipline_wrapp.mdo_discipline.get_output_data_names()))
-        self.assertEqual(set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_input_data_names()),
-                         set(exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[
+        self.assertEqual(set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_input_data_names()),
+                         set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[
                                  0].mdo_discipline_wrapp.mdo_discipline.get_input_data_names()))
         # Test that the lower-level coupling does not crush inputs nor
         # numerical variables of its subprocess:
         self.assertIn('doe.Eval.subprocess.Disc2.cache_file_path',
-                      exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_input_data_names())
+                      exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_input_data_names())
         self.assertIn('doe.Eval.subprocess.Disc1.cache_file_path',
-                      exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].get_input_data_names())
+                      exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_input_data_names())
         # Check that the root process does not crush variables with the same
         # short name:
         for var in ['doe.Eval.z_dict', 'doe.Eval.subprocess.Disc1.z_dict', 'doe.Eval.z', 'doe.Eval.subprocess.Disc1.z']:
@@ -1183,12 +1183,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {same_usecase_name}',
                        f'|_ {same_usecase_name}',
+                       f'\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -1235,15 +1235,15 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
+                       f'\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ Disc1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
-        assert not exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
+        assert not exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].is_sos_coupling
 
         # -- set up disciplines
         private_values = {
@@ -1321,15 +1321,15 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ doe',
+                       f'\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ Disc1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
-        assert not exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].is_sos_coupling
+        assert not exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].is_sos_coupling
 
         # -- set up disciplines in Scenario
         disc_dict = {}
@@ -1663,12 +1663,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {same_usecase_name}',
                        f'|_ {same_usecase_name}',
+                       f'\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
                        '\t\t\t|_ Sellar_1',
-                       f'\t|_ SampleGenerator',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
