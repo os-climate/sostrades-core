@@ -318,47 +318,48 @@ class SosFactory:
 
         return builder
 
-    # TODO: these implementations are WIP to test class split (adding of mod)
-    def create_mono_instance_driver(self, sos_name, cls_builder, with_sample_generator=False):
+    def create_mono_instance_driver(self, sos_name, cls_builder):
         '''
-
         Args:
             sos_name: Name of the driver
             cls_builder: (builder list or 1 builder) builder that will be use for driver subprocess
-            with_sample_generator:
-
         Returns:
-
+            builder_list: list containing the driver builder
         '''
         module_struct_list = f'{self.EE_PATH}.proxy_mono_instance_driver.ProxyMonoInstanceDriver'
         driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.mono_instance_driver_wrapper.MonoInstanceDriverWrapper'
         return self.create_driver(sos_name=sos_name,
                                   cls_builder=cls_builder,
                                   map_name=None,
-                                  with_sample_generator=with_sample_generator,
                                   module_struct_list=module_struct_list,
                                   driver_wrapper_mod=driver_wrapper_mod)
 
-    def create_multi_instance_driver(self, sos_name, cls_builder, with_sample_generator=False, map_name=None):
+    def create_multi_instance_driver(self, sos_name, cls_builder, map_name=None):
+        '''
+        Args:
+            sos_name: Name of the driver
+            cls_builder: (builder list or 1 builder) builders that will be used for driver subprocess
+            map_name (optional): Map associated to scatter tool
+        Returns:
+            builder_list: list containing the driver builder
+        '''
         module_struct_list = f'{self.EE_PATH}.proxy_multi_instance_driver.ProxyMultiInstanceDriver'
         builder_list = self.create_driver(sos_name=sos_name,
                                           cls_builder=cls_builder,
                                           map_name=map_name,
-                                          with_sample_generator=with_sample_generator,
                                           module_struct_list=module_struct_list)
-
         return builder_list
 
-    def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, module_struct_list=None,
-                      driver_wrapper_mod=None):
+    def create_driver(self, sos_name, cls_builder, map_name=None,
+                      module_struct_list=None, driver_wrapper_mod=None):
         '''
 
         Args:
             sos_name: Name of the driver
             cls_builder: sub process builder list to evaluate
             map_name (optional): Map associated to scatter_tool (in multiinstance mode)
-            with_sample_generator (optional): Add a sample generator and associate it to the driver evaluator
-
+            module_struct_list (string): module of the proxy
+            driver_wrapper_mod (string): module of the driver wrapper (mono-instance)
 
         Returns: A driver evaluator with all the parameters
 
@@ -383,13 +384,7 @@ class SosFactory:
 
         builder.set_builder_info('map_name', map_name)
 
-        builder_list = [builder]
-        if with_sample_generator:
-            sampling_builder = self.create_sample_generator('SampleGenerator')
-            
-            builder_list.insert(0, sampling_builder)
-
-        return builder_list
+        return [builder]
 
     def create_sample_generator(self, sos_name):
         '''
