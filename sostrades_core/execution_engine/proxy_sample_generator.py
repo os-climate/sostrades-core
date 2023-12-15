@@ -227,6 +227,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         if self.DESIGN_SPACE in disc_in:
             design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
             if design_space is not None:
+                pass
 
         if design_space_integrity_msg:
             self.sg_data_integrity = False
