@@ -914,6 +914,7 @@ class TestMultiScenario(unittest.TestCase):
         exp_tv_tree = ('\n').join([
             "Nodes representation for Treeview MyCase",
             "|_ MyCase",
+            "	|_ SampleGenerator",
             "	|_ multi_scenarios",
             "		|_ scenario_1",
             "			|_ Disc1",
@@ -927,7 +928,6 @@ class TestMultiScenario(unittest.TestCase):
             "		|_ W",
             "			|_ Disc1",
             "			|_ Disc3",
-            "	|_ SampleGenerator",
         ])
         self.assertEqual(exp_tv_tree, self.exec_eng.display_treeview_nodes())
 
@@ -996,6 +996,7 @@ class TestMultiScenario(unittest.TestCase):
         exp_tv_tree = ('\n').join([
             "Nodes representation for Treeview MyCase",
             "|_ MyCase",
+            "	|_ SampleGenerator",
             "	|_ multi_scenarios",
             "		|_ scenario_1",
             "			|_ Disc1",
@@ -1009,7 +1010,6 @@ class TestMultiScenario(unittest.TestCase):
             "		|_ W",
             "			|_ Disc1",
             "			|_ Disc3",
-            "	|_ SampleGenerator",
         ])
 
         self.assertEqual(exp_tv_tree, self.exec_eng.display_treeview_nodes())
@@ -1063,6 +1063,7 @@ class TestMultiScenario(unittest.TestCase):
         exp_tv_tree = ('\n').join([
             "Nodes representation for Treeview MyCase",
             "|_ MyCase",
+            "	|_ SampleGenerator",
             "	|_ multi_scenarios",
             "		|_ scenario_1",
             "			|_ Disc1",
@@ -1076,7 +1077,6 @@ class TestMultiScenario(unittest.TestCase):
             "		|_ scenario_4",
             "			|_ Disc1",
             "			|_ Disc3",
-            "	|_ SampleGenerator",
         ])
         self.assertEqual(exp_tv_tree, exec_eng2.display_treeview_nodes())
 

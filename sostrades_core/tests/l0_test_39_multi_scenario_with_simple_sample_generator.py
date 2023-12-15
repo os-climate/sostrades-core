@@ -244,6 +244,7 @@ class TestMultiScenario(unittest.TestCase):
 
         exp_tv = 'Nodes representation for Treeview MyCase\n' \
                  '|_ MyCase\n' \
+                 '\t|_ SampleGenerator\n' \
                  '\t|_ multi_scenarios\n' \
                  '\t\t|_ a\n' \
                  '\t\t\t|_ Disc1\n' \
@@ -253,8 +254,7 @@ class TestMultiScenario(unittest.TestCase):
                  '\t\t\t|_ Disc3\n' \
                  '\t\t|_ d\n' \
                  '\t\t\t|_ Disc1\n' \
-                 '\t\t\t|_ Disc3\n' \
-                 '\t|_ SampleGenerator'
+                 '\t\t\t|_ Disc3'
         self.assertEqual(exp_tv, self.exec_eng.display_treeview_nodes())
 
         # manually configure scenarios reference values
