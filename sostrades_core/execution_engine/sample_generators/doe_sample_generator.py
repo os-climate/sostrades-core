@@ -480,10 +480,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                     self.LOWER_BOUND: ('multiple', None, True),
                     self.UPPER_BOUND: ('multiple', None, True),
                     self.VALUES: ('multiple', None, True),
-                    self.ENABLE_VARIABLE_BOOL: (
-                        'bool', None, True),
-                    self.LIST_ACTIVATED_ELEM: (
-                        'list', None, True), }
+                    self.ENABLE_VARIABLE_BOOL: ('bool', None, True),
+                    self.LIST_ACTIVATED_ELEM: ('list', None, True),
+                }
 
                 if proxy.sampling_method == proxy.DOE_ALGO:
                     default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
@@ -635,8 +634,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
+        # FIXME: why are we dismissing some of the user-input values in design_space ?
         enable_variables = [True for _ in selected_inputs]
-        # FIXME: why are we dismissing user-input values ?
         dspace_df_updated = pd.DataFrame({self.VARIABLES: selected_inputs,
                                           self.VALUES: values,
                                           self.LOWER_BOUND: lower_bounds,
@@ -680,6 +679,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                 else:
                     # check if there is any False in l_activated
                     if not all(l_activated):
+                        # FIXME: implementation doesn't look good for >1 deactivated elem
                         index_false = l_activated.index(False)
                         # self.sample_generator.dict_desactivated_elem[dv] = {
                         #     'value': val[index_false], 'position': index_false}
