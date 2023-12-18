@@ -471,7 +471,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                 selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
 
                 if set(selected_inputs) != set(self.selected_inputs):
-                    selected_inputs_has_changed = True
                     self.selected_inputs = selected_inputs
 
                 default_design_space = pd.DataFrame()
@@ -492,6 +491,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                                          self.ENABLE_VARIABLE_BOOL: [False] * len(self.selected_inputs),
                                                          self.VALUES: [None] * len(self.selected_inputs),
                                                          })
+                    default_design_space[self.ENABLE_VARIABLE_BOOL] = default_design_space[self.ENABLE_VARIABLE_BOOL].astype(bool)
                 elif proxy.sampling_method == proxy.GRID_SEARCH:
                     default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
                                                          self.LOWER_BOUND: [0.0] * len(self.selected_inputs),
@@ -503,7 +503,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                                          })
                     default_design_space[self.NB_POINTS] = default_design_space[self.NB_POINTS].astype(int)
                     design_space_dataframe_descriptor.update({self.NB_POINTS: ('int', None, True)})
-
                 dynamic_inputs.update({proxy.DESIGN_SPACE: {proxy.TYPE: 'dataframe',
                                                             proxy.DEFAULT: default_design_space,
                                                             proxy.STRUCTURING: False,
@@ -516,7 +515,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                     proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
                                       proxy.DATAFRAME_DESCRIPTOR, design_space_dataframe_descriptor, check_value=False)
 
-                    if selected_inputs_has_changed:
+                    if self.selected_inputs:
                         from_design_space = list(
                             disc_in['design_space'][proxy.VALUE][self.VARIABLES])
                         from_eval_inputs = self.selected_inputs
@@ -526,7 +525,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                             [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
                         final_dataframe = pd.DataFrame(columns=df_cols)
 
-                        ds_idx = 0
                         for element in from_eval_inputs:
                             default_row = default_design_space[default_design_space[self.VARIABLES] == element].iloc[0]
                             final_dataframe = final_dataframe.append(default_row, ignore_index=True)
@@ -541,7 +539,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                 elif proxy.sampling_method == proxy.GRID_SEARCH and self.NB_POINTS not in to_append.columns:
                                     # for GridSearch need to eventually insert the self.NB_POINTS column
                                     to_append.insert(3, self.NB_POINTS, 2)
-                                final_dataframe.loc[len(final_dataframe)-1, to_append.columns] = to_append.iloc[0]
+                                final_dataframe.loc[len(final_dataframe)-1, to_append.columns] = to_append.iloc[0, :]
                         proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
                                           proxy.VALUE, final_dataframe, check_value=False)
 

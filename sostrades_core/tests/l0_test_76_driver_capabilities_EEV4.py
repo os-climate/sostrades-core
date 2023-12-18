@@ -151,8 +151,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         dspace_dict_x = {'variable': ['x'],
 
-                         'lower_bnd': [0.],
-                         'upper_bnd': [10.],
+                         'lower_bnd': [array([0.])],
+                         'upper_bnd': [array([10.])],
 
                          }
         dspace_x = pd.DataFrame(dspace_dict_x)
