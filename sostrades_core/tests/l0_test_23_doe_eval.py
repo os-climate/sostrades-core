@@ -513,7 +513,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertEqual(exec_eng.dm.get_value(
             'doe.SampleGenerator.algo_options')['n_samples'], n_samples)
-        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True),
+        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_x_eval.columns],
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after algo name change
@@ -531,7 +531,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             if option != 'n_samples':
                 self.assertEqual(exec_eng.dm.get_value('doe.SampleGenerator.algo_options')[option],
                                  default_algo_options_fullfact[option])
-        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True),
+        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_x_eval.columns],
                            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after eval_inputs and gather_outputs changes
@@ -567,7 +567,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.assertDictEqual(exec_eng.dm.get_value('doe.SampleGenerator.algo_options'),
                              algo_full_options)
-        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True),
+        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_eval.columns],
                            dspace_eval.reset_index(drop=True), check_dtype=False)
 
     def test_5_Eval_User_defined_samples_reconfiguration(self):

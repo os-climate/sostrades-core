@@ -34,7 +34,7 @@ from copy import deepcopy
 from pandas import DataFrame
 from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
-
+from numpy import bool_ as np_bool
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
@@ -172,6 +172,7 @@ class ProxyDiscipline:
     # complex can also be a type if we use complex step
     INT_MAP = (int, np_int32, np_int64, np_complex128)
     FLOAT_MAP = (float, np_float64, np_complex128)
+    BOOL_MAP = (bool, np_bool)
     PROC_BUILDER_MODAL = 'proc_builder_modal'
     VAR_TYPE_MAP = {
         # an integer cannot be a float
@@ -188,7 +189,7 @@ class ProxyDiscipline:
         'df_dict': dict,
         'dict': dict,
         'dataframe': DataFrame,
-        'bool': bool,
+        'bool': BOOL_MAP,
         'list': list,
         PROC_BUILDER_MODAL: dict
     }

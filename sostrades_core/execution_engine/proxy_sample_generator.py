@@ -26,6 +26,8 @@ from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_
     CartesianProductSampleGenerator
 from sostrades_core.tools.gather.gather_tool import check_eval_io
 import pandas as pd
+from numpy import array
+
 
 class ProxySampleGeneratorException(Exception):
     pass
@@ -67,6 +69,11 @@ class ProxySampleGenerator(ProxyDiscipline):
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
+    LOWER_BOUND = DoeSampleGenerator.LOWER_BOUND
+    UPPER_BOUND = DoeSampleGenerator.UPPER_BOUND
+    VARIABLES = DoeSampleGenerator.VARIABLES
+    VALUES = DoeSampleGenerator.VALUES
+    NB_POINTS = DoeSampleGenerator.NB_POINTS
 
     NS_SAMPLING = 'ns_sampling'
 
@@ -187,16 +194,24 @@ class ProxySampleGenerator(ProxyDiscipline):
         return isinstance(list_of_values, list) and all(map(lambda _val: isinstance(_val, self.VAR_TYPE_MAP[var_type]),
                                                             list_of_values))
 
-    def _check_design_space_types_for_one_variable(self, design_space_row):
-        var_name = design_space_row[self.FULL_NAME]
-        var_type = self.eval_in_possible_types[var_name]
+    def _check_design_space_dimensions_for_one_variable(self, design_space_row):
+        lb = design_space_row[self.LOWER_BOUND] if self.LOWER_BOUND in design_space_row.index else None
+        ub = design_space_row[self.UPPER_BOUND] if self.UPPER_BOUND in design_space_row.index else None
+        val = design_space_row[self.VALUES] if self.VALUES in design_space_row.index else None
+        lb_shape = array(lb).shape
+        ub_shape = array(ub).shape
+        val_shape = array(val).shape
+        lb_ub_dim_mismatch = lb is not None and ub is not None and lb_shape != ub_shape
+        lb_val_dim_mismatch = lb is not None and val is not None and lb_shape != val_shape
+        val_ub_dim_mismatch = val is not None and ub is not None and val_shape != ub_shape
+        return not (lb_ub_dim_mismatch or lb_val_dim_mismatch or val_ub_dim_mismatch)
 
     def check_data_integrity(self):
         super().check_data_integrity()
         self.sg_data_integrity = True
         disc_in = self.get_data_in()
 
-        # check integrity for eval_inputs
+        # check integrity for eval_inputs # TODO: move to cartesian product sample generator
         eval_inputs_integrity_msg = []
         if self.configurator and self.EVAL_INPUTS in disc_in:
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
@@ -210,7 +225,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                     )
                 # for cartesian product check that factors' values have the right type. NB: this also checks that
                 # list_of_values is a list (redundantly with dataframe descriptor) as to avoid spurious sampling
-                if self.LIST_OF_VALUES in eval_inputs.columns:
+                if not vars_not_possible and self.LIST_OF_VALUES in eval_inputs.columns:
                     wrong_type_vars = eval_inputs[self.FULL_NAME][
                         ~eval_inputs.apply(self._check_eval_inputs_types_for_one_variable, axis=1)].to_list()
                     for wrong_type_var in wrong_type_vars:
@@ -222,13 +237,34 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.ee.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
                                 self.CHECK_INTEGRITY_MSG, '\n'.join(eval_inputs_integrity_msg))
 
-        # check integrity for design space # todo: to be discussed
+        # check integrity for design space # todo: move to doe and gridsearch generators ?
         design_space_integrity_msg = []
         if self.DESIGN_SPACE in disc_in:
             design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-            if design_space is not None:
-                pass
-
+            if design_space is not None and not design_space.empty:
+                if self.configurator:
+                    # possible value checks (with current implementation should be OK by construction)
+                    vars_not_possible = design_space[self.VARIABLES][
+                            ~design_space[self.VARIABLES].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
+                    for var_not_possible in vars_not_possible:
+                        design_space_integrity_msg.append(
+                            f'Variable {var_not_possible} is not among the possible input values.'
+                        )
+                # check of dimensions coherences
+                wrong_dim_vars = design_space[self.VARIABLES][
+                    ~design_space.apply(self._check_design_space_dimensions_for_one_variable, axis=1)].to_list()
+                for wrong_dim_var in wrong_dim_vars:
+                    design_space_integrity_msg.append(
+                        f'Columns {self.LOWER_BOUND}, {self.UPPER_BOUND} and {self.VALUES} should be of type '
+                        f'{self.eval_in_possible_types[wrong_dim_var]} for variable {wrong_dim_var} '
+                        f'and should have coherent shapes.')
+                if self.NB_POINTS in design_space.columns:
+                    wrong_nb_points_vars = design_space[self.VARIABLES][~design_space[self.NB_POINTS].apply(
+                        lambda _nb_pts: isinstance(_nb_pts, self.VAR_TYPE_MAP['int']) and _nb_pts >= 0)
+                    ].to_list()
+                    if wrong_nb_points_vars:
+                        design_space_integrity_msg.append(
+                            f'Column {self.NB_POINTS} should contain non-negative integers only.')
         if design_space_integrity_msg:
             self.sg_data_integrity = False
             self.ee.dm.set_data(self.get_var_full_name(self.DESIGN_SPACE, disc_in),
