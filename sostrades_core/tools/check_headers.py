@@ -47,7 +47,7 @@ CARTOUCHE_CAP_AIRBUS = CARTOUCHE_BASE.format(f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED
 CARTOUCHE_CAP = CARTOUCHE_BASE.format(f"{CAP_COPYRIGHT}\n{LICENCE}")
 
 # Define a regular expression to match the cartouche only at the beginning
-cartouche_pattern = r"^'''(.*?)'''\n"
+cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
 
 cartouche_modified_pattern = r"Modifications on (.+) Copyright 2023 Capgemini"
 
@@ -69,8 +69,8 @@ class HeaderError:
      return f"-------------------\n\
 Header Error on {self.type_of_change} file : {self.concerned_file}\n\
 Details : {self.error_details}\n\
-Expected header is : \n { self.expected_header}\n\
-but header is {self.current_header}\n\
+Expected header is :\n{ self.expected_header}\n\
+but header is\n{self.current_header}\n\
 -------------------\n"
 
 def check_header_for_added_file(file_path):
