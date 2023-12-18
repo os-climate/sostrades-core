@@ -30,7 +30,7 @@ class Testheader(unittest.TestCase):
         Initialize third data needed for testing
         '''
         self.pp = pprint.PrettyPrinter(indent=4, compact=True)
-        self.ExtensionToIgnore = ["pkl", "png", "jpg", "csv", "md", "markdown", "avif", "json", "in", "gitignore", "cfg", "puml", "pdf", "txt", "ipynb", "zip", "rst"]
+        self.ExtensionToIgnore = ["pkl", "png", "jpg", "csv", "md", "markdown", "avif", "json", "in", "gitignore", "cfg", "puml", "pdf", "txt", "ipynb", "zip", "rst", "ini"]
         #Add here the files to ignore       
         self.FilesToIgnore = ["sostrades_core/execution_engine/sample_generators/__init__.py",
                               "sostrades_core/sos_processes/test/sellar/__init__.py",
@@ -39,7 +39,4 @@ class Testheader(unittest.TestCase):
         self.airbus_rev_commit = "11d7f9f"
 
     def test_Headers(self):
-        check_headers(self.ExtensionToIgnore,self.FilesToIgnore,self.airbus_rev_commit)
-
-        
-
+        check_headers(self.ExtensionToIgnore, self.FilesToIgnore, self.airbus_rev_commit)
