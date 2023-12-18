@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/11/14 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -159,6 +160,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
             yaxis.update({'range': self.primary_ordinate_axis_range})
         yaxis.update({'title': self.primary_ordinate_axis_name})
         yaxis.update({'automargin': True})
+        if self.y_axis_log:
+            fig.update_yaxes(type='log')
 
         yaxis2 = {}
         if len(self.secondary_ordinate_axis_range) > 0:
