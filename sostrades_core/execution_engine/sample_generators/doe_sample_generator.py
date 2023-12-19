@@ -72,6 +72,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     # This algorithm is special: it has parameters "reverse" that can have name of variable
     # Do we want it in SoSTrades. Does it works also or not ?
     UNSUPPORTED_GEMSEO_ALGORITHMS = ['CustomDOE', 'DiagonalDOE']
+    # algorithms not listed below will have input constrained to floats and arrays
+    TYPE_PERMISSIVE_ALGORITHMS = {'fullfact', 'OT_FULLFACT', 'pbdesign', 'ff2n'}
 
     def __init__(self, logger:Optional[logging.Logger]=None):
         '''
@@ -699,3 +701,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         disc_in = proxy.get_data_in()
         return self.selected_inputs and \
             proxy.ALGO in disc_in and proxy.ALGO_OPTIONS in disc_in and proxy.DESIGN_SPACE in disc_in
+
+    def filter_inputs(self, proxy):
+        """
+        Filter for the majority of algorithms the
+        """
+        disc_in = proxy.get_data_in()
+        if proxy.ALGO in disc_in and proxy.get_sosdisc_inputs(proxy.ALGO) in self.TYPE_PERMISSIVE_ALGORITHMS:
+            pass
+        elif proxy.eval_in_possible_types:
+            proxy.eval_in_possible_types = {_v: _t for (_v, _t) in proxy.eval_in_possible_types.items() if _t in ('array', 'float')}
+            proxy.eval_in_possible_values = [_v for _v in proxy.eval_in_possible_values if _v in proxy.eval_in_possible_types]

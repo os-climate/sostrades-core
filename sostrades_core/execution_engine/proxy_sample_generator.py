@@ -384,6 +384,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if self.configurator:
                 _df_desc[self.FULL_NAME] = ('string', None, False)
             self._update_eval_inputs_columns(_df_desc, disc_in)
+        self.mdo_discipline_wrapp.wrapper.sample_generator.filter_inputs(self)
         self._update_eval_inputs_with_possible_values(disc_in)
 
     def _update_eval_inputs_columns(self, eval_inputs_df_desc, disc_in=None):
