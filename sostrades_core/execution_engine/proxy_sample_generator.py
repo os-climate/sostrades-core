@@ -505,4 +505,5 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.samples_gene_df[self.SELECTED_SCENARIO] = False
             self.logger.warning(
                 f'Sampled over {self.MAX_AUTO_SELECT_SCENARIOS} scenarios, please select manually which ones are'
-                f'to be built and/or evaluated using input samples dataframe ({self.SELECTED_SCENARIO} column).')
+                f'to be built and/or evaluated using input samples dataframe ({self.SELECTED_SCENARIO} column). '
+                f'For a large number of scenarios, a mono-instance driver with sample generation at run-time is advised.')
