@@ -48,6 +48,10 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
             raise InstanciatedSeriesException(
                 f'given series has the wrong type, {type(series)} instead of InstanciatedSeries')
 
+        if self.y_min_zero:
+            self.y_primary_max = max(max(series.ordinate), self.y_primary_max)
+            self.primary_ordinate_axis_range = [-0.05 * self.y_primary_max, self.y_primary_max * 1.1]
+
     def to_plotly(self, logger=None):
         """
         Convert current instance into a plotly object

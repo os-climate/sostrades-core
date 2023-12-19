@@ -275,7 +275,7 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
     def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
                  primary_ordinate_axis_range=[], chart_name='', stacked_bar=False, bar_orientation='v',
                  cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[],
-                 y_axis_log: bool = False):
+                 y_axis_log: bool = False, y_min_zero: bool = False):
         """
          Create a new chart definition
 
@@ -338,6 +338,10 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         self.cumulative_surface = cumulative_surface
 
         self.y_axis_log = y_axis_log
+        self.y_min_zero = y_min_zero
+        self.y_primary_max = 0.
+        if self.y_min_zero:
+            self.primary_ordinate_axis_range = [0., 0.]
 
     def add_series(self, series):
         """
@@ -376,6 +380,8 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         if len(self.secondary_ordinate_axis_range) > 1:
             sec_ord_axis_range = [
                 self.secondary_ordinate_axis_range[0], self.secondary_ordinate_axis_range[1]]
+
+
 
         chart_string = [f'\nname: {self.chart_name}',
                         f'Abs axis name: {self.abscissa_axis_name}',
