@@ -477,13 +477,14 @@ class ProxySampleGenerator(ProxyDiscipline):
                 overwrite_samples_df =\
                     samples_df_dm[self.SCENARIO_NAME].equals(self.SAMPLES_DF_DEFAULT[self.SCENARIO_NAME]) or \
                     self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)
-                self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
-                if self.samples_gene_df is not None and not self.samples_gene_df.empty and overwrite_samples_df:
-                    self.max_auto_select_scenarios_warning()
-                    self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                                     self.VALUE, self.samples_gene_df, check_value=False)
-                    self.dm.set_data(self.get_var_full_name(self.OVERWRITE_SAMPLES_DF, disc_in),
-                                     self.VALUE, False, check_value=False)
+                if overwrite_samples_df:
+                    self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
+                    if self.samples_gene_df is not None and not self.samples_gene_df.empty:
+                        self.max_auto_select_scenarios_warning()
+                        self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
+                                         self.VALUE, self.samples_gene_df, check_value=False)
+                        self.dm.set_data(self.get_var_full_name(self.OVERWRITE_SAMPLES_DF, disc_in),
+                                         self.VALUE, False, check_value=False)
                 self.sample_pending = False
             else:
                 self.sample_pending = True
