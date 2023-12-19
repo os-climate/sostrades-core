@@ -956,6 +956,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         print(f'Second configure with design_space creation: \n {ds}')
 
+        # FIXME: [discussion open] currently grid search forbids int values
         self.assertEqual(expected_ds, ds.to_dict())
         self.assertEqual(expected_samples, samples.to_dict())
 
