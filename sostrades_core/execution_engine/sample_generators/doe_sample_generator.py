@@ -89,6 +89,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         self._reload()
 
         self.selected_inputs = []
+        self.selected_inputs_types = {}
         # self.dict_desactivated_elem = {}
         
     def _reload(self):
@@ -376,20 +377,24 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             # Find the dictionary version of the current point sample
             current_point_dict = design_space.array_to_dict(current_point)
 
-            # FIXME : are conversions needed here?
-            # sample_dict = self._convert_array_into_new_type(sample_dict)
-
-            # We reconstruct the current point as an array with variables
-            # ordered as in selected_inputs
-
+        
             reformated_current_point = []
             for in_variable in selected_inputs:
+
+                # convert array into data when needed
+                if in_variable in self.selected_inputs_types.keys() and (
+                    self.selected_inputs_types[in_variable] in ['float', 'int', 'string']):
+                    current_point_dict[in_variable] = current_point_dict[in_variable][0]
+                if in_variable in self.selected_inputs_types.keys() and (
+                    self.selected_inputs_types[in_variable] in ['list']):
+                    current_point_dict[in_variable] = list(current_point_dict[in_variable])
+
                 reformated_current_point.append(
                     current_point_dict[in_variable])
             reformated_samples.append(reformated_current_point)
 
         return reformated_samples
-
+    
     def _put_samples_in_df_format(self, samples, design_space):
         """
         construction of a dataframe of the generated samples
@@ -407,10 +412,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         samples_df = pd.DataFrame(data=samples,
                                   columns=selected_inputs)
-        # for input_name in selected_inputs:
-        #     type_input = design_space.get_type(input_name)[0]
-        #     if type_input in ['int', 'float']:
-        #         samples_df[input_name] = samples_df[input_name].astype(type_input)
+        
+
         return samples_df
 
 
@@ -466,12 +469,18 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         disc_in = proxy.get_data_in()
         # Dynamic input of default design space
         if proxy.EVAL_INPUTS in disc_in:
+
+            # save possible types in sample generator
+            if proxy.eval_in_possible_types is not None:
+                self.selected_inputs_types = proxy.eval_in_possible_types.copy()
+
             eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
             if eval_inputs is not None:
                 selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
 
                 if set(selected_inputs) != set(self.selected_inputs):
                     self.selected_inputs = selected_inputs
+                    
 
                 default_design_space = pd.DataFrame()
                 design_space_dataframe_descriptor = {
@@ -632,6 +641,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         lower_bounds = dspace_df[self.LOWER_BOUND].tolist()
         upper_bounds = dspace_df[self.UPPER_BOUND].tolist()
         values = lower_bounds
+
         # FIXME: why are we dismissing some of the user-input values in design_space ?
         enable_variables = [True for _ in selected_inputs]
         dspace_df_updated = pd.DataFrame({self.VARIABLES: selected_inputs,
