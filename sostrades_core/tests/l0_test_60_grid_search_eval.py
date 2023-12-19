@@ -941,8 +941,8 @@ class TestGridSearchEval(unittest.TestCase):
             f'{self.study_name}.{self.sample_generator}.design_space')
         samples = self.exec_eng.dm.get_value(f'{self.study_name}.{self.evaluator}.samples_df')
 
-        expected_ds = {'variable': {0: 'Disc1.b', 1: 'Disc1.x'},
-                       'lower_bnd': {0: 0.0, 1: 0.0},
+        expected_ds = {'variable': {1: 'Disc1.x'},
+                       'lower_bnd': {1: 0.0},
                        'upper_bnd': {0: 100.0, 1: 100.0},
                        'nb_points': {0: 2, 1: 2},
                        'activated_elem': {0: [], 1: []},

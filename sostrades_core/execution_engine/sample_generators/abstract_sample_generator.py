@@ -117,3 +117,12 @@ class AbstractSampleGenerator(object):
         loaded in the dm.
         """
         return True
+
+    def filter_inputs(self, proxy):
+        """
+        Method that takes the ProxySampleGenerator as input and filters the possible evaluated inputs values and types
+        in order to constrain the input for specific sample generators.
+        """
+        # proxy.eval_in_possible_values = [subprocess_inputs]
+        # proxy.eval_in_possible_types = {subprocess_input: variable_type}
+        pass
