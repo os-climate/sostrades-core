@@ -526,33 +526,32 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                     proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
                                       proxy.DATAFRAME_DESCRIPTOR, design_space_dataframe_descriptor, check_value=False)
 
-                    if self.selected_inputs:
-                        from_design_space = list(
-                            disc_in['design_space'][proxy.VALUE][self.VARIABLES])
-                        from_eval_inputs = self.selected_inputs
+                    from_design_space = list(
+                        disc_in['design_space'][proxy.VALUE][self.VARIABLES])
+                    from_eval_inputs = self.selected_inputs
 
-                        df_cols = [self.VARIABLES, self.LOWER_BOUND, self.UPPER_BOUND] + (
-                            [self.NB_POINTS] if proxy.sampling_method == proxy.GRID_SEARCH else []) + (
-                            [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
-                        final_dataframe = pd.DataFrame(columns=df_cols)
+                    df_cols = [self.VARIABLES, self.LOWER_BOUND, self.UPPER_BOUND] + (
+                        [self.NB_POINTS] if proxy.sampling_method == proxy.GRID_SEARCH else []) + (
+                        [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
+                    final_dataframe = pd.DataFrame(columns=df_cols)
 
-                        for element in from_eval_inputs:
-                            default_row = default_design_space[default_design_space[self.VARIABLES] == element].iloc[0]
-                            final_dataframe = final_dataframe.append(default_row, ignore_index=True)
-                            if element in from_design_space:
-                                to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
-                                                                              self.VARIABLES] == element]
-                                # TODO: in the current implementation it would be more proper that GridSearch setup its
-                                #  own design space instead of having particular cases in the Doe sample generator.
-                                if proxy.sampling_method == proxy.DOE_ALGO:
-                                    # for DoE need to dismiss self.NB_POINTS
-                                    to_append = to_append.loc[:, to_append.columns != self.NB_POINTS]
-                                elif proxy.sampling_method == proxy.GRID_SEARCH and self.NB_POINTS not in to_append.columns:
-                                    # for GridSearch need to eventually insert the self.NB_POINTS column
-                                    to_append.insert(3, self.NB_POINTS, 2)
-                                final_dataframe.loc[len(final_dataframe)-1, to_append.columns] = to_append.iloc[0, :]
-                        proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
-                                          proxy.VALUE, final_dataframe, check_value=False)
+                    for element in from_eval_inputs:
+                        default_row = default_design_space[default_design_space[self.VARIABLES] == element].iloc[0]
+                        final_dataframe = final_dataframe.append(default_row, ignore_index=True)
+                        if element in from_design_space:
+                            to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
+                                                                          self.VARIABLES] == element]
+                            # TODO: in the current implementation it would be more proper that GridSearch setup its
+                            #  own design space instead of having particular cases in the Doe sample generator.
+                            if proxy.sampling_method == proxy.DOE_ALGO:
+                                # for DoE need to dismiss self.NB_POINTS
+                                to_append = to_append.loc[:, to_append.columns != self.NB_POINTS]
+                            elif proxy.sampling_method == proxy.GRID_SEARCH and self.NB_POINTS not in to_append.columns:
+                                # for GridSearch need to eventually insert the self.NB_POINTS column
+                                to_append.insert(3, self.NB_POINTS, 2)
+                            final_dataframe.loc[len(final_dataframe)-1, to_append.columns] = to_append.iloc[0, :]
+                    proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
+                                      proxy.VALUE, final_dataframe, check_value=False)
 
     def setup_algo_options(self, dynamic_inputs, proxy):
         """
