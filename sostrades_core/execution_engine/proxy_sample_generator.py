@@ -188,6 +188,13 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.set_configure_status(False)
 
     def _check_eval_inputs_types_for_one_variable(self, eval_inputs_row):
+        """
+        Utility method that checks type and first subtype integrity in the 'list_of_values' column of evaluated inputs,
+        which contains the factors of the product in case of a cartesian product sampling.
+
+        Arguments:
+            eval_inputs_row (pd.Series): row of the evaluated inputs dataframe to check
+        """
         var_name = eval_inputs_row[self.FULL_NAME]
         var_type = self.eval_in_possible_types[var_name]
         list_of_values = eval_inputs_row[self.LIST_OF_VALUES]
@@ -195,6 +202,13 @@ class ProxySampleGenerator(ProxyDiscipline):
                                                             list_of_values))
 
     def _check_design_space_dimensions_for_one_variable(self, design_space_row):
+        """
+        Utility method that checks that values in the columns 'lower_bnd', 'upper_bnd', 'value' of the design space do
+        have the same shape for a same variable.
+
+        Arguments:
+            eval_inputs_row (pd.Series): row of the design space dataframe to check
+        """
         lb = design_space_row[self.LOWER_BOUND] if self.LOWER_BOUND in design_space_row.index else None
         ub = design_space_row[self.UPPER_BOUND] if self.UPPER_BOUND in design_space_row.index else None
         val = design_space_row[self.VALUES] if self.VALUES in design_space_row.index else None
@@ -207,11 +221,20 @@ class ProxySampleGenerator(ProxyDiscipline):
         return not (lb_ub_dim_mismatch or lb_val_dim_mismatch or val_ub_dim_mismatch)
 
     def check_data_integrity(self):
+        """
+        Data integrity checks of the Sample Generator including:
+        - evaluated inputs (if working with driver):
+            - check that the variables selected make sense with the subprocess
+            - check that the type and subtype of column 'list_of_values' are correct
+        - design space:
+            - check that the variables selected make sense with the subprocess (if working with driver)
+            - check that the ['lower_bnd', 'upper_bnd', 'value'] columns have coherent shapes with each other
+        """
         super().check_data_integrity()
         self.sg_data_integrity = True
         disc_in = self.get_data_in()
 
-        # check integrity for eval_inputs # TODO: move to cartesian product sample generator
+        # check integrity for eval_inputs # TODO: move to cartesian product sample generator ?
         eval_inputs_integrity_msg = []
         if self.configurator and self.EVAL_INPUTS in disc_in:
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
