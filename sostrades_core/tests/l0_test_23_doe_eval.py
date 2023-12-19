@@ -1282,6 +1282,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.assertEqual(len(eval_disc_ind), 11)
 
+
     def test_15_DoE_OT_FACTORIAL_Eval(self):
         """
         Test DoE + Eval of inputs and outputs of single subdiscipline not in root process with OT_FACTORIAL algo
@@ -1688,8 +1689,81 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(eval_disc_samples),
                          theoretical_fullfact_samples + 1)
 
+    def test_20_doe_eval_output_conversion(self):
+        """ Here we test a DoEEval process on a single sub-discipline so that there is no ProxyCoupling built in node.
+        """
+
+        dspace_dict = {'variable': ['x'],
+
+                       'lower_bnd': [0.],
+                       'upper_bnd': [100.],
+
+                       }
+        dspace = pd.DataFrame(dspace_dict)
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+        proc_name = "test_mono_driver_sample_generator_simple"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo,
+                                                            mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            doe_eval_builder)
+
+        exec_eng.configure()
+        initial_input = {f'{self.study_name}.Eval.with_sample_generator': True}
+        exec_eng.load_study_from_input_dict(initial_input)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ doe',
+                       f'\t|_ SampleGenerator',
+                       '\t|_ Eval',
+                       '\t\t|_ Disc1',
+                       ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
+
+        assert not exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].is_sos_coupling
+
+        # -- set up disciplines
+        private_values = {
+            self.study_name + '.Eval.x': 10.,
+            self.study_name + '.Eval.Disc1.a': 5.,
+            self.study_name + '.Eval.Disc1.b': 25431.,
+            self.study_name + '.Eval.y': 4.}
+        exec_eng.load_study_from_input_dict(private_values)
+        input_selection_a = {'selected_input': [False, True, False],
+                             'full_name': ['x', 'Disc1.a', 'Disc1.b']}
+        input_selection_a = pd.DataFrame(input_selection_a)
+
+        output_selection_ind = {'selected_output': [False, True],
+                                'full_name': ['y', 'Disc1.indicator']}
+        output_selection_ind = pd.DataFrame(output_selection_ind)
+
+        disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
+                     f'{self.ns}.SampleGenerator.sampling_generation_mode': self.sampling_gen_mode,
+                     f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
+                     f'{self.ns}.Eval.eval_inputs': input_selection_a,
+                     f'{self.ns}.Eval.gather_outputs': output_selection_ind}
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+        disc_dict = {'doe.SampleGenerator.algo_options': {'n_samples': 10, 'face': 'faced'},
+                     'doe.SampleGenerator.design_space': dspace}
+
+        exec_eng.load_study_from_input_dict(disc_dict)
+        exec_eng.execute()
+
+        eval_disc = exec_eng.dm.get_disciplines_with_name('doe.Eval')[0]
+
+        # check samples_df conversion into float
+        samples_df = eval_disc.get_sosdisc_inputs(
+            'samples_df')
+        self.assertTrue(isinstance(samples_df['Disc1.a'][0], float))
+
+
 if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_12_Eval_User_Defined_samples_non_alpha()
-()
+    cls.test_14_doe_eval_of_single_sub_discipline()
+
