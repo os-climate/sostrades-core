@@ -39,7 +39,4 @@ class Testheader(unittest.TestCase):
         self.airbus_rev_commit = "11d7f9f"
 
     def test_Headers(self):
-        check_headers(self.ExtensionToIgnore,self.FilesToIgnore,self.airbus_rev_commit)
-
-        
-
+        check_headers(self.ExtensionToIgnore, self.FilesToIgnore, self.airbus_rev_commit)
