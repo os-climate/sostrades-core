@@ -468,18 +468,22 @@ class ProxySampleGenerator(ProxyDiscipline):
         Method used to ask the sample generator to sample and push the samples_df into the data manager when a sampling
         at configuration time is performed.
         """
-        # TODO: discuss implementation as is_ready_to_sample ~= data_integrity
+        # is_ready_to_sample is similar to data_integrity except that no error is logged (mainly for incomplete config.)
         if self.sg_data_integrity and self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
             if self.SAMPLES_DF in disc_in:
                 samples_df_dm = self.dm.get_value(self.get_input_var_full_name(self.SAMPLES_DF))
-                # sample but avoid pushing the generated samples_df into the dm, UNLESS:
+                # avoid sampling and pushing the generated samples_df into the dm, UNLESS:
                 # - the current scenario names are the default (i.e. no previous modification or sampling made), or
                 # - the user asked to force re-sampling on reconfiguration using input flag overwrite_samples_df
                 overwrite_samples_df =\
                     samples_df_dm[self.SCENARIO_NAME].equals(self.SAMPLES_DF_DEFAULT[self.SCENARIO_NAME]) or \
                     self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)
                 if overwrite_samples_df:
-                    self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
+                    try:
+                        self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
+                    except ValueError as cm:  # TODO: larger clause ?
+                        self.samples_gene_df = None
+                        self.logger.error('Failed to sample due to ' + str(cm))
                     if self.samples_gene_df is not None and not self.samples_gene_df.empty:
                         self.max_auto_select_scenarios_warning()
                         self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
