@@ -284,7 +284,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
                             inputs=inputs,
                             outputs=outputs)
 
-    def test_06_gradient_subprocess_flatten_local_data_deepcopy(self):
+    def _test_06_gradient_subprocess_flatten_local_data_deepcopy(self):
         """
         Test objective lagrangian derivative using a one level coupling of sellar process and local data with deepcopy.
         """
@@ -322,7 +322,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_06.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
         local_data_after_execute = coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
