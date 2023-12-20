@@ -195,11 +195,14 @@ class ProxySampleGenerator(ProxyDiscipline):
         Arguments:
             eval_inputs_row (pd.Series): row of the evaluated inputs dataframe to check
         """
+        selected = eval_inputs_row[self.SELECTED_INPUT]
         var_name = eval_inputs_row[self.FULL_NAME]
         var_type = self.eval_in_possible_types[var_name]
         list_of_values = eval_inputs_row[self.LIST_OF_VALUES]
-        return isinstance(list_of_values, list) and all(map(lambda _val: isinstance(_val, self.VAR_TYPE_MAP[var_type]),
-                                                            list_of_values))
+        return not selected or (
+                isinstance(list_of_values, list) and
+                all(map(lambda _val: isinstance(_val, self.VAR_TYPE_MAP[var_type]),
+                        list_of_values)))
 
     def _check_design_space_dimensions_for_one_variable(self, design_space_row):
         """
@@ -254,7 +257,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                     for wrong_type_var in wrong_type_vars:
                         eval_inputs_integrity_msg.append(
                             f'Column {self.LIST_OF_VALUES} should be a list of '
-                            f'{self.eval_in_possible_types[wrong_type_var]} for variable {wrong_type_var}.')
+                            f'{self.eval_in_possible_types[wrong_type_var]} for selected variable {wrong_type_var}.')
         if eval_inputs_integrity_msg:
             self.sg_data_integrity = False
             self.ee.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
