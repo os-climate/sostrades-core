@@ -86,7 +86,7 @@ class FDValidGrad(object):
         if args is None:
             df = self.__df_pointer(x)
         else:
-            df = self.__df_pointer(x, args)
+            df = self.__df_pointer(x, *args)
 
         ok, msg = self.__compute_error_and_check(
             df_fd, df, treshold, split_out=split_out)

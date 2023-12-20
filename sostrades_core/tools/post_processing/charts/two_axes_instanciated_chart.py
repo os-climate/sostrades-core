@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/11/14 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,6 +47,10 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
         else:
             raise InstanciatedSeriesException(
                 f'given series has the wrong type, {type(series)} instead of InstanciatedSeries')
+
+        if self.y_min_zero:
+            self.y_primary_max = max(max(series.ordinate), self.y_primary_max)
+            self.primary_ordinate_axis_range = [-0.05 * self.y_primary_max, self.y_primary_max * 1.1]
 
     def to_plotly(self, logger=None):
         """
