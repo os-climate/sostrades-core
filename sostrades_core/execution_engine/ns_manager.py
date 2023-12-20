@@ -149,7 +149,6 @@ class NamespaceManager:
             #-- add in the list if created
             self.ns_list.append(ns)
             self.all_ns_dict[ns.get_ns_id()] = ns
-        
 
         # This shared_ns_dict delete the namespace if already exist: new one
         # has priority
@@ -589,6 +588,7 @@ class NamespaceManager:
         """ 
         self.database_infos = database_infos
 
+
     def clean_all_ns_in_nslist(self, ns_list, clean_all_ns_with_name=False):
         """
         Method to clean all namespaces in given input list
@@ -630,10 +630,6 @@ class NamespaceManager:
        
         for ns_to_clean in ns_list:
             self.clean_namespace(ns_to_clean)
-
-        
-
-
 
 
 class NamespaceManagerException(Exception):

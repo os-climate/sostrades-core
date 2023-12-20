@@ -38,9 +38,14 @@ class BaseProcessBuilder:
         instantiate builders iterating over a list of module paths
         return the list of disciplines built
         '''
+        if associate_namespace:
+            clean_existing = False
+        else:
+            clean_existing = True
+
         ns_ids = []
         if ns_dict is not None:
-            ns_ids = self.ee.ns_manager.add_ns_def(ns_dict)
+            ns_ids = self.ee.ns_manager.add_ns_def(ns_dict, clean_existing=clean_existing)
         builders = []
 
         for disc_name, mod_path in mods_dict.items():
