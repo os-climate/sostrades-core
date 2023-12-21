@@ -182,7 +182,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
         disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -323,7 +323,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # values_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
         values_dict[f'{self.ns}.Simple_Disc1.added_algo_options'] = {
             'n_samples': n_samples}
-        values_dict[f'{self.ns}.eval_inputs'] = self.input_selection_x
+        values_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
         values_dict[f'{self.ns}.gather_outputs'] = self.output_selection_obj_y1_y2
 
         # Sellar inputs
@@ -445,7 +445,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
         disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -553,7 +553,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                                 'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
-        disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
+        disc_dict = {f'{ns}.SampleGenerator.eval_inputs': input_selection_a,
                      f'{ns}.Eval.gather_outputs': output_selection_ind}
 
         a_values = [2.0, 4.0, 6.0, 8.0, 10.0]
@@ -693,7 +693,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                                 'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
-        disc_dict = {f'{ns}.Eval.eval_inputs': input_selection_a,
+        disc_dict = {f'{ns}.SampleGenerator.eval_inputs': input_selection_a,
                      f'{ns}.Eval.gather_outputs': output_selection_ind}
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -753,7 +753,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         input_selection_a_b = {'selected_input': [False, True, True],
                                'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a_b = pd.DataFrame(input_selection_a_b)
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a_b
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a_b
 
         # Change of samples
         # b_values = [array([1.0]), array([3.0]), array(
@@ -785,7 +785,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         input_selection_x_a = {'selected_input': [True, True, False],
                                'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_x_a
 
         # Change of samples
         new_samples_dict2 = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
@@ -820,7 +820,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         input_selection_x_b = {'selected_input': [True, False, True],
                                'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_x_b = pd.DataFrame(input_selection_x_b)
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_b
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_x_b
 
         # Change of samples
         new_samples_dict3 = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
@@ -865,7 +865,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         input_selection_x_a = {'selected_input': [False, True, False],
                                'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_x_a
 
         # Change of samples
         new_samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,
@@ -890,7 +890,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         input_selection_x_a = {'selected_input': [True, False, False],
                                'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_x_a = pd.DataFrame(input_selection_x_a)
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_a
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_x_a
 
         # Change of samples
         new_samples_dict = {SampleGeneratorWrapper.SELECTED_SCENARIO: [True] * 5,

@@ -379,7 +379,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                 dm_value = self.exec_eng.dm.get_value(var)
                 if var == f'{self.study_name}.multi_scenarios.scenario_list' or \
                         var == f'{self.study_name}.multi_scenarios.generated_samples' or \
-                        var == f'{self.study_name}.multi_scenarios.eval_inputs' or \
+                        var == f'{self.study_name}.SampleGenerator.eval_inputs' or \
                         var == f'{self.study_name}.multi_scenarios_gather.gather_outputs':
                     # this variable is an exception because it is forced by the value of another variable during setup
                     continue
@@ -484,7 +484,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         output_selection_y_ind = pd.DataFrame(output_selection_y_ind)
 
         io_dict = {
-            f'{self.study_name}.multi_scenarios.eval_inputs': input_selection_x_b,
+            f'{self.study_name}.SampleGenerator.eval_inputs': input_selection_x_b,
             f'{self.study_name}.multi_scenarios.gather_outputs': output_selection_y_ind,
         }
         self.exec_eng.load_study_from_input_dict(io_dict)

@@ -44,7 +44,7 @@ class Study(StudyManager):
 
         disc_dict = {}
         # Eval inputs
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a
         disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_ind
 
         # a_values = [array([2.0]), array([4.0]), array(

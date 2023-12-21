@@ -60,7 +60,7 @@ class Study(StudyManager):
         # CP + Eval inputs
         disc_dict[f'{ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_cp_x_z
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_cp_x_z
         disc_dict[f'{ns}.Eval.instance_reference'] = True
         disc_dict[f'{ns}.Eval.reference_mode'] = 'linked_mode'
 

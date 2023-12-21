@@ -89,12 +89,12 @@ class TestGridSearchEval(unittest.TestCase):
         print('Study first configure!')
 
         self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         # self.exec_eng.dm.get_data('MyCase.GridSearch.eval_inputs')[
         #     'possible_values']
 
         eval_inputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -107,7 +107,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         dict_values = {
             # GRID SEARCH INPUTS
-            f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.sample_generator}.eval_inputs': eval_inputs,
             f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
 
             # DISC1 INPUTS
@@ -181,7 +181,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         # TEST FOR 6 INPUTS
         eval_inputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -196,7 +196,7 @@ class TestGridSearchEval(unittest.TestCase):
                         'Disc1.d', ['selected_input']] = True
 
         dict_values = {
-            f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.sample_generator}.eval_inputs': eval_inputs,
             f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -224,7 +224,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         # CHANGE THE SELECTED INPUTS TO 2
         eval_inputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.x', ['selected_input']] = False
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -239,12 +239,12 @@ class TestGridSearchEval(unittest.TestCase):
                         'Disc1.d', ['selected_input']] = False
 
         dict_values = {
-            f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.sample_generator}.eval_inputs': eval_inputs,
             f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        self.exec_eng.dm.get_value(['MyCase.Eval.eval_inputs'][0])
+        self.exec_eng.dm.get_value(['MyCase.SampleGenerator.eval_inputs'][0])
 
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.sample_generator}.design_space')
@@ -253,7 +253,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        self.exec_eng.dm.get_value(['MyCase.Eval.eval_inputs'][0])
+        self.exec_eng.dm.get_value(['MyCase.SampleGenerator.eval_inputs'][0])
 
     # def test_02_grid_search_shortest_name(self):
     #     sa_builder = self.exec_eng.factory.get_builder_from_process(
@@ -296,15 +296,13 @@ class TestGridSearchEval(unittest.TestCase):
         # print('Study first configure!')
 
         self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
-        # self.exec_eng.dm.get_data('MyCase.GridSearch.eval_inputs')[
-        #     'possible_values']
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
 
         # dict_values = {}
         # self.exec_eng.load_study_from_input_dict(dict_values)
 
         eval_inputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.f', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -461,7 +459,7 @@ class TestGridSearchEval(unittest.TestCase):
         # GridSearch inputs
 
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = input_selection_x
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = input_selection_x
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = output_selection_obj_y1_y2
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -525,14 +523,11 @@ class TestGridSearchEval(unittest.TestCase):
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        # self.exec_eng.dm.get_data('MyCase.GridSearch.eval_inputs')[
-        #     'possible_values']
-
         # dict_values = {}
         # self.exec_eng.load_study_from_input_dict(dict_values)
 
         eval_inputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'subprocess.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -547,7 +542,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         dict_values = {
             # GRID SEARCH INPUTS
-            f'{self.study_name}.{self.evaluator}.eval_inputs': eval_inputs,
+            f'{self.study_name}.{self.sample_generator}.eval_inputs': eval_inputs,
             f'{self.study_name}.{self.evaluator}.gather_outputs': gather_outputs,
         }
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -628,14 +623,11 @@ class TestGridSearchEval(unittest.TestCase):
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        # self.exec_eng.dm.get_data('MyCase.GridSearch.eval_inputs')[
-        #     'possible_values']
-
         # dict_values = {}
         # self.exec_eng.load_study_from_input_dict(dict_values)
 
         eval_inputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'subprocess.Disc1.x', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -819,10 +811,10 @@ class TestGridSearchEval(unittest.TestCase):
         # print('Study first configure!')
 
         self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
 
         eval_inputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.b', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -904,10 +896,10 @@ class TestGridSearchEval(unittest.TestCase):
         self.exec_eng.display_treeview_nodes()
 
         self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
 
         eval_inputs = self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.evaluator}.eval_inputs')
+            f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
                         'Disc1.b', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] ==

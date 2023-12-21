@@ -103,8 +103,8 @@ class ProxySampleGenerator(ProxyDiscipline):
                         ProxyDiscipline.DATAFRAME_EDITION_LOCKED: False,
                         ProxyDiscipline.STRUCTURING: True,
                         ProxyDiscipline.DEFAULT: pd.DataFrame(columns=[SELECTED_INPUT, FULL_NAME]),
-                        ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
-                        ProxyDiscipline.NAMESPACE: NS_SAMPLING,
+                        #ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
+                        #ProxyDiscipline.NAMESPACE: NS_SAMPLING,
                         }
     EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
     LIST_OF_VALUES = SampleGeneratorWrapper.LIST_OF_VALUES

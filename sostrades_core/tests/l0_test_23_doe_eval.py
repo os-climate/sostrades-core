@@ -165,7 +165,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z.copy()
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z.copy()
 
         # Eval inputs
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2.copy()
@@ -233,10 +233,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
-        disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
-                     f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
-        # Eval inputs
-
+        disc_dict = {f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
+        # Samples
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
                     array([3.7137135749628882]), array([0.0417022004702574]), array([6.954954792150857])]
         z_values = [array([1.515949043849158, 5.6317362409322165]),
@@ -345,10 +343,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
 
         # Eval inputs
-        # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -492,7 +489,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
 
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = algo_name
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -536,12 +533,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # trigger a reconfiguration after eval_inputs and gather_outputs changes
         disc_dict = {f'{self.ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2,
-                     f'{self.ns}.Eval.eval_inputs': self.input_selection_x_z}
+                     f'{self.ns}.SampleGenerator.eval_inputs': self.input_selection_x_z}
         exec_eng.load_study_from_input_dict(disc_dict)
         assert exec_eng.dm.get_value('doe.Eval.gather_outputs').equals(
             self.output_selection_obj_y1_y2)
         df1 = self.input_selection_x_z
-        df2 = exec_eng.dm.get_value('doe.Eval.eval_inputs')
+        df2 = exec_eng.dm.get_value('doe.SampleGenerator.eval_inputs')
         df_all = df1.merge(df2, on=['selected_input', 'full_name'],
                            how='left', indicator=True)
         assert df_all[['selected_input', 'full_name']].equals(
@@ -609,7 +606,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
         # -- set up disciplines in Scenario
-        disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_x,
+        disc_dict = {f'{self.ns}.SampleGenerator.eval_inputs': self.input_selection_x,
                      f'{self.ns}.Eval.gather_outputs': self.output_selection_obj,
                      }
         # DoE inputs
@@ -617,18 +614,18 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertListEqual(exec_eng.dm.get_value(
             'doe.Eval.samples_df').columns.tolist(),
                              [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME, 'x'])
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv_x
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_local_dv_x
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
                              [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME,
                               'subprocess.Sellar_Problem.local_dv', 'x'])
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_local_dv
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_local_dv
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertListEqual(exec_eng.dm.get_value('doe.Eval.samples_df').columns.tolist(),
                              [ProxySampleGenerator.SELECTED_SCENARIO, ProxySampleGenerator.SCENARIO_NAME,
                               'subprocess.Sellar_Problem.local_dv'])
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         x_values = [array([9.379763880395856]), array([8.88644794300546]),
@@ -740,7 +737,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'face': 'faced'}
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -765,7 +762,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # trigger a reconfiguration after algo name change
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "fullfact"
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_eval
         exec_eng.load_study_from_input_dict(disc_dict)
         # disc_dict['doe.DoEEval.algo_options'] = {
@@ -803,7 +800,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
-        disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_local_dv_x,
+        disc_dict = {f'{self.ns}.SampleGenerator.eval_inputs': self.input_selection_local_dv_x,
                      f'{self.ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
         # DoE inputs
 
@@ -853,7 +850,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(len(eval_disc_y1), 6)
         self.assertEqual(len(eval_disc_y2), 6)
 
-        disc_dict = {f'{self.ns}.Eval.eval_inputs': self.input_selection_x}
+        disc_dict = {f'{self.ns}.SampleGenerator.eval_inputs': self.input_selection_x}
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertEqual(len(eval_disc_samples), 6)
         self.assertEqual(len(eval_disc_obj), 6)
@@ -919,7 +916,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_generation_mode': self.sampling_gen_mode,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
-                     f'{self.ns}.Eval.eval_inputs': input_selection_x_a,
+                     f'{self.ns}.SampleGenerator.eval_inputs': input_selection_x_a,
                      f'{self.ns}.Eval.gather_outputs': output_selection_z_z,
                      f'{self.ns}.SampleGenerator.algo_options': {'n_samples': 10, 'face': 'faced'},
                      f'{self.ns}.SampleGenerator.design_space': dspace
@@ -991,7 +988,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # configure disciplines with the algo lhs
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
-                     f'{self.ns}.Eval.eval_inputs': wrong_input_selection_x,
+                     f'{self.ns}.SampleGenerator.eval_inputs': wrong_input_selection_x,
                      f'{self.ns}.Eval.gather_outputs': wrong_output_selection_obj}
 
         disc_dict.update(values_dict)
@@ -1041,7 +1038,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # -- set up disciplines in Scenario
         disc_dict = {  # f'{ns}.Eval.with_sample_generator': True,
-            f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
+            f'{ns}.SampleGenerator.eval_inputs': self.input_selection_x_z,
             f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2}
 
         # Eval inputs
@@ -1164,7 +1161,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{same_usecase_name}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'fake_option': 'fake_option'}
         disc_dict[f'{same_usecase_name}.Eval.with_sample_generator'] = True
-        disc_dict[f'{same_usecase_name}.Eval.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{same_usecase_name}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{same_usecase_name}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -1263,7 +1260,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_generation_mode': self.sampling_gen_mode,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
-                     f'{self.ns}.Eval.eval_inputs': input_selection_a,
+                     f'{self.ns}.SampleGenerator.eval_inputs': input_selection_a,
                      f'{self.ns}.Eval.gather_outputs': output_selection_ind}
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -1344,10 +1341,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace_a
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'levels': levels, 'centers': centers}
-        disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_a
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a
 
         # Eval inputs
-        # disc_dict[f'{self.ns}.eval_inputs'] = disc_dict[f'{self.ns}.eval_inputs']
         disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_ind
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -1404,7 +1400,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(builder_mode_input)
 
         # -- set up disciplines in Scenario
-        disc_dict = {f'{ns}.Eval.eval_inputs': self.input_selection_x_z,
+        disc_dict = {f'{ns}.SampleGenerator.eval_inputs': self.input_selection_x_z,
                      f'{ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2_with_out_name}
         # Eval inputs
 
@@ -1518,7 +1514,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
-        disc_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
 
         # Eval inputs
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
@@ -1582,7 +1578,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         values_dict[f'{self.ns}.SampleGenerator.sampling_method'] = "cartesian_product"
         values_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = "at_run_time"
 
-        values_dict[f'{self.ns}.Eval.eval_inputs'] = self.input_selection_x_z_cp
+        values_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z_cp
 
         # Eval inputs
         values_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
@@ -1645,7 +1641,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{same_usecase_name}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'fake_option': 'fake_option'}
         disc_dict[f'{same_usecase_name}.Eval.with_sample_generator'] = True
-        disc_dict[f'{same_usecase_name}.Eval.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{same_usecase_name}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{same_usecase_name}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -1744,7 +1740,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict = {f'{self.ns}.SampleGenerator.sampling_method': self.sampling_method_doe,
                      f'{self.ns}.SampleGenerator.sampling_generation_mode': self.sampling_gen_mode,
                      f'{self.ns}.SampleGenerator.sampling_algo': "lhs",
-                     f'{self.ns}.Eval.eval_inputs': input_selection_a,
+                     f'{self.ns}.SampleGenerator.eval_inputs': input_selection_a,
                      f'{self.ns}.Eval.gather_outputs': output_selection_ind}
 
         exec_eng.load_study_from_input_dict(disc_dict)
