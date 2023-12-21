@@ -61,7 +61,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sample_generator': f'{self.name}.{self.uncertainty_quantification}',
+                   'ns_evaluator': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -169,7 +170,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
                                        })
         disc_dict[f'{self.ee.study_name}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ee.study_name}.SampleGenerator.eval_inputs'] = eval_inputs_cp
-        disc_dict[f'{ns}.Eval.design_space'] = dspace
+        disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_obj_y1_y2
 
         disc_dict[f'{ns}.Eval.x'] = 10.
@@ -189,7 +190,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sample_generator': f'{self.name}.{self.uncertainty_quantification}',
+                   'ns_evaluator': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -281,7 +283,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
-        ns_dict = {'ns_sampling': f'{self.name}.{self.uncertainty_quantification}',
+        ns_dict = {'ns_sample_generator': f'{self.name}.{self.uncertainty_quantification}',
+                   'ns_evaluator': f'{self.name}.{self.uncertainty_quantification}',
                    'ns_uncertainty_quantification': f'{self.name}.UncertaintyQuantification'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)

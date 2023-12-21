@@ -72,7 +72,7 @@ class UncertaintyQuantification(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.UNIT: None,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        SoSWrapp.NAMESPACE: 'ns_sampling',
+        SoSWrapp.NAMESPACE: 'ns_evaluator',
     }
     DESC_IN = {
         'samples_inputs_df': eval_df_data_description,
@@ -88,7 +88,7 @@ class UncertaintyQuantification(SoSWrapp):
                 'full_name': ('string', None, False),
             },
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_sampling',
+            SoSWrapp.NAMESPACE: 'ns_sample_generator',
             SoSWrapp.STRUCTURING: True
         },
         'confidence_interval': {
@@ -124,7 +124,7 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_sampling',
+            SoSWrapp.NAMESPACE: 'ns_sample_generator',
         },
         GATHER_OUTPUTS: {
             SoSWrapp.TYPE: 'dataframe',
@@ -137,7 +137,7 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_sampling',
+            SoSWrapp.NAMESPACE: 'ns_evaluator',
         },
     }
 
