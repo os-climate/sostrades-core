@@ -169,15 +169,15 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # check management of eval_inputs columns and dataframe descriptor
-        eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.eval_inputs')
-        eval_inputs_df_desc = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.eval_inputs',
+        eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.SampleGenerator.eval_inputs')
+        eval_inputs_df_desc = self.exec_eng.dm.get_data(f'{self.study_name}.SampleGenerator.eval_inputs',
                                                         'dataframe_descriptor')
         self.assertListEqual(eval_inputs.columns.tolist(),
                              ['selected_input', 'full_name', 'list_of_values'])
         self.assertListEqual(list(eval_inputs_df_desc.keys()),
                              ['selected_input', 'full_name', 'list_of_values'])
 
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(
@@ -235,8 +235,8 @@ class TestMultiScenario(unittest.TestCase):
 
         # check management of eval_inputs columns and dataframe descriptor when changing back to simple mode
         self.exec_eng.load_study_from_input_dict({f'{self.study_name}.SampleGenerator.sampling_method': 'simple'})
-        eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.eval_inputs')
-        eval_inputs_df_desc = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.eval_inputs',
+        eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.SampleGenerator.eval_inputs')
+        eval_inputs_df_desc = self.exec_eng.dm.get_data(f'{self.study_name}.SampleGenerator.eval_inputs',
                                                         'dataframe_descriptor')
         self.assertListEqual(eval_inputs.columns.tolist(),
                              ['selected_input', 'full_name'])
@@ -261,7 +261,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        dict_values[f'{self.study_name}.Eval.eval_inputs'] = self.input_selection_cp_x_z
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # manually configure the scenarios non-varying values (~reference)
@@ -308,7 +308,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        dict_values[f'{self.study_name}.Eval.eval_inputs'] = self.input_selection_cp_x_z
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_z
         study_dump.load_data(from_input_dict=dict_values)
 
         # manually configure the scenarios non-varying values (~reference)
@@ -565,7 +565,7 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # same input selection as first test, all scenarios activated
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
@@ -596,7 +596,7 @@ class TestMultiScenario(unittest.TestCase):
 
         # modify the eval inputs of the cartesian product and check that
         # the scenarios disappear and new ones are created
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs']['selected_input'] = [False, True, False, False,
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs']['selected_input'] = [False, True, False, False,
                                                                                            False]
         dict_values[f'{self.study_name}.SampleGenerator.overwrite_samples_df'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -609,7 +609,7 @@ class TestMultiScenario(unittest.TestCase):
         self.assertTrue(samples_df.equals(samples_df_th))
 
         # change the trade variables values
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z_3
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_b_z_3
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
@@ -649,7 +649,7 @@ class TestMultiScenario(unittest.TestCase):
                                  samples_df[samples_df['scenario_name'] == sc].iloc[0][var])
 
         # change the trade variables themselves
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z_p
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_b_z_p
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
@@ -735,7 +735,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(
@@ -846,7 +846,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'grid_search'
         dict_values[f'{self.study_name}.SampleGenerator.sampling_generation_mode'] = 'at_configuration_time'
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = input_selection_cp_b_z
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(
@@ -956,7 +956,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.with_sample_generator'] = True
         dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'grid_search'
         dict_values[f'{self.study_name}.SampleGenerator.sampling_generation_mode'] = 'at_configuration_time'
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = input_selection_cp_b_z
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         self.assertEqual(self.exec_eng.dm.get_value(
@@ -1102,7 +1102,7 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         # same input selection as first test, all scenarios activated
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_b_z
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
@@ -1120,7 +1120,7 @@ class TestMultiScenario(unittest.TestCase):
                                                            self.z2])
 
         # first a change in eval_inputs should not resample because overwrite_samples_df flag is off
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = self.input_selection_cp_b_z_p
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = self.input_selection_cp_b_z_p
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')

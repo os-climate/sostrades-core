@@ -213,7 +213,7 @@ class TestMultiScenario(unittest.TestCase):
             f'{self.study_name}.SampleGenerator.sampling_generation_mode'), 'at_configuration_time')
 
         # check that eval_inputs possible values has been properly loaded
-        eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.multi_scenarios.eval_inputs')
+        eval_inputs = self.exec_eng.dm.get_value(f'{self.study_name}.SampleGenerator.eval_inputs')
         set_subprocess_inputs = set(eval_inputs['full_name'])
         for var in self.subprocess_inputs_to_check:
             self.assertIn(var, set_subprocess_inputs)
@@ -222,7 +222,7 @@ class TestMultiScenario(unittest.TestCase):
         eval_inputs.loc[eval_inputs['full_name'] == 'Disc1.b', ['selected_input']] = True
         eval_inputs.loc[eval_inputs['full_name'] == 'z', ['selected_input']] = True
 
-        dict_values[f'{self.study_name}.multi_scenarios.eval_inputs'] = eval_inputs
+        dict_values[f'{self.study_name}.SampleGenerator.eval_inputs'] = eval_inputs
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
