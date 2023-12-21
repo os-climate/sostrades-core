@@ -69,7 +69,7 @@ class Study(StudyManager):
         disc_dict[f'{self.study_name}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.study_name}.SampleGenerator.eval_inputs'] = eval_inputs_cp
         # disc_dict[f'{self.study_name}.SampleGenerator.eval_inputs'] = eval_inputs
-        disc_dict[f'{ns}.Eval.design_space'] = dspace
+        disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         # disc_dict[f'{ns}.Eval.eval_inputs'] = input_selection_x_z
         disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_obj_y1_y2
 
