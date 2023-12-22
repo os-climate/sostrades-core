@@ -168,6 +168,8 @@ class ProxySampleGenerator(ProxyDiscipline):
         # TODO: actually no need for two variables as the type dict could be sorted and its keys be the possible_values
         self.eval_in_possible_values = []
         self.eval_in_possible_types = {}
+        self.samples_df_f_name = None
+        #FIXME: using samples_df_f_name to sample means configuration-time sampling needs to be banned on standalone sample gen.
 
     def set_eval_in_possible_values(self,
                                     possible_values: list[str],
@@ -322,7 +324,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             elif self.sampling_generation_mode == self.AT_CONFIGURATION_TIME:
                 dynamic_inputs.update({
                     self.OVERWRITE_SAMPLES_DF: self.OVERWRITE_SAMPLES_DF_DESC.copy(),
-                    self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy(),
+                    # self.SAMPLES_DF: self.SAMPLES_DF_DESC_SHARED.copy(),
                 })
                 # if sampling is at config-time, set all input structuring and add samples_df input
                 self.all_input_structuring = True
@@ -473,8 +475,9 @@ class ProxySampleGenerator(ProxyDiscipline):
         """
         # is_ready_to_sample is similar to data_integrity except that no error is logged (mainly for incomplete config.)
         if self.sg_data_integrity and self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
-            if self.SAMPLES_DF in disc_in:
-                samples_df_dm = self.dm.get_value(self.get_input_var_full_name(self.SAMPLES_DF))
+            if self.OVERWRITE_SAMPLES_DF in disc_in:
+                # if self.samples_df_f_name:
+                samples_df_dm = self.dm.get_value(self.samples_df_f_name)
                 # avoid sampling and pushing the generated samples_df into the dm, UNLESS:
                 # - the current scenario names are the default (i.e. no previous modification or sampling made), or
                 # - the user asked to force re-sampling on reconfiguration using input flag overwrite_samples_df
@@ -489,7 +492,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                         self.logger.error('Failed to sample due to ' + str(cm))
                     if self.samples_gene_df is not None and not self.samples_gene_df.empty:
                         self.max_auto_select_scenarios_warning()
-                        self.dm.set_data(self.get_var_full_name(self.SAMPLES_DF, disc_in),
+                        self.dm.set_data(self.samples_df_f_name,
                                          self.VALUE, self.samples_gene_df, check_value=False)
                         self.dm.set_data(self.get_var_full_name(self.OVERWRITE_SAMPLES_DF, disc_in),
                                          self.VALUE, False, check_value=False)
