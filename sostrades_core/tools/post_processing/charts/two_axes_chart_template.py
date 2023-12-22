@@ -34,7 +34,14 @@ class SeriesTemplate:
     """ Class that define a series abscissa and ordinate list with a name
     """
 
-    DISPLAY_TYPE_VALUES = ['lines', 'scatter', 'bar']
+    DASH_LINES_DISPLAY = 'dash_lines'
+    DASH_DOT_LINES_DISPLAY = 'dash_dot_lines'
+    LINES_DISPLAY = 'lines'
+    DOT_LINES_DISPLAY = 'dot_lines'
+    SCATTER_DISPLAY = 'scatter'
+    BAR_DISPLAY = 'bar'
+    DISPLAY_TYPE_VALUES = [LINES_DISPLAY, SCATTER_DISPLAY, BAR_DISPLAY, DASH_LINES_DISPLAY,
+                           DASH_DOT_LINES_DISPLAY, DOT_LINES_DISPLAY]
 
     SERIES_NAME = 'series_name'
     ABSCISSA = 'abscissa'
@@ -42,10 +49,6 @@ class SeriesTemplate:
     DISPLAY_TYPE = 'display_type'
     VISIBLE = 'visible'
     Y_AXIS = 'y_axis'
-
-    LINES_DISPLAY = 'lines'
-    SCATTER_DISPLAY = 'scatter'
-    BAR_DISPLAY = 'bar'
 
     Y_AXIS_PRIMARY = 'y'
     Y_AXIS_SECONDARY = 'y2'
