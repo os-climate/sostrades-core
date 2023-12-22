@@ -141,7 +141,6 @@ class TestMultiScenario(unittest.TestCase):
         self.input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
     def tearDown(self):
-
         for dir_to_del in self.dirs_to_del:
             sleep(0.5)
             if Path(dir_to_del).is_dir():
@@ -153,6 +152,8 @@ class TestMultiScenario(unittest.TestCase):
         Checks a standalone simple sample generator that takes 'eval_inputs' and generates an
         empty dataframe with the corresponding lines and columns and all scenarios selected.
         """
+        # FIXME: test no longer stands as standalone sample generator sampling at config. time is to be deactivated
+        #  as simple sample generator can only work at config-time => standalone simple generator needs to b banned too
         sg_builder = self.exec_eng.factory.create_sample_generator('SampleGenerator')
         self.exec_eng.ns_manager.add_ns('ns_sampling', f'{self.exec_eng.study_name}.SampleGenerator')
         self.exec_eng.factory.set_builders_to_coupling_builder([sg_builder])
@@ -335,8 +336,9 @@ class TestMultiScenario(unittest.TestCase):
         samples_df_data = self.exec_eng.dm.get_data(f'{self.study_name}.Eval.samples_df')
 
         disc_dependencies = samples_df_data['disciplines_dependencies']
-        # Sample generator and Driver have samples_df in their data_in
-        self.assertEqual(len(disc_dependencies), 2)
+
+        # Only Driver have samples_df in its data_in
+        self.assertEqual(len(disc_dependencies), 1)
 
         # the two disc have sampels_df as an input then it should be in in the dm (check the treeview)
         self.assertEqual(samples_df_data['io_type'], 'in')

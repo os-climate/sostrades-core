@@ -267,6 +267,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         self.sample_generator_disc.set_eval_in_possible_values(possible_values=self.eval_in_possible_values,
                                                                possible_types=self.eval_in_possible_types)
+        self.sample_generator_disc.samples_df_f_name = self.get_input_var_full_name(self.SAMPLES_DF)
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
 
@@ -318,7 +319,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         '''
         # create the builder of a ProxySampleGenerator
         sampling_builder = self.ee.factory.create_sample_generator('SampleGenerator')
-        # associate ns_sampling and 
+        # # associate ns_sampling for samples_df output and
         ns_sampling = self.ee.ns_manager.add_ns(ProxySampleGenerator.NS_SAMPLING,
                                                 self.ee.ns_manager.get_local_namespace_value(self))
         sampling_builder.associate_namespaces(ns_sampling)

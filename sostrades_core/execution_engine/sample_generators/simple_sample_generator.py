@@ -46,6 +46,7 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
         Constructor
         '''
         super().__init__(self.GENERATOR_NAME, logger=logger)
+        self.samples_df_f_name = None
 
     def _generate_samples(self, samples_df, var_names):
         '''
@@ -75,37 +76,20 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
             msg += "is <%s> " % str(type(samples_df))
             raise SimpleSampleGeneratorTypeError()
 
-    # def setup(self, proxy):
-    #     # 1. handle dynamic inputs of the mode
-    #     dynamic_inputs, dynamic_outputs = {}, {}
-    #     disc_in = proxy.get_data_in()
-    #
-    #     dynamic_inputs.update({proxy.SAMPLES_DF: proxy.SAMPLES_DF_DESC_SHARED.copy()})
-    #
-    #     # FIXME: refacto with a call to self.sample (when modifying setup_sos_disciplines)
-    #     # 2. retrieve input that configures the sampling tool
-    #     if proxy.EVAL_INPUTS in disc_in and proxy.SAMPLES_DF in disc_in:
-    #         samples_df = proxy.get_sosdisc_inputs(proxy.SAMPLES_DF)
-    #         eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
-    #         if eval_inputs is not None and samples_df is not None:
-    #             selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
-    #             if selected_inputs:
-    #                 # 3. if sampling at config.time set the generated samples
-    #                 proxy.samples_gene_df = self.generate_samples(samples_df, selected_inputs)
-    #                 proxy.dm.set_data(proxy.get_var_full_name(proxy.SAMPLES_DF, disc_in),
-    #                                   proxy.VALUE, proxy.samples_gene_df, check_value=False)
-    #     return dynamic_inputs, dynamic_outputs
+    def setup(self, proxy):
+        self.samples_df_f_name = proxy.samples_df_f_name
+        return super().setup(proxy)
 
     def is_ready_to_sample(self, proxy):
         disc_in = proxy.get_data_in()
         return proxy.EVAL_INPUTS in disc_in and \
-            proxy.SAMPLES_DF in disc_in and \
+            proxy.SAMPLES_DF in proxy.configurator.get_data_in() and \
             proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS) is not None and \
-            proxy.get_sosdisc_inputs(proxy.SAMPLES_DF) is not None
+            proxy.configurator.get_sosdisc_inputs(proxy.SAMPLES_DF) is not None
 
     def get_arguments(self, wrapper):
         eval_inputs = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
-        samples_df = wrapper.get_sosdisc_inputs(wrapper.SAMPLES_DF)
+        samples_df = wrapper.dm.get_value(self.samples_df_f_name)
         selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
         simple_kwargs = {'samples_df': samples_df, 'var_names': selected_inputs}
         return [], simple_kwargs
