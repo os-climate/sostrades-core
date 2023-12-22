@@ -23,8 +23,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
 from sostrades_core.sos_processes.test.test_sellar_sub_opt_w_design_var.usecase import Study
 from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var_sub.usecase import Study as study_sellar_sub
+from sostrades_core.sos_processes.test.test_sellar_coupling_for_design_var.usecase import Study as study_sellar_sub_wodvar
 
 from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
+
 
 class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
     """
@@ -40,6 +42,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
     - test_08_gradient_subprocess_flatten_local_data_deepcopy_high_step : deepcopy local data before check jacobian and use a high step for complex step
     - test_09_FDGradient_Sellar : Test Sellar with no cache nor warmstart using FDGradient class (with no cache nor warm start)
     - test_10_FDGradient_Sellar_warm_start_and_cache : Test Sellar gradient with cache and warmstart using FDGradient
+    - test_11_gradient_subprocess_wo_dvar_fmanager_flatten_local_data : Test Sellar without design var nor func manager
     """
 
     def analytic_grad_entry(self):
@@ -80,7 +83,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_01.pkl'
         inputs = ['Test.Sellar.SellarOptimScenario.x_in', 'Test.Sellar.SellarOptimScenario.z_in']
         outputs = ['Test.Sellar.SellarOptimScenario.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-4, derr_approx='finite_differences', threshold=1e-15,
@@ -89,7 +92,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
                             inputs=inputs,
                             outputs=outputs)
 
-    def _test_02_gradient_subprocess_flatten_input_data(self):
+    def test_02_gradient_subprocess_flatten_input_data(self):
         """
         Test objective lagrangian derivative using a one level coupling of sellar process.
         """
@@ -176,7 +179,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_03.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
 
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -225,11 +228,11 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_04.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
 
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
-                            step=1.0e-14, derr_approx='complex_step', threshold=1e-10,
+                            step=1.0e-25, derr_approx='complex_step', threshold=1e-10,
                             local_data=full_values_dict,
                             inputs=inputs,
                             outputs=outputs)
@@ -275,7 +278,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_05.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
 
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -327,7 +330,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-15, derr_approx='complex_step', threshold=1e-20,
-                            local_data= deepcopy(local_data_after_execute),
+                            local_data=deepcopy(local_data_after_execute),
                             inputs=inputs,
                             outputs=outputs)
 
@@ -371,7 +374,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_07.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
         local_data = self.execute_sellar()
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -419,12 +422,12 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_08.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
         local_data_after_execute = coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-3, derr_approx='complex_step', threshold=1e-20,
-                            local_data= deepcopy(local_data_after_execute),
+                            local_data=deepcopy(local_data_after_execute),
                             inputs=inputs,
                             outputs=outputs)
 
@@ -463,7 +466,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
 
         return deepcopy(coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data)
 
-    def test_09_FDGradient_Sellar(self, x= np.array([1., 1., 1., 1., 5., 2.]), *args):
+    def test_09_FDGradient_Sellar(self, x=np.array([1., 1., 1., 1., 5., 2.]), *args):
         """
         Use FDValidGrad to check gradient
         x : point on which gradient is validated
@@ -496,6 +499,54 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         # run test 9 with different inputs (cache and warmstart activated)
         self.test_09_FDGradient_Sellar(np.array([1., 1., 1., 1., 5., 2.]), ee, full_values_dict)
 
+    def _test_11_gradient_subprocess_wo_dvar_fmanager_flatten_local_data(self):
+        """
+        Test objective and constraints derivative using a one level coupling of sellar process without design var
+        nor func manager and local data.
+        """
+        # create new exec engine
+        ee = ExecutionEngine(self.name)
+        # get builder from process
+        builder = ee.factory.get_builder_from_process('sostrades_core.sos_processes.test',
+                                                      'test_sellar_coupling_for_design_var')
+        ee.factory.set_builders_to_coupling_builder(builder)
+        ee.configure()
+        # import study and set data
+        usecase = study_sellar_sub_wodvar(execution_engine=ee)
+        usecase.study_name = self.name
+        values_dict = usecase.setup_usecase()
+        full_values_dict = {}
+        for dict_v in values_dict:
+            full_values_dict.update(dict_v)
+        # set cache to None and warm start to False
+        full_values_dict['Test.SellarCoupling.warm_start'] = False
+        full_values_dict['Test.SellarCoupling.cache_type'] = None  # 'SimpleCache'
+        full_values_dict['Test.SellarCoupling.propagate_cache_to_children'] = True
+        full_values_dict['Test.warm_start'] = False
+        full_values_dict['Test.cache_type'] = None  # 'SimpleCache'
+        full_values_dict['Test.propagate_cache_to_children'] = True
+        full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
+        full_values_dict['Test.SellarCoupling.tolerance'] = 1e-14
+        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        # load_data
+        ee.load_study_from_input_dict(full_values_dict)
+        # execute
+        ee.execute()
+        ee.display_treeview_nodes()
+        coupling_disc = ee.root_process.proxy_disciplines[0]
+
+        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_11.pkl'
+        inputs = ['Test.SellarCoupling.x', 'Test.SellarCoupling.z']
+        outputs = ['Test.SellarCoupling.obj', 'Test.SellarCoupling.c_1', 'Test.SellarCoupling.c_2']
+        AbstractJacobianUnittest.DUMP_JACOBIAN = True
+
+        self.check_jacobian(location=dirname(__file__), filename=pkl_name,
+                            discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
+                            step=1.0e-14, derr_approx='complex_step', threshold=1e-10,
+                            local_data=coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data,
+                            inputs=inputs,
+                            outputs=outputs)
+
     def fx_sellar(self, x, *args):
         """
         Method to execute Sellar
@@ -521,7 +572,8 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
             assert self.ee_to_test is ee
             ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.execute(full_values_dict)
 
-        objective_lagr = ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.get_outputs_by_name(f'Test.objective_lagrangian')
+        objective_lagr = ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.get_outputs_by_name(
+            f'Test.objective_lagrangian')
         return objective_lagr
 
     def dfx_sellar(self, x, *args):
@@ -587,6 +639,5 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-14
         full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
-        #ee.load_study_from_input_dict(full_values_dict)
+        # ee.load_study_from_input_dict(full_values_dict)
         return ee, deepcopy(full_values_dict)
-
