@@ -239,6 +239,30 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.sg_data_integrity = True
         disc_in = self.get_data_in()
 
+        method_mode_integrity_msg = []
+        # ban the simple mode for standalone as: (standalone => sampling at run-time) & (simple mode => at config-time)
+        if not self.configurator:
+            if self.SAMPLING_METHOD in disc_in and \
+                    self.get_sosdisc_inputs(self.SAMPLING_METHOD) == self.SIMPLE_SAMPLING_METHOD:
+                method_mode_integrity_msg.append(
+                    f"Input {self.SAMPLING_METHOD} cannot be {self.SIMPLE_SAMPLING_METHOD} "
+                    f"for a SampleGenerator working without a driver."
+                )
+                if method_mode_integrity_msg:
+                    self.sg_data_integrity = False
+                    self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_METHOD, disc_in),
+                                        self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
+            elif self.SAMPLING_GENERATION_MODE in disc_in and \
+                    self.get_sosdisc_inputs(self.SAMPLING_GENERATION_MODE) == self.AT_CONFIGURATION_TIME:
+                method_mode_integrity_msg.append(
+                    f"Input {self.SAMPLING_GENERATION_MODE} cannot be {self.AT_CONFIGURATION_TIME} "
+                    f"for a SampleGenerator working without a driver."
+                )
+                if method_mode_integrity_msg:
+                    self.sg_data_integrity = False
+                    self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_GENERATION_MODE, disc_in),
+                                        self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
+
         # check integrity for eval_inputs # TODO: move to cartesian product sample generator ?
         eval_inputs_integrity_msg = []
         if self.configurator and self.EVAL_INPUTS in disc_in:

@@ -580,7 +580,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # f.close()
 
     def _test_4_cartesian_product_execution(self):
-        # FIXME: test no longer stands as standalone sample generator sampling at config. time is to be deactivated
+        # NB: test no longer stands as standalone sample generator sampling at config. time is deactivated
         """
         This is a test of the cartesian product wrapper
         """
@@ -669,7 +669,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         """
         This is a test of the cartesian product wrapper
         """
-        # FIXME: test no longer stands as standalone sample generator sampling at config. time is to be deactivated
+        # NB: test no longer stands as standalone sample generator sampling at config. time is to  deactivated
         self.ns = f'{self.study_name_cp}'
         exec_eng = ExecutionEngine(self.study_name_cp)
 

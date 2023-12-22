@@ -147,13 +147,13 @@ class TestMultiScenario(unittest.TestCase):
                 rmtree(dir_to_del)
         sleep(0.5)
 
-    def test_01_standalone_simple_sample_generator(self):
+    def _test_01_standalone_simple_sample_generator(self):
         """
         Checks a standalone simple sample generator that takes 'eval_inputs' and generates an
         empty dataframe with the corresponding lines and columns and all scenarios selected.
         """
-        # FIXME: test no longer stands as standalone sample generator sampling at config. time is to be deactivated
-        #  as simple sample generator can only work at config-time => standalone simple generator needs to b banned too
+        # NB: test no longer stands as standalone sample generator sampling at config. time is banned (data integrity)
+        #  as simple sample generator can only work at config-time => standalone simple generator is banned too
         sg_builder = self.exec_eng.factory.create_sample_generator('SampleGenerator')
         self.exec_eng.ns_manager.add_ns('ns_sampling', f'{self.exec_eng.study_name}.SampleGenerator')
         self.exec_eng.factory.set_builders_to_coupling_builder([sg_builder])
