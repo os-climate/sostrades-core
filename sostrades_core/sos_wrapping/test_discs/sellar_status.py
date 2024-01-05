@@ -35,7 +35,7 @@ class SellarProblem(SoSWrapp):
                'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'local_dv': {'type': 'float','range': [0.0, 20.0]}}
+               'local_dv': {'type': 'float', 'range': [0.0, 20.0]}}
 
     DESC_OUT = {'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                 'c_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
@@ -203,7 +203,8 @@ class Sellar2(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'debug_mode_sellar': {'type': 'bool', 'default':False, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+               'debug_mode_sellar': {'type': 'bool', 'default': False, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                     'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'float',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
@@ -211,7 +212,7 @@ class Sellar2(SoSWrapp):
     def run(self):
         """ solves Discipline1
         """
-        y_1, z,debug_mode = self.get_sosdisc_inputs(['y_1', 'z','debug_mode_sellar'])
+        y_1, z, debug_mode = self.get_sosdisc_inputs(['y_1', 'z', 'debug_mode_sellar'])
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': y_2}
         self.store_sos_outputs_values(y1_out)
@@ -219,8 +220,6 @@ class Sellar2(SoSWrapp):
         if debug_mode:
             # if debug mode activated raise an error
             raise Exception("debug mode activated to trigger except")
-
-
 
     @staticmethod
     def compute_y_2(y_1, z):
@@ -281,7 +280,9 @@ class Sellar3(SoSWrapp):
     DESC_IN = {'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'error_string': {'type': 'string', 'default': '', 'possible_values': ["", "nan", "input_change",
-                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]}}
+                                                                                     "linearize_data_change",
+                                                                                     "min_max_grad",
+                                                                                     "min_max_couplings", "all"]}}
 
     DESC_OUT = {'y_2': {'type': 'float',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}

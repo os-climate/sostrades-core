@@ -34,7 +34,7 @@ from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump, AbstractLoadDump
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from copy import deepcopy
-from gemseo.utils.compare_data_manager_tooling import compare_dict
+from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20
@@ -52,7 +52,8 @@ class BaseStudyManager():
         redefining the method 'setup_use_case' allow to change the way to load data into the execution engine
     """
 
-    def __init__(self, repository_name, process_name, study_name, dump_directory: Optional[str] = None, run_usecase=True,
+    def __init__(self, repository_name, process_name, study_name, dump_directory: Optional[str] = None,
+                 run_usecase=True,
                  yield_method=None, logger=None, execution_engine=None):
         """ Constructor
 

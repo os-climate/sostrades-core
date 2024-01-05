@@ -13,33 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from os.path import join
 
-from pathlib import Path
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-# from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var.usecase import Study as study_sellar_opt
-# from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_mda
-from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import \
-    Study as study_disc1_disc2
-
-from gemseo.utils.compare_data_manager_tooling import compare_dict
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
 import sys
 from copy import deepcopy
-import numpy as np
-import pandas as pd
 from os import remove
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.core.mdo_scenario import MDOScenario
-# from sostrades_core.sos_wrapping.test_discs.sellar_gemseo.sellar import Sellar1, Sellar2, SellarSystem
+from gemseo.core.discipline import MDODiscipline
 
 
 def print_test_name():
@@ -107,9 +88,9 @@ class TestCache(unittest.TestCase):
         res_1 = self.ee.execute()
 
         # check cache is None
-        self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
+        self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), MDODiscipline.CacheType.NONE)
         self.assertEqual(self.ee.dm.get_value(
-            'SoSDisc.Disc1.cache_type'), 'None')
+            'SoSDisc.Disc1.cache_type'), MDODiscipline.CacheType.NONE)
         self.assertEqual(
             self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
         self.assertEqual(
@@ -148,7 +129,8 @@ class TestCache(unittest.TestCase):
         self.assertEqual(
             self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache.__class__.__name__, 'SimpleCache')
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache.__class__.__name__, 'SimpleCache')
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache.__class__.__name__,
+            'SimpleCache')
         # get number of calls after first call
         n_call_root_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
         n_call_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
@@ -166,15 +148,15 @@ class TestCache(unittest.TestCase):
 
         # DESACTIVATE CACHE
 
-        values_dict[f'{self.name}.cache_type'] = 'None'
+        values_dict[f'{self.name}.cache_type'] = MDODiscipline.CacheType.NONE
         self.ee.load_study_from_input_dict(values_dict)
 
         self.ee.prepare_execution()
 
         # check cache is None
-        self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
+        self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), MDODiscipline.CacheType.NONE)
         self.assertEqual(self.ee.dm.get_value(
-            'SoSDisc.Disc1.cache_type'), 'None')
+            'SoSDisc.Disc1.cache_type'), MDODiscipline.CacheType.NONE)
         self.assertEqual(
             self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
         self.assertEqual(
@@ -194,7 +176,8 @@ class TestCache(unittest.TestCase):
         self.assertEqual(
             self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
         self.assertEqual(
-            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__, 'SimpleCache')
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__,
+            'SimpleCache')
 
         # first execute
         res_1 = self.ee.execute()
@@ -878,7 +861,7 @@ class TestCache(unittest.TestCase):
     #                            objective_name='obj',
     #                            design_space=design_space,
     #                            tolerance=1e-8,
-    #                            sub_mda_class='MDAGaussSeidel')  # 'MDAJacobi'
+    #                            inner_mda_name='MDAGaussSeidel')  # 'MDAJacobi'
     #     scenario.set_differentiation_method("user")  # user
     #
     #     # add constraints
@@ -964,7 +947,7 @@ class TestCache(unittest.TestCase):
     #     dspace = pd.DataFrame(dspace_dict)
     #
     #     disc_dict = {}
-    #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.sub_mda_class'] = 'MDAGaussSeidel'
+    #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.inner_mda_name'] = 'MDAGaussSeidel'
     #     disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
     #     disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
     #     disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
@@ -1030,7 +1013,7 @@ class TestCache(unittest.TestCase):
     #     dspace = pd.DataFrame(dspace_dict)
     #
     #     disc_dict = {}
-    #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.sub_mda_class'] = 'MDAGaussSeidel'
+    #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.inner_mda_name'] = 'MDAGaussSeidel'
     #     disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
     #     disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
     #     disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace

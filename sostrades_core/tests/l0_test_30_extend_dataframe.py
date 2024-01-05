@@ -16,7 +16,7 @@ limitations under the License.
 '''
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_df, \
     convert_array_into_new_type, convert_new_type_into_array, DEFAULT_EXCLUDED_COLUMNS
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8

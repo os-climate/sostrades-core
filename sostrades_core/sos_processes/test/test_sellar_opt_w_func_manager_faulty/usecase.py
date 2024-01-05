@@ -33,7 +33,6 @@ class Study(StudyManager):
         self.coupling_name = "Sellar_Problem"
 
     def setup_usecase(self):
-
         INEQ_CONSTRAINT = FunctionManager.INEQ_CONSTRAINT
         OBJECTIVE = FunctionManager.OBJECTIVE
         ns = f'{self.study_name}'
@@ -60,14 +59,14 @@ class Study(StudyManager):
         # f'{ns}.{self.optim_name}.c_1', f'{ns}.{self.optim_name}.c_2']
 
         disc_dict[f'{ns}.{self.optim_name}.algo_options'] = {"ftol_rel": 1e-10,
-                                                               "ineq_tolerance": 2e-3,
-                                                               "normalize_design_space": False}
+                                                             "ineq_tolerance": 2e-3,
+                                                             "normalize_design_space": False}
 
         # Sellar inputs
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.x'] = array([1.])
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.z'] = array([1., 1.])
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.{self.coupling_name}.local_dv'] = 10.
-        disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.sub_mda_class'] = 'PureNewtonRaphson'
+        disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.inner_mda_name'] = 'PureNewtonRaphson'
         disc_dict[f'{ns}.{self.optim_name}.max_iter'] = 2
 
         func_df = pd.DataFrame(
@@ -80,7 +79,7 @@ class Study(StudyManager):
 
         prefix = self.study_name + f'.{self.optim_name}.' + f'{self.subcoupling_name}.' + func_mng_name + '.'
         values_dict = {}
-        values_dict[prefix + 
+        values_dict[prefix +
                     FunctionManagerDisc.FUNC_DF] = func_df
 
         disc_dict.update(values_dict)

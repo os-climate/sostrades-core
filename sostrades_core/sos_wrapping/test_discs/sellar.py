@@ -201,7 +201,8 @@ class Sellar2(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'debug_mode_sellar': {'type': 'bool', 'default':False, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+               'debug_mode_sellar': {'type': 'bool', 'default': False, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                     'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'array',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
@@ -273,7 +274,9 @@ class Sellar3(SoSWrapp):
     DESC_IN = {'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'error_string': {'type': 'string', 'default': '', 'possible_values': ["", "nan", "input_change",
-                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]}}
+                                                                                     "linearize_data_change",
+                                                                                     "min_max_grad",
+                                                                                     "min_max_couplings", "all"]}}
 
     DESC_OUT = {'y_2': {'type': 'array',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
@@ -324,7 +327,7 @@ class Sellar3(SoSWrapp):
 
         if error_string == 'linearize_data_change':
             y_1_fullname = [full_name for full_name in self.local_data.keys() if
-                             'y_1' == full_name.split('.')[-1]][0]
+                            'y_1' == full_name.split('.')[-1]][0]
             y_1 = self.local_data[y_1_fullname]
             y_1[0] += 0.5
 
@@ -368,7 +371,7 @@ class Sellar3(SoSWrapp):
                             "in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (
                                 d_name, out, inp, maxi))
                         raise ValueError("in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (
-                                d_name, out, inp, maxi))
+                            d_name, out, inp, maxi))
 
 
 if __name__ == '__main__':

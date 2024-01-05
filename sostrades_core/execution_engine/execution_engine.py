@@ -326,7 +326,7 @@ class ExecutionEngine:
         anonymized_cache_map = {}
         if self.dm.cache_map != {}:
             for key, cache in self.dm.cache_map.items():
-                serialized_new_cache = cache.get_all_data()
+                serialized_new_cache = [cache_entry for cache_entry in cache]
                 anonymized_cache = {}
                 for index, index_dict in serialized_new_cache.items():
                     anonymized_cache[index] = {
@@ -725,7 +725,7 @@ class ExecutionEngine:
         Get values of mdo_discipline input_grammar from data manager
         '''
         input_data = {}
-        input_data_names = proxy_coupling.mdo_discipline_wrapp.mdo_discipline.input_grammar.get_data_names()
+        input_data_names = proxy_coupling.mdo_discipline_wrapp.mdo_discipline.input_grammar.names
         if len(input_data_names) > 0:
             for data_name in input_data_names:
                 input_data[data_name] = self.dm.get_value(data_name)

@@ -31,21 +31,21 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
     """
 
     def __init__(
-        self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        name=None,  # type: Optional[str]
-        max_mda_iter=10,  # type: int
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        over_relax_factor=1.0,  # type: float
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type: bool
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-        warm_start_threshold=-1,  # type: int
+            self,
+            disciplines,  # type: Sequence[MDODiscipline]
+            name=None,  # type: Optional[str]
+            max_mda_iter=10,  # type: int
+            grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+            tolerance=1e-6,  # type: float
+            linear_solver_tolerance=1e-12,  # type: float
+            warm_start=False,  # type: bool
+            use_lu_fact=False,  # type: bool
+            over_relax_factor=1.0,  # type: float
+            coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+            log_convergence=False,  # type: bool
+            linear_solver="DEFAULT",  # type: str
+            linear_solver_options=None,  # type: Mapping[str,Any]
+            warm_start_threshold=-1,  # type: int
     ):  # type: (...) -> None
         """
         Args:
@@ -94,7 +94,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         # store initial residual
         current_iter = 0
         while not self._termination(current_iter) or current_iter == 0:
-            for discipline in self.disciplines:
+            for discipline in self._disciplines:
                 discipline.execute(self.local_data)
                 outs = discipline.get_output_data()
                 if use_relax:
@@ -117,7 +117,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
 
             # build new_couplings: concatenated strong couplings, converted into arrays
             new_couplings = self._current_strong_couplings()
-            
+
             self._compute_residual(
                 current_couplings,
                 new_couplings,
@@ -125,7 +125,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 first=current_iter == 0,
                 log_normed_residual=self.log_convergence,
             )
-            
+
             # store current residuals
             current_iter += 1
             current_couplings = new_couplings
@@ -136,5 +136,5 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 self.store_state_for_warm_start()
             # -- end of SoSTrades modif
 
-        for discipline in self.disciplines:  # Update all outputs without relax
+        for discipline in self._disciplines:  # Update all outputs without relax
             self.local_data.update(discipline.get_output_data())

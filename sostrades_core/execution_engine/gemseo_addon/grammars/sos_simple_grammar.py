@@ -20,13 +20,12 @@ limitations under the License.
 import logging
 from typing import Any, Mapping
 
-from gemseo.core.grammars.errors import InvalidDataException
-from gemseo.core.grammar import SimpleGrammar
+from gemseo.core.grammars.simpler_grammar import SimplerGrammar
 
 LOGGER = logging.getLogger("gemseo.addons.grammars.sos_simple_grammar")
 
 
-class SoSSimpleGrammar(SimpleGrammar):
+class SoSSimpleGrammar(SimplerGrammar):
     """Store the names and types of the elements as Python lists.
 
     Attributes:
@@ -35,22 +34,25 @@ class SoSSimpleGrammar(SimpleGrammar):
             stored in the same order as ``data_names``.
     """
 
-    def load_data(
-        self,
-        data,  # type: Mapping[str,Any]
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> Mapping[str,Any]
-#         self.check(data, raise_exception)
-        return data
-    
-    def set_item_value(self, item_name, item_value):
-        """
-        Sets the value of an item
-
-        :param item_name: the item name to be modified
-        :param item_value: value of the item
-        """
-        if not self.is_data_name_existing(item_name):
-            raise ValueError("Item " + str(item_name) + " not in grammar " +
-                             self.name)
-        self._update_field(item_name, item_value['type'])
+    # def load_data(
+    #         self,
+    #         data,  # type: Mapping[str,Any]
+    #         raise_exception=True,  # type: bool
+    # ):  # type: (...) -> Mapping[str,Any]
+    #     #         self.check(data, raise_exception)
+    #     return data
+    #
+    # def set_item_value(self, item_name, item_value):
+    #     """
+    #     Sets the value of an item
+    #
+    #     :param item_name: the item name to be modified
+    #     :param item_value: value of the item
+    #     """
+    #     if not self.is_data_name_existing(item_name):
+    #         raise ValueError("Item " + str(item_name) + " not in grammar " +
+    #                          self.name)
+    #     self._update_field(item_name, item_value['type'])
+    def validate(self, data,
+                 raise_exception=True):
+        pass

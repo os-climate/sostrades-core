@@ -54,7 +54,7 @@ class SoSMDOScenario(MDOScenario):
                  formulation,
                  objective_name,
                  design_space,
-                 logger:logging.Logger,
+                 logger: logging.Logger,
                  grammar_type=None,
                  reduced_dm=None):
         """
@@ -65,11 +65,11 @@ class SoSMDOScenario(MDOScenario):
         self.objective_name = objective_name
         self.name = name
         super().__init__(disciplines,
-            self.formulation,
-            self.objective_name,
-            design_space,
-            name=self.name,
-            grammar_type=grammar_type)
+                         self.formulation,
+                         self.objective_name,
+                         design_space,
+                         name=self.name,
+                         grammar_type=grammar_type)
         self.maximize_objective = None
         self.algo_name = None
         self.algo_options = None
@@ -80,7 +80,7 @@ class SoSMDOScenario(MDOScenario):
         self.input_design_space = None
         self.reduced_dm = reduced_dm
         self.activated_variables = self.formulation.design_space.variables_names
-        self.is_sos_coupling=False
+        self.is_sos_coupling = False
 
     def _run(self):
         '''
@@ -94,7 +94,7 @@ class SoSMDOScenario(MDOScenario):
         else:
             self.run_scenario()
         outputs = [discipline.get_output_data()
-                   for discipline in self.disciplines]
+                   for discipline in self._disciplines]
         for data in outputs:
             self.local_data.update(data)
         self.update_design_space_out()
@@ -109,7 +109,7 @@ class SoSMDOScenario(MDOScenario):
         # context : empty fields due to several calls to the same design space lead to NaN in dataframes
         # TODO: post proc this dataframe (or directly retrieve values from database) so that NaN values are replaced by already computed values
         dataframe = dataframe.fillna(-1)
-        #dataframe = dataframe.rename(columns=rename_func)
+        # dataframe = dataframe.rename(columns=rename_func)
 
         constraints_names = [constraint.name for constraint in
                              self.formulation.opt_problem.constraints]
@@ -122,14 +122,15 @@ class SoSMDOScenario(MDOScenario):
 
         out = {
             "objective": np.array(dataframe["functions"][objective_name].values),
-            "variables": {correct_var_name(var): np.array(dataframe["design_parameters"][var].values) for var in self.design_space.variables_names},
-            "constraints": {correct_var_name(var): np.array(dataframe["functions"][var].values) for var in constraints_names}
+            "variables": {correct_var_name(var): np.array(dataframe["design_parameters"][var].values) for var in
+                          self.design_space.variables_names},
+            "constraints": {correct_var_name(var): np.array(dataframe["functions"][var].values) for var in
+                            constraints_names}
         }
 
         self.local_data.update({
             [key for key in self.get_output_data_names() if 'post_processing_mdo_data' in key][
                 0]: out})
-
 
     def execute_at_xopt(self):
         '''
@@ -182,7 +183,7 @@ class SoSMDOScenario(MDOScenario):
         self.formulation.opt_problem.evaluate_functions(
             eval_jac=self.eval_jac, normalize=False)
 
-        #self.store_local_data(**local_data)
+        # self.store_local_data(**local_data)
         # if eval mode design space was not modified
         # self.store_sos_outputs_values(
         #     {'design_space_out': self.formulation.design_space}, update_dm=True)
@@ -198,7 +199,7 @@ class SoSMDOScenario(MDOScenario):
         # preprocess functions
         problem.preprocess_functions(normalize=normalize)
         functions = problem.nonproc_constraints + \
-            [problem.nonproc_objective]
+                    [problem.nonproc_objective]
 
         self.functions_before_run = functions
 
@@ -265,7 +266,7 @@ class SoSMDOScenario(MDOScenario):
 
         """
         functions = problem.nonproc_constraints + \
-            [problem.nonproc_objective]
+                    [problem.nonproc_objective]
         self.logger.info(f'list of functions to evaluate {functions}')
 
         for func in functions:
@@ -277,17 +278,17 @@ class SoSMDOScenario(MDOScenario):
             except TypeError:
                 self.logger.error("Failed to evaluate function %s", func)
                 raise
-        current_idx=0
-        for k,v in problem.design_space.items():
-            k_size=v.size
-            self.local_data.update({k: x_vect[current_idx:current_idx+k_size]})
-            current_idx+=k_size
+        current_idx = 0
+        for k, v in problem.design_space.items():
+            k_size = v.size
+            self.local_data.update({k: x_vect[current_idx:current_idx + k_size]})
+            current_idx += k_size
 
     def update_default_coupling_inputs(self):
         '''
         Update default inputs of the couplings
         '''
-        for disc in self.disciplines:
+        for disc in self._disciplines:
             self._set_default_inputs_from_local_data(disc)
 
     def _set_default_inputs_from_local_data(self, disc):

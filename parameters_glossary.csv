@@ -77,7 +77,7 @@ scenario_name,Scenario Name,,,,
 scenario_name_dict,Scenarii Dict,,,,
 scenario_name_trade,Scenario Name Trade,,,,
 sensitivity_outputs,Sensitivity Outputs,,,,D - Nominal property
-sub_mda_class,Sub MDA Class,,The class to instantiate for sub Multi-disciplinary Design Analysis,,D - Nominal property
+inner_mda_name,Sub MDA Class,,The class to instantiate for sub Multi-disciplinary Design Analysis,,D - Nominal property
 sub_process_folder_name,Folder name of the subprocess,,Selected process folder name to be nested inside the DoE.If 'None' then it uses the sos_processes python for doe creation.,,
 subsystems_list,SubSystems List,,,,
 tolerance,Tolerance,,"Tolerance of the iterative direct coupling solver, norm of the current residuals divided by initial residuals norm shall be lower than the tolerance to stop iterating",,

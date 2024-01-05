@@ -16,9 +16,9 @@ limitations under the License.
 '''
 from builtins import NotImplementedError
 
-from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
+from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator, \
     SampleTypeError
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 import pandas as pd
 import numpy as np
@@ -26,6 +26,7 @@ import numpy as np
 import itertools
 
 import logging
+
 LOGGER = logging.getLogger(__name__)
 
 '''
@@ -65,7 +66,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         Raises:
             Exception if samples_df is not a dataframe                   
         '''
-        if not(isinstance(samples_df, pd.DataFrame)):
+        if not (isinstance(samples_df, pd.DataFrame)):
             msg = "Expected sampling output type should be pandas.core.frame.DataFrame"
             msg += "however sampling type of sampling generator <%s> " % str(
                 self.__class__.__name__)
@@ -91,9 +92,10 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         def combvec(vect_list):
             my_sample = list(itertools.product(*vect_list))
             return my_sample
+
         my_res = combvec(vect_list)
         samples_df = pd.DataFrame(my_res, columns=variable_list)
-        
+
         return samples_df
 
     @staticmethod

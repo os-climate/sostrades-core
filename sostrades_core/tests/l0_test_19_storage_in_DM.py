@@ -220,9 +220,9 @@ class TestDataManagerStorage(unittest.TestCase):
             self.ee.dm.disciplines_id_map['New_ns_test'], [test_id])
         self.assertNotIn('Test', self.ee.dm.disciplines_id_map)
 
-        self.assertIn('Test.sub_mda_class', self.ee.dm.data_id_map)
+        self.assertIn('Test.inner_mda_name', self.ee.dm.data_id_map)
         self.ee.dm.generate_data_id_map()
-        self.assertIn('New_ns_test.sub_mda_class', self.ee.dm.data_id_map)
+        self.assertIn('New_ns_test.inner_mda_name', self.ee.dm.data_id_map)
 
     def test_05_convert_dict_with_maps(self):
 

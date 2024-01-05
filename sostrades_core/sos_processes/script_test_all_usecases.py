@@ -30,7 +30,7 @@ import logging
 from copy import deepcopy
 from tempfile import gettempdir
 import traceback
-from gemseo.utils.compare_data_manager_tooling import compare_dict, \
+from sostrades_core.tools.compare_data_manager_tooling import compare_dict, \
     delete_keys_from_dict
 from multiprocessing import Process, Queue
 from queue import Empty
@@ -428,7 +428,6 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
             study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
         except Exception as e:
-
 
             error_msg_post_processing += f'\nERROR while computing the usecase {study.study_full_path}:\n' \
                                          f'\n {traceback.format_exc()}'

@@ -37,7 +37,8 @@ class TreeNode:
     MARKDOWN_DOCUMENTATION_KEY = 'documentation'
 
     needed_variables = [ProxyDiscipline.TYPE, ProxyDiscipline.USER_LEVEL, ProxyDiscipline.EDITABLE,
-                        ProxyDiscipline.COUPLING, ProxyDiscipline.VALUE, ProxyDiscipline.NUMERICAL, ProxyDiscipline.OPTIONAL]
+                        ProxyDiscipline.COUPLING, ProxyDiscipline.VALUE, ProxyDiscipline.NUMERICAL,
+                        ProxyDiscipline.OPTIONAL]
 
     def __init__(self, name, exec_display=False):
         """ class constructor
@@ -130,7 +131,7 @@ class TreeNode:
         # Serialize data_management_disciplines attribute
         json_data_management_disciplines = {}
         for key in self.data_management_disciplines.keys():
-            json_data_management_disciplines[key] = self.data_management_disciplines[key].to_json() 
+            json_data_management_disciplines[key] = self.data_management_disciplines[key].to_json()
         dict_obj.update({'data_management_disciplines': json_data_management_disciplines})
 
         # Serialize markdown_documentation
@@ -158,13 +159,12 @@ class TreeNode:
 
         self.model_name_full_path = discipline.get_module()
         self.models_full_path_list.append(self.model_name_full_path)
-        
+
         # add a new data_management_discipline
         data_management_discipline = DataManagementDiscipline()
         data_management_discipline.namespace = self.full_namespace
         data_management_discipline.model_name_full_path = self.model_name_full_path
         data_management_discipline.discipline_label = discipline.get_disc_label()
-        
 
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
@@ -175,7 +175,7 @@ class TreeNode:
                 # if self.exec_display:
 
                 namespaced_key = discipline.get_var_full_name(
-                        key, disc_in)
+                    key, disc_in)
                 # else:
                 #     namespaced_key = discipline.get_var_display_name(
                 #         key, disc_in)
@@ -183,7 +183,8 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
-                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_IN, key)
+                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path,
+                                                                                   ProxyDiscipline.IO_TYPE_IN, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -191,23 +192,22 @@ class TreeNode:
                     self.disciplines_by_variable[namespaced_key] = []
                 self.disciplines_by_variable[namespaced_key].append(data_management_discipline.discipline_label)
                 if new_disc_data[ProxyDiscipline.NUMERICAL]:
-                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
-                                                                    namespaced_key, 
-                                                                    data_management_discipline.model_name_full_path,
-                                                                    data_management_discipline.numerical_parameters)
+                    self.add_disc_data_in_data_management_discipline(new_disc_data,
+                                                                     namespaced_key,
+                                                                     data_management_discipline.model_name_full_path,
+                                                                     data_management_discipline.numerical_parameters)
                 else:
-                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
-                                                                    namespaced_key, 
-                                                                    data_management_discipline.model_name_full_path,
-                                                                    data_management_discipline.disciplinary_inputs)
-                
-                
+                    self.add_disc_data_in_data_management_discipline(new_disc_data,
+                                                                     namespaced_key,
+                                                                     data_management_discipline.model_name_full_path,
+                                                                     data_management_discipline.disciplinary_inputs)
+
         disc_out = discipline.get_data_out()
         if not no_data:
             for key, data_key in disc_out.items():
                 # if self.exec_display:
                 namespaced_key = discipline.get_var_full_name(
-                        key, disc_out)
+                    key, disc_out)
                 # else:
                 #     namespaced_key = discipline.get_var_display_name(
                 #         key, disc_out)
@@ -217,7 +217,8 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_OUT
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
-                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_OUT, key)
+                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path,
+                                                                                   ProxyDiscipline.IO_TYPE_OUT, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -225,15 +226,15 @@ class TreeNode:
                     self.disciplines_by_variable[namespaced_key] = []
                 self.disciplines_by_variable[namespaced_key].append(data_management_discipline.discipline_label)
                 if new_disc_data[ProxyDiscipline.NUMERICAL]:
-                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
-                                                                    namespaced_key, 
-                                                                    data_management_discipline.model_name_full_path,
-                                                                    data_management_discipline.numerical_parameters)
+                    self.add_disc_data_in_data_management_discipline(new_disc_data,
+                                                                     namespaced_key,
+                                                                     data_management_discipline.model_name_full_path,
+                                                                     data_management_discipline.numerical_parameters)
                 else:
-                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
-                                                                    namespaced_key, 
-                                                                    data_management_discipline.model_name_full_path,
-                                                                    data_management_discipline.disciplinary_outputs)
+                    self.add_disc_data_in_data_management_discipline(new_disc_data,
+                                                                     namespaced_key,
+                                                                     data_management_discipline.model_name_full_path,
+                                                                     data_management_discipline.disciplinary_outputs)
 
         self.__manage_status(discipline.status)
 
@@ -270,11 +271,9 @@ class TreeNode:
         markdown_data = TreeNode.get_markdown_documentation(filepath)
         self.add_markdown_documentation(markdown_data, self.model_name_full_path)
 
-
     def create_data_key(self, disc_name, io_type, variable_name):
         io_type = io_type.lower()
         return f'{disc_name}_{io_type}put_{variable_name}'
-
 
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data
@@ -299,7 +298,8 @@ class TreeNode:
             if disc_full_path not in self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]:
                 self.disc_data[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST].append(disc_full_path)
 
-    def add_disc_data_in_data_management_discipline(self, new_disc_data, namespace, disc_full_path, discipline_variable_list):
+    def add_disc_data_in_data_management_discipline(self, new_disc_data, namespace, disc_full_path,
+                                                    discipline_variable_list):
         """ Set variable from discipline into treenode disc_data
         :params: new_disc_data, variable data
         :type: ProxyDiscipline variable data_dict
@@ -347,7 +347,10 @@ class TreeNode:
         if isdir(doc_folder_path):
             # look for markdown file with extension .markdown or .md
             markdown_list = [join(doc_folder_path, md_file) for md_file in listdir(doc_folder_path) if ((
-                md_file.endswith(r".markdown") or md_file.endswith(r".md")) and md_file.startswith(filename))]
+                                                                                                                md_file.endswith(
+                                                                                                                    r".markdown") or md_file.endswith(
+                                                                                                            r".md")) and md_file.startswith(
+                filename))]
 
             if len(markdown_list) > 0:
                 # build file path
@@ -437,5 +440,5 @@ class TreeNode:
             return 30
         elif status == ProxyDiscipline.STATUS_RUNNING:
             return 40
-        else:  # status = ProxyDiscipline.STATUS_FAILED
+        else:  # status = ProxyDiscipline.ExecutionStatus.FAILED
             return 50

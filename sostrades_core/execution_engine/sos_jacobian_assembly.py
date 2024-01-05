@@ -81,7 +81,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         for residual in residuals:
             residual_size = self.sizes[residual]
             # Find the associated discipline
-            discipline = self.disciplines[residual]
+            discipline = self._disciplines[residual]
             residual_jac = discipline.jac[residual]
             # Column blocks
             out_j = 0
@@ -97,11 +97,12 @@ class SoSJacobianAssembly(JacobianAssembly):
                         jac = residual_jac.get(variable, None)
                         if jac is not None:
                             diag_mat += jac
-#                     dres_dvar[
-#                         out_i: out_i + variable_size, out_j: out_j + variable_size
-#                     ] = diag_mat
+                    #                     dres_dvar[
+                    #                         out_i: out_i + variable_size, out_j: out_j + variable_size
+                    #                     ] = diag_mat
                     dict.update(dres_dvar,
-                                {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(diag_mat.row.astype(float), diag_mat.col.astype(float), diag_mat.data)})
+                                {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in
+                                 zip(diag_mat.row.astype(float), diag_mat.col.astype(float), diag_mat.data)})
                 else:
                     # block Jacobian
                     jac = residual_jac.get(variable, None)
@@ -111,9 +112,10 @@ class SoSJacobianAssembly(JacobianAssembly):
                         assert n_j == variable_size
                         jac = jac.tocoo()
                         # Fill the sparse Jacobian block
-                        #dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
+                        # dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
                         dict.update(dres_dvar,
-                                    {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(jac.row.astype(float), jac.col.astype(float), jac.data)})
+                                    {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in
+                                     zip(jac.row.astype(float), jac.col.astype(float), jac.data)})
 
                 # Shift the column by block width
                 out_j += variable_size
@@ -122,13 +124,13 @@ class SoSJacobianAssembly(JacobianAssembly):
         return dres_dvar.tocsr()
 
     def dres_dvar(
-        self,
-        residuals,
-        variables,
-        n_residuals,
-        n_variables,
-        matrix_type=JacobianAssembly.SPARSE,
-        transpose=False,
+            self,
+            residuals,
+            variables,
+            n_residuals,
+            n_variables,
+            matrix_type=JacobianAssembly.SPARSE,
+            transpose=False,
     ):
         """Forms the matrix of partial derivatives of residuals
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
@@ -193,7 +195,7 @@ class SoSJacobianAssembly(JacobianAssembly):
             for residual in residuals:
                 residual_size = self.sizes[residual]
                 # Find the associated discipline
-                discipline = self.disciplines[residual]
+                discipline = self._disciplines[residual]
                 residual_jac = discipline.jac[residual]
                 # Column blocks
                 out_j = 0
@@ -217,21 +219,22 @@ class SoSJacobianAssembly(JacobianAssembly):
             return result
 
         return dres_dvar
+
     # end of SoSTrades modif
 
     def total_derivatives(
-        self,
-        in_data,
-        functions,
-        variables,
-        couplings,
-        linear_solver="LGMRES",
-        mode=JacobianAssembly.AUTO_MODE,
-        matrix_type=JacobianAssembly.SPARSE,
-        use_lu_fact=False,
-        exec_cache_tol=None,
-        force_no_exec=False,
-        **linear_solver_options
+            self,
+            in_data,
+            functions,
+            variables,
+            couplings,
+            linear_solver="LGMRES",
+            mode=JacobianAssembly.AUTO_MODE,
+            matrix_type=JacobianAssembly.SPARSE,
+            use_lu_fact=False,
+            exec_cache_tol=None,
+            force_no_exec=False,
+            **linear_solver_options
     ):
         """Computes the Jacobian of total derivatives of the coupled system formed by
         the disciplines.
@@ -376,25 +379,26 @@ class SoSJacobianAssembly(JacobianAssembly):
                 discipline.add_differentiated_inputs(list(set(disc_inputs)))
 
             # - unconsistent check in case of a discipline that has no strong couplings (e.g, a discipline dead-end)
-#             if outputs and not inputs:
-#                 base_msg = (
-#                     "Discipline '{}' has the outputs '{}' that must be "
-#                     "differenciated, but no coupling or design "
-#                     "variables as inputs"
-#                 )
-#                 raise ValueError(base_msg.format(discipline.name, outputs))
 
-            # end of SoSTrades modif
+    #             if outputs and not inputs:
+    #                 base_msg = (
+    #                     "Discipline '{}' has the outputs '{}' that must be "
+    #                     "differenciated, but no coupling or design "
+    #                     "variables as inputs"
+    #                 )
+    #                 raise ValueError(base_msg.format(discipline.name, outputs))
+
+    # end of SoSTrades modif
 
     # Newton step computation
     def compute_newton_step(
-        self,
-        in_data,
-        couplings,
-        relax_factor,
-        linear_solver="LGMRES",
-        matrix_type=JacobianAssembly.LINEAR_OPERATOR,
-        **linear_solver_options
+            self,
+            in_data,
+            couplings,
+            relax_factor,
+            linear_solver="LGMRES",
+            matrix_type=JacobianAssembly.LINEAR_OPERATOR,
+            **linear_solver_options
     ):
         """Compute Newton step for the the coupled system of residuals formed by the
         disciplines.
@@ -458,13 +462,13 @@ class SoSJacobianAssembly(JacobianAssembly):
 
     # Newton step computation
     def compute_newton_step_pure(
-        self,
-        res,
-        couplings,
-        relax_factor,
-        linear_solver="LGMRES",
-        matrix_type=JacobianAssembly.LINEAR_OPERATOR,
-        **linear_solver_options
+            self,
+            res,
+            couplings,
+            relax_factor,
+            linear_solver="LGMRES",
+            matrix_type=JacobianAssembly.LINEAR_OPERATOR,
+            **linear_solver_options
     ):
         """Compute Newton step dictionary and let the solver decide how to apply the newton step.
         :param res: residuals for the newton step
@@ -504,13 +508,13 @@ class SoSJacobianAssembly(JacobianAssembly):
         for coupling in couplings:
             size = self.sizes[coupling]
             newton_step_dict[coupling] = -relax_factor * \
-                newton_step[component: component + size]
+                                         newton_step[component: component + size]
             component += size
 
         return newton_step_dict
 
     def _adjoint_mode(
-        self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy, linear_solver, **kwargs
+            self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy, linear_solver, **kwargs
     ):
         """Computation of total derivative Jacobian in adjoint mode.
 
@@ -558,8 +562,8 @@ class SoSJacobianAssembly(JacobianAssembly):
                     )
                     self.n_linear_resolutions += 1
                     jac[fun][fun_component, :] = (
-                        dfunction_dx[fun_component, :] +
-                        (dres_dx.T.dot(adjoint)).T
+                            dfunction_dx[fun_component, :] +
+                            (dres_dx.T.dot(adjoint)).T
                     )
         return jac
 
@@ -635,10 +639,10 @@ class SoSJacobianAssembly(JacobianAssembly):
             )
 
     def linearize_all_disciplines(
-        self,
-        input_local_data,  # type: Mapping[str,ndarray]
-        force_no_exec=False,
-        exec_before_linearize=True
+            self,
+            input_local_data,  # type: Mapping[str,ndarray]
+            force_no_exec=False,
+            exec_before_linearize=True
     ):  # type: (...) -> None
         """Linearize all the disciplines.
         Args:
@@ -670,5 +674,5 @@ def comp_jac(tup):
             dres_dy_t, -dfunction_dy[fun_component, :].T,
             linear_solver=linear_solver)
         _jac[fun_component, :] = dfunction_dx[
-            fun_component, :] + (dres_dx.T.dot(adjoint)).T
+                                 fun_component, :] + (dres_dx.T.dot(adjoint)).T
     return _jac

@@ -159,7 +159,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.debug_mode': init_dict('string'),
                     ns_2 + '.warm_start': init_dict('string'),
                     ns_2 + '.acceleration': init_dict('string'),
-                    ns_2 + '.sub_mda_class': init_dict('string'),
+                    ns_2 + '.inner_mda_name': init_dict('string'),
                     ns_2 + '.max_mda_iter': init_dict('int'),
                     ns_2 + '.epsilon0': init_dict('float'),
                     ns_2 + '.warm_start_threshold': init_dict('float'),

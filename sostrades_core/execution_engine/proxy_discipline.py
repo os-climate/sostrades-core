@@ -35,7 +35,7 @@ from pandas import DataFrame
 from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 from numpy import bool_ as np_bool
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
@@ -229,9 +229,9 @@ class ProxyDiscipline:
     NUM_DESC_IN = {
         LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                              NUMERICAL: True, STRUCTURING: True},
-        CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
-                     POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
-                     # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
+        CACHE_TYPE: {TYPE: 'string', DEFAULT: MDODiscipline.CacheType.NONE,
+                     POSSIBLE_VALUES: [MDODiscipline.CacheType.NONE, MDODiscipline.CacheType.SIMPLE],
+                     # [MDOChain.CacheType.NONE, MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                      NUMERICAL: True,
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
@@ -243,13 +243,13 @@ class ProxyDiscipline:
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
     # -- status
-    STATUS_VIRTUAL = MDODiscipline.STATUS_VIRTUAL
-    STATUS_PENDING = MDODiscipline.STATUS_PENDING
-    STATUS_DONE = MDODiscipline.STATUS_DONE
-    STATUS_RUNNING = MDODiscipline.STATUS_RUNNING
-    STATUS_FAILED = MDODiscipline.STATUS_FAILED
-    STATUS_CONFIGURE = MDODiscipline.STATUS_CONFIGURE
-    STATUS_LINEARIZE = MDODiscipline.STATUS_LINEARIZE
+    STATUS_VIRTUAL = MDODiscipline.ExecutionStatus.VIRTUAL
+    STATUS_PENDING = MDODiscipline.ExecutionStatus.PENDING
+    STATUS_DONE = MDODiscipline.ExecutionStatus.DONE
+    STATUS_RUNNING = MDODiscipline.ExecutionStatus.RUNNING
+    STATUS_FAILED = MDODiscipline.ExecutionStatus.FAILED
+    STATUS_CONFIGURE = 'CONFIGURE'
+    STATUS_LINEARIZE = MDODiscipline.ExecutionStatus.LINEARIZE
 
     EE_PATH = 'sostrades_core.execution_engine'
 
@@ -324,6 +324,8 @@ class ProxyDiscipline:
         """
         self.logger = ee.logger.getChild(self.__class__.__name__)
         self.proxy_disciplines: List[ProxyDiscipline] = []
+        # : list of outputs that shall be null, to be considered as residuals
+        self.residual_variables = {}
         self._status = None
         self.status_observers = []
         self.__config_dependency_disciplines = []
@@ -492,7 +494,8 @@ class ProxyDiscipline:
                 # == True)
                 self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                                self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
-                if self.get_sosdisc_inputs(self.CACHE_TYPE) == 'None' and self.dm.cache_map is not None:
+                if self.get_sosdisc_inputs(
+                        self.CACHE_TYPE) == MDODiscipline.CacheType.NONE and self.dm.cache_map is not None:
                     self.delete_cache_in_cache_map()
 
             #             if self._reset_debug_mode:
@@ -501,7 +504,7 @@ class ProxyDiscipline:
             #                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
             # set the status to pending on GEMSEO side (so that it does not
             # stay on DONE from last execution)
-            self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.STATUS_PENDING
+            self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.ExecutionStatus.PENDING
 
         # clear the proxy from the wrapper before execution
         self.clear_proxy_from_wrapper()
@@ -523,19 +526,19 @@ class ProxyDiscipline:
 
     def set_cache(self, disc: MDODiscipline, cache_type: str, cache_hdf_file: str):
         '''
-        Instanciate and set cache for disc if cache_type is not 'None'
+        Instanciate and set cache for disc if cache_type is not MDODiscipline.CacheType.NONE
 
         Arguments:
             disc (MDODiscipline): GEMSEO object to set cache
             cache_type (string): type of cache
             cache_hdf_file (string): cache hdf file path
         '''
-        if cache_type == MDOChain.HDF5_CACHE and cache_hdf_file is None:
+        if cache_type == MDOChain.CacheType.HDF5 and cache_hdf_file is None:
             raise Exception(
                 'if the cache type is set to HDF5Cache, the cache_file path must be set')
         else:
             disc.cache = None
-            if cache_type != 'None':
+            if cache_type != MDOChain.CacheType.NONE:
                 disc.set_cache_policy(
                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 

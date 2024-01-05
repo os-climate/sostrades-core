@@ -34,6 +34,7 @@ from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study
 
 from logging import Handler, DEBUG
 
+
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest
@@ -45,6 +46,7 @@ class UnitTestHandler(Handler):
 
     def emit(self, record):
         self.msg_list.append(record.msg)
+
 
 class TestMDALoop(unittest.TestCase):
     """
@@ -163,7 +165,7 @@ class TestMDALoop(unittest.TestCase):
         disc_dict[f'{self.name}.{coupling_name}.Sellar_3.error_string'] = 'linearize_data_change'
         disc_dict[f'{self.name}.{coupling_name}.Sellar_3.debug_mode'] = 'linearize_data_change'
         disc_dict[f'{self.name}.{coupling_name}.linearization_mode'] = 'adjoint'
-        disc_dict[f'{self.name}.{coupling_name}.sub_mda_class'] = 'MDANewtonRaphson'
+        disc_dict[f'{self.name}.{coupling_name}.inner_mda_name'] = 'MDANewtonRaphson'
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_ok = False
@@ -176,7 +178,6 @@ class TestMDALoop(unittest.TestCase):
             raise Exception('Execution failed, and not for the good reason')
         if exec_ok:
             raise Exception('Execution worked, and it should not have')
-
 
     def test_04_debug_mode_mda_min_max_coupling(self):
         """
@@ -208,8 +209,12 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.execute()
-        self.assertIn('in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_1> has the minimum coupling value <1.0>', self.my_handler.msg_list)
-        self.assertIn('in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_2> has the maximum coupling value <3.515922583453351>', self.my_handler.msg_list)
+        self.assertIn(
+            'in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_1> has the minimum coupling value <1.0>',
+            self.my_handler.msg_list)
+        self.assertIn(
+            'in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_2> has the maximum coupling value <3.515922583453351>',
+            self.my_handler.msg_list)
 
     def test_05_debug_mode_all(self):
         """
@@ -278,13 +283,15 @@ class TestMDALoop(unittest.TestCase):
         disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = 'linearize_data_change'
         disc_dict[f'{self.name}.debug_mode'] = ''
 
-
         exec_eng.load_study_from_input_dict(disc_dict)
         proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
         # the dm has the proper values
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'linearize_data_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'linearize_data_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),
+                         'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),
+                         'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),
+                         'linearize_data_change')
 
         # the activation has been properly logged
         self.assertIn('Discipline Sellar_1 set to debug mode linearize_data_change', self.my_handler.msg_list)
@@ -310,10 +317,11 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # dm
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'),'input_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'input_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'input_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'input_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'), 'input_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),
+                         'input_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'), 'input_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'), 'input_change')
 
         # log
         self.assertIn('Discipline Sellar_Problem set to debug mode input_change', self.my_handler.msg_list)
@@ -337,10 +345,10 @@ class TestMDALoop(unittest.TestCase):
         # check that if I deactivate the debug mode of the lower coupling then all the children get deactivated
         disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = ''
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'),'')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'), '')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'), '')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'), '')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'), '')
         exec_eng.execute()
         self.assertEqual(
             proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),

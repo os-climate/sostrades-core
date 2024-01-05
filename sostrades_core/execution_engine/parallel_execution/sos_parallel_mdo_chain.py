@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from gemseo.core.chain import MDOParallelChain
-from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization,\
+from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization, \
     SoSDiscParallelExecution
 from gemseo.core.discipline import MDODiscipline
 import multiprocessing as mp
@@ -38,11 +38,11 @@ class SoSParallelChain(MDOParallelChain):
                                                use_threading=use_threading)
         # replace DiscParallelExecution and DiscParallelLinearization GEMSEO's
         # attributes
-        dpe = SoSDiscParallelExecution(self.disciplines,
+        dpe = SoSDiscParallelExecution(self._isciplines,
                                        n_processes=n_processes,
                                        use_threading=use_threading)
         self.parallel_execution = dpe
-        dpl = SoSDiscParallelLinearization(self.disciplines,
+        dpl = SoSDiscParallelLinearization(self._disciplines,
                                            n_processes=n_processes,
                                            use_threading=use_threading)
         self.parallel_lin = dpl

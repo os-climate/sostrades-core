@@ -29,7 +29,8 @@ from itertools import repeat
 from gemseo.core.chain import MDOChain
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
-from gemseo.api import create_mda
+from gemseo import create_mda
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 
 import logging
@@ -72,9 +73,9 @@ class SoSMDAChain(MDAChain):
         SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',
                                               # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                               NUMERICAL: True},
-        CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
-                     # POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
-                     # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
+        CACHE_TYPE: {TYPE: 'string', DEFAULT: MDOChain.CacheType.NONE,
+                     # POSSIBLE_VALUES: [MDOChain.CacheType.NONE, MDODiscipline.SIMPLE_CACHE],
+                     # [MDOChain.CacheType.NONE, MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                      NUMERICAL: True,
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
@@ -87,7 +88,7 @@ class SoSMDAChain(MDAChain):
                  disciplines,  # type: Sequence[MDODiscipline]
                  logger,  # type: logging.Logger
                  reduced_dm=None,  # type: dict
-                 sub_mda_class="MDAJacobi",  # type: str
+                 inner_mda_name="MDAJacobi",  # type: str
                  max_mda_iter=20,  # type: int
                  name=None,  # type: Optional[str]
                  n_processes=N_CPUS,  # type: int
@@ -95,17 +96,37 @@ class SoSMDAChain(MDAChain):
                  tolerance=1e-6,  # type: float
                  linear_solver_tolerance=1e-12,  # type: float
                  use_lu_fact=False,  # type: bool
-                 grammar_type=MDAChain.JSON_GRAMMAR_TYPE,  # type: str
+                 grammar_type=MDAChain.GrammarType.JSON,  # type: str
                  coupling_structure=None,
                  sub_coupling_structures=None,
                  log_convergence=False,  # type: bool
                  linear_solver="DEFAULT",  # type: str
                  linear_solver_options=None,  # type: Mapping[str,Any]
-                 # authorize_self_coupled_disciplines=False,  # type: bool
-                 **sub_mda_options
+                 mdachain_parallelize_tasks=False,
+                 mdachain_parallel_options=None,
+                 initialize_defaults=False,
+                 **inner_mda_options,
                  ):
-        ''' Constructor
-        '''
+        """
+        Args:
+            inner_mda_name: The class name of the inner-MDA.
+            n_processes: The maximum simultaneous number of threads if ``use_threading``
+                is set to True, otherwise processes, used to parallelize the execution.
+            chain_linearize: Whether to linearize the chain of execution. Otherwise,
+                linearize the overall MDA with base class method. This last option is
+                preferred to minimize computations in adjoint mode, while in direct
+                mode, linearizing the chain may be cheaper.
+            sub_coupling_structures: The coupling structures to be used by the
+                inner-MDAs. If ``None``, they are created from the sub-disciplines.
+            mdachain_parallelize_tasks: Whether to parallelize the parallel tasks, if
+                any.
+            mdachain_parallel_options: The options of the MDOParallelChain instances, if
+                any.
+            initialize_defaults: Whether to create a :class:`.MDOInitializationChain`
+                to compute the eventually missing :attr:`.default_inputs` at the first
+                execution.
+            **inner_mda_options: The options of the inner-MDAs.
+        """
         self.logger = logger
         self.is_sos_coupling = True
         # =========================================================================
@@ -116,7 +137,7 @@ class SoSMDAChain(MDAChain):
         self.reduced_dm = reduced_dm
 
         super().__init__(disciplines,
-                         sub_mda_class=sub_mda_class,
+                         inner_mda_name=inner_mda_name,
                          max_mda_iter=max_mda_iter,
                          name=name,
                          n_processes=n_processes,
@@ -130,7 +151,10 @@ class SoSMDAChain(MDAChain):
                          log_convergence=log_convergence,
                          linear_solver=linear_solver,
                          linear_solver_options=linear_solver_options,
-                         **sub_mda_options
+                         mdachain_parallelize_tasks=mdachain_parallelize_tasks,
+                         mdachain_parallel_options=mdachain_parallel_options,
+                         initialize_defaults=initialize_defaults,
+                         **inner_mda_options
                          )
 
     def _run(self):
@@ -153,8 +177,8 @@ class SoSMDAChain(MDAChain):
         except Exception as error:
             # Update data manager status (status 'FAILED' is not propagate correctly due to exception
             # so we have to force data manager status update in this case
-            self.status = self.STATUS_FAILED
-            self.mdo_chain.status = self.STATUS_FAILED
+            self.status = self.ExecutionStatus.FAILED
+            self.mdo_chain.status = self.ExecutionStatus.FAILED
             raise error
 
         # save residual history
@@ -162,6 +186,7 @@ class SoSMDAChain(MDAChain):
         self.residuals_history = DataFrame(
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
 
+        del self.local_data['MDA residuals norm']
         # TODO: use a method to get the full name
         out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
         self.store_local_data(**out)
@@ -173,6 +198,9 @@ class SoSMDAChain(MDAChain):
     #         # store local data in datamanager
     #         self.proxy_discipline.update_dm_with_local_data(self.local_data)
 
+    def __set_local_data(self, data):
+        self._local_data = data
+        
     def pre_run_mda(self):
         '''
         Pre run needed if one of the strong coupling variables is None in a MDA 
@@ -214,7 +242,7 @@ class SoSMDAChain(MDAChain):
                     # order the MDA disciplines the same way as the
                     # original disciplines
                     sub_mda_disciplines = []
-                    for disc in self.disciplines:
+                    for disc in self._disciplines:
                         if disc in coupled_disciplines:
                             sub_mda_disciplines.append(disc)
                     # submda disciplines are not ordered in a correct exec
@@ -283,7 +311,7 @@ class SoSMDAChain(MDAChain):
         Get input_data for linearize ProxyDiscipline
         '''
         input_data = {}
-        input_data_names = self.input_grammar.get_data_names()
+        input_data_names = self.input_grammar.names
         if len(input_data_names) > 0:
 
             for data_name in input_data_names:
@@ -293,7 +321,7 @@ class SoSMDAChain(MDAChain):
 
     # -- Protected methods
 
-    def linearize(self, input_data=None, force_all=False, force_no_exec=False):
+    def linearize(self, input_data=None, force_all=False, execute=True):
         '''
         Overload the linearize of soscoupling to use the one of sosdiscipline and not the one of MDAChain
         '''
@@ -304,9 +332,9 @@ class SoSMDAChain(MDAChain):
 
         return self._old_discipline_linearize(input_data=input_data,
                                               force_all=force_all,
-                                              force_no_exec=force_no_exec)
+                                              execute=execute)
 
-    def _old_discipline_linearize(self, input_data=None, force_all=False, force_no_exec=False,
+    def _old_discipline_linearize(self, input_data=None, force_all=False, execute=True,
                                   exec_before_linearize=True):
         """ Temporary call to sostrades linearize that was previously in SoSDiscipline
         TODO: see with IRT how we can handle it
@@ -315,11 +343,11 @@ class SoSMDAChain(MDAChain):
         # to be deleted during GEMS update
 
         result = SoSMDODiscipline.linearize(
-            self, input_data, force_all, force_no_exec)
+            self, input_data, force_all, execute)
 
         return result
 
-    def check_jacobian(self, input_data=None, derr_approx=MDAChain.FINITE_DIFFERENCES,
+    def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
                        step=1e-7, threshold=1e-8, linearization_mode='auto',
                        inputs=None, outputs=None, parallel=False,
                        n_processes=MDAChain.N_CPUS,
@@ -403,9 +431,12 @@ class SoSMDAChain(MDAChain):
     def _create_mdo_chain(
             self,
             disciplines,
-            sub_mda_class="MDAJacobi",
+            inner_mda_name="MDAJacobi",
             sub_coupling_structures=None,
-            **sub_mda_options
+            mdachain_parallelize_tasks=False,
+            mdachain_parallel_options=None,
+            initialize_defaults=False,
+            **inner_mda_options
     ):
         """
         ** Adapted from MDAChain Class in GEMSEO (overload)**
@@ -413,14 +444,14 @@ class SoSMDAChain(MDAChain):
         Create an MDO chain from the execution sequence of the disciplines.
 
         Args:
-            sub_mda_class: The name of the class of the sub-MDAs.
+            inner_mda_name: The name of the class of the sub-MDAs.
             disciplines: The disciplines.
             sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
                 If None, they are created from the sub-disciplines.
             **sub_mda_options: The options to be used to initialize the sub-MDAs.
 
         disciplines,  # type: Sequence[MDODiscipline]
-        sub_mda_class="MDAJacobi",  # type: str
+        inner_mda_name="MDAJacobi",  # type: str
         # type: Optional[Iterable[MDOCouplingStructure]]
         sub_coupling_structures=None,
         **sub_mda_options  # type: Optional[Union[float,int,bool,str]]
@@ -431,7 +462,7 @@ class SoSMDAChain(MDAChain):
         if sub_coupling_structures is None:
             sub_coupling_structures = repeat(None)
 
-        sub_coupling_structures_iterator = iter(sub_coupling_structures)
+        self.__sub_coupling_structures_iterator = iter(sub_coupling_structures)
 
         for parallel_tasks in self.coupling_structure.sequence:
             # to parallelize, check if 1 < len(parallel_tasks)
@@ -464,21 +495,21 @@ class SoSMDAChain(MDAChain):
                     #                         sub_mda_disciplines = [MDOChain(sub_mda_disciplines,
                     #                                                         grammar_type=self.grammar_type)]
                     # create a sub-MDA
-                    sub_mda_options["use_lu_fact"] = self.use_lu_fact
-                    sub_mda_options["linear_solver_tolerance"] = self.linear_solver_tolerance
-                    sub_mda_options["linear_solver"] = self.linear_solver
-                    sub_mda_options["linear_solver_options"] = self.linear_solver_options
-                    if sub_mda_class not in ['MDAGaussSeidel', 'MDAQuasiNewton']:
-                        sub_mda_options["n_processes"] = self.n_processes
+                    inner_mda_options["linear_solver_tolerance"] = self.linear_solver_tolerance
+                    if inner_mda_name not in ['MDAGaussSeidel', 'MDAQuasiNewton']:
+                        inner_mda_options["n_processes"] = self.n_processes
                     sub_mda = create_mda(
-                        sub_mda_class,
+                        inner_mda_name,
                         sub_mda_disciplines,
                         max_mda_iter=self.max_mda_iter,
                         tolerance=self.tolerance,
                         grammar_type=self.grammar_type,
+                        use_lu_fact=self.use_lu_fact,
+                        linear_solver=self.linear_solver,
+                        linear_solver_options=self.linear_solver_options,
                         coupling_structure=next(
-                            sub_coupling_structures_iterator),
-                        **sub_mda_options
+                            self.__sub_coupling_structures_iterator),
+                        **inner_mda_options
                     )
                     #                     self.set_epsilon0_and_cache(sub_mda)
 
@@ -613,9 +644,9 @@ class SoSMDAChain(MDAChain):
             List[string] The names of the input variables.
         """
         if not filtered_inputs:
-            return self.input_grammar.get_data_names()
+            return self.input_grammar.names
         else:
-            return filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
+            return filter_variables_to_convert(self.reduced_dm, self.input_grammar.names,
                                                logger=self.logger)
 
     def get_output_data_names(self, filtered_outputs=False):
@@ -629,6 +660,6 @@ class SoSMDAChain(MDAChain):
             List[string] The names of the output variables.
         """
         if not filtered_outputs:
-            return self.output_grammar.get_data_names()
+            return self.output_grammar.names
         else:
-            return filter_variables_to_convert(self.reduced_dm, self.output_grammar.get_data_names())
+            return filter_variables_to_convert(self.reduced_dm, self.output_grammar.names)

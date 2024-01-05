@@ -18,6 +18,7 @@ from sostrades_core.tools.post_processing.post_processing_factory import PostPro
 from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import Study
 from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
 from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for optimization scenario
@@ -287,9 +288,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -316,7 +317,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4,
+            msg="Wrong objective value")
         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
         assert_array_almost_equal(
             exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
@@ -366,9 +368,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -396,10 +398,12 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4,
+            msg="Wrong objective value")
         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
         assert_array_almost_equal(
-            exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4, err_msg="Wrongoptimal x solution")
+            exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
+            err_msg="Wrongoptimal x solution")
 
     def test_05b_optim_scenario_execution_disciplinaryopt_analyticgrad(self):
         print("\n Test 5 : Sellar optim solution check with DisciplinaryOpt formulation  with user defined gradients")
@@ -445,9 +449,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -475,10 +479,12 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4, msg="Wrong objective value")
+            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4,
+            msg="Wrong objective value")
         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
         assert_array_almost_equal(
-            exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4, err_msg="Wrongoptimal x solution")
+            exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
+            err_msg="Wrongoptimal x solution")
 
     def _test_06_optim_scenario_execution_fd_parallel(self):
         if os.name == 'nt':
@@ -531,11 +537,11 @@ class TestSoSOptimScenario(unittest.TestCase):
             local_dv = 10.
             values_dict = {}
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([
-                                                                             1.])
+                1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                               1.])
+                1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                               1.])
+                1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
                 1., 1.])
             values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -563,10 +569,12 @@ class TestSoSOptimScenario(unittest.TestCase):
             # check optimal x and f
             sellar_obj_opt = 3.18339 + local_dv
             self.assertAlmostEqual(
-                sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4, msg="Wrong objective value")
+                sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4,
+                msg="Wrong objective value")
             exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
             assert_array_almost_equal(
-                exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4, err_msg="Wrong optimal x solution")
+                exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
+                err_msg="Wrong optimal x solution")
 
     def test_07_test_options(self):
         print("\n Test 07 : Sellar optim solution check options")
@@ -684,9 +692,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           2.])
+            2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           2.])
+            2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             2., 2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.tolerance'] = 1e-16
@@ -704,7 +712,8 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # Check that the jacobian has not been executed
         self.assertEqual(
-            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.jac, None)
+            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.jac,
+            None)
         # Exec_eng with only the coupling
         exec_eng2 = ExecutionEngine(self.study_name)
         factory = exec_eng2.factory
@@ -726,7 +735,7 @@ class TestSoSOptimScenario(unittest.TestCase):
             2., 2.])
 
         values_dict[f'{self.ns}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        values_dict[f'{self.ns}.{self.c_name}.sub_mda_class'] = 'MDANewtonRaphson'
+        values_dict[f'{self.ns}.{self.c_name}.inner_mda_name'] = 'MDANewtonRaphson'
         values_dict[f'{self.ns}.{self.c_name}.tolerance'] = 1e-16
 
         exec_eng2.load_study_from_input_dict(values_dict)
@@ -784,12 +793,12 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Sellar inputs
         local_dv = 10.
         values_dict = {}
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.sub_mda_class'] = 'MDANewtonRaphson'
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.inner_mda_name'] = 'MDANewtonRaphson'
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           2.])
+            2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           2.])
+            2.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             2., 2.])
 
@@ -939,9 +948,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1027,9 +1036,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1050,29 +1059,29 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.prepare_execution()
         res = exec_eng.execute()
 
-#=========================================================================
-#     def _test_14_optim_sellar_idf_process(self):
-#
-#         exec_eng = ExecutionEngine(self.study_name)
-#         builder_process = exec_eng.factory.get_builder_from_process(
-#             'sostrades_core.sos_processes.test', 'test_sellar_opt_idf')
-#
-#         exec_eng.factory.set_builders_to_coupling_builder(builder_process)
-#
-#         exec_eng.configure()
-#
-#         study_dremio = study_sellar_idf()
-#         study_dremio.study_name = self.study_name
-#         dict_values_list = study_dremio.setup_usecase()
-#
-#         dict_values = {}
-#         for dict_val in dict_values_list:
-#             dict_values.update(dict_val)
-#
-#         exec_eng.load_study_from_input_dict(dict_values)
-#
-#         exec_eng.execute()
-#=========================================================================
+    # =========================================================================
+    #     def _test_14_optim_sellar_idf_process(self):
+    #
+    #         exec_eng = ExecutionEngine(self.study_name)
+    #         builder_process = exec_eng.factory.get_builder_from_process(
+    #             'sostrades_core.sos_processes.test', 'test_sellar_opt_idf')
+    #
+    #         exec_eng.factory.set_builders_to_coupling_builder(builder_process)
+    #
+    #         exec_eng.configure()
+    #
+    #         study_dremio = study_sellar_idf()
+    #         study_dremio.study_name = self.study_name
+    #         dict_values_list = study_dremio.setup_usecase()
+    #
+    #         dict_values = {}
+    #         for dict_val in dict_values_list:
+    #             dict_values.update(dict_val)
+    #
+    #         exec_eng.load_study_from_input_dict(dict_values)
+    #
+    #         exec_eng.execute()
+    # =========================================================================
 
     def test_16_test_post_run(self):
         print("\n Test 16 : Sellar optim check post run exception")
@@ -1118,9 +1127,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1162,9 +1171,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1182,10 +1191,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert x_first_execution == x_nominal_execution
         assert_array_equal(z_first_execution, z_nominal_execution)
 
-
-
     def _test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
-        print("\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")
+        print(
+            "\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -1230,9 +1238,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1300,9 +1308,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1344,9 +1352,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict = {}
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
-                                                                           1.])
+            1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
@@ -1369,7 +1377,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.assertIn("Design variables", filters[0].filter_values)
 
         for graph in graph_list:
-            #graph.to_plotly().show()
+            # graph.to_plotly().show()
             pass
 
     def test_18_optim_scenario_optim_algo_projected_gradient_func_manager(self):
@@ -1402,8 +1410,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         filters = proxy_optim.get_chart_filter_list()
         graph_list = proxy_optim.get_post_processing_list(filters)
         for graph in graph_list:
-            #graph.to_plotly().show()
+            # graph.to_plotly().show()
             pass
+
 
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()

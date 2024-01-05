@@ -26,10 +26,12 @@ from pandas import DataFrame
 from numpy import ndarray, floating
 from scipy.sparse.lil import lil_matrix
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+
 
 class SoSMDODisciplineException(Exception):
     pass
@@ -53,11 +55,11 @@ class SoSMDODiscipline(MDODiscipline):
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
     DEBUG_MODE = 'debug_mode'
     LINEARIZATION_MODE = 'linearization_mode'
-    NUM_DESC_IN = {LINEARIZATION_MODE,'cache_type','cache_file_path','debug_mode'}
+    NUM_DESC_IN = {LINEARIZATION_MODE, 'cache_type', 'cache_file_path', 'debug_mode'}
 
     def __init__(self,
-                 full_name :str, grammar_type: str, cache_type: str,
-                 cache_file_path: str, sos_wrapp: SoSWrapp, reduced_dm: dict, logger:logging.Logger):
+                 full_name: str, grammar_type: str, cache_type: str,
+                 cache_file_path: str, sos_wrapp: SoSWrapp, reduced_dm: dict, logger: logging.Logger):
         '''
         Constructor
 
@@ -72,10 +74,12 @@ class SoSMDODiscipline(MDODiscipline):
         # self.disciplines = [] # TODO: remove and leave in driver
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
+        self.check_linearize_data_changes = False
         self.input_full_name_map = None
         self.output_full_name_map = None
         self.logger = logger
-        super().__init__(name=full_name, grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path)
+        super().__init__(name=full_name, grammar_type=grammar_type, cache_type=cache_type,
+                         cache_file_path=cache_file_path)
         self.is_sos_coupling = False
 
     def _run(self):
@@ -84,15 +88,15 @@ class SoSMDODiscipline(MDODiscipline):
         """
         # TODO: [discuss] is this to be done at the prepare execution? (with set_wrapper_attributes)?
         # send local data to the wrapper for i/o
-        # self.sos_wrapp.local_data = self.local_data
-        # self.sos_wrapp.input_data_names = self.get_input_data_names()
-        # self.sos_wrapp.output_data_names = self.get_output_data_names()
+        self.sos_wrapp.local_data = self.local_data
+        self.sos_wrapp.input_data_names = self.get_input_data_names()
+        self.sos_wrapp.output_data_names = self.get_output_data_names()
         # self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
 
         # debug mode: input change
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
-                self.local_data).items() if key in self.input_grammar.data_names}
+                self._local_data).items() if key in self.input_grammar.data_names}
 
         # SoSWrapp run
         local_data = self.sos_wrapp._run()
@@ -104,14 +108,14 @@ class SoSMDODiscipline(MDODiscipline):
 
         # debug modes
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
-            self._check_nan_in_data(self.local_data)
+            self._check_nan_in_data(self._local_data)
 
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['linearize_data_change']:
-            self.check_linearize_data_changes=True
+            self.check_linearize_data_changes = True
 
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
-                self.local_data).items() if key in self.input_grammar.data_names}
+                self._local_data).items() if key in self.input_grammar.data_names}
             output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
                                                                 disc_inputs_after_execution,
                                                                 'Discipline inputs integrity through run',
@@ -131,24 +135,24 @@ class SoSMDODiscipline(MDODiscipline):
         '''
 
         try:
-            self.local_data = super().execute(input_data)
+            self._local_data = super().execute(input_data)
         except Exception as error:
             # Update data manager status (status 'FAILED' is not propagate correctly due to exception
             # so we have to force data manager status update in this case
-            self.status = self.STATUS_FAILED
+            self.status = self.ExecutionStatus.FAILED
             raise error
-        return self.local_data
+        return self._local_data
 
-    def linearize(self, input_data=None, force_all=False, force_no_exec=False,
+    def linearize(self, input_data=None, force_all=False, execute=True,
                   exec_before_linearize=True):
         """overloads GEMS linearize function
         """
 
-        self.default_inputs = self._default_inputs
-        if input_data is not None:
-            self.default_inputs.update(input_data)
+        # self.default_inputs = self._default_inputs
+        # if input_data is not None:
+        #     self.default_inputs.update(input_data)
 
-        if self.linearization_mode == self.COMPLEX_STEP:
+        if self.linearization_mode == self.LinearizationMode.COMPLEX_STEP:
             # is complex_step, switch type of inputs variables
             # perturbed to complex
             inputs, _ = self._retreive_diff_inouts(force_all)
@@ -159,19 +163,19 @@ class SoSMDODiscipline(MDODiscipline):
             pass
 
         # need execution before the linearize
-        if not force_no_exec and exec_before_linearize:
+        if execute and exec_before_linearize:
             self.reset_statuses_for_run()
             self.exec_for_lin = True
             self.execute(self.default_inputs)
             self.exec_for_lin = False
-            force_no_exec = True
+            execute = False
             need_execution_after_lin = False
 
         # need execution but after linearize, in the NR GEMSEO case an
         # execution is done bfore the while loop which udates the local_data of
         # each discipline
-        elif not force_no_exec and not exec_before_linearize:
-            force_no_exec = True
+        elif execute and not exec_before_linearize:
+            execute = False
             need_execution_after_lin = True
 
         # no need of any execution
@@ -180,20 +184,21 @@ class SoSMDODiscipline(MDODiscipline):
             # maybe no exec before the first linearize, GEMSEO needs a
             # local_data with inputs and outputs for the jacobian computation
             # if the local_data is empty
-            if self.local_data == {}:
+            if self._local_data == {}:
                 own_data = {
-                    k: v for k, v in self.default_inputs.items() if self.is_input_existing(k) or self.is_output_existing(k)}
-                self.local_data = own_data
+                    k: v for k, v in self.default_inputs.items() if
+                    self.is_input_existing(k) or self.is_output_existing(k)}
+                self._local_data = own_data
 
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
                 self.default_inputs).items() if key in self.input_grammar.data_names}
 
         # Set STATUS to LINEARIZE for GUI visualization
-        self.status = self.STATUS_LINEARIZE
+        self.status = self.ExecutionStatus.LINEARIZE
         result = MDODiscipline.linearize(
-            self, self.default_inputs, force_all, force_no_exec)
-        self.status = self.STATUS_DONE
+            self, self.default_inputs, force_all, execute)
+        self.status = self.ExecutionStatus.DONE
 
         self._check_nan_in_data(result)
         if self.check_linearize_data_changes and not self.is_sos_coupling:
@@ -213,7 +218,7 @@ class SoSMDODiscipline(MDODiscipline):
 
         return result
 
-    def check_jacobian(self, input_data=None, derr_approx=MDODiscipline.FINITE_DIFFERENCES,
+    def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
                        step=1e-7, threshold=1e-8, linearization_mode='auto',
                        inputs=None, outputs=None, parallel=False,
                        n_processes=MDODiscipline.N_CPUS,
@@ -230,7 +235,7 @@ class SoSMDODiscipline(MDODiscipline):
         # however if an execute was done, we do not want to restart the model
         # and potentially loose informations to compute gradients (some
         # gradients are computed with the model)
-        if self.status != self.STATUS_DONE:
+        if self.status != self.ExecutionStatus.DONE:
             self.init_execution()
 
         # if dump_jac_path is provided, we trigger GEMSEO dump
@@ -377,10 +382,10 @@ class SoSMDODiscipline(MDODiscipline):
             List[string] The names of the input variables.
         """
         if not filtered_inputs:
-            return self.input_grammar.get_data_names()
+            return self.input_grammar.names
         else:
-            return filter_variables_to_convert(self.reduced_dm, self.input_grammar.get_data_names(),
-                                                    logger=self.logger)
+            return filter_variables_to_convert(self.reduced_dm, self.input_grammar.names,
+                                               logger=self.logger)
 
     def get_output_data_names(self, filtered_outputs=False):  # type: (...) -> List[str]
         """
@@ -393,9 +398,9 @@ class SoSMDODiscipline(MDODiscipline):
             List[string] The names of the output variables.
         """
         if not filtered_outputs:
-            return self.output_grammar.get_data_names()
+            return self.output_grammar.names
         else:
-            return filter_variables_to_convert(self.reduced_dm, self.output_grammar.get_data_names())
+            return filter_variables_to_convert(self.reduced_dm, self.output_grammar.names)
 
     def get_attributes_to_serialize(self):  # pylint: disable=R0201
         """
@@ -425,8 +430,8 @@ class SoSMDODiscipline(MDODiscipline):
         if input_column is not None or output_column is not None:
             if len(inputs) == 1 and len(outputs) == 1:
 
-                if hasattr(self, 'disciplines') and self.disciplines is not None:
-                    for discipline in self.disciplines:
+                if hasattr(self, '_disciplines') and self._disciplines is not None:
+                    for discipline in self._disciplines:
                         self.sos_wrapp.jac_boundaries.update(
                             discipline.jac_boundaries)
 
@@ -448,14 +453,18 @@ class SoSMDODiscipline(MDODiscipline):
 
         return indices
 
-    @MDODiscipline.local_data.setter
-    def local_data(
-            self, data  # type: MutableMapping[str, Any]
-    ):  # type: (...) -> None
-        super(SoSMDODiscipline, type(self)).local_data.fset(self, data)
-        self.sos_wrapp.local_data = data
-        self.sos_wrapp.input_data_names = self.get_input_data_names()
-        self.sos_wrapp.output_data_names = self.get_output_data_names()
+    # TODO DO NOT WORK ANYMORE
+    # @MDODiscipline._local_data.setter
+    # def _local_data(
+    #         self, data  # type: MutableMapping[str, Any]
+    # ):  # type: (...) -> None
+    #     super(SoSMDODiscipline, type(self)).local_data.fset(self, data)
+    #     self.sos_wrapp.local_data = data
+    #     self.sos_wrapp.input_data_names = self.get_input_data_names()
+    #     self.sos_wrapp.output_data_names = self.get_output_data_names()
+
+    def __set_local_data(self, data):
+        self._local_data = data
 
     # ----------------------------------------------------
     # ----------------------------------------------------
@@ -534,7 +543,7 @@ class SoSMDODiscipline(MDODiscipline):
         Return:
             output_error (dict): dict with mismatches spotted in comparison
         """
-        from gemseo.utils.compare_data_manager_tooling import compare_dict
+        from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 
         dict_error = {}
         compare_dict(left_dict, right_dict, '', dict_error)
@@ -555,7 +564,7 @@ class SoSMDODiscipline(MDODiscipline):
         Method to display the minimum and maximum values among a discipline's couplings
         '''
         min_coupling_dict, max_coupling_dict = {}, {}
-        for key, value in self.local_data.items():
+        for key, value in self._local_data.items():
             is_coupling = self.reduced_dm[key]['coupling']
             if is_coupling:
                 min_coupling_dict[key] = min(abs(value))

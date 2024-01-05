@@ -132,7 +132,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
             input_data (dict): full names and reference values for the subprocess inputs
         """
         input_data = {}
-        input_data_names = disc.input_grammar.get_data_names()
+        input_data_names = disc.input_grammar.names
         if len(input_data_names) > 0:
             input_data = self.get_sosdisc_inputs(
                 keys=input_data_names, in_dict=True, full_name_keys=True)

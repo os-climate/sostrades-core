@@ -17,6 +17,7 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 from copy import deepcopy
 import logging
+
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
@@ -26,7 +27,6 @@ from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDA
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.sequential_mda import GSNewtonMDA
 from gemseo.mda.sequential_mda import MDASequential
-
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 
@@ -84,14 +84,14 @@ class GSorNewtonMDA(MDASequential):
                                    name=None, grammar_type=grammar_type)
         mda_gs.tolerance = tolerance
 
-        mda_newton = GSNewtonMDA(disciplines,  max_mda_iter=max_mda_iter,
+        mda_newton = GSNewtonMDA(disciplines, max_mda_iter=max_mda_iter,
                                  name=None, grammar_type=grammar_type,
                                  linear_solver=linear_solver,
                                  linear_solver_options=linear_solver_options,
                                  tolerance_gs=tolerance_gs,
                                  use_lu_fact=use_lu_fact, tolerance=tolerance,
                                  relax_factor=relax_factor,
-                                 ** newton_mda_options)
+                                 **newton_mda_options)
 
         sequence = [mda_gs, mda_newton]
         super(GSorNewtonMDA,
@@ -117,17 +117,17 @@ class GSorNewtonMDA(MDASequential):
         try:
             mda_i = self.mda_sequence[1]
             mda_i.reset_statuses_for_run()
-            dm_values = deepcopy(self.disciplines[0].dm.get_data_dict_values())
+            dm_values = deepcopy(self._disciplines[0].dm.get_data_dict_values())
             self.local_data = mda_i.execute(self.local_data)
         except:
             LOGGER.warning(
                 'The GSNewtonMDA has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
             mda_i.reset_statuses_for_run()
-            dm = self.disciplines[0].ee.dm
+            dm = self._disciplines[0].ee.dm
             # set values directrly in dm to avoid reconfigure of disciplines
             dm.set_values_from_dict(dm_values)
-            # self.disciplines[0].ee.load_study_from_input_dict(dm_values)
+            # self._disciplines[0].ee.load_study_from_input_dict(dm_values)
             self.local_data = mda_i.execute(self.local_data)
 
         self.residual_history += mda_i.residual_history

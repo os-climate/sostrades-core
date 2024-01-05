@@ -42,10 +42,10 @@ class SimpleCustomDriver(SoSWrapp):
 
     def run(self):
         input_data = {}
-        input_data_names = self.attributes['sub_mdo_disciplines'][0].input_grammar.get_data_names()
+        input_data_names = self.attributes['sub_mdo_disciplines'][0].input_grammar.names
         if len(input_data_names) > 0:
             input_data = self.get_sosdisc_inputs(keys=input_data_names, in_dict=True, full_name_keys=True)
         sub_disc_local_data = self.attributes['sub_mdo_disciplines'][0].execute(input_data)
         output_val = sub_disc_local_data.get(self.get_sosdisc_inputs('output_full_name'))
-        dict_values = {'output_squared': output_val**2}
+        dict_values = {'output_squared': output_val ** 2}
         self.store_sos_outputs_values(dict_values)

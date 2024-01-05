@@ -93,6 +93,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     SECANT_ACCELERATION = "secant"
     M2D_ACCELERATION = "m2d"
     RESIDUALS_HISTORY = "residuals_history"
+    MDA_RESIDUALS_NORM = 'MDA residuals norm'
     # AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
 
     # get list of available linear solvers from LinearSolversFactory
@@ -115,13 +116,13 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     DESC_IN = {
         # NUMERICAL PARAMETERS
-        'sub_mda_class': {ProxyDiscipline.TYPE: 'string',
-                          ProxyDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
-                                                            'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
-                                                            'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential',
-                                                            'GSPureNewtonorGSMDA'],
-                          ProxyDiscipline.DEFAULT: 'MDAJacobi', ProxyDiscipline.NUMERICAL: True,
-                          ProxyDiscipline.STRUCTURING: True},
+        'inner_mda_name': {ProxyDiscipline.TYPE: 'string',
+                           ProxyDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
+                                                             'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
+                                                             'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential',
+                                                             'GSPureNewtonorGSMDA'],
+                           ProxyDiscipline.DEFAULT: 'MDAJacobi', ProxyDiscipline.NUMERICAL: True,
+                           ProxyDiscipline.STRUCTURING: True},
         'max_mda_iter': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 30, ProxyDiscipline.NUMERICAL: True,
                          ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         'n_processes': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 1, ProxyDiscipline.NUMERICAL: True,
@@ -205,6 +206,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     DESC_OUT = {
         RESIDUALS_HISTORY: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'dataframe',
                             ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True},
+        MDA_RESIDUALS_NORM: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'array',
+                             ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True}
     }
 
     eps0 = 1.0e-6
@@ -317,7 +320,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         Set possible values of preconditioner in data manager, according to liner solver MDA/MDO value
         (available preconditioners are different if petsc linear solvers are used)
-        And set default value of max_mda_iter_gs according to sub_mda_class
+        And set default value of max_mda_iter_gs according to inner_mda_name
         '''
         disc_in = self.get_data_in()
         # set possible values of linear solver MDA preconditioner
@@ -360,7 +363,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
             # set default value of max_mda_iter_gs
             if 'max_mda_iter_gs' in disc_in:
-                if self.get_sosdisc_inputs('sub_mda_class') == 'GSorNewtonMDA':
+                if self.get_sosdisc_inputs('inner_mda_name') == 'GSorNewtonMDA':
                     self.update_default_value(
                         'max_mda_iter_gs', self.IO_TYPE_IN, 200)
                 else:
@@ -442,7 +445,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         """
         self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
         self.strong_couplings = filter_variables_to_convert(self.ee.dm.convert_data_dict_with_full_name(),
-                                                            self.coupling_structure.strong_couplings(),
+                                                            self.coupling_structure.strong_couplings,
                                                             write_logs=True, logger=self.logger)
 
     def configure(self):
@@ -664,25 +667,25 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         Get numerical parameters input values for MDAChain init
         '''
         # get input for MDAChain instantiation
-        needed_numerical_param = ['sub_mda_class', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance',
+        needed_numerical_param = ['inner_mda_name', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance',
                                   'use_lu_fact', 'warm_start',
                                   'n_processes']
         num_data = self.get_sosdisc_inputs(
             needed_numerical_param, in_dict=True)
 
-        if num_data['sub_mda_class'] == 'MDAJacobi':
+        if num_data['inner_mda_name'] == 'MDAJacobi':
             num_data['acceleration'] = copy(
                 self.get_sosdisc_inputs('acceleration'))
-        if num_data['sub_mda_class'] == 'MDAGaussSeidel':
+        if num_data['inner_mda_name'] == 'MDAGaussSeidel':
             num_data['warm_start_threshold'] = copy(self.get_sosdisc_inputs(
                 'warm_start_threshold'))
-        if num_data['sub_mda_class'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
+        if num_data['inner_mda_name'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
             #             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
             #                 'max_mda_iter_gs'))
             num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs(
                 'tolerance_gs'))
-        if num_data['sub_mda_class'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA',
-                                         'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
+        if num_data['inner_mda_name'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSNewtonMDA',
+                                          'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
             num_data['relax_factor'] = copy(
                 self.get_sosdisc_inputs('relax_factor'))
 
@@ -907,10 +910,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             return series
 
         if select_all or 'Residuals History' in chart_list:
-            sub_mda_class = self.get_sosdisc_inputs('sub_mda_class')
-            if post_processing_mda_data is not None and sub_mda_class in post_processing_mda_data.columns:
+            inner_mda_name = self.get_sosdisc_inputs('inner_mda_name')
+            if post_processing_mda_data is not None and inner_mda_name in post_processing_mda_data.columns:
                 residuals_through_iterations = np.asarray(
-                    list(map(lambda x: [x[0]], post_processing_mda_data[sub_mda_class])))
+                    list(map(lambda x: [x[0]], post_processing_mda_data[inner_mda_name])))
                 iterations = list(range(len(residuals_through_iterations)))
                 min_y, max_y = inf, - inf
                 min_value, max_value = residuals_through_iterations.min(), residuals_through_iterations.max()

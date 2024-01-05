@@ -578,7 +578,7 @@ class SoSWrapp(object):
 
         return expected_shape
 
-    #TODO: see if should generalize the get_boundary_jac method with *args, **kwargs
+    # TODO: see if should generalize the get_boundary_jac method with *args, **kwargs
     def get_boundary_jac_for_design_var_columns(self, ykey, column, io_type, xkey, dataframefillmethod):
         '''
         particular case of the design_var discipline where the design var dataframe has been filled following the

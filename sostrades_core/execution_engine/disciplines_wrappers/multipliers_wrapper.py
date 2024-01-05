@@ -27,7 +27,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8

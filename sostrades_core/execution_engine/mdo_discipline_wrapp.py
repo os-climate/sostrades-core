@@ -150,14 +150,12 @@ class MDODisciplineWrapp(object):
         input_names = proxy.get_input_data_names()
         grammar = self.mdo_discipline.input_grammar
         grammar.clear()
-        grammar.initialize_from_base_dict(
-            {input: None for input in input_names})
+        grammar.update_from_names(input_names)
 
         output_names = proxy.get_output_data_names()
         grammar = self.mdo_discipline.output_grammar
         grammar.clear()
-        grammar.initialize_from_base_dict(
-            {output: None for output in output_names})
+        grammar.update_from_names(output_names)
 
     def update_default_from_dict(self, input_dict, check_input=True):
         '''
@@ -170,7 +168,7 @@ class MDODisciplineWrapp(object):
         '''
         if input_dict is not None:
             to_update = [(key, value) for (key, value) in input_dict.items()
-                         if not check_input or key in self.mdo_discipline.input_grammar.get_data_names()]
+                         if not check_input or key in self.mdo_discipline.input_grammar.names]
             self.mdo_discipline._default_inputs.update(to_update)
 
     def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None,
@@ -263,7 +261,7 @@ class MDODisciplineWrapp(object):
         for key, value in proxy.get_data_in().items():
             if value['default'] is not None:
                 full_key = proxy.get_var_full_name(key, proxy.get_data_in())
-                self.mdo_discipline._default_inputs.update(
+                self.mdo_discipline.default_inputs.update(
                     {full_key: value['default']})
 
     def __update_gemseo_grammar(self, proxy, mdachain):
@@ -285,11 +283,9 @@ class MDODisciplineWrapp(object):
 
         # i/o grammars update with SoSTrades i/o
         for names, grammar in zip([missing_inputs, missing_outputs], [mdachain.input_grammar, mdachain.output_grammar]):
-            # fake data dict with NoneType
-            data_dict = dict.fromkeys(names, None)
             # This works since (for now) this method (for SimpleGrammar only)
             # does not clear the existing grammar of MDAChain
-            grammar.initialize_from_base_dict(data_dict)
+            grammar.update_from_names(names)
 
     def execute(self, input_data):
         """

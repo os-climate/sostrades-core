@@ -25,7 +25,8 @@ from sostrades_core.sos_wrapping.test_discs.disc1_all_types import Disc1
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
+from gemseo.core.discipline import MDODiscipline
 
 
 class TestProxyDiscipline(unittest.TestCase):
@@ -423,7 +424,7 @@ class TestProxyDiscipline(unittest.TestCase):
         local_data = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.execute(values_dict)
         ref_local_data = {'Test.x': 1.0, 'Test.Disc1.a': 1.0, 'Test.Disc1.b': 2.0,
                           'Test.Disc1.linearization_mode': 'auto',
-                          'Test.Disc1.cache_type': 'None', 'Test.Disc1.cache_file_path': '',
+                          'Test.Disc1.cache_type': MDODiscipline.CacheType.NONE, 'Test.Disc1.cache_file_path': '',
                           'Test.Disc1.debug_mode': '',
                           'Test.Disc1.indicator': 2.0, 'Test.y': 3.0}
         print(local_data)

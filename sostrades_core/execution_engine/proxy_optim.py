@@ -25,16 +25,14 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 from copy import deepcopy
 from multiprocessing import cpu_count
-
-import pandas as pd
 from numpy import array, ndarray, delete, inf
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.scenario import Scenario
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
 from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
@@ -138,10 +136,10 @@ class ProxyOptim(ProxyDriverEvaluator):
     COMPLEX_STEP = "complex_step"
     APPROX_MODES = [FINITE_DIFFERENCES, COMPLEX_STEP]
     AVAILABLE_MODES = (
-        JacobianAssembly.AUTO_MODE,
-        JacobianAssembly.DIRECT_MODE,
-        JacobianAssembly.ADJOINT_MODE,
-        JacobianAssembly.REVERSE_MODE,
+        JacobianAssembly.DerivationMode.AUTO,
+        JacobianAssembly.DerivationMode.DIRECT,
+        JacobianAssembly.DerivationMode.ADJOINT,
+        JacobianAssembly.DerivationMode.REVERSE,
         FINITE_DIFFERENCES,
         COMPLEX_STEP,
     )
@@ -223,9 +221,11 @@ class ProxyOptim(ProxyDriverEvaluator):
                'formulation': {'type': 'string', 'structuring': True},
                'maximize_objective': {'type': 'bool', 'structuring': True, 'default': False},
                'objective_name': {'type': 'string', 'structuring': True},
-               'differentiation_method': {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
-                                          'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
-                                                              Scenario.COMPLEX_STEP],
+               'differentiation_method': {'type': 'string',
+                                          'default': Scenario.DifferentiationMethod.FINITE_DIFFERENCES,
+                                          'possible_values': [USER_GRAD,
+                                                              Scenario.DifferentiationMethod.FINITE_DIFFERENCES,
+                                                              Scenario.DifferentiationMethod.COMPLEX_STEP],
                                           'structuring': True},
                'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6},
                'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
@@ -805,14 +805,14 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         for ineq, is_pos in zip(ineq_full_names, is_positive):
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
-                ineq, MDOFunction.TYPE_INEQ, ineq, value=None, positive=is_pos)
+                ineq, MDOFunction.ConstraintType.INEQ, ineq, value=None, positive=is_pos)
 
         # -- equality constraints
         eq_names = self.get_sosdisc_inputs(self.EQ_CONSTRAINTS)
         eq_full_names = self._update_names(eq_names)
         for eq in eq_full_names:
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
-                self, eq, MDOFunction.TYPE_EQ, eq, value=None,
+                self, eq, MDOFunction.ConstraintType.EQ, eq, value=None,
                 positive=False)
 
     def read_from_dict(self, dp_dict):
@@ -922,7 +922,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         if hasattr(self, "disciplines"):
             msg = self.__class__.__name__ + ":\nDisciplines: "
             disc_names = [disc.name
-                          for disc in self.disciplines]  # pylint: disable=E1101
+                          for disc in self._disciplines]  # pylint: disable=E1101
             msg += " ".join(disc_names)
             msg += "\nMDOFormulation: "  # We keep MDO here has is done in gemseo
             msg += self.formulation.__class__.__name__

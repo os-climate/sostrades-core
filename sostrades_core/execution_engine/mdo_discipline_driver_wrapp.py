@@ -86,4 +86,4 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
         sub_mdo_disciplines = self.get_sub_mdo_disciplines(proxy)
 
         if self.mdo_discipline is not None:
-            self.mdo_discipline.disciplines = sub_mdo_disciplines
+            self.mdo_discipline._disciplines = sub_mdo_disciplines

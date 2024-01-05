@@ -16,7 +16,7 @@ limitations under the License.
 '''
 import logging
 
-from gemseo.core.parallel_execution import DiscParallelExecution,\
+from gemseo.core.parallel_execution import DiscParallelExecution, \
     DiscParallelLinearization
 import multiprocessing as mp
 
@@ -48,10 +48,9 @@ class SoSDiscParallelExecution(DiscParallelExecution):
             over inputs_list
         """
         for disc, output in zip(self.worker_list, ordered_outputs):
-
             # Update discipline local data
             local_data = output[0]
-            #self.local_data.update(local_data)
+            # self.local_data.update(local_data)
             # Update values and metadata in DM
             # TODO: we should do a dm merge?
             # update values
@@ -101,8 +100,8 @@ class SoSDiscParallelExecution(DiscParallelExecution):
 
         self.logger.info(
             f"Parallel execution of {len(self.worker_list)} disciplines with {self.n_processes} processes")
-#         for w in self.worker_list:
-#             self.logger.info("\t " + w.get_disc_full_name())
+        #         for w in self.worker_list:
+        #             self.logger.info("\t " + w.get_disc_full_name())
 
         return DiscParallelExecution.execute(self, input_data_list, exec_callback,
                                              task_submitted_callback)
@@ -147,7 +146,7 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
             update_dm_with_worker_results(dm_data, local_data, disc)
 
     def _run_task_by_index(
-        self, task_index  # type: int
+            self, task_index  # type: int
     ):  # type: (...) -> Tuple[int, Any]
         """Run a task from an index of discipline and the input local data.
 
@@ -168,7 +167,8 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
             worker = self.worker_list[0]
 
         # return the worker index to order the outputs properly
-        output = self._run_task(worker, input_loc, force_no_exec=self.force_no_exec, exec_before_linearize=self.exec_before_linearize
+        output = self._run_task(worker, input_loc, force_no_exec=self.force_no_exec,
+                                exec_before_linearize=self.exec_before_linearize
                                 )
         return task_index, output
 
@@ -207,15 +207,14 @@ class SoSDiscParallelLinearization(DiscParallelLinearization):
 
         self.logger.info(
             f"Parallel linearize of {len(self.worker_list)} disciplines with {self.n_processes} processes")
-#         for w in self.worker_list:
-#             self.logger.info("\t " + w.get_disc_full_name())
+        #         for w in self.worker_list:
+        #             self.logger.info("\t " + w.get_disc_full_name())
 
         return DiscParallelLinearization.execute(self, input_data_list, exec_callback,
                                                  task_submitted_callback)
 
 
 def get_data_from_worker(worker):
-
     sub_disc = worker.get_sub_disciplines()
     all_discs = sub_disc + [worker]
     dm_data = worker.ee.dm.get_io_data_of_disciplines(all_discs)
@@ -231,13 +230,13 @@ def update_dm_with_worker_results(dm_data, local_data, disc):
     for d in all_discs:
         dm = d.ee.dm
         get_data = dm.get_data
-        #- update data out
+        # - update data out
         data_out = d.get_data_out()
         out_f_keys = [d.get_var_full_name(
             k, data_out) for k in data_out.keys()]
         d_values = {get_data(k, VAR_NAME): dm_values[k] for k in out_f_keys}
         d.store_sos_outputs_values(d_values, update_dm=True)
-        #- update data in
+        # - update data in
         data_in = d.get_data_in()
         in_f_keys = [d.get_var_full_name(
             k, data_in) for k in data_in.keys()]
@@ -246,13 +245,13 @@ def update_dm_with_worker_results(dm_data, local_data, disc):
                         dm_values[full_k], check_value=False)
         # TODO: won't work in case of var names updated by scatterDisciplines since
         # the link between data_i/o and DM is broken
-        #d_values = {get_data(k, VAR_NAME): dm_values[k] for k in in_f_keys}
-        #d._update_with_values(data_in, d_values)
-        #- update GEMS i/o values
+        # d_values = {get_data(k, VAR_NAME): dm_values[k] for k in in_f_keys}
+        # d._update_with_values(data_in, d_values)
+        # - update GEMS i/o values
         loc_data = {k: v for k, v in local_data.items(
         ) if k in d.get_input_output_data_names()}
         d.local_data.update(loc_data)
-        #disc.local_data.update(d.local_data)
+        # disc.local_data.update(d.local_data)
 
     # update metadata
     dm_metadata = dm_data[TYPE_METADATA]

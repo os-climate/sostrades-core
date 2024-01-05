@@ -121,7 +121,7 @@ class TestStructuringInputs(unittest.TestCase):
         self.assertFalse(self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Disc1')[0].check_structuring_variables_changes())
         self.assertListEqual(self.exec_eng.dm.get_disciplines_with_name('MyCase.Disc1')[
-            0]._structuring_variables['AC_list'], ['AC1', 'AC2'])
+                                 0]._structuring_variables['AC_list'], ['AC1', 'AC2'])
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
         print(self.exec_eng.display_treeview_nodes())
@@ -138,7 +138,7 @@ class TestStructuringInputs(unittest.TestCase):
         self.assertFalse(self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Disc1')[0].check_structuring_variables_changes())
         self.assertListEqual(self.exec_eng.dm.get_disciplines_with_name('MyCase.Disc1')[
-                             0]._structuring_variables['AC_list'], ['AC1', 'AC3', 'AC4'])
+                                 0]._structuring_variables['AC_list'], ['AC1', 'AC3', 'AC4'])
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
         print(self.exec_eng.display_treeview_nodes())
@@ -162,7 +162,7 @@ class TestStructuringInputs(unittest.TestCase):
         self.assertFalse(self.exec_eng.dm.get_disciplines_with_name(
             'MyCase.Disc1')[0].check_structuring_variables_changes())
         self.assertListEqual(self.exec_eng.dm.get_disciplines_with_name('MyCase.Disc1')[
-                             0]._structuring_variables['AC_list'], ['AC3', 'AC4'])
+                                 0]._structuring_variables['AC_list'], ['AC3', 'AC4'])
 
         disc_to_conf = self.exec_eng.root_process.get_disciplines_to_configure()
         self.assertListEqual(disc_to_conf, [])
@@ -170,7 +170,8 @@ class TestStructuringInputs(unittest.TestCase):
 
         self.exec_eng.execute()
 
-#=========================================================================
+
+# =========================================================================
 #     def _test_02_configure_core_process(self):
 #
 #         builder_process = self.exec_eng.factory.get_builder_from_process(
@@ -245,9 +246,9 @@ class TestStructuringInputs(unittest.TestCase):
 #         # With new compare_dict method: 0.0
 #
 #         self.exec_eng.execute()
-#=========================================================================
+# =========================================================================
 
-#=========================================================================
+# =========================================================================
 #     def _test_03_study_instanciation_core_process(self):
 #
 #         t0 = time()
@@ -269,9 +270,9 @@ class TestStructuringInputs(unittest.TestCase):
 #         # Before: 0.07483434677124023
 #         # After: 0.03124070167541504
 #         # With new compare_dict method: 0.0469052791595459
-#=========================================================================
+# =========================================================================
 
-#=========================================================================
+# =========================================================================
 #     def _test_04_SoSCoupling_structuring_variables(self):
 #
 #         repo_discopt = 'sostrades_core.sos_processes.test'
@@ -303,7 +304,7 @@ class TestStructuringInputs(unittest.TestCase):
 #             'max_iter': max_iter, 'tol': linear_solver_tol}
 #         dict_values = {'MyCase.SellarOptimScenario.SellarCoupling.tolerance': mda_tolerance,
 #                        'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options': linear_solver_MDA_options,
-#                        'MyCase.SellarOptimScenario.SellarCoupling.sub_mda_class': "MDANewtonRaphson"}
+#                        'MyCase.SellarOptimScenario.SellarCoupling.inner_mda_name': "MDANewtonRaphson"}
 #
 #         self.exec_eng.load_study_from_input_dict(dict_values)
 #
@@ -347,7 +348,7 @@ class TestStructuringInputs(unittest.TestCase):
 #         # options)
 #         mda_tolerance = 1e-09
 #         dict_values = {'MyCase.SellarOptimScenario.SellarCoupling.tolerance': mda_tolerance,
-#                        'MyCase.SellarOptimScenario.SellarCoupling.sub_mda_class': "MDAGaussSeidel",
+#                        'MyCase.SellarOptimScenario.SellarCoupling.inner_mda_name': "MDAGaussSeidel",
 #                        'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options': ProxyCoupling.DEFAULT_LINEAR_SOLVER_OPTIONS
 #                        }
 #         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -380,9 +381,9 @@ class TestStructuringInputs(unittest.TestCase):
 #         assert linear_solver_tolerance_gemseo == 1.0e-8  # GEMSEO default value
 #         # provided by SoSTrades
 #         assert linear_solver_options_dm == ProxyCoupling.DEFAULT_LINEAR_SOLVER_OPTIONS
-#=========================================================================
+# =========================================================================
 
-#=========================================================================
+# =========================================================================
 #     def _test_05_SoSCoupling_numerical_inputs(self):
 #
 #         repo_discopt = 'sostrades_core.sos_processes.test'
@@ -394,7 +395,7 @@ class TestStructuringInputs(unittest.TestCase):
 #
 #         self.exec_eng.load_study_from_input_dict({})
 #
-#         coupling_inputs = {'sub_mda_class': {'type': 'string', 'default': 'MDAJacobi', 'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'PureNewtonRaphson',
+#         coupling_inputs = {'inner_mda_name': {'type': 'string', 'default': 'MDAJacobi', 'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson', 'PureNewtonRaphson',
 #                                                                                                            'MDAQuasiNewton', 'GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential', 'GSPureNewtonorGSMDA']},
 #                            'max_mda_iter': {'type': 'int', 'default': 30, 'possible_values': None},
 #                            'n_processes': {'type': 'int', 'default': 1, 'possible_values': None},
@@ -468,7 +469,7 @@ class TestStructuringInputs(unittest.TestCase):
 #         uc_cls = study_sellar_opt()
 #         uc_cls.study_name = 'MyCase'
 #         dict_values = uc_cls.setup_usecase()
-#         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.sub_mda_class'] = 'GSorNewtonMDA'
+#         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.inner_mda_name'] = 'GSorNewtonMDA'
 #         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter'] = 20
 #         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.tolerance'] = 1e-3
 #         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.relax_factor'] = 0.85
@@ -535,11 +536,10 @@ class TestStructuringInputs(unittest.TestCase):
 #         self.assertEqual(coupling_sellar.linear_solver_tolerance, 1e-10)
 #         self.assertEqual(coupling_sellar.linear_solver_options, {
 #                          'max_iter': 600, 'use_ilu_precond': True})
-#=========================================================================
+# =========================================================================
 
 
 if '__main__' == __name__:
-
     cls = TestStructuringInputs()
     cls.setUp()
     cls.test_01_configure_discipline_with_setup_sos_discipline()
