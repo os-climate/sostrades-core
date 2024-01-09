@@ -34,7 +34,21 @@ class SeriesTemplate:
     """ Class that define a series abscissa and ordinate list with a name
     """
 
-    DISPLAY_TYPE_VALUES = ['lines', 'scatter', 'bar']
+    DASH_LINES_DISPLAY = 'dash_lines'
+    DASH_DOT_LINES_DISPLAY = 'dash_dot_lines'
+    LINES_DISPLAY = 'lines'
+    ADD_MARKERS = '+markers'
+    DOT_LINES_DISPLAY = 'dot_lines'
+    SCATTER_DISPLAY = 'scatter'
+    BAR_DISPLAY = 'bar'
+    LINES_DISPLAY_WITH_MARKERS = LINES_DISPLAY + ADD_MARKERS
+    DASH_LINES_DISPLAY_WITH_MARKERS = DASH_LINES_DISPLAY + ADD_MARKERS
+    DASH_DOT_LINES_DISPLAY_WITH_MARKERS = DASH_DOT_LINES_DISPLAY + ADD_MARKERS
+    DOT_LINES_DISPLAY_WITH_MARKERS = DOT_LINES_DISPLAY + ADD_MARKERS
+    DISPLAY_TYPE_VALUES = [LINES_DISPLAY, SCATTER_DISPLAY, BAR_DISPLAY, DASH_LINES_DISPLAY,
+                           DASH_DOT_LINES_DISPLAY, DOT_LINES_DISPLAY, LINES_DISPLAY_WITH_MARKERS,
+                           DASH_LINES_DISPLAY_WITH_MARKERS, DASH_DOT_LINES_DISPLAY_WITH_MARKERS,
+                           DOT_LINES_DISPLAY_WITH_MARKERS]
 
     SERIES_NAME = 'series_name'
     ABSCISSA = 'abscissa'
@@ -42,10 +56,6 @@ class SeriesTemplate:
     DISPLAY_TYPE = 'display_type'
     VISIBLE = 'visible'
     Y_AXIS = 'y_axis'
-
-    LINES_DISPLAY = 'lines'
-    SCATTER_DISPLAY = 'scatter'
-    BAR_DISPLAY = 'bar'
 
     Y_AXIS_PRIMARY = 'y'
     Y_AXIS_SECONDARY = 'y2'
