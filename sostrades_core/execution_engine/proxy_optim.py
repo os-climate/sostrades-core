@@ -474,7 +474,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
                    dspace['value'].tolist()):
                 raise ValueError(
-                    'A design variable must obligatory be an array')
+                    f"A design variable must obligatory be an array {[type(design_variable).__name__ for design_variable in dspace['value'].tolist()]}")
 
             # build design space
             design_space = self.set_design_space()
@@ -507,16 +507,13 @@ class ProxyOptim(ProxyDriverEvaluator):
                 full_dvs.append(full_key)
                 # dspace_dict_updated[full_key] = dspace_df[key]
             else:
-                self.logger.warning(f" missing design variable in dm : {key}")
-        if len(full_dvs) == len(dvs):
-            dspace_dict_updated = dspace_df.copy()
-            dspace_dict_updated[self.VARIABLES] = full_dvs
+                raise Exception(f" The design variable {key} is not in the dm : {key}")
 
-            design_space = self.read_from_dataframe(dspace_dict_updated)
+        dspace_dict_updated = dspace_df.copy()
+        dspace_dict_updated[self.VARIABLES] = full_dvs
 
-        else:
+        design_space = self.read_from_dataframe(dspace_dict_updated)
 
-            design_space = DesignSpace()
         return design_space
 
     def get_full_names(self, names):
