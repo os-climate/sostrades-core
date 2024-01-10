@@ -40,6 +40,7 @@ class UnitTestHandler(Handler):
     def emit(self, record):
         self.msg_list.append(record.msg)
 
+
 class TestGridSearchEval(unittest.TestCase):
     """
     SoSGridSearchEval test class
@@ -53,7 +54,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
         self.repo = 'sostrades_core.sos_processes.test.tests_driver_eval.mono'
-        
+
         self.base_path = 'sostrades_core.sos_wrapping.test_discs'
         self.exec_eng = ExecutionEngine(self.namespace)
 
@@ -70,7 +71,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.exec_eng.logger.addHandler(self.my_handler)
 
     def test_01_grid_search_eval(self):
-        #FIXME: no asserts.. check values?
+        # FIXME: no asserts.. check values?
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
 
@@ -103,7 +104,7 @@ class TestGridSearchEval(unittest.TestCase):
         gather_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.gather_outputs')
         gather_outputs.loc[gather_outputs['full_name'] ==
-                         'Disc1.y', ['selected_output']] = True
+                           'Disc1.y', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
@@ -313,7 +314,7 @@ class TestGridSearchEval(unittest.TestCase):
         gather_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.gather_outputs')
         gather_outputs.loc[gather_outputs['full_name'] ==
-                         'Disc1.y', ['selected_output']] = True
+                           'Disc1.y', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
@@ -350,24 +351,24 @@ class TestGridSearchEval(unittest.TestCase):
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.sample_generator}.design_space')
 
-        yy_dict={'scenario_1':12.0,
-                'scenario_2':25.0,
-                'scenario_3':56.0,
-                'scenario_4':48.0,
-                'scenario_5':19.0,
-                'scenario_6':55.0,
-                'scenario_7':27.0,
-                'scenario_8':32.0,
-                'reference_scenario':45.0,}
+        yy_dict = {'scenario_1': 12.0,
+                   'scenario_2': 25.0,
+                   'scenario_3': 56.0,
+                   'scenario_4': 48.0,
+                   'scenario_5': 19.0,
+                   'scenario_6': 55.0,
+                   'scenario_7': 27.0,
+                   'scenario_8': 32.0,
+                   'reference_scenario': 45.0, }
 
-        new_gsoutputs_dict={'doe_samples_dataframe':doe_disc_samples,
-                            'GridSearch.Disc1.y_dict':yy_dict}
+        new_gsoutputs_dict = {'doe_samples_dataframe': doe_disc_samples,
+                              'GridSearch.Disc1.y_dict': yy_dict}
 
         # grid_search_disc.store_sos_outputs_values(
         #     new_gsoutputs_dict, update_dm=True
         # )
         dspace = pd.DataFrame({
-            'variable': ['Disc1.f',  'Disc1.g', 'Disc1.h'],
+            'variable': ['Disc1.f', 'Disc1.g', 'Disc1.h'],
             'lower_bnd': [5., 20., 1.],
             'upper_bnd': [7., 25., 2.],
             'nb_points': [3, 3, 3],
@@ -388,8 +389,8 @@ class TestGridSearchEval(unittest.TestCase):
         filters = grid_search_disc.get_chart_filter_list()
         graph_list = grid_search_disc.get_post_processing_list(filters)
         for graph in graph_list:
-                pass
-            # graph.to_plotly().show()
+            pass
+        # graph.to_plotly().show()
 
     def test_04_grid_search_status(self):
         """ This tests aims at proving the ability of grid search
@@ -422,7 +423,7 @@ class TestGridSearchEval(unittest.TestCase):
                        '\t|_ Eval',
                        '\t\t|_ Sellar_Problem',
                        '\t\t|_ Sellar_2',
-                       '\t\t|_ Sellar_1',]
+                       '\t\t|_ Sellar_1', ]
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -518,7 +519,8 @@ class TestGridSearchEval(unittest.TestCase):
             f'{self.study_name}.{self.evaluator}.subprocess.Disc1.name': 'A1',
             f'{self.study_name}.{self.evaluator}.subprocess.Disc1.a': 20,
             f'{self.study_name}.{self.evaluator}.subprocess.Disc1.b': 2,
-            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.dd_df': pd.DataFrame({'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.dd_df': pd.DataFrame(
+                {'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
         }
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -538,7 +540,7 @@ class TestGridSearchEval(unittest.TestCase):
         gather_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.gather_outputs')
         gather_outputs.loc[gather_outputs['full_name'] ==
-                         'subprocess.Disc1.val_sum_dict', ['selected_output']] = True
+                           'subprocess.Disc1.val_sum_dict', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
@@ -618,7 +620,8 @@ class TestGridSearchEval(unittest.TestCase):
             # DISC1 INPUTS
             f'{self.study_name}.{self.evaluator}.subprocess.Disc1.name': 'A1',
             f'{self.study_name}.{self.evaluator}.subprocess.Disc1.b': 2,
-            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.dd_df': pd.DataFrame({'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
+            f'{self.study_name}.{self.evaluator}.subprocess.Disc1.dd_df': pd.DataFrame(
+                {'string_val': ['str', 'str2', 'str3'], 'values1': [100., 200., 300.], 'values2': [50., 100., 150.]})
         }
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -636,7 +639,7 @@ class TestGridSearchEval(unittest.TestCase):
         gather_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.gather_outputs')
         gather_outputs.loc[gather_outputs['full_name'] ==
-                         'subprocess.Disc1.val_sum_dict', ['selected_output']] = True
+                           'subprocess.Disc1.val_sum_dict', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
@@ -737,7 +740,7 @@ class TestGridSearchEval(unittest.TestCase):
         gather_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.gather_outputs')
         gather_outputs.loc[gather_outputs['full_name'] ==
-                         'subprocess.Disc1.val_sum_dict2', ['selected_output']] = True
+                           'subprocess.Disc1.val_sum_dict2', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
@@ -791,7 +794,7 @@ class TestGridSearchEval(unittest.TestCase):
         self.assertEqual(result_val2, result__computed_val2)
 
     def test_08_check_gs_with_more_3_than_selected_inputs(self):
-        #FIXME: add asserts ?
+        # FIXME: add asserts ?
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
 
@@ -831,7 +834,7 @@ class TestGridSearchEval(unittest.TestCase):
         gather_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.gather_outputs')
         gather_outputs.loc[gather_outputs['full_name'] ==
-                         'Disc1.y', ['selected_output']] = True
+                           'Disc1.y', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
@@ -875,9 +878,13 @@ class TestGridSearchEval(unittest.TestCase):
         #     #     pass
         #     graph.to_plotly().show()
 
-    def test_10_grid_search_at_configuration_time(self):
+    def _test_10_grid_search_at_configuration_time(self):
         """
         GridSearch sampling at configuration-time with 2 inputs and default design space.
+        TODO : For now grid search with integer is disabled :
+                - Modify the design space build according to integer
+                - overload filter_inputs method in grid search to allow integer
+                - use a astype('int') after the linspace to convert to integer if needed
         """
         sa_builder = self.exec_eng.factory.get_builder_from_process(
             self.repo, self.proc_name)
@@ -895,9 +902,6 @@ class TestGridSearchEval(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(initial_input)
         self.exec_eng.display_treeview_nodes()
 
-        self.exec_eng.dm.get_value(
-            f'{self.study_name}.{self.sample_generator}.eval_inputs')
-
         eval_inputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.sample_generator}.eval_inputs')
         eval_inputs.loc[eval_inputs['full_name'] ==
@@ -908,7 +912,7 @@ class TestGridSearchEval(unittest.TestCase):
         gather_outputs = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.evaluator}.gather_outputs')
         gather_outputs.loc[gather_outputs['full_name'] ==
-                         'Disc1.y', ['selected_output']] = True
+                           'Disc1.y', ['selected_output']] = True
 
         dict_values = {
             # GRID SEARCH INPUTS
