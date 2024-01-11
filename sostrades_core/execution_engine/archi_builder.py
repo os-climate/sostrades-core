@@ -217,83 +217,81 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         """
         Check the activation dataframe to see if possible values and types are respected
         """
-        if self.ACTIVATION_DF in self.get_data_in():
-            activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
-            # chekc if sub architectures are built and activation_df has been
-            # modified
-            if (
-                    activation_df is not None
-                    and not activation_df.equals(
-                self._structuring_variables[self.ACTIVATION_DF]
-            )
-                    and not activation_df.equals(self.default_activation_df)
-                    and activation_df.columns.equals(self.default_activation_df.columns)
-            ):
-                rows_to_delete = []
-                modified_activation_df = deepcopy(activation_df)
-                for (colname, colval) in activation_df.iteritems():
-                    if self.default_df_descriptor[colname][0] == 'string':
-                        # if 'string' type is defined in default_df_descriptor, then
-                        # convert values into string
-                        if not all(activation_df[colname].isnull()):
-                            modified_activation_df[colname] = colval.map(str)
-                        # check if possibles values are defined from
-                        # architecture_df
-                        if not all(self.default_activation_df[colname].isnull()):
-                            # check if values are among possible values
-                            if not all(
-                                    colval.isin(
-                                        self.default_activation_df[colname])
-                            ):
-                                wrong_values = colval.loc[
-                                    ~colval.isin(
-                                        self.default_activation_df[colname])
-                                ]
-                                rows_to_delete.extend(
-                                    wrong_values.index.values.tolist()
-                                )
-                                self.ee.logger.error(
-                                    f'Invalid Value Block Activation Configuration: {wrong_values.values.tolist()} in column {colname} not in *possible values* {self.default_activation_df[colname].values.tolist()}'
-                                )
 
-                    elif self.default_df_descriptor[colname][0] == 'bool':
-                        # if 'bool' type is defined in default_df_descriptor, then
-                        # check if value block is available
-                        if not all(self.default_activation_df[colname]):
-                            for vb in self.activation_columns:
-                                unavailable_vb = self.default_activation_df.loc[
-                                    ~self.default_activation_df[colname], vb
-                                ].values.tolist()
-                                if not (
-                                        activation_df.loc[
-                                            activation_df[vb].isin(unavailable_vb)
-                                        ][activation_df[colname]]
-                                ).empty:
-                                    # if not available value blocks are activated,
-                                    # set False in activation_df
-                                    self.ee.logger.error(
-                                        f'Invalid Value Block Activation Configuration: value block {colname} not available for {list(set(activation_df.loc[activation_df[vb].isin(unavailable_vb)][activation_df[colname]][vb].values.tolist()))}'
-                                    )
-                                    modified_activation_df.loc[
-                                        modified_activation_df[vb].isin(
-                                            unavailable_vb), colname
-                                    ] = False
-                        # if colname value block is desactivated, then
-                        # desactivate its children
-                        if False in activation_df[colname].values.tolist():
-                            children_names = self.get_children_names(
-                                colname, self.architecture_df
+        activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
+        # chekc if sub architectures are built and activation_df has been
+        # modified
+        if (
+                activation_df is not None
+
+                and not activation_df.equals(self.default_activation_df)
+                and activation_df.columns.equals(self.default_activation_df.columns)
+        ):
+            rows_to_delete = []
+            modified_activation_df = deepcopy(activation_df)
+            for (colname, colval) in activation_df.iteritems():
+                if self.default_df_descriptor[colname][0] == 'string':
+                    # if 'string' type is defined in default_df_descriptor, then
+                    # convert values into string
+                    if not all(activation_df[colname].isnull()):
+                        modified_activation_df[colname] = colval.map(str)
+                    # check if possibles values are defined from
+                    # architecture_df
+                    if not all(self.default_activation_df[colname].isnull()):
+                        # check if values are among possible values
+                        if not all(
+                                colval.isin(
+                                    self.default_activation_df[colname])
+                        ):
+                            wrong_values = colval.loc[
+                                ~colval.isin(
+                                    self.default_activation_df[colname])
+                            ]
+                            rows_to_delete.extend(
+                                wrong_values.index.values.tolist()
                             )
-                            if len(children_names) > 0:
-                                modified_activation_df.loc[
-                                    ~modified_activation_df[colname], children_names
-                                ] = False
+                            warning_msg = f'Invalid Value Block Activation Configuration: {wrong_values.values.tolist()} in column {colname} not in *possible values* {self.default_activation_df[colname].values.tolist()}'
 
-                if len(rows_to_delete) > 0:
-                    # remove rows with values not among possible_values
-                    self.get_data_in()[self.ACTIVATION_DF][self.VALUE] = modified_activation_df.drop(
-                        rows_to_delete
-                    )
+                            self.check_integrity_msg_list.append(warning_msg)
+
+                elif self.default_df_descriptor[colname][0] == 'bool':
+                    # if 'bool' type is defined in default_df_descriptor, then
+                    # check if value block is available
+                    if not all(self.default_activation_df[colname]):
+                        for vb in self.activation_columns:
+                            unavailable_vb = self.default_activation_df.loc[
+                                ~self.default_activation_df[colname], vb
+                            ].values.tolist()
+                            if not (
+                                    activation_df.loc[
+                                        activation_df[vb].isin(unavailable_vb)
+                                    ][activation_df[colname]]
+                            ).empty:
+                                # if not available value blocks are activated,
+                                # set False in activation_df
+                                warning_msg = f'Invalid Value Block Activation Configuration: value block {colname} not available for {list(set(activation_df.loc[activation_df[vb].isin(unavailable_vb)][activation_df[colname]][vb].values.tolist()))}'
+                                self.check_integrity_msg_list.append(warning_msg)
+
+                                modified_activation_df.loc[
+                                    modified_activation_df[vb].isin(
+                                        unavailable_vb), colname
+                                ] = False
+                    # if colname value block is desactivated, then
+                    # desactivate its children
+                    if False in activation_df[colname].values.tolist():
+                        children_names = self.get_children_names(
+                            colname, self.architecture_df
+                        )
+                        if len(children_names) > 0:
+                            modified_activation_df.loc[
+                                ~modified_activation_df[colname], children_names
+                            ] = False
+
+            # if len(rows_to_delete) > 0:
+            #     # remove rows with values not among possible_values
+            #     self.get_data_in()[self.ACTIVATION_DF][self.VALUE] = modified_activation_df.drop(
+            #         rows_to_delete
+            #     )
 
     def get_children_names(self, parent_name, architecture):
         """
@@ -464,12 +462,26 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 f'Invalid Action in architecture dataframe. Action must be among: {list(self.POSSIBLE_ACTIONS.values())}'
             )
 
+    def check_data_integrity(self):
+        '''
+        Check the data integrity of the input variables of the driver
+        '''
+        # checking for duplicates
+        self.check_integrity_msg_list = []
+        disc_in = self.get_data_in()
+        super().check_data_integrity()
+        if self.ACTIVATION_DF in disc_in:
+            self.check_activation_df()
+
+            data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
+            self.dm.set_data(
+                self.get_var_full_name(self.ACTIVATION_DF, disc_in),
+                self.CHECK_INTEGRITY_MSG, data_integrity_msg)
+
     def build(self):
         """
         Build method to build all value blocks regarding the architecture
         """
-
-        self.check_activation_df()
 
         activ_builder_dict, self.builder_dict = self.build_action_from_builder_dict(
             self.builder_dict, self.architecture_df

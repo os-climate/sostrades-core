@@ -29,7 +29,7 @@ class Study(StudyManager):
 
         activ_df = pd.DataFrame({'Business': ['Remy', 'Tomato'],
                                  'CAPEX': [True, True],
-                                 'OPEX': [True, True],
+                                 'OPEX': [True, False],
                                  'Manhour': [True, False]})
 
         values_dict = {
