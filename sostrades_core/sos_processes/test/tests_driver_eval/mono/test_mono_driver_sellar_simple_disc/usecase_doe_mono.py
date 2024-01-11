@@ -54,9 +54,9 @@ class Study(StudyManager):
         disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples}
-        disc_dict[f'{ns}.with_sample_generator'] = True
-        disc_dict[f'{ns}.eval_inputs'] = input_selection_x
-        disc_dict[f'{ns}.gather_outputs'] = output_selection_obj_y1_y2
+        disc_dict[f'{ns}.Eval.with_sample_generator'] = True
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_x
+        disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_obj_y1_y2
 
         # Sellar inputs
         local_dv = 10.

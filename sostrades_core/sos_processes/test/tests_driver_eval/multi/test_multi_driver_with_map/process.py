@@ -41,6 +41,6 @@ class ProcessBuilder(BaseProcessBuilder):
         cls_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                             mod_id='test_disc1_disc2_coupling')
 
-        multi_scenarios = self.ee.factory.create_multi_instance_driver('multi_scenario', cls_list, map_name='new_map')
+        multi_scenarios = self.ee.factory.create_multi_instance_driver('multi_scenarios', cls_list, map_name='new_map')
 
         return multi_scenarios

@@ -33,7 +33,7 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
 
-        #coupling_name = 'subprocess'
+        # coupling_name = 'subprocess'
         coupling_name = 'D1_D3_Coupling'
 
         dspace_dict = {'variable': [f'Eval.{coupling_name}.Disc1.b', 'Eval.{coupling_name}.z', ],
@@ -43,25 +43,26 @@ class Study(StudyManager):
 
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_b_z = pd.DataFrame({'selected_input': [False, True, False, False, True],
-                                            'full_name': ['', f'{coupling_name}.Disc1.b', '', '', f'{coupling_name}.z']
+        input_selection_b_z = pd.DataFrame({'selected_input': [True, True],
+                                            'full_name': [f'{coupling_name}.Disc1.b', f'{coupling_name}.z']
                                             })
 
         input_selection_b_z = pd.DataFrame(input_selection_b_z)
 
         output_selection_obj_y_o = {'selected_output': [False, True, True],
-                                    'full_name': [f'{coupling_name}.indicator', f'{coupling_name}.y', f'{coupling_name}.o']}
+                                    'full_name': [f'{coupling_name}.indicator', f'{coupling_name}.y',
+                                                  f'{coupling_name}.o']}
 
         output_selection_obj_y_o = pd.DataFrame(output_selection_obj_y_o)
 
         disc_dict = {}
         # DoE + Eval inputs
         n_samples = 20
-        disc_dict[f'{ns}.Sample_Generator.sampling_method'] = 'doe_algo'
-        disc_dict[f'{ns}.Sample_Generator.sampling_generation_mode'] = 'at_run_time'
-        disc_dict[f'{ns}.Sample_Generator.sampling_algo'] = "lhs"
-        disc_dict[f'{ns}.Sample_Generator.design_space'] = dspace
-        disc_dict[f'{ns}.Sample_Generator.algo_options'] = {
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
+        disc_dict[f'{ns}.SampleGenerator.sampling_generation_mode'] = 'at_run_time'
+        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "lhs"
+        disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
+        disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}
 
         disc_dict[f'{ns}.Eval.with_sample_generator'] = True

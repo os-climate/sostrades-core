@@ -31,7 +31,7 @@ class Study(StudyManager):
         Usecase for disc1 disc2 eval generator cp without reference
         """
         dict_values = {}
-        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
 
         b1 = 4
         b2 = 2

@@ -19,7 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 '''
 import unittest
 import pprint
-from sostrades_core.sos_processes.script_test_all_usecases import test_all_usecases
+from sostrades_core.sos_processes.script_test_all_usecases import test_all_usecases as generic_test_method
 
 
 class TestUseCases(unittest.TestCase):
@@ -36,11 +36,12 @@ class TestUseCases(unittest.TestCase):
         self.maxDiff = None
 
     def test_all_usecases(self):
-        test_passed, output_error = test_all_usecases(processes_repo=self.processes_repo)
+        test_passed, output_error = generic_test_method(processes_repo=self.processes_repo)
         if not test_passed:
             raise Exception(f'{output_error}')
-        
-if __name__=='__main__':
+
+
+if __name__ == '__main__':
     test = TestUseCases()
     test.setUp()
     test.test_all_usecases()

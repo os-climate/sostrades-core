@@ -52,12 +52,13 @@ class Study(StudyManager):
         disc_dict = {}
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
         disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_cp_x_z
+        disc_dict[f'{ns}.SampleGenerator.sampling_generation_mode'] = 'at_run_time'
 
         return [disc_dict]
 
 
 if '__main__' == __name__:
-    #uc_cls = Study(run_usecase=True)
+    # uc_cls = Study(run_usecase=True)
     uc_cls = Study()
     uc_cls.load_data()
     uc_cls.execution_engine.display_treeview_nodes(display_variables=True)

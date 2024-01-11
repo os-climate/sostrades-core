@@ -37,21 +37,15 @@ class Study(StudyManager):
         dict_of_list_values = {
             'SellarCoupling.x': [array([3.]), array([4.])],
             'SellarCoupling.z': [array([-10., 0.])],
-            'SellarCoupling.Sellar_Problem.local_dv': [10.],
-            'SellarCoupling.y_1': [array([1.])],
-            'SellarCoupling.y_2': [array([1.])]
+            'SellarCoupling.Sellar_Problem.local_dv': [10.]
         }
         # ======================================================================
 
         list_of_values = [dict_of_list_values['SellarCoupling.Sellar_Problem.local_dv'],
-                          dict_of_list_values['SellarCoupling.x'],
-                          dict_of_list_values['SellarCoupling.y_1'],
-                          dict_of_list_values['SellarCoupling.y_2']]
+                          dict_of_list_values['SellarCoupling.x']]
 
-        input_selection_cp_x_z = {'selected_input': [False, True, True, True],
-                                  'full_name': ['SellarCoupling.Sellar_Problem.local_dv', 'SellarCoupling.x',
-                                                'SellarCoupling.y_1',
-                                                'SellarCoupling.y_2'],
+        input_selection_cp_x_z = {'selected_input': [False, True],
+                                  'full_name': ['SellarCoupling.Sellar_Problem.local_dv', 'SellarCoupling.x'],
                                   'list_of_values': list_of_values
                                   }
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
@@ -77,16 +71,6 @@ class Study(StudyManager):
         else:
             disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
-        # Sellar reference inputs
-        # ======================================================================
-        # local_dv = 10.
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.x'] = array([2.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_1'] = array([1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_2'] = array([1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.z'] = array([1., 1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
-        # ======================================================================
-
         local_dv = 10.
         disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.x'] = array([2.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.y_1'] = [1.]
@@ -94,6 +78,16 @@ class Study(StudyManager):
         disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
 
+        disc_dict[f'{ns}.Eval.scenario_1.SellarCoupling.x'] = array([2.])
+        disc_dict[f'{ns}.Eval.scenario_1.SellarCoupling.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.scenario_1.SellarCoupling.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.scenario_1.SellarCoupling.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.scenario_1.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.scenario_2.SellarCoupling.x'] = array([2.])
+        disc_dict[f'{ns}.Eval.scenario_2.SellarCoupling.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.scenario_2.SellarCoupling.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.scenario_2.SellarCoupling.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.scenario_2.SellarCoupling.Sellar_Problem.local_dv'] = local_dv
         return [disc_dict]
 
 

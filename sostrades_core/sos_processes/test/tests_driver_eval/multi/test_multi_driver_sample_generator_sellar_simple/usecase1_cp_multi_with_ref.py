@@ -37,18 +37,15 @@ class Study(StudyManager):
         dict_of_list_values = {
             'x': [array([3.]), array([4.])],
             'z': [array([-10., 0.])],
-            'Sellar_Problem.local_dv': [10.],
-            'y_1': [array([1.])],
-            'y_2': [array([1.])]
+            'Sellar_Problem.local_dv': [10.]
         }
         # ======================================================================
 
         list_of_values = [dict_of_list_values['Sellar_Problem.local_dv'], dict_of_list_values['x'],
-                          dict_of_list_values['y_1'], dict_of_list_values['y_2'], dict_of_list_values['z']]
+                          dict_of_list_values['z']]
 
-        input_selection_cp_x_z = {'selected_input': [False, True, True, True, True],
-                                  'full_name': ['Sellar_Problem.local_dv', 'x', 'y_1',
-                                                'y_2',
+        input_selection_cp_x_z = {'selected_input': [False, True, True],
+                                  'full_name': ['Sellar_Problem.local_dv', 'x',
                                                 'z'],
                                   'list_of_values': list_of_values
                                   }
@@ -75,23 +72,22 @@ class Study(StudyManager):
         else:
             disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
-        # Sellar reference inputs
-        # ======================================================================
-        # local_dv = 10.
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
-        # disc_dict[f'{ns}.Eval.ReferenceScenario.Sellar_Problem.local_dv'] = local_dv
-        # ======================================================================
-
         local_dv = 10.
         disc_dict[f'{ns}.Eval.ReferenceScenario.x'] = array([2.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.y_1'] = array([1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.y_2'] = array([1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.z'] = array([1., 1.])
         disc_dict[f'{ns}.Eval.ReferenceScenario.Sellar_Problem.local_dv'] = local_dv
-
+        disc_dict[f'{ns}.Eval.scenario_1.x'] = array([2.])
+        disc_dict[f'{ns}.Eval.scenario_1.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.scenario_1.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.scenario_1.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.scenario_1.Sellar_Problem.local_dv'] = local_dv
+        disc_dict[f'{ns}.Eval.scenario_2.x'] = array([2.])
+        disc_dict[f'{ns}.Eval.scenario_2.y_1'] = array([1.])
+        disc_dict[f'{ns}.Eval.scenario_2.y_2'] = array([1.])
+        disc_dict[f'{ns}.Eval.scenario_2.z'] = array([1., 1.])
+        disc_dict[f'{ns}.Eval.scenario_2.Sellar_Problem.local_dv'] = local_dv
         return [disc_dict]
 
 
