@@ -41,8 +41,9 @@ class ProcessBuilder(BaseProcessBuilder):
             'Disc7', mod_list)
         disc7_builder.associate_namespaces(ns_7)
 
+        # for associated namespaces, to add a value to the existing namespace, remove namespace cleaning
         ns_72 = self.ee.ns_manager.add_ns(
-            'ns_protected', f'{self.ee.study_name}.Disc72')
+            'ns_protected', f'{self.ee.study_name}.Disc72', clean_existing=False)
         disc7_builder2 = self.ee.factory.get_builder_from_module(
             'Disc72', mod_list)
         disc7_builder2.associate_namespaces(ns_72)
