@@ -31,7 +31,7 @@ class Study(StudyManager):
         Usecase for disc1 disc2 eval generator cp with reference
         """
         dict_values = {}
-        dict_values[f'{self.study_name}.Sample_Generator.sampling_method'] = 'cartesian_product'
+        dict_values[f'{self.study_name}.SampleGenerator.sampling_method'] = 'cartesian_product'
         dict_values[f'{self.study_name}.Eval.with_sample_generator'] = True
         dict_values[f'{self.study_name}.Eval.instance_reference'] = True
         dict_values[f'{self.study_name}.Eval.reference_mode'] = 'linked_mode'
@@ -61,7 +61,8 @@ class Study(StudyManager):
             process_builder_parameter_type = ProcessBuilderParameterType(
                 mod_id, repo, my_usecase)
             process_builder_parameter_type.usecase_data = anonymize_input_dict_from_usecase
-            dict_values[f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
+            dict_values[
+                f'{self.study_name}.Eval.sub_process_inputs'] = process_builder_parameter_type.to_data_manager_dict()
         else:
             dict_values[f'{self.study_name}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 

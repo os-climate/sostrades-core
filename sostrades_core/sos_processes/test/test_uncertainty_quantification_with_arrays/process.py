@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- Generate test 1 process
+# -- Generate test 1 process
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
 class ProcessBuilder(BaseProcessBuilder):
-
     # ontology information
     _ontology_data = {
         'label': 'sos_trades_core.sos_processes.test.test_uncertainty_quantification',
@@ -30,11 +29,11 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-
         uq_name = 'UncertaintyQuantification'
-
-        ns_dict = {
-            'ns_uncertainty_quantification': f'{self.ee.study_name}.{uq_name}'}
+        ns_value = f'{self.ee.study_name}.{uq_name}'
+        ns_dict = {'ns_sample_generator': ns_value,
+                   'ns_evaluator': ns_value,
+                   'ns_uncertainty_quantification': ns_value}
         self.ee.ns_manager.add_ns_def(ns_dict)
 
         builder = self.ee.factory.add_uq_builder(uq_name)

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.study_manager.study_manager import StudyManager
-from numpy import array
+import pandas as pd
 
 
 class Study(StudyManager):
@@ -29,7 +29,11 @@ class Study(StudyManager):
         """
         ns = f'{self.study_name}'
 
-        private_val_list = [{f'{ns}.multi_scenarios.scenario_1.Disc1.a': 3,
+        private_val_list = [{f'{ns}.multi_scenarios.samples_df': pd.DataFrame({'selected_scenario': [True,
+                                                                                                     True],
+                                                                               'scenario_name': ['scenario_1',
+                                                                                                 'scenario_2']}),
+                             f'{ns}.multi_scenarios.scenario_1.Disc1.a': 3,
                              f'{ns}.multi_scenarios.scenario_1.Disc1.b': 4,
                              f'{ns}.multi_scenarios.scenario_1.Disc2.constant': 10,
                              f'{ns}.multi_scenarios.scenario_1.Disc2.power': 2,

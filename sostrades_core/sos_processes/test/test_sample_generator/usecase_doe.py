@@ -52,6 +52,7 @@ class Study(StudyManager):
             'n_samples': n_samples}
         disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_x_z
 
+        disc_dict[f'{ns}.SampleGenerator.sampling_generation_mode'] = 'at_run_time'
         return [disc_dict]
 
 
