@@ -34,7 +34,14 @@ class SeriesTemplate:
     """ Class that define a series abscissa and ordinate list with a name
     """
 
-    DISPLAY_TYPE_VALUES = ['lines', 'scatter', 'bar']
+    DASH_LINES_DISPLAY = 'dash_lines'
+    DASH_DOT_LINES_DISPLAY = 'dash_dot_lines'
+    LINES_DISPLAY = 'lines'
+    DOT_LINES_DISPLAY = 'dot_lines'
+    SCATTER_DISPLAY = 'scatter'
+    BAR_DISPLAY = 'bar'
+    DISPLAY_TYPE_VALUES = [LINES_DISPLAY, SCATTER_DISPLAY, BAR_DISPLAY, DASH_LINES_DISPLAY,
+                           DASH_DOT_LINES_DISPLAY, DOT_LINES_DISPLAY]
 
     SERIES_NAME = 'series_name'
     ABSCISSA = 'abscissa'
@@ -42,10 +49,6 @@ class SeriesTemplate:
     DISPLAY_TYPE = 'display_type'
     VISIBLE = 'visible'
     Y_AXIS = 'y_axis'
-
-    LINES_DISPLAY = 'lines'
-    SCATTER_DISPLAY = 'scatter'
-    BAR_DISPLAY = 'bar'
 
     Y_AXIS_PRIMARY = 'y'
     Y_AXIS_SECONDARY = 'y2'
@@ -274,7 +277,8 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
 
     def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
                  primary_ordinate_axis_range=[], chart_name='', stacked_bar=False, bar_orientation='v',
-                 cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[]):
+                 cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[],
+                 y_axis_log: bool = False, y_min_zero: bool = False):
         """
          Create a new chart definition
 
@@ -298,6 +302,7 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         :type secondary_ordinate_axis_name: str
         :param secondary_ordinate_axis_range: array(2) with min and max value range for secondary ordinate axes
         :type secondary_ordinate_axis_range: list [min, max]
+        :param y_axis_log: bool indicating wheter y axis is logarithmic or not
         """
 
         super().__init__()
@@ -334,6 +339,12 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
 
         # Cumulative surface display
         self.cumulative_surface = cumulative_surface
+
+        self.y_axis_log = y_axis_log
+        self.y_min_zero = y_min_zero
+        self.y_primary_max = 0.
+        if self.y_min_zero:
+            self.primary_ordinate_axis_range = [0., 0.]
 
     def add_series(self, series):
         """
@@ -372,6 +383,8 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         if len(self.secondary_ordinate_axis_range) > 1:
             sec_ord_axis_range = [
                 self.secondary_ordinate_axis_range[0], self.secondary_ordinate_axis_range[1]]
+
+
 
         chart_string = [f'\nname: {self.chart_name}',
                         f'Abs axis name: {self.abscissa_axis_name}',

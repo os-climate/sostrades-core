@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/11/14 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,6 +47,10 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
         else:
             raise InstanciatedSeriesException(
                 f'given series has the wrong type, {type(series)} instead of InstanciatedSeries')
+
+        if self.y_min_zero:
+            self.y_primary_max = max(max(series.ordinate), self.y_primary_max)
+            self.primary_ordinate_axis_range = [-0.05 * self.y_primary_max, self.y_primary_max * 1.1]
 
     def to_plotly(self, logger=None):
         """
@@ -136,6 +141,19 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                                         mode='lines', yaxis=serie.y_axis,
                                          visible=True if serie.visible else 'legendonly'))
 
+            elif serie.display_type == InstanciatedSeries.DASH_LINES_DISPLAY:
+                fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
+                                        mode='lines', yaxis=serie.y_axis, line={'dash': 'dash'},
+                                         visible=True if serie.visible else 'legendonly'))
+            elif serie.display_type == InstanciatedSeries.DASH_DOT_LINES_DISPLAY:
+                fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
+                                        mode='lines', yaxis=serie.y_axis, line={'dash': 'dashdot'},
+                                         visible=True if serie.visible else 'legendonly'))
+            elif serie.display_type == InstanciatedSeries.DOT_LINES_DISPLAY:
+                fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
+                                        mode='lines', yaxis=serie.y_axis, line={'dash': 'dot'},
+                                         visible=True if serie.visible else 'legendonly'))
+
         # -- Annotations management
         chart_annotations = []
         # Upper left annotations
@@ -159,6 +177,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
             yaxis.update({'range': self.primary_ordinate_axis_range})
         yaxis.update({'title': self.primary_ordinate_axis_name})
         yaxis.update({'automargin': True})
+        if self.y_axis_log:
+            fig.update_yaxes(type='log')
 
         yaxis2 = {}
         if len(self.secondary_ordinate_axis_range) > 0:
