@@ -15,6 +15,7 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 import time
 
 
@@ -29,6 +30,8 @@ class Study(StudyManager):
             f'{self.study_name}.a': 1,
             f'{self.study_name}.Disc1.b': "StringInputDisc1",
             f'{self.study_name}.Disc2.b': "StringInputDisc2",
+            f'{self.study_name}.Disc1.c': "CCCCCC11111",
+            f'{self.study_name}.Disc2.c': "CCCCCC222222",
             f'{self.study_name}.Disc1VirtualNode.x': 4.,
             f'{self.study_name}.Disc2VirtualNode.x': 5.,
             }
@@ -42,3 +45,18 @@ if '__main__' == __name__:
     uc_cls.run(for_test=True)
     stop = time.time()
     print(stop - start)
+
+
+
+    ppf = PostProcessingFactory()
+    # for disc in uc_cls.execution_engine.root_process.proxy_disciplines:
+    #         filters = ppf.get_post_processing_filters_by_discipline(
+    #             disc)
+    #         graph_list = ppf.get_post_processing_by_discipline(
+    #             disc, filters, as_json=False)
+
+    #         for graph in graph_list:
+    #             graph.to_plotly().show()        
+    
+    print(uc_cls.execution_engine.dm.get_value(f'{uc_cls.study_name}.Disc2.flag'))
+    print(uc_cls.execution_engine.dm.get_value(f'{uc_cls.study_name}.a'))
