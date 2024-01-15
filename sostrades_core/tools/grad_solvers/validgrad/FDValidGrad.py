@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-
+Modifications on 20/12/2023 Copyright 2023 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -86,7 +86,7 @@ class FDValidGrad(object):
         if args is None:
             df = self.__df_pointer(x)
         else:
-            df = self.__df_pointer(x, args)
+            df = self.__df_pointer(x, *args)
 
         ok, msg = self.__compute_error_and_check(
             df_fd, df, treshold, split_out=split_out)

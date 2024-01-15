@@ -915,19 +915,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 residuals_through_iterations = np.asarray(
                     list(map(lambda x: [x[0]], post_processing_mda_data[inner_mda_name])))
                 iterations = list(range(len(residuals_through_iterations)))
-                min_y, max_y = inf, - inf
-                min_value, max_value = residuals_through_iterations.min(), residuals_through_iterations.max()
-                if max_value > max_y:
-                    max_y = max_value
-                if min_value < min_y:
-                    min_y = min_value
                 chart_name = 'Residuals History'
 
                 new_chart = TwoAxesInstanciatedChart('Iterations', 'Residuals',
-                                                     [min(iterations), max(iterations)], [
-                                                         min_y - (max_y - min_y) * 0.1
-                                                         , max_y + (max_y - min_y) * 0.1],
-                                                     chart_name)
+                                                     chart_name=chart_name,
+                                                     y_axis_log=True)
 
                 for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
                     new_chart.series.append(series)

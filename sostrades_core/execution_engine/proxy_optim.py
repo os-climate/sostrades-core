@@ -475,7 +475,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
                    dspace['value'].tolist()):
                 raise ValueError(
-                    'A design variable must obligatory be an array')
+                    f"A design variable must obligatory be an array {[type(design_variable).__name__ for design_variable in dspace['value'].tolist()]}")
 
             # build design space
             design_space = self.set_design_space()
@@ -508,16 +508,13 @@ class ProxyOptim(ProxyDriverEvaluator):
                 full_dvs.append(full_key)
                 # dspace_dict_updated[full_key] = dspace_df[key]
             else:
-                self.logger.warning(f" missing design variable in dm : {key}")
-        if len(full_dvs) == len(dvs):
-            dspace_dict_updated = dspace_df.copy()
-            dspace_dict_updated[self.VARIABLES] = full_dvs
+                raise Exception(f" The design variable {key} is not in the dm : {key}")
 
-            design_space = self.read_from_dataframe(dspace_dict_updated)
+        dspace_dict_updated = dspace_df.copy()
+        dspace_dict_updated[self.VARIABLES] = full_dvs
 
-        else:
+        design_space = self.read_from_dataframe(dspace_dict_updated)
 
-            design_space = DesignSpace()
         return design_space
 
     def get_full_names(self, names):
@@ -583,17 +580,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         if select_all or "Fitness function" in chart_list:
             fitness_func_through_iterations = post_processing_mdo_data["objective"]
             iterations = list(range(len(fitness_func_through_iterations)))
-            min_y, max_y = inf, - inf
-            min_value, max_value = fitness_func_through_iterations.min(), fitness_func_through_iterations.max()
-            if max_value > max_y: max_y = max_value
-            if min_value < min_y: min_y = min_value
+
             chart_name = 'Objective function optimization'
 
             new_chart = TwoAxesInstanciatedChart('Iterations', 'Fitness function',
-                                                 [min(iterations), max(iterations)], [
-                                                     min_y - (max_y - min_y) * 0.1
-                                                     , max_y + (max_y - min_y) * 0.1],
-                                                 chart_name)
+                                                 chart_name=chart_name)
 
             for series in to_series(
                     varname="Fitness function", x=iterations, y=fitness_func_through_iterations):

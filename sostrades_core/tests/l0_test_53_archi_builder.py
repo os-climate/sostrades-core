@@ -577,8 +577,8 @@ class TestArchiBuilder(unittest.TestCase):
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
              'Action': [
                  ('scatter_architecture', 'product_list', 'SumValueBlockDiscipline', component_fhs_architecture_df), (
-                 'scatter_architecture', 'product_list', 'SumValueBlockDiscipline',
-                 component_Delivery_architecture_df)],
+                     'scatter_architecture', 'product_list', 'SumValueBlockDiscipline',
+                     component_Delivery_architecture_df)],
              'Activation': [False, False]})
 
         architecture_df = pd.DataFrame(
@@ -587,7 +587,7 @@ class TestArchiBuilder(unittest.TestCase):
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline',
                       'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
              'Action': [('standard'), ('standard'), (
-             'scatter_architecture', 'product_list', 'SumValueBlockDiscipline', component_sales_architecture_df),
+                 'scatter_architecture', 'product_list', 'SumValueBlockDiscipline', component_sales_architecture_df),
                         ('architecture', Opex_architecture_df), ('scatter', 'product_list', 'ValueBlockDiscipline')],
              'Activation': [True, True, False, False, False]})
 
@@ -660,9 +660,6 @@ class TestArchiBuilder(unittest.TestCase):
         builder = self.exec_eng.factory.get_builder_from_process(
             repo, 'test_architecture_standard')
 
-        my_handler = UnitTestHandler()
-        self.exec_eng.logger.addHandler(my_handler)
-
         self.exec_eng.factory.set_builders_to_coupling_builder(builder)
         self.exec_eng.load_study_from_input_dict({})
 
@@ -682,25 +679,15 @@ class TestArchiBuilder(unittest.TestCase):
         values_dict['MyCase.Business.activation_df'] = activ_df
 
         self.exec_eng.load_study_from_input_dict(values_dict)
-
-        msg_log_error = 'Invalid Value Block Activation Configuration: [\'Zucchini\'] in column Business not in *possible values* [\'Remy\', \'Tomato\']'
-
-        self.assertTrue(msg_log_error in my_handler.msg_list)
-
-        msg_log_error = 'Invalid Value Block Activation Configuration: value block OPEX not available for [\'Tomato\']'
-        self.assertTrue(msg_log_error in my_handler.msg_list)
+        integrity_msg = self.exec_eng.get_data_integrity_msg()
+        msg_log_error = 'Variable MyCase.Business.activation_df : '
+        msg_log_error += 'Invalid Value Block Activation Configuration: [\'Zucchini\'] in column Business not in *possible values* [\'Remy\', \'Tomato\']\n'
+        msg_log_error += 'Invalid Value Block Activation Configuration: value block OPEX not available for [\'Tomato\']'
+        self.assertEqual(integrity_msg, msg_log_error)
 
         activ_df = pd.DataFrame({'Business': ['Remy', 'Tomato'],
                                  'CAPEX': [True, True],
                                  'OPEX': [True, False],
-                                 'Manhour': [True, False]})
-
-        self.assertTrue(activ_df.equals(
-            self.exec_eng.dm.get_value('MyCase.Business.activation_df')))
-
-        activ_df = pd.DataFrame({'Business': ['Remy', 'Tomato'],
-                                 'CAPEX': [True, True],
-                                 'OPEX': [True, True],
                                  'Manhour': [True, False]})
         values_dict['MyCase.Business.activation_df'] = activ_df
         self.exec_eng.load_study_from_input_dict(values_dict)
