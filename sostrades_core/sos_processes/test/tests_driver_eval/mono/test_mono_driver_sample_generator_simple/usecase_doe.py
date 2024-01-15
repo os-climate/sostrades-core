@@ -33,10 +33,10 @@ class Study(StudyManager):
         ns = f'{self.study_name}'
         dspace_dict = {'variable': ['Disc1.a'],
 
-                         'lower_bnd': [0.],
-                         'upper_bnd': [1.],
+                       'lower_bnd': [0.],
+                       'upper_bnd': [1.],
 
-                         }
+                       }
         dspace = pd.DataFrame(dspace_dict)
 
         input_selection_a = {'selected_input': [False, True, False],
@@ -56,9 +56,9 @@ class Study(StudyManager):
         disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = 'OT_FACTORIAL'
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples, 'levels': levels, 'centers': centers}
-        disc_dict[f'{ns}.with_sample_generator'] = True
-        disc_dict[f'{ns}.eval_inputs'] = input_selection_a
-        disc_dict[f'{ns}.gather_outputs'] = output_selection_ind
+        disc_dict[f'{ns}.Eval.with_sample_generator'] = True
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a
+        disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_ind
 
         # Disc1 inputs
         disc_dict[f'{ns}.Eval.x'] = 10.

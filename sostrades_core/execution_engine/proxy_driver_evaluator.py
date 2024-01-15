@@ -403,9 +403,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.driver_data_integrity = True
         if self.SAMPLES_DF in disc_in:
             self.check_data_integrity_samples_df()
-
-        if self.SAMPLES_DF in disc_in and len(self.check_integrity_msg_list) != 0:
+        if len(self.check_integrity_msg_list) != 0:
             self.driver_data_integrity = False
+        if self.SAMPLES_DF in disc_in:
             data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
             self.dm.set_data(
                 self.get_var_full_name(self.SAMPLES_DF, disc_in),
@@ -480,7 +480,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     var_type = self.eval_in_possible_types[col]
                     df_desc_tuple = tuple([var_type, None, True])
 
-                    if no_None_in_df and not samples_df[col].apply(lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).all():
+                    if no_None_in_df and not samples_df[col].apply(
+                            lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).all():
                         warning_msg = f'Some value has wrong types in column {col}, the subprocess variable is of type {var_type} and all variables in the column should be the same'
                         self.check_integrity_msg_list.append(warning_msg)
                     else:
