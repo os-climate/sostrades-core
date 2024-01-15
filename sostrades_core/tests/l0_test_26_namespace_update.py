@@ -268,11 +268,10 @@ class TestNamespaceManagement(unittest.TestCase):
             'Disc1', self.mod1_path)
         disc2_builder = self.factory.get_builder_from_module(
             'Disc2', self.mod2_path)
-
         extra_name = 'extra_name'
         # update namespace list with extra_ns
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
-            extra_name, after_name=self.ee.study_name)
+            extra_name, after_name=self.ee.study_name, clean_existing=True)
         # update builder names with extra_name
         self.ee.factory.update_builder_list_with_extra_name(
             extra_name, [disc1_builder, disc2_builder])
@@ -316,21 +315,15 @@ class TestNamespaceManagement(unittest.TestCase):
         extra_name = 'extra_name'
         # update namespace list with extra_ns
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
-            extra_name, after_name=self.ee.study_name)
+            extra_name, after_name=self.ee.study_name, clean_existing=False)
         # after update without cleaning, assert len is 2
         self.assertTrue(len(self.ee.ns_manager.get_all_namespace_with_name('ns_disc1')) == 2)
         extra_name_2 = 'extra_name_a'
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
-            extra_name_2, after_name=self.ee.study_name, clean_namespaces=True) 
-        # after second update, with clean namespace, namespace cleaned is the one in shared_ns_dict, len should be 2 but 
-        # the remaining is the very first one 
-        ns_disc1_list = self.ee.ns_manager.get_all_namespace_with_name('ns_disc1')
-        self.assertTrue(len(ns_disc1_list) == 2)
-        self.assertTrue(f'{self.ns_test}' in [ns.value for ns in ns_disc1_list])
-
+            extra_name_2, after_name=self.ee.study_name, clean_existing=True)
         extra_name_3 = 'extra_name_b'
         self.ee.ns_manager.update_namespace_list_with_extra_ns(
-            extra_name_3, after_name=self.ee.study_name, clean_namespaces=True, clean_all_ns_with_name=True) 
+            extra_name_3, after_name=self.ee.study_name, clean_existing=True)
         # if clean namespaces and clean all ns with name, we should have only one namespace
         ns_disc1_list = self.ee.ns_manager.get_all_namespace_with_name('ns_disc1')
         self.assertTrue(len(ns_disc1_list) == 1)
