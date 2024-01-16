@@ -17,7 +17,7 @@ limitations under the License.
 from sostrades_core.execution_engine.data_connector.abstract_data_connector import AbstractDataConnector
 import json 
 import pandas as pd 
-
+from os.path import dirname, join, exists
 
 
 
@@ -25,8 +25,6 @@ class JSONDatasetsConnector(AbstractDataConnector):
     """
     Specific data connector for dataset in json format
     """
-
-    
 
     NAME = 'JSON_datasets'
 
@@ -41,13 +39,14 @@ class JSONDatasetsConnector(AbstractDataConnector):
         :param data_connection_info: contains necessary data for connection
         :type data_connection_info: dict
         """
-        self.filepath = None
+        self.filename = None
+        self.filepath = dirname(__file__)
         self.json_content = {}
         super().__init__(data_connection_info=data_connection_info)
 
     def _extract_connection_info(self,data_connection_info):
 
-        self.filepath = data_connection_info['filepath']
+        self.filename = data_connection_info['filename']
 
 
     def load_data(self, dataset_name):
@@ -61,10 +60,18 @@ class JSONDatasetsConnector(AbstractDataConnector):
         #TODO: optimise opening and reading by creating a dedictated abstractDatasetConnector
         json_data = {}
         # Read JSON
-        with open(self.filepath, "r") as file:
-            json_data = json.load(file)
+        db_path = join(self.filepath,self.filename)
+        if exists(db_path):
+            with open(db_path, "r") as file:
+                json_data = json.load(file)
+        else:
+            raise Exception(f'The connector json file is not found at {db_path}')
         
-        return json_data[dataset_name]
+        if dataset_name in json_data:
+            return json_data[dataset_name]
+        else:
+            raise Exception(f'The dataset {dataset_name} is not found in the {self.filename}')
+        
 
     
     def write_data(self, ):

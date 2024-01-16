@@ -37,7 +37,7 @@ class DatasetManager:
 
         #TODO: this connector should be saved in a connector factory singleton somewhere
         # and here we should only get the connector
-        connector_connexion_info ={'filepath': 'C:\\Users\\mgueylar\\Desktop\\projets\\Business4Planet\\sostrades-core\\sostrades_core\\sos_processes\\test\\test_disc1_disc2_dataset\\datasets_db.json'}
+        connector_connexion_info ={'filename': 'datasets_db.json'}
         connector = JSONDatasetsConnector(data_connection_info=connector_connexion_info)
              
         return Dataset(dataset_info=dataset_info, connector=connector)
