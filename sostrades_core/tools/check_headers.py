@@ -1,5 +1,5 @@
 '''
-Copyright 2023 Capgemini
+Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,8 +39,9 @@ CARTOUCHE_BASE = """'''
 '''
 """
 
-CAP_COPYRIGHT = "Copyright 2023 Capgemini"
-CAP_MODIFIED_COPYRIGHT = "Modifications on {} Copyright 2023 Capgemini"
+CAP_COPYRIGHT_2023 = "Copyright 2023 Capgemini"
+CAP_COPYRIGHT = "Copyright 2024 Capgemini"
+CAP_MODIFIED_COPYRIGHT = "Modifications on {} Copyright 2024 Capgemini"
 AIRBUS_COPYRIGHT = "Copyright 2022 Airbus SAS"
 
 CARTOUCHE_CAP_AIRBUS = CARTOUCHE_BASE.format(f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT}\n{LICENCE}")
@@ -49,7 +50,7 @@ CARTOUCHE_CAP = CARTOUCHE_BASE.format(f"{CAP_COPYRIGHT}\n{LICENCE}")
 # Define a regular expression to match the cartouche only at the beginning
 cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
 
-cartouche_modified_pattern = r"Modifications on (.+) Copyright 2023 Capgemini"
+cartouche_modified_pattern = r"Modifications on (.+) Copyright 202(.) Capgemini"
 
 class FileChange(Enum):
     NOTSET = 0
@@ -80,7 +81,7 @@ def check_header_for_added_file(file_path):
     cartouche_match = re.search(pattern=cartouche_pattern, string=content, flags=re.DOTALL)
 
     if cartouche_match:
-        if cartouche_match.group(0).startswith(f"'''\n{CAP_COPYRIGHT}") and cartouche_match.group(0).__contains__(LICENCE):
+        if (cartouche_match.group(0).startswith(f"'''\n{CAP_COPYRIGHT}") or cartouche_match.group(0).startswith(f"'''\n{CAP_COPYRIGHT_2023}")) and cartouche_match.group(0).__contains__(LICENCE):
             #OK
             if verbose :
                 print(f"Cartouche OK for path {file_path}")
@@ -175,7 +176,7 @@ def check_headers(ignored_exts,ignored_file,airbus_rev_commit):
         item_path = diff_item.a_path
         if item_path not in ignored_file:
             if verbose:
-                print("D", item_path)
+                print("D", item_path)    
 
     for diff_item in diff_index.iter_change_type('R'):
         # Renamed

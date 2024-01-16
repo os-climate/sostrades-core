@@ -235,14 +235,18 @@ class ScatterTool(SosTool):
         ns_ids_list = []
         extra_name = f'{self.driver.sos_name}.{name}'
         after_name = self.driver.father_executor.get_disc_full_name()
+        ns_list = self.ns_to_update.values()
 
         for ns_name, ns in self.ns_to_update.items():
             updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
                 ns.get_value(), extra_name, after_name=after_name)
             display_value = ns.get_display_value_if_exists()
             ns_id = self.ee.ns_manager.add_ns(
-                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
+                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False, clean_existing=False)
             ns_ids_list.append(ns_id)
+
+        # remove/clean the initial namespace values of the subprocess before they were updated
+        self.ee.ns_manager.clean_all_ns_in_nslist(ns_list, clean_all_ns_with_name=False)
 
         return ns_ids_list
 

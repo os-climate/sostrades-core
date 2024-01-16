@@ -112,21 +112,21 @@ class NamespaceManager:
         return self.__disc_ns_dict
 
     #-- Data name space methods
-    def add_ns_def(self, ns_info, database_infos = None):
+    def add_ns_def(self, ns_info, database_infos = None, clean_existing=True):
         ''' 
         add multiple namespaces to the namespace_manager 
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
         ns_ids = []
         for key, value in ns_info.items():
-            ns_id = self.add_ns(key, value, database_infos=database_infos)
+            ns_id = self.add_ns(key, value, database_infos=database_infos, clean_existing = clean_existing)
             ns_ids.append(ns_id)
         if database_infos is not None: 
             self.database_activated = True
 
         return ns_ids
 
-    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_infos = None):
+    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_infos = None, clean_existing=True):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
@@ -135,6 +135,8 @@ class NamespaceManager:
         # if the couple (name,value) already exists do not create another
         # object take the one that exists
         ns_id = f'{name}{self.NS_NAME_SEPARATOR}{ns_value}'
+        if clean_existing:
+            self.clean_all_namespaces_with_name(name)
 
         if ns_id in self.all_ns_dict:
             ns = self.all_ns_dict[ns_id]
@@ -143,12 +145,10 @@ class NamespaceManager:
 
         # else we create a new object and store it in all_ns_dict
         else:
-
             ns = Namespace(name, ns_value, display_value, database_infos)
             #-- add in the list if created
             self.ns_list.append(ns)
             self.all_ns_dict[ns.get_ns_id()] = ns
-        
 
         # This shared_ns_dict delete the namespace if already exist: new one
         # has priority
@@ -502,23 +502,18 @@ class NamespaceManager:
         ns_reference = self.ns_object_map[ns_tuple[1]]
         return self.compose_ns([ns_reference.value, var_name])
 
-    def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None, clean_namespaces=False, clean_all_ns_with_name=False):
+    def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None, clean_existing=True):
         '''
         Update the value of a list of namespaces with an extra namespace placed behind after_name
         '''
         ns_ids = []
         if namespace_list is None:
             namespace_list = list(self.shared_ns_dict.values())
-        # if clean namespaces, delete given namespace list before creating new ones
-        if clean_namespaces:
-            self.clean_all_ns_in_nslist(namespace_list, clean_all_ns_with_name)
-
-
         
         for ns in deepcopy(namespace_list):
 
             ns_id = self.__update_namespace_with_extra_ns(
-                ns, extra_ns, after_name)
+                ns, extra_ns, after_name,clean_existing=clean_existing)
             ns_ids.append(ns_id)
 
         return ns_ids
@@ -532,7 +527,7 @@ class NamespaceManager:
                 self.__update_namespace_with_extra_ns(
                     namespace, extra_ns, after_name)
 
-    def __update_namespace_with_extra_ns(self, old_ns_object, extra_ns, after_name=None):
+    def __update_namespace_with_extra_ns(self, old_ns_object, extra_ns, after_name=None, clean_existing=True):
         '''
         Update the value of old_ns_object with an extra namespace which will be placed just after the variable after_name
         if after is the name of the discipline then we do not add the extra namespace
@@ -546,7 +541,7 @@ class NamespaceManager:
         # Add a new namespace (o or not if it exists already) but NEVER update
         # the value of a namespace without modifying the ordering of the
         # ns_manager
-        ns_id = self.add_ns(old_ns_object.name, new_ns_value)
+        ns_id = self.add_ns(old_ns_object.name, new_ns_value, clean_existing=clean_existing)
         # old_ns_object.update_value(new_ns_value)
         return ns_id
 
@@ -593,6 +588,7 @@ class NamespaceManager:
         """ 
         self.database_infos = database_infos
 
+
     def clean_all_ns_in_nslist(self, ns_list, clean_all_ns_with_name=False):
         """
         Method to clean all namespaces in given input list
@@ -634,10 +630,6 @@ class NamespaceManager:
        
         for ns_to_clean in ns_list:
             self.clean_namespace(ns_to_clean)
-
-        
-
-
 
 
 class NamespaceManagerException(Exception):

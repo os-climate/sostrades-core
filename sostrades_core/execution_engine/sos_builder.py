@@ -184,9 +184,12 @@ class SoSBuilder:
         new_associated_namespaces = self.__ee.ns_manager.update_namespace_list_with_extra_ns(extra_name,
                                                                                              after_name=after_name,
                                                                                              namespace_list=namespace_object_list,
-                                                                                             clean_namespaces=True)
+                                                                                             clean_existing=False)
         self.delete_all_associated_namespaces()
         self.associate_namespaces(new_associated_namespaces)
+        # remove the now unused initial namespace
+        for ns in namespace_object_list:
+            self.__ee.ns_manager.clean_namespace(ns)
 
     def update_associated_namespaces_with_extra_name_rec(self, extra_name, after_name=None):
         """
