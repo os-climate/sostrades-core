@@ -1,0 +1,31 @@
+{
+    "datasets_infos": {
+        "Dataset1.1": {
+            "connector_id": "JSON_datasets",
+            "dataset_id": "dataset_bw"
+        },
+        "Dataset2.1": {
+            "connector_id": "JSON_datasets",
+            "dataset_id": "dataset_b"
+        },
+        "Dataset1.2": {
+            "connector_id": "JSON_datasets",
+            "dataset_id": "dataset_c_1"
+        },
+        "Dataset2.2": {
+            "connector_id": "JSON_datasets",
+            "dataset_id": "dataset_c_2"
+        },
+        "Dataset3": {
+            "connector_id": "JSON_datasets",
+            "dataset_id": "dataset_ax"
+        }
+    },
+    "namespace_datasets_mapping": {
+        "ns_a" : ["Dataset3"],
+        "ns_xy_disc1" : ["Dataset3"],
+        "ns_xy_disc2": ["Dataset3"],
+        "Disc1": ["Dataset1.1","Dataset1.2"],
+        "Disc2": ["Dataset2.1","Dataset2.2"]
+    }
+}
