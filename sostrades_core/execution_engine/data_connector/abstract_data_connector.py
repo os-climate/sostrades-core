@@ -48,6 +48,7 @@ class AbstractDataConnector(abc.ABC):
         :param data_connection_info: contains necessary data for connection
         :type data_connection_info: dict
         """
+        
 
     @abc.abstractmethod
     def load_data(self, connector_info):

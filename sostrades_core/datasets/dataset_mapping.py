@@ -2,10 +2,12 @@ from dataclasses import dataclass
 
 import json
 
-from sostrades_core.execution_engine.datasets.dataset_info import DatasetInfo
+from sostrades_core.datasets.dataset_info import DatasetInfo
 
 @dataclass()
 class DatasetsMapping:
+    DATASETS_INFO_KEY = "datasets_infos"
+    NAMESPACE_KEY = "namespace_datasets_mapping"
     datasets_infos:dict[str:DatasetInfo]
     namespace_datasets_mapping:dict[str:list[DatasetInfo]]
 
@@ -33,12 +35,12 @@ class DatasetsMapping:
         """
         # Parse datasets info
         datasets_infos = {}
-        for dataset in input_dict["datasets_infos"]:
-            datasets_infos[dataset] = DatasetInfo.deserialize(input_dict=input_dict["datasets_infos"][dataset])
+        for dataset in input_dict[DatasetsMapping.DATASETS_INFO_KEY]:
+            datasets_infos[dataset] = DatasetInfo.deserialize(input_dict=input_dict[DatasetsMapping.DATASETS_INFO_KEY][dataset])
         
         # Parse namespace datasets mapping
         namespace_datasets_mapping = {}
-        input_dict_dataset_mapping = input_dict["namespace_datasets_mapping"]
+        input_dict_dataset_mapping = input_dict[DatasetsMapping.NAMESPACE_KEY]
         for namespace in input_dict_dataset_mapping:
             namespace_datasets_mapping[namespace] = []
             for dataset in input_dict_dataset_mapping[namespace]:

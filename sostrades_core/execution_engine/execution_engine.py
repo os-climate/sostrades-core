@@ -513,6 +513,13 @@ class ExecutionEngine:
 
         return converted_dict
 
+    def load_study_from_dataset(self, datasets_mapping, update_status_configure=True):
+        '''
+        Load a study from a datasets mapping dictionary : retreive dataset value and load study
+        '''
+        # call the configure function with the set dm data from datasets
+        self.configure_study_with_data(datasets_mapping, self.dm.set_data_values_from_datasets, update_status_configure)
+
     def load_study_from_input_dict(self, input_dict_to_load, update_status_configure=True):
         '''
         Load a study from an input dictionary : Convert the input_dictionary into a dm-like dictionary
@@ -565,9 +572,21 @@ class ExecutionEngine:
             for key, value in dict_to_load.items():
                 converted_key = anonymize_function(key)
                 data_cache.update({converted_key: value})
-        # keys of data stored in dumped study file are namespaced, convert them
-        # to uuids
-        convert_data_cache = self.dm.convert_data_dict_with_ids(data_cache)
+        
+        # call the configure function with the set dm data from dict
+        self.configure_study_with_data(data_cache, self.dm.set_data_values_from_dict, update_status_configure)
+
+
+
+    def configure_study_with_data(self, dict_or_datasets_to_load, set_data_in_dm_function, update_status_configure):
+        '''
+        method that insert data into dm and configure the process
+
+        :params: set_data_in_dm_function, a function that retreive data values and set it into the dm data_dict, with signature:
+        set_data_in_dm_function (dict_to_load:dict, already_inserted_keys: list of data name)
+        :type: function
+
+        '''
         iteration = 0
 
         loop_stop = False
@@ -583,21 +602,13 @@ class ExecutionEngine:
                 self.__yield_method()
 
             self.dm.no_change = True
-            for key, value in self.dm.data_dict.items():
-                if key in convert_data_cache:
-                    # Only inject key which are set as input
-                    # Discipline configuration only take care of input
-                    # variables
-                    # Variables are only set once
-                    if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and not key in checked_keys:
-                        value['value'] = convert_data_cache[key]['value']
-                        checked_keys.append(key)
-
+            loaded_data = set_data_in_dm_function(dict_or_datasets_to_load, checked_keys)
+            
             self.__configure_io()
 
             if self.__yield_method is not None:
                 self.__yield_method()
-            convert_data_cache = self.dm.convert_data_dict_with_ids(data_cache)
+            convert_data_cache = self.dm.convert_data_dict_with_ids(loaded_data)
 
             iteration = iteration + 1
 
@@ -627,7 +638,7 @@ class ExecutionEngine:
         #         self.__configure_execution()
 
         # -- Init execute, to fully initialize models in discipline
-        if len(dict_to_load):
+        if len(loaded_data):
             self.update_from_dm()
             self.dm.create_reduced_dm()
             if update_status_configure:

@@ -14,15 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
+from sostrades_core.datasets.datasets_connectors.json_datasets_connector import JSONDatasetsConnector
 from sostrades_core.study_manager.study_manager import StudyManager
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 import time
-
+from os.path import join, dirname
+from os.path import abspath, basename, dirname, relpath, splitext, join, exists
 
 class Study(StudyManager):
 
     def __init__(self, execution_engine=None):
-        super().__init__(__file__, execution_engine=execution_engine)
+        # get the process folder name
+        file_path = __file__
+        study_file_path = abspath(file_path)
+        study_file_name = splitext(basename(study_file_path))[0]
+        module_path = dirname(study_file_path)
+        process_name = basename(module_path)
+
+        # Find the module path
+        module_path = dirname(module_path)
+        module_path_list = []
+
+        # Check if __init__.py exists in the parent directory
+        # If yes, it is a module
+        # If not, we stop
+        while exists(join(module_path, '__init__.py')):
+            module_path_list.append(basename(module_path))
+            module_path = dirname(module_path)
+
+        repository_name = '.'.join(module_path_list[::-1])
+        super().__init__(repository_name,process_name, study_file_name, execution_engine=execution_engine)
 
     def setup_usecase(self):
 
@@ -39,24 +60,16 @@ class Study(StudyManager):
 
 
 if '__main__' == __name__:
-    start = time.time()
+    # test study with only one dataset
+    json_study_file_path = join(dirname(__file__), 'usecase_dataset.json')
     uc_cls = Study()
-    uc_cls.load_data()
-    uc_cls.run(for_test=True)
-    stop = time.time()
-    print(stop - start)
+    uc_cls.load_study(json_study_file_path)
+    uc_cls.run()
+
+    # test with 2 datasets
+    json_study_file_path = join(dirname(__file__), 'usecase_2datasets.json')
+    uc_cls2 = Study()
+    uc_cls2.load_study(json_study_file_path)
+    uc_cls2.run()
 
 
-
-    ppf = PostProcessingFactory()
-    # for disc in uc_cls.execution_engine.root_process.proxy_disciplines:
-    #         filters = ppf.get_post_processing_filters_by_discipline(
-    #             disc)
-    #         graph_list = ppf.get_post_processing_by_discipline(
-    #             disc, filters, as_json=False)
-
-    #         for graph in graph_list:
-    #             graph.to_plotly().show()        
-    
-    print(uc_cls.execution_engine.dm.get_value(f'{uc_cls.study_name}.Disc2.flag'))
-    print(uc_cls.execution_engine.dm.get_value(f'{uc_cls.study_name}.a'))

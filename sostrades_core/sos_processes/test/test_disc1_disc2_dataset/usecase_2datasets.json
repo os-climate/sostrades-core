@@ -1,0 +1,19 @@
+{
+    "datasets_infos": {
+        "Dataset1": {
+            "connector_id": "JSON_datasets",
+            "dataset_id": "dataset_ax"
+        },
+        "Dataset2": {
+            "connector_id": "JSON_datasets",
+            "dataset_id": "dataset_bc"
+        }
+    },
+    "namespace_datasets_mapping": {
+        "ns_a" : ["Dataset1"],
+        "ns_xy_disc1" : ["Dataset1"],
+        "ns_xy_disc2": ["Dataset1"],
+        "Disc1": ["Dataset2"],
+        "Disc2": ["Dataset2"]
+    }
+}

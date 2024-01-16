@@ -23,6 +23,7 @@ from uuid import uuid4
 from hashlib import sha256
 from copy import deepcopy
 from numpy import can_cast
+from sostrades_core.datasets.dataset_manager import DatasetManager
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
@@ -86,6 +87,8 @@ class DataManager:
         self.reset()
         self.data_check_integrity = False
         self.logger = logger
+
+        self.dataset_manager = DatasetManager()
 
     @staticmethod
     def get_an_uuid():
@@ -342,6 +345,70 @@ class DataManager:
             # if self.data_dict[k][ProxyDiscipline.VISIBILITY] == INTERNAL_VISIBILITY:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
+        
+    def set_data_values_from_dict(self, values_dict, already_set_data):
+        '''
+        Set values in data_dict from dict with namespaced keys 
+        '''
+        # convert data_dict with uuids
+        for key, value in self.data_dict.items():
+            if key in values_dict:
+                # Only inject key which are set as input
+                # Discipline configuration only take care of input
+                # variables
+                # Variables are only set once
+                if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and not key in already_set_data:
+                    value['value'] = values_dict[key]['value']
+                    already_set_data.append(key)
+        return values_dict
+    
+    def set_data_values_from_datasets(self, datasets_mapping, already_set_data):
+        '''
+        Set values in data_dict from datasets
+        :param: datasets_mapping, adatset list and mapping with study namespaces
+        :type: DatasetsMapping
+        
+        :param: already_set_data, list of data names that have already been set in dm
+        :type: list
+
+        :return: loaded_data_dict, dict of data ids with data values set in dm
+        '''
+        #do a map between namespace and data from data_dict not already fetched
+        # to have a list of data by namespace
+        namespaced_data_dict = {}
+        for key, data_value in self.data_dict.items():
+            # get only not already 
+            if data_value[IO_TYPE] == IO_TYPE_IN and not key in already_set_data:
+                data_ns = data_value[NS_REFERENCE].name
+                data_name = data_value[VAR_NAME]
+                
+                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns,{})
+                namespaced_data_dict[data_ns][data_name] = key
+        
+
+        # iterate on each namespace to retrieve data in this namespace
+        loaded_data_dict = {}
+        for namespace, data_dict in namespaced_data_dict.items():
+            # retrieve the list of dataset associated to the namespace from the mapping
+            if namespace in datasets_mapping.namespace_datasets_mapping.keys():
+
+                datasets_info = datasets_mapping.namespace_datasets_mapping[namespace]
+                # get data values into the dataset
+                updated_data = self.dataset_manager.fetch_data_from_dataset(datasets_info, data_dict)
+
+                # update data values in dm
+                for data_name, value in updated_data.items():
+                    key = data_dict[data_name]
+                    self.data_dict[key][VALUE] = value
+                    loaded_data_dict[key]= value # save witch data has been retrieved
+            else:
+                self.logger.warning(f'the namespace {namespace} is not referenced in the datasets mapping of the study')
+        
+        # update the already set data list for the next loop
+        already_set_data.extend(loaded_data_dict.keys())
+        return loaded_data_dict
+
+
 
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys
@@ -473,7 +540,7 @@ class DataManager:
             f'store and update the discipline data into the DM dictionary {list(disc_dict.keys())[:10]} ...')
 
         def _dm_update(var_name, io_type, var_f_name):
-
+            
             if var_f_name in self.data_id_map.keys():
                 # If data already exists in DM
                 var_id = self.get_data_id(var_f_name)
