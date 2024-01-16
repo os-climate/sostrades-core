@@ -328,7 +328,7 @@ class SosFactory:
         '''
         module_struct_list = f'{self.EE_PATH}.proxy_mono_instance_driver.ProxyMonoInstanceDriver'
         driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.mono_instance_driver_wrapper.MonoInstanceDriverWrapper'
-        return self.create_driver(sos_name=sos_name,
+        return self._create_driver(sos_name=sos_name,
                                   cls_builder=cls_builder,
                                   map_name=None,
                                   module_struct_list=module_struct_list,
@@ -344,13 +344,13 @@ class SosFactory:
             builder_list: list containing the driver builder
         '''
         module_struct_list = f'{self.EE_PATH}.proxy_multi_instance_driver.ProxyMultiInstanceDriver'
-        builder_list = self.create_driver(sos_name=sos_name,
+        builder_list = self._create_driver(sos_name=sos_name,
                                           cls_builder=cls_builder,
                                           map_name=map_name,
                                           module_struct_list=module_struct_list)
         return builder_list
 
-    def create_driver(self, sos_name, cls_builder, map_name=None,
+    def _create_driver(self, sos_name, cls_builder, map_name=None,
                       module_struct_list=None, driver_wrapper_mod=None):
         '''
 
