@@ -660,6 +660,27 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_2.y'), y2)
 
+    def test_10_multi_scenario_clean_initial_ns_values(self):
+        '''
+        test dev that cleans the initial namespace value of the subprocess on which the multi-scenario is built,
+        ie removes 4 namespace values:
+        ns_disc3 MyCase
+        ns_out_disc3 MyCase
+        ns_ac MyCase
+        ns_data_ac MyCase
+
+        and only keep the 9 of the multi-scenario
+        '''
+        self.get_simple_multiscenario_process_configured(self.exec_eng)
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                            True],
+                                                                                      'scenario_name': ['scenario_1',
+                                                                                                        'scenario_2']})
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.assertEqual(len(self.exec_eng.ns_manager.ns_list), 9) # maybe should be 8 ?
 
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
