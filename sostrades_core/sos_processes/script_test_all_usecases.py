@@ -443,11 +443,10 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
     ppf = PostProcessingFactory()
 
     try:
-        for disc in study.execution_engine.root_process.proxy_disciplines:
-            filters = ppf.get_post_processing_filters_by_discipline(
-                disc)
-            graph_list = ppf.get_post_processing_by_discipline(
-                disc, filters, as_json=False)
+        post_procs = ppf.get_all_post_processings(execution_engine=study.ee, filters_only=False, as_json=False)
+        # for post_proc_bundle in post_procs.values():
+        #     for chart in post_proc_bundle.post_processings:
+        #         chart.to_plotly().show()
         dm_after_pp = deepcopy(study.execution_engine.get_anonimated_data_dict())
     except Exception as e:
         error_msg_post_processing += f'\nERROR while computing post processing for usecase {study.study_full_path}:\n {e}'
