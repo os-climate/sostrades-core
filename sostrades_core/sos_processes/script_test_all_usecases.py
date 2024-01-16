@@ -471,6 +471,7 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
     - if not MDO and not MDA : test double run
 
     If force run is true : run MDA with strong coupling and MDOs
+    If test_mdo is true : tests sets 1 iteration to mdo and then test integrity of data after computing post-processings
 
     """
     logging.disable(logging.INFO)
@@ -486,13 +487,24 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         test_passed = data_integrity_passed
 
         if data_integrity_passed:
+            if study_2.ee.factory.contains_mdo:
+                msg = f"\nINFO: {usecase}, 'max_iter' is set to 1 before testing post-procs"
+                info_msg += msg
+                max_iter_var_name = study_2.ee.dm.get_all_namespaces_from_var_name("max_iter")[0]
+                study_2.ee.dm.set_values_from_dict({max_iter_var_name: 1})
+                print(msg)
+            msg = f"\nINFO: {usecase}, 'max_mda_iter' is set to 2 before testing post-procs"
+            print(msg)
+            info_msg += msg
+            max_iter_mda_var_name = study_2.ee.dm.get_all_namespaces_from_var_name("max_mda_iter")[0]
+            study_2.ee.dm.set_values_from_dict({max_iter_mda_var_name: 2})
             if not study_2.ee.factory.contains_mdo or force_run:
                 post_processing_passed, error_msg_post_processing = test_post_processing_study(
                     study=study_2, force_run=force_run)
                 test_passed = post_processing_passed
                 info_msg += error_msg_post_processing
 
-                if post_processing_passed:
+                if post_processing_passed and not study_2.ee.factory.contains_mdo:
                     if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
                         run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
                         test_passed = run_test_passed
