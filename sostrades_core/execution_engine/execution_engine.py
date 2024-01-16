@@ -518,7 +518,7 @@ class ExecutionEngine:
         Load a study from a datasets mapping dictionary : retreive dataset value and load study
         '''
         # call the configure function with the set dm data from datasets
-        self.configure_study_with_data(datasets_mapping, self.dm.set_data_values_from_datasets, update_status_configure)
+        self.configure_study_with_data(datasets_mapping, self.dm.fill_data_dict_from_datasets, update_status_configure)
 
     def load_study_from_input_dict(self, input_dict_to_load, update_status_configure=True):
         '''
@@ -574,7 +574,7 @@ class ExecutionEngine:
                 data_cache.update({converted_key: value})
         
         # call the configure function with the set dm data from dict
-        self.configure_study_with_data(data_cache, self.dm.set_data_values_from_dict, update_status_configure)
+        self.configure_study_with_data(data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
 
 
 
@@ -602,6 +602,7 @@ class ExecutionEngine:
                 self.__yield_method()
 
             self.dm.no_change = True
+            # call the function that will set data in dm
             loaded_data = set_data_in_dm_function(dict_or_datasets_to_load, checked_keys)
             
             self.__configure_io()

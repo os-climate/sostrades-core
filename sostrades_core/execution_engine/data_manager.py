@@ -346,7 +346,7 @@ class DataManager:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
         
-    def set_data_values_from_dict(self, values_dict, already_set_data):
+    def fill_data_dict_from_dict(self, values_dict, already_set_data):
         '''
         Set values in data_dict from dict with namespaced keys 
         '''
@@ -362,7 +362,7 @@ class DataManager:
                     already_set_data.append(key)
         return values_dict
     
-    def set_data_values_from_datasets(self, datasets_mapping, already_set_data):
+    def fill_data_dict_from_datasets(self, datasets_mapping, already_set_data):
         '''
         Set values in data_dict from datasets
         :param: datasets_mapping, adatset list and mapping with study namespaces
