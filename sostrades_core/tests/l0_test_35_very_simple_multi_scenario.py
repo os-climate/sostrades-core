@@ -680,7 +680,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
                                                                                                         'scenario_2']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
-        self.assertEqual(len(self.exec_eng.ns_manager.ns_list), 9)
+        self.assertEqual(len(self.exec_eng.ns_manager.ns_list), 9) # maybe should be 8 ?
 
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
