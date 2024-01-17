@@ -1,24 +1,43 @@
+"""
+Copyright 2024 Capgemini
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 from dataclasses import dataclass
 
-@dataclass()
+
+@dataclass(frozen=True)
 class DatasetInfo:
-    connector_id:str
-    dataset_id:str
+    # Keys for parsing json
+    CONNECTOR_ID_KEY = "connector_id"
+    DATASET_ID_KEY = "dataset_id"
+
+    # Id of the connector
+    connector_id: str
+    # Dataset id for this connector
+    dataset_id: str
 
     @staticmethod
-    def deserialize(input_dict:dict) -> "DatasetInfo":
+    def deserialize(input_dict: dict) -> "DatasetInfo":
         """
         Method to deserialize
-        expected 
+        expected
         {
             "connector_id": <connector_id>,
             "dataset_id": <dataset_id>,
         }
         """
         return DatasetInfo(
-            connector_id=input_dict["connector_id"],
-            dataset_id=input_dict["dataset_id"],
+            connector_id=input_dict[DatasetInfo.CONNECTOR_ID_KEY],
+            dataset_id=input_dict[DatasetInfo.DATASET_ID_KEY],
         )
-
-    def __hash__(self) -> int:
-        return hash(str(self))

@@ -1,18 +1,38 @@
+"""
+Copyright 2024 Capgemini
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 from dataclasses import dataclass
 
 import json
 
 from sostrades_core.datasets.dataset_info import DatasetInfo
 
+
 @dataclass()
 class DatasetsMapping:
+    # Keys for parsing json
     DATASETS_INFO_KEY = "datasets_infos"
     NAMESPACE_KEY = "namespace_datasets_mapping"
-    datasets_infos:dict[str:DatasetInfo]
-    namespace_datasets_mapping:dict[str:list[DatasetInfo]]
+
+    # Dataset info [dataset_name : DatasetInfo]
+    datasets_infos: dict[str:DatasetInfo]
+    # Namespace mapping [namespace_name : List[DatasetInfo]]
+    namespace_datasets_mapping: dict[str : list[DatasetInfo]]
 
     @staticmethod
-    def deserialize(input_dict:dict) -> "DatasetsMapping":
+    def deserialize(input_dict: dict) -> "DatasetsMapping":
         """
         Method to deserialize
         expected example
@@ -36,8 +56,10 @@ class DatasetsMapping:
         # Parse datasets info
         datasets_infos = {}
         for dataset in input_dict[DatasetsMapping.DATASETS_INFO_KEY]:
-            datasets_infos[dataset] = DatasetInfo.deserialize(input_dict=input_dict[DatasetsMapping.DATASETS_INFO_KEY][dataset])
-        
+            datasets_infos[dataset] = DatasetInfo.deserialize(
+                input_dict=input_dict[DatasetsMapping.DATASETS_INFO_KEY][dataset]
+            )
+
         # Parse namespace datasets mapping
         namespace_datasets_mapping = {}
         input_dict_dataset_mapping = input_dict[DatasetsMapping.NAMESPACE_KEY]
@@ -49,41 +71,9 @@ class DatasetsMapping:
             datasets_infos=datasets_infos,
             namespace_datasets_mapping=namespace_datasets_mapping,
         )
-    
+
     @staticmethod
-    def from_json_file(file_path:str) -> "DatasetsMapping":
+    def from_json_file(file_path: str) -> "DatasetsMapping":
         with open(file_path, "rb") as file:
             json_data = json.load(file)
         return DatasetsMapping.deserialize(json_data)
-
-
-if __name__ == "__main__":
-    """
-    Some example to wotk with dataset mapping
-    """
-    import os
-    input_dict = {
-            "datasets_infos": {
-                "Dataset1": {
-                    "connector_id": "<1connector_id>",
-                    "dataset_id": "<1dataset_id>",
-                },
-                "Dataset2": {
-                    "connector_id": "<2connector_id>",
-                    "dataset_id": "<2dataset_id>",
-                }
-            },
-            "namespace_datasets_mapping": {
-                "namespace1" : ["Dataset1"],
-                "namespace2" : ["Dataset1", "Dataset2"]
-            },
-        }
-
-    dataset_mapping_from_dict = DatasetsMapping.deserialize(input_dict=input_dict)
-    print("Dataset mapping from dict", dataset_mapping_from_dict)
-
-    json_file_path = os.path.join(os.path.dirname(__file__), "example_mapping.json")
-    print("Json file path", json_file_path)
-    dataset_mapping_from_json = DatasetsMapping.from_json_file(file_path=json_file_path)
-    
-    print("Dataset mapping from json", dataset_mapping_from_json)

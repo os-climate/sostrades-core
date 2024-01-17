@@ -17,9 +17,10 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from typing import Union, Optional
+from typing import Any, Callable, List, Union, Optional
 # Execution engine SoSTrades code
 import logging
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
@@ -513,7 +514,7 @@ class ExecutionEngine:
 
         return converted_dict
 
-    def load_study_from_dataset(self, datasets_mapping, update_status_configure=True):
+    def load_study_from_dataset(self, datasets_mapping: DatasetsMapping, update_status_configure:bool=True):
         '''
         Load a study from a datasets mapping dictionary : retreive dataset value and load study
         '''
@@ -549,7 +550,7 @@ class ExecutionEngine:
                    for key, value in input_dict.items()}
         return dm_dict
 
-    def load_study_from_dict(self, dict_to_load, anonymize_function=None, update_status_configure=True):
+    def load_study_from_dict(self, dict_to_load:dict[str:Any], anonymize_function=None, update_status_configure:bool=True):
         '''
         method that imports data from dictionary to discipline tree
 
@@ -578,12 +579,16 @@ class ExecutionEngine:
 
 
 
-    def configure_study_with_data(self, dict_or_datasets_to_load, set_data_in_dm_function, update_status_configure):
+    def configure_study_with_data(
+            self, dict_or_datasets_to_load: Union[dict, DatasetsMapping],
+            set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], dict[str:Any]],None],
+            update_status_configure:bool
+            ):
         '''
         method that insert data into dm and configure the process
 
-        :params: set_data_in_dm_function, a function that retreive data values and set it into the dm data_dict, with signature:
-        set_data_in_dm_function (dict_to_load:dict, already_inserted_keys: list of data name)
+        :params: set_data_in_dm_function, a function sets data in datamanager data_dict using dict_or_datasets_to_load, with signature:
+        set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: list of data name) -> dict[str:Any] list of loaded data
         :type: function
 
         '''

@@ -19,11 +19,13 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import logging
 from copy import copy
+from typing import Any, List
 from uuid import uuid4
 from hashlib import sha256
 from copy import deepcopy
 from numpy import can_cast
 from sostrades_core.datasets.dataset_manager import DatasetManager
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
@@ -346,7 +348,7 @@ class DataManager:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
         
-    def fill_data_dict_from_dict(self, values_dict, already_set_data):
+    def fill_data_dict_from_dict(self, values_dict:dict[str:Any], already_set_data: List[str]) -> dict[str:Any]:
         '''
         Set values in data_dict from dict with namespaced keys 
         '''
@@ -362,7 +364,7 @@ class DataManager:
                     already_set_data.append(key)
         return values_dict
     
-    def fill_data_dict_from_datasets(self, datasets_mapping, already_set_data):
+    def fill_data_dict_from_datasets(self, datasets_mapping:DatasetsMapping, already_set_data:List[str]) -> dict[str:Any]:
         '''
         Set values in data_dict from datasets
         :param: datasets_mapping, adatset list and mapping with study namespaces
@@ -394,7 +396,7 @@ class DataManager:
 
                 datasets_info = datasets_mapping.namespace_datasets_mapping[namespace]
                 # get data values into the dataset
-                updated_data = self.dataset_manager.fetch_data_from_dataset(datasets_info, data_dict)
+                updated_data = self.dataset_manager.fetch_data_from_dataset(datasets_info=datasets_info, data_names=data_dict)
 
                 # update data values in dm
                 for data_name, value in updated_data.items():
@@ -407,7 +409,6 @@ class DataManager:
         # update the already set data list for the next loop
         already_set_data.extend(loaded_data_dict.keys())
         return loaded_data_dict
-
 
 
     def convert_data_dict_with_full_name(self):

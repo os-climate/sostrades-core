@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from sostrades_core.datasets.datasets_connectors.json_datasets_connector import JSONDatasetsConnector
 
 from sostrades_core.execution_engine.data_connector.dremio_data_connector import (
     DremioDataConnector,
@@ -30,7 +29,6 @@ from sostrades_core.execution_engine.data_connector.ontology_data_connector impo
 from sostrades_core.execution_engine.data_connector.mongodb_data_connector import MongoDBDataConnector
 
 
-
 class ConnectorFactory:
     """
     Data connector factory
@@ -43,8 +41,7 @@ class ConnectorFactory:
         MockConnector.NAME: MockConnector,
         TrinoDataConnector.NAME: TrinoDataConnector,
         OntologyDataConnector.NAME: OntologyDataConnector,
-        MongoDBDataConnector.NAME: MongoDBDataConnector,
-        JSONDatasetsConnector.NAME:JSONDatasetsConnector
+        MongoDBDataConnector.NAME: MongoDBDataConnector
     }
 
     @staticmethod
@@ -162,5 +159,3 @@ class PersistentConnectorContainer:
         if connector_identifier not in self.__registered_connectors.keys():
             self.__logger.info(f'Request a non registered connector "{connector_identifier}"')
         return self.__registered_connectors.get(connector_identifier, None)
-
-

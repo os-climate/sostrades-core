@@ -1,14 +1,32 @@
+"""
+Copyright 2024 Capgemini
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+from typing import Any, List
 from sostrades_core.datasets.dataset_info import DatasetInfo
 from sostrades_core.datasets.dataset import Dataset
-from sostrades_core.datasets.datasets_connectors.json_datasets_connector import JSONDatasetsConnector
+from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+    DatasetsConnectorManager,
+)
 
 
 class DatasetManager:
     def __init__(self):
         self.datasets = {}
 
-    def fetch_data_from_dataset(self, datasets_info, data_names):
-        '''
+    def fetch_data_from_dataset(self, datasets_info: DatasetInfo, data_names: List[str]) -> dict[str:Any]:
+        """
         get data from datasets and fill data_dict
 
         :param: datasets_info, list of datasets associated to a namespace
@@ -18,29 +36,33 @@ class DatasetManager:
         :type: list of string (data names)
 
         :return: data_dict of data names and retrieved values
-        '''
-        updated_data = {}
+        """
+        data_retrieved = {}
 
         for dataset_info in datasets_info:
-            # create a Dataset and save it in a list if it does not already exists
-            if dataset_info not in self.datasets:
-                self.datasets[dataset_info] = self._create_dataset(dataset_info)
-            
-            # retrieve the data values from the dataset
-            updated_data.update(self.datasets[dataset_info].fetch_values(data_names))
+            # Get the dataset, creates it if not exists
+            dataset = self.get_dataset(dataset_info=dataset_info)
 
-        return updated_data
+            # Retrieve values
+            dataset_data = dataset.get_values(data_names=data_names)
 
-    def _create_dataset(self, dataset_info):
-        '''Get the connector associated to the dataset and create a Dataset object
-        '''
+            # Update internal dictionnary
+            # TODO handle conflict, data may come from several datasets
+            data_retrieved.update(dataset_data)
 
-        #TODO: this connector should be saved in a connector factory singleton somewhere
-        # and here we should only get the connector
-        connector_connexion_info ={'filename': 'datasets_db.json'}
-        connector = JSONDatasetsConnector(data_connection_info=connector_connexion_info)
-             
+        return data_retrieved
+
+    def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
+        if dataset_info not in self.datasets:
+            self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
+        return self.datasets[dataset_info]
+
+    def __create_dataset(self, dataset_info: DatasetInfo) -> Dataset:
+        """
+        Private method
+        Get the connector associated to the dataset and create a Dataset object
+        """
+        # Gets connector
+        connector = DatasetsConnectorManager.get_connector(connector_identifier=dataset_info.connector_id)
+
         return Dataset(dataset_info=dataset_info, connector=connector)
-
-
-     

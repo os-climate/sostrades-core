@@ -1,8 +1,8 @@
 {
     "dataset_all_in_one": {
         "a": 1,
-        "b": "2",
-        "c": "3",
+        "b": "string_2",
+        "c": "string_3",
         "x":4
     },
     "dataset_ax": {
@@ -10,33 +10,33 @@
         "x":20
     },
     "dataset_bc": {
-        "b": "1",
-        "c": "2"
+        "b": "string_1",
+        "c": "string_2"
     },
     "dataset_a": {
         "a": 15
     },
     "dataset_bcx_1": {
         "x":30,
-        "b": "40",
-        "c": "50"
+        "b": "string_40",
+        "c": "string_50"
     },
     "dataset_bcx_2": {
         "x":4,
-        "b": "5",
-        "c": "6"
+        "b": "string_5",
+        "c": "string_6"
     },
     "dataset_bw": {
-        "b": "5",
+        "b": "string_5",
         "w": "dumb_value"
     },
     "dataset_c_1": {
-        "c": "11"
+        "c": "string_11"
     },
     "dataset_c_2": {
-        "c": "12"
+        "c": "string_12"
     },
     "dataset_b": {
-        "b": "42"
+        "b": "string_42"
     }
 }

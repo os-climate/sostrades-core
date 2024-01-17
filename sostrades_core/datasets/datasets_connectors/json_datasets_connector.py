@@ -1,5 +1,5 @@
-'''
-Copyright 2023 Capgemini
+"""
+Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,75 +12,57 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-'''
+"""
+import json
+import os
+from typing import Any, List
 
-from sostrades_core.execution_engine.data_connector.abstract_data_connector import AbstractDataConnector
-import json 
-import pandas as pd 
-from os.path import dirname, join, exists
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
 
 
-
-class JSONDatasetsConnector(AbstractDataConnector):
+class JSONDatasetsConnector(AbstractDatasetsConnector):
     """
-    Specific data connector for dataset in json format
+    Specific dataset connector for dataset in json format
     """
 
-    NAME = 'JSON_datasets'
-
-    CONNECTOR_TYPE = 'connector_type'
-    CONNECTOR_DATA = 'connector_data'
-    CONNECTOR_REQUEST = 'connector_request'
-
-    def __init__(self, data_connection_info=None):
+    def __init__(self, file_path: str):
         """
         Constructor for JSON data connector
 
-        :param data_connection_info: contains necessary data for connection
-        :type data_connection_info: dict
+        :param file_path: file_path for this dataset connector
+        :type file_path: str
         """
-        self.filename = None
-        self.filepath = dirname(__file__)
-        self.json_content = {}
-        super().__init__(data_connection_info=data_connection_info)
+        super().__init__()
+        self.file_path = file_path
 
-    def _extract_connection_info(self,data_connection_info):
-
-        self.filename = data_connection_info['filename']
-
-
-    def load_data(self, dataset_name):
+    def get_data(self, dataset_identifier: str, data_to_get: List[str]) -> None:
         """
-        Method to load a dataset from JSON and filla data_dict
+        Method to retrieve data from JSON and fill a data_dict
 
-        :param: dataset_name, name of the dataset
+        :param: dataset_identifier, identifier of the dataset
         :type: string
-
         """
-        #TODO: optimise opening and reading by creating a dedictated abstractDatasetConnector
+        # TODO: optimise opening and reading by creating a dedictated abstractDatasetConnector
         json_data = {}
         # Read JSON
-        db_path = join(self.filepath,self.filename)
-        if exists(db_path):
-            with open(db_path, "r") as file:
-                json_data = json.load(file)
-        else:
-            raise Exception(f'The connector json file is not found at {db_path}')
-        
-        if dataset_name in json_data:
-            return json_data[dataset_name]
-        else:
-            raise Exception(f'The dataset {dataset_name} is not found in the {self.filename}')
-        
+        db_path = self.file_path
+        if not os.path.exists(db_path):
+            raise FileNotFoundError(f"The connector json file is not found at {db_path}")
 
-    
-    def write_data(self, ):
+        with open(db_path, "r") as file:
+            json_data = json.load(file)
+
+        if dataset_identifier not in json_data:
+            raise KeyError(f"The dataset {dataset_identifier} is not found in the {self.filename}")
+
+        dataset_data = json_data[dataset_identifier]
+
+        # Filter data
+        filtered_data = {key: dataset_data[key] for key in dataset_data if key in data_to_get}
+        return filtered_data
+
+    def write_data(self, data_to_write: dict[str:Any]) -> None:
         """
-        Method to load a data 
+        Method to write data
         """
-
-        raise Exception("method not implemented")
-
-    def set_connector_request(self, requested_datasets):
-
-        raise Exception("method not implemented")
+        raise NotImplementedError()

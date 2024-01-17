@@ -13,22 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from dataclasses import dataclass
-from typing import Any
 
-from sostrades_core.datasets.dataset_info import DatasetInfo
-from sostrades_core.execution_engine.data_connector.abstract_data_connector import (
-    AbstractDataConnector,
-)
+import abc
+from typing import Any, List
 
 
-@dataclass()
-class Dataset:
-    dataset_info: DatasetInfo
-    connector: AbstractDataConnector
+class AbstractDatasetsConnector(abc.ABC):
+    """
+    Abstract class to inherit in order to build specific datasets connector
+    """
 
-    def get_values(self, data_names: list[str]) -> dict[str:Any]:
+    @abc.abstractmethod
+    def get_data(self, dataset_identifier: str, data_to_get: List[str]) -> dict[str:Any]:
         """
-        Get dataset data and return a data dict with values
+        Abstract method to overload in order to get a list of data from a specific API
         """
-        return self.connector.get_data(dataset_identifier=self.dataset_info.dataset_id, data_to_get=data_names)
+
+    @abc.abstractmethod
+    def write_data(self, data_to_write: dict[str:Any]) -> None:
+        """
+        Abstract method to overload in order to write a data from a specific API
+        """
