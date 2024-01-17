@@ -669,18 +669,19 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         ns_ac MyCase
         ns_data_ac MyCase
 
-        and only keep the 9 of the multi-scenario
+        and only keep the 8 of the multi-scenario
         '''
         self.get_simple_multiscenario_process_configured(self.exec_eng)
         dict_values = {}
         dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                            True],
-                                                                                      'scenario_name': ['scenario_1',
-                                                                                                        'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
-        self.assertEqual(len(self.exec_eng.ns_manager.ns_list), 9) # maybe should be 8 ?
+        self.assertEqual(len(self.exec_eng.ns_manager.ns_list), 8)  # maybe should be 8 ?
+
 
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()

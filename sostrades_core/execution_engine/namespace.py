@@ -33,7 +33,7 @@ class Namespace:
         self.value = value
         self.__display_value = display_value
         self.dependency_disc_list = []  # list of dependency disciplines
-        self.database_infos = database_infos 
+        self.database_infos = database_infos
 
     def to_dict(self):
         ''' Method that serialize as dict a Namespace object '''
@@ -66,6 +66,7 @@ class Namespace:
         '''
 
         return self.__display_value
+
     def is_display_value(self):
 
         return self.__display_value is not None
@@ -101,6 +102,18 @@ class Namespace:
         '''
         if disc_id in self.dependency_disc_list:
             self.dependency_disc_list.remove(disc_id)
+
+    def check_namespace_is_used(self):
+        '''
+
+        Returns: Boolean to check if the namespace is used by at leats one discipline
+        False the namespace is not used anymore
+
+        '''
+        if len(self.dependency_disc_list) == 0:
+            return False
+        else:
+            return True
 
     def __eq__(self, other):
 
