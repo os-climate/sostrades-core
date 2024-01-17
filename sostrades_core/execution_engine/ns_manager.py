@@ -660,7 +660,6 @@ class NamespaceManager:
         full_ns_list = list(self.all_ns_dict.values())
         for ns in full_ns_list:
             if ns.name not in post_proc_ns_list and not ns.check_namespace_is_used():
-                print(f'Namespace {ns.get_ns_id()} is not used and is cleaned')
                 self.__clean_namespace(ns)
 
 
