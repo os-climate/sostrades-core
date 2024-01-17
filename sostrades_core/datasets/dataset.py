@@ -24,11 +24,17 @@ from sostrades_core.execution_engine.data_connector.abstract_data_connector impo
 
 @dataclass()
 class Dataset:
+    """
+    Dataset class
+    """
     dataset_info: DatasetInfo
     connector: AbstractDataConnector
 
     def get_values(self, data_names: list[str]) -> dict[str:Any]:
         """
         Get dataset data and return a data dict with values
+
+        :param data_names: list of names to retrieve
+        :type data_names: list[str]
         """
-        return self.connector.get_data(dataset_identifier=self.dataset_info.dataset_id, data_to_get=data_names)
+        return self.connector.get_values(dataset_identifier=self.dataset_info.dataset_id, data_to_get=data_names)

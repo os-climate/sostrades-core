@@ -22,6 +22,9 @@ from sostrades_core.datasets.dataset_info import DatasetInfo
 
 @dataclass()
 class DatasetsMapping:
+    """
+    Stores namespace/dataset mapping
+    """
     # Keys for parsing json
     DATASETS_INFO_KEY = "datasets_infos"
     NAMESPACE_KEY = "namespace_datasets_mapping"
@@ -52,6 +55,8 @@ class DatasetsMapping:
                 "namespace2" : ["Dataset1", "Dataset2"]
             },
         }
+        :param input_dict: dict like input json object
+        :type input_dict: dict
         """
         # Parse datasets info
         datasets_infos = {}
@@ -74,6 +79,11 @@ class DatasetsMapping:
 
     @staticmethod
     def from_json_file(file_path: str) -> "DatasetsMapping":
+        """
+        Method to deserialize from a json file
+        :param file_path: path of the file to deserialize
+        :type file_path: str
+        """
         with open(file_path, "rb") as file:
             json_data = json.load(file)
         return DatasetsMapping.deserialize(json_data)

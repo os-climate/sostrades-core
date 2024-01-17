@@ -18,6 +18,9 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class DatasetInfo:
+    """
+    Stores the informations of a dataset
+    """
     # Keys for parsing json
     CONNECTOR_ID_KEY = "connector_id"
     DATASET_ID_KEY = "dataset_id"
@@ -36,6 +39,8 @@ class DatasetInfo:
             "connector_id": <connector_id>,
             "dataset_id": <dataset_id>,
         }
+        :param input_dict: dict like input json object
+        :type input_dict: dict
         """
         return DatasetInfo(
             connector_id=input_dict[DatasetInfo.CONNECTOR_ID_KEY],

@@ -35,12 +35,15 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         super().__init__()
         self.file_path = file_path
 
-    def get_data(self, dataset_identifier: str, data_to_get: List[str]) -> None:
+    def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> None:
         """
         Method to retrieve data from JSON and fill a data_dict
 
-        :param: dataset_identifier, identifier of the dataset
-        :type: string
+        :param dataset_identifier: identifier of the dataset
+        :type dataset_identifier: str
+
+        :param data_to_get: data to retrieve, list of names
+        :type data_to_get: List[str]
         """
         # TODO: optimise opening and reading by creating a dedictated abstractDatasetConnector
         json_data = {}
@@ -61,8 +64,12 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         filtered_data = {key: dataset_data[key] for key in dataset_data if key in data_to_get}
         return filtered_data
 
-    def write_data(self, data_to_write: dict[str:Any]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any]) -> None:
         """
         Method to write data
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: List[str]
         """
         raise NotImplementedError()

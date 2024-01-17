@@ -16,7 +16,7 @@ limitations under the License.
 import logging
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetsConnectorFactory, DatasetConnectorTypes
+from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetsConnectorFactory, DatasetConnectorType
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
@@ -31,13 +31,16 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     def get_connector(cls, connector_identifier:str) -> AbstractDatasetsConnector:
         """
         Gets a connector given its identifier
+
+        :param connector_identifier: identifier of the connector
+        :type connector_identifier: string
         """
         if connector_identifier not in cls.__registered_connectors:
             raise ValueError(f"Connector {connector_identifier} not found.")
         return cls.__registered_connectors[connector_identifier]
 
     @classmethod
-    def register_connector(cls, connector_identifier:str, connector_type:DatasetConnectorTypes, **connector_instanciation_fields) -> AbstractDatasetsConnector:
+    def register_connector(cls, connector_identifier:str, connector_type:DatasetConnectorType, **connector_instanciation_fields) -> AbstractDatasetsConnector:
         """
         Register a connector with connector_instanciation_fields
         :param connector_identifier: An unique name to identify clearly this connector

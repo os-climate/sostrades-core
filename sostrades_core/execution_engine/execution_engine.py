@@ -17,9 +17,11 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from typing import Any, Callable, List, Union, Optional
+from typing import Any, Callable, Union, Optional
 # Execution engine SoSTrades code
 import logging
+import json 
+
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
@@ -31,8 +33,6 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-import os 
-import json 
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -517,6 +517,11 @@ class ExecutionEngine:
     def load_study_from_dataset(self, datasets_mapping: DatasetsMapping, update_status_configure:bool=True):
         '''
         Load a study from a datasets mapping dictionary : retreive dataset value and load study
+        
+        :param datasets_mapping: Dataset mapping to use
+        :type datasets_mapping: DatasetsMapping
+        :param update_status_configure: whether to update the status for configure
+        :type update_status_configure: bool
         '''
         # call the configure function with the set dm data from datasets
         self.configure_study_with_data(datasets_mapping, self.dm.fill_data_dict_from_datasets, update_status_configure)
@@ -527,8 +532,7 @@ class ExecutionEngine:
         and compute the function load_study_from_dict
         '''
         dict_to_load = self.convert_input_dict_into_dict(input_dict_to_load)
-        self.load_study_from_dict(
-            dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
+        self.load_study_from_dict(dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
 
     def get_anonimated_data_dict(self):
         '''
@@ -546,11 +550,12 @@ class ExecutionEngine:
 
     def convert_input_dict_into_dict(self, input_dict):
 
-        dm_dict = {key: {ProxyDiscipline.VALUE: value}
-                   for key, value in input_dict.items()}
+        dm_dict = {key: {ProxyDiscipline.VALUE: value} for key, value in input_dict.items()}
         return dm_dict
 
-    def load_study_from_dict(self, dict_to_load:dict[str:Any], anonymize_function=None, update_status_configure:bool=True):
+    def load_study_from_dict(
+        self, dict_to_load: dict[str:Any], anonymize_function=None, update_status_configure: bool = True
+    ):
         '''
         method that imports data from dictionary to discipline tree
 
@@ -564,7 +569,7 @@ class ExecutionEngine:
         Optional parameter used only for evaluator process to avoid the configuration of all disciplines
         :type: SoSEval object
         '''
-        self.logger.debug('Loading study from dictionary')
+        self.logger.debug("Loading study from dictionary")
 
         if anonymize_function is None:
             data_cache = dict_to_load
@@ -573,23 +578,22 @@ class ExecutionEngine:
             for key, value in dict_to_load.items():
                 converted_key = anonymize_function(key)
                 data_cache.update({converted_key: value})
-        
+
         # call the configure function with the set dm data from dict
         self.configure_study_with_data(data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
 
-
-
     def configure_study_with_data(
-            self, dict_or_datasets_to_load: Union[dict, DatasetsMapping],
-            set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], dict[str:Any]],None],
-            update_status_configure:bool
-            ):
+        self,
+        dict_or_datasets_to_load: Union[dict, DatasetsMapping],
+        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], dict[str:Any]], None],
+        update_status_configure: bool,
+    ):
         '''
         method that insert data into dm and configure the process
 
-        :params: set_data_in_dm_function, a function sets data in datamanager data_dict using dict_or_datasets_to_load, with signature:
+        :param set_data_in_dm_function: a function sets data in datamanager data_dict using dict_or_datasets_to_load, with signature:
         set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: list of data name) -> dict[str:Any] list of loaded data
-        :type: function
+        :type set_data_in_dm_function: Callable
 
         '''
         iteration = 0
@@ -599,7 +603,7 @@ class ExecutionEngine:
         # that should mean all disciplines under discipline to load are deeply
         # configured
 
-        checked_keys = []
+        checked_keys = set()
 
         while not loop_stop:
             self.logger.info("Configuring loop iteration %i.", iteration)
@@ -609,7 +613,7 @@ class ExecutionEngine:
             self.dm.no_change = True
             # call the function that will set data in dm
             loaded_data = set_data_in_dm_function(dict_or_datasets_to_load, checked_keys)
-            
+
             self.__configure_io()
 
             if self.__yield_method is not None:
@@ -621,7 +625,7 @@ class ExecutionEngine:
             if self.root_process.is_configured():
                 loop_stop = True
             elif iteration >= 100:
-                self.logger.warning('CONFIGURE WARNING: root process is not configured after 100 iterations')
+                self.logger.warning("CONFIGURE WARNING: root process is not configured after 100 iterations")
                 loop_stop = True
 
         # Convergence is ended
@@ -633,10 +637,10 @@ class ExecutionEngine:
                 # check if this is a strongly coupled input necessary to
                 # initialize a MDA
                 is_init_coupling_var = (
-                        value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[
-                    ProxyDiscipline.COUPLING])
+                    value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING]
+                )
                 if is_output_var or is_init_coupling_var:
-                    value['value'] = convert_data_cache[key]['value']
+                    value["value"] = convert_data_cache[key]["value"]
 
         if self.__yield_method is not None:
             self.__yield_method()

@@ -21,19 +21,22 @@ from sostrades_core.datasets.datasets_connectors.datasets_connector_manager impo
 )
 
 
-class DatasetManager:
+class DatasetsManager:
+    """
+    Manages connections to datasets
+    """
     def __init__(self):
         self.datasets = {}
 
-    def fetch_data_from_dataset(self, datasets_info: DatasetInfo, data_names: List[str]) -> dict[str:Any]:
+    def fetch_data_from_datasets(self, datasets_info: List[DatasetInfo], data_names: List[str]) -> dict[str:Any]:
         """
         get data from datasets and fill data_dict
 
-        :param: datasets_info, list of datasets associated to a namespace
-        :type: list of DatasetInfo
+        :param datasets_info: list of datasets associated to a namespace
+        :type datasets_info: List[DatasetInfo]
 
-        :param: data_names, list of data to be fetch in datasets
-        :type: list of string (data names)
+        :param data_names: list of data to be fetch in datasets
+        :type data_names: List[str]
 
         :return: data_dict of data names and retrieved values
         """
@@ -53,6 +56,14 @@ class DatasetManager:
         return data_retrieved
 
     def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
+        """
+        Gets a dataset, creates it if it does not exist
+
+        :param dataset_info: Dataset info
+        :type dataset_info: DatasetInfo
+
+        :return: Dataset
+        """
         if dataset_info not in self.datasets:
             self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
         return self.datasets[dataset_info]
@@ -61,6 +72,9 @@ class DatasetManager:
         """
         Private method
         Get the connector associated to the dataset and create a Dataset object
+
+        :param dataset_info: Dataset info
+        :type dataset_info: DatasetInfo
         """
         # Gets connector
         connector = DatasetsConnectorManager.get_connector(connector_identifier=dataset_info.connector_id)

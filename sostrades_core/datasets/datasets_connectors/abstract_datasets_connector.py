@@ -24,13 +24,21 @@ class AbstractDatasetsConnector(abc.ABC):
     """
 
     @abc.abstractmethod
-    def get_data(self, dataset_identifier: str, data_to_get: List[str]) -> dict[str:Any]:
+    def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to get a list of data from a specific API
+        :param: dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param data_to_get: list of data name to get
+        :type data_to_get: List[str]
         """
 
     @abc.abstractmethod
-    def write_data(self, data_to_write: dict[str:Any]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any]) -> None:
         """
         Abstract method to overload in order to write a data from a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: dict[str:Any]
         """

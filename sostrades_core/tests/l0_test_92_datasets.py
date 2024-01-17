@@ -16,10 +16,10 @@ limitations under the License.
 from pathlib import Path
 import unittest
 import os
-from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorTypes
-from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
+from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
+from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
@@ -29,11 +29,11 @@ class TestDatasets(unittest.TestCase):
     """
 
     def setUp(self):
+        # register connector for tests
         self.test_data_folder = os.path.join(os.path.dirname(__file__), "data")
-
         DatasetsConnectorManager.register_connector(
             connector_identifier="JSON_datasets",
-            connector_type=DatasetConnectorTypes.JSON,
+            connector_type=DatasetConnectorType.JSON,
             file_path=os.path.join(self.test_data_folder, "test_92_datasets_db.json"),
         )
 
@@ -59,10 +59,10 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("dataset_test.a"), 1)
         self.assertEqual(dm.get_value("dataset_test.Disc1VirtualNode.x"), 4)
         self.assertEqual(dm.get_value("dataset_test.Disc2VirtualNode.x"), 4)
-        self.assertEqual(dm.get_value("dataset_test.Disc1.b"), "2")
-        self.assertEqual(dm.get_value("dataset_test.Disc2.b"), "2")
-        self.assertEqual(dm.get_value("dataset_test.Disc1.c"), "3")
-        self.assertEqual(dm.get_value("dataset_test.Disc2.c"), "3")
+        self.assertEqual(dm.get_value("dataset_test.Disc1.b"), "string_2")
+        self.assertEqual(dm.get_value("dataset_test.Disc2.b"), "string_2")
+        self.assertEqual(dm.get_value("dataset_test.Disc1.c"), "string_3")
+        self.assertEqual(dm.get_value("dataset_test.Disc2.c"), "string_3")
 
     def test_02_usecase2(self):
         dm = self.study.execution_engine.dm
@@ -80,10 +80,10 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("dataset_test.a"), 10)
         self.assertEqual(dm.get_value("dataset_test.Disc1VirtualNode.x"), 20)
         self.assertEqual(dm.get_value("dataset_test.Disc2VirtualNode.x"), 20)
-        self.assertEqual(dm.get_value("dataset_test.Disc1.b"), "1")
-        self.assertEqual(dm.get_value("dataset_test.Disc2.b"), "1")
-        self.assertEqual(dm.get_value("dataset_test.Disc1.c"), "2")
-        self.assertEqual(dm.get_value("dataset_test.Disc2.c"), "2")
+        self.assertEqual(dm.get_value("dataset_test.Disc1.b"), "string_1")
+        self.assertEqual(dm.get_value("dataset_test.Disc2.b"), "string_1")
+        self.assertEqual(dm.get_value("dataset_test.Disc1.c"), "string_2")
+        self.assertEqual(dm.get_value("dataset_test.Disc2.c"), "string_2")
 
     def test_03_mapping(self):
         """

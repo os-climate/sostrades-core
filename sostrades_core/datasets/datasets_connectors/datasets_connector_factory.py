@@ -23,7 +23,7 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
-class DatasetConnectorTypes(Enum):
+class DatasetConnectorType(Enum):
     """
     Dataset connector types anum
     """
@@ -38,16 +38,16 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
 
     @staticmethod
     def get_connector(
-        connector_type: DatasetConnectorTypes, **connector_instanciation_fields
+        connector_type: DatasetConnectorType, **connector_instanciation_fields
     ) -> AbstractDatasetsConnector:
         """
         Instanciate a connector of type connector_type with provided arguments
         Raises ValueError if type is invalid
 
         :param connector_type: connector type to instanciate
-        :type connector_type: DatasetConnectorTypes
+        :type connector_type: DatasetConnectorType
         """
-        if not isinstance(connector_type, DatasetConnectorTypes) or not issubclass(
+        if not isinstance(connector_type, DatasetConnectorType) or not issubclass(
             connector_type.value, AbstractDatasetsConnector
         ):
             raise ValueError(f"Unexpected connector type {connector_type}")
@@ -57,9 +57,9 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
 if __name__ == "__main__":
     """
     Example usage of the factory"""
-    DatasetsConnectorFactory.get_connector(DatasetConnectorTypes.JSON, filename="aa")
+    DatasetsConnectorFactory.get_connector(DatasetConnectorType.JSON, file_path="aa")
 
-    connector_instanciation_dict = {"filename": "test_filename.json"}
+    connector_instanciation_dict = {"file_path": "test_filename.json"}
     DatasetsConnectorFactory.get_connector(
-        DatasetConnectorTypes.JSON, **connector_instanciation_dict
+        DatasetConnectorType.JSON, **connector_instanciation_dict
     )

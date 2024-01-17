@@ -22,15 +22,14 @@ from copy import copy
 from typing import Any, List
 from uuid import uuid4
 from hashlib import sha256
-from copy import deepcopy
-from numpy import can_cast
-from sostrades_core.datasets.dataset_manager import DatasetManager
-from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 
+from gemseo.caches.simple_cache import SimpleCache
+
+from sostrades_core.datasets.dataset_manager import DatasetsManager
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
-from gemseo.caches.simple_cache import SimpleCache
 
 TYPE = ProxyDiscipline.TYPE
 VALUE = ProxyDiscipline.VALUE
@@ -90,7 +89,7 @@ class DataManager:
         self.data_check_integrity = False
         self.logger = logger
 
-        self.dataset_manager = DatasetManager()
+        self.dataset_manager = DatasetsManager()
 
     @staticmethod
     def get_an_uuid():
@@ -347,10 +346,16 @@ class DataManager:
             # if self.data_dict[k][ProxyDiscipline.VISIBILITY] == INTERNAL_VISIBILITY:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
-        
-    def fill_data_dict_from_dict(self, values_dict:dict[str:Any], already_set_data: List[str]) -> dict[str:Any]:
+
+    def fill_data_dict_from_dict(self, values_dict: dict[str:Any], already_set_data: set[str]) -> dict[str:Any]:
         '''
-        Set values in data_dict from dict with namespaced keys 
+        Set values in data_dict from dict with namespaced keys
+        
+        :param values_dict: Dictionnary {name : values}
+        :type values_dict: dict[str:Any]
+        
+        :param already_set_data: set of data already set
+        :type already_set_data: set[str]
         '''
         # convert data_dict with uuids
         for key, value in self.data_dict.items():
@@ -360,33 +365,36 @@ class DataManager:
                 # variables
                 # Variables are only set once
                 if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and not key in already_set_data:
-                    value['value'] = values_dict[key]['value']
-                    already_set_data.append(key)
+                    value["value"] = values_dict[key]["value"]
+                    already_set_data.add(key)
         return values_dict
-    
-    def fill_data_dict_from_datasets(self, datasets_mapping:DatasetsMapping, already_set_data:List[str]) -> dict[str:Any]:
+
+    def fill_data_dict_from_datasets(
+        self, datasets_mapping: DatasetsMapping, already_set_data: set[str]
+    ) -> dict[str:Any]:
         '''
         Set values in data_dict from datasets
+
         :param: datasets_mapping, adatset list and mapping with study namespaces
         :type: DatasetsMapping
         
-        :param: already_set_data, list of data names that have already been set in dm
-        :type: list
+        :param already_set_data: set of data already set
+        :type already_set_data: set[str]
 
         :return: loaded_data_dict, dict of data ids with data values set in dm
         '''
-        #do a map between namespace and data from data_dict not already fetched
+        # do a map between namespace and data from data_dict not already fetched
         # to have a list of data by namespace
         namespaced_data_dict = {}
+        
         for key, data_value in self.data_dict.items():
-            # get only not already 
+            # get only not already
             if data_value[IO_TYPE] == IO_TYPE_IN and not key in already_set_data:
                 data_ns = data_value[NS_REFERENCE].name
                 data_name = data_value[VAR_NAME]
-                
-                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns,{})
+
+                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {})
                 namespaced_data_dict[data_ns][data_name] = key
-        
 
         # iterate on each namespace to retrieve data in this namespace
         loaded_data_dict = {}
@@ -396,20 +404,21 @@ class DataManager:
 
                 datasets_info = datasets_mapping.namespace_datasets_mapping[namespace]
                 # get data values into the dataset
-                updated_data = self.dataset_manager.fetch_data_from_dataset(datasets_info=datasets_info, data_names=data_dict)
+                updated_data = self.dataset_manager.fetch_data_from_datasets(
+                    datasets_info=datasets_info, data_names=data_dict
+                )
 
                 # update data values in dm
                 for data_name, value in updated_data.items():
                     key = data_dict[data_name]
                     self.data_dict[key][VALUE] = value
-                    loaded_data_dict[key]= value # save witch data has been retrieved
+                    loaded_data_dict[key] = value  # save witch data has been retrieved
             else:
-                self.logger.warning(f'the namespace {namespace} is not referenced in the datasets mapping of the study')
-        
-        # update the already set data list for the next loop
-        already_set_data.extend(loaded_data_dict.keys())
-        return loaded_data_dict
+                self.logger.warning(f"the namespace {namespace} is not referenced in the datasets mapping of the study")
 
+        # update the already set data list for the next loop
+        already_set_data.update(loaded_data_dict.keys())
+        return loaded_data_dict
 
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys

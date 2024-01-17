@@ -13,10 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorTypes
+import os
+
+from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.study_manager.study_manager import StudyManager
-import os
+
 
 if '__main__' == __name__:
     # Create a connector for demonstration
@@ -24,7 +26,7 @@ if '__main__' == __name__:
 
     DatasetsConnectorManager.register_connector(
         connector_identifier="JSON_datasets",
-        connector_type=DatasetConnectorTypes.JSON,
+        connector_type=DatasetConnectorType.JSON,
         file_path=os.path.join(test_data_folder, "test_92_datasets_db.json"),
     )
 
@@ -44,5 +46,3 @@ if '__main__' == __name__:
     uc_cls2 = StudyManager(repo, proc_name, study_name)
     uc_cls2.load_study(json_study_file_path)
     uc_cls2.run()
-
-
