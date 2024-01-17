@@ -641,6 +641,17 @@ class ExecutionEngine:
 
         self.dm.treeview = None
 
+        self.clean_unused_namespaces()
+
+    def clean_unused_namespaces(self):
+        '''
+
+        Returns:
+
+        '''
+        post_processing_ns_list = list(self.post_processing_manager.namespace_post_processing.keys())
+        self.ns_manager.clean_unused_namespaces(post_processing_ns_list)
+
     def get_data_integrity_msg(self) -> str:
         """gathers the messages concerning data integrity"""
         integrity_msg_list = [

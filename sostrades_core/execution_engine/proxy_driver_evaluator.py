@@ -327,6 +327,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.ee.factory.current_discipline = self.father_executor
         sampling_disc = sampling_builder.build()
         sampling_disc.configurator = self
+        # add dependency of the namespace for the discipline
+        self.ee.ns_manager.add_disc_in_dependency_list_of_namespace(ns_sampling, sampling_disc)
         self.ee.factory.add_discipline(sampling_disc)
         # perform a reference switch so that the SampleGenerator discipline shows in treeview before driver
         # TODO: [discuss] whether there is a cleaner way

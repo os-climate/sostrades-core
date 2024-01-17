@@ -245,8 +245,9 @@ class ScatterTool(SosTool):
                 ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False, clean_existing=False)
             ns_ids_list.append(ns_id)
 
-        # remove/clean the initial namespace values of the subprocess before they were updated
-        self.ee.ns_manager.clean_all_ns_in_nslist(ns_list, clean_all_ns_with_name=False)
+            # remove/clean the initial namespace values of the subprocess before they were updated
+            ns.remove_dependency(self.driver.disc_id)
+        # self.ee.ns_manager.clean_all_ns_in_nslist(ns_list, clean_all_ns_with_name=False)
         return ns_ids_list
 
     def build_child(self, name, new_name_flag):
