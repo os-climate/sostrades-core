@@ -78,7 +78,7 @@ def run_usecase(process_module_name:str, dataset_mapping_json_file:str):
     uc_cls.run()
 
 if __name__ == "__main__":
-    f"""
+    """
     Run a usecase from CLI
     Usage: python -m sostrades_core.study_manager.run_usecase <process_module_name> <dataset_mapping_json_file>
     example
