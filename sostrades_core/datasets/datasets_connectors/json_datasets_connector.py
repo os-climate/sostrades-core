@@ -48,7 +48,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         """
         db_path = self.__file_path
         if not os.path.exists(db_path):
-            raise DatasetGenericException() from FileNotFoundError(f"The connector json file is not found at {db_path}")
+            raise DatasetGenericException(f"The connector json file is not found at {db_path}") from FileNotFoundError()
 
         with open(db_path, "r", encoding="utf-8") as file:
             self.__json_data = json.load(fp=file)

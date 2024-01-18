@@ -18,7 +18,7 @@
         }
     },
     "namespace_datasets_mapping": {
-        "dataset_test": ["numericals"],
+        "usecase_3datasets": ["numericals"],
         "ns_a" : ["numericals", "Dataset3"],
         "ns_xy_disc1" : ["numericals", "Dataset1"],
         "ns_xy_disc2": ["numericals", "Dataset2"],
