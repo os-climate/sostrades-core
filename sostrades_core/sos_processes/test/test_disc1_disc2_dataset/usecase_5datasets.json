@@ -26,11 +26,10 @@
         }
     },
     "namespace_datasets_mapping": {
-        "usecase_5datasets": ["numericals"],
-        "ns_a" : ["numericals", "Dataset3"],
-        "ns_xy_disc1" : ["numericals", "Dataset3"],
-        "ns_xy_disc2": ["numericals", "Dataset3"],
-        "Disc1": ["numericals", "Dataset1.1","Dataset1.2"],
-        "Disc2": ["numericals", "Dataset2.1","Dataset2.2"]
+        "<study_ph>": ["numericals", "Dataset3"],
+        "<study_ph>.Disc1VirtualNode" : ["numericals","Dataset3"],
+        "<study_ph>.Disc2VirtualNode": ["numericals","Dataset3"],
+        "<study_ph>.Disc1": ["numericals", "Dataset1.1","Dataset1.2"],
+        "<study_ph>.Disc2": ["numericals", "Dataset2.1","Dataset2.2"]
     }
 }
