@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
 from pathlib import Path
 import unittest
 import os
@@ -29,6 +30,8 @@ class TestDatasets(unittest.TestCase):
     """
 
     def setUp(self):
+        # Set logging level to debug for datasets
+        logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
         # register connector for tests
         self.test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         DatasetsConnectorManager.register_connector(

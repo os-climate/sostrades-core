@@ -15,6 +15,7 @@ limitations under the License.
 """
 from __future__ import annotations
 import abc
+import logging
 from typing import Any, List
 
 
@@ -22,6 +23,7 @@ class AbstractDatasetsConnector(abc.ABC):
     """
     Abstract class to inherit in order to build specific datasets connector
     """
+    __logger = logging.getLogger(__name__)
 
     @abc.abstractmethod
     def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> dict[str:Any]:
@@ -77,8 +79,12 @@ class AbstractDatasetsConnector(abc.ABC):
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
         """
+        self.__logger.debug(f"Copying dataset {dataset_identifier} from {connector_from} to {self}")
         dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier)
         self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, create_if_not_exists=create_if_not_exists, override=override)
+
+    def __str__(self) -> str:
+        return f"{type(self).__name__}"     
 
 
 class DatasetGenericException(Exception):

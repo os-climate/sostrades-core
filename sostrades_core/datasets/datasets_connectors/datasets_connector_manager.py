@@ -35,6 +35,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         :param connector_identifier: identifier of the connector
         :type connector_identifier: string
         """
+        cls.__logger.debug(f"Getting connector {connector_identifier}")
         if connector_identifier not in cls.__registered_connectors:
             raise ValueError(f"Connector {connector_identifier} not found.")
         return cls.__registered_connectors[connector_identifier]
@@ -50,8 +51,9 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         :param connector_instanciation_fields: dictionary of key/value needed by the connector
         :type connector_instanciation_fields: dict
         """
+        cls.__logger.debug(f"Registering connector {connector_identifier}")
         if connector_identifier in cls.__registered_connectors.keys():
-            cls.__logger.info(f'Existing connector \"{connector_identifier}\" is updated')
+            cls.__logger.debug(f'Existing connector \"{connector_identifier}\" is updated')
 
         connector = DatasetsConnectorFactory.get_connector(connector_type=connector_type, **connector_instanciation_fields)
         cls.__registered_connectors[connector_identifier] = connector 

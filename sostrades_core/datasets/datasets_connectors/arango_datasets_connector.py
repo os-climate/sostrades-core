@@ -13,12 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
 from typing import Any, List
 
 from arango import ArangoClient, CollectionListError
 from arango.collection import StandardCollection
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException, DatasetUnableToInitializeConnectorException
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    AbstractDatasetsConnector,
+    DatasetGenericException,
+    DatasetNotFoundException,
+    DatasetUnableToInitializeConnectorException,
+)
 
 
 class ArangoDatasetsConnector(AbstractDatasetsConnector):
@@ -26,7 +32,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     Specific dataset connector for dataset in arango db format
     """
 
-    def __init__(self, host:str, db_name:str, username:str, password:str):
+    def __init__(self, host: str, db_name: str, username: str, password: str):
         """
         Constructor for Arango data connector
 
@@ -34,17 +40,20 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         :type hostname: str
         """
         super().__init__()
+        self.__logger = logging.getLogger(__name__)
+        self.__logger.debug("Initializing Arango connector")
 
         # Connect to database
         try:
             client = ArangoClient(hosts=host)
             self.db = client.db(name=db_name, username=username, password=password)
+
             # Check if db exists and we can retrieve details
             self.db.details()
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=ArangoDatasetsConnector) from exc
-        
-    def __get_dataset_collection(self, name:str) -> StandardCollection:
+
+    def __get_dataset_collection(self, name: str) -> StandardCollection:
         try:
             if not self.db.has_collection(name=name):
                 raise DatasetNotFoundException(dataset_name=name)
@@ -62,15 +71,18 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         :param data_to_get: data to retrieve, list of names
         :type data_to_get: List[str]
         """
+        self.__logger.debug(f"Getting values {data_to_get} for dataset {dataset_identifier} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
 
         # Retrieve the data
         cursor = dataset_collection.get_many(data_to_get)
 
         # Process the results
-        result_data = {doc['_key']:doc['value'] for doc in cursor}
+        result_data = {doc["_key"]: doc["value"] for doc in cursor}
+        self.__logger.debug(
+            f"Values obtained {list(result_data.keys())} for dataset {dataset_identifier} for connector {self}"
+        )
         return result_data
-
 
     def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any]) -> None:
         """
@@ -81,9 +93,10 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: List[str]
         """
+        self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
         # prepare query to write
-        data_for_arango = [{"_key":tag, 'value': value} for tag, value in values_to_write.items()]
+        data_for_arango = [{"_key": tag, "value": value} for tag, value in values_to_write.items()]
 
         # Write items
         dataset_collection.insert_many(data_for_arango, overwrite=True)
@@ -94,13 +107,20 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
         """
+        self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
 
         # Process all data
-        result_data = {doc['_key']:doc['value'] for doc in dataset_collection}
+        result_data = {doc["_key"]: doc["value"] for doc in dataset_collection}
         return result_data
 
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], create_if_not_exists:bool=True, override:bool=False) -> None:
+    def write_dataset(
+        self,
+        dataset_identifier: str,
+        values_to_write: dict[str:Any],
+        create_if_not_exists: bool = True,
+        override: bool = False,
+    ) -> None:
         """
         Write a dataset from Arango
         :param dataset_identifier: dataset identifier for connector
@@ -112,6 +132,9 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
         """
+        self.__logger.debug(
+            f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})"
+        )
         if not self.db.has_collection(name=dataset_identifier):
             # Handle dataset creation
             if create_if_not_exists:
@@ -122,21 +145,23 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-            
+
         self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write)
-            
+
 
 if __name__ == "__main__":
     """
     Example usage using docker deployment for arango
     """
-    connector_values = {
-        "host": 'http://127.0.0.1:8529',
-        "db_name":'os-climate',
-        "username":"root",
-        "password":"ArangoDB_BfPM",
-    }
     
+    logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
+    connector_values = {
+        "host": "http://127.0.0.1:8529",
+        "db_name": "os-climate",
+        "username": "root",
+        "password": "ArangoDB_BfPM",
+    }
+
     connector = ArangoDatasetsConnector(**connector_values)
     # Write values
     connector.write_values(dataset_identifier="test_dataset_collection", values_to_write={"x": 1, "y": "str_y2"})

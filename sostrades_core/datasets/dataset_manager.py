@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import logging
 from typing import Any, List
 from sostrades_core.datasets.dataset_info import DatasetInfo
 from sostrades_core.datasets.dataset import Dataset
@@ -25,8 +26,9 @@ class DatasetsManager:
     """
     Manages connections to datasets
     """
-    def __init__(self):
+    def __init__(self, logger:logging.Logger):
         self.datasets = {}
+        self.__logger = logger
 
     def fetch_data_from_datasets(self, datasets_info: List[DatasetInfo], data_names: List[str]) -> dict[str:Any]:
         """
@@ -40,6 +42,7 @@ class DatasetsManager:
 
         :return: data_dict of data names and retrieved values
         """
+        self.__logger.debug(f"Fetching data {data_names} from datasets {datasets_info}")
         data_retrieved = {}
 
         for dataset_info in datasets_info:

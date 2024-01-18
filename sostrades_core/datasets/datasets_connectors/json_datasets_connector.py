@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import json
+import logging
 import os
 from typing import Any, List
 
@@ -34,6 +35,8 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         """
         super().__init__()
         self.__file_path = file_path
+        self.__logger = logging.getLogger(__name__)
+        self.__logger.debug("Initializing JSON connector")
 
         # In json, we have to load the full file to retrieve values, so cache it
         self.__json_data = None
@@ -71,10 +74,19 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :param data_to_get: data to retrieve, list of names
         :type data_to_get: List[str]
         """
-        dataset_data = self.get_values_all(dataset_identifier=dataset_identifier)
+        self.__logger.debug(f"Getting values {data_to_get} for dataset {dataset_identifier} for connector {self}")
+        # Read JSON if not read already
+        if self.__json_data is None:
+            self.__load_json_data()
+
+        if dataset_identifier not in self.__json_data:
+            raise DatasetNotFoundException(f"The dataset {dataset_identifier} is not found in the file {self.__file_path}")
+
+        dataset_data = self.__json_data[dataset_identifier]
 
         # Filter data
         filtered_data = {key: dataset_data[key] for key in dataset_data if key in data_to_get}
+        self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_data
 
     def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any]) -> None:
@@ -86,6 +98,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :type values_to_write: List[str]
         """
         # Read JSON if not read already
+        self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         if self.__json_data is None:
             self.__load_json_data()
 
@@ -103,6 +116,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
         """
+        self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
         # Read JSON if not read already
         if self.__json_data is None:
             self.__load_json_data()
@@ -126,6 +140,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
         """
+        self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         if dataset_identifier not in self.__json_data:
             # Handle dataset creation
             if create_if_not_exists:

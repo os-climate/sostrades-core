@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from enum import Enum
+import logging
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
     JSONDatasetsConnector,
 )
@@ -39,9 +40,10 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
     """
     Dataset connector factory
     """
+    __logger = logging.getLogger(__name__)
 
-    @staticmethod
-    def get_connector(
+    @classmethod
+    def get_connector(cls,
         connector_type: DatasetConnectorType, **connector_instanciation_fields
     ) -> AbstractDatasetsConnector:
         """
@@ -51,6 +53,7 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
         :param connector_type: connector type to instanciate
         :type connector_type: DatasetConnectorType
         """
+        cls.__logger.debug(f"Instanciating connector of type {connector_type}")
         if not isinstance(connector_type, DatasetConnectorType) or not issubclass(
             connector_type.value, AbstractDatasetsConnector
         ):
@@ -66,6 +69,8 @@ if __name__ == "__main__":
     Copy dataset from json to arango
     """
     import os
+    
+    logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
     # Json connector
     json_file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "tests", "data", "test_92_datasets_db.json")
 

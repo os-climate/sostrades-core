@@ -89,7 +89,7 @@ class DataManager:
         self.data_check_integrity = False
         self.logger = logger
 
-        self.dataset_manager = DatasetsManager()
+        self.dataset_manager = DatasetsManager(logger=logger.getChild("DatasetsManager"))
 
     @staticmethod
     def get_an_uuid():
@@ -405,7 +405,7 @@ class DataManager:
                 datasets_info = datasets_mapping.namespace_datasets_mapping[namespace]
                 # get data values into the dataset
                 updated_data = self.dataset_manager.fetch_data_from_datasets(
-                    datasets_info=datasets_info, data_names=data_dict
+                    datasets_info=datasets_info, data_names=list(data_dict.keys())
                 )
 
                 # update data values in dm
