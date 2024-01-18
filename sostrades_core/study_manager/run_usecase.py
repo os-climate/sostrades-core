@@ -63,9 +63,9 @@ def run_usecase(process_module_name:str, dataset_mapping_json_file:str):
     )
 
     # Prepare arguments to instanciate study manager
-    # process_module_name = sostrades_core.tests.my_process.process
+    # process_module_name = sostrades_core.tests.my_process
     # repo => sostrades_core.tests
-    # proc_name => process
+    # proc_name => my_process
     repo = ".".join(process_module_name.split(".")[:-1])
     proc_name = process_module_name.split(".")[-1]
     
