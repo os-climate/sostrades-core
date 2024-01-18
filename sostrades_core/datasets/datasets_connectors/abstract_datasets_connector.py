@@ -42,3 +42,25 @@ class AbstractDatasetsConnector(abc.ABC):
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
         """
+
+class DatasetGenericException(Exception):
+    """
+    Generic exception for datasets
+    """
+    pass
+
+class DatasetNotFoundException(DatasetGenericException):
+    """
+    Exception when a dataset is not found
+    """
+    def __init__(self, dataset_name:str):
+        self.dataset_name = dataset_name
+        super().__init__(f"Dataset '{dataset_name}' not found")
+
+class DatasetUnableToInitializeConnectorException(DatasetGenericException):
+    """
+    Exception when an error occurs during dataset initialization
+    """
+    def __init__(self, connector_type:AbstractDatasetsConnector):
+        self.connector_type = connector_type
+        super().__init__(f"Unable to initialize connector of type {connector_type}")

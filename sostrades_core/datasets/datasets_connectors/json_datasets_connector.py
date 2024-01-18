@@ -17,7 +17,7 @@ import json
 import os
 from typing import Any, List
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException
 
 
 class JSONDatasetsConnector(AbstractDatasetsConnector):
@@ -45,7 +45,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         """
         db_path = self.__file_path
         if not os.path.exists(db_path):
-            raise FileNotFoundError(f"The connector json file is not found at {db_path}")
+            raise DatasetGenericException() from FileNotFoundError(f"The connector json file is not found at {db_path}")
 
         with open(db_path, "r", encoding="utf-8") as file:
             self.__json_data = json.load(fp=file)
@@ -56,7 +56,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         """
         db_path = self.__file_path
         if not os.path.exists(db_path):
-            raise FileNotFoundError(f"The connector json file is not found at {db_path}")
+            raise DatasetGenericException() from FileNotFoundError(f"The connector json file is not found at {db_path}")
 
         with open(db_path, "w", encoding="utf-8") as file:
             json.dump(obj=self.__json_data, fp=file, indent=4)
@@ -76,7 +76,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
 
         if dataset_identifier not in self.__json_data:
-            raise KeyError(f"The dataset {dataset_identifier} is not found in the file {self.__file_path}")
+            raise DatasetNotFoundException(f"The dataset {dataset_identifier} is not found in the file {self.__file_path}")
 
         dataset_data = self.__json_data[dataset_identifier]
 
@@ -97,7 +97,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
 
         if dataset_identifier not in self.__json_data:
-            raise KeyError(f"Dataset {dataset_identifier} not found in json file {self.__file_path}")
+            raise DatasetNotFoundException(f"Dataset {dataset_identifier} not found in json file {self.__file_path}")
 
         # Write data
         self.__json_data[dataset_identifier].update(values_to_write)
