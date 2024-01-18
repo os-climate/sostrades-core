@@ -25,6 +25,7 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     AbstractDatasetsConnector,
     DatasetUnableToInitializeConnectorException,
 )
+from sostrades_core.datasets.datasets_connectors.sospickle_datasets_connector import SoSPickleDatasetsConnector
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
@@ -35,6 +36,7 @@ class DatasetConnectorType(Enum):
 
     JSON = JSONDatasetsConnector
     Arango = ArangoDatasetsConnector
+    SoSpickle = SoSPickleDatasetsConnector
 
     @classmethod
     def get_enum_value(cls, value_str):
