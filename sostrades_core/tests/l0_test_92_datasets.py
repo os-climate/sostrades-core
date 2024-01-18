@@ -54,6 +54,33 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("dataset_test.Disc1.c"), None)
         self.assertEqual(dm.get_value("dataset_test.Disc2.c"), None)
 
+        #check numerical parameters
+        self.assertEqual(dm.get_value("dataset_test.linearization_mode"), None)
+        self.assertEqual(dm.get_value("dataset_test.debug_mode"), None)
+        self.assertEqual(dm.get_value("dataset_test.cache_type"), None)
+        self.assertEqual(dm.get_value("dataset_test.cache_file_path"), None)
+        self.assertEqual(dm.get_value("dataset_test.sub_mda_class"), None)
+        self.assertEqual(dm.get_value("dataset_test.max_mda_iter"), None)
+        self.assertEqual(dm.get_value("dataset_test.n_processes"), None)
+        self.assertEqual(dm.get_value("dataset_test.chain_linearize"), None)
+        self.assertEqual(dm.get_value("dataset_test.tolerance"), None)
+        self.assertEqual(dm.get_value("dataset_test.use_lu_fact"), None)
+        self.assertEqual(dm.get_value("dataset_test.warm_start"), None)
+        self.assertEqual(dm.get_value("dataset_test.acceleration"), None)
+        self.assertEqual(dm.get_value("dataset_test.warm_start_threshold"), None)
+        self.assertEqual(dm.get_value("dataset_test.n_subcouplings_parallel"), None)
+        self.assertEqual(dm.get_value("dataset_test.tolerance_gs"), None)
+        self.assertEqual(dm.get_value("dataset_test.relax_factor"), None)
+        self.assertEqual(dm.get_value("dataset_test.epsilon0"), None)
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDO"), None)
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDO_preconditioner"), None)
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDO_options"), None)
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDA"), None)
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDA_preconditioner"), None)
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDA_options"), None)
+        self.assertEqual(dm.get_value("dataset_test.group_mda_disciplines"), None)
+        self.assertEqual(dm.get_value("dataset_test.propagate_cache_to_children"), None)
+
         self.study.load_study(os.path.join(self.process_path, "usecase_dataset.json"))
 
         self.assertEqual(dm.get_value("dataset_test.a"), 1)
@@ -63,6 +90,38 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("dataset_test.Disc2.b"), "string_2")
         self.assertEqual(dm.get_value("dataset_test.Disc1.c"), "string_3")
         self.assertEqual(dm.get_value("dataset_test.Disc2.c"), "string_3")
+
+        #check numerical parameters
+        self.assertEqual(dm.get_value("dataset_test.linearization_mode"), "auto")
+        self.assertEqual(dm.get_value("dataset_test.debug_mode"), "")
+        self.assertEqual(dm.get_value("dataset_test.cache_type"), "None")
+        self.assertEqual(dm.get_value("dataset_test.cache_file_path"), "")
+        self.assertEqual(dm.get_value("dataset_test.sub_mda_class"), "MDAJacobi")
+        self.assertEqual(dm.get_value("dataset_test.max_mda_iter"), 30)
+        self.assertEqual(dm.get_value("dataset_test.n_processes"), 1)
+        self.assertEqual(dm.get_value("dataset_test.chain_linearize"), False)
+        self.assertEqual(dm.get_value("dataset_test.tolerance"), 1.0e-6)
+        self.assertEqual(dm.get_value("dataset_test.use_lu_fact"), False)
+        self.assertEqual(dm.get_value("dataset_test.warm_start"), False)
+        self.assertEqual(dm.get_value("dataset_test.acceleration"), "m2d")
+        self.assertEqual(dm.get_value("dataset_test.warm_start_threshold"), -1)
+        self.assertEqual(dm.get_value("dataset_test.n_subcouplings_parallel"), 1)
+        self.assertEqual(dm.get_value("dataset_test.tolerance_gs"), 10.0)
+        self.assertEqual(dm.get_value("dataset_test.relax_factor"), 0.99)
+        self.assertEqual(dm.get_value("dataset_test.epsilon0"), 1.0e-6)
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDO"), "GMRES")
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDO_preconditioner"), "None")
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDO_options"), {
+            "max_iter": 1000,
+            "tol": 1.0e-8})
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDA"), "GMRES")
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDA_preconditioner"), "None")
+        self.assertEqual(dm.get_value("dataset_test.linear_solver_MDA_options"), {
+            "max_iter": 1000,
+            "tol": 1.0e-8})
+        self.assertEqual(dm.get_value("dataset_test.group_mda_disciplines"), False)
+        self.assertEqual(dm.get_value("dataset_test.propagate_cache_to_children"), False)
+
 
     def test_02_usecase2(self):
         dm = self.study.execution_engine.dm

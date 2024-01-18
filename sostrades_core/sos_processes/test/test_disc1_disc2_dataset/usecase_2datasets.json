@@ -7,13 +7,18 @@
         "Dataset2": {
             "connector_id": "JSON_datasets",
             "dataset_id": "dataset_bc"
+        },
+        "numericals": {
+            "connector_id": "JSON_datasets",
+            "dataset_id": "default_numerical_parameters"
         }
     },
     "namespace_datasets_mapping": {
-        "ns_a" : ["Dataset1"],
-        "ns_xy_disc1" : ["Dataset1"],
-        "ns_xy_disc2": ["Dataset1"],
-        "Disc1": ["Dataset2"],
-        "Disc2": ["Dataset2"]
+        "dataset_test": ["numericals"],
+        "ns_a" : ["numericals", "Dataset1"],
+        "ns_xy_disc1" : ["numericals", "Dataset1"],
+        "ns_xy_disc2": ["numericals", "Dataset1"],
+        "Disc1": ["numericals", "Dataset2"],
+        "Disc2": ["numericals", "Dataset2"]
     }
 }

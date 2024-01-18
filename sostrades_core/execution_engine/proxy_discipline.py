@@ -226,15 +226,15 @@ class ProxyDiscipline:
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  #POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+        LINEARIZATION_MODE: {TYPE: 'string',  #POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                              NUMERICAL: True, STRUCTURING: True},
-        CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
+        CACHE_TYPE: {TYPE: 'string',
                      POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
                      # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                      NUMERICAL: True,
                      STRUCTURING: True},
-        CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
-        DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
+        CACHE_FILE_PATH: {TYPE: 'string', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
+        DEBUG_MODE: {TYPE: 'string', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                      NUMERICAL: True, STRUCTURING: True}, 
     }
 

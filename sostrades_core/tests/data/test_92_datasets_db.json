@@ -38,5 +38,36 @@
     },
     "dataset_b": {
         "b": "string_42"
+    },
+    "default_numerical_parameters": {
+        "linearization_mode": "auto",
+        "debug_mode": "",
+        "cache_type": "None",
+        "cache_file_path":"",
+        "sub_mda_class": "MDAJacobi",
+        "max_mda_iter": 30,
+        "n_processes": 1,
+        "chain_linearize": false,
+        "tolerance": 1.0e-6,
+        "use_lu_fact": false,
+        "warm_start": false,
+        "acceleration": "m2d",
+        "warm_start_threshold": -1,
+        "n_subcouplings_parallel": 1,
+        "tolerance_gs": 10.0,
+        "relax_factor": 0.99,
+        "epsilon0": 1.0e-6,
+        "linear_solver_MDO": "GMRES",
+        "linear_solver_MDO_preconditioner": "None",
+        "linear_solver_MDO_options": {
+            "max_iter": 1000,
+            "tol": 1.0e-8},
+        "linear_solver_MDA": "GMRES",
+        "linear_solver_MDA_preconditioner": "None",
+        "linear_solver_MDA_options": {
+            "max_iter": 1000,
+            "tol": 1.0e-8},
+        "group_mda_disciplines": false,
+        "propagate_cache_to_children": false
     }
 }
