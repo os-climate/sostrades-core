@@ -33,7 +33,33 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :type file_path: str
         """
         super().__init__()
-        self.file_path = file_path
+        self.__file_path = file_path
+
+        # In json, we have to load the full file to retrieve values, so cache it
+        self.__json_data = None
+
+    def __load_json_data(self):
+        """
+        Method to load data from json file
+        Populates self.__json_data
+        """
+        db_path = self.__file_path
+        if not os.path.exists(db_path):
+            raise FileNotFoundError(f"The connector json file is not found at {db_path}")
+
+        with open(db_path, "r", encoding="utf-8") as file:
+            self.__json_data = json.load(fp=file)
+
+    def __save_json_data(self):
+        """
+        Method to save data to json file
+        """
+        db_path = self.__file_path
+        if not os.path.exists(db_path):
+            raise FileNotFoundError(f"The connector json file is not found at {db_path}")
+
+        with open(db_path, "w", encoding="utf-8") as file:
+            json.dump(obj=self.__json_data, fp=file, indent=4)
 
     def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> None:
         """
@@ -45,20 +71,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :param data_to_get: data to retrieve, list of names
         :type data_to_get: List[str]
         """
-        # TODO: optimise opening and reading by creating a dedictated abstractDatasetConnector
-        json_data = {}
-        # Read JSON
-        db_path = self.file_path
-        if not os.path.exists(db_path):
-            raise FileNotFoundError(f"The connector json file is not found at {db_path}")
+        # Read JSON if not read already
+        if self.__json_data is None:
+            self.__load_json_data()
 
-        with open(db_path, "r") as file:
-            json_data = json.load(file)
+        if dataset_identifier not in self.__json_data:
+            raise KeyError(f"The dataset {dataset_identifier} is not found in the file {self.__file_path}")
 
-        if dataset_identifier not in json_data:
-            raise KeyError(f"The dataset {dataset_identifier} is not found in the {self.filename}")
-
-        dataset_data = json_data[dataset_identifier]
+        dataset_data = self.__json_data[dataset_identifier]
 
         # Filter data
         filtered_data = {key: dataset_data[key] for key in dataset_data if key in data_to_get}
@@ -72,4 +92,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: List[str]
         """
-        raise NotImplementedError()
+        # Read JSON if not read already
+        if self.__json_data is None:
+            self.__load_json_data()
+
+        if dataset_identifier not in self.__json_data:
+            raise KeyError(f"Dataset {dataset_identifier} not found in json file {self.__file_path}")
+
+        # Write data
+        self.__json_data[dataset_identifier].update(values_to_write)
+
+        self.__save_json_data()

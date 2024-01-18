@@ -17,9 +17,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from sostrades_core.datasets.dataset_info import DatasetInfo
-from sostrades_core.execution_engine.data_connector.abstract_data_connector import (
-    AbstractDataConnector,
-)
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
 
 
 @dataclass()
@@ -28,7 +26,7 @@ class Dataset:
     Dataset class
     """
     dataset_info: DatasetInfo
-    connector: AbstractDataConnector
+    connector: AbstractDatasetsConnector
 
     def get_values(self, data_names: list[str]) -> dict[str:Any]:
         """
