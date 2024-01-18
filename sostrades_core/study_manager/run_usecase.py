@@ -52,15 +52,6 @@ def run_usecase(process_module_name:str, dataset_mapping_json_file:str):
     if not os.path.exists(dataset_mapping_json_file):
         raise FileNotFoundError(f"File {dataset_mapping_json_file} does not exist")
     test_module_importability(process_module_name + ".process")
-    
-    # Create a connector for demonstration
-    test_data_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tests", "data")
-
-    DatasetsConnectorManager.register_connector(
-        connector_identifier="JSON_datasets",
-        connector_type=DatasetConnectorType.JSON,
-        file_path=os.path.join(test_data_folder, "test_92_datasets_db.json"),
-    )
 
     # Prepare arguments to instanciate study manager
     # process_module_name = sostrades_core.tests.my_process

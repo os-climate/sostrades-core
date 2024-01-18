@@ -13,7 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import json
 import logging
+import os
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
 from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetsConnectorFactory, DatasetConnectorType
@@ -24,6 +26,9 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     """
     Datasets connector manager
     """
+    CONNECTOR_TYPE_STR = "connector_type"
+    CONNECTOR_IDENTIFIER_STR = "connector_id"
+    CONNECTOR_ARGS_STR = "connector_args"
     __registered_connectors = {}
     __logger = logging.getLogger(__name__)
     
@@ -59,3 +64,15 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         cls.__registered_connectors[connector_identifier] = connector 
         return connector
     
+    @classmethod
+    def instanciate_connectors_from_json_file(cls, file_path:str):
+        with open(file=file_path, mode="r", encoding="utf-8") as file:
+            json_data = json.load(file)
+        
+        for connector_data in json_data:
+            connector_id = connector_data[cls.CONNECTOR_IDENTIFIER_STR]
+            connector_type = DatasetConnectorType.get_enum_value(connector_data[cls.CONNECTOR_TYPE_STR])
+            cls.register_connector(connector_identifier=connector_id, connector_type=connector_type, **connector_data[cls.CONNECTOR_ARGS_STR])
+
+# Initialize some sample connectors
+DatasetsConnectorManager.instanciate_connectors_from_json_file(os.path.join(os.path.dirname(__file__), "sample_connectors.json"))

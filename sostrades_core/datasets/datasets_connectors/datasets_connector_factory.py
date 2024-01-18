@@ -23,6 +23,7 @@ from sostrades_core.datasets.datasets_connectors.arango_datasets_connector impor
 )
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
+    DatasetUnableToInitializeConnectorException,
 )
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
@@ -34,6 +35,14 @@ class DatasetConnectorType(Enum):
 
     JSON = JSONDatasetsConnector
     Arango = ArangoDatasetsConnector
+
+    @classmethod
+    def get_enum_value(cls, value_str):
+        try:
+            # Iterate through the enum members and find the one with a matching value
+            return next(member for member in cls if member.name == value_str)
+        except StopIteration:
+            raise ValueError(f"No matching enum value found for '{value_str}'")
 
 
 class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
@@ -58,7 +67,10 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
             connector_type.value, AbstractDatasetsConnector
         ):
             raise ValueError(f"Unexpected connector type {connector_type}")
-        return connector_type.value(**connector_instanciation_fields)
+        try:
+            return connector_type.value(**connector_instanciation_fields)
+        except TypeError as exc:
+            raise DatasetUnableToInitializeConnectorException(connector_type) from exc
 
 
 if __name__ == "__main__":
@@ -99,5 +111,5 @@ if __name__ == "__main__":
     print("Arango connector from dict", arango_connector_from_dict)
 
     # Copy dataset
-    arango_connector_from_dict.copy_dataset_from(connector_from=json_connector_from_dict, dataset_identifier="dataset_all_in_one", create_if_not_exists=True, override=True)
-    print(arango_connector_from_dict.get_values_all(dataset_identifier="dataset_all_in_one"))
+    arango_connector_from_dict.copy_dataset_from(connector_from=json_connector_from_dict, dataset_identifier="default_numerical_parameters", create_if_not_exists=True, override=True)
+    print(arango_connector_from_dict.get_values_all(dataset_identifier="default_numerical_parameters"))

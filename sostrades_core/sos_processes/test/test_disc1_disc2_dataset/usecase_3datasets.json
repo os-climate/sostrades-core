@@ -1,19 +1,19 @@
 {
     "datasets_infos": {
         "Dataset1": {
-            "connector_id": "JSON_datasets",
+            "connector_id": "MVP0_datasets_connector",
             "dataset_id": "dataset_bcx_1"
         },
         "Dataset2": {
-            "connector_id": "JSON_datasets",
+            "connector_id": "MVP0_datasets_connector",
             "dataset_id": "dataset_bcx_2"
         },
         "Dataset3": {
-            "connector_id": "JSON_datasets",
+            "connector_id": "MVP0_datasets_connector",
             "dataset_id": "dataset_a"
         },
         "numericals": {
-            "connector_id": "JSON_datasets",
+            "connector_id": "MVP0_datasets_connector",
             "dataset_id": "default_numerical_parameters"
         }
     },
