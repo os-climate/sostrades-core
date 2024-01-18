@@ -585,14 +585,14 @@ class ExecutionEngine:
     def configure_study_with_data(
         self,
         dict_or_datasets_to_load: Union[dict, DatasetsMapping],
-        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], dict[str:Any]], None],
+        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str]], dict[str:Any]],
         update_status_configure: bool,
     ):
         '''
         method that insert data into dm and configure the process
 
         :param set_data_in_dm_function: a function sets data in datamanager data_dict using dict_or_datasets_to_load, with signature:
-        set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: list of data name) -> dict[str:Any] list of loaded data
+        set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: set of data name) -> dict[str:Any] list of loaded data
         :type set_data_in_dm_function: Callable
 
         '''
