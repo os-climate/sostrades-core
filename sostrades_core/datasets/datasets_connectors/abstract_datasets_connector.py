@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+from __future__ import annotations
 import abc
 from typing import Any, List
 
@@ -42,6 +42,44 @@ class AbstractDatasetsConnector(abc.ABC):
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
         """
+
+    @abc.abstractmethod
+    def get_values_all(self, dataset_identifier: str) -> dict[str:Any]:
+        """
+        Abstract method to get all values from a dataset for a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        """
+
+    @abc.abstractmethod
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], create_if_not_exists:bool=True, override:bool=False) -> None:
+        """
+        Abstract method to overload in order to write a dataset from a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: dict[str:Any]
+        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
+        :type create_if_not_exists: bool
+        :param override: override dataset if it exists (raises otherwise)
+        :type override: bool
+        """
+    
+    def copy_dataset_from(self, connector_from:AbstractDatasetsConnector, dataset_identifier: str, create_if_not_exists:bool=True, override:bool=False):
+        """
+        Copies a dataset from another AbstractDatasetsConnector
+        :param connector_from: Connector to copy dataset from
+        :type connector_from: AbstractDatasetsConnector
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
+        :type create_if_not_exists: bool
+        :param override: override dataset if it exists (raises otherwise)
+        :type override: bool
+        """
+        dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier)
+        self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, create_if_not_exists=create_if_not_exists, override=override)
+
 
 class DatasetGenericException(Exception):
     """

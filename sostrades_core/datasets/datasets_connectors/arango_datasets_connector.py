@@ -18,7 +18,7 @@ from typing import Any, List
 from arango import ArangoClient, CollectionListError
 from arango.collection import StandardCollection
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetNotFoundException, DatasetUnableToInitializeConnectorException
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException, DatasetUnableToInitializeConnectorException
 
 
 class ArangoDatasetsConnector(AbstractDatasetsConnector):
@@ -88,7 +88,48 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         # Write items
         dataset_collection.insert_many(data_for_arango, overwrite=True)
 
+    def get_values_all(self, dataset_identifier: str) -> dict[str:Any]:
+        """
+        Get all values from a dataset for Arango
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        """
+        dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
+
+        # Process all data
+        result_data = {doc['_key']:doc['value'] for doc in dataset_collection}
+        return result_data
+
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], create_if_not_exists:bool=True, override:bool=False) -> None:
+        """
+        Write a dataset from Arango
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: dict[str:Any]
+        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
+        :type create_if_not_exists: bool
+        :param override: override dataset if it exists (raises otherwise)
+        :type override: bool
+        """
+        if not self.db.has_collection(name=dataset_identifier):
+            # Handle dataset creation
+            if create_if_not_exists:
+                self.db.create_collection(name=dataset_identifier)
+            else:
+                raise DatasetNotFoundException(dataset_identifier)
+        else:
+            # Handle override
+            if not override:
+                raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
+            
+        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write)
+            
+
 if __name__ == "__main__":
+    """
+    Example usage using docker deployment for arango
+    """
     connector_values = {
         "host": 'http://127.0.0.1:8529',
         "db_name":'os-climate',
@@ -97,7 +138,14 @@ if __name__ == "__main__":
     }
     
     connector = ArangoDatasetsConnector(**connector_values)
+    # Write values
     connector.write_values(dataset_identifier="test_dataset_collection", values_to_write={"x": 1, "y": "str_y2"})
-    print(connector.get_values(dataset_identifier="test_dataset_collection", data_to_get=["x", "y"]))
-    print(connector)
 
+    # Read values
+    print(connector.get_values(dataset_identifier="test_dataset_collection", data_to_get=["x", "y"]))
+
+    # Read dataset
+    print(connector.get_all_values(dataset_identifier="test_dataset_collection"))
+
+    # Write dataset
+    connector.write_dataset(dataset_identifier="test_dataset_collection_2", values_to_write={"x": 1, "y": "str_y2"})

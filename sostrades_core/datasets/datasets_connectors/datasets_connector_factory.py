@@ -17,6 +17,9 @@ from enum import Enum
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
     JSONDatasetsConnector,
 )
+from sostrades_core.datasets.datasets_connectors.arango_datasets_connector import (
+    ArangoDatasetsConnector,
+)
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
 )
@@ -29,6 +32,7 @@ class DatasetConnectorType(Enum):
     """
 
     JSON = JSONDatasetsConnector
+    Arango = ArangoDatasetsConnector
 
 
 class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
@@ -56,10 +60,39 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
 
 if __name__ == "__main__":
     """
-    Example usage of the factory"""
-    DatasetsConnectorFactory.get_connector(DatasetConnectorType.JSON, file_path="aa")
+    Example usage of the factory
+    Instanciates 2 json connector, showing 2 ways of instanciation
+    Instanciates an Arango connector
+    Copy dataset from json to arango
+    """
+    import os
+    # Json connector
+    json_file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "tests", "data", "test_92_datasets_db.json")
 
-    connector_instanciation_dict = {"file_path": "test_filename.json"}
-    DatasetsConnectorFactory.get_connector(
+    # Explicit args
+    json_connector_with_explicit_args = DatasetsConnectorFactory.get_connector(DatasetConnectorType.JSON, file_path=json_file_path)
+    print("JSON connector from explicit args", json_connector_with_explicit_args)
+
+    # With instanciation dict
+    connector_instanciation_dict = {"file_path": json_file_path}
+    json_connector_from_dict = DatasetsConnectorFactory.get_connector(
         DatasetConnectorType.JSON, **connector_instanciation_dict
     )
+    print("JSON connector from dict", json_connector_from_dict)
+
+    # Arango connector    
+    arango_instanciation_dict = {
+        "host": 'http://127.0.0.1:8529',
+        "db_name":'os-climate',
+        "username":"root",
+        "password":"ArangoDB_BfPM",
+    }
+    
+    arango_connector_from_dict = DatasetsConnectorFactory.get_connector(
+        DatasetConnectorType.Arango, **arango_instanciation_dict
+    )
+    print("Arango connector from dict", arango_connector_from_dict)
+
+    # Copy dataset
+    arango_connector_from_dict.copy_dataset_from(connector_from=json_connector_from_dict, dataset_identifier="dataset_all_in_one", create_if_not_exists=True, override=True)
+    print(arango_connector_from_dict.get_values_all(dataset_identifier="dataset_all_in_one"))

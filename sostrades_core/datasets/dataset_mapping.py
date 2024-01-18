@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+from __future__ import annotations
 from dataclasses import dataclass
 
 import json
@@ -35,7 +36,7 @@ class DatasetsMapping:
     namespace_datasets_mapping: dict[str : list[DatasetInfo]]
 
     @staticmethod
-    def deserialize(input_dict: dict) -> "DatasetsMapping":
+    def deserialize(input_dict: dict) -> DatasetsMapping:
         """
         Method to deserialize
         expected example

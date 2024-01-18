@@ -71,14 +71,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :param data_to_get: data to retrieve, list of names
         :type data_to_get: List[str]
         """
-        # Read JSON if not read already
-        if self.__json_data is None:
-            self.__load_json_data()
-
-        if dataset_identifier not in self.__json_data:
-            raise DatasetNotFoundException(f"The dataset {dataset_identifier} is not found in the file {self.__file_path}")
-
-        dataset_data = self.__json_data[dataset_identifier]
+        dataset_data = self.get_values_all(dataset_identifier=dataset_identifier)
 
         # Filter data
         filtered_data = {key: dataset_data[key] for key in dataset_data if key in data_to_get}
@@ -103,3 +96,46 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         self.__json_data[dataset_identifier].update(values_to_write)
 
         self.__save_json_data()
+    
+    def get_values_all(self, dataset_identifier: str) -> dict[str:Any]:
+        """
+        Abstract method to get all values from a dataset for a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        """
+        # Read JSON if not read already
+        if self.__json_data is None:
+            self.__load_json_data()
+
+        if dataset_identifier not in self.__json_data:
+            raise DatasetNotFoundException(f"The dataset {dataset_identifier} is not found in the file {self.__file_path}")
+
+        dataset_data = self.__json_data[dataset_identifier]
+        return dataset_data
+        
+
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], create_if_not_exists:bool=True, override:bool=False) -> None:
+        """
+        Abstract method to overload in order to write a dataset from a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: dict[str:Any]
+        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
+        :type create_if_not_exists: bool
+        :param override: override dataset if it exists (raises otherwise)
+        :type override: bool
+        """
+        if dataset_identifier not in self.__json_data:
+            # Handle dataset creation
+            if create_if_not_exists:
+                self.__json_data = {}
+            else:
+                raise DatasetNotFoundException(dataset_identifier)
+        else:
+            # Handle override
+            if not override:
+                raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
+        
+        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write)
+            
