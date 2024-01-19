@@ -188,7 +188,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         )
         # Check if dataset exists
         mapping = self.__parse_datasets_mapping()
-        if dataset_identifier not in mapping or not self.db.has_collection(name=mapping[dataset_identifier]):
+        if dataset_identifier not in mapping:
             # Handle dataset creation
             if create_if_not_exists:
                 # Generate a dataset uid
@@ -205,6 +205,8 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
+            if not self.db.has_collection(name=mapping[dataset_identifier]):
+                self.db.create_collection(name=mapping[dataset_identifier])
 
         self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write)
 
