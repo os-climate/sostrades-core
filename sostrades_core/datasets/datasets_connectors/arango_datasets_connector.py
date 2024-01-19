@@ -21,7 +21,6 @@ from typing import Any, List
 
 from arango import ArangoClient, CollectionListError
 from arango.collection import StandardCollection
-import pandas as pd
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
@@ -40,6 +39,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     VALUE_STR = "value"
     KEY_STR = "_key"
     DATASET_COLLECTION_NAME_STR = "dataset_collection_name"
+    MAX_KEY_SIZE = 254
 
     def __init__(self, host: str, db_name: str, username: str, password: str, datasets_descriptor_collection_name:str="datasets"):
         """
@@ -77,6 +77,13 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             raise DatasetUnableToInitializeConnectorException(connector_type=ArangoDatasetsConnector) from exc
 
     def __name_to_valid_arango_collection_name(self, dataset_name:str) -> str:
+        """
+        Constructor for Arango data connector
+        Checks that this collection does not exist
+
+        :param dataset_name: dataset name to clean
+        :type dataset_name: str
+        """
         # Remove characters not allowed in collection names
         filtered_name = re.sub(r'[^a-zA-Z0-9_\-]', '', dataset_name)
 
@@ -88,10 +95,10 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         max_length = 256
         filtered_name = filtered_name[:max_length]
 
-        if len(filtered_name) == 0:
+        if len(filtered_name) == 0 or self.db.has_collection(name=filtered_name):
             # generate a random id
             # need only alpha characters
-            return ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(255))
+            return ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(ArangoDatasetsConnector.MAX_KEY_SIZE))
 
         return filtered_name
 
