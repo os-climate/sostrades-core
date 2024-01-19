@@ -659,8 +659,20 @@ class NamespaceManager:
     def clean_unused_namespaces(self, post_proc_ns_list):
         full_ns_list = list(self.all_ns_dict.values())
         for ns in full_ns_list:
-            if ns.name not in post_proc_ns_list and not ns.check_namespace_is_used():
+            if self.unused_namespace(ns, post_proc_ns_list=post_proc_ns_list):
                 self.__clean_namespace(ns)
+
+    def unused_namespace(self, ns, post_proc_ns_list=[]):
+        '''
+
+        Args:
+            ns: namespace to check
+            post_proc_ns_list: list of post processing namespaces, not mandatory
+
+        Returns:
+            True if the namespace is unused, False if it is used
+        '''
+        return ns.name not in post_proc_ns_list and not ns.check_namespace_is_used()
 
 
 class NamespaceManagerException(Exception):
