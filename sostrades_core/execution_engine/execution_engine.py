@@ -177,6 +177,10 @@ class ExecutionEngine:
         '''
         self.logger.info("Preparing execution.")
         # - instantiate models in user wrapps
+
+        # clean unused namespaces
+        self.clean_unused_namespaces()
+
         self.__factory.init_execution()
         self.fill_data_connector_prepare_exec()
         # - execution
@@ -640,8 +644,6 @@ class ExecutionEngine:
             self.dm.create_reduced_dm()
 
         self.dm.treeview = None
-
-        self.clean_unused_namespaces()
 
     def clean_unused_namespaces(self):
         '''
