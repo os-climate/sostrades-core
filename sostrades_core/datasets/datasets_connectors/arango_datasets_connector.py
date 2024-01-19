@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
+import random
+import string
 from typing import Any, List
 
 from arango import ArangoClient, CollectionListError
@@ -36,13 +38,26 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     COLLECTION_SYSTEM_STR = "system"
     VALUE_STR = "value"
     KEY_STR = "_key"
+    DATASET_COLLECTION_NAME_STR = "dataset_collection_name"
 
-    def __init__(self, host: str, db_name: str, username: str, password: str):
+    def __init__(self, host: str, db_name: str, username: str, password: str, datasets_descriptor_collection_name:str="datasets"):
         """
         Constructor for Arango data connector
 
-        :param hostname: Host to connect to
-        :type hostname: str
+        :param host: Host to connect to
+        :type host: str
+
+        :param db_name: Database name
+        :type db_name: str
+
+        :param username: Username
+        :type username: str
+
+        :param password: Password
+        :type password: str
+
+        :param datasets_descriptor_collection_name: Database describing datasets
+        :type datasets_descriptor_collection_name: str
         """
         super().__init__()
         self.__logger = logging.getLogger(__name__)
@@ -53,17 +68,40 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             client = ArangoClient(hosts=host)
             self.db = client.db(name=db_name, username=username, password=password)
 
-            # Check if db exists and we can retrieve details
-            self.db.details()
+            if not self.db.has_collection(name=datasets_descriptor_collection_name):
+                raise Exception(f"Expected to find collection {datasets_descriptor_collection_name} describing datasets")
+            self.datasets_descriptor_collection_name = datasets_descriptor_collection_name
+            
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=ArangoDatasetsConnector) from exc
 
+    def __parse_datasets_mapping(self) -> dict[str, StandardCollection]:
+        """
+        Gets the mapping between datasets name and datasets collections
+        """
+        collection = self.db.collection(name=self.datasets_descriptor_collection_name)
+        return {document[ArangoDatasetsConnector.DATASET_COLLECTION_NAME_STR]:document[ArangoDatasetsConnector.KEY_STR] for document in collection}
+
+
     def __get_dataset_collection(self, name: str) -> StandardCollection:
+        """
+        Get the collection associated with datasets
+
+        :param dataset_identifier: identifier of the dataset
+        :type dataset_identifier: str
+
+        :param data_to_get: data to retrieve, list of names
+        :type data_to_get: List[str]
+        """
         try:
-            if not self.db.has_collection(name=name):
+            mapping = self.__parse_datasets_mapping()
+            dataset_collection_name = mapping[name]
+            if not self.db.has_collection(name=dataset_collection_name):
                 raise DatasetNotFoundException(dataset_name=name)
-            return self.db.collection(name=name)
+            return self.db.collection(name=dataset_collection_name)
         except CollectionListError as exc:
+            raise DatasetNotFoundException(dataset_name=name) from exc
+        except KeyError as exc:
             raise DatasetNotFoundException(dataset_name=name) from exc
 
     def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> None:
@@ -101,7 +139,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
         # prepare query to write
-        data_for_arango = [{ArangoDatasetsConnector.KEY_STR: tag, ArangoDatasetsConnector.VALUE_STR: self.__handle_types(value)} for tag, value in values_to_write.items()]
+        data_for_arango = [{ArangoDatasetsConnector.KEY_STR: tag, ArangoDatasetsConnector.VALUE_STR: value} for tag, value in values_to_write.items()]
 
         # Write items
         dataset_collection.insert_many(data_for_arango, overwrite=True)
@@ -124,7 +162,8 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         Get all available datasets for a specific API
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
-        return list(collection[ArangoDatasetsConnector.COLLECTION_NAME_STR] for collection in self.db.collections() if not collection[ArangoDatasetsConnector.COLLECTION_SYSTEM_STR])
+        mapping = self.__parse_datasets_mapping()
+        return list(mapping.keys())
 
     def write_dataset(
         self,
@@ -147,10 +186,19 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(
             f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})"
         )
-        if not self.db.has_collection(name=dataset_identifier):
+        # Check if dataset exists
+        mapping = self.__parse_datasets_mapping()
+        if dataset_identifier not in mapping or not self.db.has_collection(name=mapping[dataset_identifier]):
             # Handle dataset creation
             if create_if_not_exists:
-                self.db.create_collection(name=dataset_identifier)
+                # Generate a dataset uid
+                # need only alpha characters
+                dataset_uid = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(25))
+                
+                # Create matching collection
+                collection = self.db.collection(name=self.datasets_descriptor_collection_name)
+                collection.insert({ArangoDatasetsConnector.KEY_STR: dataset_uid, ArangoDatasetsConnector.DATASET_COLLECTION_NAME_STR: dataset_identifier}, overwrite=True)
+                self.db.create_collection(name=dataset_uid)
             else:
                 raise DatasetNotFoundException(dataset_identifier)
         else:
