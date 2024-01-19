@@ -390,7 +390,7 @@ class DataManager:
         for key, data_value in self.data_dict.items():
             # get only not already
             if data_value[IO_TYPE] == IO_TYPE_IN and not key in already_set_data:
-                data_ns = data_value[NS_REFERENCE].name
+                data_ns = data_value[NS_REFERENCE].value
                 data_name = data_value[VAR_NAME]
 
                 namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {})
@@ -399,10 +399,9 @@ class DataManager:
         # iterate on each namespace to retrieve data in this namespace
         loaded_data_dict = {}
         for namespace, data_dict in namespaced_data_dict.items():
+            datasets_info = datasets_mapping.get_datasets_info_from_namespace(namespace, self.name)
             # retrieve the list of dataset associated to the namespace from the mapping
-            if namespace in datasets_mapping.namespace_datasets_mapping.keys():
-
-                datasets_info = datasets_mapping.namespace_datasets_mapping[namespace]
+            if len(datasets_info) > 0:
                 # get data values into the dataset
                 updated_data = self.dataset_manager.fetch_data_from_datasets(
                     datasets_info=datasets_info, data_names=list(data_dict.keys())

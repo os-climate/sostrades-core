@@ -29,6 +29,7 @@ class DatasetsMapping:
     # Keys for parsing json
     DATASETS_INFO_KEY = "datasets_infos"
     NAMESPACE_KEY = "namespace_datasets_mapping"
+    STUDY_PLACEHOLDER = "<study_ph>"
 
     # Dataset info [dataset_name : DatasetInfo]
     datasets_infos: dict[str:DatasetInfo]
@@ -88,3 +89,11 @@ class DatasetsMapping:
         with open(file_path, "rb") as file:
             json_data = json.load(file)
         return DatasetsMapping.deserialize(json_data)
+
+    def get_datasets_info_from_namespace(self, namespace:str, study_name:str) -> "list(DatasetInfo)":
+        datasets_mapping = []
+        anonimized_ns = namespace.replace(study_name, self.STUDY_PLACEHOLDER)
+        if anonimized_ns in self.namespace_datasets_mapping.keys():
+            datasets_mapping = self.namespace_datasets_mapping[anonimized_ns]
+
+        return datasets_mapping
