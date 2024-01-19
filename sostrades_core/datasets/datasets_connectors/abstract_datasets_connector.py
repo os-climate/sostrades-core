@@ -54,6 +54,12 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
+    def get_datasets_available(self) -> list[str]:
+        """
+        Abstract method to get all available datasets for a specific API
+        """
+
+    @abc.abstractmethod
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], create_if_not_exists:bool=True, override:bool=False) -> None:
         """
         Abstract method to overload in order to write a dataset from a specific API
@@ -82,6 +88,23 @@ class AbstractDatasetsConnector(abc.ABC):
         self.__logger.debug(f"Copying dataset {dataset_identifier} from {connector_from} to {self}")
         dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier)
         self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, create_if_not_exists=create_if_not_exists, override=override)
+
+    
+    def copy_all_datasets_from(self, connector_from:AbstractDatasetsConnector, create_if_not_exists:bool=True, override:bool=False):
+        """
+        Copies all datasets from another AbstractDatasetsConnector
+        :param connector_from: Connector to copy dataset from
+        :type connector_from: AbstractDatasetsConnector
+        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
+        :type create_if_not_exists: bool
+        :param override: override dataset if it exists (raises otherwise)
+        :type override: bool
+        """
+        self.__logger.debug(f"Copying all datasets from {connector_from} to {self}")
+        datasets = connector_from.get_datasets_available()
+        for dataset_identifier in datasets:
+            dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier)
+            self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, create_if_not_exists=create_if_not_exists, override=override)
 
     def __str__(self) -> str:
         return f"{type(self).__name__}"     

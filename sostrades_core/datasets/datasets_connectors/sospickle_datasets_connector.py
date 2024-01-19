@@ -30,6 +30,8 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
     """
     Specific dataset connector for dataset in pickle format
     """
+    VALUE_STR = "value"
+    SOS_NS_SEPARATOR = "."
 
     def __init__(self, file_path: str):
         """
@@ -57,7 +59,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         :param dataset_id: name of dataset
         :type dataset_id: str
         """
-        return dataset_id + "." + data_tag
+        return dataset_id + SoSPickleDatasetsConnector.SOS_NS_SEPARATOR + data_tag
 
     @classmethod
     def __get_dataset_id_and_data_name(cls, name_in_pickle:str) -> Tuple[str, str]:
@@ -67,9 +69,9 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         :param name_in_pickle: name of the parameter in pickle
         :type name_in_pickle: str
         """
-        spl = name_in_pickle.split(".")
+        spl = name_in_pickle.split(SoSPickleDatasetsConnector.SOS_NS_SEPARATOR)
         data_name = spl[-1]
-        dataset_id = ".".join(spl[:-1])
+        dataset_id = SoSPickleDatasetsConnector.SOS_NS_SEPARATOR.join(spl[:-1])
         return dataset_id, data_name
 
     def __load_pickle_data(self):
@@ -102,8 +104,8 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         :param dataset_id: data to retrieve, list of names
         :type dataset_id: List[str]
         """
-        datasets = set(self.__get_dataset_id_and_data_name(key)[0] for key in self.__pickle_data)
-        return dataset_id in datasets
+        
+        return dataset_id in self.get_datasets_available()
 
     def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> None:
         """
@@ -126,7 +128,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         datasets_data = self.__pickle_data
 
         # Filter data
-        filtered_data = {key: datasets_data[self.__get_pickle_key(key, dataset_identifier)]['value'] for key in datasets_data if key in data_to_get}
+        filtered_data = {key: datasets_data[self.__get_pickle_key(key, dataset_identifier)][SoSPickleDatasetsConnector.VALUE_STR] for key in datasets_data if key in data_to_get}
         self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_data
 
@@ -174,10 +176,19 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
             if dataset_id == dataset_identifier:
                 dataset_keys.append(key)
 
-        dataset_data = {key.split(".")[-1]:self.__pickle_data[key]['value'] for key in self.__pickle_data if key in dataset_keys}
+        dataset_data = {key.split(SoSPickleDatasetsConnector.SOS_NS_SEPARATOR)[-1]:self.__pickle_data[key][SoSPickleDatasetsConnector.VALUE_STR] for key in self.__pickle_data if key in dataset_keys}
         return dataset_data
+    
+    def get_datasets_available(self) -> list[str]:
+        """
+        Get all available datasets for a specific API
+        """
+        self.__logger.debug(f"Getting all datasets for connector {self}")
+        # Read pickle if not read already
+        if self.__pickle_data is None:
+            self.__load_pickle_data()
+        return list(self.__get_dataset_id_and_data_name(key)[0] for key in self.__pickle_data)
         
-
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], create_if_not_exists:bool=True, override:bool=False) -> None:
         """
         Abstract method to overload in order to write a dataset from a specific API

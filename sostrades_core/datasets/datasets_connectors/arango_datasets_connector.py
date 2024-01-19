@@ -18,6 +18,7 @@ from typing import Any, List
 
 from arango import ArangoClient, CollectionListError
 from arango.collection import StandardCollection
+import pandas as pd
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
@@ -31,6 +32,10 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     """
     Specific dataset connector for dataset in arango db format
     """
+    COLLECTION_NAME_STR = "name"
+    COLLECTION_SYSTEM_STR = "system"
+    VALUE_STR = "value"
+    KEY_STR = "_key"
 
     def __init__(self, host: str, db_name: str, username: str, password: str):
         """
@@ -78,7 +83,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         cursor = dataset_collection.get_many(data_to_get)
 
         # Process the results
-        result_data = {doc["_key"]: doc["value"] for doc in cursor}
+        result_data = {doc[ArangoDatasetsConnector.KEY_STR]: doc[ArangoDatasetsConnector.VALUE_STR] for doc in cursor}
         self.__logger.debug(
             f"Values obtained {list(result_data.keys())} for dataset {dataset_identifier} for connector {self}"
         )
@@ -96,7 +101,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
         # prepare query to write
-        data_for_arango = [{"_key": tag, "value": value} for tag, value in values_to_write.items()]
+        data_for_arango = [{ArangoDatasetsConnector.KEY_STR: tag, ArangoDatasetsConnector.VALUE_STR: self.__handle_types(value)} for tag, value in values_to_write.items()]
 
         # Write items
         dataset_collection.insert_many(data_for_arango, overwrite=True)
@@ -111,8 +116,15 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
 
         # Process all data
-        result_data = {doc["_key"]: doc["value"] for doc in dataset_collection}
+        result_data = {doc[ArangoDatasetsConnector.KEY_STR]: doc[ArangoDatasetsConnector.VALUE_STR] for doc in dataset_collection}
         return result_data
+    
+    def get_datasets_available(self) -> list[str]:
+        """
+        Get all available datasets for a specific API
+        """
+        self.__logger.debug(f"Getting all datasets for connector {self}")
+        return list(collection[ArangoDatasetsConnector.COLLECTION_NAME_STR] for collection in self.db.collections() if not collection[ArangoDatasetsConnector.COLLECTION_SYSTEM_STR])
 
     def write_dataset(
         self,
@@ -170,7 +182,8 @@ if __name__ == "__main__":
     print(connector.get_values(dataset_identifier="test_dataset_collection", data_to_get=["x", "y"]))
 
     # Read dataset
-    print(connector.get_all_values(dataset_identifier="test_dataset_collection"))
+    print(connector.get_values_all(dataset_identifier="test_dataset_collection"))
 
     # Write dataset
-    connector.write_dataset(dataset_identifier="test_dataset_collection_2", values_to_write={"x": 1, "y": "str_y2"})
+    #connector.write_dataset(dataset_identifier="test_dataset_collection_2", values_to_write={"x": 1, "y": "str_y2"})
+    print(connector.get_datasets_available())

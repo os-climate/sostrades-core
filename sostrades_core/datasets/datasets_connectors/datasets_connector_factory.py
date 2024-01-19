@@ -115,3 +115,8 @@ if __name__ == "__main__":
     # Copy dataset
     arango_connector_from_dict.copy_dataset_from(connector_from=json_connector_from_dict, dataset_identifier="default_numerical_parameters", create_if_not_exists=True, override=True)
     print(arango_connector_from_dict.get_values_all(dataset_identifier="default_numerical_parameters"))
+
+    file_path = os.path.join(os.path.dirname(__file__), "uc1_test_damage_ggo.pickle")
+    pickle_connector = SoSPickleDatasetsConnector(file_path=file_path)
+    
+    #arango_connector_from_dict.copy_all_datasets_from(connector_from=pickle_connector, create_if_not_exists=True, override=True)

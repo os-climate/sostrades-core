@@ -88,6 +88,16 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         filtered_data = {key: dataset_data[key] for key in dataset_data if key in data_to_get}
         self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_data
+    
+    def get_datasets_available(self) -> list[str]:
+        """
+        Get all available datasets for a specific API
+        """
+        self.__logger.debug(f"Getting all datasets for connector {self}")
+        # Read JSON if not read already
+        if self.__json_data is None:
+            self.__load_json_data()
+        return list(self.__json_data.keys())
 
     def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any]) -> None:
         """
