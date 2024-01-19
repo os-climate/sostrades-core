@@ -38,7 +38,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     COLLECTION_SYSTEM_STR = "system"
     VALUE_STR = "value"
     KEY_STR = "_key"
-    DATASET_COLLECTION_NAME_STR = "dataset_collection_name"
+    DATASET_NAME_STR = "dataset_name"
     MAX_KEY_SIZE = 254
 
     def __init__(self, host: str, db_name: str, username: str, password: str, datasets_descriptor_collection_name:str="datasets"):
@@ -107,7 +107,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         Gets the mapping between datasets name and datasets collections
         """
         collection = self.db.collection(name=self.datasets_descriptor_collection_name)
-        return {document[ArangoDatasetsConnector.DATASET_COLLECTION_NAME_STR]:document[ArangoDatasetsConnector.KEY_STR] for document in collection}
+        return {document[ArangoDatasetsConnector.DATASET_NAME_STR]:document[ArangoDatasetsConnector.KEY_STR] for document in collection}
 
 
     def __get_dataset_collection(self, name: str) -> StandardCollection:
@@ -223,7 +223,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
                 
                 # Create matching collection
                 collection = self.db.collection(name=self.datasets_descriptor_collection_name)
-                collection.insert({ArangoDatasetsConnector.KEY_STR: dataset_uid, ArangoDatasetsConnector.DATASET_COLLECTION_NAME_STR: dataset_identifier}, overwrite=True)
+                collection.insert({ArangoDatasetsConnector.KEY_STR: dataset_uid, ArangoDatasetsConnector.DATASET_NAME_STR: dataset_identifier}, overwrite=True)
                 self.db.create_collection(name=dataset_uid)
             else:
                 raise DatasetNotFoundException(dataset_identifier)
