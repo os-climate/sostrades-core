@@ -152,16 +152,16 @@ class ScatterMap:
         '''
         return self.dependency_disc_list
 
-    def add_dependency(self, disc):
+    def add_dependency(self, disc_id):
         '''
         Add scatter_map disciplinary dependency
         '''
-        if disc not in self.dependency_disc_list:
-            self.dependency_disc_list.append(disc)
+        if disc_id not in self.dependency_disc_list:
+            self.dependency_disc_list.append(disc_id)
 
-    def remove_dependency(self, disc):
+    def remove_dependency(self, disc_id):
         '''
         Remove disciplinary dependency
         '''
-        if disc in list(self.dependency_disc_list):
-            self.dependency_disc_list.remove(disc)
+        if disc_id in list(self.dependency_disc_list):
+            self.dependency_disc_list.remove(disc_id)

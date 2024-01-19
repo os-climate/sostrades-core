@@ -100,7 +100,7 @@ class ScatterTool(SosTool):
 
         if self.map_name is not None:
             self.sc_map = self.ee.scattermap_manager.get_build_map(self.map_name)
-            self.ee.scattermap_manager.associate_disc_to_build_map(self)
+            self.ee.scattermap_manager.associate_disc_to_build_map(self.driver)
             self.sc_map.configure_map(self.sub_builders)
         # get initial values of namespaces before updat eby the scatter tool at each build
         self.get_values_for_namespaces_to_update()

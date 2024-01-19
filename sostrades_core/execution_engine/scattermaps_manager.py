@@ -65,7 +65,7 @@ class ScatterMapsManager:
         Associate a discipline to its own build map
         '''
         smap = self.get_build_map(disc.map_name)
-        smap.add_dependency(disc)
+        smap.add_dependency(disc.disc_id)
 
     def add_build_map(self, map_name, map_dict):
         '''
