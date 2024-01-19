@@ -15,13 +15,14 @@ limitations under the License.
 """
 import logging
 import os
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import pickle
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetGenericException,
+    DatasetNotFoundException,
 )
 
 
@@ -46,17 +47,30 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         self.__pickle_data = None
 
     @classmethod
-    def __get_pickle_key(cls, data_tag:str, dataset_id:str):
+    def __get_pickle_key(cls, data_tag:str, dataset_id:str) -> str:
         """
         Gets the key in pickle from a data name and a dataset id
 
         :param data_tag: identifier of the dataset
         :type data_tag: str
 
-        :param dataset_id: data to retrieve, list of names
-        :type dataset_id: List[str]
+        :param dataset_id: name of dataset
+        :type dataset_id: str
         """
         return dataset_id + "." + data_tag
+
+    @classmethod
+    def __get_dataset_id_and_data_name(cls, name_in_pickle:str) -> Tuple[str, str]:
+        """
+        Gets the dataset id and data name from the name of a variable in pickle
+
+        :param name_in_pickle: name of the parameter in pickle
+        :type name_in_pickle: str
+        """
+        spl = name_in_pickle.split(".")
+        data_name = spl[-1]
+        dataset_id = ".".join(spl[:-1])
+        return dataset_id, data_name
 
     def __load_pickle_data(self):
         """
@@ -81,6 +95,16 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         with open(db_path, "wb") as file:
             pickle.dump(obj=self.__pickle_data, file=file, indent=4)
 
+    def __has_dataset(self, dataset_id:str):
+        """
+        Method to check if the pickle file contains dataset
+        
+        :param dataset_id: data to retrieve, list of names
+        :type dataset_id: List[str]
+        """
+        datasets = set(self.__get_dataset_id_and_data_name(key)[0] for key in self.__pickle_data)
+        return dataset_id in datasets
+
     def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> None:
         """
         Method to retrieve data from pickle and fill a data_dict
@@ -95,6 +119,9 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         # Read pickle if not read already
         if self.__pickle_data is None:
             self.__load_pickle_data()
+
+        if not self.__has_dataset(dataset_identifier):
+            raise DatasetNotFoundException(dataset_identifier)
 
         datasets_data = self.__pickle_data
 
@@ -116,6 +143,9 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         if self.__pickle_data is None:
             self.__load_pickle_data()
 
+        if not self.__has_dataset(dataset_identifier):
+            raise DatasetNotFoundException(dataset_identifier)
+
         # Perform key mapping
         data_to_update_dict = {self.__get_pickle_key(key, dataset_identifier): value for key, value in values_to_write.items()}
 
@@ -134,11 +164,14 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         # Read pickle if not read already
         if self.__pickle_data is None:
             self.__load_pickle_data()
+
+        if not self.__has_dataset(dataset_identifier):
+            raise DatasetNotFoundException(dataset_identifier)
         
         dataset_keys = []
         for key in self.__pickle_data:
-            dataset = ".".join(key.split(".")[:-1])
-            if dataset == dataset_identifier:
+            dataset_id, data_name = self.__get_dataset_id_and_data_name(key)
+            if dataset_id == dataset_identifier:
                 dataset_keys.append(key)
 
         dataset_data = {key.split(".")[-1]:self.__pickle_data[key]['value'] for key in self.__pickle_data if key in dataset_keys}
@@ -158,13 +191,21 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         :type override: bool
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
-        # Handle override
-        if not override:
-            raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
+        if not self.__has_dataset(dataset_identifier):
+            # Handle dataset creation
+            if create_if_not_exists:
+                # Nothing to do here
+                pass
+            else:
+                raise DatasetNotFoundException(dataset_identifier)
+        else:
+            # Handle override
+            if not override:
+                raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
         
         self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write)
 
 if __name__ == "__main__":
     file_path = os.path.join(os.path.dirname(__file__), "uc1_test_damage_ggo.pickle")
     connector = SoSPickleDatasetsConnector(file_path=file_path)
-    print(connector.get_values_all("<study_ph>.Macroeconomics").keys())
+    print(connector.get_values_all("<study_ph>2.Macroeconomics").keys())

@@ -80,7 +80,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
 
         if dataset_identifier not in self.__json_data:
-            raise DatasetNotFoundException(f"The dataset {dataset_identifier} is not found in the file {self.__file_path}")
+            raise DatasetNotFoundException(dataset_identifier)
 
         dataset_data = self.__json_data[dataset_identifier]
 
@@ -103,7 +103,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
 
         if dataset_identifier not in self.__json_data:
-            raise DatasetNotFoundException(f"Dataset {dataset_identifier} not found in json file {self.__file_path}")
+            raise DatasetNotFoundException(dataset_identifier)
 
         # Write data
         self.__json_data[dataset_identifier].update(values_to_write)
@@ -122,7 +122,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
 
         if dataset_identifier not in self.__json_data:
-            raise DatasetNotFoundException(f"The dataset {dataset_identifier} is not found in the file {self.__file_path}")
+            raise DatasetNotFoundException(dataset_identifier)
 
         dataset_data = self.__json_data[dataset_identifier]
         return dataset_data
