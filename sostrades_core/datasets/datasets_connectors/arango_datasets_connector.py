@@ -16,6 +16,7 @@ limitations under the License.
 import logging
 import random
 import string
+import re
 from typing import Any, List
 
 from arango import ArangoClient, CollectionListError
@@ -74,6 +75,25 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=ArangoDatasetsConnector) from exc
+
+    def __name_to_valid_arango_collection_name(self, dataset_name:str) -> str:
+        # Remove characters not allowed in collection names
+        filtered_name = re.sub(r'[^a-zA-Z0-9_\-]', '', dataset_name)
+
+        # Ensure the name starts with a letter
+        if filtered_name and not filtered_name[0].isalpha():
+            filtered_name = 'D' + filtered_name
+
+        # Ensure the name does not exceed the maximum length
+        max_length = 256
+        filtered_name = filtered_name[:max_length]
+
+        if len(filtered_name) == 0:
+            # generate a random id
+            # need only alpha characters
+            return ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(255))
+
+        return filtered_name
 
     def __parse_datasets_mapping(self) -> dict[str, StandardCollection]:
         """
@@ -192,8 +212,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             # Handle dataset creation
             if create_if_not_exists:
                 # Generate a dataset uid
-                # need only alpha characters
-                dataset_uid = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(25))
+                dataset_uid = self.__name_to_valid_arango_collection_name(dataset_identifier)
                 
                 # Create matching collection
                 collection = self.db.collection(name=self.datasets_descriptor_collection_name)
