@@ -63,7 +63,7 @@ class SeriesTemplate:
     MARKER_SYMBOL = 'marker_symbol'
 
     def __init__(self, abscissa=[], ordinate=[], series_name='', display_type='lines', visible=True,
-                 y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle'):
+                 y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle', marker=None):
         """ Create a new series to add in a chart
 
         :param abscissa: list of number values for abscissa
@@ -82,6 +82,8 @@ class SeriesTemplate:
         :type custom_data: str
         :param marker_symbol: symbol to use to display point on chart ('circle' by default) see: https://plotly.com/python/marker-style/
         :type marker_symbol: str
+        :param marker: symbol to use to describe the markers displayed on the chart
+        :type marker: dict(), ex: marker=dict(color='LightSkyBlue', size=20, line=dict(color='MediumPurple', width=2))
         """
 
         self.__ordinate = []
@@ -103,6 +105,7 @@ class SeriesTemplate:
 
         self.custom_data = custom_data
         self.marker_symbol = marker_symbol
+        self.marker = marker
 
     @property
     def abscissa(self):

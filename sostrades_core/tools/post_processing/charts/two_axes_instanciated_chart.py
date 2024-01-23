@@ -130,7 +130,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
 
             elif serie.display_type == InstanciatedSeries.SCATTER_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                         marker_symbol=serie.marker_symbol, mode='markers', yaxis=serie.y_axis,
+                                         marker_symbol=serie.marker_symbol, mode='markers',
+                                         marker=serie.marker, yaxis=serie.y_axis,
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.BAR_DISPLAY:
                 fig.add_trace(go.Bar(x=abscissa, y=cumulated_values, name=serie.series_name,
@@ -142,7 +143,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.LINES_DISPLAY_WITH_MARKERS:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                        marker_symbol=serie.marker_symbol, mode='lines+markers', yaxis=serie.y_axis,
+                                        marker_symbol=serie.marker_symbol, mode='lines+markers',
+                                         marker=serie.marker, yaxis=serie.y_axis,
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DASH_LINES_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
@@ -150,7 +152,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DASH_LINES_DISPLAY_WITH_MARKERS:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                        marker_symbol=serie.marker_symbol, mode='lines+markers', yaxis=serie.y_axis, line={'dash': 'dash'},
+                                        marker_symbol=serie.marker_symbol, mode='lines+markers',
+                                         marker=serie.marker, yaxis=serie.y_axis, line={'dash': 'dash'},
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DASH_DOT_LINES_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
@@ -158,7 +161,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DASH_DOT_LINES_DISPLAY_WITH_MARKERS:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                        marker_symbol=serie.marker_symbol, mode='lines+markers', yaxis=serie.y_axis, line={'dash': 'dashdot'},
+                                        marker_symbol=serie.marker_symbol, mode='lines+markers',
+                                         marker=serie.marker, yaxis=serie.y_axis, line={'dash': 'dashdot'},
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DOT_LINES_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
@@ -166,7 +170,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DOT_LINES_DISPLAY_WITH_MARKERS:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                        marker_symbol=serie.marker_symbol, mode='lines+markers', yaxis=serie.y_axis, line={'dash': 'dot'},
+                                        marker_symbol=serie.marker_symbol, mode='lines+markers',
+                                         marker=serie.marker, yaxis=serie.y_axis, line={'dash': 'dot'},
                                          visible=True if serie.visible else 'legendonly'))
 
         # -- Annotations management
