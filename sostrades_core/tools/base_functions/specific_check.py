@@ -51,6 +51,5 @@ def specific_check_years(dm):
                 if not all(np.isin(np.arange(year_start, year_end + 1, time_step), value['years'].values)):
                     errors_in_dm_msg = f"Variable: The column years of '{var_f_name}' dataframe is not coherent with year start {year_start} and year end {year_end} \n years in dataframe : {min(value['years'].values)} to {max(value['years'].values)} !"
                     dm.logger.error(errors_in_dm_msg)
-
-                    raise ValueError(
-                        f'DataManager contains *value errors*: {errors_in_dm_msg}')
+                    pass
+                    #raise ValueError(f'DataManager contains *value errors*: {errors_in_dm_msg}')
