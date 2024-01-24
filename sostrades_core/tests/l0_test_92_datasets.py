@@ -34,11 +34,11 @@ class TestDatasets(unittest.TestCase):
         logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
         # register connector for tests
         self.test_data_folder = os.path.join(os.path.dirname(__file__), "data")
-        DatasetsConnectorManager.register_connector(
-            connector_identifier="JSON_datasets",
-            connector_type=DatasetConnectorType.JSON,
-            file_path=os.path.join(self.test_data_folder, "test_92_datasets_db.json"),
-        )
+        # DatasetsConnectorManager.register_connector(
+        #     connector_identifier="JSON_datasets",
+        #     connector_type=DatasetConnectorType.JSON,
+        #     file_path=os.path.join(self.test_data_folder, "test_92_datasets_db.json"),
+        # )
 
         self.repo = "sostrades_core.sos_processes.test"
         self.study_name = "usecase_dataset"
