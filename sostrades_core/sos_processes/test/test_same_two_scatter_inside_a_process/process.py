@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/10/10-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,11 +36,12 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         default initialisation test
         '''
-
+        repo_name = 'sostrades_core.sos_processes.test.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver'
         builder_list1 = self.ee.factory.get_builder_from_process(
-            'sostrades_core.sos_processes.test', 'test_driver')
+            repo_name, proc_name)
         builder_list2 = self.ee.factory.get_builder_from_process(
-            'sostrades_core.sos_processes.test', 'test_driver')
+            repo_name, proc_name)
         ns_list_standard = deepcopy(self.ee.ns_manager.ns_list)
         # ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
         #     'Scatter1', after_name=exec_eng.study_name)

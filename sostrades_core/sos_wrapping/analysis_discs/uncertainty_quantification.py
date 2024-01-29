@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class UncertaintyQuantification(SoSWrapp):
     }
 
     EVAL_INPUTS = 'eval_inputs'
-    EVAL_OUTPUTS = 'eval_outputs'
+    GATHER_OUTPUTS = 'gather_outputs'
     DEFAULT = SoSWrapp.DEFAULT
     UPPER_BOUND = "upper_bnd"
     LOWER_BOUND = "lower_bnd"
@@ -72,7 +72,7 @@ class UncertaintyQuantification(SoSWrapp):
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.UNIT: None,
         SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-        SoSWrapp.NAMESPACE: 'ns_eval',
+        SoSWrapp.NAMESPACE: 'ns_evaluator',
     }
     DESC_IN = {
         'samples_inputs_df': eval_df_data_description,
@@ -87,9 +87,9 @@ class UncertaintyQuantification(SoSWrapp):
                 NB_POINTS: ('int', None, True),
                 'full_name': ('string', None, False),
             },
-            SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_eval',
+            SoSWrapp.NAMESPACE: 'ns_sample_generator',
+            SoSWrapp.STRUCTURING: True
         },
         'confidence_interval': {
             SoSWrapp.TYPE: 'float',
@@ -124,9 +124,9 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_eval',
+            SoSWrapp.NAMESPACE: 'ns_sample_generator',
         },
-        EVAL_OUTPUTS: {
+        GATHER_OUTPUTS: {
             SoSWrapp.TYPE: 'dataframe',
             SoSWrapp.DATAFRAME_DESCRIPTOR: {
                 'selected_output': ('bool', None, True),
@@ -137,7 +137,7 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
-            SoSWrapp.NAMESPACE: 'ns_eval',
+            SoSWrapp.NAMESPACE: 'ns_evaluator',
         },
     }
 
@@ -176,12 +176,12 @@ class UncertaintyQuantification(SoSWrapp):
             dynamic_outputs = {}
             dynamic_inputs = {}
             if (self.EVAL_INPUTS in data_in) & (
-                    self.EVAL_INPUTS in data_in
+                    self.GATHER_OUTPUTS in data_in
             ):
-                eval_outputs = self.get_sosdisc_inputs(self.EVAL_OUTPUTS)
+                gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
                 eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
-                if (eval_inputs is not None) & (eval_outputs is not None):
+                if (eval_inputs is not None) & (gather_outputs is not None):
 
                     selected_inputs = eval_inputs[
                         eval_inputs['selected_input'] == True
@@ -190,8 +190,8 @@ class UncertaintyQuantification(SoSWrapp):
                     in_param = selected_inputs.tolist()
                     # in_param.sort()
 
-                    selected_outputs = eval_outputs[
-                        eval_outputs['selected_output'] == True
+                    selected_outputs = gather_outputs[
+                        gather_outputs['selected_output'] == True
                         ]['full_name']
 
                     out_param = selected_outputs.tolist()
@@ -385,13 +385,13 @@ class UncertaintyQuantification(SoSWrapp):
         """
 
         self.check_eval_in_out_types(self.EVAL_INPUTS, self.IO_TYPE_IN)
-        self.check_eval_in_out_types(self.EVAL_OUTPUTS, self.IO_TYPE_OUT)
+        self.check_eval_in_out_types(self.GATHER_OUTPUTS, self.IO_TYPE_OUT)
 
     def check_eval_in_out_types(self, eval_io_name, io_type):
         """
 
         Args:
-            eval_io_name: evalinputs or eval_outputs
+            eval_io_name: evalinputs or gather_outputs
             io_type: 'in' or 'out'
 
         Returns: CHeck data_integrity for parameter inside eval in or out
@@ -438,7 +438,7 @@ class UncertaintyQuantification(SoSWrapp):
             inputs_dict['input_distribution_parameters_df']
         )
 
-        self.all_samples_df = samples_inputs_df.merge(samples_outputs_df, on='scenario', how='left')
+        self.all_samples_df = samples_inputs_df.merge(samples_outputs_df, on='scenario_name', how='left')
         self.breakdown_arrays_to_float()
 
         self.set_float_input_distribution_parameters_df_values()
@@ -458,7 +458,7 @@ class UncertaintyQuantification(SoSWrapp):
         self.float_input_distribution_parameters_df = pd.DataFrame()
 
         self.float_all_samples_df = pd.DataFrame()
-        self.float_all_samples_df['scenario'] = self.all_samples_df['scenario']
+        self.float_all_samples_df['scenario_name'] = self.all_samples_df['scenario_name']
 
         self.pure_float_input_names = []
         self.dict_array_float_names = {}
@@ -533,8 +533,8 @@ class UncertaintyQuantification(SoSWrapp):
         """
         Delete the reference scenario in a df for UQ
         """
-        reference_scenario_samples_list = [scen for scen in samples_df['scenario'].values if 'reference' in scen]
-        samples_df_wo_ref = samples_df.loc[~samples_df['scenario'].isin(reference_scenario_samples_list)]
+        reference_scenario_samples_list = [scen for scen in samples_df['scenario_name'].values if 'reference_scenario' in scen]
+        samples_df_wo_ref = samples_df.loc[~samples_df['scenario_name'].isin(reference_scenario_samples_list)]
 
         return samples_df_wo_ref
 

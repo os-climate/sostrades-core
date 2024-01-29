@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/10/10-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,11 +50,7 @@ class SosTool():
         self.associated_namespaces = None
         self.ee = ee
         self.driver = None
-        self.flatten_subprocess = None
-        if isinstance(cls_builder, list):
-            self.__builders = cls_builder
-        else:
-            self.__builders = [cls_builder]
+        self.sub_builders = cls_builder
 
     @property
     def sub_builders(self):
@@ -101,7 +98,7 @@ class SosTool():
         '''
         Prepare tool function if some data of the driver are needed to configure the tool
         '''
-        self.flatten_subprocess = self.driver.flatten_subprocess
+        pass
 
     def get_dynamic_output_from_tool(self):
         pass
@@ -118,9 +115,7 @@ class SosTool():
 
     def set_father_discipline(self):
         '''
-        Set the current discipline to build the builder_list at driver level
+        Set the current discipline to build the builder_list at father_executor of the driver level (which is the coupling above the driver
         '''
-        if self.flatten_subprocess :
-            self.ee.factory.current_discipline = self.driver.father_executor
-        else :
-            self.ee.factory.current_discipline = self.driver
+
+        self.ee.factory.current_discipline = self.driver.father_executor

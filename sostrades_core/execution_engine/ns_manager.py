@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/21-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/03/21-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ class NamespaceManager:
         self.name = name  # old habit
 
         self.ee = ee
-        #-- List where all namespaces are gathered (of all disciplines)
+        # -- List where all namespaces are gathered (of all disciplines)
         self.ns_list = []
         # Dict with key = ns name and value = ns value just for performances
         self.all_ns_dict = {}
@@ -55,7 +55,7 @@ class NamespaceManager:
         # Dict of local namespaces which fills the local_ns key of the
         # disc_ns_dict
         self.__local_ns_dict = {}
-        #-- current disciplinary name space
+        # -- current disciplinary name space
         self.current_disc_ns = None
 
         # disc_ns_dict hosts local_ns and other_ns for each discipline in the
@@ -70,9 +70,9 @@ class NamespaceManager:
         self.extra_ns_local = []
         self.ns_object_map = {}
 
-        self.database_activated = False 
-        self.database_conf_path = None 
-        self.database_infos = None 
+        self.database_activated = False
+        self.database_conf_path = None
+        self.database_infos = None
 
     @staticmethod
     def compose_ns(args):
@@ -111,22 +111,23 @@ class NamespaceManager:
         '''
         return self.__disc_ns_dict
 
-    #-- Data name space methods
-    def add_ns_def(self, ns_info, database_infos = None, clean_existing=True):
+    # -- Data name space methods
+    def add_ns_def(self, ns_info, database_infos=None, clean_existing=True):
         ''' 
         add multiple namespaces to the namespace_manager 
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
         ns_ids = []
         for key, value in ns_info.items():
-            ns_id = self.add_ns(key, value, database_infos=database_infos, clean_existing = clean_existing)
+            ns_id = self.add_ns(key, value, database_infos=database_infos, clean_existing=clean_existing)
             ns_ids.append(ns_id)
-        if database_infos is not None: 
+        if database_infos is not None:
             self.database_activated = True
 
         return ns_ids
 
-    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_infos = None, clean_existing=True):
+    def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_infos=None,
+               clean_existing=True):
         '''
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
@@ -136,7 +137,7 @@ class NamespaceManager:
         # object take the one that exists
         ns_id = f'{name}{self.NS_NAME_SEPARATOR}{ns_value}'
         if clean_existing:
-            self.clean_all_namespaces_with_name(name)
+            self.__clean_all_namespaces_with_name(name)
 
         if ns_id in self.all_ns_dict:
             ns = self.all_ns_dict[ns_id]
@@ -146,7 +147,7 @@ class NamespaceManager:
         # else we create a new object and store it in all_ns_dict
         else:
             ns = Namespace(name, ns_value, display_value, database_infos)
-            #-- add in the list if created
+            # -- add in the list if created
             self.ns_list.append(ns)
             self.all_ns_dict[ns.get_ns_id()] = ns
 
@@ -214,7 +215,8 @@ class NamespaceManager:
                 f'The namespace {ns_name} is not defined in the namespace manager')
         else:
             return self.shared_ns_dict[ns_name]
-    #-- Disciplinary name space management
+
+    # -- Disciplinary name space management
 
     def reset_current_disc_ns(self):
         '''
@@ -293,9 +295,23 @@ class NamespaceManager:
         namespace in shared_namespace_list
         '''
 
+        disc_namespace_dict = self.get_associated_ns(disc)
         for namespace in shared_namespace_list:
-            if namespace in self.shared_ns_dict:
-                self.shared_ns_dict[namespace].add_dependency(disc.disc_id)
+            if namespace in disc_namespace_dict:
+                disc_namespace_dict[namespace].add_dependency(disc.disc_id)
+
+    def add_disc_in_dependency_list_of_namespace(self, ns_id, disc_id):
+        '''
+
+        Args:
+            ns_id: Id of the namespace we want to add the disc in the depdndency lsit
+            disc_id: Id of the discipline
+
+        Returns: Add the disc with disc_id in the dependency_disc_list
+
+        '''
+        ns = self.all_ns_dict[ns_id]
+        ns.add_dependency(disc_id)
 
     def create_disc_ns_info(self, disc):
         '''
@@ -443,17 +459,17 @@ class NamespaceManager:
         '''
         return self.disc_ns_dict[disc]['local_ns'].get_value()
 
-#     def get_display_namespace_value(self, disc):
-#         '''
-#         Return the display_namespace linked to the discipline disc
-#         '''
-#         if disc.father_builder in self.display_ns_dict:
-#             return self.display_ns_dict[disc.father_builder]
-#
-#         elif disc.father_builder not in self.display_ns_dict and disc in self.disc_ns_dict:
-#             return self.get_local_namespace_value(disc)
-#         else:
-#             return None
+    #     def get_display_namespace_value(self, disc):
+    #         '''
+    #         Return the display_namespace linked to the discipline disc
+    #         '''
+    #         if disc.father_builder in self.display_ns_dict:
+    #             return self.display_ns_dict[disc.father_builder]
+    #
+    #         elif disc.father_builder not in self.display_ns_dict and disc in self.disc_ns_dict:
+    #             return self.get_local_namespace_value(disc)
+    #         else:
+    #             return None
 
     def get_display_namespace_value(self, disc):
         return self.disc_ns_dict[disc]['local_ns'].get_display_value()
@@ -509,11 +525,10 @@ class NamespaceManager:
         ns_ids = []
         if namespace_list is None:
             namespace_list = list(self.shared_ns_dict.values())
-        
-        for ns in deepcopy(namespace_list):
 
+        for ns in deepcopy(namespace_list):
             ns_id = self.__update_namespace_with_extra_ns(
-                ns, extra_ns, after_name,clean_existing=clean_existing)
+                ns, extra_ns, after_name, clean_existing=clean_existing)
             ns_ids.append(ns_id)
 
         return ns_ids
@@ -585,33 +600,18 @@ class NamespaceManager:
         """
         Set database infos to namespace
         database_infos: dictionnary of database_infos to set to namespace
-        """ 
+        """
         self.database_infos = database_infos
 
-
-    def clean_all_ns_in_nslist(self, ns_list, clean_all_ns_with_name=False):
-        """
-        Method to clean all namespaces in given input list
-        ns_list : List of namespaces to clean
-        clean_all_ns_with_name : Boolean if True clean all namespaces having name of namespace in ns_list
-        """
-        for ns in ns_list:
-            if clean_all_ns_with_name:
-                # if boolean, clean all namespaces with name of objects in ns_list (including objects in ns_list)
-                self.clean_all_namespaces_with_name(ns.name)
-            else: 
-                # clean only the namespace and not other namespaces with the same name
-                self.clean_namespace(ns) 
-            
-
-    def clean_namespace(self, ns):
+    def __clean_namespace(self, ns):
         """
         Clean given namespace in shared_ns_dict (if in dictionnary), in ns_list and in all_ns_dict
         ns (Namespace) : namespace to clean in different lists and dictionaries
+        Protect this function to be used only wisely (in process or builder but NEVER in a discipline)
         """
         if ns in self.shared_ns_dict.values():
             del self.shared_ns_dict[ns.name]
-        
+
         ns_id = ns.get_ns_id()
         if ns_id in self.all_ns_dict:
             del self.all_ns_dict[ns_id]
@@ -619,17 +619,60 @@ class NamespaceManager:
         if ns in self.ns_list:
             self.ns_list.remove(ns)
 
+    def clean_namespace_from_process(self, ns):
+        """
 
-    def clean_all_namespaces_with_name(self, ns_name):
+        Args:
+            ns: namespace to clean
+
+        We can safely delete the namespace from the namespace manager without checking if this namespace is used by a discipline because discipline are not yet built
+        CAUTION : This method MUST BE USED WISELY AND NEVER IN A DISCIPLINE
+        """
+        self.__clean_namespace(ns)
+
+    def __clean_all_namespaces_with_name(self, ns_name):
         """
         Method to clean all namespaces with given name in different namespace manager objects
         ns_name : namespace name to delete
         """
 
         ns_list = self.get_all_namespace_with_name(ns_name)
-       
+
         for ns_to_clean in ns_list:
-            self.clean_namespace(ns_to_clean)
+            self.__clean_namespace(ns_to_clean)
+
+    def clean_namespace_from_discipline(self, ns, disc):
+        '''
+
+        Args:
+            ns: namespace to clean
+            disc: disci that want to delete the namespace
+
+        Delete the disc from the dependency disc list of the namespace
+        The namespace is deleted ONLY IF it is used only by this discipline. Delete the disc from the dependency disc list of the namespace
+
+        '''
+        ns.remove_dependency(disc.disc_id)
+        if not ns.check_namespace_is_used():
+            self.__clean_namespace(ns)
+
+    def clean_unused_namespaces(self, post_proc_ns_list):
+        full_ns_list = list(self.all_ns_dict.values())
+        for ns in full_ns_list:
+            if self.unused_namespace(ns, post_proc_ns_list=post_proc_ns_list):
+                self.__clean_namespace(ns)
+
+    def unused_namespace(self, ns, post_proc_ns_list=[]):
+        '''
+
+        Args:
+            ns: namespace to check
+            post_proc_ns_list: list of post processing namespaces, not mandatory
+
+        Returns:
+            True if the namespace is unused, False if it is used
+        '''
+        return ns.name not in post_proc_ns_list and not ns.check_namespace_is_used()
 
 
 class NamespaceManagerException(Exception):

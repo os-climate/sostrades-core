@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ class DataManager:
     STATUS = 'status'
 
     def __init__(self, name,
-                 logger:logging.Logger,
+                 logger: logging.Logger,
                  root_dir=None,
                  rw_object=None,
                  study_filename=None,
@@ -134,8 +134,9 @@ class DataManager:
                 disc_cache = self.cache_map[disc_id]
                 self.fill_cache_with_serialized_cache(
                     disc_cache, serialized_cache)
-#                 for disc in self.gemseo_disciplines_id_map[disc_id]:
-#                     disc.cache = disc_cache
+
+    #                 for disc in self.gemseo_disciplines_id_map[disc_id]:
+    #                     disc.cache = disc_cache
 
     def fill_cache_with_serialized_cache(self, empty_cache, serialized_cache):
         '''
@@ -150,7 +151,7 @@ class DataManager:
             out_names = list(cached_outputs.keys())
             empty_cache.cache_outputs(cached_inputs, in_names,
                                       cached_outputs, out_names)
-#
+            #
             if 'jacobian' in serialized_cache[1]:
                 cached_jac = serialized_cache[1]['jacobian']
                 empty_cache.cache_jacobian(cached_inputs, in_names, cached_jac)
@@ -432,8 +433,10 @@ class DataManager:
         return converted_dict
 
     def create_reduced_dm(self):
-        self.reduced_dm = self.get_data_dict_list_attr([ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA, ProxyDiscipline.NUMERICAL,
-                                                        ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING, ProxyDiscipline.CONNECTOR_DATA])
+        self.reduced_dm = self.get_data_dict_list_attr(
+            [ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA, ProxyDiscipline.NUMERICAL,
+             ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING,
+             ProxyDiscipline.CONNECTOR_DATA])
 
     def convert_dict_with_maps(self, dict_to_convert, map_full_names_ids, keys='full_names'):
         ''' Convert dict keys with ids to full_names or full_names to ids
@@ -635,8 +638,9 @@ class DataManager:
         return serializer.export_data_dict_and_zip(dict_to_export,
                                                    export_dir)
 
-    def remove_keys(self, disc_id, data_d):
+    def remove_keys(self, disc_id, data_d, io_type):
         ''' Clean namespaced keys in data_dict and remove discipline dependencies
+        The io_type is only here to switch the dm io_type in case we suppress an output variable which still exist as an input
         '''
         list_data_d = [data_d] if isinstance(data_d, str) else data_d
 
@@ -661,6 +665,11 @@ class DataManager:
                         # discipline dependency
                         del self.data_dict[var_id]
                         del self.data_id_map[var_f_name]
+                    else:
+                        # only one discipline can declare a variable as output then if this key is removed from the discipline and the variable still exists
+                        # then the variable becomes an input
+                        if io_type == ProxyDiscipline.IO_TYPE_OUT:
+                            self.data_dict[var_id][ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
                 else:
                     pass
 
@@ -686,7 +695,7 @@ class DataManager:
                 keys_to_remove.append(
                     disc_ref._convert_to_namespace_name(key, disc_ref.IO_TYPE_IN))
             self.remove_keys(
-                disc_id, keys_to_remove)
+                disc_id, keys_to_remove, disc_ref.IO_TYPE_IN)
 
         # remove discipline in disciplines_dict and disciplines_id_map
         self.disciplines_id_map[disc_f_name].remove(disc_id)
@@ -701,10 +710,10 @@ class DataManager:
         disc_ref = self.get_discipline(disc_id)
         # clean input keys from dm
         self.remove_keys(disc_id, list(disc_ref.apply_visibility_ns(
-            ProxyDiscipline.IO_TYPE_IN)))
+            ProxyDiscipline.IO_TYPE_IN)), ProxyDiscipline.IO_TYPE_IN)
         # clean output keys from dm
         self.remove_keys(disc_id, list(disc_ref.apply_visibility_ns(
-            ProxyDiscipline.IO_TYPE_OUT)))
+            ProxyDiscipline.IO_TYPE_OUT)), ProxyDiscipline.IO_TYPE_OUT)
 
     def export_couplings(self, in_csv=False, f_name=None):
         ''' Export couplings of all disciplines registered in the DM
@@ -803,7 +812,8 @@ class DataManager:
 
             def compare_data(data_name):
 
-                if data_name == ProxyDiscipline.UNIT and data1[ProxyDiscipline.TYPE] not in ProxyDiscipline.NO_UNIT_TYPES:
+                if data_name == ProxyDiscipline.UNIT and data1[
+                    ProxyDiscipline.TYPE] not in ProxyDiscipline.NO_UNIT_TYPES:
                     return str(data1[data_name]) != str(
                         data2[data_name]) or data1[data_name] is None
                 elif var_f_name in self.no_check_default_variables:

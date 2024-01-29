@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2023/11/06 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ class SoSWrapp(object):
     DATAFRAME_FILL = DesignVar.DATAFRAME_FILL
     ONE_COLUMN_FOR_KEY = DesignVar.ONE_COLUMN_FOR_KEY
     COLUMNS_NAMES = DesignVar.COLUMNS_NAMES
+    IO_TYPE = 'io_type'
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'

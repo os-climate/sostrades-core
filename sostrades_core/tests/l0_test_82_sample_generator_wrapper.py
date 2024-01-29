@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ from pandas._testing import assert_frame_equal
 import re
 
 from gemseo.algos.doe.doe_factory import DOEFactory
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -62,6 +63,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
     def setUp_doe(self):
 
         self.sampling_method_doe = 'doe_algo'
+        self.sampling_generation_mode_doe = 'at_run_time'
         self.study_name_doe = 'doe'
 
         self.ref_dir = join(dirname(__file__), 'data')
@@ -222,6 +224,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         disc_dict = {}
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_generation_mode_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "fullfact"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
@@ -271,6 +274,8 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         target_samples_df = pd.DataFrame(data=target_samples,
                                          columns=selected_inputs)
+        #keep only variables columns in samples_df
+        doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
 
         assert_frame_equal(doe_disc_samples, target_samples_df)
 
@@ -341,6 +346,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # equal to None).
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = "doe_algo"
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_generation_mode_doe
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = pydoe_algo_used_options
@@ -385,6 +391,10 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             design_space = exec_eng.dm.get_value(
                 'doe.SampleGenerator.design_space')
+            
+            #keep only variables columns in samples_df
+            doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
+
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
             # Check whether samples correspond with eval_inputs variable
@@ -492,6 +502,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # equal to None).
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = "doe_algo"
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_generation_mode_doe
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = OT_algo_used_options
@@ -538,6 +549,9 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             design_space = exec_eng.dm.get_value(
                 'doe.SampleGenerator.design_space')
+            #remove scenario columns from samples_df
+            doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
+
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
             # Check whether samples correspond with eval_inputs variable
@@ -565,7 +579,8 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             assert_frame_equal(doe_disc_samples, reference_samples)
         # f.close()
 
-    def test_4_cartesian_product_execution(self):
+    def _test_4_cartesian_product_execution(self):
+        # NB: test no longer stands as standalone sample generator sampling at config. time is deactivated
         """
         This is a test of the cartesian product wrapper
         """
@@ -586,7 +601,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # CP inputs
         disc_dict = {}
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = 'cartesian_product'
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_z
         # disc_dict[f'{self.ns}.CP.generated_samples'] = generated_samples
 
         exec_eng.load_study_from_input_dict(disc_dict)
@@ -606,15 +621,15 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print(disc_sampling_method)
 
         disc_eval_inputs_cp = disc.get_sosdisc_inputs(
-            'eval_inputs_cp')
+            'eval_inputs')
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
-        if self.sampling_generation_mode_cp == 'at_configuration_time':
-            disc_generated_samples = disc.get_sosdisc_inputs(
-                'generated_samples')
-            print('generated_samples:')
-            print(disc_generated_samples)
+        # if self.sampling_generation_mode_cp == 'at_configuration_time':
+        #     disc_generated_samples = disc.get_sosdisc_inputs(
+        #         'generated_samples')
+        #     print('generated_samples:')
+        #     print(disc_generated_samples)
 
         exec_eng.execute()
 
@@ -622,10 +637,12 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         #     'cp.CP')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
         disc = exec_eng.root_process.proxy_disciplines[0]
 
-        disc_samples = disc.get_sosdisc_outputs(
-            'samples_df')
+        if self.sampling_generation_mode_cp == 'at_run_time':
 
-        print(disc_samples)
+            disc_samples = disc.get_sosdisc_outputs(
+                'samples_df')
+
+            print(disc_samples)
 
         targeted_samples = [
             [0.0, [-10.0, 0.0]],
@@ -648,11 +665,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         target_samples_df = pd.DataFrame(
             targeted_samples, columns=variable_list)
 
-    def test_5_cartesian_product_step_by_step_execution(self):
+    def _test_5_cartesian_product_step_by_step_execution(self):
         """
         This is a test of the cartesian product wrapper
         """
-
+        # NB: test no longer stands as standalone sample generator sampling at config. time is to  deactivated
         self.ns = f'{self.study_name_cp}'
         exec_eng = ExecutionEngine(self.study_name_cp)
 
@@ -691,14 +708,14 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print(disc_sampling_method)
 
         disc_eval_inputs_cp = disc.get_sosdisc_inputs(
-            'eval_inputs_cp')
+            'eval_inputs')
         print('eval_inputs_cp 1:')
         print(disc_eval_inputs_cp)
 
         # 2. Input eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.display_treeview_nodes(True)
@@ -709,20 +726,20 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print(disc_sampling_method)
 
         disc_eval_inputs_cp = disc.get_sosdisc_inputs(
-            'eval_inputs_cp')
+            'eval_inputs')
         print('eval_inputs_cp 2:')
         print(disc_eval_inputs_cp)
 
-        if self.sampling_generation_mode_cp == 'at_configuration_time':
-            disc_generated_samples = disc.get_sosdisc_inputs(
-                'generated_samples')
-            print('generated_samples:')
-            print(disc_generated_samples)
+        # if self.sampling_generation_mode_cp == 'at_configuration_time':
+        #     disc_generated_samples = disc.get_sosdisc_inputs(
+        #         'generated_samples')
+        #     print('generated_samples:')
+        #     print(disc_generated_samples)
 
         # 3. Input an updated eval_inputs_cp
         # CP inputs
         disc_dict = {}
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_y_1_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.display_treeview_nodes(True)
@@ -733,22 +750,23 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         print(disc_sampling_method)
 
         disc_eval_inputs_cp = disc.get_sosdisc_inputs(
-            'eval_inputs_cp')
+            'eval_inputs')
         print('eval_inputs_cp 3:')
         print(disc_eval_inputs_cp)
 
-        if self.sampling_generation_mode_cp == 'at_configuration_time':
-            disc_generated_samples = disc.get_sosdisc_inputs(
-                'generated_samples')
-            print('generated_samples:')
-            print(disc_generated_samples)
+        # if self.sampling_generation_mode_cp == 'at_configuration_time':
+        #     disc_generated_samples = disc.get_sosdisc_inputs(
+        #         'generated_samples')
+        #     print('generated_samples:')
+        #     print(disc_generated_samples)
 
         exec_eng.execute()
 
-        disc_samples = disc.get_sosdisc_outputs(
-            'samples_df')
+        if self.sampling_generation_mode_cp == 'at_run_time':
+            disc_samples = disc.get_sosdisc_outputs(
+                'samples_df')
 
-        print(disc_samples)
+            print(disc_samples)
 
         # 4. Change sampling_method: go to doe_algo
         # CP inputs
@@ -765,11 +783,11 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
 
         disc_dict = {}
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         disc_dict = {}
-        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs_cp'] = self.input_selection_cp_x_y_1_z
+        disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_cp_x_y_1_z
         exec_eng.load_study_from_input_dict(disc_dict)
 
         exec_eng.execute()

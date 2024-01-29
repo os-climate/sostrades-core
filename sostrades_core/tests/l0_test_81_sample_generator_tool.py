@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -216,10 +216,12 @@ class TestSampleGeneratorTool(unittest.TestCase):
         selected_inputs = self.selected_inputs
 
         doe_wrapper = SampleGeneratorWrapper(self.study_name, logger=logging.getLogger(__name__))
-        design_space = doe_wrapper.create_design_space(
-            selected_inputs, dspace_df)  # gemseo DesignSpace
+        # design_space = doe_wrapper.create_design_space(
+        #     selected_inputs, dspace_df)  # gemseo DesignSpace
 
         sample_generator = DoeSampleGenerator()
+        design_space = sample_generator.create_design_space(
+            selected_inputs, dspace_df)  # gemseo DesignSpace
         samples_df = sample_generator.generate_samples(
             sampling_algo_name, algo_options, design_space)
 
@@ -281,10 +283,12 @@ class TestSampleGeneratorTool(unittest.TestCase):
             selected_inputs = self.selected_inputs
 
             doe_wrapper = SampleGeneratorWrapper(self.study_name, logger=logging.getLogger(__name__))
-            design_space = doe_wrapper.create_design_space(
-                selected_inputs, dspace_df)  # gemseo DesignSpace
+            # design_space = doe_wrapper.create_design_space(
+            #     selected_inputs, dspace_df)  # gemseo DesignSpace
 
             sample_generator = DoeSampleGenerator()
+            design_space = sample_generator.create_design_space(
+                selected_inputs, dspace_df)  # gemseo DesignSpace
             samples_df = sample_generator.generate_samples(
                 sampling_algo_name, algo_options, design_space)
 
@@ -355,10 +359,12 @@ class TestSampleGeneratorTool(unittest.TestCase):
             selected_inputs = self.selected_inputs
 
             doe_wrapper = SampleGeneratorWrapper(self.study_name, logger=logging.getLogger(__name__))
-            design_space = doe_wrapper.create_design_space(
-                selected_inputs, dspace_df)  # gemseo DesignSpace
+            # design_space = doe_wrapper.create_design_space(
+            #     selected_inputs, dspace_df)  # gemseo DesignSpace
 
             sample_generator = DoeSampleGenerator()
+            design_space = sample_generator.create_design_space(
+                selected_inputs, dspace_df)  # gemseo DesignSpace
             samples_df = sample_generator.generate_samples(
                 sampling_algo_name, algo_options, design_space)
             # print(samples_df)

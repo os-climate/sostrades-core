@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/10/03-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +21,7 @@ import unittest
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
+
 
 class TestBuildScatter(unittest.TestCase):
     """
@@ -46,47 +48,55 @@ class TestBuildScatter(unittest.TestCase):
             |_scatter2
         '''
         driver_name = 'coupling_scatter'
-        builder_list = self.factory.get_builder_from_process(repo=self.repo,
-                                                             mod_id=self.sub_proc)
+
         # builder_list is a list of builders from self.sub_proc
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
         with self.assertRaises(Exception) as cm:
             self.exec_eng0 = ExecutionEngine(self.namespace)
-            scatter_list = self.exec_eng0.factory.create_driver(
-                driver_name, builder_list, display_options=['group_scenarios_under_disciplines'])
+            self.factory = self.exec_eng0.factory
+            builder_list = self.factory.get_builder_from_process(repo=self.repo,
+                                                                 mod_id=self.sub_proc)
+            scatter_list = self.exec_eng0.factory.create_multi_instance_driver(driver_name, builder_list)
             self.exec_eng0.factory.set_builders_to_coupling_builder(scatter_list)
 
             self.exec_eng0.configure()
+            dict_values[f'{self.study_name}.{driver_name}.display_options'] = ['group_scenarios_under_disciplines']
             self.exec_eng0.load_study_from_input_dict(dict_values)
         error_message = f'The display options parameter for the driver creation should be a dict'
         self.assertEqual(str(cm.exception), error_message)
 
         with self.assertRaises(Exception) as cm:
             self.exec_eng00 = ExecutionEngine(self.namespace)
-            scatter_list = self.exec_eng00.factory.create_driver(
-                driver_name, builder_list, display_options={'wrong_option': True})
+            self.factory = self.exec_eng00.factory
+            builder_list = self.factory.get_builder_from_process(repo=self.repo,
+                                                                 mod_id=self.sub_proc)
+            scatter_list = self.exec_eng00.factory.create_multi_instance_driver(driver_name, builder_list)
             self.exec_eng00.factory.set_builders_to_coupling_builder(scatter_list)
 
             self.exec_eng00.configure()
+            dict_values[f'{self.study_name}.{driver_name}.display_options'] = {'wrong_option': True}
             self.exec_eng00.load_study_from_input_dict(dict_values)
-        error_message = f"Display options should be in the possible list : ['hide_under_coupling', 'hide_coupling_in_driver', 'group_scenarios_under_disciplines', 'autogather']"
+        error_message = f"Display options should be in the possible list : ['hide_under_coupling', 'hide_coupling_in_driver', 'group_scenarios_under_disciplines']"
         self.assertEqual(str(cm.exception), error_message)
 
-        scatter_list = self.exec_eng.factory.create_driver(
-            driver_name, builder_list, display_options={'group_scenarios_under_disciplines': True})
+        self.factory = self.exec_eng.factory
+        builder_list = self.factory.get_builder_from_process(repo=self.repo,
+                                                             mod_id=self.sub_proc)
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(scatter_list)
 
         self.exec_eng.configure()
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
+            'group_scenarios_under_disciplines': True}
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
 
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -117,7 +127,8 @@ class TestBuildScatter(unittest.TestCase):
                        f'\t\t\t|_ Disc2',
                        f'\t\t|_ scatter2',
                        f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2', ]
+                       f'\t\t\t|_ Disc2', 
+                       f'\t|_ {driver_name}_gather',]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(exec_display=True)
@@ -150,22 +161,22 @@ class TestBuildScatter(unittest.TestCase):
                                                              mod_id=self.sub_proc)
         # builder_list is a list of builders from self.sub_proc
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
-        scatter_list = self.exec_eng.factory.create_driver(
-            driver_name, builder_list, display_options={'group_scenarios_under_disciplines': True,
-                                                        'autogather': True})
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(scatter_list)
 
         self.exec_eng.configure()
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
-
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
+        dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
+            'group_scenarios_under_disciplines': True}
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
+        dict_values[f'{self.study_name}.{driver_name}_gather.gather_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
+                          'full_name': ['y', 'z', 'Disc1.indicator']})
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -186,25 +197,28 @@ class TestBuildScatter(unittest.TestCase):
         dict_values[f'{self.study_name}.{driver_name}.scatter2.Disc1.b'] = b2
 
         self.exec_eng.load_study_from_input_dict(dict_values)
+        # change this test because now we have only one gather
+        # self.assertTrue(isinstance(
+        #     self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter.Disc1')[0].mdo_discipline_wrapp.wrapper,
+        #     GatherDiscipline))
+        # self.assertTrue(isinstance(
+        #     self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter.Disc2')[0].mdo_discipline_wrapp.wrapper,
+        #     GatherDiscipline))
+        self.assertTrue(isinstance(
+            self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter_gather')[0].mdo_discipline_wrapp.wrapper,
+            GatherDiscipline))
 
-        self.assertTrue(isinstance(
-            self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter.Disc1')[0].mdo_discipline_wrapp.wrapper,
-            GatherDiscipline))
-        self.assertTrue(isinstance(
-            self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter.Disc2')[0].mdo_discipline_wrapp.wrapper,
-            GatherDiscipline))
         # exec treeview
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ Disc1',
-                       f'\t\t|_ Disc2',
                        f'\t\t|_ scatter1',
                        f'\t\t\t|_ Disc1',
                        f'\t\t\t|_ Disc2',
                        f'\t\t|_ scatter2',
                        f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2', ]
+                       f'\t\t\t|_ Disc2',
+                       f'\t|_ {driver_name}_gather' ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(exec_display=True)
@@ -228,19 +242,19 @@ class TestBuildScatter(unittest.TestCase):
 
         self.exec_eng.execute()
 
-        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.y_gather')
+        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.y_dict')
         y_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.y') for scatter_name in scatter_list}
 
         self.assertDictEqual(y_gather, y_gather_th)
 
-        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc1.indicator_gather')
+        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.Disc1.indicator_dict')
         indicator_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.Disc1.indicator') for scatter_name in scatter_list}
 
         self.assertDictEqual(indicator_gather, indicator_gather_th)
 
-        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter.Disc2.z_gather')
+        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.z_dict')
         z_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.z') for scatter_name in scatter_list}
 
@@ -256,22 +270,22 @@ class TestBuildScatter(unittest.TestCase):
                                                              mod_id=self.sub_proc)
         # builder_list is a list of builders from self.sub_proc
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
-        scatter_list = self.exec_eng.factory.create_driver(
-            driver_name, builder_list, display_options={'group_scenarios_under_disciplines': False,
-                                                        'autogather': True})
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(scatter_list)
 
         self.exec_eng.configure()
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
-
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
+        dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
+            'group_scenarios_under_disciplines': False}
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
+        dict_values[f'{self.study_name}.{driver_name}_gather.gather_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
+                          'full_name': ['y', 'z', 'Disc1.indicator']})
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -329,19 +343,19 @@ class TestBuildScatter(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
         self.exec_eng.execute()
 
-        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.y_gather')
+        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.y_dict')
         y_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.y') for scatter_name in scatter_list}
 
         self.assertDictEqual(y_gather, y_gather_th)
 
-        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.indicator_gather')
-        indicator_gather_th = {f'{scatter_name}.Disc1': self.exec_eng.dm.get_value(
+        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.Disc1.indicator_dict')
+        indicator_gather_th = {f'{scatter_name}': self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.Disc1.indicator') for scatter_name in scatter_list}
 
         self.assertDictEqual(indicator_gather, indicator_gather_th)
 
-        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.z_gather')
+        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.z_dict')
         z_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.z') for scatter_name in scatter_list}
 
@@ -356,40 +370,40 @@ class TestBuildScatter(unittest.TestCase):
                                                              mod_id=self.sub_proc)
         # builder_list is a list of builders from self.sub_proc
         dict_values = {}
-        dict_values[f'{self.study_name}.{driver_name}.builder_mode'] = 'multi_instance'
         # User fill in the fields in the GUI
 
-        scatter_list = self.exec_eng.factory.create_driver(
-            driver_name, builder_list, display_options={'group_scenarios_under_disciplines': False,
-                                                        'autogather': True})
+        scatter_list = self.exec_eng.factory.create_multi_instance_driver(driver_name, builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(scatter_list)
 
         self.exec_eng.configure()
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
-
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
+        dict_values[f'{self.study_name}.{driver_name}.display_options'] = {
+            'group_scenarios_under_disciplines': False}
+        dict_values[f'{self.study_name}.{driver_name}_gather.gather_outputs'] = pd.DataFrame({'selected_output': [True, True, True],
+                          'full_name': ['y', 'z', 'Disc1.indicator']})
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        scenario_df = pd.DataFrame({'selected_scenario': [False, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        samples_df = pd.DataFrame({'selected_scenario': [False, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
 
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': ['scatter1',
-                                                      'scatter2']})
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scatter1',
+                                                     'scatter2']})
 
-        dict_values[f'{self.study_name}.{driver_name}.scenario_df'] = scenario_df
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = samples_df
         # User fill in the fields in the GUI
 
         self.exec_eng.load_study_from_input_dict(dict_values)
@@ -441,20 +455,25 @@ class TestBuildScatter(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
         self.exec_eng.execute()
 
-        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.y_gather')
+        y_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.y_dict')
         y_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.y') for scatter_name in scatter_list}
 
         self.assertDictEqual(y_gather, y_gather_th)
 
-        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.indicator_gather')
-        indicator_gather_th = {f'{scatter_name}.Disc1': self.exec_eng.dm.get_value(
+        indicator_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.Disc1.indicator_dict')
+        indicator_gather_th = {f'{scatter_name}': self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.Disc1.indicator') for scatter_name in scatter_list}
 
         self.assertDictEqual(indicator_gather, indicator_gather_th)
 
-        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.z_gather')
+        z_gather = self.exec_eng.dm.get_value('MyCase.coupling_scatter_gather.z_dict')
         z_gather_th = {scatter_name: self.exec_eng.dm.get_value(
             f'{self.study_name}.{driver_name}.{scatter_name}.z') for scatter_name in scatter_list}
 
         self.assertDictEqual(z_gather, z_gather_th)
+
+if __name__ == '__main__':
+    test = TestBuildScatter()
+    test.setUp()
+    test.test_02_autogather_with_coupling_of_scatter()

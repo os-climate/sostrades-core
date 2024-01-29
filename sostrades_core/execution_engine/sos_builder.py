@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,10 @@ class SoSBuilder:
     '''
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
     SPECIFIC_PROXYS = ['ProxyCoupling', 'ProxyDisciplineGather', 'ProxyOptim', 'ArchiBuilder',
-                       'ProxyDriverEvaluator', 'SelectorDiscipline', ]
+                       'ProxyDriverEvaluator',  # FIXME: to remove
+                       'ProxyMonoInstanceDriver', 'ProxyMultiInstanceDriver',
+                       'SelectorDiscipline',
+                       'ProxySampleGenerator']
 
     def __init__(self, disc_name, ee, cls, is_executable=True):
         '''
@@ -128,6 +131,12 @@ class SoSBuilder:
         self.disc.father_builder = self
 
         self.discipline_dict[future_new_ns_disc_name] = self.disc
+        self.configure_associated_namespaces()
+
+    def configure_associated_namespaces(self):
+
+        for ns_id in self.associated_namespaces:
+            self.__ee.ns_manager.add_disc_in_dependency_list_of_namespace(ns_id, self.disc.disc_id)
         self.__ee.ns_manager.associate_display_values_to_new_local_namespaces(
             self)
 
@@ -186,7 +195,7 @@ class SoSBuilder:
         self.associate_namespaces(new_associated_namespaces)
         # remove the now unused initial namespace
         for ns in namespace_object_list:
-            self.__ee.ns_manager.clean_namespace(ns)
+            self.__ee.ns_manager.clean_namespace_from_process(ns)
 
     def update_associated_namespaces_with_extra_name_rec(self, extra_name, after_name=None):
         """

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/07-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/04/07-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.proxy_optim import ProxyOptim
 
 '''
@@ -28,6 +29,7 @@ from pandas.core.common import flatten
 from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
+from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
 from sostrades_core.sos_wrapping.selector_discipline import SelectorDiscipline
 
@@ -106,9 +108,10 @@ class SosFactory:
         init_execution delegated to the wrapper using the proxy for i/o configuration.
         """
         for proxy in self.__proxy_disciplines:
-            factory = proxy.mdo_discipline_wrapp
-            if factory.wrapper is not None:
-                factory.wrapper.init_execution()
+            if proxy.mdo_discipline_wrapp is not None:
+                factory = proxy.mdo_discipline_wrapp
+                if factory.wrapper is not None:
+                    factory.wrapper.init_execution()
 
     @property
     def sos_name(self):
@@ -202,7 +205,7 @@ class SosFactory:
     def contains_mda_with_strong_couplings(self) -> bool:
         mda_disciplines_with_strong_couplings = len(list(
             filter(lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
-                   self.proxy_disciplines))) >0
+                   self.proxy_disciplines))) > 0
 
         ee_with_strong_couplings = len(self.__execution_engine.root_process.strong_couplings)
 
@@ -249,7 +252,6 @@ class SosFactory:
     def set_root_process(self):
         self.__root = self.coupling_disc
         self.__execution_engine.set_root_process(self.__root)
-
 
     def build(self):
         """Method that build the root process"""
@@ -316,35 +318,56 @@ class SosFactory:
 
         return builder
 
-    def create_driver(self, sos_name, cls_builder, map_name=None, with_sample_generator=False, flatten_subprocess=False,
-                      display_options=None, ):
+    def create_mono_instance_driver(self, sos_name, cls_builder):
+        '''
+        Args:
+            sos_name: Name of the driver
+            cls_builder: (builder list or 1 builder) builder that will be use for driver subprocess
+        Returns:
+            builder_list: list containing the driver builder
+        '''
+        module_struct_list = f'{self.EE_PATH}.proxy_mono_instance_driver.ProxyMonoInstanceDriver'
+        driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.mono_instance_driver_wrapper.MonoInstanceDriverWrapper'
+        return self._create_driver(sos_name=sos_name,
+                                  cls_builder=cls_builder,
+                                  map_name=None,
+                                  module_struct_list=module_struct_list,
+                                  driver_wrapper_mod=driver_wrapper_mod)
+
+    def create_multi_instance_driver(self, sos_name, cls_builder, map_name=None):
+        '''
+        Args:
+            sos_name: Name of the driver
+            cls_builder: (builder list or 1 builder) builders that will be used for driver subprocess
+            map_name (optional): Map associated to scatter tool
+        Returns:
+            builder_list: list containing the driver builder
+        '''
+        module_struct_list = f'{self.EE_PATH}.proxy_multi_instance_driver.ProxyMultiInstanceDriver'
+        builder_list = self._create_driver(sos_name=sos_name,
+                                          cls_builder=cls_builder,
+                                          map_name=map_name,
+                                          module_struct_list=module_struct_list)
+        return builder_list
+
+    def _create_driver(self, sos_name, cls_builder, map_name=None,
+                      module_struct_list=None, driver_wrapper_mod=None):
         '''
 
         Args:
             sos_name: Name of the driver
             cls_builder: sub process builder list to evaluate
             map_name (optional): Map associated to scatter_tool (in multiinstance mode)
-            with_sample_generator (optional): Add a sample generator and associate it to the driver evaluator
-            flatten_subprocess (optional): Create all subprocess disciplines at high level coupling node
-                to allow coupling between all disciplines (useful in multiinstance mode when scenarios
-                are not independant btw each other)
-            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
-                'autogather' : will create an automatic gather discipline which will gather
-                            all cls_builder outputs at driver node
-                'hide_under_coupling' : Hide all disciplines created under the coupling at scenario name node for display purpose
-                'hide_coupling_in_driver': Hide the coupling (scenario_name node) under the driver for display purpose
-                'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose
-                                                      Scenarios will be under discipline for the display treeview
+            module_struct_list (string): module of the proxy
+            driver_wrapper_mod (string): module of the driver wrapper (mono-instance)
 
         Returns: A driver evaluator with all the parameters
 
         '''
-        module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
+        if module_struct_list is None:
+            module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
 
-        driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.driver_evaluator_wrapper.DriverEvaluatorWrapper'
-        driver_wrapper_cls = self.get_disc_class_from_module(
-            driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
 
         if cls_builder is not None:
@@ -354,21 +377,31 @@ class SosFactory:
             else:
                 builder.set_builder_info('cls_builder', [cls_builder])
 
+        if driver_wrapper_mod is not None:
+            driver_wrapper_cls = self.get_disc_class_from_module(
+                driver_wrapper_mod)
+            builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
+
         builder.set_builder_info('map_name', map_name)
-        builder.set_builder_info('flatten_subprocess', flatten_subprocess)
-        builder.set_builder_info('display_options', display_options)
-        builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 
-        builder_list = [builder]
-        if with_sample_generator:
-            sampling_builder = self.get_builder_from_module('SampleGenerator',
-                                                            'sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper')
-            self.__execution_engine.ns_manager.add_ns('ns_sampling',
-                                                      self.__execution_engine.ns_manager.get_shared_ns_dict()[
-                                                          'ns_eval'].value)
-            builder_list.insert(0, sampling_builder)
+        return [builder]
 
-        return builder_list
+    def create_sample_generator(self, sos_name):
+        '''
+
+        Args:
+            sos_name: Name of the sample generator
+
+        Returns: A sample generator builder
+
+        '''
+        sampling_proxy_mod = f'{self.EE_PATH}.proxy_sample_generator.ProxySampleGenerator'
+        sampling_proxy_cls = self.get_disc_class_from_module(sampling_proxy_mod)
+        sampling_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.sample_generator_wrapper.SampleGeneratorWrapper'
+        sampling_wrapper_cls = self.get_disc_class_from_module(sampling_wrapper_mod)
+        sampling_builder = SoSBuilder(sos_name, self.__execution_engine, sampling_proxy_cls)
+        sampling_builder.set_builder_info('cls_builder', sampling_wrapper_cls)
+        return sampling_builder
 
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
         # TODO: recode when driver classes are properly merged, at the moment
@@ -406,12 +439,11 @@ class SosFactory:
 
         return builder
 
-    def create_scatter_tool_builder(self, tool_name, map_name, display_options=None):
+    def create_scatter_tool_builder(self, tool_name, map_name):
         """
         create a scatter tool builder with the tool factory
         """
-        scatter_tool = self.tool_factory.create_tool_builder(tool_name, 'ScatterTool', map_name=map_name,
-                                                             display_options=display_options)
+        scatter_tool = self.tool_factory.create_tool_builder(tool_name, 'ScatterTool', map_name=map_name)
 
         return scatter_tool
 

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2023/11/06 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ from copy import deepcopy
 from pandas import DataFrame
 from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
-
+from numpy import bool_ as np_bool
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
@@ -111,7 +111,7 @@ class ProxyDiscipline:
     # -- Disciplinary attributes
     DESC_IN = None
     DESC_OUT = None
-    IO_TYPE = 'io_type'
+    IO_TYPE = SoSWrapp.IO_TYPE
     IO_TYPE_IN = SoSWrapp.IO_TYPE_IN
     IO_TYPE_OUT = SoSWrapp.IO_TYPE_OUT
     TYPE = SoSWrapp.TYPE
@@ -172,6 +172,7 @@ class ProxyDiscipline:
     # complex can also be a type if we use complex step
     INT_MAP = (int, np_int32, np_int64, np_complex128)
     FLOAT_MAP = (float, np_float64, np_complex128)
+    BOOL_MAP = (bool, np_bool)
     PROC_BUILDER_MODAL = 'proc_builder_modal'
     VAR_TYPE_MAP = {
         # an integer cannot be a float
@@ -188,7 +189,7 @@ class ProxyDiscipline:
         'df_dict': dict,
         'dict': dict,
         'dataframe': DataFrame,
-        'bool': bool,
+        'bool': BOOL_MAP,
         'list': list,
         PROC_BUILDER_MODAL: dict
     }
@@ -226,7 +227,7 @@ class ProxyDiscipline:
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  #POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                              NUMERICAL: True, STRUCTURING: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                      POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
@@ -235,10 +236,8 @@ class ProxyDiscipline:
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                     NUMERICAL: True, STRUCTURING: True}, 
+                     NUMERICAL: True, STRUCTURING: True},
     }
-
-
 
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
@@ -269,7 +268,8 @@ class ProxyDiscipline:
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
-        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades', logger=self.logger)
+        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades',
+                                        logger=self.logger)
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.model = None
@@ -277,7 +277,25 @@ class ProxyDiscipline:
         self.father_executor: Union["ProxyDiscipline", None] = None
         self.cls = cls_builder
 
-    def set_father_executor(self, father_executor):#: "ProxyDiscipline"):
+    @property
+    def configurator(self):
+        """
+        Property that is None when the discipline is self-configured and stores a reference to the configurator
+        discipline otherwise.
+        """
+        return self.__configurator
+
+    @configurator.setter
+    def configurator(self, disc):
+        """
+        Configurator discipline setter.
+        """
+        if disc is self:
+            self.__configurator = None
+        else:
+            self.__configurator = disc
+
+    def set_father_executor(self, father_executor):  #: "ProxyDiscipline"):
         """
         set father executor
 
@@ -292,7 +310,8 @@ class ProxyDiscipline:
         """
         pass
 
-    def _reload(self, sos_name, ee, associated_namespaces = None): #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
+    def _reload(self, sos_name, ee,
+                associated_namespaces=None):  #: str, ee: "ExecutionEngine", associated_namespaces: Union[list[str], None]  = None):
 
         """
         Reload ProxyDiscipline attributes and set is_sos_coupling.
@@ -345,6 +364,10 @@ class ProxyDiscipline:
         self._io_ns_map_out = None  # used by ProxyCoupling, ProxyDriverEvaluator
         self._structuring_variables = None
         self.reset_data()
+
+        self._non_structuring_variables = None
+        self.__all_input_structuring = False
+
         # -- Maturity attribute
         self._maturity = self.get_maturity()
 
@@ -357,13 +380,15 @@ class ProxyDiscipline:
             self.__class__, self.dm)
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
+        self.__configurator: Union["ProxyDiscipline", None] = None
 
-    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger:logging.Logger):
+    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger: logging.Logger):
         """
         creation of mdo_discipline_wrapp by the proxy
         To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=name, logger=logger.getChild("MDODisciplineWrapp"), wrapper=wrapper, wrapping_mode=wrapping_mode)
+        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=name, logger=logger.getChild("MDODisciplineWrapp"),
+                                                       wrapper=wrapper, wrapping_mode=wrapping_mode)
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
         # unnecessary as long as no wrapper configuration actions are demanded BEFORE first proxy configuration.
@@ -417,11 +442,37 @@ class ProxyDiscipline:
         """
         self._update_status_dm(status)
 
+    @property
+    def all_input_structuring(self):
+        """
+        Property that is used to turn non-structuring variables into structuring when the flag is True.
+        """
+        return self.__all_input_structuring
+
+    @all_input_structuring.setter
+    def all_input_structuring(self, all_inp_struct: bool):
+        """
+        Setter of the all_input_structuring flag including a save of non-structuring variables values.
+        """
+        if self.__all_input_structuring is all_inp_struct:
+            pass
+        elif all_inp_struct is True:
+            self._non_structuring_variables = {}
+            self._set_structuring_variables_values(variables_dict=self._non_structuring_variables,
+                                                   variables_keys=self._get_non_structuring_variables_keys(),
+                                                   clear_variables_dict=True)
+            self.__all_input_structuring = True
+        elif all_inp_struct is False:
+            self._non_structuring_variables = None
+            self.__all_input_structuring = False
+        else:
+            raise ValueError('all_input_structuring should be a boolean')
+
     def prepare_execution(self):
         '''
         GEMSEO objects instanciation
         '''
-        if self.mdo_discipline_wrapp.mdo_discipline is None:
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is None:
             # init gemseo discipline if it has not been created yet
             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
@@ -603,13 +654,14 @@ class ProxyDiscipline:
         Returns:
             (dict) data_in or data_out of the variable
         '''
-        data_dict_list = [d for k, d in self.get_data_io_dict(
-            io_type).items() if k == var_name]
-        if len(data_dict_list) != 1:
+
+        data_io = self.get_data_io_dict(io_type)
+
+        if var_name in data_io:
+            return data_io[var_name]
+        else:
             raise Exception(
                 f'No key matching with variable name {var_name} in the data_{io_type}')
-
-        return data_dict_list[0]
 
     def get_variable_name_from_ns_key(self, io_type, ns_key):
         """
@@ -621,11 +673,32 @@ class ProxyDiscipline:
         Create the data_in and data_out of the discipline with the DESC_IN/DESC_OUT, inst_desc_in/inst_desc_out
         and initialize GEMS grammar with it (with a filter for specific variable types)
         '''
-        # set input/output data descriptions if data_in and data_out are empty
-        self.create_data_io_from_desc_io()
 
-        # update data_in/data_out with inst_desc_in/inst_desc_out
-        self.update_data_io_with_inst_desc_io()
+        # get new variables from inst_desc_in (dynamic variables)
+        new_inputs = self.get_new_variables_in_dict(self.inst_desc_in, self.IO_TYPE_IN)
+
+        # get variables from desc_in if it is the first configure (data_in is empty) : static variables
+        if self._data_in == {}:
+            desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
+            new_inputs.update(desc_in)
+            # add numerical variables to the new inputs dict
+            num_data_in = deepcopy(self.NUM_DESC_IN)
+            new_inputs.update(num_data_in)
+
+        if len(new_inputs) > 0:
+            self.update_data_io_and_nsmap(new_inputs, self.IO_TYPE_IN)
+
+        # get new variables from inst_desc_out (dynamic variables)
+        new_outputs = self.get_new_variables_in_dict(self.inst_desc_out, self.IO_TYPE_OUT)
+        # get variables from desc_out if it is the first configure (data_out is empty) : static variables
+        if self._data_out == {}:
+            desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
+
+            new_outputs.update(desc_out)
+
+        # add new outputs from inst_desc_out to data_out
+        if len(new_outputs) > 0:
+            self.update_data_io_and_nsmap(new_outputs, self.IO_TYPE_OUT)
 
     def update_dm_with_data_dict(self, data_dict):
         """
@@ -637,35 +710,23 @@ class ProxyDiscipline:
         self.dm.update_with_discipline_dict(
             self.disc_id, data_dict)
 
-    def create_data_io_from_desc_io(self):
-        """
-        Create data_in and data_out from DESC_IN and DESC_OUT if empty
-        """
-        if self._data_in == {}:
-            desc_in = self.get_desc_in_out(self.IO_TYPE_IN)
-            # TODO: check if it is OK to update dm during config. rather than
-            # at the very end of it (dynamic ns)
-            self.update_data_io_and_nsmap(desc_in, self.IO_TYPE_IN)
-
-            # Deal with numerical parameters inside the sosdiscipline
-            self.add_numerical_param_to_data_in()
-
-        if self._data_out == {}:
-            desc_out = self.get_desc_in_out(self.IO_TYPE_OUT)
-            self.update_data_io_and_nsmap(desc_out, self.IO_TYPE_OUT)
-
     def get_desc_in_out(self, io_type):
         """
-        Retrieves information from wrapper or ProxyDiscipline DESC_IN to fill data_in
-        To be overloaded by special proxies ( coupling, scatter,...)
+        Retrieves information from ProxyDiscipline and/or wrapper DESC_IN to fill data_in
 
         Argument:
             io_type : 'string' . indicates whether we are interested in desc_in or desc_out
         """
         if io_type == self.IO_TYPE_IN:
-            return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN) or {}
+            _desc = deepcopy(self.DESC_IN) if self.DESC_IN else {}
+            if self.mdo_discipline_wrapp and self.mdo_discipline_wrapp.wrapper and self.mdo_discipline_wrapp.wrapper.DESC_IN:
+                _desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN))
+            return _desc
         elif io_type == self.IO_TYPE_OUT:
-            return deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT) or {}
+            _desc = deepcopy(self.DESC_OUT) if self.DESC_OUT else {}
+            if self.mdo_discipline_wrapp and self.mdo_discipline_wrapp.wrapper and self.mdo_discipline_wrapp.wrapper.DESC_OUT:
+                _desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT))
+            return _desc
         else:
             raise Exception(
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
@@ -725,6 +786,7 @@ class ProxyDiscipline:
                 f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
         if self.IO_TYPE_IN in io_types:
             self._data_in = {(key, id_ns): self._data_in[(key, id_ns)] for key, id_ns in self._io_ns_map_in.items()}
+
         if self.IO_TYPE_OUT in io_types:
             self._data_out = {(key, id_ns): self._data_out[(key, id_ns)] for key, id_ns in self._io_ns_map_out.items()}
 
@@ -752,32 +814,8 @@ class ProxyDiscipline:
             error_msg = 'data_dict_in_short_names for uodate_data_io not implemented'
             self.logger.error(error_msg)
             raise Exception(error_msg)
-        #             data_io.update(zip(self._extract_var_ns_tuples(data_dict, io_type),  # keys are ns tuples
-        # data_dict.values()))                             # values are values
-        # i.e. var dicts
         else:
             data_io.update(data_dict)
-
-    def add_numerical_param_to_data_in(self):
-        """
-        Add numerical parameters to the data_in
-        """
-        num_data_in = deepcopy(self.NUM_DESC_IN)
-        self.update_data_io_and_nsmap(num_data_in, self.IO_TYPE_IN)
-
-    def update_data_io_with_inst_desc_io(self):
-        """
-        Update data_in and data_out with inst_desc_in and inst_desc_out
-        """
-        new_inputs = self.get_new_variables_in_dict(self.inst_desc_in, self.IO_TYPE_IN)
-        new_outputs = self.get_new_variables_in_dict(self.inst_desc_out, self.IO_TYPE_OUT)
-
-        if len(new_inputs) > 0:
-            self.update_data_io_and_nsmap(new_inputs, self.IO_TYPE_IN)
-
-        # add new outputs from inst_desc_out to data_out
-        if len(new_outputs) > 0:
-            self.update_data_io_and_nsmap(new_outputs, self.IO_TYPE_OUT)
 
     def get_new_variables_in_dict(self, var_dict, io_type):
         '''
@@ -789,7 +827,6 @@ class ProxyDiscipline:
         Returns:
             the dict filtered with variables that are not yet in data_io
         '''
-
 
         new_var_dict = {key: value for key, value in var_dict.items() if
                         not key in self.get_data_io_dict_keys(io_type) and not key in self.get_data_io_dict_tuple_keys(
@@ -812,6 +849,8 @@ class ProxyDiscipline:
             completed_new_inputs)
         self._update_data_io(
             zip(var_ns_tuples, completed_new_inputs.values()), io_type)
+
+        self.build_simple_data_io(io_type)
 
     def get_built_disciplines_ids(self):
         """
@@ -938,7 +977,7 @@ class ProxyDiscipline:
             if io_type == self.IO_TYPE_IN:
                 del self.inst_desc_in[var_name]
                 self.ee.dm.remove_keys(
-                    self.disc_id, self.get_var_full_name(var_name, self.get_data_in()))
+                    self.disc_id, self.get_var_full_name(var_name, self.get_data_in()), io_type)
 
                 del self._data_in[(var_name, self._io_ns_map_in[var_name])]
                 del self._io_ns_map_in[var_name]
@@ -948,13 +987,15 @@ class ProxyDiscipline:
                 if var_name in self.inst_desc_out:
                     del self.inst_desc_out[var_name]
                 self.ee.dm.remove_keys(
-                    self.disc_id, self.get_var_full_name(var_name, self.get_data_out()))
+                    self.disc_id, self.get_var_full_name(var_name, self.get_data_out()), io_type)
 
                 del self._data_out[(var_name, self._io_ns_map_out[var_name])]
                 del self._io_ns_map_out[var_name]
 
             if var_name in self._structuring_variables:
                 del self._structuring_variables[var_name]
+
+        self.build_simple_data_io(io_type)
 
     def update_default_value(self, var_name: str, io_type: str, new_default_value):
         '''
@@ -994,7 +1035,7 @@ class ProxyDiscipline:
         # check if all config_dependency_disciplines are configured. If not no
         # need to try configuring the discipline because all is not ready for
         # it
-        def_bool = True
+
         if self.check_configured_dependency_disciplines():
             self.set_numerical_parameters()
 
@@ -1009,8 +1050,8 @@ class ProxyDiscipline:
             self._update_status_dm(self.STATUS_CONFIGURE)
 
             self.set_configure_status(True)
-
-
+            for disc in self.config_dependent_disciplines:
+                disc.set_configure_status(False)
 
     def __check_all_data_integrity(self):
         '''
@@ -1160,7 +1201,9 @@ class ProxyDiscipline:
         self.inst_desc_in = {}
         self.inst_desc_out = {}
         self._data_in = {}
+        self._simple_data_in = {}
         self._data_out = {}
+        self._simple_data_out = {}
         self._io_ns_map_in = {}
         self._io_ns_map_out = {}
 
@@ -1168,17 +1211,50 @@ class ProxyDiscipline:
 
     def get_data_in(self):
         """"
-        _data_in getter
-        #TODO: RENAME THIS METHOD OR ADD MODES 's'/'f'/'t' (short/full/tuple) as only the discipline dict and not subprocess is output
+        _simple_data_in getter
         """
-        return {var_name: self._data_in[(var_name, id_ns)] for (var_name, id_ns) in self._io_ns_map_in.items()}
+        return self._simple_data_in
+
+    def get_io_ns_map(self, io_type):
+        '''
+
+        Args:
+            io_type: in or out
+
+        Returns: the _io_ns_map_in or _io_ns_map_out depending on the io_type
+
+        '''
+        if io_type == self.IO_TYPE_IN:
+            return self._io_ns_map_in
+        elif io_type == self.IO_TYPE_OUT:
+            return self._io_ns_map_out
+
+    def build_simple_data_io(self, io_type):
+        '''
+
+        Args:
+            io_type: in or out string
+
+        Returns: Buiold the simple_data_in dict which is the data_in withotu the tuple as key but only the name of the variable
+
+        '''
+
+        data_io = self.get_data_io_with_full_name(io_type, True)
+        io_ns_map = self.get_io_ns_map(io_type)
+
+        if io_type == self.IO_TYPE_IN:
+            self._simple_data_in = {var_name: data_io[(var_name, id_ns)] for (var_name, id_ns) in
+                                    io_ns_map.items()}
+        elif io_type == self.IO_TYPE_OUT:
+            self._simple_data_out = {var_name: data_io[(var_name, id_ns)] for (var_name, id_ns) in
+                                     io_ns_map.items()}
 
     def get_data_out(self):
         """
         _data_out getter
         #TODO: RENAME THIS METHOD OR ADD MODES 's'/'f'/'t' (short/full/tuple) as only the discipline dict and not subprocess is output
         """
-        return {var_name: self._data_out[(var_name, id_ns)] for (var_name, id_ns) in self._io_ns_map_out.items()}
+        return self._simple_data_out
 
     def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
         """
@@ -1190,18 +1266,6 @@ class ProxyDiscipline:
         Return:
             data_io_full_name (Dict[dict]): data_in/data_out with variable full names
         """
-        # data_io_short_name = self.get_data_io_dict(io_type)
-        #
-        # if as_namespaced_tuple:
-        #     def dict_key(v): return (
-        #         v, id(data_io_short_name[v][self.NS_REFERENCE]))
-        # else:
-        #     def dict_key(v): return self.get_var_full_name(
-        #         v, data_io_short_name)
-        #
-        # data_io_full_name = {dict_key(
-        # var_name): value_dict for var_name, value_dict in
-        # data_io_short_name.items()}
 
         if io_type == self.IO_TYPE_IN:
             if as_namespaced_tuple:
@@ -1355,7 +1419,8 @@ class ProxyDiscipline:
 
             # store structuring variables in self._structuring_variables
             if self.STRUCTURING in data_keys and curr_data[self.STRUCTURING] is True:
-                self._structuring_variables[key] = None
+                if curr_data[self.IO_TYPE] == self.IO_TYPE_IN:
+                    self._structuring_variables[key] = None
                 del curr_data[self.STRUCTURING]
             if self.CHECK_INTEGRITY_MSG not in data_keys:
                 curr_data[self.CHECK_INTEGRITY_MSG] = ''
@@ -1369,17 +1434,6 @@ class ProxyDiscipline:
                 curr_data[self.IS_EVAL] = False
 
         return data_dict
-
-    # def get_non_numerical_variables_and_values_dict(self):
-    #
-    #     non_num_dict = {}
-    #     data_in = self.get_data_in()
-    #
-    #     for var in data_in.keys():
-    #         if not data_in[var]['numerical']:
-    #             non_num_dict[self.get_var_full_name(var,data_in)] = data_in[var]['value']
-    #
-    #     return non_num_dict
 
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
@@ -1488,268 +1542,6 @@ class ProxyDiscipline:
                 values_dict[key] = self.dm.get_value(q_key)
         return values_dict
 
-    # def _get_sosdisc_io(self, keys, io_type, full_name=False):
-    #     """
-    #     Generic method to retrieve discipline inputs and outputs
-    #
-    #     Arguments:
-    #         keys (List[string]): the output short names list
-    #         io_type (string): IO_TYPE_IN or IO_TYPE_OUT
-    #         full_name (bool): True if returned keys are full names, False for short names
-    #
-    #     Return:
-    #         values_dict (dict): dict of variable keys and values
-    #     """
-    #
-    #     # convert local key names to namespaced ones
-    #     if isinstance(keys, str):
-    #         keys = [keys]
-    #     namespaced_keys_dict = {key: namespaced_key for key, namespaced_key in zip(
-    #         keys, self._convert_list_of_keys_to_namespace_name(keys, io_type))}
-    #
-    #     values_dict = {}
-    #
-    #     for key, namespaced_key in namespaced_keys_dict.items():
-    #         # new_key can be key or namespaced_key according to full_name value
-    #         new_key = full_name * namespaced_key + (1 - full_name) * key
-    #         if namespaced_key not in self.dm.data_id_map:
-    #             raise Exception(
-    #                 f'The key {namespaced_key} for the discipline {self.get_disc_full_name()} is missing in the data manager')
-    #         # get data in local_data during run or linearize steps
-    #         elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
-    #             values_dict[new_key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[namespaced_key]
-    #         # get data in data manager during configure step
-    #         else:
-    #             values_dict[new_key] = self.dm.get_value(namespaced_key)
-    #
-    #     return values_dict
-
-    #     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
-    #                   exec_before_linearize=True):
-    #         """overloads GEMS linearize function
-    #         """
-    #         # set GEM's default_inputs for gradient computation purposes
-    #         # to be deleted during GEMS update
-    #
-    #         if input_data is not None:
-    #             self.default_inputs = input_data
-    #         else:
-    #             self.default_inputs = {}
-    #             input_data = self.get_input_data_for_gems()
-    #             self.default_inputs = input_data
-    #
-    #         if self.linearization_mode == self.COMPLEX_STEP:
-    #             # is complex_step, switch type of inputs variables
-    #             # perturbed to complex
-    #             inputs, _ = self._retreive_diff_inouts(force_all)
-    #             def_inputs = self.default_inputs
-    #             for name in inputs:
-    #                 def_inputs[name] = def_inputs[name].astype('complex128')
-    #         else:
-    #             pass
-    #
-    #         # need execution before the linearize
-    #         if not force_no_exec and exec_before_linearize:
-    #             self.reset_statuses_for_run()
-    #             self.exec_for_lin = True
-    #             self.execute(input_data)
-    #             self.exec_for_lin = False
-    #             force_no_exec = True
-    #             need_execution_after_lin = False
-    #
-    #         # need execution but after linearize, in the NR GEMSEO case an
-    #         # execution is done bfore the while loop which udates the local_data of
-    #         # each discipline
-    #         elif not force_no_exec and not exec_before_linearize:
-    #             force_no_exec = True
-    #             need_execution_after_lin = True
-    #
-    #         # no need of any execution
-    #         else:
-    #             need_execution_after_lin = False
-    #             # maybe no exec before the first linearize, GEMSEO needs a
-    #             # local_data with inputs and outputs for the jacobian computation
-    #             # if the local_data is empty
-    #             if self.local_data == {}:
-    #                 own_data = {
-    #                     k: v for k, v in input_data.items() if self.is_input_existing(k) or self.is_output_existing(k)}
-    #                 self.local_data = own_data
-    #
-    #         if self.check_linearize_data_changes and not self.is_sos_coupling:
-    #             disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
-    #                 input_data).items() if key in self.input_grammar.data_names}
-    #
-    #         # set LINEARIZE status to get inputs from local_data instead of
-    #         # datamanager
-    #         self._update_status_dm(self.STATUS_LINEARIZE)
-    #         result = MDODiscipline.linearize(
-    #             self, input_data, force_all, force_no_exec)
-    #         # reset DONE status
-    #         self._update_status_dm(self.STATUS_DONE)
-    #
-    #         self.__check_nan_in_data(result)
-    #         if self.check_linearize_data_changes and not self.is_sos_coupling:
-    #             disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(
-    #                 input_data).items() if key in disc_data_before_linearize.keys()}
-    #             is_output_error = True
-    #             output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
-    #                                                                 disc_data_after_linearize,
-    #                                                                 'Discipline data integrity through linearize',
-    #                                                                 is_output_error=is_output_error)
-    #             if output_error != '':
-    #                 raise ValueError(output_error)
-    #
-    #         if need_execution_after_lin:
-    #             self.reset_statuses_for_run()
-    #             self.execute(input_data)
-    #
-    #         return result
-
-    #     def _get_columns_indices(self, inputs, outputs, input_column, output_column):
-    #         """
-    #         returns indices of input_columns and output_columns
-    #         """
-    #         # Get boundaries of the jacobian to compare
-    #         if inputs is None:
-    #             inputs = self.get_input_data_names()
-    #         if outputs is None:
-    #             outputs = self.get_output_data_names()
-    #
-    #         indices = None
-    #         if input_column is not None or output_column is not None:
-    #             if len(inputs) == 1 and len(outputs) == 1:
-    #
-    #                 if self.proxy_disciplines is not None:
-    #                     for discipline in self.proxy_disciplines:
-    #                         self.jac_boundaries.update(discipline.jac_boundaries)
-    #
-    #                 indices = {}
-    #                 if output_column is not None:
-    #                     jac_bnd = self.jac_boundaries[f'{outputs[0]},{output_column}']
-    #                     tup = [jac_bnd['start'], jac_bnd['end']]
-    #                     indices[outputs[0]] = [i for i in range(*tup)]
-    #
-    #                 if input_column is not None:
-    #                     jac_bnd = self.jac_boundaries[f'{inputs[0]},{input_column}']
-    #                     tup = [jac_bnd['start'], jac_bnd['end']]
-    #                     indices[inputs[0]] = [i for i in range(*tup)]
-    #
-    #             else:
-    #                 raise Exception(
-    #                     'Not possible to use input_column and output_column options when \
-    #                     there is more than one input and output')
-    #
-    #         return indices
-    #
-    #     def set_partial_derivative(self, y_key, x_key, value):
-    #         '''
-    #         Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac
-    #         '''
-    #         new_y_key = self.get_var_full_name(y_key, self._data_out)
-    #
-    #         new_x_key = self.get_var_full_name(x_key, self._data_in)
-    #
-    #         if new_x_key in self.jac[new_y_key]:
-    #             if isinstance(value, ndarray):
-    #                 value = lil_matrix(value)
-    #             self.jac[new_y_key][new_x_key] = value
-    #
-    #     def set_partial_derivative_for_other_types(self, y_key_column, x_key_column, value):
-    #         '''
-    #         Set the derivative of the column y_key by the column x_key inside the jacobian of GEMS self.jac
-    #         y_key_column = 'y_key,column_name'
-    #         '''
-    #         if len(y_key_column) == 2:
-    #             y_key, y_column = y_key_column
-    #         else:
-    #             y_key = y_key_column[0]
-    #             y_column = None
-    #
-    #         lines_nb_y, index_y_column = self.get_boundary_jac_for_columns(
-    #             y_key, y_column, self.IO_TYPE_OUT)
-    #
-    #         if len(x_key_column) == 2:
-    #             x_key, x_column = x_key_column
-    #         else:
-    #             x_key = x_key_column[0]
-    #             x_column = None
-    #
-    #         lines_nb_x, index_x_column = self.get_boundary_jac_for_columns(
-    #             x_key, x_column, self.IO_TYPE_IN)
-    #
-    #         # Convert keys in namespaced keys in the jacobian matrix for GEMS
-    #         new_y_key = self.get_var_full_name(y_key, self._data_out)
-    #
-    #         new_x_key = self.get_var_full_name(x_key, self._data_in)
-    #
-    #         # Code when dataframes are filled line by line in GEMS, we keep the code for now
-    #         #         if index_y_column and index_x_column is not None:
-    #         #             for iy in range(value.shape[0]):
-    #         #                 for ix in range(value.shape[1]):
-    #         #                     self.jac[new_y_key][new_x_key][iy * column_nb_y + index_y_column,
-    #         # ix * column_nb_x + index_x_column] = value[iy, ix]
-    #
-    #         if new_x_key in self.jac[new_y_key]:
-    #             if index_y_column is not None and index_x_column is not None:
-    #                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-    #                                                index_x_column * lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
-    #                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
-    #                                                                         'end': (index_y_column + 1) * lines_nb_y},
-    #                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
-    #                                                                         'end': (index_x_column + 1) * lines_nb_x}})
-    #
-    #             elif index_y_column is None and index_x_column is not None:
-    #                 self.jac[new_y_key][new_x_key][:, index_x_column *
-    #                                                lines_nb_x:(index_x_column + 1) * lines_nb_x] = value
-    #
-    #                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': 0,
-    #                                                                         'end':-1},
-    #                                             f'{new_x_key},{x_column}': {'start': index_x_column * lines_nb_x,
-    #                                                                         'end': (index_x_column + 1) * lines_nb_x}})
-    #             elif index_y_column is not None and index_x_column is None:
-    #                 self.jac[new_y_key][new_x_key][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,
-    #                                                :] = value
-    #                 self.jac_boundaries.update({f'{new_y_key},{y_column}': {'start': index_y_column * lines_nb_y,
-    #                                                                         'end': (index_y_column + 1) * lines_nb_y},
-    #                                             f'{new_x_key},{x_column}': {'start': 0,
-    #                                                                         'end':-1}})
-    #             else:
-    #                 raise Exception(
-    #                     'The type of a variable is not yet taken into account in set_partial_derivative_for_other_types')
-    #
-    #     def get_boundary_jac_for_columns(self, key, column, io_type):
-    #         data_io_disc = self.get_data_io_dict(io_type)
-    #         var_full_name = self.get_var_full_name(key, data_io_disc)
-    #         key_type = self.dm.get_data(var_full_name, self.TYPE)
-    #         value = self._get_sosdisc_io(key, io_type)[key]
-    #
-    #         if key_type == 'dataframe':
-    #             # Get the number of lines and the index of column from the metadata
-    #             lines_nb = len(value)
-    #             index_column = [column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS].index(column)
-    #         elif key_type == 'array' or key_type == 'float':
-    #             lines_nb = None
-    #             index_column = None
-    #         elif key_type == 'dict':
-    #             dict_keys = list(value.keys())
-    #             lines_nb = len(value[column])
-    #             index_column = dict_keys.index(column)
-    #
-    #         return lines_nb, index_column
-
-    #     def get_input_data_for_gems(self):
-    #         '''
-    #         Get input_data for linearize ProxyDiscipline
-    #         '''
-    #         input_data = {}
-    #         input_data_names = self.input_grammar.get_data_names()
-    #         if len(input_data_names) > 0:
-    #
-    #             for data_name in input_data_names:
-    #                 input_data[data_name] = self.ee.dm.get_value(data_name)
-    #
-    #         return input_data
-
     def _update_type_metadata(self):
         '''
         Update metadata of values not supported by GEMS (for cases where the data has been converted by the coupling)
@@ -1789,23 +1581,6 @@ class ProxyDiscipline:
                 new_name = n
             new_names.append(new_name)
         return new_names
-
-    # =========================================================================
-    #     def update_meta_data_out(self, new_data_dict):
-    #         """
-    #         update meta data of _data_out and DESC_OUT
-    #
-    #         Arguments:
-    #             new_data_dict (Dict[dict]): contains the metadata to be updated
-    #                                         in format: {'variable_name' : {'meta_data_name' : 'meta_data_value',...}....}
-    #         """
-    #         disc_out = self.get_data_out()
-    #         for key in new_data_dict.keys():
-    #             for meta_data in new_data_dict[key].keys():
-    #                 disc_out[key][meta_data] = new_data_dict[key][meta_data]
-    #                 if meta_data in self.DESC_OUT[key].keys():
-    #                     self.DESC_OUT[key][meta_data] = new_data_dict[key][meta_data]
-    # =========================================================================
 
     def clean_dm_from_disc(self):
         """
@@ -2053,7 +1828,7 @@ class ProxyDiscipline:
         self.status = self.get_status_after_configure()
 
     def get_status_after_configure(self):
-        if self.mdo_discipline_wrapp.mdo_discipline is not None:
+        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
             return self.mdo_discipline_wrapp.mdo_discipline.status
         else:
             return self._status
@@ -2178,13 +1953,13 @@ class ProxyDiscipline:
     def check_configured_dependency_disciplines(self):
         '''
         Check if config_dependency_disciplines are configured to know if i am configured
-        Be careful using this capability to avoid endless loop of configuration 
+        Be careful using this capability to avoid endless loop of configuration
         '''
         return all([disc.is_configured() for disc in self.config_dependency_disciplines])
 
     def add_disc_to_config_dependency_disciplines(self, disc):
         '''
-        Add a discipline to config_dependency_disciplines 
+        Add a discipline to config_dependency_disciplines
         Be careful to endless configuraiton loop (small loops are checked but not with more than two disciplines)
         Do not add twice the same dsicipline
         '''
@@ -2233,7 +2008,7 @@ class ProxyDiscipline:
         '''
         disc_to_configure = []
         for disc in disc_list:
-            if not disc.is_configured():
+            if disc.configurator is None and not disc.is_configured():
                 disc_to_configure.append(disc)
         return disc_to_configure
 
@@ -2248,23 +2023,46 @@ class ProxyDiscipline:
         Compare structuring variables stored in discipline with values in dm
         Return True if at least one structuring variable value has changed, False if not
         '''
-        dict_values_dm = {key: self.get_sosdisc_inputs(
-            key) for key in self._structuring_variables.keys()}
-        try:
-            return dict_values_dm != self._structuring_variables
-        except:
-            return not dict_are_equal(dict_values_dm,
-                                      self._structuring_variables)
+        _struct_var_changes = self._check_structuring_variables_changes(self._structuring_variables)
+        if self.all_input_structuring:
+            _struct_var_changes = _struct_var_changes or self._check_structuring_variables_changes(
+                self._non_structuring_variables, variables_keys=self._get_non_structuring_variables_keys())
+        return _struct_var_changes
 
     def set_structuring_variables_values(self):
         '''
         Store structuring variables values from dm in self._structuring_variables
         '''
+        self._set_structuring_variables_values(self._structuring_variables)
+        if self.all_input_structuring:
+            self._set_structuring_variables_values(self._non_structuring_variables,
+                                                   variables_keys=self._get_non_structuring_variables_keys(),
+                                                   clear_variables_dict=True)
+
+    def _check_structuring_variables_changes(self, variables_dict, variables_keys=None):
+        dict_values_dm = {key: self.get_sosdisc_inputs(key) for
+                          key in (variables_dict.keys() if variables_keys is None else variables_keys)}
+        try:
+            return dict_values_dm != variables_dict
+        except ValueError:
+            return not dict_are_equal(dict_values_dm, variables_dict)
+
+    def _set_structuring_variables_values(self, variables_dict, variables_keys=None, clear_variables_dict=False):
         disc_in = self.get_data_in()
-        for struct_var in list(self._structuring_variables.keys()):
+        keys_to_check = list(
+            variables_dict.keys() if variables_keys is None else variables_keys)  # copy necessary in case dict is cleared
+        if clear_variables_dict:
+            variables_dict.clear()
+        for struct_var in keys_to_check:
             if struct_var in disc_in:
-                self._structuring_variables[struct_var] = deepcopy(
-                    self.get_sosdisc_inputs(struct_var))
+                variables_dict[struct_var] = deepcopy(self.get_sosdisc_inputs(struct_var))
+
+    def _get_non_structuring_variables_keys(self):
+        """
+        Method used to return the non-structuring variables of a discipline. Can be overloaded to add exceptions i.e.
+        variables that should never be considered structuring even if the all_input_structuring flag is set to True.
+        """
+        return self.get_data_in().keys() - self._structuring_variables.keys()
 
     # ----------------------------------------------------
     # ----------------------------------------------------
@@ -2445,6 +2243,13 @@ class ProxyDiscipline:
         return disc_full_path
 
     def display_proxy_subtree(self, callback=None):
+        """
+        Display in a treeview fashion the subtree of proxy_disciplines of the discipline, usually called from the
+        root_process.
+        Example: ee.root_process.display_proxy_subtree(callback=lambda disc: disc.is_configured())
+        Arguments:
+            callback (method taking ProxyDiscipline as input) : callback function to show for each ProxyDiscipline in []
+        """
         proxy_subtree = []
         self.get_proxy_subtree_rec(proxy_subtree, 0, callback)
         return '\n'.join(proxy_subtree)
