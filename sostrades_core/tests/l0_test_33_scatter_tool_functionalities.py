@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/10/03-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -90,18 +91,16 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
     def test_01_multi_scenario_driver_with_no_scatter_map(self):
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', self.builder_list)
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', self.builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
         self.exec_eng.configure()
 
         dict_values = {}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': self.scenario_list})
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': self.scenario_list})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -136,18 +135,17 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.scattermap_manager.add_build_map('new_map'
                                                        , {'ns_to_update': ['ns_ac', 'ns_out_disc3']})
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', self.builder_list, map_name='new_map')
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', self.builder_list,
+                                                                             map_name='new_map')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
         self.exec_eng.configure()
 
         dict_values = {}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': self.scenario_list})
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': self.scenario_list})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -203,18 +201,17 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.scattermap_manager.add_build_map('new_map'
                                                        , {'ns_not_to_update': ['ns_data_ac', 'ns_disc3']})
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', self.builder_list, map_name='new_map')
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', self.builder_list,
+                                                                             map_name='new_map')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
         self.exec_eng.configure()
 
         dict_values = {}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': self.scenario_list})
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': self.scenario_list})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -262,18 +259,17 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.scattermap_manager.add_build_map('new_map', {'scatter_list': (scatter_list_name, 'ns_list')})
         ns_list_value = f'{self.study_name}.multi_scenarios'
         self.exec_eng.ns_manager.add_ns('ns_list', ns_list_value)
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', self.builder_list, map_name='new_map')
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', self.builder_list,
+                                                                             map_name='new_map')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
         self.exec_eng.configure()
 
         dict_values = {}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': self.scenario_list})
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': self.scenario_list})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -292,18 +288,17 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scatter_name = 'scenario_name'
         self.exec_eng.scattermap_manager.add_build_map('new_map', {'scatter_name': scatter_name})
 
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', self.builder_list, map_name='new_map')
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', self.builder_list,
+                                                                             map_name='new_map')
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
         self.exec_eng.configure()
 
         dict_values = {}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': self.scenario_list})
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': self.scenario_list})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -323,18 +318,16 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         dynamic_builder_list = self.factory.get_builder_from_process(repo=self.repo,
                                                                      mod_id='test_disc10_dynamic')
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', dynamic_builder_list)
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', dynamic_builder_list)
 
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
         self.exec_eng.configure()
 
         dict_values = {}
-        scenario_df = pd.DataFrame({'selected_scenario': [True, True],
-                                    'scenario_name': self.scenario_list})
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = scenario_df
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': self.scenario_list})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
         self.exec_eng.load_study_from_input_dict(dict_values)
 

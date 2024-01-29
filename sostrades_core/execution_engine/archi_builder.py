@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -217,83 +217,81 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         """
         Check the activation dataframe to see if possible values and types are respected
         """
-        if self.ACTIVATION_DF in self.get_data_in():
-            activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
-            # chekc if sub architectures are built and activation_df has been
-            # modified
-            if (
+
+        activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
+        # chekc if sub architectures are built and activation_df has been
+        # modified
+        if (
                 activation_df is not None
-                and not activation_df.equals(
-                    self._structuring_variables[self.ACTIVATION_DF]
-                )
+
                 and not activation_df.equals(self.default_activation_df)
                 and activation_df.columns.equals(self.default_activation_df.columns)
-            ):
-                rows_to_delete = []
-                modified_activation_df = deepcopy(activation_df)
-                for (colname, colval) in activation_df.iteritems():
-                    if self.default_df_descriptor[colname][0] == 'string':
-                        # if 'string' type is defined in default_df_descriptor, then
-                        # convert values into string
-                        if not all(activation_df[colname].isnull()):
-                            modified_activation_df[colname] = colval.map(str)
-                        # check if possibles values are defined from
-                        # architecture_df
-                        if not all(self.default_activation_df[colname].isnull()):
-                            # check if values are among possible values
-                            if not all(
+        ):
+            rows_to_delete = []
+            modified_activation_df = deepcopy(activation_df)
+            for (colname, colval) in activation_df.iteritems():
+                if self.default_df_descriptor[colname][0] == 'string':
+                    # if 'string' type is defined in default_df_descriptor, then
+                    # convert values into string
+                    if not all(activation_df[colname].isnull()):
+                        modified_activation_df[colname] = colval.map(str)
+                    # check if possibles values are defined from
+                    # architecture_df
+                    if not all(self.default_activation_df[colname].isnull()):
+                        # check if values are among possible values
+                        if not all(
                                 colval.isin(
                                     self.default_activation_df[colname])
-                            ):
-                                wrong_values = colval.loc[
-                                    ~colval.isin(
-                                        self.default_activation_df[colname])
-                                ]
-                                rows_to_delete.extend(
-                                    wrong_values.index.values.tolist()
-                                )
-                                self.ee.logger.error(
-                                    f'Invalid Value Block Activation Configuration: {wrong_values.values.tolist()} in column {colname} not in *possible values* {self.default_activation_df[colname].values.tolist()}'
-                                )
+                        ):
+                            wrong_values = colval.loc[
+                                ~colval.isin(
+                                    self.default_activation_df[colname])
+                            ]
+                            rows_to_delete.extend(
+                                wrong_values.index.values.tolist()
+                            )
+                            warning_msg = f'Invalid Value Block Activation Configuration: {wrong_values.values.tolist()} in column {colname} not in *possible values* {self.default_activation_df[colname].values.tolist()}'
 
-                    elif self.default_df_descriptor[colname][0] == 'bool':
-                        # if 'bool' type is defined in default_df_descriptor, then
-                        # check if value block is available
-                        if not all(self.default_activation_df[colname]):
-                            for vb in self.activation_columns:
-                                unavailable_vb = self.default_activation_df.loc[
-                                    ~self.default_activation_df[colname], vb
-                                ].values.tolist()
-                                if not (
+                            self.check_integrity_msg_list.append(warning_msg)
+
+                elif self.default_df_descriptor[colname][0] == 'bool':
+                    # if 'bool' type is defined in default_df_descriptor, then
+                    # check if value block is available
+                    if not all(self.default_activation_df[colname]):
+                        for vb in self.activation_columns:
+                            unavailable_vb = self.default_activation_df.loc[
+                                ~self.default_activation_df[colname], vb
+                            ].values.tolist()
+                            if not (
                                     activation_df.loc[
                                         activation_df[vb].isin(unavailable_vb)
                                     ][activation_df[colname]]
-                                ).empty:
-                                    # if not available value blocks are activated,
-                                    # set False in activation_df
-                                    self.ee.logger.error(
-                                        f'Invalid Value Block Activation Configuration: value block {colname} not available for {list(set(activation_df.loc[activation_df[vb].isin(unavailable_vb)][activation_df[colname]][vb].values.tolist()))}'
-                                    )
-                                    modified_activation_df.loc[
-                                        modified_activation_df[vb].isin(
-                                            unavailable_vb), colname
-                                    ] = False
-                        # if colname value block is desactivated, then
-                        # desactivate its children
-                        if False in activation_df[colname].values.tolist():
-                            children_names = self.get_children_names(
-                                colname, self.architecture_df
-                            )
-                            if len(children_names) > 0:
-                                modified_activation_df.loc[
-                                    ~modified_activation_df[colname], children_names
-                                ] = False
+                            ).empty:
+                                # if not available value blocks are activated,
+                                # set False in activation_df
+                                warning_msg = f'Invalid Value Block Activation Configuration: value block {colname} not available for {list(set(activation_df.loc[activation_df[vb].isin(unavailable_vb)][activation_df[colname]][vb].values.tolist()))}'
+                                self.check_integrity_msg_list.append(warning_msg)
 
-                if len(rows_to_delete) > 0:
-                    # remove rows with values not among possible_values
-                    self.get_data_in()[self.ACTIVATION_DF][self.VALUE] = modified_activation_df.drop(
-                        rows_to_delete
-                    )
+                                modified_activation_df.loc[
+                                    modified_activation_df[vb].isin(
+                                        unavailable_vb), colname
+                                ] = False
+                    # if colname value block is desactivated, then
+                    # desactivate its children
+                    if False in activation_df[colname].values.tolist():
+                        children_names = self.get_children_names(
+                            colname, self.architecture_df
+                        )
+                        if len(children_names) > 0:
+                            modified_activation_df.loc[
+                                ~modified_activation_df[colname], children_names
+                            ] = False
+
+            # if len(rows_to_delete) > 0:
+            #     # remove rows with values not among possible_values
+            #     self.get_data_in()[self.ACTIVATION_DF][self.VALUE] = modified_activation_df.drop(
+            #         rows_to_delete
+            #     )
 
     def get_children_names(self, parent_name, architecture):
         """
@@ -313,7 +311,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return []
 
     def create_vb_disc_namespaces_and_builders(
-        self, archi_df, activation_dict, archi_parent
+            self, archi_df, activation_dict, archi_parent
     ):
         """
         Create builder dict of value blocks
@@ -381,14 +379,14 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             self.children_dict[ns] = []
             for ns_child in builder_dict:
                 if (
-                    ns in ns_child
-                    and ns != ns_child
-                    and len(ns.split('.')) + 1 == len(ns_child.split('.'))
+                        ns in ns_child
+                        and ns != ns_child
+                        and len(ns.split('.')) + 1 == len(ns_child.split('.'))
                 ):
                     self.children_dict[ns].append(ns_child)
 
     def get_full_namespaces_from_archi(
-        self, namespace, activation_dict, archi_df, archi_parent
+            self, namespace, activation_dict, archi_df, archi_parent
     ):
         """
         Get full namespaces of builder with current namespace by reading archi_df
@@ -412,7 +410,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 vb_father = archi_df.loc[
                     (archi_df[self.CURRENT] == namespace.split('.')[0])
                     & (~archi_df[self.PARENT].isna())
-                ]
+                    ]
                 # if no parents and architecture name not in architecture_df,
                 # namespace builder will be built below architecture
                 if len(vb_father) == 0:
@@ -464,12 +462,26 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 f'Invalid Action in architecture dataframe. Action must be among: {list(self.POSSIBLE_ACTIONS.values())}'
             )
 
+    def check_data_integrity(self):
+        '''
+        Check the data integrity of the input variables of the driver
+        '''
+        # checking for duplicates
+        self.check_integrity_msg_list = []
+        disc_in = self.get_data_in()
+        super().check_data_integrity()
+        if self.ACTIVATION_DF in disc_in:
+            self.check_activation_df()
+
+            data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
+            self.dm.set_data(
+                self.get_var_full_name(self.ACTIVATION_DF, disc_in),
+                self.CHECK_INTEGRITY_MSG, data_integrity_msg)
+
     def build(self):
         """
         Build method to build all value blocks regarding the architecture
         """
-
-        self.check_activation_df()
 
         activ_builder_dict, self.builder_dict = self.build_action_from_builder_dict(
             self.builder_dict, self.architecture_df
@@ -503,6 +515,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         self.activated_builders = activ_builder_dict
 
         self.send_children_to_father()
+
+    def clean_children(self, list_children=None):
+
+        if list_children is None:
+            list_children = [item for sublist in self.archi_disciplines.values() for item in sublist]
+
+        super().clean_children(list_children)
 
     def build_value_block(self, builder):
         """
@@ -718,13 +737,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         Return True/False if builder is activated/desactivated in self.activation_df
         """
         if (
-            self.ACTIVATION_DF in self.get_data_in()
-            and self.get_sosdisc_inputs(self.ACTIVATION_DF) is not None
+                self.ACTIVATION_DF in self.get_data_in()
+                and self.get_sosdisc_inputs(self.ACTIVATION_DF) is not None
         ):
             activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
             if (
-                builder_name in activation_df.columns
-                and builder_name not in self.activation_dict.keys()
+                    builder_name in activation_df.columns
+                    and builder_name not in self.activation_dict.keys()
             ):
                 df = deepcopy(activation_df)
                 for builder, activ_dict in self.activation_dict.items():
@@ -757,12 +776,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
     def setup_sos_disciplines(self):
         """
-        Set scenario_df value by reading activation_df input
+        Set samples_df value by reading activation_df input
         """
         dynamic_outputs = {}
         for driver_name, input_name in self.driver_input_to_fill.items():
 
-            if f'{driver_name}.scenario_df' in self.get_data_out():
+            if f'{driver_name}.samples_df' in self.get_data_out():
                 activation_df = deepcopy(self.get_sosdisc_inputs(self.ACTIVATION_DF))
 
                 if driver_name == 'driver':
@@ -789,16 +808,17 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 indexes = np.unique(input_value, return_index=True)[1]
                 input_value = [input_value[index] for index in sorted(indexes)]
 
-                scenario_full_name = self.get_var_full_name(f'{driver_name}.scenario_df', self.get_data_out())
+                scenario_full_name = self.get_var_full_name(f'{driver_name}.samples_df', self.get_data_out())
                 self.dm.set_data(scenario_full_name, 'value', pd.DataFrame({self.SCENARIO_NAME: input_value,
                                                                             self.SELECTED_SCENARIO: True}),
                                  check_value=False)
             dynamic_outputs.update(
-                {f'{driver_name}.scenario_df': {'type': 'dataframe',
-                                                'default': pd.DataFrame(
-                                                    columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
-                 f'{driver_name}.builder_mode': {'type': 'string',
-                                                 'value': 'multi_instance'}},
+                {f'{driver_name}.samples_df': {'type': 'dataframe',
+                                               'default': pd.DataFrame(
+                                                   columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
+                 # f'{driver_name}.builder_mode': {'type': 'string',
+                 #                                 'value': 'multi_instance'}
+                 },
             )
 
         self.add_outputs(dynamic_outputs)
@@ -817,8 +837,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         # case when scatter is on archi_node or scatter on other node at root level
         if namespace == self.sos_name:
             driver_name = 'driver'
+            builder_name = namespace
         # standard case
-        elif self.sos_name in namespace:
+        elif self.sos_name.split('.')[-1] in namespace:
             builder_name = f"{namespace.split('.', 1)[1]}"
             driver_name = f'{builder_name}.driver'
             # case when no archi_node is specified in architecture_df
@@ -826,14 +847,17 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             builder_name = namespace
             driver_name = f'{builder_name}.driver'
 
+        # TODO: check it is OK to always go multi-instance
+        # FIXME: issue with the treeviews...
         if isinstance(builder, list):
-
-            builder_scatter = self.ee.factory.create_driver(driver_name, builder)
+            builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, builder)
         else:
             builder.set_disc_name(builder.sos_name.split('.')[-1])
-            builder_scatter = self.ee.factory.create_driver(driver_name, [builder],
-                                                            display_options={'hide_under_coupling': True},
-                                                            flatten_subprocess=True)
+            builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, [builder])
+
+            builder_scatter[0].set_builder_info('process_display_options', {'hide_under_coupling': True})
+            # , display_options={'hide_under_coupling': True}
+
         if namespace == self.sos_name:
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], self.get_disc_full_name())
@@ -903,8 +927,8 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         # row
         activation_df_row = archi_df.loc[
             (archi_df[self.ACTIVATION]) & (
-                archi_df[self.CURRENT] != self.sos_name)
-        ][self.CURRENT].values
+                    archi_df[self.CURRENT] != self.sos_name)
+            ][self.CURRENT].values
         for builder in activation_df_row:
             parent = archi_df.loc[archi_df[self.CURRENT] == builder][
                 self.PARENT
@@ -1006,11 +1030,11 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             self.add_inputs(dict_desc_in, clean_inputs=False)
         else:
             if not self.default_activation_df.equals(
-                self.dm.get_data(
-                    self.get_var_full_name(
-                        self.ACTIVATION_DF, self.get_data_in()),
-                    ProxyDisciplineBuilder.DEFAULT,
-                )
+                    self.dm.get_data(
+                        self.get_var_full_name(
+                            self.ACTIVATION_DF, self.get_data_in()),
+                        ProxyDisciplineBuilder.DEFAULT,
+                    )
             ):
                 self.get_data_in()[self.ACTIVATION_DF][
                     self.VALUE
@@ -1026,7 +1050,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return activation_dict
 
     def get_scatter_input_value(
-        self, namespace, input_name, builder_name, condition_dict=None
+            self, namespace, input_name, builder_name, condition_dict=None
     ):
         """
         Get product list of actor_name for builder_name
@@ -1038,7 +1062,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 if namespace in activ_dict:
                     activation_df = activation_df.loc[
                         activation_df[var] == activ_dict[namespace]
-                    ]
+                        ]
 
             subactivation_df = activation_df.loc[activation_df[builder_name]]
             # To deal with scatter of scatter
@@ -1047,7 +1071,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 for key, value in condition_dict.items():
                     subactivation_df = subactivation_df.loc[
                         subactivation_df[key] == value
-                    ]
+                        ]
 
             input_value = [
                 val for val in subactivation_df[input_name] if val is not None

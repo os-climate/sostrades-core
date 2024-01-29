@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/10/10-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +29,7 @@ from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
-from sostrades_core.sos_processes.test.test_driver.usecase_scatter import Study
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver.usecase_scatter import Study
 
 
 class TestSameVarnameHandling(unittest.TestCase):

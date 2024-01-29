@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/21-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/02/21-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -244,9 +244,9 @@ class CheckDataIntegrity():
                         check_integrity_msg_df_descriptor)
                 if len(dataframe_descriptor[key]) == 4:
                     type_boolean = self.VAR_TYPE_MAP['bool']
-                    if type(dataframe_descriptor[key][3]) != type_boolean:
+                    if type(dataframe_descriptor[key][3]) not in type_boolean:
                         check_integrity_msg_df_descriptor = f'Dataframe descriptor has a column type ' \
-                                                            f'{dataframe_descriptor[key][3]} not a {type_boolean}'
+                                                            f'{dataframe_descriptor[key][3]} not in {type_boolean}'
                         df_descriptor_well_defined = False
                         self.__add_msg_to_check_integrity_msg_list(
                             check_integrity_msg_df_descriptor)

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_mdo_discipline_driver import SoSMDODisciplineDriver
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -41,7 +40,8 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
     '''
 
-    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
+    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None,
+                                 cache_file_path=None):  # type: (...) -> None
         """
         SoSMDODiscipline instanciation.
 
@@ -67,7 +67,7 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
                                                          logger=self.logger.getChild("SoSMDODisciplineDriver"),
                                                          )
             self._init_grammar_with_keys(proxy)
-# self._update_all_default_values(input_data) #TODO: numerical inputs etc?
+            # self._update_all_default_values(input_data) #TODO: numerical inputs etc?
             self._set_wrapper_attributes(proxy, self.wrapper)
             # self._set_discipline_attributes(proxy, self.mdo_discipline)
 
@@ -87,31 +87,3 @@ class MDODisciplineDriverWrapp(MDODisciplineWrapp):
 
         if self.mdo_discipline is not None:
             self.mdo_discipline.disciplines = sub_mdo_disciplines
-
-    # def _init_grammar_with_keys(self, proxy):
-    #     '''
-    #     initialize GEMS grammar with names and type None
-    #
-    #     Arguments:
-    #         proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
-    #     '''
-    #     input_names = list(set(proxy.get_input_data_names()) | set(proxy.proxy_disciplines[0].get_input_data_names()))
-    #     grammar = self.mdo_discipline.input_grammar
-    #     grammar.clear()
-    #     grammar.initialize_from_base_dict({input: None for input in input_names})
-    #
-    #     output_names = list(set(proxy.get_output_data_names()) | set(proxy.proxy_disciplines[0].get_output_data_names()))
-    #     grammar = self.mdo_discipline.output_grammar
-    #     grammar.clear()
-    #     grammar.initialize_from_base_dict({output: None for output in output_names})
-
-#    def _update_all_default_values(self, input_data):
-#        '''
-#        Store all input grammar data names' values from input data in default values of mdo_discipline
-#
-#        Arguments:
-#            input_data (dict): values to store
-#        '''
-#        if input_data is not None:
-#            for key in self.mdo_discipline.input_grammar.get_data_names():
-#                self.mdo_discipline._default_inputs[key] = input_data.get(key)

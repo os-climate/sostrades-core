@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/07/25-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/07/25-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.test.test_driver.usecase_scatter import Study
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver.usecase_scatter import Study
 
 
 class TestNamespaceHandling(unittest.TestCase):
@@ -143,11 +143,11 @@ class TestNamespaceHandling(unittest.TestCase):
     def test_03_two_same_scatter_inside_a_process(self):
 
         exec_eng = ExecutionEngine(self.name)
-
+        repo_name = 'sostrades_core.sos_processes.test.tests_driver_eval.multi'
         builder_list1 = exec_eng.factory.get_builder_from_process(
-            'sostrades_core.sos_processes.test', 'test_driver')
+            repo_name, 'test_multi_driver')
         builder_list2 = exec_eng.factory.get_builder_from_process(
-            'sostrades_core.sos_processes.test', 'test_driver')
+            repo_name, 'test_multi_driver')
         ns_list_standard = deepcopy(exec_eng.ns_manager.ns_list)
         # ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
         #     'Scatter1', after_name=exec_eng.study_name)

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/17-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/04/17-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -209,6 +209,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     eps0 = 1.0e-6
     has_chart = False
+    NUMERICAL_VAR_LIST = list(
+        DESC_IN.keys()) + list(
+        ProxyDisciplineBuilder.NUM_DESC_IN.keys())
 
     def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
         '''
@@ -399,8 +402,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # - build the data_i/o (sostrades) based on input and output grammar of MDAChain (GEMSEO)
         subprocess_data_in, subprocess_data_out = self.__compute_mdachain_gemseo_based_data_io()
         self._restart_data_io_to_disc_io()
-        self._update_data_io(subprocess_data_in, self.IO_TYPE_IN)
-        self._update_data_io(subprocess_data_out, self.IO_TYPE_OUT)
+        self.update_data_io_with_child(subprocess_data_in, subprocess_data_out)
 
     def __compute_mdachain_gemseo_based_data_io(self):
         ''' mimics the definition of MDAChain i/o grammar
@@ -557,7 +559,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
             # Exclude non executable proxy Disciplines
-            if disc.mdo_discipline_wrapp is not None and not isinstance(disc, ArchiBuilder):
+            if disc.mdo_discipline_wrapp is not None and disc.mdo_discipline_wrapp.mdo_discipline is not None:
                 sub_mdo_disciplines.append(
                     disc.mdo_discipline_wrapp.mdo_discipline)
 
