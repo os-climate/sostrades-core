@@ -21,7 +21,7 @@ import os
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
-from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
 
 class TestDatasets(unittest.TestCase):
@@ -44,7 +44,7 @@ class TestDatasets(unittest.TestCase):
         self.study_name = "usecase_dataset"
         self.proc_name = "test_disc1_disc2_dataset"
         self.process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", self.proc_name)
-        self.study = StudyManager(self.repo, self.proc_name, self.study_name)
+        self.study = BaseStudyManager(self.repo, self.proc_name, self.study_name)
 
     def test_01_usecase1(self):
         dm = self.study.execution_engine.dm

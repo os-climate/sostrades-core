@@ -30,19 +30,19 @@ class DatasetsManager:
         self.datasets = {}
         self.__logger = logger
 
-    def fetch_data_from_datasets(self, datasets_info: List[DatasetInfo], data_names: List[str]) -> dict[str:Any]:
+    def fetch_data_from_datasets(self, datasets_info: List[DatasetInfo], data_dict: dict[str:str]) -> dict[str:Any]:
         """
         get data from datasets and fill data_dict
 
         :param datasets_info: list of datasets associated to a namespace
         :type datasets_info: List[DatasetInfo]
 
-        :param data_names: list of data to be fetch in datasets
-        :type data_names: List[str]
+        :param data_dict: dict of data to be fetch in datasets with their types
+        :type data_dict: dict[name str: type str]
 
         :return: data_dict of data names and retrieved values
         """
-        self.__logger.debug(f"Fetching data {data_names} from datasets {datasets_info}")
+        self.__logger.debug(f"Fetching data {data_dict.keys()} from datasets {datasets_info}")
         data_retrieved = {}
 
         for dataset_info in datasets_info:
@@ -50,7 +50,7 @@ class DatasetsManager:
             dataset = self.get_dataset(dataset_info=dataset_info)
 
             # Retrieve values
-            dataset_data = dataset.get_values(data_names=data_names)
+            dataset_data = dataset.get_values(data_dict=data_dict)
 
             # Update internal dictionnary
             # TODO handle conflict, data may come from several datasets

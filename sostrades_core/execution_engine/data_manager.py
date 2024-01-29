@@ -386,15 +386,19 @@ class DataManager:
         # do a map between namespace and data from data_dict not already fetched
         # to have a list of data by namespace
         namespaced_data_dict = {}
+        KEY = 'key'
         
         for key, data_value in self.data_dict.items():
-            # get only not already
+            # get all input values not already set
             if data_value[IO_TYPE] == IO_TYPE_IN and not key in already_set_data:
                 data_ns = data_value[NS_REFERENCE].value
                 data_name = data_value[VAR_NAME]
+                data_type = data_value[TYPE]
 
-                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {})
-                namespaced_data_dict[data_ns][data_name] = key
+                # create a dict with namespace, datas with keys (to fill dm after) and types (to convert from dataset)
+                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY:{}, TYPE:{}})
+                namespaced_data_dict[data_ns][KEY][data_name] = key
+                namespaced_data_dict[data_ns][TYPE][data_name] = data_type
 
         # iterate on each namespace to retrieve data in this namespace
         loaded_data_dict = {}
@@ -402,14 +406,13 @@ class DataManager:
             datasets_info = datasets_mapping.get_datasets_info_from_namespace(namespace, self.name)
             # retrieve the list of dataset associated to the namespace from the mapping
             if len(datasets_info) > 0:
-                # get data values into the dataset
+                # get data values into the dataset into the right format
                 updated_data = self.dataset_manager.fetch_data_from_datasets(
-                    datasets_info=datasets_info, data_names=list(data_dict.keys())
-                )
+                    datasets_info=datasets_info, data_dict=data_dict[TYPE])
 
                 # update data values in dm
                 for data_name, value in updated_data.items():
-                    key = data_dict[data_name]
+                    key = data_dict[KEY][data_name]
                     self.data_dict[key][VALUE] = value
                     loaded_data_dict[key] = value  # save witch data has been retrieved
             else:

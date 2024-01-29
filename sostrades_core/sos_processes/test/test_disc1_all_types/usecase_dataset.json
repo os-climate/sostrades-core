@@ -1,0 +1,16 @@
+{
+    "datasets_infos": {
+        "Dataset1": {
+            "connector_id": "MVP0_datasets_connector",
+            "dataset_id": "dataset_all_types"
+        },
+        "numericals": {
+            "connector_id": "MVP0_datasets_connector",
+            "dataset_id": "default_numerical_parameters"
+        }
+    },
+    "namespace_datasets_mapping": {
+        "<study_ph>": ["numericals"],
+        "<study_ph>.Disc1": ["numericals","Dataset1"]
+    }
+}

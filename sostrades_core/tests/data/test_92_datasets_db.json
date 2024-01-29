@@ -5,6 +5,17 @@
         "c": "string_3",
         "x":4
     },
+    "dataset_all_types": {
+        "a": 1,
+        "b": 2,
+        "b_bool": false,
+        "name": "A1",
+        "x":4.0,
+        "x_dict":{"test1":1,"test2":2},
+        "y_array":[1.0,2.0,3.0],
+        "z_list":[1.0,2.0,3.0],
+        "d":{"years":[2023,2024],"x":[1.0,10.0]}
+    },
     "dataset_ax": {
         "a": 10,
         "x":20

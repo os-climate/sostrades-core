@@ -107,17 +107,17 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         
         return dataset_id in self.get_datasets_available()
 
-    def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> None:
+    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
         """
         Method to retrieve data from pickle and fill a data_dict
 
         :param dataset_identifier: identifier of the dataset
         :type dataset_identifier: str
 
-        :param data_to_get: data to retrieve, list of names
-        :type data_to_get: List[str]
+        :param data_to_get: data to retrieve, dict of names and types
+        :type data_to_get: dict[str:str]
         """
-        self.__logger.debug(f"Getting values {data_to_get} for dataset {dataset_identifier} for connector {self}")
+        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
         # Read pickle if not read already
         if self.__pickle_data is None:
             self.__load_pickle_data()
@@ -128,17 +128,19 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         datasets_data = self.__pickle_data
 
         # Filter data
-        filtered_data = {key: datasets_data[self.__get_pickle_key(key, dataset_identifier)][SoSPickleDatasetsConnector.VALUE_STR] for key in datasets_data if key in data_to_get}
+        filtered_data = {key: datasets_data[self.__get_pickle_key(key, dataset_identifier)][SoSPickleDatasetsConnector.VALUE_STR] for key in datasets_data if key in data_to_get.keys()}
         self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_data
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
         :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: List[str]
+        :type values_to_write: Dict[str:Any]
+        :param data_types_dict: dict of data type {name: type}
+        :type data_types_dict: dict[str:str]
         """
         # Read pickle if not read already
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
@@ -189,13 +191,15 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
             self.__load_pickle_data()
         return list(self.__get_dataset_id_and_data_name(key)[0] for key in self.__pickle_data)
         
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], create_if_not_exists:bool=True, override:bool=False) -> None:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
+        :param data_types_dict: dict of data types {name: type}
+        :type data_types_dict: dict[str:Any]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
@@ -214,7 +218,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
         
-        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write)
+        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
 if __name__ == "__main__":
     file_path = os.path.join(os.path.dirname(__file__), "uc1_test_damage_ggo.pickle")

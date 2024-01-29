@@ -17,6 +17,8 @@ import json
 import logging
 import os
 from typing import Any, List
+import pandas as pd
+import numpy as np
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException
 
@@ -64,17 +66,17 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         with open(db_path, "w", encoding="utf-8") as file:
             json.dump(obj=self.__json_data, fp=file, indent=4)
 
-    def get_values(self, dataset_identifier: str, data_to_get: List[str]) -> None:
+    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
         """
         Method to retrieve data from JSON and fill a data_dict
 
         :param dataset_identifier: identifier of the dataset
         :type dataset_identifier: str
 
-        :param data_to_get: data to retrieve, list of names
-        :type data_to_get: List[str]
+        :param data_to_get: data to retrieve, dict of names and types
+        :type data_to_get: dict[str:str]
         """
-        self.__logger.debug(f"Getting values {data_to_get} for dataset {dataset_identifier} for connector {self}")
+        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
         # Read JSON if not read already
         if self.__json_data is None:
             self.__load_json_data()
@@ -85,10 +87,13 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         dataset_data = self.__json_data[dataset_identifier]
 
         # Filter data
-        filtered_data = {key: dataset_data[key] for key in dataset_data if key in data_to_get}
+        filtered_data = {key:self.convert_from_connector_data(key, 
+                                                              dataset_data[key], 
+                                                              data_to_get)
+                        for key in dataset_data if key in data_to_get}
         self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_data
-    
+
     def get_datasets_available(self) -> list[str]:
         """
         Get all available datasets for a specific API
@@ -99,13 +104,15 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
         return list(self.__json_data.keys())
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
         :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: List[str]
+        :type values_to_write: dict[str], name, value
+        :param data_types_dict: dict of data type {name: type}
+        :type data_types_dict: dict[str:str]
         """
         # Read JSON if not read already
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
@@ -116,15 +123,20 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             raise DatasetNotFoundException(dataset_identifier)
 
         # Write data
-        self.__json_data[dataset_identifier].update(values_to_write)
+        self.__json_data[dataset_identifier].update({key:self.convert_to_connector_data(key, 
+                                                                                        value, 
+                                                                                        data_types_dict) 
+                                                    for key, value in values_to_write.items()})
 
         self.__save_json_data()
     
-    def get_values_all(self, dataset_identifier: str) -> dict[str:Any]:
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to get all values from a dataset for a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
+        :param data_types_dict: dict of data type {name: type}
+        :type data_types_dict: dict[str:str]
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
         # Read JSON if not read already
@@ -134,17 +146,22 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         if dataset_identifier not in self.__json_data:
             raise DatasetNotFoundException(dataset_identifier)
 
-        dataset_data = self.__json_data[dataset_identifier]
+        dataset_data ={key:self.convert_from_connector_data(key,
+                                                          value,
+                                                          data_types_dict) 
+                        for key, value in self.__json_data[dataset_identifier].items()}
         return dataset_data
         
 
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], create_if_not_exists:bool=True, override:bool=False) -> None:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
+        :param data_types_dict: dict of data types {name: type}
+        :type data_types_dict: dict[str:str]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
@@ -162,5 +179,5 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
         
-        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write)
+        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
             
