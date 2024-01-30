@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/23-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/06/23-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,5 +37,12 @@ class TestUseCases(unittest.TestCase):
 
     def test_all_usecases(self):
         test_passed, output_error = _test_all_usecases(processes_repo=self.processes_repo)
+        
         if not test_passed:
             raise Exception(f'{output_error}')
+
+
+if __name__ == '__main__':
+    test = TestUseCases()
+    test.setUp()
+    test.test_all_usecases()

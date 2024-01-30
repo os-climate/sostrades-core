@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-
+Modifications on 2024/01/11-2024/01/11 Copyright 2023 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -72,11 +72,11 @@ class TestDataManagerStorage(unittest.TestCase):
         y_dependencies_names = [self.ee.dm.get_disc_full_name(disc_id)
                                 for disc_id in y_dependencies_id]
         self.assertListEqual(y_dependencies_names, [
-                             'Test.Disc1', 'Test.Disc2'])
+            'Test.Disc1', 'Test.Disc2'])
 
         disc_id_list = self.ee.dm.get_discipline_ids_list('Test.Disc1')
         # remove keys in DM
-        self.ee.dm.remove_keys(disc_id_list[0], ['Test.Disc1.a', 'Test.y'])
+        self.ee.dm.remove_keys(disc_id_list[0], ['Test.Disc1.a', 'Test.y'], 'in')
 
         # check data_dict content after keys deletion
         self.assertNotIn('Test.Disc1.a', self.ee.dm.data_id_map.keys())
@@ -86,7 +86,7 @@ class TestDataManagerStorage(unittest.TestCase):
         y_dependencies_names = [self.ee.dm.get_disc_full_name(disc_id)
                                 for disc_id in y_dependencies_id]
         self.assertListEqual(y_dependencies_names, [
-                             'Test.Disc2'])
+            'Test.Disc2'])
 
     def test_02_disciplines_dict(self):
 
@@ -116,7 +116,7 @@ class TestDataManagerStorage(unittest.TestCase):
 
         # check disciplines_dict content after keys deletion
         self.assertListEqual(list(self.ee.dm.disciplines_id_map.keys()), [
-                             'Test', 'Test.Disc1', 'Test.Disc2'])
+            'Test', 'Test.Disc1', 'Test.Disc2'])
 
         # remove Disc2
         disc2_id = self.ee.dm.get_discipline_ids_list('Test.Disc2')[0]
@@ -128,7 +128,7 @@ class TestDataManagerStorage(unittest.TestCase):
         # check disciplines_dict and data_dict content after discipline
         # deletion
         self.assertListEqual(list(self.ee.dm.disciplines_id_map.keys()), [
-                             'Test', 'Test.Disc1'])
+            'Test', 'Test.Disc1'])
 
         self.assertNotIn('Test.Disc2.constant', self.ee.dm.data_id_map)
         self.assertNotIn('Test.Disc2.power', self.ee.dm.data_id_map)
@@ -139,7 +139,7 @@ class TestDataManagerStorage(unittest.TestCase):
         y_dependencies_names = [self.ee.dm.get_disc_full_name(disc_id)
                                 for disc_id in y_dependencies_id]
         self.assertListEqual(y_dependencies_names, [
-                             'Test.Disc1'])
+            'Test.Disc1'])
 
         # remove SoSCoupling Test
         disc1_id = self.ee.dm.get_discipline_ids_list('Test.Disc1')[0]
@@ -243,7 +243,6 @@ class TestDataManagerStorage(unittest.TestCase):
         self.assertDictEqual(self.ee.dm.data_dict,
                              self.ee.dm.convert_data_dict_with_ids(self.ee.dm.convert_data_dict_with_full_name()))
 
-
     def test_06_crash_with_distinct_disciplines_in_same_local_namespace_for_execution(self):
         same_name = 'SameName'
         ns_dict = {'ns_ac': f'{self.ns_test}'}
@@ -261,7 +260,7 @@ class TestDataManagerStorage(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             self.ee.configure()
 
-        disc1_name = self.mod1_path.rsplit('.',1)[0]
+        disc1_name = self.mod1_path.rsplit('.', 1)[0]
         disc2_name = self.mod2_path.rsplit('.', 1)[0]
 
         error_message = f'Trying to add two distinct disciplines with the same local namespace:' \

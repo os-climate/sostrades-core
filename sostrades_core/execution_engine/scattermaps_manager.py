@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/01/19 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -65,7 +66,7 @@ class ScatterMapsManager:
         Associate a discipline to its own build map
         '''
         smap = self.get_build_map(disc.map_name)
-        smap.add_dependency(disc)
+        smap.add_dependency(disc.disc_id)
 
     def add_build_map(self, map_name, map_dict):
         '''

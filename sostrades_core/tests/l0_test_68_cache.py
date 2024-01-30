@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-
+Modifications on 2024/01/11-2024/01/11 Copyright 2023 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,6 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
 '''
 from os.path import join
 
@@ -39,6 +40,8 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.core.mdo_scenario import MDOScenario
+
+
 # from sostrades_core.sos_wrapping.test_discs.sellar_gemseo.sellar import Sellar1, Sellar2, SellarSystem
 
 
@@ -148,7 +151,8 @@ class TestCache(unittest.TestCase):
         self.assertEqual(
             self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache.__class__.__name__, 'SimpleCache')
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache.__class__.__name__, 'SimpleCache')
+            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache.__class__.__name__,
+            'SimpleCache')
         # get number of calls after first call
         n_call_root_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
         n_call_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
@@ -194,7 +198,8 @@ class TestCache(unittest.TestCase):
         self.assertEqual(
             self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
         self.assertEqual(
-            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__, 'SimpleCache')
+            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__,
+            'SimpleCache')
 
         # first execute
         res_1 = self.ee.execute()
@@ -1123,9 +1128,9 @@ class TestCache(unittest.TestCase):
     #     eval_inputs.loc[eval_inputs['full_name'] ==
     #                     f'{self.grid_search}.Disc1.j', ['selected_input']] = True
     #
-    #     eval_outputs = self.ee.dm.get_value(
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs')
-    #     eval_outputs.loc[eval_outputs['full_name'] ==
+    #     gather_outputs = self.ee.dm.get_value(
+    #         f'{self.study_name}.{self.grid_search}.gather_outputs')
+    #     gather_outputs.loc[gather_outputs['full_name'] ==
     #                      f'{self.grid_search}.Disc1.y', ['selected_output']] = True
     #
     #     dspace = pd.DataFrame({
@@ -1139,7 +1144,7 @@ class TestCache(unittest.TestCase):
     #     dict_values = {
     #         # GRID SEARCH INPUTS
     #         f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+    #         f'{self.study_name}.{self.grid_search}.gather_outputs': gather_outputs,
     #         f'{self.study_name}.{self.grid_search}.design_space': dspace,
     #
     #         # DISC1 INPUTS
@@ -1288,9 +1293,9 @@ class TestCache(unittest.TestCase):
     #     eval_inputs.loc[eval_inputs['full_name'] ==
     #                     f'{self.grid_search}.Disc1.j', ['selected_input']] = True
     #
-    #     eval_outputs = self.ee.dm.get_value(
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs')
-    #     eval_outputs.loc[eval_outputs['full_name'] ==
+    #     gather_outputs = self.ee.dm.get_value(
+    #         f'{self.study_name}.{self.grid_search}.gather_outputs')
+    #     gather_outputs.loc[gather_outputs['full_name'] ==
     #                      f'{self.grid_search}.Disc1.y', ['selected_output']] = True
     #
     #     dspace = pd.DataFrame({
@@ -1304,7 +1309,7 @@ class TestCache(unittest.TestCase):
     #     dict_values = {
     #         # GRID SEARCH INPUTS
     #         f'{self.study_name}.{self.grid_search}.eval_inputs': eval_inputs,
-    #         f'{self.study_name}.{self.grid_search}.eval_outputs': eval_outputs,
+    #         f'{self.study_name}.{self.grid_search}.gather_outputs': gather_outputs,
     #         f'{self.study_name}.{self.grid_search}.design_space': dspace,
     #
     #         # DISC1 INPUTS

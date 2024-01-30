@@ -1,4 +1,4 @@
-scenario,COC,RC,NRC
+scenario_name,COC,RC,NRC
 scenario_1,85.0,80.0,80.0
 scenario_2,90.0,80.0,80.0
 scenario_3,95.0,80.0,80.0
@@ -404,4 +404,4 @@ scenario_402,90.0,120.0,120.0
 scenario_403,95.0,120.0,120.0
 scenario_404,100.0,120.0,120.0
 scenario_405,105.0,120.0,120.0
-reference,10.0,10.0,10.0
+reference_scenario,10.0,10.0,10.0

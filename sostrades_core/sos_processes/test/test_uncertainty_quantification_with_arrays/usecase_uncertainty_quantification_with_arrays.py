@@ -48,7 +48,7 @@ class Study(StudyManager):
             array_var_column += [triplet] * len(self.samples_dataframe[:-1])
         array_var_column.append(90.)
         samples_dataframe['input_array'] = array_var_column
-        samples_dataframe['scenario'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference']
+        samples_dataframe['scenario_name'] = [f'scenario_{i}' for i in range(len(samples_dataframe) - 1)] + ['reference_scenario']
         self.samples_dataframe = samples_dataframe
 
         np.random.seed(42)
@@ -64,7 +64,7 @@ class Study(StudyManager):
                                    (-Var1 ** 2 - Var2 ** 2) * 100_000]).T)
 
         self.data_df = pd.DataFrame(
-            {'scenario': self.samples_dataframe['scenario'], 'output1': out1, 'output_array': out_array})
+            {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output_array': out_array})
 
         self.input_selection = pd.DataFrame({'selected_input': [True, True, True, True],
                            'full_name': ['COC', 'RC', 'NRC', 'input_array'],
@@ -90,7 +90,7 @@ class Study(StudyManager):
         """
         dict_values = {
             f'{self.study_name}.{self.uncertainty_quantification}.eval_inputs': self.input_selection,
-            f'{self.study_name}.{self.uncertainty_quantification}.eval_outputs': self.output_selection,
+            f'{self.study_name}.{self.uncertainty_quantification}.gather_outputs': self.output_selection,
             f'{self.study_name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
             f'{self.study_name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.study_name}.{self.uncertainty_quantification}.design_space': dspace,
