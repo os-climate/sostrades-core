@@ -43,11 +43,12 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
 
-# if platform.system() != 'Windows':
-#    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-# - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
-MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
-ksp_lib_petsc = MyFakeKSPLib()
+if platform.system() != 'Windows':
+   from sostrades_core.tools.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
+
+# # - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
+# MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
+# ksp_lib_petsc = MyFakeKSPLib()
 
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
