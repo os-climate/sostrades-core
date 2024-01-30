@@ -442,11 +442,10 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
     ppf = PostProcessingFactory()
 
     try:
-        for disc in study.execution_engine.root_process.proxy_disciplines:
-            filters = ppf.get_post_processing_filters_by_discipline(
-                disc)
-            graph_list = ppf.get_post_processing_by_discipline(
-                disc, filters, as_json=False)
+        post_procs = ppf.get_all_post_processings(execution_engine=study.ee, filters_only=False, as_json=False)
+        # for post_proc_bundle in post_procs.values():
+        #     for chart in post_proc_bundle.post_processings:
+        #         chart.to_plotly().show()
         dm_after_pp = deepcopy(study.execution_engine.get_anonimated_data_dict())
     except Exception as e:
         error_msg_post_processing += f'\nERROR while computing post processing for usecase {study.study_full_path}:\n {e}'
@@ -470,6 +469,7 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
     - if not MDO and not MDA : test double run
 
     If force run is true : run MDA with strong coupling and MDOs
+    If test_mdo is true : tests sets 1 iteration to mdo and then test integrity of data after computing post-processings
 
     """
     logging.disable(logging.INFO)
@@ -485,13 +485,18 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         test_passed = data_integrity_passed
 
         if data_integrity_passed:
+            if study_2.ee.factory.contains_mdo:
+                max_iter_mdo_var_names = study_2.ee.dm.get_all_namespaces_from_var_name("max_iter")
+                study_2.ee.dm.set_values_from_dict({max_mdo_iter_var: 1 for max_mdo_iter_var in max_iter_mdo_var_names})
+            max_iter_mda_vars_name = study_2.ee.dm.get_all_namespaces_from_var_name("max_mda_iter")
+            study_2.ee.dm.set_values_from_dict({mda_max_iter_var: 2 for mda_max_iter_var in max_iter_mda_vars_name})
             if not study_2.ee.factory.contains_mdo or force_run:
                 post_processing_passed, error_msg_post_processing = test_post_processing_study(
                     study=study_2, force_run=force_run)
                 test_passed = post_processing_passed
                 info_msg += error_msg_post_processing
 
-                if post_processing_passed:
+                if post_processing_passed and not study_2.ee.factory.contains_mdo:
                     if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
                         run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
                         test_passed = run_test_passed

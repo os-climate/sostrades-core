@@ -400,6 +400,14 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
     def _test_06_scatter_node_namespace_removal_and_change_builder_mode_multi_to_mono(self):
         # deactivated after mono/multi split
+        '''
+        At this stage, the initial namespace values of the subprocess are cleaned once the multi-instance is activated
+        and namespace values are updated. Therefore, once the mono-instance is activated from the multi-instance,
+        the initial namespace cannot be recovered to update back the namespace value. An initial_ns_value_dict could
+        be introduced. however, it would add complexity and an on-going dev is currently (26-oct-2023) refactoring the code to
+        deal with multi-instance and mono-instance in separate class. This refactoring should also deal with this case.
+        For those reasons, it is decided to deactivate this test
+        '''
         # scatter build map
         self.get_simple_multiscenario_process_configured(self.exec_eng)
 
@@ -651,6 +659,29 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_1.y'), y1)
         self.assertEqual(self.exec_eng.dm.get_value(
             'MyCase.multi_scenarios.scenario_2.y'), y2)
+
+    def test_10_multi_scenario_clean_initial_ns_values(self):
+        '''
+        test dev that cleans the initial namespace value of the subprocess on which the multi-scenario is built,
+        ie removes 4 namespace values:
+        ns_disc3 MyCase
+        ns_out_disc3 MyCase
+        ns_ac MyCase
+        ns_data_ac MyCase
+
+        and only keep the 8 of the multi-scenario
+        '''
+        self.get_simple_multiscenario_process_configured(self.exec_eng)
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.prepare_execution()
+        self.assertEqual(len(self.exec_eng.ns_manager.ns_list), 8)  # maybe should be 8 ?
 
 
 if '__main__' == __name__:

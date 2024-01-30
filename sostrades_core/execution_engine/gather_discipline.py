@@ -53,18 +53,18 @@ class GatherDiscipline(SoSWrapp):
     GATHER_OUTPUTS = 'gather_outputs'
     GATHER_SUFFIX = '_dict'
     EVAL_OUTPUTS_DESC = {
-            SoSWrapp.TYPE: 'dataframe',
-            SoSWrapp.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
-            SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
-                                                        'full_name': ('string', None, False),
-                                                        'output_name': ('multiple', None, True)
-                                                        },
-            SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
-            SoSWrapp.STRUCTURING: True,
-        }
-    
-    DESC_IN = {GATHER_OUTPUTS : EVAL_OUTPUTS_DESC}
-    
+        SoSWrapp.TYPE: 'dataframe',
+        SoSWrapp.DEFAULT: pd.DataFrame(columns=['selected_output', 'full_name', 'output_name']),
+        SoSWrapp.DATAFRAME_DESCRIPTOR: {'selected_output': ('bool', None, True),
+                                        'full_name': ('string', None, False),
+                                        'output_name': ('multiple', None, True)
+                                        },
+        SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
+        SoSWrapp.STRUCTURING: True,
+    }
+
+    DESC_IN = {GATHER_OUTPUTS: EVAL_OUTPUTS_DESC}
+
     def __init__(self, sos_name, logger: logging.Logger):
         """
         Constructor
@@ -85,7 +85,6 @@ class GatherDiscipline(SoSWrapp):
         dynamic_inputs, dynamic_outputs = self.build_dynamic_io()
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
-        
 
     def build_dynamic_io(self):
         dynamic_inputs = {}
@@ -110,12 +109,12 @@ class GatherDiscipline(SoSWrapp):
         self.gather_names = {}
         self.short_names = {}
         if possible_out_values:
-
             # strip ns and get output names
             # the gather_names is needed to retreive output_name from full_name
-            self.gather_names = {f'{disc_namespace}.{output}':output.split('.',1)[-1] for output in possible_out_values}
+            self.gather_names = {f'{disc_namespace}.{output}': output.split('.', 1)[-1] for output in
+                                 possible_out_values}
             # the short name is needed to retreive the input_name from output_name
-            self.short_names = {f'{output}':output.split('.')[-1] for output in set(self.gather_names.values())}
+            self.short_names = {f'{output}': output.split('.')[-1] for output in set(self.gather_names.values())}
 
             # get already set eval_output
             disc_in = self.get_data_in()
@@ -125,13 +124,15 @@ class GatherDiscipline(SoSWrapp):
             # merge possible outputs with current eval_output
             eval_output_df, error_msg = get_eval_output(set(self.gather_names.values()), eval_output_new_dm)
 
-            if len(error_msg) > 0:
-                for msg in error_msg:
-                    self.logger.warning(msg)
+            # This WARNING is not meaningful in most cases (only for specific cases where we need to gather dynamic outputs in driver)
+
+            # if len(error_msg) > 0:
+            #     for msg in error_msg:
+            #         self.logger.warning(msg)
 
             # set eval_output value in desc_in
             self.dm.set_data(eval_outputs_f_name,
-                                 'value', eval_output_df, check_value=False)
+                             'value', eval_output_df, check_value=False)
 
     def build_dynamic_io_from_gather_outputs(self):
         '''
@@ -150,15 +151,17 @@ class GatherDiscipline(SoSWrapp):
             children_list = self.config_dependency_disciplines
 
             for child in children_list:
-                
+
                 for output, output_dict in child.get_data_io_dict(self.IO_TYPE_OUT).items():
                     # get the full name to retreive the variable from its output_name
                     output_namespace = copy(output_dict[self.NS_REFERENCE])
                     output_full_name = f'{output_namespace.value}.{output}'
 
                     # check only outputs that are selected in the eval_output
-                    if output_full_name in self.gather_names.keys() and self.gather_names[output_full_name] in selected_outputs_dict.keys():
-                        data_in_dict = { key: value for key, value in output_dict.items() if key in self.NEEDED_DATA_KEYS}
+                    if output_full_name in self.gather_names.keys() and self.gather_names[
+                        output_full_name] in selected_outputs_dict.keys():
+                        data_in_dict = {key: value for key, value in output_dict.items() if
+                                        key in self.NEEDED_DATA_KEYS}
 
                         # if input is local : then put it to shared visibility and add the local namespace from child to the gather discipline as shared namespace
                         # if input is shared : copy the namespace and rename it (at least two namespaces with same name but different value since it is a gather)
@@ -184,12 +187,11 @@ class GatherDiscipline(SoSWrapp):
                         # if datafram then we store all the dataframes in one
                         if dynamic_outputs[output_name][self.TYPE] != 'dataframe':
                             dynamic_outputs[output_name][self.TYPE] = 'dict'
-                        
+
                         dynamic_outputs[output_name][self.VISIBILITY] = self.LOCAL_VISIBILITY
                         del dynamic_outputs[output_name][self.NAMESPACE]
                         del dynamic_outputs[output_name][self.NS_REFERENCE]
         return dynamic_inputs, dynamic_outputs
-    
 
     def run(self):
         '''
@@ -208,15 +210,16 @@ class GatherDiscipline(SoSWrapp):
                 output_df_list = []
                 output_dict[out_key] = {}
                 # retreive the name of the output written in the eval_output
-                var_key = [input_name for input_name, output_name in selected_output.items() if output_name ==out_key][0]
-            
+                var_key = [input_name for input_name, output_name in selected_output.items() if output_name == out_key][
+                    0]
+
                 for input_key in input_dict:
                     if isinstance(input_key, tuple) and input_key[0] == out_key:
                         # Then input_dict[input_key] is a dict
                         for input_input_key in input_dict[input_key]:
                             output_dict[out_key][input_input_key] = input_dict[input_key][input_input_key]
 
-                    #retreive input_name from output_name with the short_names disct
+                    # retreive input_name from output_name with the short_names disct
                     if isinstance(input_key, tuple) and input_key[0] == self.short_names[var_key]:
                         if isinstance(input_dict[input_key], pd.DataFrame):
                             # create the dataframe list before concat

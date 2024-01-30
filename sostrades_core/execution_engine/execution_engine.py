@@ -177,6 +177,10 @@ class ExecutionEngine:
         '''
         self.logger.info("Preparing execution.")
         # - instantiate models in user wrapps
+
+        # clean unused namespaces
+        self.clean_unused_namespaces()
+
         self.__factory.init_execution()
         self.fill_data_connector_prepare_exec()
         # - execution
@@ -640,6 +644,15 @@ class ExecutionEngine:
             self.dm.create_reduced_dm()
 
         self.dm.treeview = None
+
+    def clean_unused_namespaces(self):
+        '''
+
+        Returns:
+
+        '''
+        post_processing_ns_list = list(self.post_processing_manager.namespace_post_processing.keys())
+        self.ns_manager.clean_unused_namespaces(post_processing_ns_list)
 
     def get_data_integrity_msg(self) -> str:
         """gathers the messages concerning data integrity"""

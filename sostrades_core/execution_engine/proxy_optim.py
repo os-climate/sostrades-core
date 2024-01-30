@@ -636,13 +636,13 @@ class ProxyOptim(ProxyDriverEvaluator):
         get the corresponding lagrangian formulation of a given
         optimization scenario
         """
-        from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-        list_coupl = self.ee.root_process.proxy_disciplines
-        scenario_name = self.father_executor.sos_name
-        for j in full_id_l:
-            if scenario_name + '.' in j:
-                full_id = j
-        return full_id
+
+        possible_full_id_list = [ns for ns in full_id_l if f'{self.sos_name}.' in ns]
+
+        if len(possible_full_id_list) == 1:
+            return possible_full_id_list[0]
+        else:
+            raise Exception(f'Cannot find the only objective of the optim {self.sos_name} ')
 
     def set_design_space_for_complex_step(self):
         '''
