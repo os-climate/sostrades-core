@@ -100,15 +100,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
 
     # set default value of linear solver according to the operating system
-    #     if platform.system() == 'Windows':
-    #         DEFAULT_LINEAR_SOLVER = 'GMRES'
-    #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
-    #         POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
-    #     else:
-    #         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
-    #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
-    #         POSSIBLE_VALUES_PRECONDITIONER = [
-    #             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+    if platform.system() == 'Windows':
+        DEFAULT_LINEAR_SOLVER = 'GMRES'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
+        POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
+    else:
+        DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
+        POSSIBLE_VALUES_PRECONDITIONER = [
+            'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
 
     DEFAULT_LINEAR_SOLVER_OPTIONS = {
         'max_iter': 1000,
