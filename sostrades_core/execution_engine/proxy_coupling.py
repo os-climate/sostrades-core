@@ -104,6 +104,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         DEFAULT_LINEAR_SOLVER = 'GMRES'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
         POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
+
     else:
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
