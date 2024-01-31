@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/10/12-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -47,10 +48,9 @@ def post_processings(execution_engine, namespace, filters):
                 charts_list = chart_filter.selected_values
 
     if 'Scenario table' in charts_list:
-
         table_name = 'Scenario dict'
         scenario_list = execution_engine.dm.get_value(
-            'MyCase.multi_scenarios.scenario_df')['scenario_name'].values.tolist()
+            'MyCase.multi_scenarios.samples_df')['scenario_name'].values.tolist()
 
         headers = ['Scenarios']
 

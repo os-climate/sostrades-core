@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/26-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/04/26-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -84,7 +84,8 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
 
             proxy_disc = builder.build()
 
-            if self.ee.ns_manager.get_local_namespace(self).is_display_value() and builder not in self.ee.ns_manager.display_ns_dict:
+            if self.ee.ns_manager.get_local_namespace(
+                    self).is_display_value() and builder not in self.ee.ns_manager.display_ns_dict:
                 father_display_value = self.get_disc_display_name()
                 display_value = f'{father_display_value}.{builder.sos_name}'
                 self.ee.ns_manager.get_local_namespace(
@@ -126,6 +127,24 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         """
         return self.cls_builder
 
+    def update_data_io_with_child(self, sub_data_in, sub_data_out):
+        '''
+
+        Args:
+            sub_data_in: data_in of the child under the builder
+            sub_data_out: data_out of the child under the builder
+
+        Returns:
+            Update the _data_io and the _simple_data_io of the proxydisciplinecbuilder accridng to its children
+
+        '''
+        if sub_data_in != {}:
+            self._update_data_io(sub_data_in, self.IO_TYPE_IN)
+            self.build_simple_data_io(self.IO_TYPE_IN)
+        if sub_data_out != {}:
+            self._update_data_io(sub_data_out, self.IO_TYPE_OUT)
+            self.build_simple_data_io(self.IO_TYPE_OUT)
+
     def clean(self):
         """
         This method cleans a sos_discipline_builder, which is a discipline that can build other disciplines;
@@ -133,12 +152,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         """
         self.clean_children()
 
-        #         SoSDiscipline.clean(self)
-        self.father_builder.remove_discipline(self)
-        self.clean_dm_from_disc()
-        self.ee.ns_manager.remove_dependencies_after_disc_deletion(
-            self, self.disc_id)
-        self.ee.factory.remove_sos_discipline(self)
+        super().clean()
 
     def clean_children(self, list_children=None):
         """
@@ -173,22 +187,6 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
             disc_builder, display_value)
 
         return disc_builder
-
-    def get_desc_in_out(self, io_type):
-        """
-        Retrieves information from wrapper or ProxyDiscipline DESC_IN to fill data_in
-        Overload of proxyDiscipline
-
-        Argument:
-                io_type : 'string' . indicates whether we are interested in desc_in or desc_out
-        """
-        if io_type == self.IO_TYPE_IN:
-            return deepcopy(self.DESC_IN) or {}
-        elif io_type == self.IO_TYPE_OUT:
-            return deepcopy(self.DESC_OUT) or {}
-        else:
-            raise Exception(
-                f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
 
     def set_children_numerical_inputs(self):
         """

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -68,17 +68,61 @@ class AbstractSampleGenerator(object):
             msg += "is <%s> " % str(type(samples))
             raise SampleTypeError()
 
-    def get_options_and_default_values(self, algo_name):
-        '''
-        Returns the Sample Generator expected inputs for the algo options of the selected algorithm
-        (to be provided to proxy i/o grammars)
-        To be overloaded by subclass
-        '''
-        raise NotImplementedError
+    # def get_options_and_default_values(self, algo_name):
+    #     '''
+    #     Returns the Sample Generator expected inputs for the algo options of the selected algorithm
+    #     (to be provided to proxy i/o grammars)
+    #     To be overloaded by subclass
+    #     '''
+    #     raise NotImplementedError
 
     def _check_options(self, *args, **kwargs):
         '''
         Check provided options before sample generation
         To be overloaded by subclass
         '''
+        pass
+
+    def setup(self, proxy):
+        """
+        Method used in combination with the ProxySampleGenerator in order to configure a given generation method.
+        Arguments:
+            proxy (ProxySampleGenerator) : associated proxy discipline
+        Returns:
+            dynamic_inputs (dict) : dynamic inputs of the sample generation method
+            dynamic_outputs (dict( : dynamic outputs of the sample generation method
+        """
+        return {}, {}
+
+    # TODO: renaming proxy / wrapper / proxy_or_wrapper for clarity when impl. is fixed in next 2 methods
+    def sample(self, wrapper):
+        """
+        Method that takes the wrapper as input and returns the output of generate_samples.
+        """
+        _args, _kwargs = self.get_arguments(wrapper)
+        return self.generate_samples(*_args, **_kwargs)
+
+    def get_arguments(self, wrapper):
+        """
+        Returns the Sample Generator expected inputs for the algo options of the selected algorithm
+        (to be provided to proxy i/o grammars)
+        To be overloaded by subclass
+        """
+        return [], {}
+
+    def is_ready_to_sample(self, proxy):
+        """
+        Method that takes the ProxySampleGenerator as input and returns whether the configuration sequence is ready for
+        sample generation, notably to avoid asking for sample generation before the corresponding inputs are added and
+        loaded in the dm.
+        """
+        return True
+
+    def filter_inputs(self, proxy):
+        """
+        Method that takes the ProxySampleGenerator as input and filters the possible evaluated inputs values and types
+        in order to constrain the input for specific sample generators.
+        """
+        # proxy.eval_in_possible_values = [subprocess_inputs]
+        # proxy.eval_in_possible_types = {subprocess_input: variable_type}
         pass

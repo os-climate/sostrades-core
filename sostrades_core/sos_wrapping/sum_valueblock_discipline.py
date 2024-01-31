@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/10/27-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,7 +38,7 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
         'version': '',
     }
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
-
+    
     def build_dynamic_io(self):
         """
         The sum is stored in the same name as the inputs found in the children_list
@@ -66,7 +67,7 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
         output_dict = {}
         toolbox = toolboxsum()
         for input_to_sum, type_input in self.input_to_sum.items():
-            if not input_to_sum.endswith('_gather'):
+            if not input_to_sum.endswith(self.gather_suffix):
                 # we sum only the same variable: condition endswith and only
                 # the direct children condition len(split)==2
                 sub_input_dict = {

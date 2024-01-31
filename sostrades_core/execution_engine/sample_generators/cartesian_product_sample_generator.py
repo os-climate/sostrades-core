@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ from builtins import NotImplementedError
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 import pandas as pd
 import numpy as np
@@ -92,5 +93,39 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             return my_sample
         my_res = combvec(vect_list)
         samples_df = pd.DataFrame(my_res, columns=variable_list)
-
+        
         return samples_df
+
+    @staticmethod
+    def filter_eval_inputs_cp(eval_inputs_cp, wrapper):
+        """
+        Method that reformat eval_input_cp depending on user's selection
+
+        Arguments:
+            eval_inputs_cp (dataframe):
+
+        Returns:
+            dict_of_list_values (dict[list]) : dictionary {'var': [var_cp_values]} ignoring empty lists
+
+        """
+        if eval_inputs_cp is None or eval_inputs_cp.empty:
+            return {}
+        logic_1 = eval_inputs_cp[wrapper.SELECTED_INPUT] == True
+        logic_2 = eval_inputs_cp[wrapper.LIST_OF_VALUES].isin([[]])
+        logic_3 = eval_inputs_cp[wrapper.FULL_NAME] is None
+        logic_4 = eval_inputs_cp[wrapper.FULL_NAME] == ''
+        eval_inputs_cp_filtered = eval_inputs_cp[logic_1 &
+                                                 ~logic_2 & ~logic_3 & ~logic_4]
+        eval_inputs_cp_filtered = eval_inputs_cp_filtered[[wrapper.FULL_NAME, wrapper.LIST_OF_VALUES]]
+        return eval_inputs_cp_filtered.set_index(wrapper.FULL_NAME)[wrapper.LIST_OF_VALUES].to_dict()
+
+    def get_arguments(self, wrapper):
+        eval_inputs_cp = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
+        dict_of_list_values = self.filter_eval_inputs_cp(eval_inputs_cp, wrapper)
+        return [], {'dict_of_list_values': dict_of_list_values}
+
+    def is_ready_to_sample(self, proxy):
+        # the generator is ready to sample if there are items in the dict_of_list_values, which is a dictionary
+        # {'var': [var_cp_values]} that is assured to contain no empty lists due to filter_eval_inputs_cp
+        _args, _kwargs = self.get_arguments(proxy)
+        return bool(_kwargs['dict_of_list_values'])

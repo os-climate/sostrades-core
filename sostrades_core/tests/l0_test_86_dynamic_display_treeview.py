@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2023/10/03-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
@@ -40,7 +42,6 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.repo = 'sostrades_core.sos_processes.test'
 
     def test_01_display_existing_variable_ns(self):
-
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
         disc1_builder = self.exec_eng.factory.get_builder_from_module(
             'Disc1', mod_list)
@@ -86,7 +87,6 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             exec_display=True)
 
     def test_02_display_existing_disc_ns(self):
-
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
         disc1_builder = self.exec_eng.factory.get_builder_from_module(
             'Disc1', mod_list)
@@ -158,13 +158,10 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             exec_display=True)
 
     def test_03_display_on_single_instance_evaluator(self):
-
         self.repo = 'sostrades_core.sos_processes.test'
 
         my_namespace = {'ns_barrierr': self.exec_eng.study_name,
-                        'ns_ac': f'{self.exec_eng.study_name}.Disc1',
-                        'ns_eval': f'{self.exec_eng.study_name}.multi_scenarios'}
-
+                        'ns_ac': f'{self.exec_eng.study_name}.Disc1'}
 
         # instantiate factory by getting builder from process
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
@@ -176,18 +173,17 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             'Disc2', mod_list)
 
         self.exec_eng.ns_manager.add_ns_def(my_namespace)
-        multi_scenarios = self.exec_eng.factory.create_driver(
+        multi_scenarios = self.exec_eng.factory.create_mono_instance_driver(
             'multi_scenarios', [disc1_builder, disc2_builder])
 
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
 
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'mono_instance'
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                            True],
-                                                                                      'scenario_name': ['scenario_1',
-                                                                                                        'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
 
         self.exec_eng.load_study_from_input_dict(dict_values)
 
@@ -212,9 +208,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
     def test_04_display_on_multi_instance_evaluator(self):
-
         self.repo = 'sostrades_core.sos_processes.test'
-
 
         # instantiate factory by getting builder from process
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
@@ -226,26 +220,23 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             'Disc2', mod_list)
 
         self.exec_eng.ns_manager.add_ns(
-            'ns_eval', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
-        self.exec_eng.ns_manager.add_ns(
             'ns_ac', f'{self.exec_eng.study_name}', display_value=f'{self.exec_eng.study_name}.Disc1')
 
-#         self.exec_eng.ns_manager.add_display_ns_to_builder(
-#             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
-#         self.exec_eng.ns_manager.add_display_ns_to_builder(
-#             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', [disc1_builder, disc2_builder])
+        #         self.exec_eng.ns_manager.add_display_ns_to_builder(
+        #             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
+        #         self.exec_eng.ns_manager.add_display_ns_to_builder(
+        #             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios',
+                                                                             [disc1_builder, disc2_builder])
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                            True],
-                                                                                      'scenario_name': ['scenario_1',
-                                                                                                        'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
@@ -256,7 +247,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
                        f'\t\t\t|_ Disc2',
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2']
+                       f'\t\t\t|_ Disc2',
+                       f'\t|_ multi_scenarios_gather',]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(
@@ -276,9 +268,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
     def test_05_display_on_multi_instance_evaluator_hide_coupling(self):
-
         self.repo = 'sostrades_core.sos_processes.test'
-
 
         # instantiate factory by getting builder from process
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
@@ -290,37 +280,38 @@ class TestConfigDependencyDiscs(unittest.TestCase):
             'Disc2', mod_list)
 
         self.exec_eng.ns_manager.add_ns(
-            'ns_eval', f'{self.exec_eng.study_name}.multi_scenarios', display_value=f'{self.exec_eng.study_name}')
-        self.exec_eng.ns_manager.add_ns(
             'ns_ac', f'{self.exec_eng.study_name}', display_value=f'{self.exec_eng.study_name}.Disc1')
 
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc1_builder, f'{self.exec_eng.study_name}.Disc1')
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             disc2_builder, f'{self.exec_eng.study_name}.Disc2')
-        multi_scenarios = self.exec_eng.factory.create_driver(
-            'multi_scenarios', [disc1_builder, disc2_builder], display_options={'hide_coupling_in_driver': True})
+        driver_name = 'multi_scenarios'
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver(driver_name,
+                                                                             [disc1_builder, disc2_builder])
         self.exec_eng.ns_manager.add_display_ns_to_builder(
             multi_scenarios[0], f'{self.exec_eng.study_name}')
         self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
         self.exec_eng.configure()
         dict_values = {}
-        dict_values[f'{self.study_name}.multi_scenarios.builder_mode'] = 'multi_instance'
-        dict_values[f'{self.study_name}.multi_scenarios.scenario_df'] = pd.DataFrame({'selected_scenario': [True,
-                                                                                                            True],
-                                                                                      'scenario_name': ['scenario_1',
-                                                                                                        'scenario_2']})
+        dict_values[f'{self.study_name}.{driver_name}.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                         True],
+                                                                                   'scenario_name': ['scenario_1',
+                                                                                                     'scenario_2']})
+
+        dict_values[f'{self.study_name}.{driver_name}.display_options'] = {'hide_coupling_in_driver': True}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ multi_scenarios',
+                       f'\t|_ {driver_name}',
                        f'\t\t|_ scenario_1',
                        f'\t\t\t|_ Disc1',
                        f'\t\t\t|_ Disc2',
                        f'\t\t|_ scenario_2',
                        f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2']
+                       f'\t\t\t|_ Disc2',
+                       f'\t|_ {driver_name}_gather',]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(

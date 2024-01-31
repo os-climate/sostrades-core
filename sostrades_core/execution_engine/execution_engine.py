@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2023/11/02 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2023/11/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.data_connector.data_connector_factory import (
     PersistentConnectorContainer, ConnectorFactory)
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-import os 
-import json 
+import os
+import json
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -55,7 +55,7 @@ class ExecutionEngine:
                  root_dir=None,
                  study_filename=None,
                  yield_method=None,
-                 logger:Optional[logging.Logger]=None):
+                 logger: Optional[logging.Logger] = None):
 
         self.study_name = study_name
         self.study_filename = study_filename or study_name
@@ -88,7 +88,8 @@ class ExecutionEngine:
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.check_data_integrity: bool = True
-        self.__connector_container = PersistentConnectorContainer(logger=self.logger.getChild("PersistentConnectorContainer"))
+        self.__connector_container = PersistentConnectorContainer(
+            logger=self.logger.getChild("PersistentConnectorContainer"))
 
     @property
     def factory(self) -> SosFactory:
@@ -176,6 +177,10 @@ class ExecutionEngine:
         '''
         self.logger.info("Preparing execution.")
         # - instantiate models in user wrapps
+
+        # clean unused namespaces
+        self.clean_unused_namespaces()
+
         self.__factory.init_execution()
         self.fill_data_connector_prepare_exec()
         # - execution
@@ -186,7 +191,7 @@ class ExecutionEngine:
         Mehtod called in prepare_execution
         Checks if a namespace is related to a database, create connector, load data and fill dm with the collected data
         """
-        
+
         def load_data_for_ns_with_connector(namespace, database_info):
             """
             Load data for given namespace using associated connector
@@ -204,8 +209,10 @@ class ExecutionEngine:
             namespace.database_infos = database_info
             database_label = database_info['database_label']
             # create (or get if already exists) connector 
-            connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'], database_label, 
-                                                                            conf_data[database_label]['connection_data'])
+            connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'],
+                                                                               database_label,
+                                                                               conf_data[database_label][
+                                                                                   'connection_data'])
             # load data using created connector
             database_data = connector.load_data(namespace.database_infos['database_query'])
             self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
@@ -213,12 +220,12 @@ class ExecutionEngine:
             return connector, database_data
 
         # if database is activated
-        if self.ns_manager.database_infos is not None : 
+        if self.ns_manager.database_infos is not None:
             if self.ns_manager.database_conf_path is not None:
                 loaded_data = {}
                 connector_dict = {}
                 # load configuration file of databases
-                with open(self.ns_manager.database_conf_path , 'r') as openfile:
+                with open(self.ns_manager.database_conf_path, 'r') as openfile:
                     conf_data = json.load(openfile)
                 # create connectors and pull data for shared namespaces
                 if 'shared_ns' in self.ns_manager.database_infos:
@@ -231,8 +238,8 @@ class ExecutionEngine:
                             self.logger.info(f"Loading data in database for shared namespace {ns_id}")
                             connector, database_data = load_data_for_ns_with_connector(ns, database_info)
                             # store data and connector for later use
-                            connector_dict[ns_id] = connector 
-                            loaded_data[ns_id] = database_data 
+                            connector_dict[ns_id] = connector
+                            loaded_data[ns_id] = database_data
 
                 # create connectors and pull data for local namespaces
                 if 'local_ns' in self.ns_manager.database_infos:
@@ -245,10 +252,10 @@ class ExecutionEngine:
                         # get data for local namespace
                         connector, database_data = load_data_for_ns_with_connector(ns, database_info)
                         ns_id = ns.get_ns_id()
-                        connector_dict[ns_id] = connector 
-                        loaded_data[ns_id] = database_data   
+                        connector_dict[ns_id] = connector
+                        loaded_data[ns_id] = database_data
 
-                # TODO must be refactored to not loop on all variables 
+                # TODO must be refactored to not loop on all variables
                 for var_id, dict_val in self.dm.data_dict.items():
                     # loop on all variable, get associated namespace and get data from loaded database using correct method
                     var_name = dict_val[ProxyDiscipline.VAR_NAME]
@@ -262,7 +269,7 @@ class ExecutionEngine:
                             self.logger.info(f"Loading variable {var_name} from database")
                             # set value got from database in data dict
                             dict_val[ProxyDiscipline.VALUE] = loaded_value
-            else: 
+            else:
                 self.logger.warning("Database activated but no path is set, database can't be loaded")
 
     def fill_data_in_with_connector(self):
@@ -605,6 +612,7 @@ class ExecutionEngine:
                 loop_stop = True
             elif iteration >= 100:
                 self.logger.warning('CONFIGURE WARNING: root process is not configured after 100 iterations')
+                raise Exception('too much iterations')
                 loop_stop = True
 
         # Convergence is ended
@@ -636,6 +644,15 @@ class ExecutionEngine:
             self.dm.create_reduced_dm()
 
         self.dm.treeview = None
+
+    def clean_unused_namespaces(self):
+        '''
+
+        Returns:
+
+        '''
+        post_processing_ns_list = list(self.post_processing_manager.namespace_post_processing.keys())
+        self.ns_manager.clean_unused_namespaces(post_processing_ns_list)
 
     def get_data_integrity_msg(self) -> str:
         """gathers the messages concerning data integrity"""
