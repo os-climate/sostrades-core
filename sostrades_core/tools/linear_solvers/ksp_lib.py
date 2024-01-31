@@ -27,7 +27,7 @@ from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 
 #from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E1102,E0611 # pylint: disable-msg=E0401
 # temporary fix for pylint since we moved ksp_lib for testing purposes (09.06.23)
-from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable=E1102,E0611
+# from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable=E1102,E0611
 
 
 from numpy import arange
@@ -68,6 +68,57 @@ KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
 
 # TODO: inherit from PetscKSPAlgo of GEMSEO
 
+## FIXME: provisional code copied from gemseo as to avoid double init of petsc4py
+def _convert_ndarray_to_mat_or_vec(
+    np_arr,  # type: ndarray
+):  # type: (...) -> Union[PETSc.Mat, PETSc.Vec]
+    """Convert a Numpy array to a PETSc Mat or Vec.
+
+    Args:
+         np_arr: The input Numpy array.
+
+    Returns:
+        A PETSc Mat or Vec, depending on the input dimension.
+
+    Raises:
+        ValueError: If the dimension of the input vector is greater than 2.
+    """
+    n_dim = np_arr.ndim
+    if n_dim > 2:
+        raise ValueError(
+            f"The dimension of the input array ({n_dim}) is not supported."
+        )
+
+    if issparse(np_arr):
+        if not isinstance(np_arr, csr_matrix):
+            np_arr = np_arr.tocsr()
+        if n_dim == 2 and np_arr.shape[1] > 1:
+            petsc_arr = PETSc.Mat().createAIJ(
+                size=np_arr.shape, csr=(np_arr.indptr, np_arr.indices, np_arr.data)
+            )
+            petsc_arr.assemble()
+        else:
+            petsc_arr = PETSc.Vec().createSeq(np_arr.shape[0])
+            petsc_arr.setUp()
+            inds, _, vals = find(np_arr)
+            petsc_arr.setValues(inds, vals)
+            petsc_arr.assemble()
+    else:
+        if n_dim == 1:
+            a = array(np_arr, dtype=PETSc.ScalarType)
+            petsc_arr = PETSc.Vec().createWithArray(a)
+            petsc_arr.assemble()
+        else:
+            petsc_arr = PETSc.Mat().createDense(np_arr.shape)
+            a_shape = np_arr.shape
+            petsc_arr.setUp()
+            petsc_arr.setValues(
+                arange(a_shape[0], dtype="int32"),
+                arange(a_shape[1], dtype="int32"),
+                np_arr,
+            )
+            petsc_arr.assemble()
+    return petsc_arr
 
 class PetscKSPAlgos(LinearSolverLib):
     """Interface to PETSC KSP.
