@@ -262,7 +262,7 @@ class PetscKSPAlgos(LinearSolverLib):
         if options_cmd is not None:
             petsc4py.init(options_cmd)
         else:
-            petsc4py.init()
+            petsc4py.init(petsc4py.init(["-start_in_debugger", "-malloc_debug"]))
 
         # Create the solver
         ksp = PETSc.KSP().create()
