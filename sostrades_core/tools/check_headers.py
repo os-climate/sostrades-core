@@ -292,7 +292,7 @@ class HeaderTools:
         """
         write back method
         """
-        Write the modified content back to the file
+        #Write the modified content back to the file
         with open(file, "w") as file:
             file.write(new_content)
         
