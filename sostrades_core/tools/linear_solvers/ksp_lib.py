@@ -41,7 +41,7 @@ from scipy.sparse.base import issparse
 
 # Must be done before from petsc4py import PETSc, this loads the options from
 # command args in the options database.
-petsc4py.init(["-start_in_debugger=noxterm", "-malloc_debug"])
+petsc4py.init(["-start_in_debugger", "-malloc_debug"])
 from petsc4py import PETSc  # pylint: disable-msg=E0401
 
 LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_lib")
