@@ -239,10 +239,6 @@ class HeaderTools:
             new_content = new_cartouche + content
             self.write_back(file_path, new_content)
 
-        # Write the modified content back to the file
-        # with open(file_path, "w") as file:
-        #     file.write(new_content)
-
 
     def parse_and_replace_modified_cartouche(self,file_path, new_cartouche):
         # Read the content of the file
@@ -296,10 +292,10 @@ class HeaderTools:
         """
         write back method
         """
-        # Write the modified content back to the file
-        # with open(file, "w") as file:
-        #     file.write(new_content)
-        pass
+        Write the modified content back to the file
+        with open(file, "w") as file:
+            file.write(new_content)
+        
 
     def get_first_commit_time(self,repo_path, full_file_path: str) -> datetime:
         """
