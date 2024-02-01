@@ -31,10 +31,8 @@ class Testheader(unittest.TestCase):
         '''
         self.pp = pprint.PrettyPrinter(indent=4, compact=True)
         self.ExtensionToIgnore = ["pkl", "png", "jpg", "csv", "md", "markdown", "avif", "json", "in", "gitignore", "cfg", "puml", "pdf", "txt", "ipynb", "zip", "rst", "ini"]
-        #Add here the files to ignore       
-        self.FilesToIgnore = ["sostrades_core/execution_engine/sample_generators/__init__.py",
-                              "sostrades_core/sos_processes/test/sellar/__init__.py",
-                              "sostrades_core/tools/linear_solvers/__init__.py"]
+        #Add here the files to ignore  
+        self.FilesToIgnore = []
         #commit from where to compare added, modeified deleted ...
         self.airbus_rev_commit = "11d7f9f"
 
