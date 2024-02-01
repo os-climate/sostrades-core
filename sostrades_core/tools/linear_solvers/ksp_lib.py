@@ -27,6 +27,7 @@ from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 
 #from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E1102,E0611 # pylint: disable-msg=E0401
 # temporary fix for pylint since we moved ksp_lib for testing purposes (09.06.23)
+
 # from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable=E1102,E0611
 
 
@@ -40,7 +41,7 @@ from scipy.sparse.base import issparse
 
 # Must be done before from petsc4py import PETSc, this loads the options from
 # command args in the options database.
-petsc4py.init(["-start_in_debugger", "-malloc_debug"])
+petsc4py.init(["-start_in_debugger noxterm", "-malloc_debug"])
 from petsc4py import PETSc  # pylint: disable-msg=E0401
 
 LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_lib")
