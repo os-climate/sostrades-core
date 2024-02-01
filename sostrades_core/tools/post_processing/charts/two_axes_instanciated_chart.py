@@ -139,36 +139,54 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                                      visible=True if serie.visible else 'legendonly', yaxis=serie.y_axis))
             elif serie.display_type == InstanciatedSeries.LINES_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                        mode='lines', yaxis=serie.y_axis,
+                                        mode='lines', yaxis=serie.y_axis, line=serie.line,
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.LINES_DISPLAY_WITH_MARKERS:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         marker_symbol=serie.marker_symbol, mode='lines+markers',
-                                         marker=serie.marker, yaxis=serie.y_axis,
+                                         marker=serie.marker, line=serie.line, yaxis=serie.y_axis,
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DASH_LINES_DISPLAY:
+                line = {'dash': 'dash'}
+                if serie.line is not None:
+                   line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                        mode='lines', yaxis=serie.y_axis, line={'dash': 'dash'},
+                                        mode='lines', yaxis=serie.y_axis, line=line,
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DASH_LINES_DISPLAY_WITH_MARKERS:
+                line = {'dash': 'dash'}
+                if serie.line is not None:
+                   line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         marker_symbol=serie.marker_symbol, mode='lines+markers',
-                                         marker=serie.marker, yaxis=serie.y_axis, line={'dash': 'dash'},
+                                         marker=serie.marker, yaxis=serie.y_axis, line=line,
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DASH_DOT_LINES_DISPLAY:
+                line = {'dash': 'dashdot'}
+                if serie.line is not None:
+                   line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                        mode='lines', yaxis=serie.y_axis, line={'dash': 'dashdot'},
+                                        mode='lines', yaxis=serie.y_axis, line=line,
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DASH_DOT_LINES_DISPLAY_WITH_MARKERS:
+                line = {'dash': 'dashdot'}
+                if serie.line is not None:
+                    line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         marker_symbol=serie.marker_symbol, mode='lines+markers',
                                          marker=serie.marker, yaxis=serie.y_axis, line={'dash': 'dashdot'},
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DOT_LINES_DISPLAY:
+                line = {'dash': 'dot'}
+                if serie.line is not None:
+                    line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
-                                        mode='lines', yaxis=serie.y_axis, line={'dash': 'dot'},
+                                        mode='lines', yaxis=serie.y_axis, line=line,
                                          visible=True if serie.visible else 'legendonly'))
             elif serie.display_type == InstanciatedSeries.DOT_LINES_DISPLAY_WITH_MARKERS:
+                line = {'dash': 'dot'}
+                if serie.line is not None:
+                    line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         marker_symbol=serie.marker_symbol, mode='lines+markers',
                                          marker=serie.marker, yaxis=serie.y_axis, line={'dash': 'dot'},
