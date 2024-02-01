@@ -29,8 +29,11 @@ class DatasetsMapping:
     # Keys for parsing json
     DATASETS_INFO_KEY = "datasets_infos"
     NAMESPACE_KEY = "namespace_datasets_mapping"
+    PROCESS_MODULE_PATH_KEY = "process_module_path"
     STUDY_PLACEHOLDER = "<study_ph>"
 
+    # Process module name
+    process_module_path:str
     # Dataset info [dataset_name : DatasetInfo]
     datasets_infos: dict[str:DatasetInfo]
     # Namespace mapping [namespace_name : List[DatasetInfo]]
@@ -42,6 +45,7 @@ class DatasetsMapping:
         Method to deserialize
         expected example
         {
+            "process_module_path": "process.module.path"
             "datasets_infos": {
                 "Dataset1": {
                     "connector_id": <connector_id>,
@@ -75,6 +79,7 @@ class DatasetsMapping:
             for dataset in input_dict_dataset_mapping[namespace]:
                 namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
         return DatasetsMapping(
+            process_module_path=input_dict[DatasetsMapping.PROCESS_MODULE_PATH_KEY],
             datasets_infos=datasets_infos,
             namespace_datasets_mapping=namespace_datasets_mapping,
         )
@@ -90,7 +95,15 @@ class DatasetsMapping:
             json_data = json.load(file)
         return DatasetsMapping.deserialize(json_data)
 
-    def get_datasets_info_from_namespace(self, namespace:str, study_name:str) -> "list(DatasetInfo)":
+    def get_datasets_info_from_namespace(self, namespace:str, study_name:str) -> list[DatasetInfo]:
+        """
+        Gets the datasets info for a namespace
+
+        :param namespace: Name of the namespace
+        :type namespace: str
+        :param study_name: Name of the study
+        :type study_name: str
+        """
         datasets_mapping = []
         anonimized_ns = namespace.replace(study_name, self.STUDY_PLACEHOLDER)
         if anonimized_ns in self.namespace_datasets_mapping.keys():

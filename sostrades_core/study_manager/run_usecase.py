@@ -17,12 +17,10 @@ import importlib
 import logging
 import os
 import sys
-import json
 
 import sostrades_core.study_manager.run_usecase
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
-from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 
 def test_module_importability(module_name:str):
     """
@@ -32,7 +30,7 @@ def test_module_importability(module_name:str):
     :type module_name: str
     """
     try:
-        module = importlib.import_module(module_name)
+        importlib.import_module(module_name)
     except ImportError as e:
         raise Exception(f"Unable to import process module '{module_name}' is this module correct and in PYTHONPATH ?") from e
 
@@ -50,16 +48,16 @@ def run_usecase(dataset_mapping_json_file:str):
     if not os.path.exists(dataset_mapping_json_file):
         raise FileNotFoundError(f"File {dataset_mapping_json_file} does not exist")
     
-    with open(dataset_mapping_json_file, 'rb') as f:
-        json_data = json.load(f)
-    process_module_name = json_data["process"]
+    # Load process name
+    dataset_mapping = DatasetsMapping.from_json_file(dataset_mapping_json_file)
+    process_module_name = dataset_mapping.process_module_path
 
     test_module_importability(process_module_name + ".process")
 
     # Prepare arguments to instanciate study manager
-    # process_module_name = sostrades_core.tests.my_process
+    # process_module_name = sostrades_core.tests.process
     # repo => sostrades_core.tests
-    # proc_name => my_process
+    # proc_name => process
     repo = ".".join(process_module_name.split(".")[:-1])
     proc_name = process_module_name.split(".")[-1]
     
@@ -83,7 +81,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Extract command-line arguments
-    dataset_mapping_json_file = sys.argv[2]
+    dataset_mapping_json_file = sys.argv[1]
 
     # Call the main function with the provided arguments
     run_usecase(dataset_mapping_json_file=dataset_mapping_json_file)
