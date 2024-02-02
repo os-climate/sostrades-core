@@ -63,6 +63,8 @@ class TestTreenode(unittest.TestCase):
         self.assertListEqual(gems_order_sub_disc_names, [
                              first_sub_disc, second_sub_disc],
                              'The order of sub disciplines in a coupling is different from the MDAChain execution order')
+        raise ValueError("dummy test failure")
+
 
     def test_02_treeview_to_dict(self):
 
