@@ -30,6 +30,8 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     DatasetNotFoundException,
     DatasetUnableToInitializeConnectorException,
 )
+from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
+from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import JSONDatasetsSerializer
 
 
 class ArangoDatasetsConnector(AbstractDatasetsConnector):
@@ -43,7 +45,9 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     DATASET_NAME_STR = "dataset_name"
     MAX_KEY_SIZE = 254
 
-    def __init__(self, host: str, db_name: str, username: str, password: str, datasets_descriptor_collection_name:str="datasets"):
+    def __init__(self, host: str, db_name: str, username: str, password: str, 
+                 serializer_type:DatasetSerializerType=DatasetSerializerType.JSON, 
+                 datasets_descriptor_collection_name:str="datasets"):
         """
         Constructor for Arango data connector
 
@@ -59,12 +63,16 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         :param password: Password
         :type password: str
 
+        :param serializer_type: type of serializer to deserialize data from connector
+        :type serializer_type: DatasetSerializerType (JSON for jsonDatasetSerializer)
+
         :param datasets_descriptor_collection_name: Database describing datasets
         :type datasets_descriptor_collection_name: str
         """
         super().__init__()
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug("Initializing Arango connector")
+        self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
 
         # Connect to database
         try:
@@ -151,7 +159,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         # Process the results
         result_data = {doc[ArangoDatasetsConnector.KEY_STR]: 
-                        self.convert_from_connector_data(doc[ArangoDatasetsConnector.KEY_STR], 
+                        self.__datasets_serializer.convert_from_dataset_data(doc[ArangoDatasetsConnector.KEY_STR], 
                                                         doc[ArangoDatasetsConnector.VALUE_STR], 
                                                         data_to_get)
                         for doc in cursor}
@@ -175,7 +183,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
         # prepare query to write
         data_for_arango = [{ArangoDatasetsConnector.KEY_STR: tag, 
-                            ArangoDatasetsConnector.VALUE_STR: self.convert_to_connector_data(tag, value, data_types_dict)}
+                            ArangoDatasetsConnector.VALUE_STR: self.__datasets_serializer.convert_to_dataset_data(tag, value, data_types_dict)}
                             for tag, value in values_to_write.items()]
 
         # Write items
@@ -193,7 +201,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
 
         # Process all data
-        result_data = {doc[ArangoDatasetsConnector.KEY_STR]: self.convert_from_connector_data(doc[ArangoDatasetsConnector.KEY_STR], 
+        result_data = {doc[ArangoDatasetsConnector.KEY_STR]: self.__datasets_serializer.convert_from_dataset_data(doc[ArangoDatasetsConnector.KEY_STR], 
                                                                                             doc[ArangoDatasetsConnector.VALUE_STR], 
                                                                                             data_types_dict) 
                         for doc in dataset_collection}

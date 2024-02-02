@@ -10,7 +10,7 @@
         }
     },
     "namespace_datasets_mapping": {
-        "<study_ph>": ["numericals"],
+        "<study_ph>": ["numericals","Dataset1"],
         "<study_ph>.Disc1": ["numericals","Dataset1"]
     }
 }

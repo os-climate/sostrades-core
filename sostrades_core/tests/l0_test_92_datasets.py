@@ -18,6 +18,9 @@ from pathlib import Path
 import unittest
 import os
 
+import numpy as np
+import pandas as pd
+
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
@@ -166,3 +169,35 @@ class TestDatasets(unittest.TestCase):
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
             set([dataset_mapping.datasets_infos["Dataset1"], dataset_mapping.datasets_infos["Dataset2"]]),
         )
+    
+
+    def test_04_datasets_types(self):
+        repo = "sostrades_core.sos_processes.test"
+        study_name = "usecase_dataset"
+        proc_name = "test_disc1_all_types"
+        process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", proc_name)
+        study = BaseStudyManager(repo, proc_name, study_name)
+
+        dm = study.execution_engine.dm
+        # assert data are empty
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), None)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), None)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), None)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), None)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"),np.array([])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), True)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.d"), None)
+
+        study.load_study(os.path.join(process_path, "usecase_dataset.json"))
+
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())

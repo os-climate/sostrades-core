@@ -21,6 +21,8 @@ import pandas as pd
 import numpy as np
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException
+from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
+from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import JSONDatasetsSerializer
 
 
 class JSONDatasetsConnector(AbstractDatasetsConnector):
@@ -28,17 +30,21 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
     Specific dataset connector for dataset in json format
     """
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):
         """
         Constructor for JSON data connector
 
+        
         :param file_path: file_path for this dataset connector
         :type file_path: str
+        :param serializer_type: type of serializer to deserialize data from connector
+        :type serializer_type: DatasetSerializerType (JSON for jsonDatasetSerializer)
         """
         super().__init__()
         self.__file_path = file_path
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug("Initializing JSON connector")
+        self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
 
         # In json, we have to load the full file to retrieve values, so cache it
         self.__json_data = None
@@ -87,7 +93,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         dataset_data = self.__json_data[dataset_identifier]
 
         # Filter data
-        filtered_data = {key:self.convert_from_connector_data(key, 
+        filtered_data = {key:self.__datasets_serializer.convert_from_dataset_data(key, 
                                                               dataset_data[key], 
                                                               data_to_get)
                         for key in dataset_data if key in data_to_get}
@@ -123,7 +129,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             raise DatasetNotFoundException(dataset_identifier)
 
         # Write data
-        self.__json_data[dataset_identifier].update({key:self.convert_to_connector_data(key, 
+        self.__json_data[dataset_identifier].update({key:self.__datasets_serializer.convert_to_dataset_data(key, 
                                                                                         value, 
                                                                                         data_types_dict) 
                                                     for key, value in values_to_write.items()})
@@ -146,7 +152,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         if dataset_identifier not in self.__json_data:
             raise DatasetNotFoundException(dataset_identifier)
 
-        dataset_data ={key:self.convert_from_connector_data(key,
+        dataset_data ={key:self.__datasets_serializer.convert_from_dataset_data(key,
                                                           value,
                                                           data_types_dict) 
                         for key, value in self.__json_data[dataset_identifier].items()}
