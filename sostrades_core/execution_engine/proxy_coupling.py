@@ -260,7 +260,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     # reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         '''
-        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
+        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches and its children recursively
         '''
         mda_chain = self.mdo_discipline_wrapp.mdo_discipline
 
