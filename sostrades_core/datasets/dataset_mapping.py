@@ -15,7 +15,7 @@ limitations under the License.
 """
 from __future__ import annotations
 from dataclasses import dataclass
-
+import os
 import json
 
 from sostrades_core.datasets.dataset_info import DatasetInfo
@@ -30,6 +30,7 @@ class DatasetsMapping:
     DATASETS_INFO_KEY = "datasets_infos"
     NAMESPACE_KEY = "namespace_datasets_mapping"
     STUDY_PLACEHOLDER = "<study_ph>"
+    SUB_PROCESS_MAPPING = "sub_process_datasets_mapping"
 
     # Dataset info [dataset_name : DatasetInfo]
     datasets_infos: dict[str:DatasetInfo]
@@ -56,28 +57,50 @@ class DatasetsMapping:
                 "namespace1" : ["Dataset1"],
                 "namespace2" : ["Dataset1", "Dataset2"]
             },
+            "sub_process_datasets_mapping":{
+                "namespace3": path to other mapping json file
+            }
         }
         :param input_dict: dict like input json object
         :type input_dict: dict
         """
-        # Parse datasets info
         datasets_infos = {}
-        for dataset in input_dict[DatasetsMapping.DATASETS_INFO_KEY]:
-            datasets_infos[dataset] = DatasetInfo.deserialize(
-                input_dict=input_dict[DatasetsMapping.DATASETS_INFO_KEY][dataset]
-            )
+        namespace_datasets_mapping = {}
+        # parse sub process datasets info
+        # do it first so that info in this mapping will override the sub mappings 
+        if DatasetsMapping.SUB_PROCESS_MAPPING in input_dict.keys():
+            for namespace, sub_process_mapping_path in input_dict[DatasetsMapping.SUB_PROCESS_MAPPING].items():
+                if os.path.exists(sub_process_mapping_path):
+                    # read the json mapping file
+                    sub_mapping = DatasetsMapping.from_json_file(sub_process_mapping_path)
+                    # retreive the datasets from this maping
+                    datasets_infos.update(sub_mapping.datasets_infos)
+                    sub_namespace_datasets_mapping = sub_mapping.get_namespace_datasets_mapping_for_parent(namespace)
+                    namespace_datasets_mapping.update(sub_namespace_datasets_mapping)
+                else:
+                    raise Exception("the dataset mapping file does not exists")
+                
+        # Parse datasets info
+        if DatasetsMapping.DATASETS_INFO_KEY in input_dict.keys():
+            for dataset in input_dict[DatasetsMapping.DATASETS_INFO_KEY]:
+                datasets_infos[dataset] = DatasetInfo.deserialize(
+                    input_dict=input_dict[DatasetsMapping.DATASETS_INFO_KEY][dataset]
+                )
 
         # Parse namespace datasets mapping
-        namespace_datasets_mapping = {}
-        input_dict_dataset_mapping = input_dict[DatasetsMapping.NAMESPACE_KEY]
-        for namespace in input_dict_dataset_mapping:
-            namespace_datasets_mapping[namespace] = []
-            for dataset in input_dict_dataset_mapping[namespace]:
-                namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
+        if DatasetsMapping.NAMESPACE_KEY in input_dict.keys():
+            input_dict_dataset_mapping = input_dict[DatasetsMapping.NAMESPACE_KEY]
+            for namespace in input_dict_dataset_mapping:
+                namespace_datasets_mapping[namespace] = []
+                for dataset in input_dict_dataset_mapping[namespace]:
+                    namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
+            
+    
+        
         return DatasetsMapping(
-            datasets_infos=datasets_infos,
-            namespace_datasets_mapping=namespace_datasets_mapping,
-        )
+                datasets_infos=datasets_infos,
+                namespace_datasets_mapping=namespace_datasets_mapping,
+            )
 
     @staticmethod
     def from_json_file(file_path: str) -> "DatasetsMapping":
@@ -95,5 +118,19 @@ class DatasetsMapping:
         anonimized_ns = namespace.replace(study_name, self.STUDY_PLACEHOLDER)
         if anonimized_ns in self.namespace_datasets_mapping.keys():
             datasets_mapping = self.namespace_datasets_mapping[anonimized_ns]
+
+        return datasets_mapping
+    
+    def get_namespace_datasets_mapping_for_parent(self, parent_namespace:str) -> dict[str : list[DatasetInfo]]:
+        """
+        Get the namespace_datasets_mapping and replace the study_placeholder with the parent_namespace
+        :param parent_namespace: parent namespace that will replace the <study_ph> in the child namespaces
+        :type parent_namespace: str
+        :return: namespace_datasets_mapping with updated namespaces
+        """
+        datasets_mapping = {}
+        for namespace, datasets in self.namespace_datasets_mapping.items():
+            new_namespace = namespace.replace(self.STUDY_PLACEHOLDER, parent_namespace)
+            datasets_mapping[new_namespace] = datasets
 
         return datasets_mapping

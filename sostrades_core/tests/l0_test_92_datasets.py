@@ -201,3 +201,26 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+    
+    def test_05_nested_process_level0(self):
+        repo = "sostrades_core.sos_processes.test.sellar"
+        study_name = "usecase_dataset_sellar_coupling"
+        proc_name = "test_sellar_coupling"
+        process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test","sellar", proc_name)
+        study = BaseStudyManager(repo, proc_name, study_name)
+
+        dm = study.execution_engine.dm
+        # assert data are empty
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.x"), None)
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_1"), None)
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_2"), None)
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.z"), None)
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), None)
+
+        study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json"))
+
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.x"), [1.0])
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_1"), [2.0])
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_2"), [3.0])
+        self.assertTrue((dm.get_value(f"{study_name}.SellarCoupling.z")== [4.0,5.0]).all())
+        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)
