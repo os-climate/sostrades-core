@@ -9,5 +9,4 @@ xdsm.html
 build/
 dist/
 sos_trades_core.egg-info/
-conftest.py
 /.pytest_cache/
