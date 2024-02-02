@@ -43,11 +43,12 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
 
-# if platform.system() != 'Windows':
-#    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-# - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
-MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
-ksp_lib_petsc = MyFakeKSPLib()
+if platform.system() != 'Windows':
+   from sostrades_core.tools.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
+
+# # - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
+# MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
+# ksp_lib_petsc = MyFakeKSPLib()
 
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
@@ -99,15 +100,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
 
     # set default value of linear solver according to the operating system
-    #     if platform.system() == 'Windows':
-    #         DEFAULT_LINEAR_SOLVER = 'GMRES'
-    #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
-    #         POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
-    #     else:
-    #         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
-    #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
-    #         POSSIBLE_VALUES_PRECONDITIONER = [
-    #             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+    if platform.system() == 'Windows':
+        DEFAULT_LINEAR_SOLVER = 'GMRES'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
+        POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
+    else:
+        DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
+        POSSIBLE_VALUES_PRECONDITIONER = [
+            'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
 
     DEFAULT_LINEAR_SOLVER_OPTIONS = {
         'max_iter': 1000,
