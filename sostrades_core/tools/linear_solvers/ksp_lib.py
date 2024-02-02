@@ -24,11 +24,7 @@ from typing import Union
 
 import petsc4py  # pylint: disable-msg=E0401
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
-
-#from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E1102,E0611 # pylint: disable-msg=E0401
-# temporary fix for pylint since we moved ksp_lib for testing purposes (09.06.23)
-from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable=E1102,E0611
-
+from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E1102,E0611 # pylint: disable-msg=E0401
 
 from numpy import arange
 from numpy import array
@@ -40,7 +36,7 @@ from scipy.sparse.base import issparse
 
 # Must be done before from petsc4py import PETSc, this loads the options from
 # command args in the options database.
-petsc4py.init(sys.argv)
+petsc4py.init(sys.argv)  # NB: triggers PETSc warning on unused options e.g. with tests
 from petsc4py import PETSc  # pylint: disable-msg=E0401
 
 LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_lib")
@@ -67,7 +63,6 @@ KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
                         0: 'KSP_CONVERGED_ITERATING'}
 
 # TODO: inherit from PetscKSPAlgo of GEMSEO
-
 
 class PetscKSPAlgos(LinearSolverLib):
     """Interface to PETSC KSP.
