@@ -328,8 +328,7 @@ class HeaderTools:
         if (commit_date is not None):
             return refcommit.committed_datetime > commit_date
         else:
-            return False
-
+            raise ValueError("Commit_date should not be None")
 
 
     def write_headers_if_needed_in_repo(self,ignored_exts, ignored_files, sha, repo_dir):
