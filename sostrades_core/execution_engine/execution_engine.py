@@ -645,6 +645,20 @@ class ExecutionEngine:
 
         self.dm.treeview = None
 
+        self.checked_useless_inputs(dict_to_load, convert_data_cache)
+
+    def checked_useless_inputs(self, dict_to_load, convert_data_cache, raise_exception: bool = False):
+        """Log a warning if some values are set but not used"""
+        useless_values = list(set(dict_to_load.keys()).difference(
+            set(self.dm.convert_dict_with_maps(convert_data_cache, self.dm.data_id_map).keys())))
+        useless_values.sort()
+        if len(useless_values) > 0:
+            msg = "The following values are uselessely set :\n\t-> " + "\n\t-> ".join(useless_values)
+            if raise_exception:
+                raise Exception(msg)
+            else:
+                self.logger.warning(msg)
+
     def clean_unused_namespaces(self):
         '''
 
