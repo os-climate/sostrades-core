@@ -37,7 +37,8 @@ class Disc1(SoSWrapp):
     DESC_IN = {
         'x': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_xy_disc1'},
         'a': {'type': 'int', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_a'},
-        'b': {'type': 'string', 'unit': '-'}
+        'b': {'type': 'string', 'unit': '-'},
+        'c': {'type': 'string', 'unit': '-'}
     }
     DESC_OUT = {
         'flag': {'type': 'string', 'unit': '-'},
@@ -48,7 +49,8 @@ class Disc1(SoSWrapp):
         x = self.get_sosdisc_inputs('x')
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
-        dict_values = {'flag': b, 'y': a * x}
+        c = self.get_sosdisc_inputs('c')
+        dict_values = {'flag': b+' '+c, 'y': a * x}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 
@@ -111,7 +113,8 @@ class Disc2(SoSWrapp):
     DESC_IN = {
         'x': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_xy_disc2'},
         'a': {'type': 'int', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_a'},
-        'b': {'type': 'string', 'unit': '-'}
+        'b': {'type': 'string', 'unit': '-'},
+        'c': {'type': 'string', 'unit': '-'}
     }
     DESC_OUT = {
         'flag': {'type': 'string', 'unit': '-'},
@@ -122,7 +125,8 @@ class Disc2(SoSWrapp):
         x = self.get_sosdisc_inputs('x')
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
-        dict_values = {'flag': b, 'y': a * x}
+        c = self.get_sosdisc_inputs('c')
+        dict_values = {'flag': c+b, 'y': a * x}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 

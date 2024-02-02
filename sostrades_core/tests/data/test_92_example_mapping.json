@@ -1,0 +1,16 @@
+{
+    "datasets_infos": {
+        "Dataset1": {
+            "connector_id": "<1connector_id>",
+            "dataset_id": "<1dataset_id>"
+        },
+        "Dataset2": {
+            "connector_id": "<2connector_id>",
+            "dataset_id": "<2dataset_id>"
+        }
+    },
+    "namespace_datasets_mapping": {
+        "namespace1" : ["Dataset1"],
+        "namespace2" : ["Dataset1", "Dataset2"]
+    }
+}

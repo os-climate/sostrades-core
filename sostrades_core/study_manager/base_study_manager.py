@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
@@ -62,7 +63,7 @@ class BaseStudyManager():
         :params: process_name, process name of the target process to load
         :type: str
 
-        :params: study_name, study name
+        :params: study_name, name of the study 
         :type: str
         """
         self._run_usecase = run_usecase
@@ -172,6 +173,46 @@ class BaseStudyManager():
 
     def setup_process(self):
         pass
+
+    def load_study(self, from_json_file_path=None, display_treeview=True):
+        """
+        Method that load data into the execution engine with datasets
+
+        :params: display_treeview, display or not treeview state (optional parameter)
+        :type: boolean
+        """
+        start_time = time()
+
+        logger = self.execution_engine.logger
+
+        if display_treeview:
+            logger.info('TreeView display BEFORE data setup & configure')
+            self.execution_engine.display_treeview_nodes()
+
+        # load json mapping data file
+        #TODO: to be changed in next version 
+        if from_json_file_path is not None:
+            json_file_path = from_json_file_path
+        else:
+            # if the file is not given in argument, we take the one saved at the old pkl place
+            # not tested in the POC
+            json_file_path = join(self.dump_directory, f'{self.study_name}.json')
+        # read json mapping file
+        datasets_mapping_dict = DatasetsMapping.from_json_file(file_path=json_file_path)
+
+        # load study by retieving data from datasets, set them into the dm and configure study
+        self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
+        
+        # keep old next steps after loading data
+        self.specific_check()
+        if display_treeview:
+            logger.info('TreeView display AFTER  data setup & configure')
+            self.execution_engine.display_treeview_nodes()
+
+        study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
+        message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
+        logger.info(message)
+
 
     def load_data(self, from_path=None, from_input_dict=None, display_treeview=True, from_connectors_dict=None):
         """ Method that load data into the execution engine

@@ -120,80 +120,73 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                                             'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
                                                             'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential',
                                                             'GSPureNewtonorGSMDA'],
-                          ProxyDiscipline.DEFAULT: 'MDAJacobi', ProxyDiscipline.NUMERICAL: True,
+                          ProxyDiscipline.NUMERICAL: True,
                           ProxyDiscipline.STRUCTURING: True},
-        'max_mda_iter': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 30, ProxyDiscipline.NUMERICAL: True,
+        'max_mda_iter': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.NUMERICAL: True,
                          ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
-        'n_processes': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 1, ProxyDiscipline.NUMERICAL: True,
+        'n_processes': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.NUMERICAL: True,
                         ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         'chain_linearize': {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                            ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,
+                            ProxyDiscipline.NUMERICAL: True,
                             ProxyDiscipline.STRUCTURING: True},
-        'tolerance': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.DEFAULT: 1.e-6, ProxyDiscipline.NUMERICAL: True,
+        'tolerance': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.NUMERICAL: True,
                       ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         'use_lu_fact': {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                        ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,
+                        ProxyDiscipline.NUMERICAL: True,
                         ProxyDiscipline.STRUCTURING: True},
         'warm_start': {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                       ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,
+                       ProxyDiscipline.NUMERICAL: True,
                        ProxyDiscipline.STRUCTURING: True},
         'acceleration': {ProxyDiscipline.TYPE: 'string',
                          ProxyDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
-                         ProxyDiscipline.DEFAULT: M2D_ACCELERATION, ProxyDiscipline.NUMERICAL: True,
+                         ProxyDiscipline.NUMERICAL: True,
                          ProxyDiscipline.STRUCTURING: True},
-        'warm_start_threshold': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.DEFAULT: -1,
+        'warm_start_threshold': {ProxyDiscipline.TYPE: 'float',
                                  ProxyDiscipline.NUMERICAL: True,
                                  ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         # parallel sub couplings execution
-        'n_subcouplings_parallel': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 1,
+        'n_subcouplings_parallel': {ProxyDiscipline.TYPE: 'int',
                                     ProxyDiscipline.NUMERICAL: True,
                                     ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         # 'max_mda_iter_gs': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 5, ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
-        'tolerance_gs': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.DEFAULT: 10.0, ProxyDiscipline.NUMERICAL: True,
+        'tolerance_gs': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.NUMERICAL: True,
                          ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         'relax_factor': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.RANGE: [0.0, 1.0],
-                         ProxyDiscipline.DEFAULT: 0.99,
                          ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         # NUMERICAL PARAMETERS OUT OF INIT
-        'epsilon0': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.DEFAULT: 1.0e-6, ProxyDiscipline.NUMERICAL: True,
+        'epsilon0': {ProxyDiscipline.TYPE: 'float',  ProxyDiscipline.NUMERICAL: True,
                      ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         # Linear solver for MD0
         'linear_solver_MDO': {ProxyDiscipline.TYPE: 'string',
-                              ProxyDiscipline.DEFAULT: 'GMRES',
                               #                               ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
                               # ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
                               ProxyDiscipline.NUMERICAL: True,
                               ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDO_preconditioner': {ProxyDiscipline.TYPE: 'string',
-                                             ProxyDiscipline.DEFAULT: 'None',
                                              #                                              ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
                                              # ProxyDiscipline.POSSIBLE_VALUES:
                                              # POSSIBLE_VALUES_PRECONDITIONER,
                                              ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDO_options': {ProxyDiscipline.TYPE: 'dict',
-                                      ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
                                       ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True,
                                       ProxyDiscipline.UNIT: '-'},
         # Linear solver for MDA
         'linear_solver_MDA': {ProxyDiscipline.TYPE: 'string',
-                              ProxyDiscipline.DEFAULT: 'GMRES',
                               #                               ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
                               # ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
                               ProxyDiscipline.NUMERICAL: True,
                               ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDA_preconditioner': {ProxyDiscipline.TYPE: 'string',
-                                             ProxyDiscipline.DEFAULT: 'None',
                                              #                                              ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
                                              # ProxyDiscipline.POSSIBLE_VALUES:
                                              # POSSIBLE_VALUES_PRECONDITIONER,
                                              ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDA_options': {ProxyDiscipline.TYPE: 'dict',
-                                      ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
                                       ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True,
                                       ProxyDiscipline.UNIT: '-'},
         # group all disciplines in a MDOChain
         'group_mda_disciplines': {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                                  ProxyDiscipline.DEFAULT: False, ProxyDiscipline.USER_LEVEL: 3,
+                                  ProxyDiscipline.USER_LEVEL: 3,
                                   ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         # AUTHORIZE_SELF_COUPLED_DISCIPLINES: {ProxyDiscipline.TYPE: 'bool',
         #                                      ProxyDiscipline.POSSIBLE_VALUES: [True, False],
@@ -323,40 +316,42 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # set possible values of linear solver MDA preconditioner
         if 'linear_solver_MDA' in disc_in:
             linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
-            if linear_solver_MDA.endswith('_PETSC'):
-                if platform.system() == 'Windows':
-                    raise Exception(
-                        f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
-                disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                                                                                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
-                if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
-                        disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
-                    disc_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
-            else:
-                disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = [
-                    'None', 'ilu']
-                if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
-                        disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
-                    disc_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'None'
+            if linear_solver_MDA is not None:
+                if linear_solver_MDA.endswith('_PETSC'):
+                    if platform.system() == 'Windows':
+                        raise Exception(
+                            f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
+                    disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
+                                                                                        ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                    if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
+                            disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
+                        disc_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'gasm'
+                else:
+                    disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = [
+                        'None', 'ilu']
+                    if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
+                            disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]:
+                        disc_in['linear_solver_MDA_preconditioner'][self.VALUE] = 'None'
 
         # set possible values of linear solver MDO preconditioner
         if 'linear_solver_MDO' in disc_in:
             linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
-            if linear_solver_MDO.endswith('_PETSC'):
-                if platform.system() == 'Windows':
-                    raise Exception(
-                        f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
-                disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
-                                                                                    ksp_lib_petsc.AVAILABLE_PRECONDITIONER
-                if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
-                        disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
-                    disc_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
-            else:
-                disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = [
-                    'None', 'ilu']
-                if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
-                        disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
-                    disc_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'None'
+            if linear_solver_MDO is not None:
+                if linear_solver_MDO.endswith('_PETSC'):
+                    if platform.system() == 'Windows':
+                        raise Exception(
+                            f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
+                    disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
+                                                                                        ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                    if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
+                            disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
+                        disc_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'gasm'
+                else:
+                    disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = [
+                        'None', 'ilu']
+                    if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
+                            disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]:
+                        disc_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'None'
 
             # set default value of max_mda_iter_gs
             if 'max_mda_iter_gs' in disc_in:

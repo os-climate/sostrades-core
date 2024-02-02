@@ -159,4 +159,3 @@ class PersistentConnectorContainer:
         if connector_identifier not in self.__registered_connectors.keys():
             self.__logger.info(f'Request a non registered connector "{connector_identifier}"')
         return self.__registered_connectors.get(connector_identifier, None)
-
