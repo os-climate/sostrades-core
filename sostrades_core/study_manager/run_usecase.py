@@ -19,9 +19,8 @@ import os
 import sys
 
 import sostrades_core.study_manager.run_usecase
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
-from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 
 def test_module_importability(module_name:str):
     """
@@ -31,17 +30,14 @@ def test_module_importability(module_name:str):
     :type module_name: str
     """
     try:
-        module = importlib.import_module(module_name)
+        importlib.import_module(module_name)
     except ImportError as e:
         raise Exception(f"Unable to import process module '{module_name}' is this module correct and in PYTHONPATH ?") from e
 
-def run_usecase(process_module_name:str, dataset_mapping_json_file:str):
+def run_usecase(dataset_mapping_json_file:str):
     """
     Instanciate a connector of type connector_type with provided arguments
     Raises ValueError if type is invalid
-
-    :param process_module_name: Process module to use
-    :type process_module_name: str
 
     :param dataset_mapping_json_file: Dataset mapping file to use
     :type dataset_mapping_json_file: str
@@ -51,37 +47,34 @@ def run_usecase(process_module_name:str, dataset_mapping_json_file:str):
     # Test inputs
     if not os.path.exists(dataset_mapping_json_file):
         raise FileNotFoundError(f"File {dataset_mapping_json_file} does not exist")
-    test_module_importability(process_module_name + ".process")
+    
+    # Load process name
+    dataset_mapping = DatasetsMapping.from_json_file(dataset_mapping_json_file)
+    process_module_name = dataset_mapping.process_module_path
 
-    # Prepare arguments to instanciate study manager
-    # process_module_name = sostrades_core.tests.my_process
-    # repo => sostrades_core.tests
-    # proc_name => my_process
-    repo = ".".join(process_module_name.split(".")[:-1])
-    proc_name = process_module_name.split(".")[-1]
+    test_module_importability(process_module_name + ".process")
     
     # dataset_mapping_json_file = ./sostrades_core/data/study_001_test.json
     # study_name => study_001_test
     study_name = ".".join(os.path.basename(dataset_mapping_json_file).split(".")[:-1])
 
-    uc_cls = StudyManager(repo, proc_name, study_name)
+    uc_cls = StudyManager(process_module_name=process_module_name, study_name=study_name)
     uc_cls.load_study(dataset_mapping_json_file)
     uc_cls.run()
 
 if __name__ == "__main__":
     """
     Run a usecase from CLI
-    Usage: python -m sostrades_core.study_manager.run_usecase <process_module_name> <dataset_mapping_json_file>
+    Usage: python -m sostrades_core.study_manager.run_usecase <dataset_mapping_json_file>
     example
-    python -m sostrades_core.study_manager.run_usecase sostrades_core.sos_processes.test.test_disc1_disc2_dataset ./platform/sostrades-core/sostrades_core/sos_processes/test/test_disc1_disc2_dataset/usecase_dataset.json
+    python -m sostrades_core.study_manager.run_usecase ./platform/sostrades-core/sostrades_core/sos_processes/test/test_disc1_disc2_dataset/usecase_dataset.json
     """
-    if len(sys.argv) != 3:
-        print(f"Usage: python -m {sostrades_core.study_manager.run_usecase.__name__} <process_module_name> <dataset_mapping_json_file>")
+    if len(sys.argv) != 2:
+        print(f"Usage: python -m {sostrades_core.study_manager.run_usecase.__name__} <dataset_mapping_json_file>")
         sys.exit(1)
 
     # Extract command-line arguments
-    process_module_name = sys.argv[1]
-    dataset_mapping_json_file = sys.argv[2]
+    dataset_mapping_json_file = sys.argv[1]
 
     # Call the main function with the provided arguments
-    run_usecase(process_module_name=process_module_name, dataset_mapping_json_file=dataset_mapping_json_file)
+    run_usecase(dataset_mapping_json_file=dataset_mapping_json_file)

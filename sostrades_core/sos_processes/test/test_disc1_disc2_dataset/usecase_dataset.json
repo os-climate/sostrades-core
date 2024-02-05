@@ -1,4 +1,5 @@
 {
+    "process_module_path": "sostrades_core.sos_processes.test.test_disc1_disc2_dataset",
     "datasets_infos": {
         "Dataset1": {
             "connector_id": "MVP0_datasets_connector",

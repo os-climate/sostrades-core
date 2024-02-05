@@ -11,14 +11,5 @@
         "connector_args": {
             "file_path":"./platform/sostrades-core/sostrades_core/datasets/datasets_connectors/uc1_test_damage_ggo.pickle"
         }
-    },{
-        "connector_id":"Arango_connector",
-        "connector_type":"Arango",
-        "connector_args": {
-            "host": "http://127.0.0.1:8529",
-            "db_name": "os-climate",
-            "username": "root",
-            "password": "ArangoDB_BfPM"
-        }
     }
 ]

@@ -1,4 +1,5 @@
 {
+    "process_module_path": "mock.process.path",
     "datasets_infos": {
         "Dataset1": {
             "connector_id": "<1connector_id>",

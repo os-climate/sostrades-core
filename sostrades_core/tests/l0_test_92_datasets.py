@@ -22,9 +22,7 @@ import numpy as np
 import pandas as pd
 
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
-from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.study_manager.study_manager import StudyManager
 
 
 class TestDatasets(unittest.TestCase):
@@ -35,19 +33,11 @@ class TestDatasets(unittest.TestCase):
     def setUp(self):
         # Set logging level to debug for datasets
         logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
-        # register connector for tests
-        self.test_data_folder = os.path.join(os.path.dirname(__file__), "data")
-        # DatasetsConnectorManager.register_connector(
-        #     connector_identifier="JSON_datasets",
-        #     connector_type=DatasetConnectorType.JSON,
-        #     file_path=os.path.join(self.test_data_folder, "test_92_datasets_db.json"),
-        # )
 
-        self.repo = "sostrades_core.sos_processes.test"
+        self.process_module_name = "sostrades_core.sos_processes.test.test_disc1_disc2_dataset"
         self.study_name = "usecase_dataset"
-        self.proc_name = "test_disc1_disc2_dataset"
-        self.process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", self.proc_name)
-        self.study = BaseStudyManager(self.repo, self.proc_name, self.study_name)
+        self.process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", "test_disc1_disc2_dataset")
+        self.study = StudyManager(self.process_module_name, self.study_name)
 
     def test_01_usecase1(self):
         dm = self.study.execution_engine.dm
@@ -154,7 +144,8 @@ class TestDatasets(unittest.TestCase):
         """
         Some example to work with dataset mapping
         """
-        json_file_path = os.path.join(self.test_data_folder, "test_92_example_mapping.json")
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+        json_file_path = os.path.join(test_data_folder, "test_92_example_mapping.json")
 
         dataset_mapping = DatasetsMapping.from_json_file(file_path=json_file_path)
         self.assertEqual(dataset_mapping.datasets_infos["Dataset1"].connector_id, "<1connector_id>")
@@ -172,11 +163,10 @@ class TestDatasets(unittest.TestCase):
     
 
     def test_04_datasets_types(self):
-        repo = "sostrades_core.sos_processes.test"
+        process_module_name = "sostrades_core.sos_processes.test.test_disc1_all_types"
         study_name = "usecase_dataset"
-        proc_name = "test_disc1_all_types"
-        process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", proc_name)
-        study = BaseStudyManager(repo, proc_name, study_name)
+        process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", "test_disc1_all_types")
+        study = StudyManager(process_module_name, study_name)
 
         dm = study.execution_engine.dm
         # assert data are empty
@@ -203,11 +193,10 @@ class TestDatasets(unittest.TestCase):
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
     
     def test_05_nested_process_level0(self):
-        repo = "sostrades_core.sos_processes.test.sellar"
+        process_module_name = "sostrades_core.sos_processes.test.sellar.test_sellar_coupling"
         study_name = "usecase_dataset_sellar_coupling"
-        proc_name = "test_sellar_coupling"
-        process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test","sellar", proc_name)
-        study = BaseStudyManager(repo, proc_name, study_name)
+        process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", "sellar", "test_sellar_coupling")
+        study = StudyManager(process_module_name, study_name)
 
         dm = study.execution_engine.dm
         # assert data are empty
