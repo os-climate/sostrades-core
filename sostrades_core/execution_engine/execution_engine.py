@@ -649,11 +649,12 @@ class ExecutionEngine:
 
     def checked_useless_inputs(self, dict_to_load, convert_data_cache, raise_exception: bool = False):
         """Log a warning if some values are set but not used"""
-        useless_values = list(set(dict_to_load.keys()).difference(
-            set(self.dm.convert_dict_with_maps(convert_data_cache, self.dm.data_id_map).keys())))
-        useless_values.sort()
-        if len(useless_values) > 0:
-            msg = "The following values are uselessely set :\n\t-> " + "\n\t-> ".join(useless_values)
+        keys_input = set([key.replace(self.STUDY_PLACEHOLDER_WITHOUT_DOT, self.study_name) for key in dict_to_load.keys()])
+        keys_required = set(self.dm.convert_dict_with_maps(convert_data_cache, self.dm.data_id_map).keys())
+        useless_keys = list(keys_input.difference(keys_required))
+        useless_keys.sort()
+        if len(useless_keys) > 0:
+            msg = f"{len(useless_keys)} values uselessely set :\n\t-> " + "\n\t-> ".join(useless_keys)
             if raise_exception:
                 raise Exception(msg)
             else:
