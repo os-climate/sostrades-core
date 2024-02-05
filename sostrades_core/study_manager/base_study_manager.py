@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/09-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/03/09-2023/11/02 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ from importlib import import_module
 from os.path import join, isdir, exists
 from logging import INFO, DEBUG
 from os import remove
+from guppy import hpy
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 # from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
@@ -36,12 +37,28 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from copy import deepcopy
 from gemseo.utils.compare_data_manager_tooling import compare_dict
 
+import tracemalloc
+
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20
 
 
 # Pylint code disable section
 # pylint: disable=line-too-long, logging-format-interpolation
+
+
+class TraceOutfile(object):
+    def __init__(self,file_name):
+        self.file_name = file_name
+
+    def write(self,msg: str):
+        with open(self.file_name,'a+') as myFile:
+            myFile.write(msg + "\r\n")
+
+trace = TraceOutfile("/usr/local/sostrades/data/output.txt")
+
+trace.write("START")
+
 
 
 class BaseStudyManager():
@@ -186,6 +203,11 @@ class BaseStudyManager():
         :params: display_treeview, display or not treeview state (optional parameter)
         :type: boolean
         """
+        
+        h = hpy()
+
+        tracemalloc.start()
+
         start_time = time()
 
         logger = self.execution_engine.logger
@@ -226,6 +248,23 @@ class BaseStudyManager():
         study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
+
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.statistics('lineno')
+
+        trace.write("-----------------------")
+
+        trace.write("[ Top 30 ]")
+        for stat in top_stats[:100]:
+            trace.write(str(stat))
+
+        trace.write("-----------------------")
+        trace.write("-----------------------")
+
+        trace.write(str(h.heap()))
+
+        trace.write("-----------------------")
+
 
     def specific_check(self):
         """ Method to overload to have a specific check on input datas
