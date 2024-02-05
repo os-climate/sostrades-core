@@ -27,7 +27,7 @@ from importlib import import_module
 from os.path import join, isdir, exists
 from logging import INFO, DEBUG
 from os import remove
-from guppy import hpy
+# from guppy import hpy
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 # from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
@@ -37,7 +37,7 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from copy import deepcopy
 from gemseo.utils.compare_data_manager_tooling import compare_dict
 
-import tracemalloc
+# import tracemalloc
 
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20
@@ -204,9 +204,9 @@ class BaseStudyManager():
         :type: boolean
         """
         
-        h = hpy()
+        # h = hpy()
 
-        tracemalloc.start()
+        # tracemalloc.start()
 
         start_time = time()
 
@@ -249,21 +249,21 @@ class BaseStudyManager():
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
 
-        snapshot = tracemalloc.take_snapshot()
-        top_stats = snapshot.statistics('lineno')
+        # snapshot = tracemalloc.take_snapshot()
+        # top_stats = snapshot.statistics('lineno')
 
-        trace.write("-----------------------")
+        # trace.write("-----------------------")
 
-        trace.write("[ Top 30 ]")
-        for stat in top_stats[:100]:
-            trace.write(str(stat))
+        # trace.write("[ Top 30 ]")
+        # for stat in top_stats[:100]:
+        #     trace.write(str(stat))
 
-        trace.write("-----------------------")
-        trace.write("-----------------------")
+        # trace.write("-----------------------")
+        # trace.write("-----------------------")
 
-        trace.write(str(h.heap()))
+        # trace.write(str(h.heap()))
 
-        trace.write("-----------------------")
+        # trace.write("-----------------------")
 
 
     def specific_check(self):
