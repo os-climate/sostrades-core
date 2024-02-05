@@ -23,18 +23,28 @@ import numpy as np
 
 class StudyManager(BaseStudyManager):
 
-    def __init__(self, repository_name, process_name, study_name, run_usecase=True, execution_engine=None):
+    def __init__(self, process_module_name:str, study_name, run_usecase=True, execution_engine=None):
         """
         Constructor
 
-        
+        :params: process_module_name, module name of the process, ex : sostrades_core.sos_processes.test.process
+        :type: str
+
+        :params: study_name, Name of the study
+        :type: str
         """
         # init dspace dict
         self.dspace = {}
         self.dspace['dspace_size'] = 0
 
-        super().__init__(repository_name, process_name, study_name,
-                         run_usecase=run_usecase, execution_engine=execution_engine)
+        process_module_name_split = process_module_name.split(".")
+
+        super().__init__(
+            repository_name=".".join(process_module_name_split[:-1]),
+            process_name=process_module_name_split[-1],
+            study_name=study_name,
+            run_usecase=run_usecase,
+            execution_engine=execution_engine)
 
     def update_dspace_with(self, name, value, lower, upper):
         ''' type(value) has to be ndarray

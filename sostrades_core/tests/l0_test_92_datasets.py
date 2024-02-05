@@ -40,11 +40,10 @@ class TestDatasets(unittest.TestCase):
         #     file_path=os.path.join(self.test_data_folder, "test_92_datasets_db.json"),
         # )
 
-        self.repo = "sostrades_core.sos_processes.test"
+        self.repo = "sostrades_core.sos_processes.test.test_disc1_disc2_dataset"
         self.study_name = "usecase_dataset"
-        self.proc_name = "test_disc1_disc2_dataset"
-        self.process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", self.proc_name)
-        self.study = StudyManager(self.repo, self.proc_name, self.study_name)
+        self.process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", "test_disc1_disc2_dataset")
+        self.study = StudyManager(self.repo, self.study_name)
 
     def test_01_usecase1(self):
         dm = self.study.execution_engine.dm

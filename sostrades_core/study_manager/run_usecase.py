@@ -53,19 +53,12 @@ def run_usecase(dataset_mapping_json_file:str):
     process_module_name = dataset_mapping.process_module_path
 
     test_module_importability(process_module_name + ".process")
-
-    # Prepare arguments to instanciate study manager
-    # process_module_name = sostrades_core.tests.process
-    # repo => sostrades_core.tests
-    # proc_name => process
-    repo = ".".join(process_module_name.split(".")[:-1])
-    proc_name = process_module_name.split(".")[-1]
     
     # dataset_mapping_json_file = ./sostrades_core/data/study_001_test.json
     # study_name => study_001_test
     study_name = ".".join(os.path.basename(dataset_mapping_json_file).split(".")[:-1])
 
-    uc_cls = StudyManager(repo, proc_name, study_name)
+    uc_cls = StudyManager(process_module_name=process_module_name, study_name=study_name)
     uc_cls.load_study(dataset_mapping_json_file)
     uc_cls.run()
 
