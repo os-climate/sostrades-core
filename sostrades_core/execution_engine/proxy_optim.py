@@ -406,7 +406,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         Preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
 
-        self.ee.dm.create_reduced_dm()
+        # self.ee.dm.create_reduced_dm()
         # prepare_execution of proxy_disciplines
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
@@ -416,7 +416,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                 sub_mdo_disciplines.append(
                     disc.mdo_discipline_wrapp.mdo_discipline)
 
-        self.setup_sos_disciplines()
+        # self.setup_sos_disciplines()
 
         self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs(self.ALGO), self.get_sosdisc_inputs(
             self.ALGO_OPTIONS), self.get_sosdisc_inputs(self.MAX_ITER)
