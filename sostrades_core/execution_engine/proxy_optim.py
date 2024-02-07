@@ -154,6 +154,27 @@ class ProxyOptim(ProxyDriverEvaluator):
     # FD step
     FD_STEP = "fd_step"
 
+    DESIGN_SPACE = 'design_space' # TODO: proxysamplegenerator.design_space ?
+    FORMULATION = 'formulation'
+    MAXIMIZE_OBJECTIVE = 'maximize_objective'
+    OBJECTIVE_NAME = 'objective_name'
+    FORMULATION_OPTIONS = 'formulation_options'
+
+    #        self.SEARCH_PATHS = 'search_paths'
+    SCENARIO_MANDATORY_FIELDS = [
+        DESIGN_SPACE,
+        FORMULATION,
+        MAXIMIZE_OBJECTIVE,
+        OBJECTIVE_NAME]
+    #            self.SEARCH_PATHS]
+    OPTIMAL_OBJNAME_SUFFIX = "opt"
+    ALGO_MANDATORY_FIELDS = [ALGO, MAX_ITER]
+
+    DIFFERENTIATION_METHOD = 'differentiation_method'
+    EVAL_JAC = 'eval_jac'
+    EVAL_MODE = 'eval_mode'
+    EXECUTE_AT_XOPT = 'execute_at_xopt'
+
     default_algo_options = {'max_iter': 999, 'ftol_rel': 1e-9,
                             'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
                             'xtol_abs': 1e-9, 'max_ls_step_size': 0.,
@@ -211,8 +232,8 @@ class ProxyOptim(ProxyDriverEvaluator):
                  "PYMOO_UNSGA3": {"normalize_design_space": False, "ref_dirs_name": "energy"},
                  }
 
-    DESC_IN = {'algo': {'type': 'string', 'structuring': True},
-               'design_space': {'type': 'dataframe', 'structuring': True,
+    DESC_IN = {ALGO: {'type': 'string', 'structuring': True},
+               DESIGN_SPACE: {'type': 'dataframe', 'structuring': True,
                                 'dataframe_descriptor': {VARIABLES: ('string', None, True),
                                                          VALUES: ('multiple', None, True),
                                                          LOWER_BOUND: ('multiple', None, True),
@@ -220,15 +241,15 @@ class ProxyOptim(ProxyDriverEvaluator):
                                                          ENABLE_VARIABLE_BOOL: ('bool', None, True),
                                                          LIST_ACTIVATED_ELEM: ('list', None, True), }},
 
-               'formulation': {'type': 'string', 'structuring': True},
-               'maximize_objective': {'type': 'bool', 'structuring': True, 'default': False},
-               'objective_name': {'type': 'string', 'structuring': True},
-               'differentiation_method': {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
+               FORMULATION: {'type': 'string', 'structuring': True},
+               MAXIMIZE_OBJECTIVE: {'type': 'bool', 'structuring': True, 'default': False},
+               OBJECTIVE_NAME: {'type': 'string', 'structuring': True},
+               DIFFERENTIATION_METHOD: {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
                                                               Scenario.COMPLEX_STEP],
                                           'structuring': True},
-               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6},
-               'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
+               FD_STEP: {'type': 'float', 'structuring': True, 'default': 1e-6},
+               ALGO_OPTIONS: {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
                                                                          VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
                                 'default': default_algo_options,
@@ -243,10 +264,10 @@ class ProxyOptim(ProxyDriverEvaluator):
                                   'dataframe_edition_locked': False,
                                   'default': default_parallel_options,
                                   'structuring': True},
-               'eval_mode': {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False], 'structuring': True},
-               'eval_jac': {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
-               'execute_at_xopt': {'type': 'bool', 'default': True},
-               'max_iter': {'type': 'float'},
+               EVAL_MODE: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False], 'structuring': True},
+               EVAL_JAC: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
+               EXECUTE_AT_XOPT: {'type': 'bool', 'default': True},
+               MAX_ITER: {'type': 'float'},
                INEQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
                                   'structuring': True},
                EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
@@ -269,27 +290,19 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.with_data_io = with_data_io
         self.formulation = None
         self.maximize_objective = None
+        self.algo_name = None
+        self.algo_options = None
+        self.max_iter = None
+
+        self.objective_name = None
+        self.design_space = None
+
         self.opt_problem = None
         self.eval_mode = False
         self.eval_jac = False
 
-        self.DESIGN_SPACE = 'design_space'
-        self.FORMULATION = 'formulation'
-        self.MAXIMIZE_OBJECTIVE = 'maximize_objective'
-        self.OBJECTIVE_NAME = 'objective_name'
-        self.FORMULATION_OPTIONS = 'formulation_options'
-
-        #        self.SEARCH_PATHS = 'search_paths'
-        self.SCENARIO_MANDATORY_FIELDS = [
-            self.DESIGN_SPACE,
-            self.FORMULATION,
-            self.MAXIMIZE_OBJECTIVE,
-            self.OBJECTIVE_NAME]
-        #            self.SEARCH_PATHS]
-        self.OPTIMAL_OBJNAME_SUFFIX = "opt"
         self.dict_desactivated_elem = {}
         self.activated_variables = []
-        self.ALGO_MANDATORY_FIELDS = [self.ALGO, self.MAX_ITER]
         self.is_optim_scenario = True
         self.functions_before_run = []
 
@@ -319,7 +332,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     #     value[self.NS_REFERENCE])
                     for key in self._data_in.keys():
                         if self.ALGO_OPTIONS == key[0]:
-                            self._data_in[key]['value'] = values_dict
+                            self._data_in[key][self.VALUE] = values_dict
         self.set_edition_inputs_if_eval_mode()
 
     def prepare_build(self):
@@ -372,11 +385,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         '''
 
         if 'eval_mode' in [key[0] for key in self._data_in.keys()]:
-            eval_mode = self.get_sosdisc_inputs('eval_mode')
+            eval_mode = self.get_sosdisc_inputs(self.EVAL_MODE)
             if eval_mode:
                 data_in = self.get_data_in()
                 self.eval_mode = True
-                self.eval_jac = self.get_sosdisc_inputs('eval_jac')
+                self.eval_jac = self.get_sosdisc_inputs(self.EVAL_JAC)
                 self._data_in[(self.ALGO, id(data_in[self.ALGO][self.NS_REFERENCE]))][self.EDITABLE] = False
                 self._data_in[(self.ALGO_OPTIONS, id(data_in[self.ALGO_OPTIONS][self.NS_REFERENCE]))][
                     self.EDITABLE] = False
@@ -416,10 +429,10 @@ class ProxyOptim(ProxyDriverEvaluator):
                 sub_mdo_disciplines.append(
                     disc.mdo_discipline_wrapp.mdo_discipline)
 
-        # self.setup_sos_disciplines()
+        self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs([self.ALGO,
+                                                                                    self.ALGO_OPTIONS,
+                                                                                    self.MAX_ITER])
 
-        self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs(self.ALGO), self.get_sosdisc_inputs(
-            self.ALGO_OPTIONS), self.get_sosdisc_inputs(self.MAX_ITER)
         self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
         # create_mdo_scenario from MDODisciplineWrapp
@@ -648,7 +661,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         '''
         Set design space values to complex if the differentiation method is complex_step
         '''
-        diff_method = self.get_sosdisc_inputs('differentiation_method')
+        diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
         if diff_method == self.COMPLEX_STEP:
             dspace = deepcopy(self.mdo_discipline_wrapp.mdo_discipline.formulation.opt_problem.design_space)
             curr_x = dspace._current_x
