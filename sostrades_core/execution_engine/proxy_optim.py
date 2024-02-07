@@ -41,6 +41,7 @@ from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWr
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.tools.design_space import design_space as dspace_tool
 
 
 class ProxyOptim(ProxyDriverEvaluator):
@@ -123,14 +124,14 @@ class ProxyOptim(ProxyDriverEvaluator):
                                 'wait_time_between_fork': 0}
     USER_GRAD = 'user'
     # Design space dataframe headers
-    VARIABLES = "variable"
-    VALUES = "value"
-    UPPER_BOUND = "upper_bnd"
-    LOWER_BOUND = "lower_bnd"
     TYPE = "type"
-    ENABLE_VARIABLE_BOOL = "enable_variable"
-    LIST_ACTIVATED_ELEM = "activated_elem"
-    VARIABLE_TYPE = "variable_type"
+    VARIABLES = dspace_tool.VARIABLES
+    VALUES = dspace_tool.VALUES
+    UPPER_BOUND = dspace_tool.UPPER_BOUND
+    LOWER_BOUND = dspace_tool.LOWER_BOUND
+    ENABLE_VARIABLE_BOOL = dspace_tool.ENABLE_VARIABLE_BOOL
+    LIST_ACTIVATED_ELEM = dspace_tool.LIST_ACTIVATED_ELEM
+    VARIABLE_TYPE = dspace_tool.VARIABLE_TYPE
     ALGO = "algo"
     MAX_ITER = "max_iter"
     ALGO_OPTIONS = "algo_options"
@@ -523,10 +524,9 @@ class ProxyOptim(ProxyDriverEvaluator):
             else:
                 raise Exception(f" The design variable {key} is not in the dm : {key}")
 
-        dspace_dict_updated = dspace_df.copy()
+        dspace_dict_updated = dspace_df.copy()  # todo: NOT A DICT
         dspace_dict_updated[self.VARIABLES] = full_dvs
-
-        design_space = self.read_from_dataframe(dspace_dict_updated)
+        design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_dict_updated)
 
         return design_space
 
@@ -818,95 +818,6 @@ class ProxyOptim(ProxyDriverEvaluator):
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
                 self, eq, MDOFunction.TYPE_EQ, eq, value=None,
                 positive=False)
-
-    def read_from_dict(self, dp_dict):
-        """Parses a dictionary to read the DesignSpace
-
-        :param dp_dict : design space dictionary
-        :returns:  the design space
-        """
-        design_space = DesignSpace()
-        for key in dp_dict:
-            print(key)
-            if type(dp_dict[key]['value']) != list and type(dp_dict[key]['value']) != ndarray:
-                name = key
-                var_type = ['float']
-
-                size = 1
-                l_b = array([dp_dict[key]['lower_bnd']])
-                u_b = array([dp_dict[key]['upper_bnd']])
-                value = array([dp_dict[key]['value']])
-            else:
-                size = len(dp_dict[key]['value'])
-                var_type = ['float'] * size
-
-                name = key
-                l_b = array(dp_dict[key]['lower_bnd'])
-                u_b = array(dp_dict[key]['upper_bnd'])
-                value = array(dp_dict[key]['value'])
-
-            design_space.add_variable(name, size, var_type, l_b, u_b, value)
-        return design_space
-
-    def read_from_dataframe(self, df):
-        """Parses a DataFrame to read the DesignSpace
-
-        :param df : design space df
-        :returns:  the design space
-        """
-        names = list(df[self.VARIABLES])
-        values = list(df[self.VALUES])
-        l_bounds = list(df[self.LOWER_BOUND])
-        u_bounds = list(df[self.UPPER_BOUND])
-        enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
-        list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
-
-        # looking for the optionnal variable type in the design space
-        if self.VARIABLE_TYPE in df:
-            var_types = df[self.VARIABLE_TYPE]
-        else:
-            # set to None for all variables if not exists
-            var_types = [None] * len(names)
-
-        design_space = DesignSpace()
-
-        for dv, val, lb, ub, l_activated, enable_var, vtype in zip(names, values, l_bounds, u_bounds,
-                                                                   list_activated_elem, enabled_variable, var_types):
-
-            # check if variable is enabled to add it or not in the design var
-            if enable_var:
-                self.dict_desactivated_elem[dv] = {}
-
-                if type(val) != list and type(val) != ndarray:
-                    size = 1
-                    var_type = ['float']
-                    l_b = array([lb])
-                    u_b = array([ub])
-                    value = array([val])
-                else:
-                    # check if there is any False in l_activated
-                    if not all(l_activated):
-                        index_false = l_activated.index(False)
-                        self.dict_desactivated_elem[dv] = {
-                            'value': val[index_false], 'position': index_false}
-
-                        val = delete(val, index_false)
-                        lb = delete(lb, index_false)
-                        ub = delete(ub, index_false)
-
-                    size = len(val)
-                    var_type = ['float'] * size
-                    l_b = array(lb)
-                    u_b = array(ub)
-                    value = array(val)
-
-                # 'automatic' var_type values are overwritten if filled by the user
-                if vtype is not None:
-                    var_type = vtype
-
-                design_space.add_variable(
-                    dv, size, var_type, l_b, u_b, value)
-        return design_space
 
     def _set_flush_submdas_to_true(self):
         # update MDA flag to flush residuals between each mda run
