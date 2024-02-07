@@ -44,7 +44,6 @@ class TestDefaultInDM(unittest.TestCase):
     """
 
     def setUp(self):
-
         self.name = 'EETests'
         self.exec_eng = ExecutionEngine(self.name)
         self.repo = 'sostrades_core.sos_processes.test'
@@ -91,13 +90,12 @@ class TestDefaultInDM(unittest.TestCase):
         # self.assertTrue(msg_log_error in self.my_handler.msg_list, msg)
         res2 = self.exec_eng2.execute()
 
-        #Check that res2 equals res1 : Disc1.a was loaded from default value
+        # Check that res2 equals res1 : Disc1.a was loaded from default value
         # in DESC_IN
         # NOTE: since residuals_history is a dataframe, need to pop it out of local_data to use specific assert
         local_data = copy(res.mdo_discipline_wrapp.mdo_discipline.local_data)
-        residuals = local_data.pop('EETests.'+SoSMDAChain.RESIDUALS_HISTORY, None)
+        residuals = local_data.pop('EETests.' + SoSMDAChain.RESIDUALS_HISTORY, None)
         local_data2 = copy(res2.mdo_discipline_wrapp.mdo_discipline.local_data)
-        residuals2 = local_data2.pop('EETests.'+SoSMDAChain.RESIDUALS_HISTORY, None)
-        self.assertDictEqual(local_data, local_data2, "results are not equal")
+        residuals2 = local_data2.pop('EETests.' + SoSMDAChain.RESIDUALS_HISTORY, None)
+        self.assertTrue(local_data == local_data2, "results are not equal")
         assert_frame_equal(residuals, residuals2)
-

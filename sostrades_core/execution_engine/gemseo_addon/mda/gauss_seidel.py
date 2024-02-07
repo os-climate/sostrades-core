@@ -45,7 +45,6 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             log_convergence=False,  # type: bool
             linear_solver="DEFAULT",  # type: str
             linear_solver_options=None,  # type: Mapping[str,Any]
-            warm_start_threshold=-1,  # type: int
     ):  # type: (...) -> None
         """
         Args:
@@ -72,7 +71,6 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
         )
-        self.warm_start_threshold = warm_start_threshold
 
     def _run(self):
         # Run the disciplines in a sequential way
@@ -84,12 +82,6 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
 
         relax = self.over_relax_factor
         use_relax = relax != 1.0
-
-        # -- SoSTrades modif
-        # stores cache history if residual_start filled
-        if self.warm_start_threshold != -1:
-            self.store_state_for_warm_start()
-        # -- end of SoSTrades modif
 
         # store initial residual
         current_iter = 0

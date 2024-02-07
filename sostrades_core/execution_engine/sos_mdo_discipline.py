@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import collections
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
@@ -27,6 +28,7 @@ from numpy import ndarray, floating
 from scipy.sparse.lil import lil_matrix
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from sostrades_core.execution_engine.sos_discipline_data import SoSDisciplineData
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -96,7 +98,7 @@ class SoSMDODiscipline(MDODiscipline):
         # debug mode: input change
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_before_execution = {key: {'value': value} for key, value in deepcopy(
-                self._local_data).items() if key in self.input_grammar.data_names}
+                self._local_data).items() if key in self.input_grammar.keys()}
 
         # SoSWrapp run
         local_data = self.sos_wrapp._run()
@@ -115,7 +117,7 @@ class SoSMDODiscipline(MDODiscipline):
 
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
-                self._local_data).items() if key in self.input_grammar.data_names}
+                self._local_data).items() if key in self.input_grammar.keys()}
             output_error = self.check_discipline_data_integrity(disc_inputs_before_execution,
                                                                 disc_inputs_after_execution,
                                                                 'Discipline inputs integrity through run',
@@ -166,7 +168,7 @@ class SoSMDODiscipline(MDODiscipline):
         if execute and exec_before_linearize:
             self.reset_statuses_for_run()
             self.exec_for_lin = True
-            self.execute(self.default_inputs)
+            self.execute(input_data)
             self.exec_for_lin = False
             execute = False
             need_execution_after_lin = False
@@ -190,9 +192,15 @@ class SoSMDODiscipline(MDODiscipline):
                     self.is_input_existing(k) or self.is_output_existing(k)}
                 self._local_data = own_data
 
+        # The local_data shall be reset to their original values
+        # in case an input is also an output,
+        # if we don't want to keep the computed state (as in MDAs).
+        if not self._linearize_on_last_state:
+            self._local_data.update(input_data)
+
         if self.check_linearize_data_changes and not self.is_sos_coupling:
             disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
-                self.default_inputs).items() if key in self.input_grammar.data_names}
+                self.default_inputs).items() if key in self.input_grammar.keys()}
 
         # Set STATUS to LINEARIZE for GUI visualization
         self.status = self.ExecutionStatus.LINEARIZE
@@ -219,7 +227,7 @@ class SoSMDODiscipline(MDODiscipline):
         return result
 
     def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
-                       step=1e-7, threshold=1e-8, linearization_mode='auto',
+                       step=1e-7, threshold=1e-8, linearization_mode=MDODiscipline.LinearizationMode.AUTO,
                        inputs=None, outputs=None, parallel=False,
                        n_processes=MDODiscipline.N_CPUS,
                        use_threading=False, wait_time_between_fork=0,
@@ -236,7 +244,7 @@ class SoSMDODiscipline(MDODiscipline):
         # and potentially loose informations to compute gradients (some
         # gradients are computed with the model)
         if self.status != self.ExecutionStatus.DONE:
-            self.init_execution()
+            self.sos_wrapp.init_execution()
 
         # if dump_jac_path is provided, we trigger GEMSEO dump
         if dump_jac_path is not None:
@@ -464,7 +472,50 @@ class SoSMDODiscipline(MDODiscipline):
     #     self.sos_wrapp.output_data_names = self.get_output_data_names()
 
     def __set_local_data(self, data):
-        self._local_data = data
+        self._local_data = SoSDisciplineData(
+            data,
+            input_to_namespaced=self.input_grammar.to_namespaced,
+            output_to_namespaced=self.output_grammar.to_namespaced, )
+
+    def _set_local_data_overload(self, data):
+        self._local_data = SoSDisciplineData(
+            data,
+            input_to_namespaced=self.input_grammar.to_namespaced,
+            output_to_namespaced=self.output_grammar.to_namespaced, )
+
+    def _filter_inputs(
+            self,
+            input_data):
+        """Filter data with the discipline inputs and use the default values if missing.
+
+        Args:
+            input_data: The data to be filtered.
+
+        Returns:
+            The values of the input variables based on the provided data.
+
+        Raises:
+            TypeError: When the input data are not passed as a dictionary.
+        """
+        if input_data is None:
+            return deepcopy(self.default_inputs)
+
+        if not isinstance(input_data, collections.abc.Mapping):
+            raise TypeError(
+                f"Input data must be of dict type, got {type(input_data)} instead."
+            )
+
+        full_input_data = SoSDisciplineData({})
+        for input_name in self.input_grammar:
+            input_value = input_data.get(input_name)
+            if input_value is not None:
+                full_input_data[input_name] = input_value
+            else:
+                input_value = self.input_grammar.defaults.get(input_name)
+                if input_value is not None:
+                    full_input_data[input_name] = input_value
+
+        return full_input_data
 
     # ----------------------------------------------------
     # ----------------------------------------------------

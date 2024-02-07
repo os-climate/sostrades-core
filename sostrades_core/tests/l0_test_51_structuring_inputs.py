@@ -404,7 +404,6 @@ class TestStructuringInputs(unittest.TestCase):
 #                            'use_lu_fact': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
 #                            'warm_start': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
 #                            'acceleration': {'type': 'string', 'default': 'm2d', 'possible_values': ['m2d', 'secant', 'none']},
-#                            'warm_start_threshold': {'type': 'float', 'default':-1, 'possible_values': None},
 #                            'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
 #                            'tolerance_gs': {'type': 'float', 'default': 10.0, 'possible_values': None},
 #                            'relax_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},

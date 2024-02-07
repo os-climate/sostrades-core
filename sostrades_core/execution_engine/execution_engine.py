@@ -32,10 +32,15 @@ from sostrades_core.execution_engine.data_connector.data_connector_factory impor
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
 import os
 import json
+from gemseo.core.discipline import MDODiscipline
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
 DEFAULT_scattermap_manager_NAME = 'default_smap_namanger'
+
+MDODiscipline._MDODiscipline__set_local_data = SoSMDODiscipline._set_local_data_overload
+MDODiscipline._filter_inputs = SoSMDODiscipline._filter_inputs
 
 
 class ExecutionEngineException(Exception):

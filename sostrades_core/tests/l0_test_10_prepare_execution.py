@@ -69,9 +69,9 @@ class TestPrepareExecution(unittest.TestCase):
                           ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines)
             self.assertIn(proxy_disc, ee.root_process.proxy_disciplines)
             self.assertListEqual(proxy_disc.get_input_data_names(),
-                                 proxy_disc.mdo_discipline_wrapp.mdo_discipline.input_grammar.names)
+                                 list(proxy_disc.mdo_discipline_wrapp.mdo_discipline.input_grammar.names))
             self.assertListEqual(proxy_disc.get_output_data_names(),
-                                 proxy_disc.mdo_discipline_wrapp.mdo_discipline.output_grammar.names)
+                                 list(proxy_disc.mdo_discipline_wrapp.mdo_discipline.output_grammar.names))
 
     # def test_02_init_execution(self):
     #     '''

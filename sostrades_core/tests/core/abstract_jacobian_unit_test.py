@@ -76,7 +76,8 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
     def check_jacobian(self, location, filename, discipline, local_data, inputs, outputs,
                        step=1e-15, derr_approx='complex_step',
                        input_column=None, output_column=None, threshold=1e-8, parallel=False,
-                       n_processes=5, linearization_mode='auto', directory=PICKLE_DIRECTORY):
+                       n_processes=5, linearization_mode=MDODiscipline.LinearizationMode.AUTO,
+                       directory=PICKLE_DIRECTORY):
         """ Method that encapsulate check_jacobian call in order to witch between loading and dumping mode
         """
 
@@ -93,12 +94,14 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                 f'Jacobian dump mode enable on {join(location, filename)}')
             check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
                                                    outputs=outputs, derr_approx=derr_approx,
-                                                   dump_jac_path=file_path, input_column=input_column, output_column=output_column, parallel=parallel,
+                                                   dump_jac_path=file_path, input_column=input_column,
+                                                   output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
         else:
             check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
                                                    outputs=outputs, derr_approx=derr_approx,
-                                                   load_jac_path=file_path, input_column=input_column, output_column=output_column, parallel=parallel,
+                                                   load_jac_path=file_path, input_column=input_column,
+                                                   output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
 
         self.assertTrue(check_flag, msg=f"Wrong gradient in {discipline.name}")
@@ -128,7 +131,8 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
             try:
                 a = import_module(module_name)
                 for name, obj in inspect.getmembers(a):
-                    if inspect.isclass(obj) and issubclass(obj, AbstractJacobianUnittest) and name != AbstractJacobianUnittest.__name__:
+                    if inspect.isclass(obj) and issubclass(obj,
+                                                           AbstractJacobianUnittest) and name != AbstractJacobianUnittest.__name__:
                         local_logger.info(
                             f'Execute jacobian dump on {module_name}')
                         inst = obj()

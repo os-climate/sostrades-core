@@ -142,9 +142,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                          ProxyDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
                          ProxyDiscipline.DEFAULT: M2D_ACCELERATION, ProxyDiscipline.NUMERICAL: True,
                          ProxyDiscipline.STRUCTURING: True},
-        'warm_start_threshold': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.DEFAULT: -1,
-                                 ProxyDiscipline.NUMERICAL: True,
-                                 ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 1,
                                     ProxyDiscipline.NUMERICAL: True,
@@ -676,9 +673,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if num_data['inner_mda_name'] == 'MDAJacobi':
             num_data['acceleration'] = copy(
                 self.get_sosdisc_inputs('acceleration'))
-        if num_data['inner_mda_name'] == 'MDAGaussSeidel':
-            num_data['warm_start_threshold'] = copy(self.get_sosdisc_inputs(
-                'warm_start_threshold'))
         if num_data['inner_mda_name'] in ['GSNewtonMDA', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
             #             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
             #                 'max_mda_iter_gs'))

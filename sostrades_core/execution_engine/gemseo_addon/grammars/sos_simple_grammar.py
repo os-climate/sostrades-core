@@ -56,3 +56,19 @@ class SoSSimpleGrammar(SimplerGrammar):
     def validate(self, data,
                  raise_exception=True):
         pass
+
+    @property
+    def defaults(self):
+        """The mapping from the names to the default values, if any."""
+        return self._defaults
+
+    @defaults.setter
+    def defaults(self, data) -> None:
+        self._defaults = data
+
+    def clear(self) -> None:
+        """Empty the grammar."""
+        self.to_namespaced = {}
+        self.from_namespaced = {}
+        self._defaults = {}
+        self._clear()

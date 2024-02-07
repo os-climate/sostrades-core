@@ -117,7 +117,7 @@ class TestMDAPrerun(unittest.TestCase):
         # Check residual history
         tolerance = exec_eng.dm.get_value('EE.tolerance')
         self.assertLessEqual(len(residual_history), max_mda_iter)
-        self.assertLessEqual(residual_history[-1][0], tolerance)
+        self.assertLessEqual(residual_history[-1], tolerance)
 
         disc6 = exec_eng.dm.get_disciplines_with_name('EE.Disc6')[0]
         disc7 = exec_eng.dm.get_disciplines_with_name('EE.Disc7')[0]
@@ -172,7 +172,7 @@ class TestMDAPrerun(unittest.TestCase):
         # Check residual history
         tolerance = exec_eng.dm.get_value('EE.tolerance')
         self.assertLessEqual(len(residual_history), max_mda_iter)
-        self.assertLessEqual(residual_history[-1][0], tolerance)
+        self.assertLessEqual(residual_history[-1], tolerance)
 
         disc6 = exec_eng.dm.get_disciplines_with_name('EE.Disc6')[0]
         disc7 = exec_eng.dm.get_disciplines_with_name('EE.Disc7')[0]

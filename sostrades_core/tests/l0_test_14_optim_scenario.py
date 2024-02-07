@@ -978,7 +978,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check that design space in GEMS contains the optimal value (not last
         # iteration)
         assert_array_almost_equal(
-            opt_disc.formulation.design_space.get_current_x(), opt_array,
+            opt_disc.formulation.design_space.get_current_value(), opt_array,
             err_msg="design space does not have optimal value")
 
         # check that in dm we have xopt value

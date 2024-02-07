@@ -294,8 +294,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         # Remark: those two following lines _VARIABLES_NAMES and _VARIABLES_SIZES are only used in gemseo
         # lib_scalable.py for DiagonalDOE algorithm and associated reverse
         # algo option.
-        gemseo_options[self._VARIABLES_NAMES] = design_space.variables_names
-        gemseo_options[self._VARIABLES_SIZES] = design_space.variables_sizes
+        gemseo_options[self._VARIABLES_NAMES] = design_space.variable_names
+        gemseo_options[self._VARIABLES_SIZES] = design_space.variable_sizes
 
         return gemseo_options
 

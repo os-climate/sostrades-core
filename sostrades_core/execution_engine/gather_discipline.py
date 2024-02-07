@@ -82,9 +82,21 @@ class GatherDiscipline(SoSWrapp):
            We add to the desc_in all the outputs of each child 
            We add to the desc_out the dict which will gather all inputs by name 
         '''
+        try:
+            eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, self.get_data_in())
+            if len(self.dm.get_value(eval_outputs_f_name).columns) == 0:
+                print('toto')
+        except:
+            pass
         dynamic_inputs, dynamic_outputs = self.build_dynamic_io()
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
+        try:
+            eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, self.get_data_in())
+            if len(self.dm.get_value(eval_outputs_f_name).columns) == 0:
+                print('toto')
+        except:
+            pass
 
     def build_dynamic_io(self):
         dynamic_inputs = {}

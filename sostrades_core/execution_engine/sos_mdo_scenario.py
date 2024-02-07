@@ -79,14 +79,14 @@ class SoSMDOScenario(MDOScenario):
         self.dict_desactivated_elem = None
         self.input_design_space = None
         self.reduced_dm = reduced_dm
-        self.activated_variables = self.formulation.design_space.variables_names
+        self.activated_variables = self.formulation.design_space.variable_names
         self.is_sos_coupling = False
 
     def _run(self):
         '''
 
         '''
-        self.status = self.STATUS_RUNNING
+        self.status = self.ExecutionStatus.RUNNING
         self.update_default_coupling_inputs()
 
         if self.eval_mode:
@@ -103,8 +103,8 @@ class SoSMDOScenario(MDOScenario):
 
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
-        dataset = self.export_to_dataset()
-        dataframe = dataset.export_to_dataframe()
+        dataset = self.to_dataset()
+        dataframe = dataset.copy()
         # quick fix to avoind NaN in the resulting dataframe
         # context : empty fields due to several calls to the same design space lead to NaN in dataframes
         # TODO: post proc this dataframe (or directly retrieve values from database) so that NaN values are replaced by already computed values
@@ -121,10 +121,10 @@ class SoSMDOScenario(MDOScenario):
             return corrected_var_name
 
         out = {
-            "objective": np.array(dataframe["functions"][objective_name].values),
-            "variables": {correct_var_name(var): np.array(dataframe["design_parameters"][var].values) for var in
-                          self.design_space.variables_names},
-            "constraints": {correct_var_name(var): np.array(dataframe["functions"][var].values) for var in
+            "objective": np.array(dataframe[dataframe.FUNCTION_GROUP][objective_name].values),
+            "variables": {correct_var_name(var): np.array(dataframe[dataframe.DESIGN_GROUP][var].values) for var in
+                          self.design_space.variable_names},
+            "constraints": {correct_var_name(var): np.array(dataframe[dataframe.FUNCTION_GROUP][var].values) for var in
                             constraints_names}
         }
 
@@ -197,7 +197,7 @@ class SoSMDOScenario(MDOScenario):
         normalize = self.algo_options['normalize_design_space']
 
         # preprocess functions
-        problem.preprocess_functions(normalize=normalize)
+        problem.preprocess_functions(is_function_input_normalized=normalize)
         functions = problem.nonproc_constraints + \
                     [problem.nonproc_objective]
 
@@ -225,7 +225,7 @@ class SoSMDOScenario(MDOScenario):
         normalize = self.algo_options[
             'normalize_design_space']
         # Test if the last evaluation is the optimum
-        x_opt = design_space.get_current_x()
+        x_opt = design_space.get_current_value()
         try:
             # get xopt from x_opt
             x_opt_result = problem.solution.x_opt
@@ -327,8 +327,8 @@ class SoSMDOScenario(MDOScenario):
             full_name_var = [full_name for full_name in self.get_input_data_names() if
                              (var == full_name.split('.')[-1] or var == full_name)][0]
             if full_name_var in self.activated_variables:
-                value_x_opt = list(self.formulation.design_space._current_x.get(
-                    full_name_var))
+                value_x_opt = list([self.formulation.design_space.get_current_value(
+                    [full_name_var])])
                 if self.dict_desactivated_elem[full_name_var] != {}:
                     # insert a desactivated element
                     value_x_opt.insert(

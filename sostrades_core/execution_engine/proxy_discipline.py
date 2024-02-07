@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import copy
 import logging
 
 '''
@@ -22,7 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
 # grammars etc)
-from typing import Union, List, Optional
+from typing import Union, List
 import os
 from os.path import dirname, join
 
@@ -36,17 +35,12 @@ from numpy import ndarray
 from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 from numpy import bool_ as np_bool
 from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
-from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
-
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
-    convert_new_type_into_array
 
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from gemseo.core.chain import MDOChain
-from sostrades_core.tools.controllers.simpy_formula import SympyFormula
 from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 
 
@@ -227,7 +221,8 @@ class ProxyDiscipline:
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,
+                             # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                              NUMERICAL: True, STRUCTURING: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: MDODiscipline.CacheType.NONE,
                      POSSIBLE_VALUES: [MDODiscipline.CacheType.NONE, MDODiscipline.CacheType.SIMPLE],

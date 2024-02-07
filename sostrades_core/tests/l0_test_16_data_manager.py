@@ -162,7 +162,6 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.inner_mda_name': init_dict('string'),
                     ns_2 + '.max_mda_iter': init_dict('int'),
                     ns_2 + '.epsilon0': init_dict('float'),
-                    ns_2 + '.warm_start_threshold': init_dict('float'),
                     ns_2 + '.residuals_history': init_dict('dataframe'),
                     ns_2 + '.n_subcouplings_parallel': init_dict('int'),
                     ns_2 + '.group_mda_disciplines': init_dict('bool'),
@@ -174,7 +173,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     'possible_values': None, 'range': None, 'user_level': 1,
                     'visibility': 'Private', 'editable': True, IO_TYPE: 'IN',
                     'model_origin': 'NPS.CH19_Kero.Disc1', 'value': None}
-        for var_id in ['n_processes', 'warm_start_threshold',
+        for var_id in ['n_processes',
                        'chain_linearize', 'tolerance', 'use_lu_fact',
                        'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode']:
             var_n = ns_2 + '.' + var_id

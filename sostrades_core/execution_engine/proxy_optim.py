@@ -453,7 +453,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         if len(sub_mdo_disciplines) == 1:
             coupling = sub_mdo_disciplines[0]
             # gather all disciplines under the coupling that are FunctionManagerDisc disicpline
-            func_manager_list = [disc.sos_wrapp for disc in coupling.sos_disciplines if
+            func_manager_list = [disc.sos_wrapp for disc in coupling.disciplines if
                                  isinstance(disc.sos_wrapp, FunctionManagerDisc)]
             # Normally only one FunctionManagerDisc should be under the optim
             # if multiple do nothing
@@ -479,7 +479,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
             # build design space
             design_space = self.set_design_space()
-            if design_space.variables_names:
+            if design_space.variable_names:
                 _, formulation, maximize_objective, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
 
@@ -667,8 +667,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         default_dict = {}
         driver_lib = OptimizersFactory().create(algo_name)
         driver_lib.init_options_grammar(algo_name)
-        schema_dict = driver_lib.opt_grammar.schema.to_dict()
-        properties = schema_dict.get(driver_lib.opt_grammar.PROPERTIES_FIELD)
+        schema_dict = driver_lib.opt_grammar.schema
+        properties = schema_dict.get('properties')
         algo_options_keys = list(properties.keys())
 
         found_algo_names = [
