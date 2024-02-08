@@ -27,7 +27,7 @@ class StudyManager(BaseStudyManager):
         """
         Constructor
 
-        :params: process_module_name, module name of the process, ex : sostrades_core.sos_processes.test.process
+        :params: process_module_name, module name of the process, ex : sostrades_core.sos_processes.process_name
         :type: str
 
         :params: study_name, Name of the study
