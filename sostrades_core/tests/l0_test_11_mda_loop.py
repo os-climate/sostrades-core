@@ -1305,7 +1305,6 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.configure()
         
         # load data
-        sc_name = "SobieskyCoupling"
         disc_dict = {
                       '{sc_name}.z': [0.05,45000,1.6,5.5,55.,1000],
                       '{sc_name}.y_14': [50606.9,7306.20],

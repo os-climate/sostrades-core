@@ -23,7 +23,6 @@ from shutil import rmtree
 from pathlib import Path
 from os.path import join
 import pandas as pd
-import numpy as np
 from logging import Handler
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine

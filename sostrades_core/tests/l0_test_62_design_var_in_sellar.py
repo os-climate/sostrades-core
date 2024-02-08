@@ -13,11 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import unittest
 import numpy as np
 import pandas as pd
-from os.path import join, dirname
-from pandas import DataFrame, read_csv
+from os.path import dirname
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
@@ -143,7 +141,7 @@ class TestDesignVar(AbstractJacobianUnittest):
         assert all(df.columns == [self.design_var_descriptor['x_in']['index_name'], self.design_var_descriptor['x_in']['key']])
 
         filters = disc.get_chart_filter_list()
-        graph_list = disc.get_post_processing_list(filters)
+        disc.get_post_processing_list(filters)
         # for graph in graph_list:
         #     graph.to_plotly().show()
 

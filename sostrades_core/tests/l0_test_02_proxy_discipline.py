@@ -428,7 +428,6 @@ class TestProxyDiscipline(unittest.TestCase):
                           'Test.Disc1.indicator': 2.0, 'Test.y': 3.0}
         print(local_data)
         self.assertTrue(dict_are_equal(local_data, ref_local_data))
-        pass
 
 
 if '__main__' == __name__:

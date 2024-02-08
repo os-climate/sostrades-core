@@ -13,15 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from builtins import NotImplementedError
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
 
 import pandas as pd
-import numpy as np
 
-import itertools
 
 import logging
 LOGGER = logging.getLogger(__name__)

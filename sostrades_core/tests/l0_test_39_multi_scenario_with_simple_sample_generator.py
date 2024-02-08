@@ -20,16 +20,11 @@ import unittest
 from time import sleep
 from shutil import rmtree
 from pathlib import Path
-from os.path import join
 import pandas as pd
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_sample_generator_simple.usecase_without_ref import \
-    Study
 
 
 class TestMultiScenario(unittest.TestCase):

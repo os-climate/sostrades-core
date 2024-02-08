@@ -14,16 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 '''
-from os.path import join
 
-from pathlib import Path
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 # from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var.usecase import Study as study_sellar_opt
 # from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_mda
-from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import \
-    Study as study_disc1_disc2
 
-from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -31,15 +25,9 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 import unittest
 import sys
 from copy import deepcopy
-import numpy as np
-import pandas as pd
 from os import remove
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.core.mdo_scenario import MDOScenario
 
 
 # from sostrades_core.sos_wrapping.test_discs.sellar_gemseo.sellar import Sellar1, Sellar2, SellarSystem
@@ -107,7 +95,7 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
 
         # first execute
-        res_1 = self.ee.execute()
+        self.ee.execute()
 
         # check cache is None
         self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
@@ -125,7 +113,7 @@ class TestCache(unittest.TestCase):
             0].n_calls
 
         # second execute without change of parameters
-        res_2 = self.ee.execute()
+        self.ee.execute()
 
         # get number of calls after second call
         n_call_root_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
@@ -142,7 +130,7 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
 
         # first execute
-        res_1 = self.ee.execute()
+        self.ee.execute()
 
         self.assertEqual(self.ee.dm.get_value(
             'SoSDisc.Disc1.cache_type'), 'SimpleCache')
@@ -159,7 +147,7 @@ class TestCache(unittest.TestCase):
             0].n_calls
 
         # second execute without change of parameters
-        res_2 = self.ee.execute()
+        self.ee.execute()
 
         # get number of calls after second call
         n_call_root_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
@@ -202,13 +190,13 @@ class TestCache(unittest.TestCase):
             'SimpleCache')
 
         # first execute
-        res_1 = self.ee.execute()
+        self.ee.execute()
         # get number of calls after first call
         n_call_root_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
         n_call_1 = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.n_calls
 
         # second execute without change of parameters
-        res_2 = self.ee.execute()
+        self.ee.execute()
 
         # get number of calls after second call
         n_call_root_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls

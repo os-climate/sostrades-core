@@ -16,11 +16,8 @@ limitations under the License.
 '''
 import logging
 from logging import Handler
-from time import time
 
 
-import copy
-from gemseo.algos.doe.doe_factory import DOEFactory
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -28,10 +25,8 @@ unit test for doe scenario
 """
 
 import unittest
-from numpy import array, std
+from numpy import array
 import pandas as pd
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-import os
 from os.path import dirname, join
 
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
@@ -41,8 +36,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
 
 
 from pandas.testing import assert_frame_equal
-import re
-from os.path import join, dirname, exists
+from os.path import join, dirname
 
 
 class UnitTestHandler(Handler):
@@ -482,7 +476,6 @@ class TestSampleGeneratorTool(unittest.TestCase):
         '''
         Test to check big values of n_samples and associated performances
         '''
-        pass
 
     def test_10_check_generate_samples_cartesian_product(self):
         '''

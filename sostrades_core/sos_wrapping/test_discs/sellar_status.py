@@ -18,12 +18,9 @@ limitations under the License.
 Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
 '''
-from copy import copy
 from cmath import exp, sqrt
-from numpy import array, atleast_2d, NaN, complex128, ones, zeros
+from numpy import array, atleast_2d, NaN
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 

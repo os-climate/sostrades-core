@@ -56,7 +56,7 @@ class TestExtendString(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builder)
         self.exec_eng.load_study_from_input_dict({})
         print(self.exec_eng.display_treeview_nodes())
-        disc = self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
+        self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
 
         list_float = self.exec_eng.dm.get_value('EE.Disc.list_float')
         var_dict = {'EE.Disc.list_float': list_float}
@@ -96,7 +96,7 @@ class TestExtendString(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builder)
         self.exec_eng.load_study_from_input_dict({})
         print(self.exec_eng.display_treeview_nodes())
-        disc = self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
+        self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
 
         list_list_float = self.exec_eng.dm.get_value('EE.Disc.list_list_float')
         var_dict = {'EE.Disc.list_list_float': list_list_float}
@@ -141,7 +141,7 @@ class TestExtendString(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builder)
         self.exec_eng.load_study_from_input_dict({})
         print(self.exec_eng.display_treeview_nodes())
-        disc = self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
+        self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
 
         list_dict_float = self.exec_eng.dm.get_value('EE.Disc.list_dict_float')
         var_dict = {'EE.Disc.list_dict_float': list_dict_float}

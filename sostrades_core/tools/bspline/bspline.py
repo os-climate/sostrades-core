@@ -61,7 +61,7 @@ class BSpline(object):
         if m < 2 * (n + 1):
             print('n_poles =', n_poles, '\tn =', n)
             raise Exception(ERROR_MSG + ' not enough control points')
-        mid_m = m - 2 * (n + 1)
+        m - 2 * (n + 1)
 
         if n_poles == n + 2:
             knots = np.concatenate(
@@ -143,7 +143,7 @@ class BSpline(object):
         Method to evaluate the bspline in an array
         """
         barray_list = np.zeros((len(t_adim), self.n_poles))
-        bsp_scipy = bspline_sp(self.knots, self.ctrl_pts, self.degree)
+        bspline_sp(self.knots, self.ctrl_pts, self.degree)
         if isinstance(self.ctrl_pts, list):
             self.ctrl_pts = np.asarray(self.ctrl_pts)
 

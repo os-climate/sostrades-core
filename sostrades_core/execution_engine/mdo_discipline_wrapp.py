@@ -17,7 +17,6 @@ limitations under the License.
 import logging
 from typing import Union
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
-from gemseo.mda.mda_chain import MDAChain
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
 

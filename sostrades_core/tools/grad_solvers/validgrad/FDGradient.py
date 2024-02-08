@@ -121,7 +121,7 @@ class FDGradient(object):
                     y.append(deepcopy(self.__fpointer(x)))
                 else:
                     y.append(deepcopy(self.__fpointer(x, *args)))
-                grad_index = len(y)
+                len(y)
                 #print('grad index = ',grad_index)
 
         s = np.shape(y[0])

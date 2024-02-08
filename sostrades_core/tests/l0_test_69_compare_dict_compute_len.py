@@ -19,8 +19,7 @@ from sostrades_core.tools.base_functions.compute_len import compute_len
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
-import numpy as np
-from numpy import int32, int64, float32, float64, complex128, NaN, array
+from numpy import int32, int64, float32, float64, complex128, array
 from pandas import DataFrame as df
 
 

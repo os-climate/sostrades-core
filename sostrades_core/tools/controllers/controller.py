@@ -172,7 +172,6 @@ class Controller:
         """
         Handles any change in DV number. At least, reallocate gradients tables
         """
-        pass
     
     def check(self):
         pass
@@ -181,7 +180,6 @@ class Controller:
         """
         Update specific to each Controller.
         """
-        pass
     
     def update(self):
         self.check()

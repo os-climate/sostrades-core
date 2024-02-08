@@ -73,7 +73,7 @@ class TestTreenode(unittest.TestCase):
         ee.select_root_process(self.repo, 'test_disc1_disc2_coupling')
         print('*********** CONFIGURE 1 ****************')
         ee.configure()
-        treeview = ee.display_treeview_nodes()
+        ee.display_treeview_nodes()
         tw_object = ee.get_treeview()
         tw_dict = tw_object.to_dict()
         self.assertEqual(tw_dict['name'], namespace)

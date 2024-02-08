@@ -17,7 +17,6 @@ import copy
 import pandas as pd
 import numpy as np
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.execution_engine.builder_tools.scatter_tool import ScatterTool
 
 
@@ -127,7 +126,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         """
         No need to create a MDODisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
         """
-        pass
 
     def prepare_build(self):
         """

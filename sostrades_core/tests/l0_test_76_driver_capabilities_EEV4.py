@@ -14,14 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import copy
-import logging
 from logging import Handler
-from time import time
 
 from pandas._testing import assert_frame_equal
 
-from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 
 """
@@ -30,13 +26,10 @@ unit test for doe scenario
 """
 
 import unittest
-from numpy import array, std, NaN
+from numpy import array, std
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
-import os
-from os.path import dirname, join
-import math
 
 from importlib import import_module
 
@@ -592,7 +585,6 @@ class TestSoSDOEScenario(unittest.TestCase):
             'Disc1.indicator_dict')
 
         self.assertEqual(len(eval_disc_ind), 6)
-        i = 0
         # for key in eval_disc_ind.keys():
         #     self.assertAlmostEqual(eval_disc_ind[key],
         #                            private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i])
@@ -743,7 +735,6 @@ class TestSoSDOEScenario(unittest.TestCase):
             'Disc1.indicator_dict')
 
         self.assertEqual(len(eval_disc_ind), 6)
-        i = 0
         # for key in eval_disc_ind.keys():
         #     self.assertAlmostEqual(eval_disc_ind[key],
         #                            private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i])
@@ -1128,9 +1119,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         This test checks the usecase import capability in multi instance mode.
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         with_coupling = True
         # TODO: n'existe plus voir Carlos
@@ -1833,9 +1823,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val. 
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
         repo_name = self.repo + '.tests_driver_eval.multi'

@@ -81,7 +81,6 @@ class AbstractSampleGenerator(object):
         Check provided options before sample generation
         To be overloaded by subclass
         '''
-        pass
 
     def setup(self, proxy):
         """
@@ -125,4 +124,3 @@ class AbstractSampleGenerator(object):
         """
         # proxy.eval_in_possible_values = [subprocess_inputs]
         # proxy.eval_in_possible_types = {subprocess_input: variable_type}
-        pass

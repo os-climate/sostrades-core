@@ -214,7 +214,7 @@ class CheckDataIntegrity():
         '''
 
         dataframe_descriptor = var_data_dict[self.DATAFRAME_DESCRIPTOR]
-        dataframe_edition_locked = var_data_dict[self.DATAFRAME_EDITION_LOCKED]
+        var_data_dict[self.DATAFRAME_EDITION_LOCKED]
         # Mean that dataframe columns can be dynamic depending on the case and cannot be checked
         if self.DYNAMIC_DATAFRAME_COLUMNS in var_data_dict:
             dynamic_dataframe_column = var_data_dict[self.DYNAMIC_DATAFRAME_COLUMNS]

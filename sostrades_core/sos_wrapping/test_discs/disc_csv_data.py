@@ -45,7 +45,7 @@ class DiscCsvData(SoSWrapp):
 
     def run(self):
         # Fake run not used
-        inputs = self.get_sosdisc_inputs()
+        self.get_sosdisc_inputs()
         z = 42
 
         self.store_sos_outputs_values({'z': z})

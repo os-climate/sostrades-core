@@ -167,14 +167,12 @@ class SoSWrapp(object):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def add_outputs(self, output_dict):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def clean_variables(self, var_name_list, io_type):
@@ -185,69 +183,59 @@ class SoSWrapp(object):
             var_name_list (List[string]): variable names to clean
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
         """
-        pass
 
     def check_data_integrity(self):
         """
         Method check_data_integrity
         """
-        pass
 
     @at_proxy
     def get_data_in(self):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def get_data_out(self):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def set_dynamic_default_values(self, default_values_dict):
         """
         Method set_dynamic_default_values delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def update_default_value(self, var_name, io_type, new_default_value):
         """
         Method update_default_value delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def get_disc_full_name(self):
         """
         Method get_disc_full_name delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def get_disc_display_name(self):
         """
         Method get_disc_display_name delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def get_input_var_full_name(self, var_name):
         """
         Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def get_output_var_full_name(self, var_name):
         """
         Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @property
     @at_proxy
@@ -255,7 +243,6 @@ class SoSWrapp(object):
         """
         Property config_dependency_disciplines delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def get_inst_desc_in(self):
@@ -263,42 +250,36 @@ class SoSWrapp(object):
         Method get_inst_desc_in delegated to associated ProxyDiscipline object during configuration.
         """
         # TODO: expose proxy attributes not only methods to SoSWrapp ? Would also affect properties (see decorator impl)
-        pass
 
     @at_proxy
     def get_father_executor(self):
         """
         Method get_father_executor delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def add_disc_to_config_dependency_disciplines(self):
         """
         Method add_disc_to_config_dependency_disciplines delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def get_var_full_name(self, short_name, data_io):
         """
         Method get_var_full_name delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def add_new_shared_ns(self, shared_ns):
         """
         Method add_new_shared_ns delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     @at_proxy
     def get_shared_ns_dict(self):
         """
         Method get_shared_ns_dict delegated to associated ProxyDiscipline object during configuration.
         """
-        pass
 
     def setup_sos_disciplines(self):  # type: (...) -> None
         """
@@ -309,7 +290,6 @@ class SoSWrapp(object):
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline for dynamic i/o configuration
         """
-        pass
 
     def init_execution(self):  # type: (...) -> None
         """
@@ -320,7 +300,6 @@ class SoSWrapp(object):
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline for dynamic i/o configuration
         """
-        pass
 
     def run(self):  # type: (...) -> None
         """
@@ -589,9 +568,9 @@ class SoSWrapp(object):
         techno
         '''
         if ykey not in self.DESC_OUT:
-            key_type = self.inst_desc_out[ykey]['type']
+            self.inst_desc_out[ykey]['type']
         else:
-            key_type = self.DESC_OUT[ykey]['type']
+            self.DESC_OUT[ykey]['type']
         value = self.get_sosdisc_outputs(ykey)
 
         if dataframefillmethod == self.ONE_COLUMN_FOR_KEY:

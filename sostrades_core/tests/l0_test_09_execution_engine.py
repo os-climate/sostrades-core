@@ -243,7 +243,7 @@ class TestExecutionEngine(unittest.TestCase):
         rmtree(root_dir)
 
     def test_05_exec_engine_logging(self):
-        _ee = ExecutionEngine(self.name)
+        ExecutionEngine(self.name)
         try:
             issue_using_sos_logging = False
             ee_logger = getLogger('SoSTrades')

@@ -16,7 +16,6 @@ limitations under the License.
 
 from sostrades_core.execution_engine.data_connector.abstract_data_connector import AbstractDataConnector
 import pandas as pd 
-import os
 from pymongo import MongoClient
 import logging
 import urllib.parse

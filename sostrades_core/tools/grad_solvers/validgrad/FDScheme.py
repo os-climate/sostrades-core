@@ -81,7 +81,6 @@ class FDScheme(object):
         For instance : [(x0-fd_step, x1), (x0, x1-fd_step),(x0+fd_step, x1), (x0, x1+fd_step)]
         for a second order centered scheme.
         """
-        pass
 
     def get_fd_step(self):
         """

@@ -24,7 +24,7 @@ unit test for linearization mode propagation
 import unittest
 from logging import Handler
 import pandas as pd
-from numpy import array, set_printoptions
+from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 

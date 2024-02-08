@@ -24,15 +24,11 @@ import unittest
 from time import sleep
 from shutil import rmtree
 from pathlib import Path
-from os.path import join
 
-import numpy as np
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver.usecase_scatter import Study
 
 
@@ -148,7 +144,7 @@ class TestNamespaceHandling(unittest.TestCase):
             repo_name, 'test_multi_driver')
         builder_list2 = exec_eng.factory.get_builder_from_process(
             repo_name, 'test_multi_driver')
-        ns_list_standard = deepcopy(exec_eng.ns_manager.ns_list)
+        deepcopy(exec_eng.ns_manager.ns_list)
         # ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
         #     'Scatter1', after_name=exec_eng.study_name)
         for builder in builder_list1:

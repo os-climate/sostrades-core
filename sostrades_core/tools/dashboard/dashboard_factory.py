@@ -20,7 +20,6 @@ import os
 import json
 from importlib import import_module
 
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 DASHBOARD_MODULE = "dashboard"
 DASHBOARD = "dashboard_template.json"

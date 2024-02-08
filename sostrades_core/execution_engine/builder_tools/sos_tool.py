@@ -91,14 +91,12 @@ class SosTool():
         - Remove disciplines that are not in the scatter list
         - Scatter the instantiator cls and adapt namespaces depending if it is a list or a singleton
         '''
-        pass
 
     @abc.abstractmethod
     def prepare_tool(self):
         '''
         Prepare tool function if some data of the driver are needed to configure the tool
         '''
-        pass
 
     def get_dynamic_output_from_tool(self):
         pass

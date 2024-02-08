@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 """
@@ -270,7 +269,6 @@ class BaseStudyManager():
         """ Method to overload to have a specific check on input datas
 
         """
-        pass
 
     def load_connectors(self, from_dict=None, from_path=None):
         """Method that load connectors into the execution engine

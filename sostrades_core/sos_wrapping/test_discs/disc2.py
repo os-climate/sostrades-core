@@ -15,7 +15,6 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-import time
 
 
 class Disc2(SoSWrapp):

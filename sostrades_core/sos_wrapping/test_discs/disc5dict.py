@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from numpy import array
 
 
@@ -52,7 +51,7 @@ class Disc5(SoSWrapp):
         key2 = dict_out['key2']
         if isinstance(key2, dict):
             key2 = key2['1']
-        z = self.get_sosdisc_inputs('z')
+        self.get_sosdisc_inputs('z')
 
         h = array([0.5 * (key1 + 1. / (2 * key1)),
                    0.5 * (key2 + 1. / (2 * key2))])

@@ -19,7 +19,6 @@ from sys import maxsize
 from numpy import ones, inf, array
 
 from gemseo.problems.analytical.knapsack import Knapsack
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 

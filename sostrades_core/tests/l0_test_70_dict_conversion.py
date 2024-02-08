@@ -21,15 +21,10 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 import pprint
-import numpy as np
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
 from os.path import join
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
-from copy import deepcopy
 from tempfile import gettempdir
 
 
@@ -61,7 +56,7 @@ class TestExtendString(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builder)
         self.exec_eng.load_study_from_input_dict({})
         print(self.exec_eng.display_treeview_nodes())
-        disc = self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
+        self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
 
         dict_float = self.exec_eng.dm.get_value('EE.Disc.dict_float')
         var_dict = {'EE.Disc.dict_float': dict_float}
@@ -111,7 +106,7 @@ class TestExtendString(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builder)
         self.exec_eng.load_study_from_input_dict({})
         print(self.exec_eng.display_treeview_nodes())
-        disc = self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
+        self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
 
         dict_dict_float = self.exec_eng.dm.get_value('EE.Disc.dict_dict_float')
         var_dict = {'EE.Disc.dict_dict_float': dict_dict_float}
@@ -157,7 +152,7 @@ class TestExtendString(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(builder)
         self.exec_eng.load_study_from_input_dict({})
         print(self.exec_eng.display_treeview_nodes())
-        disc = self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
+        self.exec_eng.dm.get_disciplines_with_name('EE.Disc')[0]
 
         dict_list_float = self.exec_eng.dm.get_value('EE.Disc.dict_list_float')
         var_dict = {'EE.Disc.dict_list_float': dict_list_float}

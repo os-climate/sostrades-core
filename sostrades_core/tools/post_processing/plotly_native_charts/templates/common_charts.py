@@ -24,7 +24,6 @@ from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plot
     InstantiatedPlotlyNativeChart,
 )
 import pandas as pd
-import numpy as np
 import math
 
 

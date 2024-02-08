@@ -549,7 +549,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     # builder name at architecture node
                     builder_name = namespace
                     if not builder.sos_name.endswith('@archi_node'):
-                        old_builder_name = builder.sos_name
+                        builder.sos_name
                         builder.set_disc_name(f'{builder.sos_name}@archi_node')
                         # self.ee.ns_manager.add_display_ns_to_builder(builder, old_builder_name)
                 action, args = self.get_action_builder(namespace, archi_df)

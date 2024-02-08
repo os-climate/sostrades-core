@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
-from copy import deepcopy
 import logging
 from sostrades_core.execution_engine.gemseo_addon.mda.pure_newton_raphson import PureNewtonRaphson
 """
@@ -25,7 +24,6 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.sequential_mda import GSNewtonMDA
 from gemseo.mda.sequential_mda import MDASequential
 
 

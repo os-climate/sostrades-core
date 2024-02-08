@@ -32,7 +32,6 @@ from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFact
 from gemseo.api import create_mda
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 
-import logging
 
 N_CPUS = cpu_count()
 

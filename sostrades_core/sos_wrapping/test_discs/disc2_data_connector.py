@@ -51,7 +51,7 @@ class Disc2_data_connector(SoSWrapp):
     }
 
     def run(self):
-        y = self.get_sosdisc_inputs('y')
+        self.get_sosdisc_inputs('y')
         z = 1.0
         dict_values = {'z': z}
         self.store_sos_outputs_values(dict_values)

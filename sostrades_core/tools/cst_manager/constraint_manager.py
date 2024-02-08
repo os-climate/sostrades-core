@@ -218,7 +218,7 @@ def compute_ddelta_constraint(value, goal, tolerable_delta=1.0, delta_type='abs'
     dcdelta_dgoal = compute_dcdelta_dvalue(delta, ddelta_dgoal, type=delta_type)
 
     # Third step
-    constraint = ((tolerable_delta - cdelta) / reference_value - eps)
+    ((tolerable_delta - cdelta) / reference_value - eps)
     ddelta_constraint_dvalue = -dcdelta_dvalue / reference_value
     ddelta_constraint_dgoal = -dcdelta_dgoal / reference_value
     ddelta_constraint_dtolerable_delta = np.identity(len(value)) / reference_value

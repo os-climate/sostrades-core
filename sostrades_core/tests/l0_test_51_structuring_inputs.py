@@ -18,19 +18,15 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
-from time import sleep, time
+from time import sleep
 from pathlib import Path
-import platform
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 # from sostrades_core.sos_processes.test.test_configure_process.usecase import Study as study_core
 # from sostrades_core.sos_processes.test.test_configure_process.usecase_import_study import Study as study_core_import_study
 # from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import Study as study_sellar_opt
 
 from tempfile import gettempdir
-from copy import copy, deepcopy
-from os.path import join, dirname
 from os import remove
 
 

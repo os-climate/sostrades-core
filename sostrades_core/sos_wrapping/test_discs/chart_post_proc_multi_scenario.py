@@ -18,8 +18,6 @@ limitations under the License.
 # pylint: disable=line-too-long
 
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
-    TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
 
 

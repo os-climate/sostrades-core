@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -121,10 +120,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}')[0]
 
         uncertainty_quanti_disc_output = uncertainty_quanti_disc.get_sosdisc_outputs()
-        out_df = uncertainty_quanti_disc_output['output_interpolated_values_df']
+        uncertainty_quanti_disc_output['output_interpolated_values_df']
 
         filter = uncertainty_quanti_disc.get_chart_filter_list()
-        graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
+        uncertainty_quanti_disc.get_post_processing_list(filter)
         #for graph in graph_list:
         #    graph.to_plotly().show()
 
@@ -266,10 +265,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}')[0]
 
         uncertainty_quanti_disc_output = uncertainty_quanti_disc.get_sosdisc_outputs()
-        out_df = uncertainty_quanti_disc_output['output_interpolated_values_df']
+        uncertainty_quanti_disc_output['output_interpolated_values_df']
 
         filter = uncertainty_quanti_disc.get_chart_filter_list()
-        graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
+        uncertainty_quanti_disc.get_post_processing_list(filter)
         """
         for graph in graph_list:
             graph.to_plotly().show()
@@ -362,10 +361,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
             f'{self.name}.{self.uncertainty_quantification}')[0]
 
         uncertainty_quanti_disc_output = uncertainty_quanti_disc.get_sosdisc_outputs()
-        out_df = uncertainty_quanti_disc_output['output_interpolated_values_df']
+        uncertainty_quanti_disc_output['output_interpolated_values_df']
 
         filter = uncertainty_quanti_disc.get_chart_filter_list()
-        graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
+        uncertainty_quanti_disc.get_post_processing_list(filter)
         """
         for graph in graph_list:
             graph.to_plotly().show()

@@ -15,9 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
-    TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 import pandas as pd
 
 
@@ -69,7 +66,7 @@ class Disc1(SoSWrapp):
         x = self.get_sosdisc_inputs('x')
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
-        name = self.get_sosdisc_inputs('name')
+        self.get_sosdisc_inputs('name')
         x_dict = self.get_sosdisc_inputs('x_dict')
         di_dict = self.get_sosdisc_inputs('di_dict')
         dd_df = self.get_sosdisc_inputs('dd_df')

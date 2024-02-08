@@ -276,7 +276,6 @@ class TestDataManagerStorage(unittest.TestCase):
         self.factory.set_builders_to_coupling_builder(builder_list)
         with self.assertRaises(Exception) as cm:
             self.ee.configure()
-            pass
         same_name = 'SameName'
         disc1_name = self.mod1_path.rsplit('.', 1)[0]
         disc2_name = self.mod2_path.rsplit('.', 1)[0]

@@ -16,7 +16,6 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from copy import copy, deepcopy
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.sample_generators.simple_sample_generator import SimpleSampleGenerator
@@ -24,7 +23,6 @@ from sostrades_core.execution_engine.sample_generators.grid_search_sample_genera
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
     CartesianProductSampleGenerator
-from sostrades_core.tools.gather.gather_tool import check_eval_io
 import pandas as pd
 from numpy import array
 

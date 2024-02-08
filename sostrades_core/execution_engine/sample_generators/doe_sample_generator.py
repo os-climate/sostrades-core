@@ -22,9 +22,7 @@ from sostrades_core.execution_engine.sample_generators.abstract_sample_generator
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.api import get_available_doe_algorithms
-from gemseo.api import get_algorithm_options_schema
-from gemseo.api import compute_doe
-from numpy import array, ndarray, delete, NaN
+from numpy import array, ndarray, delete
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -200,7 +198,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             self.logger.warning("N_samples is not defined; pay attention you use fullfact algo "
                            "and that levels are well defined")
 
-        pass
 
     def _check_samples(self, samples_df):
         '''
@@ -467,7 +464,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             dynamic_inputs (dict): the dynamic input dict to be updated
         """
         # TODO: might want to refactor to simplify GridSearch
-        selected_inputs_has_changed = False
         disc_in = proxy.get_data_in()
         # Dynamic input of default design space
         if proxy.EVAL_INPUTS in disc_in:

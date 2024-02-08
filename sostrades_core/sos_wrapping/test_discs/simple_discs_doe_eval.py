@@ -15,12 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from numpy import std
 from gemseo.api import get_available_doe_algorithms
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from collections import ChainMap
 
 class SimpleDisc1(SoSWrapp):
     """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.

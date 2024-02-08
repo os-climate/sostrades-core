@@ -16,8 +16,7 @@ limitations under the License.
 '''
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.sos_processes.script_test_all_usecases import processed_test_one_usecase
-from os.path import abspath, basename, dirname, relpath, splitext, join, exists
-from os import sep
+from os.path import abspath, basename, dirname, splitext, join, exists
 import numpy as np
 
 
@@ -133,7 +132,6 @@ class StudyManager(BaseStudyManager):
         """
         Method to get dv_arrays
         """
-        pass
 
     def test(self, force_run: bool = False):
         test_passed, error_msg = processed_test_one_usecase(usecase=self.study_full_path, force_run=force_run)

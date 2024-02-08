@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import pandas as pd
-from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
 
@@ -48,7 +47,6 @@ class Study(StudyManager):
 
         # configure the scenarios
         scenario_list_outer = ['scenario_1', 'scenario_2']
-        scenario_list_inner = ['name_1', 'name_2']
         for i, sc in enumerate(scenario_list_outer):
             values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.samples_df'] = scenario_df_inner
             values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.instance_reference'] = True

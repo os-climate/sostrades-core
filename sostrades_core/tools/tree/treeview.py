@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.tools.tree.data_management_discipline import DataManagementDiscipline
-from sostrades_core.execution_engine import ns_manager
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """

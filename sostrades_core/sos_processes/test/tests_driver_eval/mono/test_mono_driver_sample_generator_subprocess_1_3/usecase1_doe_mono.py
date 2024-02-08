@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import pandas as pd
-from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType

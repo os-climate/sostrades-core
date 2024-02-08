@@ -157,8 +157,8 @@ class TestValidGrad(unittest.TestCase):
         scheme = FDSecondOrderCentered(EPS)
         hess_calc = BFGSFDHessian(scheme, self.rosen_grad)
         x = np.array([1., 1.])
-        H_bfgs = hess_calc.hess_f(x)
-        H_true = self.rosen_hess(x)
+        hess_calc.hess_f(x)
+        self.rosen_hess(x)
         return True  # BFGS hessian can be not so close to true hessian...
 
     def test_07_vect_BFGSHessian(self):
@@ -166,8 +166,8 @@ class TestValidGrad(unittest.TestCase):
         scheme = FDSecondOrderCentered(EPS)
         hess_calc = BFGSFDHessian(scheme, self.rosen_grad_vect)
         x = np.array([1., 1.])
-        H_bfgs = hess_calc.vect_hess_f(x)
-        H_true = self.rosen_hess(x)
+        hess_calc.vect_hess_f(x)
+        self.rosen_hess(x)
         return True  # BFGS hessian can be not so close to true hessian...
 
     def test_08_FDHessian(self):

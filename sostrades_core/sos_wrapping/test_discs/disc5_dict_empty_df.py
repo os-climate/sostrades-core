@@ -49,11 +49,11 @@ class Disc5EmptyDf(SoSWrapp):
     def run(self):
         dict_out = self.get_sosdisc_inputs('dict_out')
         key1 = dict_out['key1']
-        key11 = key1['key11']
+        key1['key11']
         key14 = key1['key14']
         df = key14['key141']
-        val = df['col2'][1]
-        z = self.get_sosdisc_inputs('z')
+        df['col2'][1]
+        self.get_sosdisc_inputs('z')
 
         dict_empty_df = self.get_sosdisc_inputs('dict_empty_df')
         dict_empty_list = self.get_sosdisc_inputs('dict_empty_list')

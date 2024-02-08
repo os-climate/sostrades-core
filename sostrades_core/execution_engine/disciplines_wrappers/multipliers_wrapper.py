@@ -17,14 +17,8 @@ limitations under the License.
 import copy
 import re
 
-import platform
-from tqdm import tqdm
-import time
 
-from numpy import array, ndarray, delete, NaN
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
@@ -36,13 +30,7 @@ import logging
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
-from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
-    CartesianProductSampleGenerator
 import pandas as pd
-import numpy as np
-from collections import ChainMap
-from gemseo.api import get_available_doe_algorithms
 
 
 class MultipliersWrapper(SoSWrapp):
@@ -165,7 +153,7 @@ class MultipliersWrapper(SoSWrapp):
     def setup_multipliers(self, dynamic_inputs):
         self.eval_disc = self.find_eval_disc(self)
         self.eval_ns = self.eval_disc.get_disc_full_name()
-        eval_disc_in = self.eval_disc.get_data_in()
+        self.eval_disc.get_data_in()
         # self.add_disc_to_config_dependency_disciplines(self.eval_disc) # creates a cycle...
         # for disc in self.get_father_executor().proxy_disciplines:
         #     if not hasattr(disc.mdo_discipline_wrapp, 'wrapper') \

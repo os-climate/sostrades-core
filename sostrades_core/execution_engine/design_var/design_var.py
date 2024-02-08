@@ -14,10 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from numpy import arange
-from pandas import DataFrame, Series, concat
+from pandas import DataFrame, concat
 from sostrades_core.tools.bspline.bspline import BSpline
-from copy import deepcopy
 
 import numpy as np
 

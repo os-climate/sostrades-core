@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class Disc1(SoSWrapp):
@@ -50,7 +49,7 @@ class Disc1(SoSWrapp):
         x = self.get_sosdisc_inputs('x')
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
-        name = self.get_sosdisc_inputs('name')
+        self.get_sosdisc_inputs('name')
         x_dict = self.get_sosdisc_inputs('x_dict')
 
         y_dict = {}

@@ -17,22 +17,12 @@ limitations under the License.
 """A PETSC KSP linear solvers library wrapper."""
 import logging
 import sys
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Union
 
 import petsc4py  # pylint: disable-msg=E0401
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E1102,E0611 # pylint: disable-msg=E0401
 
-from numpy import arange
-from numpy import array
-from numpy import ndarray
 from numpy import isnan
-from scipy.sparse import csr_matrix
-from scipy.sparse import find
-from scipy.sparse.base import issparse
 
 # Must be done before from petsc4py import PETSc, this loads the options from
 # command args in the options database.

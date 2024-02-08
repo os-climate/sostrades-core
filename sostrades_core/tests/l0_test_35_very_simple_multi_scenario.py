@@ -27,7 +27,6 @@ from time import sleep
 from shutil import rmtree
 from pathlib import Path
 from os.path import join
-import os
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 # from sos_trades_core.execution_engine.sos_very_simple_multi_scenario import SoSVerySimpleMultiScenario
@@ -37,7 +36,6 @@ from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 
 class TestVerySimpleMultiScenario(unittest.TestCase):
@@ -125,10 +123,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_list = ['scenario_1', 'scenario_2']
         for scenario in scenario_list:
             x1 = 2.
-            x2 = 4.
             a1 = 3
             b1 = 4
-            a2 = 6
             b2 = 2
 
             dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = a1
@@ -245,10 +241,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_list = ['scenario_A', 'scenario_B']
         for scenario in scenario_list:
             x1 = 2.
-            x2 = 4.
             a1 = 3
             b1 = 4
-            a2 = 6
             b2 = 2
 
             dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = a1
@@ -279,10 +273,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_list = ['scenario_1', 'scenario_2']
         for scenario in scenario_list:
             x1 = 2.
-            x2 = 4.
             a1 = 3
             b1 = 4
-            a2 = 6
             b2 = 2
 
             dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = a1
@@ -343,11 +335,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
         scenario_list = ['scenario_1', 'scenario_2']
         for scenario in scenario_list:
-            x1 = 2.
-            x2 = 4.
             a1 = 3
             b1 = 4
-            a2 = 6
             b2 = 2
 
             dict_values[self.study_name + '.a'] = a1
@@ -618,10 +607,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         scenario_list = ['scenario_1', 'scenario_2']
         for scenario in scenario_list:
             x1 = 2.
-            x2 = 4.
             a1 = 3
             b1 = 4
-            a2 = 6
             b2 = 2
 
             dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = a1

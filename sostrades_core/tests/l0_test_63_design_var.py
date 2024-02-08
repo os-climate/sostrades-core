@@ -13,11 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import unittest
 import numpy as np
 import pandas as pd
-from os.path import join, dirname
-from pandas import DataFrame, read_csv
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
@@ -142,7 +139,7 @@ class TestDesignVar(AbstractJacobianUnittest):
 
         disc = self.ee.dm.get_disciplines_with_name(f'{self.ns}.DesignVar')[0]
         filter = disc.get_chart_filter_list()
-        graph_list = disc.get_post_processing_list(filter)
+        disc.get_post_processing_list(filter)
         # for graph in graph_list:
         #     graph.to_plotly().show()
         # checks output type is well created for dataframes (most commonly used)

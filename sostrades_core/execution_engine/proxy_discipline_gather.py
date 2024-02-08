@@ -295,7 +295,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
         If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
         DESC_IN = {'X': {'structuring':True}}
         """
-        pass
 
     def set_wrapper_attributes(self, wrapper):
         """ set the attribute attributes of wrapper

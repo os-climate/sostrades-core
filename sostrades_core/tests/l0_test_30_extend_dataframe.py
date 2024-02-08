@@ -326,7 +326,7 @@ class TestExtendDataframe(unittest.TestCase):
         exec_eng.factory.set_builders_to_coupling_builder(
             disc6_builder)
         exec_eng.configure()
-        disc6 = exec_eng.root_process.proxy_disciplines[0]
+        exec_eng.root_process.proxy_disciplines[0]
         metadata = {'years': list(np.arange(2020, 2101)),
                     '__key__': [], '__type__': pd.DataFrame,
                     '__columns__': ['CO2', 'uranium fuel', 'biomass_dry', 'wet_biomass',
@@ -477,7 +477,7 @@ class TestExtendDataframe(unittest.TestCase):
         df = convert_array_into_df(
             np.array(arr_to_convert), metadata)
         exec_eng.load_study_from_input_dict({'EE.dict_df': df})
-        old_value = exec_eng.dm.get_value('EE.dict_df')
+        exec_eng.dm.get_value('EE.dict_df')
 
         profil = cProfile.Profile()
         profil.enable()
@@ -513,7 +513,7 @@ class TestExtendDataframe(unittest.TestCase):
         exec_eng.factory.set_builders_to_coupling_builder(
             disc6_builder)
         exec_eng.configure()
-        disc6 = exec_eng.root_process.proxy_disciplines[0]
+        exec_eng.root_process.proxy_disciplines[0]
         metadata = {'years': list(np.arange(2020, 2101)),
                     '__key__': [], '__type__': pd.DataFrame,
                     '__columns__': ['CO2'],
@@ -535,7 +535,7 @@ class TestExtendDataframe(unittest.TestCase):
         df = convert_array_into_df(
             np.array(arr_to_convert), metadata)
         exec_eng.load_study_from_input_dict({'EE.dict_df': df})
-        old_value = exec_eng.dm.get_value('EE.dict_df')
+        exec_eng.dm.get_value('EE.dict_df')
 
         profil = cProfile.Profile()
         profil.enable()
@@ -576,7 +576,7 @@ class TestExtendDataframe(unittest.TestCase):
         exec_eng.factory.set_builders_to_coupling_builder(
             disc6_builder)
         exec_eng.configure()
-        disc6 = exec_eng.root_process.proxy_disciplines[0]
+        exec_eng.root_process.proxy_disciplines[0]
         metadata = {'__type__': pd.DataFrame,
                     '__columns__': ['name', 'age', 'weight', 'adult', 'favorite complex number', 'satisfaction'],
                     '__shape__': (5, 6), '__size__': 30,
@@ -589,7 +589,7 @@ class TestExtendDataframe(unittest.TestCase):
         df_init = convert_array_into_df(
             np.array(arr_to_convert), metadata)
         exec_eng.load_study_from_input_dict({'EE.df': df_init})
-        old_value = exec_eng.dm.get_value('EE.df')
+        exec_eng.dm.get_value('EE.df')
 
         profil = cProfile.Profile()
         profil.enable()

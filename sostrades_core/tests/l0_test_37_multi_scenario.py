@@ -1124,7 +1124,6 @@ class TestMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         samples_df = self.exec_eng.dm.get_value(
             f'{self.study_name}.multi_scenarios.samples_df')
-        scenario_vars = ['Disc1.b', 'z']
         self.assertEqual(
             samples_df['scenario_name'].values.tolist(), scenario_names)
         self.assertEqual(samples_df['Disc1.b'].values.tolist(), [self.b1,

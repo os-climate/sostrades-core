@@ -48,7 +48,7 @@ class Disc4(SoSWrapp):
 
     def run(self):
         # get unused dict
-        mydict = self.get_sosdisc_inputs('mydict')
+        self.get_sosdisc_inputs('mydict')
 
         # get dict of df
         h = self.get_sosdisc_inputs('h')

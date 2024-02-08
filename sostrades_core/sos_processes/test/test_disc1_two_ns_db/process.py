@@ -16,7 +16,6 @@ limitations under the License.
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 # -- Generate test 1 process
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
-from os.path import join, dirname
 import os
 
 class ProcessBuilder(BaseProcessBuilder):

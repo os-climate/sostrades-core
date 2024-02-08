@@ -15,7 +15,6 @@ limitations under the License.
 
 '''
 import pandas as pd
-from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
 

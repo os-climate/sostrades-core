@@ -25,7 +25,6 @@ from time import sleep
 from tempfile import gettempdir
 from io import BytesIO, StringIO
 from shutil import rmtree, make_archive
-import warnings
 
 from pandas import DataFrame, read_pickle, concat
 from numpy import ndarray

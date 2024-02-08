@@ -26,7 +26,6 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from copy import deepcopy
 from multiprocessing import cpu_count
 
-import pandas as pd
 from numpy import array, ndarray, delete, inf
 
 from gemseo.algos.design_space import DesignSpace
@@ -36,7 +35,7 @@ from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
-from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
+from sostrades_core.execution_engine.ns_manager import NamespaceManager
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart

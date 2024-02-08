@@ -15,9 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
-    TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.execution_engine.data_connector.mock_connector import MockConnector
 from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
@@ -65,7 +62,7 @@ class Disc1(SoSWrapp):
     DESC_OUT['y'][SoSWrapp.CONNECTOR_DATA] = connector_data
 
     def run(self):
-        x = self.get_sosdisc_inputs('x')
+        self.get_sosdisc_inputs('x')
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
         # dict_values = {'indicator': a * b, 'y': a * x + b}

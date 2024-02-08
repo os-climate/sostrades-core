@@ -19,11 +19,11 @@ scipy.optimize optimization library wrapper
 """
 
 
-from builtins import super, zip
+from builtins import super
 import logging
 
 from future import standard_library
-from numpy import isfinite, real
+from numpy import real
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 

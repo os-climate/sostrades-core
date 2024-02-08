@@ -25,7 +25,6 @@ from scipy.sparse import dia_matrix
 from scipy.sparse.dok import dok_matrix
 from copy import deepcopy
 from multiprocessing import Pool
-import platform
 
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory

@@ -16,10 +16,7 @@ limitations under the License.
 # pylint: skip-file
 """A Gauss Seidel algorithm for solving MDAs."""
 
-from typing import Optional, Sequence
 
-from gemseo.core.chain import MDOChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from numpy import array

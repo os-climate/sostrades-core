@@ -17,7 +17,6 @@ limitations under the License.
 from sostrades_core.execution_engine.design_var.design_var import DesignVar
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 import numpy as np
-import pandas as pd
 from plotly import graph_objects as go
 import plotly.colors as plt_color
 

@@ -14,14 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
 from logging import Handler
-from time import time
 
 from pandas._testing import assert_frame_equal
 import re
 
-from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 
 """
@@ -34,7 +31,6 @@ from numpy import array
 import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-import os
 from os.path import dirname, join
 
 
@@ -462,7 +458,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
                                 'seed': 1,
                                 'max_time': 0}
 
-        sample_generator = DoeSampleGenerator()
+        DoeSampleGenerator()
 
         # To work, DoE needs (statically) a sampling_algo and an eval_inputs and (dinamically) a design space.
         # The eval_inputs and design space will be defined below and samplings will be checked to assert that the right

@@ -28,8 +28,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.tools.cst_manager.func_manager_common import smooth_maximum, smooth_maximum_vect, \
-    get_dsmooth_dvariable
+from sostrades_core.tools.cst_manager.func_manager_common import smooth_maximum, get_dsmooth_dvariable
 from sostrades_core.tools.base_functions.exp_min import compute_func_with_exp_min, compute_dfunc_with_exp_min
 from numpy import float64, ndarray, asarray
 import pandas as pd
@@ -339,7 +338,7 @@ class FunctionManagerDisc(SoSWrapp):
 
         '''
         s_name = [full_name for full_name in self.local_data if 'export_csv' in full_name][0].split('.')[0]
-        t = time.localtime()
+        time.localtime()
 
         self.csvfile = open(
             f'mod_{s_name}_funcmanager_test.csv', 'w')
@@ -747,8 +746,8 @@ class FunctionManagerDisc(SoSWrapp):
 
         dcst_result = np.zeros_like(valcol)
         # ---get value of espilon2
-        smooth_log = self.get_sosdisc_inputs('smooth_log')
-        eps2 = self.get_sosdisc_inputs('eps2')
+        self.get_sosdisc_inputs('smooth_log')
+        self.get_sosdisc_inputs('eps2')
         for iii, val in enumerate(valcol):
             if val > eps:
                 # res = res0 + val ** 2 - eps ** 2
@@ -1387,14 +1386,14 @@ class FunctionManagerDisc(SoSWrapp):
         try:
             ineq_constraints_max_col = ineq_constraints.idxmax(axis=1)
         except:
-            ineq_constraints_max_col = None
+            pass
 
         eq_constraints_sum = eq_constraints.sum(axis=1).fillna(0)
         eq_constraints_max = eq_constraints.max(axis=1).fillna(0)
         try:
             eq_constraints_max_col = eq_constraints.idxmax(axis=1)
         except:
-            eq_constraints_max_col = None
+            pass
         tot_constraints = pd.concat([ineq_constraints, eq_constraints], axis=1)
         tot_constraints_sum = ineq_constraints_sum + eq_constraints_sum
         tot_constraints_max = [max(row) for index, row in pd.concat(

@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
-from collections import defaultdict
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8

@@ -51,7 +51,7 @@ class Disc5(SoSWrapp):
         key14 = key1['key14']
         df = key14['key141']
         val = df['col2'][1]
-        z = self.get_sosdisc_inputs('z')
+        self.get_sosdisc_inputs('z')
 
         h_data = array([0.5 * (key11 + 1. / (2 * key11)),
                         0.5 * (val + 1. / (2 * val))])

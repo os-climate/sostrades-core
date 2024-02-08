@@ -273,7 +273,7 @@ class GatherDiscipline(SoSWrapp):
         if chart_filters is not None:
             for chart_filter in chart_filters:
                 if chart_filter.filter_key == 'Charts gather':
-                    graphs_list = chart_filter.selected_values
+                    chart_filter.selected_values
 
         output_dict = self.get_sosdisc_outputs()
 

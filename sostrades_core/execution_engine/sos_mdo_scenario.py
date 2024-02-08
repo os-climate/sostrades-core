@@ -19,11 +19,9 @@ import numpy as np
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from typing import Union
 from copy import deepcopy
 import logging
 import pandas as pd
-from numpy import ndarray
 
 from gemseo.core.mdo_scenario import MDOScenario
 
@@ -232,7 +230,6 @@ class SoSMDOScenario(MDOScenario):
             self.logger.info(f"x_opt from problem solution is {x_opt_result}")
         except:
             self.logger.info(f"Exception {problem.solution}")
-            pass
         # Revaluate all functions at optimum
         # To re execute all disciplines and get the right data
 

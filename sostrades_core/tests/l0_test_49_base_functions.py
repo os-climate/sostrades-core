@@ -31,7 +31,6 @@ class TestBaseFunction(unittest.TestCase):
         '''
         Initialize third data needed for testing
         '''
-        pass
 
     def test_01_exp_min_function(self):
         '''

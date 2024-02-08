@@ -16,8 +16,6 @@ limitations under the License.
 '''
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import Study
-from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for optimization scenario
@@ -166,7 +164,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         # retrieve discipline to check the result...
         opt_disc = exec_eng.dm.get_disciplines_with_name(
@@ -229,7 +227,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         # retrieve discipline to check the result...
         opt_disc = exec_eng.dm.get_disciplines_with_name(
@@ -307,7 +305,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         exec_eng.prepare_execution()
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         # retrieve discipline to check the result...
         opt_disc = exec_eng.dm.get_disciplines_with_name(
@@ -387,7 +385,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         exec_eng.prepare_execution()
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         # retrieve discipline to check the result...
         opt_disc = exec_eng.dm.get_disciplines_with_name(
@@ -466,7 +464,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         exec_eng.prepare_execution()
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         # retrieve discipline to check the result...
         opt_disc = exec_eng.dm.get_disciplines_with_name(
@@ -554,7 +552,7 @@ class TestSoSOptimScenario(unittest.TestCase):
             exec_eng.display_treeview_nodes(True)
             assert exp_tv_str == exec_eng.display_treeview_nodes()
 
-            res = exec_eng.execute()
+            exec_eng.execute()
 
             # retrieve discipline to check the result...
             opt_disc = exec_eng.dm.get_disciplines_with_name(
@@ -960,7 +958,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         exec_eng.prepare_execution()
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         # retrieve discipline to check the result...
         opt_disc = exec_eng.dm.get_disciplines_with_name(
@@ -1048,7 +1046,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         exec_eng.prepare_execution()
-        res = exec_eng.execute()
+        exec_eng.execute()
 
 #=========================================================================
 #     def _test_14_optim_sellar_idf_process(self):
@@ -1140,7 +1138,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         exec_eng.prepare_execution()
         # execute without post run
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         assert isinstance(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"), dict)
 
@@ -1173,7 +1171,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.dm.set_values_from_dict(disc_dict)
         exec_eng.configure()
         exec_eng.prepare_execution()
-        res = exec_eng.execute()
+        exec_eng.execute()
         dm = exec_eng.dm
         x_nominal_execution = dm.get_value(
             f'{self.ns}.{self.sc_name}.{self.c_name}.x')
@@ -1240,7 +1238,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.configure()
         exec_eng.prepare_execution()
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         # retrieve discipline to get information to check
         opt_disc = exec_eng.dm.get_disciplines_with_name(
@@ -1322,7 +1320,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         exec_eng.prepare_execution()
         # execute without post run
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         assert isinstance(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"), dict)
 
@@ -1355,7 +1353,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.dm.set_values_from_dict(disc_dict)
         exec_eng.configure()
         exec_eng.prepare_execution()
-        res = exec_eng.execute()
+        exec_eng.execute()
 
         ppf = PostProcessingFactory()
         disc = exec_eng.dm.get_disciplines_with_name(

@@ -21,7 +21,6 @@ Common file to have methods of func manager (mainly smooth max and it derivative
 # pylint: disable=unsubscriptable-object
 import numpy as np
 from sostrades_core.tools.base_functions.exp_min import compute_dfunc_with_exp_min, compute_func_with_exp_min
-import warnings
 
 def smooth_maximum(cst, alpha=3):
     """

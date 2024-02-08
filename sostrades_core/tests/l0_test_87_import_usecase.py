@@ -14,14 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import copy
-import logging
 from logging import Handler
-from time import time
 
 from pandas._testing import assert_frame_equal
 
-from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 
 """
@@ -30,13 +26,9 @@ unit test for doe scenario
 """
 
 import unittest
-from numpy import array, std, NaN
+from numpy import array
 import pandas as pd
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
-import os
-from os.path import dirname, join
-import math
 
 from importlib import import_module
 
@@ -88,9 +80,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         It uses the test_disc1_disc3_list nested process 
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
         repo_name = self.repo + '.tests_driver_eval.multi'
@@ -174,9 +165,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         It uses the test_disc1_disc3_list nested process 
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
         repo_name = self.repo + '.tests_driver_eval.multi'
@@ -260,7 +250,7 @@ class TestSoSimportUsecase(unittest.TestCase):
         """
         from os.path import join, dirname
 
-        ref_dir = join(dirname(__file__), 'data')
+        join(dirname(__file__), 'data')
 
         # The generator eval process
         repo_name = self.repo + '.tests_driver_eval.mono'
@@ -346,9 +336,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         It uses the sellar_coupling nested process
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
         repo_name = self.repo + '.tests_driver_eval.multi'
@@ -449,9 +438,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         It uses the sellar_coupling nested process
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         with_coupling = False  # In multi instances only False is of interest
 
@@ -589,9 +577,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         It uses the sellar_coupling nested process
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
         # TODO: ask Carlos
         with_coupling = True  # In mono instance only True is of interest
 
@@ -733,9 +720,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in multi instance mode.
         """
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         repo_name = self.repo + '.tests_driver_eval.multi'
         self.repo = self.repo + '.sellar'
@@ -839,9 +825,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         """
         # Old test that could be depreciated: already covered by test 1
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
         repo_name = self.repo + '.tests_driver_eval.multi'
@@ -929,9 +914,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         """
         # Old test that could be depreciated: already covered by test 2
         from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
-        dump_dir = join(ref_dir, 'dump_load_cache')
+        join(ref_dir, 'dump_load_cache')
 
         # The generator eval process
         repo_name = self.repo + '.tests_driver_eval.multi'

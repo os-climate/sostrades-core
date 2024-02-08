@@ -59,7 +59,7 @@ class Disc1_data_connector_dremio(SoSWrapp):
     }
 
     def run(self):
-        x = self.get_sosdisc_inputs('x')
+        self.get_sosdisc_inputs('x')
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
         # dict_values = {'indicator': a * b, 'y': a * x + b}

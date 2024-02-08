@@ -47,7 +47,7 @@ class TestFuncManager(unittest.TestCase):
     def test_01_instantiate_func_manager(self):
         fail = True
         try:
-            func_manager = FunctionManager()
+            FunctionManager()
             fail = False
         except:
             fail = True
@@ -544,8 +544,8 @@ class TestFuncManager(unittest.TestCase):
         outputs = disc.get_sosdisc_outputs()
 
         # -- check outputs with reference data
-        o1 = obj1['obj1_values'].to_numpy().sum()
-        o2 = obj2['obj2_values'].to_numpy().sum()
+        obj1['obj1_values'].to_numpy().sum()
+        obj2['obj2_values'].to_numpy().sum()
 
         res = 100. * (outputs[OBJECTIVE][0] +
                       outputs[INEQ_CONSTRAINT][0] +
@@ -562,7 +562,7 @@ class TestFuncManager(unittest.TestCase):
 
         # get charts
         filter = disc.get_chart_filter_list()
-        graph_list = disc.get_post_processing_list(filter)
+        disc.get_post_processing_list(filter)
 
     def test_11_jacobian_eq_delta_and_lin_to_quad(self):
         OBJECTIVE = self.func_manager.OBJECTIVE
@@ -647,8 +647,8 @@ class TestFuncManager(unittest.TestCase):
         outputs = disc.get_sosdisc_outputs()
 
         # -- check outputs with reference data
-        o1 = obj1['obj1_values'].to_numpy().sum()
-        o2 = obj2['obj2_values'].to_numpy().sum()
+        obj1['obj1_values'].to_numpy().sum()
+        obj2['obj2_values'].to_numpy().sum()
 
         res = 100. * (outputs[OBJECTIVE][0] +
                       outputs[INEQ_CONSTRAINT][0] +
@@ -705,4 +705,4 @@ class TestFuncManager(unittest.TestCase):
         # get charts
         func_disc = self.ee.dm.get_disciplines_with_name(f'{self.name}.{optim_name}.SellarCoupling.FunctionManager')[0]
         filter = func_disc.get_chart_filter_list()
-        graph_list = func_disc.get_post_processing_list(filter)
+        func_disc.get_post_processing_list(filter)

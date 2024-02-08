@@ -21,7 +21,6 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 import logging
 import copy
-import pandas as pd
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
@@ -30,7 +29,7 @@ from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGe
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 # from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import ProxySampleGenerator
-from sostrades_core.tools.gather.gather_tool import check_eval_io, get_eval_output
+from sostrades_core.tools.gather.gather_tool import get_eval_output
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
 from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values
@@ -288,7 +287,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         """
         To be overloaded by drivers with specific configuration actions
         """
-        pass
 
     def prepare_build(self):
         """

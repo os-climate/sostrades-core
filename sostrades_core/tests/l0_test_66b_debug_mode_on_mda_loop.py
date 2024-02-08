@@ -21,16 +21,11 @@ import unittest
 from time import sleep
 from shutil import rmtree
 from pathlib import Path
-from os.path import join
 
-import numpy as np
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_coupling
 
 from logging import Handler, DEBUG
 

@@ -14,8 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
-from copy import deepcopy
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -25,11 +23,9 @@ from time import sleep
 from shutil import rmtree
 from pathlib import Path
 
-from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from tempfile import gettempdir
-from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver.usecase_scatter import Study
 
 
 class TestSameVarnameHandling(unittest.TestCase):

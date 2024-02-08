@@ -15,11 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from typing import Union
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import InstanciatedPieChart
-from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
 
 
 """
@@ -84,7 +79,7 @@ class PostProcessingManager:
         try:
             filters_function = getattr(import_module(module_name),
                                        PostProcessingManager.FILTER_FUNCTION_NAME)
-        except (ModuleNotFoundError, AttributeError, TypeError) as ex:
+        except (ModuleNotFoundError, AttributeError, TypeError):
             self.__logger.exception(
                 'The following error occurs when trying to load post processing filter function.')
             filters_function = None
@@ -92,7 +87,7 @@ class PostProcessingManager:
         try:
             post_processing_function = getattr(import_module(module_name),
                                                PostProcessingManager.POST_PROCESSING_FUNCTION_NAME)
-        except (ModuleNotFoundError, AttributeError, TypeError) as ex:
+        except (ModuleNotFoundError, AttributeError, TypeError):
             self.__logger.exception(
                 'The following error occurs when trying to load post processing function.')
             post_processing_function = None

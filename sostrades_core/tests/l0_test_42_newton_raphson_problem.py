@@ -161,25 +161,25 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
 
     def test_10_NewtonRaphsonProblem_solving_limit_max_iterations(self):
         W0 = array([1., 1., 1.])
-        sol = array([0., 0., 0.])
+        array([0., 0., 0.])
         print('')
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         NRPb.set_relax_factor(0.99)
         NRPb.set_stop_residual(1.e-15)
         NRPb.set_max_iterations(10)
-        W = NRPb.solve()
+        NRPb.solve()
         res_hist = NRPb.get_residual_hist()
         assert(len(res_hist) == 10)
 
     def test_11_NewtonRaphsonProblem_solving_limit_residual(self):
         W0 = array([1., 1., 1.])
-        sol = array([0., 0., 0.])
+        array([0., 0., 0.])
         print('')
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         NRPb.set_relax_factor(0.99)
         NRPb.set_stop_residual(1.e-6)
         NRPb.set_max_iterations(100)
-        W = NRPb.solve()
+        NRPb.solve()
         res = NRPb.get_residual()
         assert(1.e-7 < res < 1.e-6)
 

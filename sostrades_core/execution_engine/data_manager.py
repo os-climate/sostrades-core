@@ -21,8 +21,6 @@ import logging
 from copy import copy
 from uuid import uuid4
 from hashlib import sha256
-from copy import deepcopy
-from numpy import can_cast
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer

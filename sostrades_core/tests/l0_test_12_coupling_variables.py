@@ -105,7 +105,7 @@ class TestCouplingVariables(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == ee.display_treeview_nodes()
         # -- setup inputs
-        dm = ee.dm
+        ee.dm
         values_dict = {}
         values_dict[f'{namespace}.Disc2.constant'] = -10.
         values_dict[f'{namespace}.Disc2.power'] = -10.

@@ -46,7 +46,7 @@ class Disc4(SoSWrapp):
     }
 
     def run(self):
-        mydict = self.get_sosdisc_inputs('mydict')
+        self.get_sosdisc_inputs('mydict')
         h = self.get_sosdisc_inputs('h')
         dict_out = {'key1': ((h[0] + h[1]) / 2),
                     'key2': ((h[0] + h[1]) / 2)}

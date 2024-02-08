@@ -63,7 +63,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                 self.setUp()
                 AbstractJacobianUnittest.DUMP_JACOBIAN = True
                 entry()
-            except Exception as ex:
+            except Exception:
                 local_logger.exception(
                     f'Jacobian fail on {str(entry)}')
 

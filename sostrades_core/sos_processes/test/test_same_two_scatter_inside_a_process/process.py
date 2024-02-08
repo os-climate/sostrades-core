@@ -42,7 +42,7 @@ class ProcessBuilder(BaseProcessBuilder):
             repo_name, proc_name)
         builder_list2 = self.ee.factory.get_builder_from_process(
             repo_name, proc_name)
-        ns_list_standard = deepcopy(self.ee.ns_manager.ns_list)
+        deepcopy(self.ee.ns_manager.ns_list)
         # ns_scatter1 = exec_eng.ns_manager.update_namespace_list_with_extra_ns(
         #     'Scatter1', after_name=exec_eng.study_name)
         for builder in builder_list1:

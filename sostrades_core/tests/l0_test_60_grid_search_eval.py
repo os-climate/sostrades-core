@@ -21,8 +21,6 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 import pandas as pd
-import numpy as np
-from pandas.testing import assert_frame_equal
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from logging import Handler, getLogger, DEBUG
@@ -346,7 +344,7 @@ class TestGridSearchEval(unittest.TestCase):
 
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
         doe_disc_samples = grid_search_disc_output['samples_inputs_df']
-        y_dict = grid_search_disc_output['Disc1.y_dict']
+        grid_search_disc_output['Disc1.y_dict']
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.sample_generator}.design_space')
 
@@ -865,14 +863,14 @@ class TestGridSearchEval(unittest.TestCase):
             f'{self.study_name}.{self.evaluator}')[0]
 
         grid_search_disc_output = grid_search_disc.get_sosdisc_outputs()
-        doe_disc_samples = grid_search_disc_output['samples_inputs_df']
-        y_dict = grid_search_disc_output['Disc1.y_dict']
+        grid_search_disc_output['samples_inputs_df']
+        grid_search_disc_output['Disc1.y_dict']
 
         ds = self.exec_eng.dm.get_value(
             f'{self.study_name}.{self.sample_generator}.design_space')
 
         filter = grid_search_disc.get_chart_filter_list()
-        graph_list = grid_search_disc.get_post_processing_list(filter)
+        grid_search_disc.get_post_processing_list(filter)
         # for graph in graph_list:
         #     #     pass
         #     graph.to_plotly().show()

@@ -324,7 +324,7 @@ bool, str]:
     error_msg_compare = ''
     try:
         study_1, study_2, dm_1, dm_2 = multiple_configure(usecase=usecase)
-    except Exception as e:
+    except Exception:
         double_config_passed = False
         error_msg_compare += f'\nERROR while Configuring twice {usecase}:\n {traceback.format_exc()}'
         error_msg_compare += '\n---------------------------------------------------------\n'
@@ -427,7 +427,7 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
         try:
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
             study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
-        except Exception as e:
+        except Exception:
 
 
             error_msg_post_processing += f'\nERROR while computing the usecase {study.study_full_path}:\n' \

@@ -76,9 +76,7 @@ DOT_CHAR = '_00d00_'
 
 def my_transformation(tokens, local_dict, global_dict):
     #     print(tokens)
-    original_tokens = tokens
     new_tokens = []
-    tokens_to_merge = True
 
     i = 0
     while (i < len(tokens)):

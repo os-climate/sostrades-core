@@ -71,7 +71,7 @@ class TestWriteDataDiscipline(SoSWrapp):
     }
 
     def run(self):
-        connector_info = self.DESC_OUT['deliveries_df'][ProxyDiscipline.CONNECTOR_DATA]
+        self.DESC_OUT['deliveries_df'][ProxyDiscipline.CONNECTOR_DATA]
         # no need to call "write_data" method because it is done in
         # fill_output_with_connecotr in sos_discipline
 
@@ -197,7 +197,7 @@ class TestDataConnector(unittest.TestCase):
         values_dict['EETests.Disc2_data_connector.power'] = 2
 
         self.exec_eng.load_study_from_input_dict(values_dict)
-        res = self.exec_eng.execute()
+        self.exec_eng.execute()
         y = self.exec_eng.dm.get_value('EETests.y')
         self.assertEqual(y, 25.0)
 
@@ -214,7 +214,7 @@ class TestDataConnector(unittest.TestCase):
         values_dict['EETests.x'] = 2.
 
         self.exec_eng2.load_study_from_input_dict(values_dict)
-        res = self.exec_eng2.execute()
+        self.exec_eng2.execute()
 
         y = self.exec_eng2.dm.get_value('EETests.y')
         self.assertEqual(y, 42.0)
@@ -390,7 +390,7 @@ class TestDataConnector(unittest.TestCase):
             'http_scheme': 'https'
         }
         engine = create_engine(sqlstring, connect_args=sqlargs)
-        connection = engine.connect()
+        engine.connect()
 
         qres = engine.execute('show catalogs')
         catalog_list = qres.fetchall()

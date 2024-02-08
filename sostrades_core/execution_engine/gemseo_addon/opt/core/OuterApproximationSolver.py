@@ -24,11 +24,9 @@ from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
 import logging
-from numpy import array, append, int32, atleast_2d, concatenate
+from numpy import array, append, int32, atleast_2d
 from copy import deepcopy
 import cvxpy as cp
-from pandas.core.frame import DataFrame
-import pandas as pd
 
 # TODO list : 
 # * avoid re-building the NLP

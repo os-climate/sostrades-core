@@ -16,7 +16,6 @@ limitations under the License.
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
-from json import dumps
 class DataManagementDiscipline :
     """
     Class to store discipline data

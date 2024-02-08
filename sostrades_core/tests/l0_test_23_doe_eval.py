@@ -16,12 +16,9 @@ limitations under the License.
 '''
 import logging
 from logging import Handler
-from time import time
 
 from pandas._testing import assert_frame_equal
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -34,8 +31,6 @@ import pandas as pd
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
-import os
-from os.path import dirname, join
 
 
 class UnitTestHandler(Handler):

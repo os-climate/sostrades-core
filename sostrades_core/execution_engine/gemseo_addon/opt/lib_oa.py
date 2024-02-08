@@ -24,7 +24,7 @@ from builtins import super, zip
 import logging
 
 from future import standard_library
-from numpy import isfinite, real
+from numpy import isfinite
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
@@ -114,7 +114,7 @@ class OuterApproximationOpt(OptimizationLibrary):
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
-        bounds = list(zip(l_b, u_b))
+        list(zip(l_b, u_b))
         
         # execute the optimization
         solver = OuterApproximationSolver(self.problem)
