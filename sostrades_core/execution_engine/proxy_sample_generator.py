@@ -19,6 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from copy import copy, deepcopy
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+from sostrades_core.execution_engine.sample_generators.sensitivity_analysis_sample_generator import SensitivityAnalysisSampleGenerator
 from sostrades_core.execution_engine.sample_generators.simple_sample_generator import SimpleSampleGenerator
 from sostrades_core.execution_engine.sample_generators.grid_search_sample_generator import GridSearchSampleGenerator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
@@ -110,18 +111,24 @@ class ProxySampleGenerator(ProxyDiscipline):
     LIST_OF_VALUES = SampleGeneratorWrapper.LIST_OF_VALUES
     EVAL_INPUTS_CP_DF_DESC.update({LIST_OF_VALUES: ('list', None, True)})
 
+    EVAL_INPUTS_SA_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
+    VALUE = SensitivityAnalysisSampleGenerator.VALUE
+    EVAL_INPUTS_SA_DF_DESC.update({VALUE: ('float', 0.0, True)})
+
     SAMPLING_METHOD = 'sampling_method'
     SIMPLE_SAMPLING_METHOD = 'simple'
     DOE_ALGO = 'doe_algo'
     CARTESIAN_PRODUCT = 'cartesian_product'
     GRID_SEARCH = 'grid_search'
-    AVAILABLE_SAMPLING_METHODS = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
+    SENSITIVITY_ANALYSIS = 'sensitivity_analysis'
+    AVAILABLE_SAMPLING_METHODS = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH, SENSITIVITY_ANALYSIS]
     # classes of the sample generator tools associated to each method in AVAILABLE_SAMPLING_METHODS
     SAMPLE_GENERATOR_CLS = {
         SIMPLE_SAMPLING_METHOD: SimpleSampleGenerator,
         DOE_ALGO: DoeSampleGenerator,
         CARTESIAN_PRODUCT: CartesianProductSampleGenerator,
-        GRID_SEARCH: GridSearchSampleGenerator
+        GRID_SEARCH: GridSearchSampleGenerator,
+        SENSITIVITY_ANALYSIS: SensitivityAnalysisSampleGenerator
     }
 
     SAMPLING_GENERATION_MODE = 'sampling_generation_mode'
@@ -406,6 +413,8 @@ class ProxySampleGenerator(ProxyDiscipline):
         # build right dataframe descriptor
         if self.sampling_method == self.CARTESIAN_PRODUCT:
             _df_desc = self.EVAL_INPUTS_CP_DF_DESC.copy()
+        elif self.sampling_method == self.SENSITIVITY_ANALYSIS:
+            _df_desc = self.EVAL_INPUTS_CP_DF_DESC.copy()
         elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
             _df_desc = self.EVAL_INPUTS_DF_DESC.copy()
         if _df_desc:
@@ -439,6 +448,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if eval_inputs is not None:
                 eval_inputs = eval_inputs.reindex(columns=eval_inputs_df_desc.keys(),
                                                   fill_value=[])  # hardcoded compliance with 'list_of_values' column default
+                
                 self.dm.set_data(eval_inputs_f_name,
                                  self.VALUE,
                                  eval_inputs,

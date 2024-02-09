@@ -39,11 +39,11 @@ class Study(StudyManager):
                        }
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_a = {'selected_input': [False, True, False],
-                             'full_name': ['x', 'Disc1.a', 'Disc1.b']}
+        input_selection_a = {'selected_input': [False, True, True],
+                             'full_name': ['x', 'Disc1.a', 'Disc1.b'],'value':[None, 100.0, 10.0]}
         input_selection_a = pd.DataFrame(input_selection_a)
 
-        output_selection_ind = {'selected_output': [False, True],
+        output_selection_ind = {'selected_output': [True, False],
                                 'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
@@ -52,10 +52,8 @@ class Study(StudyManager):
         n_samples = 10
         levels = [0.25, 0.5, 0.75]
         centers = [5]
-        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "doe_algo"
-        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = 'OT_FACTORIAL'
-        disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
-        disc_dict[f'{ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples, 'levels': levels, 'centers': centers}
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "sensitivity_analysis"
+        disc_dict[f'{ns}.SampleGenerator.variation_list'] = [-10,0,10]
         disc_dict[f'{ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a
         disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_ind
@@ -71,6 +69,12 @@ class Study(StudyManager):
 
 
 if '__main__' == __name__:
+    ns = 'usecase_doe'
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     uc_cls.run()
+    dm = uc_cls.execution_engine.dm
+    scenario_namespace = dm.get_value(f'{ns}.SampleGenerator.scenario_variations')
+    print(scenario_namespace)
+    samples_df = dm.get_value(f'{ns}.Eval.samples_df')
+    print(samples_df)
