@@ -493,7 +493,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
             # build design space
             design_space = self.set_design_space()
-            if design_space.variables_names:
+            if design_space.variables_names: ## FIXME: should do nothing
                 _, formulation, maximize_objective, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
 
@@ -507,7 +507,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         reads design space (set_design_space)
         """
-
+        ## FIXME: use possible values
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         # update design space dv with full names
         dvs = list(dspace_df[self.VARIABLES])
