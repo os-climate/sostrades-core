@@ -111,10 +111,6 @@ class ProxySampleGenerator(ProxyDiscipline):
     LIST_OF_VALUES = SampleGeneratorWrapper.LIST_OF_VALUES
     EVAL_INPUTS_CP_DF_DESC.update({LIST_OF_VALUES: ('list', None, True)})
 
-    EVAL_INPUTS_SA_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
-    VALUE = SensitivityAnalysisSampleGenerator.VALUE
-    EVAL_INPUTS_SA_DF_DESC.update({VALUE: ('float', 0.0, True)})
-
     SAMPLING_METHOD = 'sampling_method'
     SIMPLE_SAMPLING_METHOD = 'simple'
     DOE_ALGO = 'doe_algo'
@@ -412,8 +408,6 @@ class ProxySampleGenerator(ProxyDiscipline):
         _df_desc = None
         # build right dataframe descriptor
         if self.sampling_method == self.CARTESIAN_PRODUCT:
-            _df_desc = self.EVAL_INPUTS_CP_DF_DESC.copy()
-        elif self.sampling_method == self.SENSITIVITY_ANALYSIS:
             _df_desc = self.EVAL_INPUTS_CP_DF_DESC.copy()
         elif self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
             _df_desc = self.EVAL_INPUTS_DF_DESC.copy()

@@ -53,6 +53,8 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
         '''
         Constructor
         '''
+        self.selected_inputs = []
+        self.selected_inputs_types = {}
         super().__init__(self.GENERATOR_NAME, logger=logger)
 
     def _check_samples(self, samples_df):
@@ -90,10 +92,18 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
             dynamic_inputs (dict): the dynamic input dict to be updated
 
         """
+        # save possible types in sample generator
+        if proxy.eval_in_possible_types is not None:
+            self.selected_inputs_types = proxy.eval_in_possible_types.copy()
+
+        
+                    
+        # add variation list
         dynamic_inputs.update({self.VARIATION_LIST:
                                        {proxy.TYPE: 'list',
-                                        proxy.DEFAULT: [-5,0, 5],
-                                        proxy.STRUCTURING: True}
+                                        proxy.DEFAULT: [-5, 5],
+                                        proxy.STRUCTURING: True,
+                                        proxy.UNIT:'%'}
                                    })
         
         disc_in = proxy.get_data_in()
@@ -102,6 +112,10 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
             eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
             if eval_inputs is not None:
                 selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
+
+                # save selected inputs in sample generator
+                if set(selected_inputs) != set(self.selected_inputs):
+                    self.selected_inputs = selected_inputs
 
                 # the dataframe containing the mapping of variation percentage for each variables for each scenario
                 # it will be: {'var_1': [percentage_sc1, percentage_sc2], 'var_2': [percentage_sc1, percentage_sc2]}
@@ -142,34 +156,25 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
                                       proxy.VALUE, samples_percentage_df, check_value=False)
         return samples_df
 
-    def filter_eval_inputs(self, eval_inputs_cp, wrapper):
-        """
-        Method that reformat eval_input_cp depending on user's selection
-
-        Arguments:
-            eval_inputs_cp (dataframe):
-
-        Returns:
-            dict_of_list_values (dict[list]) : dictionary {'var': [var_cp_values]} ignoring empty lists
-
-        """
-        if eval_inputs_cp is None or eval_inputs_cp.empty:
-            return {}
-        logic_1 = eval_inputs_cp[wrapper.SELECTED_INPUT] == True
-        logic_2 = eval_inputs_cp[wrapper.LIST_OF_VALUES] is not None
-        eval_inputs_cp_filtered = eval_inputs_cp[logic_1 & logic_2]
-        eval_inputs_cp_filtered = eval_inputs_cp_filtered[[wrapper.FULL_NAME, wrapper.LIST_OF_VALUES]]
-        return eval_inputs_cp_filtered.set_index(wrapper.FULL_NAME)[wrapper.LIST_OF_VALUES].to_dict()
 
     def get_arguments(self, wrapper):
         desc_in = wrapper.get_data_in()
         arguments = {}
+        # retrieve variation list
         if self.VARIATION_LIST in desc_in:
             arguments[self.VARIATION_LIST] = wrapper.get_sosdisc_inputs(self.VARIATION_LIST)
-        eval_inputs = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
-        dict_of_value = self.filter_eval_inputs(eval_inputs, wrapper)
-        arguments[self.DICT_OF_VALUE] = dict_of_value
+
+        # retrieve input values
+        if self.selected_inputs is not None:
+            samples_df = {}
+            for selected_input in self.selected_inputs:
+                #TODO recuperer la value avec le full name!!! check in simple_sample_generator
+                samples_df[selected_input] = wrapper.dm.get_value(selected_input)
+            arguments[self.DICT_OF_VALUE] = samples_df
+
+        # set the proxy to set the scenario_variations into dm values
         arguments['proxy'] = wrapper
+
         return [], arguments
 
     def is_ready_to_sample(self, proxy):

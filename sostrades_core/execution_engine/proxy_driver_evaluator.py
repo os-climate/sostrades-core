@@ -269,6 +269,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
 
+
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
