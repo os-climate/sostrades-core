@@ -21,8 +21,8 @@ import numpy as np
 from copy import deepcopy, copy
 from multiprocessing import cpu_count
 from pandas import DataFrame
-import platform
 import logging
+from os import getenv
 
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
@@ -42,13 +42,8 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
-
-if platform.system() != 'Windows':
+if getenv("USE_PETSC", "").lower() in ("true", "1"):
    from sostrades_core.tools.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-
-# # - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
-# MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
-# ksp_lib_petsc = MyFakeKSPLib()
 
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
@@ -100,16 +95,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
 
     # set default value of linear solver according to the operating system
-    if platform.system() == 'Windows':
-        DEFAULT_LINEAR_SOLVER = 'GMRES'
-        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
-        POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
-    else:
+    if getenv("USE_PETSC", "").lower() in ("true", "1"):
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
         POSSIBLE_VALUES_PRECONDITIONER = [
             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
-
+    else:
+        DEFAULT_LINEAR_SOLVER = 'GMRES'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
+        POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
     DEFAULT_LINEAR_SOLVER_OPTIONS = {
         'max_iter': 1000,
         'tol': 1.0e-8}
@@ -325,9 +319,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if 'linear_solver_MDA' in disc_in:
             linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
             if linear_solver_MDA.endswith('_PETSC'):
-                if platform.system() == 'Windows':
-                    raise Exception(
-                        f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
+                if not getenv("USE_PETSC", "").lower() in ("true", "1"):
+                    raise ValueError(
+                        f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
+                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
+                        f'USE_PETSC')
                 disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                                                                                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
@@ -344,9 +340,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if 'linear_solver_MDO' in disc_in:
             linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
             if linear_solver_MDO.endswith('_PETSC'):
-                if platform.system() == 'Windows':
-                    raise Exception(
-                        f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
+                if not getenv("USE_PETSC", "").lower() in ("true", "1"):
+                    raise ValueError(
+                        f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
+                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
+                        f'USE_PETSC')
                 disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                                                                                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
