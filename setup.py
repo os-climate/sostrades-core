@@ -17,7 +17,7 @@ limitations under the License.
 # coding: utf-8
 
 from setuptools import setup, find_packages
-import platform
+from os import getenv
 
 with open('README.md') as f:
     readme = f.read()
@@ -30,7 +30,7 @@ with open('requirements.in', 'r') as requirements_file:
     reqs_list = [line.strip() for line in requirements_file if line.strip()]
 
 # platform-specific dependencies added conditionally
-if platform.system() != 'Windows':
+if getenv("USE_PETSC", "").lower() in ("true", "1"):
     reqs_list.append('petsc==3.12.3')
     reqs_list.append('petsc4py==3.12.0')
 

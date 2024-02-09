@@ -19,14 +19,13 @@ import logging
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
-
+from sostrades_core.tools.design_space import design_space as dspace_tool
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.api import get_available_doe_algorithms
 from gemseo.api import get_algorithm_options_schema
 from gemseo.api import compute_doe
 from numpy import array, ndarray, delete, NaN
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 
 import pandas as pd
@@ -47,14 +46,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     Abstract class that generates sampling
     '''
     GENERATOR_NAME = "DOE_GENERATOR"
-    VARIABLES = "variable"
-    VALUES = "value"
-    UPPER_BOUND = "upper_bnd"
-    LOWER_BOUND = "lower_bnd"
-    ENABLE_VARIABLE_BOOL = "enable_variable"
-    LIST_ACTIVATED_ELEM = "activated_elem"
+    VARIABLES = dspace_tool.VARIABLES
+    VALUES = dspace_tool.VALUES
+    UPPER_BOUND = dspace_tool.UPPER_BOUND
+    LOWER_BOUND = dspace_tool.LOWER_BOUND
+    ENABLE_VARIABLE_BOOL = dspace_tool.ENABLE_VARIABLE_BOOL
+    LIST_ACTIVATED_ELEM = dspace_tool.LIST_ACTIVATED_ELEM
     NB_POINTS = "nb_points"
-    
+
     
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
@@ -623,8 +622,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         if dspace_df is not None:
             dspace_df_updated = self.update_design_space(
                 selected_inputs, dspace_df)
-            design_space = self.create_gemseo_dspace_from_dspace_df(
-                dspace_df_updated)
+            design_space, _ = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df_updated)
         return design_space
 
     def update_design_space(self, selected_inputs, dspace_df):
@@ -652,59 +650,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                           self.ENABLE_VARIABLE_BOOL: enable_variables,
                                           self.LIST_ACTIVATED_ELEM: [[True] for _ in selected_inputs]})
         return dspace_df_updated
-
-    def create_gemseo_dspace_from_dspace_df(self, dspace_df):
-        """
-        Create gemseo dspace from sostrades updated dspace_df
-        It parses the dspace_df DataFrame to create the gemseo DesignSpace
-
-        Arguments:
-            dspace_df (dataframe): updated dspace_df
-
-        Returns:
-            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
-        """
-        names = list(dspace_df[self.VARIABLES])
-        values = list(dspace_df[self.VALUES])
-        l_bounds = list(dspace_df[self.LOWER_BOUND])
-        u_bounds = list(dspace_df[self.UPPER_BOUND])
-        enabled_variable = list(dspace_df[self.ENABLE_VARIABLE_BOOL])
-        list_activated_elem = list(dspace_df[self.LIST_ACTIVATED_ELEM])
-        design_space = DesignSpace()
-        for dv, val, lb, ub, l_activated, enable_var in zip(names, values, l_bounds, u_bounds, list_activated_elem,
-                                                            enabled_variable):
-
-            # check if variable is enabled to add it or not in the design var
-            if enable_var:
-
-                # self.sample_generator.dict_desactivated_elem[dv] = {}
-                name = dv
-                if type(val) != list and type(val) != ndarray:
-                    size = 1
-                    var_type = ['float']
-                    l_b = array([lb])
-                    u_b = array([ub])
-                    value = array([val])
-                else:
-                    # check if there is any False in l_activated
-                    if not all(l_activated):
-                        # FIXME: implementation doesn't look good for >1 deactivated elem
-                        index_false = l_activated.index(False)
-                        # self.sample_generator.dict_desactivated_elem[dv] = {
-                        #     'value': val[index_false], 'position': index_false}
-
-                        val = delete(val, index_false)
-                        lb = delete(lb, index_false)
-                        ub = delete(ub, index_false)
-
-                    size = len(val)
-                    var_type = ['float'] * size
-                    l_b = array(lb)
-                    u_b = array(ub)
-                    value = array(val)
-                design_space.add_variable(
-                    name, size, var_type, l_b, u_b, value)
-        return design_space
 
     def is_ready_to_sample(self, proxy):
         disc_in = proxy.get_data_in()
