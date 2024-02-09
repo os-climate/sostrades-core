@@ -269,6 +269,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
 
+            # Clean up post_processing
+            self.ee.post_processing_manager.remove_post_processing_module_to_namespace(ProxySampleGenerator.NS_SAMPLING, 'sostrades_core.sos_wrapping.analysis_discs.chart_post_proc_sensitivity_analysis', missing_ok=True)
+            
+            # Add sensitivity_analysis if needed
+            if self.sample_generator_disc.sampling_method == self.sample_generator_disc.SENSITIVITY_ANALYSIS:
+                self.ee.post_processing_manager.add_post_processing_module_to_namespace(ProxySampleGenerator.NS_SAMPLING, 'sostrades_core.sos_wrapping.analysis_discs.chart_post_proc_sensitivity_analysis') 
+
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
