@@ -61,9 +61,20 @@ class DesignVar(object):
         '''
 
         self.output_dict = {}
-        list_ctrl = self.design_var_descriptor.keys()
+        vars_dvar_descriptor = set(self.design_var_descriptor.keys())
+        vars_dspace = set(self.dspace[self.VARIABLES])
 
-        for elem in list_ctrl:
+        diff_var_dvd_dspace = vars_dvar_descriptor.difference(vars_dspace)
+        if len(diff_var_dvd_dspace) > 0:
+            msg = "\n".join(diff_var_dvd_dspace)
+            raise Exception(f"The following variables are in the {self.DESIGN_VAR_DESCRIPTOR} but not in the {self.DESIGN_SPACE}:\n{msg}")
+
+        diff_dspace_dvar_descr = vars_dspace.difference(vars_dvar_descriptor)
+        if len(diff_var_dvd_dspace) > 0:
+            msg = "\n".join(diff_dspace_dvar_descr)
+            raise Exception(f"The following variables are in the {self.DESIGN_SPACE} but not in the {self.DESIGN_VAR_DESCRIPTOR}:\n{msg}")
+
+        for elem in vars_dvar_descriptor:
             l_activated = self.dspace.loc[self.dspace[self.VARIABLES]
                                           == elem, self.ACTIVATED_ELEM_LIST].to_list()[0]
             # check output length and compute BSpline only if necessary
