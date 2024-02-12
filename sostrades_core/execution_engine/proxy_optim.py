@@ -18,7 +18,7 @@ from typing import List
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from gemseo.core.scenario import Scenario
 from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
-from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_output_values
+from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values #find_possible_output_values
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -313,24 +313,19 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
         """
-        # super().setup_sos_disciplines()
         if self.ALGO_OPTIONS in self.get_sosdisc_inputs().keys():
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
             if algo_name is not None:
+                # TODO: worth some refacto ?
                 default_dict = self.get_algo_options(algo_name)
                 if algo_options is not None:
                     values_dict = deepcopy(default_dict)
 
                     for k in algo_options.keys():
-                        if algo_options[k] != 'None' or not isinstance(algo_options[k], type(None)):
+                        if algo_options[k] != 'None' or not isinstance(algo_options[k], type(None)): # TODO: condition makes no sense?
                             values_dict.update({k: algo_options[k]})
                     self.inst_desc_in[self.ALGO_OPTIONS] = values_dict
-
-                    # {(key, id(
-                    #     value[self.NS_REFERENCE])): value for key, value in self.get_data_in().items()}
-                    # id(
-                    #     value[self.NS_REFERENCE])
                     for key in self._data_in.keys():
                         if self.ALGO_OPTIONS == key[0]:
                             self._data_in[key][self.VALUE] = values_dict
@@ -340,45 +335,43 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         To be overload by subclasses with special builds.
         """
-
         if not isinstance(self.cls_builder, list):
             builder_list = [self.cls_builder]
         else:
             builder_list = self.cls_builder
-
         return builder_list
 
-    def configure(self):
-        """
-        Configuration of SoSScenario, call to super Class and
-        """
-        self.configure_io()
-        self._update_status_dm(self.STATUS_CONFIGURE)
-
-    def configure_io(self):
-        """
-        Configure discipline  and all sub-disciplines
-        """
-        if self._data_in == {} or self.check_structuring_variables_changes():
-            super().configure()
-
-        disc_to_configure = self.get_disciplines_to_configure()
-
-        if len(disc_to_configure) > 0:
-            self.set_configure_status(False)
-        else:
-            self.set_children_numerical_inputs()
-            self.set_configure_status(True)
-
-        for disc in disc_to_configure:
-            disc.configure()
-
-    def get_disciplines_to_configure(self):
-        """
-        Get sub disciplines list to configure
-        """
-        # TODO: not yet adapted ProxyOptim to case self.flatten_subprocess == True
-        return self._get_disciplines_to_configure(self.proxy_disciplines)
+    # TODO: double-check but in theory can inherit from proxydriverevaluator...
+    # def configure(self):
+    #     """
+    #     Configuration of SoSScenario, call to super Class and
+    #     """
+    #     self.configure_io()
+    #     self._update_status_dm(self.STATUS_CONFIGURE)
+    #
+    # def configure_io(self):
+    #     """
+    #     Configure discipline  and all sub-disciplines
+    #     """
+    #     if self._data_in == {} or self.check_structuring_variables_changes():
+    #         super().configure()
+    #
+    #     disc_to_configure = self.get_disciplines_to_configure()
+    #
+    #     if len(disc_to_configure) > 0:
+    #         self.set_configure_status(False)
+    #     else:
+    #         self.set_children_numerical_inputs()
+    #         self.set_configure_status(True)
+    #
+    #     for disc in disc_to_configure:
+    #         disc.configure()
+    #
+    # def get_disciplines_to_configure(self):
+    #     """
+    #     Get sub disciplines list to configure
+    #     """
+    #     return self._get_disciplines_to_configure(self.proxy_disciplines)
 
     def set_edition_inputs_if_eval_mode(self):
         '''
@@ -446,9 +439,9 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         self.set_formulation_for_func_manager(sub_mdo_disciplines)
 
-        # Extract variables for eval analysis
-        if self.proxy_disciplines is not None and len(self.proxy_disciplines) > 0:
-            self.set_eval_possible_values()
+        # # Extract variables for eval analysis TODO: IN PRINCIPLE DONE IN CONFIGURE
+        # if self.proxy_disciplines is not None and len(self.proxy_disciplines) > 0:
+        #     self.set_eval_possible_values()
 
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
@@ -486,10 +479,11 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
-            if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
-                   dspace['value'].tolist()):
-                raise ValueError(
-                    f"A design variable must obligatory be an array {[type(design_variable).__name__ for design_variable in dspace['value'].tolist()]}")
+            # TODO: data integrity checks
+            # if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
+            #        dspace['value'].tolist()):
+            #     raise ValueError(
+            #         f"A design variable must obligatory be an array {[type(design_variable).__name__ for design_variable in dspace['value'].tolist()]}")
 
             # build design space
             design_space = self.set_design_space()
@@ -527,7 +521,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         dspace_dict_updated = dspace_df.copy()  # todo: NOT A DICT
         dspace_dict_updated[self.VARIABLES] = full_dvs
         design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_dict_updated)
-
         return design_space
 
     def get_full_names(self, names):
@@ -718,32 +711,61 @@ class ProxyOptim(ProxyDriverEvaluator):
         return self.get_full_names(local_names) + \
             self._update_study_ns_in_varname(full_names)
 
-    def set_eval_possible_values(self):
-
-        possible_out_values = find_possible_output_values(self, strip_first_ns=True)
+    def configure_driver(self):
+        self.set_eval_possible_values(strip_first_ns=True)
 
         # Fill the possible_values of obj and constraints
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
-                         self.POSSIBLE_VALUES, possible_out_values)
+                         self.POSSIBLE_VALUES, self.eval_out_possible_values)
 
         if self.is_constraints:
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
-                             self.POSSIBLE_VALUES, possible_out_values)
+                             self.POSSIBLE_VALUES, self.eval_out_possible_values)
             self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
-                             self.POSSIBLE_VALUES, possible_out_values)
+                             self.POSSIBLE_VALUES, self.eval_out_possible_values)
+
         # fill the possible values of algos
-        self.mdo_discipline_wrapp.mdo_discipline._init_algo_factory()
-        avail_algos = self.mdo_discipline_wrapp.mdo_discipline._algo_factory.algorithms
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}',
-                         self.POSSIBLE_VALUES, avail_algos)
+        _algo_factory = OptimizersFactory()
+        avail_algos = _algo_factory.algorithms
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}', self.POSSIBLE_VALUES, avail_algos)
+
         # fill the possible values of formulations
-        self._form_factory = MDOFormulationsFactory()
-        avail_formulations = self._form_factory.formulations
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}',
-                         self.POSSIBLE_VALUES, avail_formulations)
+        _form_factory = MDOFormulationsFactory()
+        avail_formulations = _form_factory.formulations
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}', self.POSSIBLE_VALUES, avail_formulations)
+
         # fill the possible values of maximize_objective
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',
-                         self.POSSIBLE_VALUES, [False, True])
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',  self.POSSIBLE_VALUES, [False, True])
+
+    def _update_eval_output_with_possible_out_values(self, possible_out_values, disc_in):
+        pass
+
+    # def set_eval_possible_values(self):
+    #
+    #     possible_out_values = find_possible_output_values(self, strip_first_ns=True)
+    #
+    #     # Fill the possible_values of obj and constraints
+    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
+    #                      self.POSSIBLE_VALUES, possible_out_values)
+    #
+    #     if self.is_constraints:
+    #         self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
+    #                          self.POSSIBLE_VALUES, possible_out_values)
+    #         self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
+    #                          self.POSSIBLE_VALUES, possible_out_values)
+    #     # fill the possible values of algos
+    #     self.mdo_discipline_wrapp.mdo_discipline._init_algo_factory()
+    #     avail_algos = self.mdo_discipline_wrapp.mdo_discipline._algo_factory.algorithms
+    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}',
+    #                      self.POSSIBLE_VALUES, avail_algos)
+    #     # fill the possible values of formulations
+    #     self._form_factory = MDOFormulationsFactory()
+    #     avail_formulations = self._form_factory.formulations
+    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}',
+    #                      self.POSSIBLE_VALUES, avail_formulations)
+    #     # fill the possible values of maximize_objective
+    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',
+    #                      self.POSSIBLE_VALUES, [False, True])
 
     def set_diff_method(self):
         """
