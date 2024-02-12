@@ -41,6 +41,7 @@ from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWr
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.tools.design_space import design_space as dspace_tool
 
 
 class ProxyOptim(ProxyDriverEvaluator):
@@ -123,14 +124,14 @@ class ProxyOptim(ProxyDriverEvaluator):
                                 'wait_time_between_fork': 0}
     USER_GRAD = 'user'
     # Design space dataframe headers
-    VARIABLES = "variable"
-    VALUES = "value"
-    UPPER_BOUND = "upper_bnd"
-    LOWER_BOUND = "lower_bnd"
     TYPE = "type"
-    ENABLE_VARIABLE_BOOL = "enable_variable"
-    LIST_ACTIVATED_ELEM = "activated_elem"
-    VARIABLE_TYPE = "variable_type"
+    VARIABLES = dspace_tool.VARIABLES
+    VALUES = dspace_tool.VALUES
+    UPPER_BOUND = dspace_tool.UPPER_BOUND
+    LOWER_BOUND = dspace_tool.LOWER_BOUND
+    ENABLE_VARIABLE_BOOL = dspace_tool.ENABLE_VARIABLE_BOOL
+    LIST_ACTIVATED_ELEM = dspace_tool.LIST_ACTIVATED_ELEM
+    VARIABLE_TYPE = dspace_tool.VARIABLE_TYPE
     ALGO = "algo"
     MAX_ITER = "max_iter"
     ALGO_OPTIONS = "algo_options"
@@ -153,6 +154,27 @@ class ProxyOptim(ProxyDriverEvaluator):
     PARALLEL_OPTIONS = 'parallel_options'
     # FD step
     FD_STEP = "fd_step"
+
+    DESIGN_SPACE = 'design_space' # TODO: proxysamplegenerator.design_space ?
+    FORMULATION = 'formulation'
+    MAXIMIZE_OBJECTIVE = 'maximize_objective'
+    OBJECTIVE_NAME = 'objective_name'
+    FORMULATION_OPTIONS = 'formulation_options'
+
+    #        self.SEARCH_PATHS = 'search_paths'
+    SCENARIO_MANDATORY_FIELDS = [
+        DESIGN_SPACE,
+        FORMULATION,
+        MAXIMIZE_OBJECTIVE,
+        OBJECTIVE_NAME]
+    #            self.SEARCH_PATHS]
+    OPTIMAL_OBJNAME_SUFFIX = "opt"
+    ALGO_MANDATORY_FIELDS = [ALGO, MAX_ITER]
+
+    DIFFERENTIATION_METHOD = 'differentiation_method'
+    EVAL_JAC = 'eval_jac'
+    EVAL_MODE = 'eval_mode'
+    EXECUTE_AT_XOPT = 'execute_at_xopt'
 
     default_algo_options = {'max_iter': 999, 'ftol_rel': 1e-9,
                             'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
@@ -211,8 +233,8 @@ class ProxyOptim(ProxyDriverEvaluator):
                  "PYMOO_UNSGA3": {"normalize_design_space": False, "ref_dirs_name": "energy"},
                  }
 
-    DESC_IN = {'algo': {'type': 'string', 'structuring': True},
-               'design_space': {'type': 'dataframe', 'structuring': True,
+    DESC_IN = {ALGO: {'type': 'string', 'structuring': True},
+               DESIGN_SPACE: {'type': 'dataframe', 'structuring': True,
                                 'dataframe_descriptor': {VARIABLES: ('string', None, True),
                                                          VALUES: ('multiple', None, True),
                                                          LOWER_BOUND: ('multiple', None, True),
@@ -220,15 +242,15 @@ class ProxyOptim(ProxyDriverEvaluator):
                                                          ENABLE_VARIABLE_BOOL: ('bool', None, True),
                                                          LIST_ACTIVATED_ELEM: ('list', None, True), }},
 
-               'formulation': {'type': 'string', 'structuring': True},
-               'maximize_objective': {'type': 'bool', 'structuring': True, 'default': False},
-               'objective_name': {'type': 'string', 'structuring': True},
-               'differentiation_method': {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
+               FORMULATION: {'type': 'string', 'structuring': True},
+               MAXIMIZE_OBJECTIVE: {'type': 'bool', 'structuring': True, 'default': False},
+               OBJECTIVE_NAME: {'type': 'string', 'structuring': True},
+               DIFFERENTIATION_METHOD: {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
                                                               Scenario.COMPLEX_STEP],
                                           'structuring': True},
-               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6},
-               'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
+               FD_STEP: {'type': 'float', 'structuring': True, 'default': 1e-6},
+               ALGO_OPTIONS: {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
                                                                          VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
                                 'default': default_algo_options,
@@ -243,10 +265,10 @@ class ProxyOptim(ProxyDriverEvaluator):
                                   'dataframe_edition_locked': False,
                                   'default': default_parallel_options,
                                   'structuring': True},
-               'eval_mode': {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False], 'structuring': True},
-               'eval_jac': {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
-               'execute_at_xopt': {'type': 'bool', 'default': True},
-               'max_iter': {'type': 'float'},
+               EVAL_MODE: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False], 'structuring': True},
+               EVAL_JAC: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
+               EXECUTE_AT_XOPT: {'type': 'bool', 'default': True},
+               MAX_ITER: {'type': 'float'},
                INEQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
                                   'structuring': True},
                EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
@@ -269,27 +291,19 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.with_data_io = with_data_io
         self.formulation = None
         self.maximize_objective = None
+        self.algo_name = None
+        self.algo_options = None
+        self.max_iter = None
+
+        self.objective_name = None
+        self.design_space = None
+
         self.opt_problem = None
         self.eval_mode = False
         self.eval_jac = False
 
-        self.DESIGN_SPACE = 'design_space'
-        self.FORMULATION = 'formulation'
-        self.MAXIMIZE_OBJECTIVE = 'maximize_objective'
-        self.OBJECTIVE_NAME = 'objective_name'
-        self.FORMULATION_OPTIONS = 'formulation_options'
-
-        #        self.SEARCH_PATHS = 'search_paths'
-        self.SCENARIO_MANDATORY_FIELDS = [
-            self.DESIGN_SPACE,
-            self.FORMULATION,
-            self.MAXIMIZE_OBJECTIVE,
-            self.OBJECTIVE_NAME]
-        #            self.SEARCH_PATHS]
-        self.OPTIMAL_OBJNAME_SUFFIX = "opt"
         self.dict_desactivated_elem = {}
         self.activated_variables = []
-        self.ALGO_MANDATORY_FIELDS = [self.ALGO, self.MAX_ITER]
         self.is_optim_scenario = True
         self.functions_before_run = []
 
@@ -319,7 +333,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     #     value[self.NS_REFERENCE])
                     for key in self._data_in.keys():
                         if self.ALGO_OPTIONS == key[0]:
-                            self._data_in[key]['value'] = values_dict
+                            self._data_in[key][self.VALUE] = values_dict
         self.set_edition_inputs_if_eval_mode()
 
     def prepare_build(self):
@@ -372,11 +386,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         '''
 
         if 'eval_mode' in [key[0] for key in self._data_in.keys()]:
-            eval_mode = self.get_sosdisc_inputs('eval_mode')
+            eval_mode = self.get_sosdisc_inputs(self.EVAL_MODE)
             if eval_mode:
                 data_in = self.get_data_in()
                 self.eval_mode = True
-                self.eval_jac = self.get_sosdisc_inputs('eval_jac')
+                self.eval_jac = self.get_sosdisc_inputs(self.EVAL_JAC)
                 self._data_in[(self.ALGO, id(data_in[self.ALGO][self.NS_REFERENCE]))][self.EDITABLE] = False
                 self._data_in[(self.ALGO_OPTIONS, id(data_in[self.ALGO_OPTIONS][self.NS_REFERENCE]))][
                     self.EDITABLE] = False
@@ -406,7 +420,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         Preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
 
-        self.ee.dm.create_reduced_dm()
+        # self.ee.dm.create_reduced_dm()
         # prepare_execution of proxy_disciplines
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
@@ -416,10 +430,10 @@ class ProxyOptim(ProxyDriverEvaluator):
                 sub_mdo_disciplines.append(
                     disc.mdo_discipline_wrapp.mdo_discipline)
 
-        self.setup_sos_disciplines()
+        self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs([self.ALGO,
+                                                                                    self.ALGO_OPTIONS,
+                                                                                    self.MAX_ITER])
 
-        self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs(self.ALGO), self.get_sosdisc_inputs(
-            self.ALGO_OPTIONS), self.get_sosdisc_inputs(self.MAX_ITER)
         self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
         # create_mdo_scenario from MDODisciplineWrapp
@@ -479,7 +493,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
             # build design space
             design_space = self.set_design_space()
-            if design_space.variables_names:
+            if design_space.variables_names: ## FIXME: should do nothing
                 _, formulation, maximize_objective, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
 
@@ -493,7 +507,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         reads design space (set_design_space)
         """
-
+        ## FIXME: use possible values
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         # update design space dv with full names
         dvs = list(dspace_df[self.VARIABLES])
@@ -510,10 +524,9 @@ class ProxyOptim(ProxyDriverEvaluator):
             else:
                 raise Exception(f" The design variable {key} is not in the dm : {key}")
 
-        dspace_dict_updated = dspace_df.copy()
+        dspace_dict_updated = dspace_df.copy()  # todo: NOT A DICT
         dspace_dict_updated[self.VARIABLES] = full_dvs
-
-        design_space = self.read_from_dataframe(dspace_dict_updated)
+        design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_dict_updated)
 
         return design_space
 
@@ -648,7 +661,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         '''
         Set design space values to complex if the differentiation method is complex_step
         '''
-        diff_method = self.get_sosdisc_inputs('differentiation_method')
+        diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
         if diff_method == self.COMPLEX_STEP:
             dspace = deepcopy(self.mdo_discipline_wrapp.mdo_discipline.formulation.opt_problem.design_space)
             curr_x = dspace._current_x
@@ -805,95 +818,6 @@ class ProxyOptim(ProxyDriverEvaluator):
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
                 self, eq, MDOFunction.TYPE_EQ, eq, value=None,
                 positive=False)
-
-    def read_from_dict(self, dp_dict):
-        """Parses a dictionary to read the DesignSpace
-
-        :param dp_dict : design space dictionary
-        :returns:  the design space
-        """
-        design_space = DesignSpace()
-        for key in dp_dict:
-            print(key)
-            if type(dp_dict[key]['value']) != list and type(dp_dict[key]['value']) != ndarray:
-                name = key
-                var_type = ['float']
-
-                size = 1
-                l_b = array([dp_dict[key]['lower_bnd']])
-                u_b = array([dp_dict[key]['upper_bnd']])
-                value = array([dp_dict[key]['value']])
-            else:
-                size = len(dp_dict[key]['value'])
-                var_type = ['float'] * size
-
-                name = key
-                l_b = array(dp_dict[key]['lower_bnd'])
-                u_b = array(dp_dict[key]['upper_bnd'])
-                value = array(dp_dict[key]['value'])
-
-            design_space.add_variable(name, size, var_type, l_b, u_b, value)
-        return design_space
-
-    def read_from_dataframe(self, df):
-        """Parses a DataFrame to read the DesignSpace
-
-        :param df : design space df
-        :returns:  the design space
-        """
-        names = list(df[self.VARIABLES])
-        values = list(df[self.VALUES])
-        l_bounds = list(df[self.LOWER_BOUND])
-        u_bounds = list(df[self.UPPER_BOUND])
-        enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
-        list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
-
-        # looking for the optionnal variable type in the design space
-        if self.VARIABLE_TYPE in df:
-            var_types = df[self.VARIABLE_TYPE]
-        else:
-            # set to None for all variables if not exists
-            var_types = [None] * len(names)
-
-        design_space = DesignSpace()
-
-        for dv, val, lb, ub, l_activated, enable_var, vtype in zip(names, values, l_bounds, u_bounds,
-                                                                   list_activated_elem, enabled_variable, var_types):
-
-            # check if variable is enabled to add it or not in the design var
-            if enable_var:
-                self.dict_desactivated_elem[dv] = {}
-
-                if type(val) != list and type(val) != ndarray:
-                    size = 1
-                    var_type = ['float']
-                    l_b = array([lb])
-                    u_b = array([ub])
-                    value = array([val])
-                else:
-                    # check if there is any False in l_activated
-                    if not all(l_activated):
-                        index_false = l_activated.index(False)
-                        self.dict_desactivated_elem[dv] = {
-                            'value': val[index_false], 'position': index_false}
-
-                        val = delete(val, index_false)
-                        lb = delete(lb, index_false)
-                        ub = delete(ub, index_false)
-
-                    size = len(val)
-                    var_type = ['float'] * size
-                    l_b = array(lb)
-                    u_b = array(ub)
-                    value = array(val)
-
-                # 'automatic' var_type values are overwritten if filled by the user
-                if vtype is not None:
-                    var_type = vtype
-
-                design_space.add_variable(
-                    dv, size, var_type, l_b, u_b, value)
-        return design_space
 
     def _set_flush_submdas_to_true(self):
         # update MDA flag to flush residuals between each mda run
