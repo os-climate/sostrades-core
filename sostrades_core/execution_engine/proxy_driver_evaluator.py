@@ -711,3 +711,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.logger.warning(msg)
         self.dm.set_data(eval_outputs_f_name,
                          'value', eval_output_df, check_value=False)
+
+    def _compose_with_driver_ns(self, sub_name):
+        driver_name = self.get_disc_full_name()
+        if isinstance(sub_name, str):
+            return self.ee.ns_manager.compose_ns([driver_name, sub_name])
+        else:
+            return list(map(lambda _sname: self.ee.ns_manager.compose_ns([driver_name, _sname]),
+                            sub_name))
