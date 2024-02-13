@@ -24,6 +24,7 @@ from sostrades_core.execution_engine.sample_generators.grid_search_sample_genera
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
     CartesianProductSampleGenerator
+from sostrades_core.tools.design_space import design_space as dspace_tool
 from sostrades_core.tools.gather.gather_tool import check_eval_io
 import pandas as pd
 from numpy import array
@@ -206,25 +207,6 @@ class ProxySampleGenerator(ProxyDiscipline):
                 all(map(lambda _val: isinstance(_val, self.VAR_TYPE_MAP[var_type]),
                         list_of_values)))
 
-    def _check_design_space_dimensions_for_one_variable(self, design_space_row):
-        """
-        Utility method that checks that values in the columns 'lower_bnd', 'upper_bnd', 'value' of the design space do
-        have the same shape for a same variable.
-
-        Arguments:
-            eval_inputs_row (pd.Series): row of the design space dataframe to check
-        """
-        lb = design_space_row[self.LOWER_BOUND] if self.LOWER_BOUND in design_space_row.index else None
-        ub = design_space_row[self.UPPER_BOUND] if self.UPPER_BOUND in design_space_row.index else None
-        val = design_space_row[self.VALUES] if self.VALUES in design_space_row.index else None
-        lb_shape = array(lb).shape
-        ub_shape = array(ub).shape
-        val_shape = array(val).shape
-        lb_ub_dim_mismatch = lb is not None and ub is not None and lb_shape != ub_shape
-        lb_val_dim_mismatch = lb is not None and val is not None and lb_shape != val_shape
-        val_ub_dim_mismatch = val is not None and ub is not None and val_shape != ub_shape
-        return not (lb_ub_dim_mismatch or lb_val_dim_mismatch or val_ub_dim_mismatch)
-
     def check_data_integrity(self):
         """
         Data integrity checks of the Sample Generator including:
@@ -289,27 +271,15 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.ee.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
                                 self.CHECK_INTEGRITY_MSG, '\n'.join(eval_inputs_integrity_msg))
 
-        # check integrity for design space # todo: move to doe and gridsearch generators ?
+        # check integrity for design space
         design_space_integrity_msg = []
         if self.DESIGN_SPACE in disc_in:
             design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-            if design_space is not None and not design_space.empty:
-                if self.configurator:
-                    # possible value checks (with current implementation should be OK by construction)
-                    vars_not_possible = design_space[self.VARIABLES][
-                            ~design_space[self.VARIABLES].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
-                    for var_not_possible in vars_not_possible:
-                        design_space_integrity_msg.append(
-                            f'Variable {var_not_possible} is not among the possible input values.'
-                        )
-                # check of dimensions coherences
-                wrong_dim_vars = design_space[self.VARIABLES][
-                    ~design_space.apply(self._check_design_space_dimensions_for_one_variable, axis=1)].to_list()
-                for wrong_dim_var in wrong_dim_vars:
-                    design_space_integrity_msg.append(
-                        f'Columns {self.LOWER_BOUND}, {self.UPPER_BOUND} and {self.VALUES} should be of type '
-                        f'{self.eval_in_possible_types[wrong_dim_var]} for variable {wrong_dim_var} '
-                        f'and should have coherent shapes.')
+            if design_space is not None:
+                possible_variables_types = self.eval_in_possible_types if self.configurator else None
+                design_space_integrity_msg = dspace_tool.check_design_space_data_integrity(design_space,
+                                                                                           possible_variables_types)
+                # specific check nb_points of the sample generator
                 if self.NB_POINTS in design_space.columns:
                     wrong_nb_points_vars = design_space[self.VARIABLES][~design_space[self.NB_POINTS].apply(
                         lambda _nb_pts: isinstance(_nb_pts, self.VAR_TYPE_MAP['int']) and _nb_pts >= 0)
@@ -317,6 +287,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                     if wrong_nb_points_vars:
                         design_space_integrity_msg.append(
                             f'Column {self.NB_POINTS} should contain non-negative integers only.')
+
         if design_space_integrity_msg:
             self.sg_data_integrity = False
             self.ee.dm.set_data(self.get_var_full_name(self.DESIGN_SPACE, disc_in),

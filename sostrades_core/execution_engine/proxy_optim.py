@@ -644,7 +644,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
 
         possible_full_id_list = [ns for ns in full_id_l if f'{self.sos_name}.' in ns]
-
+        # TODO: data integrity !
         if len(possible_full_id_list) == 1:
             return possible_full_id_list[0]
         else:
@@ -867,3 +867,46 @@ class ProxyOptim(ProxyDriverEvaluator):
             msg += str(self.get_sosdisc_inputs(self.ALGO)) + "\n"
 
         return msg
+
+    def check_data_integrity(self):
+        # TODO: design space data integrity, full name checks of inputs objective, design space, constraints...
+        pass
+
+    def _get_subprocess_var_full_name(self, var_names, io_type):
+        """
+        Method that searches for a list of variable names inside the eval_in/out_possible_values attribute. If the entry
+        exists (actual full name of a variable anonymized wrt. driver node), then the entry is added to _out_names.
+        If a short name is used that cannot be associated to one and only one variable in the subprocess, an error
+        string is added to _out_errors.
+
+        Arguments:
+            var_names (list[string]): list of variable names to query
+            io_type (string): 'in'/'out' for input/output subprocess variables resp.
+        Returns:
+            _out_names (list[string]): output list of variable full names anonymized wrt. driver node.
+            _out_errors (list[string]): list of error strings obtained from the queries for data integrity (empty if OK)
+        """
+        if io_type == self.IO_TYPE_IN:
+            subpr_vars = self.eval_in_possible_types
+        elif io_type == self.IO_TYPE_OUT:
+            subpr_vars = set(self.eval_out_possible_values)
+        else:
+            raise ValueError(f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
+        # TODO: move code below to possible values tool ?
+        _out_names = []
+        _out_errors = []
+        for var_name in var_names:
+            if var_name in subpr_vars:
+                _out_names.append(var_name)
+            else:
+                subpr_var_names = [var for var in subpr_vars if var.endswith(f".{var_name}")]
+                if not subpr_var_names:
+                    _out_names.append(None)
+                    _out_errors.append(f'Variable {var_name} is not among subprocess {io_type}puts.')
+                elif len(subpr_var_names) > 1:
+                    _out_names.append(None)
+                    _out_errors.append(f'Variable {var_name} appears more than once among optimisation subprocess '
+                                       f'{io_type}puts, please use a non-ambiguous variable name.')
+                else:
+                    _out_names.append(subpr_var_names[0])
+        return _out_names, _out_errors
