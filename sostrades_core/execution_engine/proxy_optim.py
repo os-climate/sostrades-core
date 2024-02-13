@@ -412,6 +412,10 @@ class ProxyOptim(ProxyDriverEvaluator):
         '''
         Preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
+        self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs([self.ALGO,
+                                                                                    self.ALGO_OPTIONS,
+                                                                                    self.MAX_ITER])
+        self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
         # self.ee.dm.create_reduced_dm()
         # prepare_execution of proxy_disciplines
@@ -422,12 +426,6 @@ class ProxyOptim(ProxyDriverEvaluator):
             if disc.mdo_discipline_wrapp is not None:
                 sub_mdo_disciplines.append(
                     disc.mdo_discipline_wrapp.mdo_discipline)
-
-        self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs([self.ALGO,
-                                                                                    self.ALGO_OPTIONS,
-                                                                                    self.MAX_ITER])
-
-        self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
         # create_mdo_scenario from MDODisciplineWrapp
         self.mdo_discipline_wrapp.create_mdo_scenario(
@@ -476,7 +474,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         formulation = None
         obj_full_name = None
         maximize_objective = False
-
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
             # TODO: data integrity checks
@@ -487,13 +484,13 @@ class ProxyOptim(ProxyDriverEvaluator):
 
             # build design space
             design_space = self.set_design_space()
-            if design_space.variables_names: ## FIXME: should do nothing
+            if design_space.variables_names: ## TODO: CHECK but it should be OK because already checked in data integrity
                 _, formulation, maximize_objective, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
 
                 # get full objective ids
                 obj_name = self.get_sosdisc_inputs(self.OBJECTIVE_NAME)
-                obj_full_name = self._update_names([obj_name])[0]
+                obj_full_name = self._update_names([obj_name], self.IO_TYPE_OUT)[0]
 
         return formulation, obj_full_name, design_space, maximize_objective
 
@@ -516,28 +513,26 @@ class ProxyOptim(ProxyDriverEvaluator):
         #     else:
         #         raise Exception(f" The design variable {key} is not in the dm : {key}") # TODO: data integrity!
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE).copy()
-        dspace_var_names, _ = self._get_subprocess_var_full_name(dspace_df[self.VARIABLES], self.IO_TYPE_IN)
-        dspace_var_names = self._compose_with_driver_ns(dspace_var_names)
-        dspace_df[self.VARIABLES] = dspace_var_names
+        dspace_df[self.VARIABLES] = self._update_names(dspace_df[self.VARIABLES], self.IO_TYPE_IN)
         design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df)
         return design_space
 
-    def get_full_names(self, names):
-        '''
-        get full names of variables
-        '''
-        full_names = []
-        for i_name in names:
-            full_id_l = self.dm.get_all_namespaces_from_var_name(i_name)
-            if full_id_l != []:
-                if len(full_id_l) > 1:
-                    # full_id = full_id_l[0]
-                    full_id = self.get_scenario_lagr(full_id_l)
-                else:
-                    full_id = full_id_l[0]
-                full_names.append(full_id)
-
-        return full_names
+    # def get_full_names(self, names):
+    #     '''
+    #     get full names of variables
+    #     '''
+    #     full_names = []
+    #     for i_name in names:
+    #         full_id_l = self.dm.get_all_namespaces_from_var_name(i_name)
+    #         if full_id_l != []:
+    #             if len(full_id_l) > 1:
+    #                 # full_id = full_id_l[0]
+    #                 full_id = self.get_scenario_lagr(full_id_l)
+    #             else:
+    #                 full_id = full_id_l[0]
+    #             full_names.append(full_id)
+    #
+    #     return full_names
 
     def get_chart_filter_list(self):
         chart_filters = []
@@ -636,18 +631,17 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         return instanciated_charts
 
-    def get_scenario_lagr(self, full_id_l):
-        """
-        get the corresponding lagrangian formulation of a given
-        optimization scenario
-        """
-
-        possible_full_id_list = [ns for ns in full_id_l if f'{self.sos_name}.' in ns]
-        # TODO: data integrity !
-        if len(possible_full_id_list) == 1:
-            return possible_full_id_list[0]
-        else:
-            raise Exception(f'Cannot find the only objective of the optim {self.sos_name} ')
+    # def get_scenario_lagr(self, full_id_l):
+    #     """
+    #     get the corresponding lagrangian formulation of a given
+    #     optimization scenario
+    #     """
+    #     possible_full_id_list = [ns for ns in full_id_l if f'{self.sos_name}.' in ns]
+    #     # TODO: data integrity !
+    #     if len(possible_full_id_list) == 1:
+    #         return possible_full_id_list[0]
+    #     else:
+    #         raise Exception(f'Cannot find the only objective of the optim {self.sos_name} ')
 
     def set_design_space_for_complex_step(self):
         '''
@@ -693,26 +687,28 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         return default_dict
 
-    def _update_names(self, names):
-        """
-        if no dot in the name, it looks for the full name in the dm
-        else we suppose that this is a full name that needs to be updated with current
-        study name
-        |!| it will NOT work for names with a dot in data_io...
-        """
-        local_names = []
-        full_names = []
-        for name in names:
-            if NamespaceManager.NS_SEP not in name:
-                local_names.append(name)
-            else:
-                full_names.append(name)
-        return self.get_full_names(local_names) + \
-            self._update_study_ns_in_varname(full_names)
+    # def _update_names(self, names):
+    #     """
+    #     if no dot in the name, it looks for the full name in the dm
+    #     else we suppose that this is a full name that needs to be updated with current
+    #     study name
+    #     |!| it will NOT work for names with a dot in data_io...
+    #     """
+    #     local_names = []
+    #     full_names = []
+    #     for name in names:
+    #         if NamespaceManager.NS_SEP not in name:
+    #             local_names.append(name)
+    #         else:
+    #             full_names.append(name)
+    #     return self.get_full_names(local_names) + \
+    #         self._update_study_ns_in_varname(full_names)
 
     def configure_driver(self):
         self.set_eval_possible_values(strip_first_ns=False)
-        # FIXME: no good ! with the short name logic we cannot check directly the data integrity w/ POSSIBLE VALUES [discuss & fix]
+
+        # FIXME: no good ! with the short name logic we cannot check directly the data integrity w/ POSSIBLE VALUES
+        #  or maybe overriding the generic check data integrity ? [discuss & fix]
         # # Fill the possible_values of obj and constraints
         # self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
         #                  self.POSSIBLE_VALUES, self.eval_out_possible_values)
@@ -825,7 +821,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             ineq_names.append(name)
             is_positive.append(is_pos)
 
-        ineq_full_names = self._update_names(ineq_names)
+        ineq_full_names = self._update_names(ineq_names, self.IO_TYPE_OUT)
 
         for ineq, is_pos in zip(ineq_full_names, is_positive):
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
@@ -833,7 +829,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         # -- equality constraints
         eq_names = self.get_sosdisc_inputs(self.EQ_CONSTRAINTS)
-        eq_full_names = self._update_names(eq_names)
+        eq_full_names = self._update_names(eq_names, self.IO_TYPE_OUT)
         for eq in eq_full_names:
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
                 self, eq, MDOFunction.TYPE_EQ, eq, value=None,
@@ -863,14 +859,13 @@ class ProxyOptim(ProxyDriverEvaluator):
             msg += self.formulation.__class__.__name__
             msg += "\nAlgorithm: "
             msg += str(self.get_sosdisc_inputs(self.ALGO)) + "\n"
-
         return msg
 
     def check_data_integrity(self):
         # TODO: design space data integrity, full name checks of inputs objective, design space, constraints...
         pass
 
-    def _get_subprocess_var_full_name(self, var_names, io_type):
+    def _get_subprocess_var_names(self, var_names, io_type):
         """
         Method that searches for a list of variable names inside the eval_in/out_possible_values attribute. If the entry
         exists (actual full name of a variable anonymized wrt. driver node), then the entry is added to _out_names.
@@ -908,3 +903,20 @@ class ProxyOptim(ProxyDriverEvaluator):
                 else:
                     _out_names.append(subpr_var_names[0])
         return _out_names, _out_errors
+
+    def _update_names(self, var_names, io_type):
+        """
+        Utility function for getting full name from a short name of a variable in the subprocess. Should not be called
+        before data integrity checks as it will raise an error if no solution found, or if ambiguity determining
+        the variable full name.
+        Arguments:
+            var_names (list[string]): list of variable names to query
+            io_type (string): 'in'/'out' for input/output subprocess variables resp.
+        Returns:
+            f_names (list[string]): output list of variable full names (absolute, with study name too)
+        """
+        f_names, query_err = self._get_subprocess_var_names(var_names, io_type)
+        if query_err:
+            raise ValueError(" ".join(query_err))  # this already has been checked on data_integrity.
+        f_names = self._compose_with_driver_ns(f_names)
+        return f_names
