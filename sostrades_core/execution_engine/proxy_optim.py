@@ -502,25 +502,24 @@ class ProxyOptim(ProxyDriverEvaluator):
         reads design space (set_design_space)
         """
         ## FIXME: use possible values
-        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+        # dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         # update design space dv with full names
-        dvs = list(dspace_df[self.VARIABLES])
-        full_dvs = []
-        dspace_dict_updated = {}
-
-        for key in dvs:
-
-            full_key_l = self.get_full_names([key])
-            if len(full_key_l) > 0:
-                full_key = full_key_l[0]
-                full_dvs.append(full_key)
-                # dspace_dict_updated[full_key] = dspace_df[key]
-            else:
-                raise Exception(f" The design variable {key} is not in the dm : {key}")
-
-        dspace_dict_updated = dspace_df.copy()  # todo: NOT A DICT
-        dspace_dict_updated[self.VARIABLES] = full_dvs
-        design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_dict_updated)
+        # dvs = list(dspace_df[self.VARIABLES])
+        # full_dvs = []
+        # dspace_dict_updated = {}
+        # for key in dvs:
+        #     full_key_l = self.get_full_names([key])
+        #     if len(full_key_l) > 0:
+        #         full_key = full_key_l[0]
+        #         full_dvs.append(full_key)
+        #         # dspace_dict_updated[full_key] = dspace_df[key]
+        #     else:
+        #         raise Exception(f" The design variable {key} is not in the dm : {key}") # TODO: data integrity!
+        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE).copy()
+        dspace_var_names, _ = self._get_subprocess_var_full_name(dspace_df[self.VARIABLES], self.IO_TYPE_IN)
+        dspace_var_names = self._compose_with_driver_ns(dspace_var_names)
+        dspace_df[self.VARIABLES] = dspace_var_names
+        design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df)
         return design_space
 
     def get_full_names(self, names):
