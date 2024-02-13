@@ -26,6 +26,8 @@ import warnings
 def smooth_maximum(cst, alpha=3):
     """
     Function
+    #-- smooth maximum of values return the value if it was a float
+    #-- return smooth maximum if objective was an array
     """
     max_exp = 650  # max value for exponent input, higher value gives infinity
     min_exp = -300
