@@ -712,17 +712,16 @@ class ProxyOptim(ProxyDriverEvaluator):
             self._update_study_ns_in_varname(full_names)
 
     def configure_driver(self):
-        self.set_eval_possible_values(strip_first_ns=True)
-
-        # Fill the possible_values of obj and constraints
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
-                         self.POSSIBLE_VALUES, self.eval_out_possible_values)
-
-        if self.is_constraints:
-            self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
-                             self.POSSIBLE_VALUES, self.eval_out_possible_values)
-            self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
-                             self.POSSIBLE_VALUES, self.eval_out_possible_values)
+        self.set_eval_possible_values(strip_first_ns=False)
+        # FIXME: no good ! with the short name logic we cannot check directly the data integrity w/ POSSIBLE VALUES [discuss & fix]
+        # # Fill the possible_values of obj and constraints
+        # self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
+        #                  self.POSSIBLE_VALUES, self.eval_out_possible_values)
+        # if self.is_constraints:
+        #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
+        #                      self.POSSIBLE_VALUES, self.eval_out_possible_values)
+        #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
+        #                      self.POSSIBLE_VALUES, self.eval_out_possible_values)
 
         # fill the possible values of algos
         _algo_factory = OptimizersFactory()
