@@ -418,7 +418,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
         # self.ee.dm.create_reduced_dm()
-        # prepare_execution of proxy_disciplines
+        # prepare_execution of proxy_disciplines and extract GEMSEO objects
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
@@ -428,8 +428,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     disc.mdo_discipline_wrapp.mdo_discipline)
 
         # create_mdo_scenario from MDODisciplineWrapp
-        self.mdo_discipline_wrapp.create_mdo_scenario(
-            sub_mdo_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
+        self.mdo_discipline_wrapp.create_mdo_scenario(sub_mdo_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
         self.set_constraints()
         self.set_diff_method()
         self.set_design_space_for_complex_step()
@@ -483,8 +482,8 @@ class ProxyOptim(ProxyDriverEvaluator):
             #         f"A design variable must obligatory be an array {[type(design_variable).__name__ for design_variable in dspace['value'].tolist()]}")
 
             # build design space
-            design_space = self.set_design_space()
-            if design_space.variables_names: ## TODO: CHECK but it should be OK because already checked in data integrity
+            design_space = self.set_design_space() ## TODO: CHECK but it should be OK because already checked in data integrity
+            if design_space.variables_names:
                 _, formulation, maximize_objective, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
 
@@ -705,6 +704,10 @@ class ProxyOptim(ProxyDriverEvaluator):
     #         self._update_study_ns_in_varname(full_names)
 
     def configure_driver(self):
+        """
+        Specific configuration actions for the optimisation driver do be done after the subprocess is configured:
+        extraction of the subprocess inputs and outputs, GEMSEO algorithms and formulations.
+        """
         self.set_eval_possible_values(strip_first_ns=False)
 
         # FIXME: no good ! with the short name logic we cannot check directly the data integrity w/ POSSIBLE VALUES
