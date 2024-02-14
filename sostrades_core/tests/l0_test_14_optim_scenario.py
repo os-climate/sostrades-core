@@ -615,9 +615,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.dm.set_values_from_dict(values_dict)
-
-        exec_eng.configure()
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',

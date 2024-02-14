@@ -120,9 +120,10 @@ class GatherDiscipline(SoSWrapp):
             disc_in = self.get_data_in()
             eval_output_new_dm = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
             eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, disc_in)
-
+            possible_out_values = list(set(self.gather_names.values()))
+            possible_out_values.sort()
             # merge possible outputs with current eval_output
-            eval_output_df, error_msg = get_eval_output(set(self.gather_names.values()), eval_output_new_dm)
+            eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
 
             # This WARNING is not meaningful in most cases (only for specific cases where we need to gather dynamic outputs in driver)
 
