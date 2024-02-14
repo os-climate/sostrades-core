@@ -17,12 +17,16 @@ limitations under the License.
 # pylint: disable=line-too-long
 
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.namespace import Namespace
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
+import numpy as np
+import pandas as pd
 
-
-def post_processing_filters(execution_engine, namespace):
+def post_processing_filters(execution_engine:ExecutionEngine, namespace:Namespace):
     """ 
     post processing function designed to build filters
     """
@@ -34,41 +38,25 @@ def post_processing_filters(execution_engine, namespace):
         'Charts', chart_list, chart_list, filter_key='graphs'))
     return filters
 
+    #chart_filters.append(ChartFilter('Variation List (%)', variation_list, variation_list, 'variation_list'))
 
-def post_processings(execution_engine, namespace, filters):
+
+def post_processings(execution_engine:ExecutionEngine, namespace:str, filters):
     """ 
     post processing function designed to build graphs
     """
+    # For the outputs, making a bar graph with gradients values
+
     instanciated_charts = []
-    # TODO CHANGE
+    
+    # TODO samples_df or samples_inputs_df
+    samples_df_name = namespace + "." + ProxySampleGenerator.SAMPLES_DF
+    samples_df:pd.DataFrame = execution_engine.dm.get_value(var_f_name=samples_df_name)
+    
+    instanciated_charts.append(InstanciatedTable.from_pd_df(table_name="samples_df", df=samples_df))
 
-    # Overload default value with chart filter
-    if filters is not None:
-        for chart_filter in filters:
-            if chart_filter.filter_key == 'graphs':
-                charts_list = chart_filter.selected_values
-
-    """
-    if 'Scenario table' in charts_list:
-        table_name = 'Scenario dict'
-        scenario_list = execution_engine.dm.get_value(namespace'.samples_df')['scenario_name'].values.tolist()
-        
-        #récupérer le namespace du sample generator 
-        #il s'appelle ns_sampling
-        #get ns in shared ns dict ns name c'est 
-
-        headers = ['Scenarios']
-
-        cells = []
-        cells.append(scenario_list)
-
-        new_table = InstanciatedTable(
-            table_name, headers, cells)
-        instanciated_charts.append(new_table)
-    """
-    print("PATATE")
-
-    new_table = InstanciatedTable("PATATE", ['Scenarios'], [["A", "B", "C"]])
-    instanciated_charts.append(new_table)
+    y_dict_name = namespace + ".y_dict"
+    y_dict:dict[str:float] = execution_engine.dm.get_value(var_f_name=y_dict_name)
+    instanciated_charts.append(InstanciatedTable(table_name="y_dict", header=["key", "value"], cells=list(y_dict.items())))
 
     return instanciated_charts
