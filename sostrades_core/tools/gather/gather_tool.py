@@ -48,13 +48,9 @@ def get_eval_output(possible_out_values, eval_output_dm):
     error_msg = []
     default_dataframe = None
     if possible_out_values:
-        possible_out_values = list(possible_out_values)
-        possible_out_values.sort()
         default_dataframe = pd.DataFrame({'selected_output': [False for _ in possible_out_values],
                                               'full_name': possible_out_values,
                                                'output_name': [None for _ in possible_out_values]})
-
-
         # check if the eval_inputs need to be updated after a subprocess configure
         if eval_output_dm is not None and (set(eval_output_dm['full_name'].tolist()) != (set(default_dataframe['full_name'].tolist())) \
          or eval_output_dm['selected_output'].tolist() != (default_dataframe['selected_output'].tolist()) \

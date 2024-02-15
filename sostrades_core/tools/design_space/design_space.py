@@ -89,6 +89,50 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
             design_space.add_variable(
                 dv, size, var_type, l_b, u_b, value)
     return design_space, dict_desactivated_elem
+
+def check_design_space_data_integrity(design_space, possible_variables_types):
+    design_space_integrity_msg = []
+    if design_space.empty or not design_space[VARIABLES].tolist():
+        design_space_integrity_msg.append("The design space should contain at least one variable.")
+    else:
+        if possible_variables_types:
+            # possible value checks (with current implementation should be OK by construction)
+            vars_not_possible = design_space[VARIABLES][
+                ~design_space[VARIABLES].apply(lambda _var: _var in possible_variables_types)].to_list()
+            for var_not_possible in vars_not_possible:
+                design_space_integrity_msg.append(
+                    f'Variable {var_not_possible} is not among the possible input values.'
+                )
+        # check of dimensions coherences
+        wrong_dim_vars = design_space[VARIABLES][
+            ~design_space.apply(_check_design_space_dimensions_for_one_variable, axis=1)].to_list()
+        for wrong_dim_var in wrong_dim_vars:
+            design_space_integrity_msg.append(
+                f'Columns {LOWER_BOUND}, {UPPER_BOUND} and {VALUES} should be of type '
+                f'{possible_variables_types[wrong_dim_var]} for variable {wrong_dim_var} '
+                f'and should have coherent shapes.')
+
+    return design_space_integrity_msg
+
+def _check_design_space_dimensions_for_one_variable(design_space_row):
+    """
+    Utility method that checks that values in the columns 'lower_bnd', 'upper_bnd', 'value' of the design space do
+    have the same shape for a same variable.
+
+    Arguments:
+        eval_inputs_row (pd.Series): row of the design space dataframe to check
+    """
+    lb = design_space_row[LOWER_BOUND] if LOWER_BOUND in design_space_row.index else None
+    ub = design_space_row[UPPER_BOUND] if UPPER_BOUND in design_space_row.index else None
+    val = design_space_row[VALUES] if VALUES in design_space_row.index else None
+    lb_shape = array(lb).shape
+    ub_shape = array(ub).shape
+    val_shape = array(val).shape
+    lb_ub_dim_mismatch = lb is not None and ub is not None and lb_shape != ub_shape
+    lb_val_dim_mismatch = lb is not None and val is not None and lb_shape != val_shape
+    val_ub_dim_mismatch = val is not None and ub is not None and val_shape != ub_shape
+    return not (lb_ub_dim_mismatch or lb_val_dim_mismatch or val_ub_dim_mismatch)
+
 ## TODO: looks unused
 # def read_from_dict(self, dp_dict):
 #     """Parses a dictionary to read the DesignSpace
