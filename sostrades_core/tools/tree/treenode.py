@@ -266,9 +266,9 @@ class TreeNode:
         self.data_management_disciplines[f'{data_management_discipline.discipline_label}'] = data_management_discipline
 
         # Manage markdown documentation
-        filepath = inspect.getfile(discipline.__class__)
-        markdown_data = TreeNode.get_markdown_documentation(filepath)
-        self.add_markdown_documentation(markdown_data, self.model_name_full_path)
+        # filepath = inspect.getfile(discipline.__class__)
+        # markdown_data = TreeNode.get_markdown_documentation(filepath)
+        # self.add_markdown_documentation(markdown_data, self.model_name_full_path)
 
 
     def create_data_key(self, disc_name, io_type, variable_name):
@@ -337,68 +337,68 @@ class TreeNode:
                 TreeNode.MARKDOWN_DOCUMENTATION_KEY: markdown_data
             })
 
-    @staticmethod
-    def get_markdown_documentation(filepath):
-        # Manage markdown documentation
+    # @staticmethod
+    # def get_markdown_documentation(filepath):
+    #     # Manage markdown documentation
 
-        doc_folder_path = join(dirname(filepath), 'documentation')
-        filename = os.path.basename(filepath).split('.')[0]
-        markdown_data = ""
-        if isdir(doc_folder_path):
-            # look for markdown file with extension .markdown or .md
-            markdown_list = [join(doc_folder_path, md_file) for md_file in listdir(doc_folder_path) if ((
-                md_file.endswith(r".markdown") or md_file.endswith(r".md")) and md_file.startswith(filename))]
+    #     doc_folder_path = join(dirname(filepath), 'documentation')
+    #     filename = os.path.basename(filepath).split('.')[0]
+    #     markdown_data = ""
+    #     if isdir(doc_folder_path):
+    #         # look for markdown file with extension .markdown or .md
+    #         markdown_list = [join(doc_folder_path, md_file) for md_file in listdir(doc_folder_path) if ((
+    #             md_file.endswith(r".markdown") or md_file.endswith(r".md")) and md_file.startswith(filename))]
 
-            if len(markdown_list) > 0:
-                # build file path
-                markdown_filepath = markdown_list[0]
+    #         if len(markdown_list) > 0:
+    #             # build file path
+    #             markdown_filepath = markdown_list[0]
 
-                if isfile(markdown_filepath):
-                    markdown_data = ''
+    #             if isfile(markdown_filepath):
+    #                 markdown_data = ''
 
-                    with open(markdown_filepath, 'r+t', encoding='utf-8') as f:
-                        markdown_data = f.read()
+    #                 with open(markdown_filepath, 'r+t', encoding='utf-8') as f:
+    #                     markdown_data = f.read()
 
-                    # Find file reference in markdown file
-                    place_holder = f'!\\[(.*)\\]\\((.*)\\)'
-                    matches = re.finditer(place_holder, markdown_data)
+    #                 # Find file reference in markdown file
+    #                 place_holder = f'!\\[(.*)\\]\\((.*)\\)'
+    #                 matches = re.finditer(place_holder, markdown_data)
 
-                    images_base_64 = {}
-                    base64_image_tags = []
+    #                 images_base_64 = {}
+    #                 base64_image_tags = []
 
-                    for matche in matches:
-                        # Format:
-                        # (0) => full matche line
-                        # (1) => first group (place holder name)
-                        # (2) => second group (image path/name)
+    #                 for matche in matches:
+    #                     # Format:
+    #                     # (0) => full matche line
+    #                     # (1) => first group (place holder name)
+    #                     # (2) => second group (image path/name)
 
-                        image_name = matche.group(2)
+    #                     image_name = matche.group(2)
 
-                        # Convert markdown image link to link to base64 image
-                        image_filepath = join(doc_folder_path, image_name)
+    #                     # Convert markdown image link to link to base64 image
+    #                     image_filepath = join(doc_folder_path, image_name)
 
-                        if isfile(image_filepath):
-                            image_data = open(image_filepath, 'r+b').read()
-                            encoded = base64.b64encode(
-                                image_data).decode('utf-8')
+    #                     if isfile(image_filepath):
+    #                         image_data = open(image_filepath, 'r+b').read()
+    #                         encoded = base64.b64encode(
+    #                             image_data).decode('utf-8')
 
-                            images_base_64.update({image_name: encoded})
+    #                         images_base_64.update({image_name: encoded})
 
-                            # first replace the matches
-                            matche_value = matche.group(1)
-                            matches_replace = f'![{matche_value}]({image_name})'
-                            matches_replace_by = f'![{matche_value}][{image_name}]'
+    #                         # first replace the matches
+    #                         matche_value = matche.group(1)
+    #                         matches_replace = f'![{matche_value}]({image_name})'
+    #                         matches_replace_by = f'![{matche_value}][{image_name}]'
 
-                            base64_image_tag = f'[{image_name}]:data:image/png;base64,{images_base_64[image_name]}'
-                            base64_image_tags.append(base64_image_tag)
+    #                         base64_image_tag = f'[{image_name}]:data:image/png;base64,{images_base_64[image_name]}'
+    #                         base64_image_tags.append(base64_image_tag)
 
-                            markdown_data = markdown_data.replace(
-                                matches_replace, matches_replace_by)
+    #                         markdown_data = markdown_data.replace(
+    #                             matches_replace, matches_replace_by)
 
-                    for image_tag in base64_image_tags:
-                        markdown_data = f'{markdown_data}\n\n{image_tag}'
+    #                 for image_tag in base64_image_tags:
+    #                     markdown_data = f'{markdown_data}\n\n{image_tag}'
 
-        return markdown_data
+    #     return markdown_data
 
     def __str__(self):
         children_str = ''.join([str(c) for c in self.children])

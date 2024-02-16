@@ -73,10 +73,10 @@ class TreeView:
             from importlib import import_module
             documentation_folder = import_module(process_module).__file__
 
-            if documentation_folder != '':
+            # if documentation_folder != '':
 
-                self.root.add_markdown_documentation(TreeNode.get_markdown_documentation(
-                    documentation_folder), TreeView.PROCESS_DOCUMENTATION)
+            #     self.root.add_markdown_documentation(TreeNode.get_markdown_documentation(
+            #         documentation_folder), TreeView.PROCESS_DOCUMENTATION)
         except:
             pass
 
