@@ -425,7 +425,7 @@ class SoSJacobianAssembly(JacobianAssembly):
 
         # SoSTrades modif
         # Petsc needs sparse matrix to configure
-        if linear_solver.endswith('petsc'):
+        if linear_solver.endswith('_PETSC'):
             matrix_type = self.SPARSE
         else:
             matrix_type = self.LINEAR_OPERATOR
@@ -483,7 +483,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         n_couplings = self.compute_dimension(couplings)
 
         # Petsc needs sparse matrix to configure
-        if linear_solver.endswith('petsc'):
+        if linear_solver.endswith('_PETSC'):
             matrix_type = self.SPARSE
 
         # compute the partial derivatives of the residuals
