@@ -41,7 +41,7 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
-   from sostrades_core.execution_engine.gemseo_addon.linear_solvers import PetscKSPAlgos as ksp_lib_petsc
+   from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
