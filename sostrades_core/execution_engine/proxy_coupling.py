@@ -315,7 +315,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if 'linear_solver_MDA' in disc_in:
             linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
             if linear_solver_MDA.endswith('_PETSC'):
-                if not getenv("USE_PETSC", "").lower() in ("true", "1"):
+                if getenv("USE_PETSC", "").lower() not in ("true", "1"):
                     raise ValueError(
                         f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
                         f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
@@ -336,7 +336,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if 'linear_solver_MDO' in disc_in:
             linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
             if linear_solver_MDO.endswith('_PETSC'):
-                if not getenv("USE_PETSC", "").lower() in ("true", "1"):
+                if getenv("USE_PETSC", "").lower() not in ("true", "1"):
                     raise ValueError(
                         f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
                         f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
