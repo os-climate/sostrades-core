@@ -64,14 +64,12 @@ class DesignVar(object):
         vars_dvar_descriptor = set(self.design_var_descriptor.keys())
         vars_dspace = set(self.dspace[self.VARIABLES])
 
-        diff_var_dvd_dspace = list(vars_dvar_descriptor.difference(vars_dspace))
-        diff_var_dvd_dspace.sort()
+        diff_var_dvd_dspace = vars_dvar_descriptor.difference(vars_dspace)
         if len(diff_var_dvd_dspace) > 0:
             msg = "\n".join(diff_var_dvd_dspace)
             raise Exception(f"The following variables are in the {self.DESIGN_VAR_DESCRIPTOR} but not in the {self.DESIGN_SPACE}:\n{msg}")
 
-        diff_dspace_dvar_descr = list(vars_dspace.difference(vars_dvar_descriptor))
-        diff_dspace_dvar_descr.sort()
+        diff_dspace_dvar_descr = vars_dspace.difference(vars_dvar_descriptor)
         if len(diff_var_dvd_dspace) > 0:
             msg = "\n".join(diff_dspace_dvar_descr)
             raise Exception(f"The following variables are in the {self.DESIGN_SPACE} but not in the {self.DESIGN_VAR_DESCRIPTOR}:\n{msg}")
