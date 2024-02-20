@@ -29,21 +29,19 @@ from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDiscip
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-from sostrades_core.execution_engine.archi_builder import ArchiBuilder
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.mda.sequential_mda import MDASequential
 
 from collections import ChainMap
-from gemseo.core.scenario import Scenario
-from numpy import array, ndarray, delete, inf
+from numpy import ndarray
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
-   from sostrades_core.tools.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
+   from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
@@ -317,7 +315,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if 'linear_solver_MDA' in disc_in:
             linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
             if linear_solver_MDA.endswith('_PETSC'):
-                if not getenv("USE_PETSC", "").lower() in ("true", "1"):
+                if getenv("USE_PETSC", "").lower() not in ("true", "1"):
                     raise ValueError(
                         f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
                         f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
@@ -338,7 +336,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if 'linear_solver_MDO' in disc_in:
             linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
             if linear_solver_MDO.endswith('_PETSC'):
-                if not getenv("USE_PETSC", "").lower() in ("true", "1"):
+                if getenv("USE_PETSC", "").lower() not in ("true", "1"):
                     raise ValueError(
                         f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
                         f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '

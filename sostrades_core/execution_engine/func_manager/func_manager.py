@@ -47,6 +47,7 @@ class FunctionManager:
         -Inequatity constraints: satisfied < 0., violation > 0., strong violation > 1
         -Equality constraints: satisfied: 0.
         """
+        self.aggr_mod_ineq = None
         self.POS_FTYPE = [self.OBJECTIVE,
                           self.INEQ_CONSTRAINT, self.EQ_CONSTRAINT]
         self.reinit()
@@ -69,7 +70,9 @@ class FunctionManager:
 
     def __to_array_type(self, value):
         t_val = type(value)
-        if t_val == type(np.array([0.])):
+        if isinstance(value, np.ndarray):
+            mod_value = value
+        elif t_val == type(np.array([0.])):
             mod_value = value
         elif t_val == type([]):
             mod_value = np.array(value)
