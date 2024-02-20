@@ -29,7 +29,18 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     '''
     Class for driver on multi instance mode
     '''
-
+    _ontology_data = {
+        'label': ' Multi-Instance Driver',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     DISPLAY_OPTIONS_POSSIBILITIES = ScatterTool.DISPLAY_OPTIONS_POSSIBILITIES
 
     #            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
@@ -272,7 +283,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             else:
                 self.set_variables_editability(scenario_names, self.original_editable_dict_non_ref)
 
-            
             # PROPAGATE TRADE VARIABLES VALUES FROM samples_df
             # check that there are indeed variable changes input, with respect
             # to reference scenario
@@ -298,8 +308,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                     # save trades variable original editable state and set them into not editable
                     self.change_editability_state_for_trade_variables(scenario_names, scenarios_data_dict.keys())
 
-
-
     def change_editability_state_for_trade_variables(self, scenario_names, trades_variables):
         '''
             save trade variables editable state if it is not already saved
@@ -308,21 +316,23 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         # get variables that have not been already saved
         new_trades_variables = trades_variables - self.original_editable_dict_trade_variables.keys()
         # save editable property of those variables
-        self.original_editable_dict_trade_variables.update(self.save_original_editable_attr_from_variables(new_trades_variables))
+        self.original_editable_dict_trade_variables.update(
+            self.save_original_editable_attr_from_variables(new_trades_variables))
 
         # get variables that are no more trades variables
-        old_trades_variables = {key:value for key, value in self.original_editable_dict_trade_variables.items() if key not in trades_variables}
+        old_trades_variables = {key: value for key, value in self.original_editable_dict_trade_variables.items() if
+                                key not in trades_variables}
 
         # set '_' after scenario name to avoid scenario_1 in scenario12
-        scenario_names_ = [f'.{sc}.'for sc in scenario_names]
+        scenario_names_ = [f'.{sc}.' for sc in scenario_names]
         # set old editable state to those variables
         self.set_variables_editability(scenario_names_, old_trades_variables)
-        #remove those trades variables 
+        # remove those trades variables
         for old_trade_var in old_trades_variables.keys():
             del self.original_editable_dict_trade_variables[old_trade_var]
 
         # set new trades variables not editable by giving a dict with editable = False
-        not_editable_dict = {key:False for key in new_trades_variables}
+        not_editable_dict = {key: False for key in new_trades_variables}
         self.set_variables_editability(scenario_names_, not_editable_dict)
 
     '''

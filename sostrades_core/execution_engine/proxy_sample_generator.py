@@ -54,7 +54,7 @@ class ProxySampleGenerator(ProxyDiscipline):
 
     INPUT_TYPE = ['float', 'array', 'int', 'string']
 
-    MULTIPLIER_PARTICULE = "__MULTIPLIER__" # todo: to delete
+    MULTIPLIER_PARTICULE = "__MULTIPLIER__"  # todo: to delete
 
     SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
@@ -103,8 +103,8 @@ class ProxySampleGenerator(ProxyDiscipline):
                         ProxyDiscipline.DATAFRAME_EDITION_LOCKED: False,
                         ProxyDiscipline.STRUCTURING: True,
                         ProxyDiscipline.DEFAULT: pd.DataFrame(columns=[SELECTED_INPUT, FULL_NAME]),
-                        #ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
-                        #ProxyDiscipline.NAMESPACE: NS_SAMPLING,
+                        # ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
+                        # ProxyDiscipline.NAMESPACE: NS_SAMPLING,
                         }
     EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
     LIST_OF_VALUES = SampleGeneratorWrapper.LIST_OF_VALUES
@@ -162,14 +162,14 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.sampling_generation_mode = None
 
         self.sample_pending = False
-        self.samples_gene_df = None   # sample generated at configuration-time
+        self.samples_gene_df = None  # sample generated at configuration-time
 
         self.force_sampling_at_configuration_time = False
         # TODO: actually no need for two variables as the type dict could be sorted and its keys be the possible_values
         self.eval_in_possible_values = []
         self.eval_in_possible_types = {}
         self.samples_df_f_name = None
-        #FIXME: using samples_df_f_name to sample means configuration-time sampling needs to be banned on standalone sample gen.
+        # FIXME: using samples_df_f_name to sample means configuration-time sampling needs to be banned on standalone sample gen.
 
     def set_eval_in_possible_values(self,
                                     possible_values: list[str],
@@ -270,7 +270,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if eval_inputs is not None:
                 # possible value checks (with current implementation should be OK by construction)
                 vars_not_possible = eval_inputs[self.FULL_NAME][
-                        ~eval_inputs[self.FULL_NAME].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
+                    ~eval_inputs[self.FULL_NAME].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
                 for var_not_possible in vars_not_possible:
                     eval_inputs_integrity_msg.append(
                         f'Variable {var_not_possible} is not among the possible input values.'
@@ -297,7 +297,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                 if self.configurator:
                     # possible value checks (with current implementation should be OK by construction)
                     vars_not_possible = design_space[self.VARIABLES][
-                            ~design_space[self.VARIABLES].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
+                        ~design_space[self.VARIABLES].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
                     for var_not_possible in vars_not_possible:
                         design_space_integrity_msg.append(
                             f'Variable {var_not_possible} is not among the possible input values.'
@@ -339,7 +339,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.instantiate_sampling_tool()
             self.update_eval_inputs(disc_in)
             dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(self)
-            
+
             self.check_data_integrity()
             if self.sampling_generation_mode == self.AT_RUN_TIME:
                 # if sampling at run-time add the corresponding output
@@ -366,7 +366,8 @@ class ProxySampleGenerator(ProxyDiscipline):
             if self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
                 sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
                 if self.mdo_discipline_wrapp.wrapper.sample_generator.__class__ != sample_generator_cls:
-                    self.mdo_discipline_wrapp.wrapper.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
+                    self.mdo_discipline_wrapp.wrapper.sample_generator = sample_generator_cls(
+                        logger=self.logger.getChild(sample_generator_cls.__name__))
 
     def configure_generation_mode(self, disc_in):
         """
@@ -461,12 +462,14 @@ class ProxySampleGenerator(ProxyDiscipline):
                 self.dm.set_data(eval_inputs_f_name,
                                  'value', default_in_dataframe, check_value=False)
             # check if the eval_inputs need to be updated after a subprocess input change
-            elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (set(default_in_dataframe[self.FULL_NAME].tolist())):
+            elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (
+            set(default_in_dataframe[self.FULL_NAME].tolist())):
                 # reindex eval_inputs to the possible values keeping other values and columns of the df
-                eval_input_new_dm = eval_input_new_dm.\
-                    drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(self.eval_in_possible_values).\
+                eval_input_new_dm = eval_input_new_dm. \
+                    drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(self.eval_in_possible_values). \
                     reset_index().reindex(columns=eval_input_new_dm.columns)
-                eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype('bool')
+                eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype(
+                    'bool')
                 # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
                 if self.LIST_OF_VALUES in eval_input_new_dm.columns:
                     new_in = eval_input_new_dm[self.LIST_OF_VALUES].isna()
@@ -505,7 +508,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                 # avoid sampling and pushing the generated samples_df into the dm, UNLESS:
                 # - the current scenario names are the default (i.e. no previous modification or sampling made), or
                 # - the user asked to force re-sampling on reconfiguration using input flag overwrite_samples_df
-                overwrite_samples_df =\
+                overwrite_samples_df = \
                     samples_df_dm[self.SCENARIO_NAME].equals(self.SAMPLES_DF_DEFAULT[self.SCENARIO_NAME]) or \
                     self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)
                 if overwrite_samples_df:

@@ -99,7 +99,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.execution_engine.sos_scenario',
+        'label': ' Optimization Driver',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
