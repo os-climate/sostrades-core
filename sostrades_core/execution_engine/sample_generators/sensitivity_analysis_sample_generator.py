@@ -106,9 +106,7 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
                                        {proxy.TYPE: 'list',
                                         proxy.DEFAULT: [-5, 5],
                                         proxy.STRUCTURING: True,
-                                        proxy.UNIT:'%',
-                                        proxy.VISIBILITY: proxy.SHARED_VISIBILITY,
-                                        proxy.NAMESPACE: self.NS_ANALYSIS}
+                                        proxy.UNIT:'%'}
                                    })
         
         disc_in = proxy.get_data_in()

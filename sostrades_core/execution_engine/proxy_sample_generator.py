@@ -394,10 +394,13 @@ class ProxySampleGenerator(ProxyDiscipline):
         else:
             # remove the tornado chart analysis discipline
             if self.analysis_disc is not None:
-                self.ee.factory.current_discipline = self.father_executor
+                
+                self.father_executor.remove_discipline(self.analysis_disc)
+                self.ee.factory.remove_sos_discipline(self.analysis_disc)
+                
+                #TODO: this deletion doesn't work: need to find a way to delete this ns
                 ns = self.ee.ns_manager.shared_ns_dict[SensitivityAnalysisSampleGenerator.NS_ANALYSIS]
-                self.ee.ns_manager.clean_namespace_from_discipline(ns,self)
-                self.analysis_disc.clean()
+                self.ee.ns_manager.clean_namespace_from_discipline(ns, self)
                 
                 self.analysis_disc = None
 
