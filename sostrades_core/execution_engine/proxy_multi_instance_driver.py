@@ -353,9 +353,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         # ref_discipline_full_name =
         # ref_discipline.get_disc_full_name() # do provide the sting
         # path of data in flatten
-        driver_evaluator_ns = self.get_disc_full_name()
-        reference_scenario_ns = self.ee.ns_manager.compose_ns(
-            [driver_evaluator_ns, self.REFERENCE_SCENARIO_NAME])
+        reference_scenario_ns = self._compose_with_driver_ns(self.REFERENCE_SCENARIO_NAME)
         # ref_discipline_full_name may need to be renamed has it is not
         # true in flatten mode
         ref_discipline_full_name = reference_scenario_ns
@@ -464,8 +462,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.save_editable_attr = False
 
     def get_reference_scenario_disciplines(self):
-        reference_scenario_root_name = self.ee.ns_manager.compose_ns([self.get_disc_full_name(),
-                                                                      self.REFERENCE_SCENARIO_NAME])
+        reference_scenario_root_name = self._compose_with_driver_ns(self.REFERENCE_SCENARIO_NAME)
         return [disc for disc in self.scenarios if reference_scenario_root_name in disc.get_disc_full_name()]
 
     # def get_reference_scenario_index(self):
