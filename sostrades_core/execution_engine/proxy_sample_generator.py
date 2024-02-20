@@ -19,13 +19,12 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from copy import copy, deepcopy
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-from sostrades_core.execution_engine.sample_generators.sensitivity_analysis_sample_generator import SensitivityAnalysisSampleGenerator
+from sostrades_core.execution_engine.sample_generators.tornado_chart_analysis_sample_generator import TornadoChartAnalysisSampleGenerator
 from sostrades_core.execution_engine.sample_generators.simple_sample_generator import SimpleSampleGenerator
 from sostrades_core.execution_engine.sample_generators.grid_search_sample_generator import GridSearchSampleGenerator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
     CartesianProductSampleGenerator
-from sostrades_core.tools.gather.gather_tool import check_eval_io
 import pandas as pd
 from numpy import array
 
@@ -124,7 +123,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         DOE_ALGO: DoeSampleGenerator,
         CARTESIAN_PRODUCT: CartesianProductSampleGenerator,
         GRID_SEARCH: GridSearchSampleGenerator,
-        SENSITIVITY_ANALYSIS: SensitivityAnalysisSampleGenerator
+        SENSITIVITY_ANALYSIS: TornadoChartAnalysisSampleGenerator
     }
 
     SAMPLING_GENERATION_MODE = 'sampling_generation_mode'
@@ -383,7 +382,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             analysis_disc = analysis_builder.build()
             self.ee.factory.add_discipline(analysis_disc)
             # associate ns_analysis for analysis output
-            ns_analysis_id = self.ee.ns_manager.add_ns(SensitivityAnalysisSampleGenerator.NS_ANALYSIS,
+            ns_analysis_id = self.ee.ns_manager.add_ns(TornadoChartAnalysisSampleGenerator.NS_ANALYSIS,
                                                 self.ee.ns_manager.get_local_namespace_value(analysis_disc))
             # add dependency of the namespace for the discipline
             self.ee.ns_manager.add_disc_in_dependency_list_of_namespace(ns_analysis_id, analysis_disc.disc_id)
@@ -394,16 +393,18 @@ class ProxySampleGenerator(ProxyDiscipline):
         else:
             # remove the tornado chart analysis discipline
             if self.analysis_disc is not None:
+
                 
                 self.father_executor.remove_discipline(self.analysis_disc)
                 self.ee.factory.remove_sos_discipline(self.analysis_disc)
                 
-                #TODO: this deletion doesn't work: need to find a way to delete this ns
-                ns = self.ee.ns_manager.shared_ns_dict[SensitivityAnalysisSampleGenerator.NS_ANALYSIS]
+                
+                ns = self.ee.ns_manager.shared_ns_dict[TornadoChartAnalysisSampleGenerator.NS_ANALYSIS]
+                self.ee.ns_manager.clean_namespace_from_discipline(ns, self.analysis_disc)
                 self.ee.ns_manager.clean_namespace_from_discipline(ns, self)
                 
+                
                 self.analysis_disc = None
-
 
     def configure_generation_mode(self, disc_in):
         """

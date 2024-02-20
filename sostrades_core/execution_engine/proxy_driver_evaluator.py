@@ -266,10 +266,20 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.sample_generator_disc.set_eval_in_possible_values(possible_values=self.eval_in_possible_values,
                                                                possible_types=self.eval_in_possible_types)
         self.sample_generator_disc.samples_df_f_name = self.get_input_var_full_name(self.SAMPLES_DF)
+        self.configure_samples_df()
+        # set samples_df editable
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
 
-
+    def configure_samples_df(self):
+        # set samples_df editable so that when it changes in samples generator, it is reinit at each configure
+        if self.SAMPLES_DF in self.get_data_in():
+            samples_df_full_path = self.get_input_var_full_name(self.SAMPLES_DF)
+            self.dm.set_data(samples_df_full_path,
+                             self.EDITABLE,
+                             True,
+                             check_value=False)
+        
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be

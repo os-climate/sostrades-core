@@ -15,6 +15,7 @@ limitations under the License.
 '''
 
 import pandas as pd
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
 
@@ -28,15 +29,15 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 
-class SensitivityAnalysisSampleTypeError(SampleTypeError):
+class TornadoChartAnalysisSampleTypeError(SampleTypeError):
     pass
 
 
-class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
+class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
     '''
-    SensitivityAnalysis class that generates sampling
+    Tornado chart Analysis class that generates sampling
     '''
-    GENERATOR_NAME = "SENSITIVITY_ANALYSIS_GENERATOR"
+    GENERATOR_NAME = "TORNADO_CHART_ANALYSIS_GENERATOR"
 
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
@@ -49,6 +50,8 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
     DICT_OF_VALUE = 'dict_of_value'
     N_SAMPLES = "n_samples"
     NS_ANALYSIS = 'ns_analysis'
+    REFERENCE_SCENARIO_NAME = 'reference_scenario'
+    SCENARIO_NAMES = SampleGeneratorWrapper.SCENARIO_NAME
 
     def __init__(self, logger: logging.Logger):
         '''
@@ -122,41 +125,74 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
 
                 # the dataframe containing the mapping of variation percentage for each variables for each scenario
                 # it will be: {'var_1': [percentage_sc1, percentage_sc2], 'var_2': [percentage_sc1, percentage_sc2]}
-                design_scenario_mapping_descriptor = {
+                design_scenario_mapping_descriptor = {self.SCENARIO_NAMES:('string', None, False)}
+                design_scenario_mapping_descriptor.update({
                     name: ('float', None, False)
                     for name in selected_inputs
-                }
+                })
                 dynamic_inputs.update({self.SCENARIO_VARIABLE_VARIATIONS: {proxy.TYPE: 'dataframe',
                                                             proxy.STRUCTURING: False,
                                                             proxy.EDITABLE: False,
                                                             proxy.DATAFRAME_DESCRIPTOR: design_scenario_mapping_descriptor,
                                                             proxy.VISIBILITY: proxy.SHARED_VISIBILITY,
                                                             proxy.NAMESPACE: self.NS_ANALYSIS}})
+        samples_df_full_path = f'{self.ns_sampling}.{proxy.SAMPLES_DF}'
+        if proxy.ee.dm.check_data_in_dm(samples_df_full_path):
+            #set samples_df not editable
+            proxy.ee.dm.set_data(samples_df_full_path, proxy.EDITABLE, False, check_value=False)
 
             
     def _generate_samples(self, variation_list, dict_of_value, proxy):
         '''
-        
+        generate samples: each scenario is a percentage applied to one of the variables.
+        First scenario is the reference scenario (0% of variation)
         '''
-        disc_in = proxy.get_data_in()
-        dict_of_list_values = {}
-        for name, value in dict_of_value.items():
-            # compute all values with percentages
-            if value is not None and isinstance(value, float) and bool([isinstance(percent, float) for percent in variation_list]):
-                dict_of_list_values[name] = [(1.0 + percent/100.0) * value for percent in variation_list]
-        variable_list = dict_of_list_values.keys()
-        vect_list = [dict_of_list_values[elem]
-                     for elem in variable_list]
-        percentage_vect_list = [variation_list for elem in variable_list]
-
-        def combvec(vect_list):
-            my_sample = list(itertools.product(*vect_list))
-            my_sample_percentages = list(itertools.product(*percentage_vect_list))
-            return my_sample,my_sample_percentages
-        my_res, my_percentages = combvec(vect_list)
-        samples_df = pd.DataFrame(my_res, columns=variable_list)
-        samples_percentage_df = pd.DataFrame(my_percentages, columns=variable_list)
         
+        selected_scenario_str = SampleGeneratorWrapper.SELECTED_SCENARIO
+        scenario_names_str = SampleGeneratorWrapper.SCENARIO_NAME
+        
+        samples_dict = {}
+        scenario_variations_dict = {}
+        # add the reference value(0%) at the begining of the list
+        if 0.0 in variation_list:
+            variation_list.remove(0.0)
+
+        # add reference scenario
+        samples_dict[selected_scenario_str] = [True]
+        samples_dict[scenario_names_str] = [self.REFERENCE_SCENARIO_NAME]
+        samples_dict.update({name:[value] for name, value in dict_of_value.items()})
+
+        scenario_variations_dict[scenario_names_str] = [self.REFERENCE_SCENARIO_NAME]
+        scenario_variations_dict.update({name:[0.0] for name in dict_of_value.keys()})
+
+        nb_scenario = len(variation_list) # number of scenario per variable (without reference)
+        current_sc = 1 # current scenario number
+
+        for name, value in dict_of_value.items():
+            
+            if value is not None and isinstance(value, float) and bool([isinstance(percent, float) for percent in variation_list]):
+                # compute all values with percentages, add them in samples_dict with scenario names
+                samples_dict[selected_scenario_str].extend([True]*nb_scenario)
+                samples_dict[scenario_names_str].extend([f'scenario_{i}' for i in range(current_sc, nb_scenario + current_sc)])
+                samples_dict[name].extend([(1.0 + percent/100.0) * value for percent in variation_list])
+                
+                #update scenario variation with percentages per scenario
+                scenario_variations_dict[scenario_names_str].extend([f'scenario_{i}' for i in range(current_sc, nb_scenario + current_sc)])
+                scenario_variations_dict[name].extend(variation_list)
+                
+                # other values are reference values (only the current variable has changed)
+                for other_name, other_value in dict_of_value.items():
+                    if other_name != name:
+                        samples_dict[other_name].extend([other_value]*nb_scenario)
+                        scenario_variations_dict[other_name].extend([0.0]*nb_scenario)
+                
+                current_sc += nb_scenario
+        
+        # build dataframes
+        samples_df = pd.DataFrame(samples_dict)
+        samples_percentage_df = pd.DataFrame(scenario_variations_dict)
+        
+        disc_in = proxy.get_data_in()
         proxy.dm.set_data(proxy.get_var_full_name(self.SCENARIO_VARIABLE_VARIATIONS, disc_in),
                                       proxy.VALUE, samples_percentage_df, check_value=False)
         return samples_df
@@ -173,8 +209,6 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
         if self.selected_inputs is not None:
             samples_df = {}
             for selected_input in self.selected_inputs:
-                #TODO recuperer la value avec le full name!!! check in simple_sample_generator
-                
                 samples_df[selected_input] = wrapper.dm.get_value(f'{self.ns_sampling}.{selected_input}')
             arguments[self.DICT_OF_VALUE] = samples_df
 
