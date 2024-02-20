@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/27-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/03/27-2024/02/20 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ from collections import defaultdict
 from numpy import empty, ones, zeros
 from scipy.sparse import dia_matrix
 from scipy.sparse.dok import dok_matrix
+from scipy.sparse.lil import lil_matrix
+from os import getenv
 from copy import deepcopy
 from multiprocessing import Pool
 import platform
@@ -121,6 +123,63 @@ class SoSJacobianAssembly(JacobianAssembly):
             out_i += residual_size
         return dres_dvar.tocsr()
 
+    # SoSTrades modif
+    def _dres_dvar_sparse_lil(self, residuals, variables, n_residuals, n_variables):
+        """Forms the matrix of partial derivatives of residuals
+        Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
+        fill the sparse Jacobian:
+        |           |
+        |  dRi/dvj  |
+        |           |
+
+        :param residuals: the residuals (R)
+        :param variables: the differentiation variables
+        :param n_residuals: number of residuals
+        :param n_variables: number of variables
+        """
+        dres_dvar = lil_matrix((n_residuals, n_variables))
+        # end of SoSTrades modif
+
+        out_i = 0
+        # Row blocks
+        for residual in residuals:
+            residual_size = self.sizes[residual]
+            # Find the associated discipline
+            discipline = self.disciplines[residual]
+            residual_jac = discipline.jac[residual]
+            # Column blocks
+            out_j = 0
+            for variable in variables:
+                variable_size = self.sizes[variable]
+                if residual == variable:
+                    # residual Yi-Yi: put -I in the Jacobian
+                    ones_mat = (ones(variable_size), 0)
+                    shape = (variable_size, variable_size)
+                    diag_mat = -dia_matrix(ones_mat, shape=shape)
+
+                    if self.coupling_structure.is_self_coupled(discipline):
+                        jac = residual_jac.get(variable, None)
+                        if jac is not None:
+                            diag_mat += jac
+                    dres_dvar[
+                    out_i: out_i + variable_size, out_j: out_j + variable_size
+                    ] = diag_mat
+
+                else:
+                    # block Jacobian
+                    jac = residual_jac.get(variable, None)
+                    if jac is not None:
+                        n_i, n_j = jac.shape
+                        assert n_i == residual_size
+                        assert n_j == variable_size
+                        # Fill the sparse Jacobian block
+                        dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
+                # Shift the column by block width
+                out_j += variable_size
+            # Shift the row by block height
+            out_i += residual_size
+        return dres_dvar.real
+
     def dres_dvar(
         self,
         residuals,
@@ -145,9 +204,14 @@ class SoSJacobianAssembly(JacobianAssembly):
         :param transpose: if True, transpose the matrix
         """
         if matrix_type == JacobianAssembly.SPARSE:
-            sparse_dres_dvar = self._dres_dvar_sparse(
-                residuals, variables, n_residuals, n_variables
-            )
+            if getenv("USE_PETSC", "").lower() in ("true", "1"):
+                sparse_dres_dvar = self._dres_dvar_sparse_lil(
+                    residuals, variables, n_residuals, n_variables
+                )
+            else:
+                sparse_dres_dvar = self._dres_dvar_sparse(
+                    residuals, variables, n_residuals, n_variables
+                )
             if transpose:
                 return sparse_dres_dvar.T
             return sparse_dres_dvar
