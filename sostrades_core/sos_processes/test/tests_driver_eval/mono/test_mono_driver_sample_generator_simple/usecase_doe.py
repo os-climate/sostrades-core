@@ -52,7 +52,7 @@ class Study(StudyManager):
         n_samples = 10
         levels = [0.25, 0.5, 0.75]
         centers = [5]
-        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "sensitivity_analysis"
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "tornado_chart_analysis"
         disc_dict[f'{ns}.SampleGenerator.variation_list'] = [-10.0,10.0]
         disc_dict[f'{ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a
@@ -72,9 +72,15 @@ if '__main__' == __name__:
     ns = 'usecase_doe'
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
-    uc_cls.run()
+    #uc_cls.run()
     dm = uc_cls.execution_engine.dm
-    scenario_namespace = dm.get_value(f'{ns}.SampleGenerator.scenario_variations')
+    scenario_namespace = dm.get_value(f'{ns}.tornado_chart_analysis.scenario_variations')
     print(scenario_namespace)
     samples_df = dm.get_value(f'{ns}.Eval.samples_df')
-    print(samples_df)
+    values_dict = {}
+    values_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
+    values_dict[f'{ns}.SampleGenerator.overwrite_samples_df'] = True
+    uc_cls.ee.load_study_from_input_dict(values_dict)
+    uc_cls.ee.display_treeview_nodes()
+
+    print('ns_analysis' in uc_cls.ee.ns_manager.all_ns_dict.keys())

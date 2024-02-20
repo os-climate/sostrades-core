@@ -48,6 +48,7 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
     SCENARIO_VARIABLE_VARIATIONS = 'scenario_variations'
     DICT_OF_VALUE = 'dict_of_value'
     N_SAMPLES = "n_samples"
+    NS_ANALYSIS = 'ns_analysis'
 
     def __init__(self, logger: logging.Logger):
         '''
@@ -55,6 +56,7 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
         '''
         self.selected_inputs = []
         self.selected_inputs_types = {}
+        self.ns_sampling = None
         super().__init__(self.GENERATOR_NAME, logger=logger)
 
     def _check_samples(self, samples_df):
@@ -92,18 +94,21 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
             dynamic_inputs (dict): the dynamic input dict to be updated
 
         """
+        # retrieve the namespace of the reference scenario
+        self.ns_sampling = proxy.ee.ns_manager.get_shared_namespace_value(proxy, proxy.NS_SAMPLING)
+
         # save possible types in sample generator
         if proxy.eval_in_possible_types is not None:
             self.selected_inputs_types = proxy.eval_in_possible_types.copy()
-
-        
-                    
+          
         # add variation list
         dynamic_inputs.update({self.VARIATION_LIST:
                                        {proxy.TYPE: 'list',
                                         proxy.DEFAULT: [-5, 5],
                                         proxy.STRUCTURING: True,
-                                        proxy.UNIT:'%'}
+                                        proxy.UNIT:'%',
+                                        proxy.VISIBILITY: proxy.SHARED_VISIBILITY,
+                                        proxy.NAMESPACE: self.NS_ANALYSIS}
                                    })
         
         disc_in = proxy.get_data_in()
@@ -126,7 +131,9 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
                 dynamic_inputs.update({self.SCENARIO_VARIABLE_VARIATIONS: {proxy.TYPE: 'dataframe',
                                                             proxy.STRUCTURING: False,
                                                             proxy.EDITABLE: False,
-                                                            proxy.DATAFRAME_DESCRIPTOR: design_scenario_mapping_descriptor}})
+                                                            proxy.DATAFRAME_DESCRIPTOR: design_scenario_mapping_descriptor,
+                                                            proxy.VISIBILITY: proxy.SHARED_VISIBILITY,
+                                                            proxy.NAMESPACE: self.NS_ANALYSIS}})
 
             
     def _generate_samples(self, variation_list, dict_of_value, proxy):
@@ -137,8 +144,8 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
         dict_of_list_values = {}
         for name, value in dict_of_value.items():
             # compute all values with percentages
-            if value is not None and len(value)> 0 and bool([isinstance(percent, float) for percent in variation_list]):
-                dict_of_list_values[name] = [(1.0 + percent/100.0) * value[0] for percent in variation_list]
+            if value is not None and isinstance(value, float) and bool([isinstance(percent, float) for percent in variation_list]):
+                dict_of_list_values[name] = [(1.0 + percent/100.0) * value for percent in variation_list]
         variable_list = dict_of_list_values.keys()
         vect_list = [dict_of_list_values[elem]
                      for elem in variable_list]
@@ -169,7 +176,8 @@ class SensitivityAnalysisSampleGenerator(AbstractSampleGenerator):
             samples_df = {}
             for selected_input in self.selected_inputs:
                 #TODO recuperer la value avec le full name!!! check in simple_sample_generator
-                samples_df[selected_input] = wrapper.dm.get_value(selected_input)
+                
+                samples_df[selected_input] = wrapper.dm.get_value(f'{self.ns_sampling}.{selected_input}')
             arguments[self.DICT_OF_VALUE] = samples_df
 
         # set the proxy to set the scenario_variations into dm values
