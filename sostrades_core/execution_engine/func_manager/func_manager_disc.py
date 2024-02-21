@@ -271,6 +271,7 @@ class FunctionManagerDisc(SoSWrapp):
         for f in self.function_dict.keys():
             fvalue_df = self.get_sosdisc_inputs(f)
             self.check_isnan_inf(f, fvalue_df)
+            self.check_value_range(fvalue_df, fname=f, ftype=self.function_dict[f]['ftype'].upper())
             # conversion dataframe > array:
             f_arr = self.convert_df_to_array(f, fvalue_df)
             # update func manager with value as array
@@ -1475,3 +1476,11 @@ class FunctionManagerDisc(SoSWrapp):
         ''' returns the functions out names
         '''
         return f + self.MOD_SUFFIX
+
+    def check_value_range(self, fvalue_df, fname: str, ftype: str):
+        """Log some warnings if value is not between 0 and 1"""
+        if isinstance(fvalue_df, np.ndarray):
+            if fvalue_df.max() > 1:
+                self.logger.warning(f"{ftype} {fname} maximum is above 1 ({fvalue_df.max()}). All its values should be between 0 and 1")
+            if fvalue_df.min() < 0:
+                self.logger.warning(f"{ftype} {fname} minimum is lower than 1 ({fvalue_df.min()}). All its values should be between 0 and 1")
