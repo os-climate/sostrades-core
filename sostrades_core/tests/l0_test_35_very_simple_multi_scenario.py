@@ -112,6 +112,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.factory.set_builders_to_coupling_builder(
             multi_scenarios)
         self.exec_eng.configure()
+        self.exec_eng.configure()
 
         dict_values = {}
         samples_df = pd.DataFrame({'selected_scenario': [True, True],
