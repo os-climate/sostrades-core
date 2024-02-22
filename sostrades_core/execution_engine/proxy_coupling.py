@@ -878,8 +878,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         instanciated_charts = []
         # Overload default value with chart filter
-        # Overload default value with chart filter
         select_all = False
+        chart_list = []
         if chart_filters is not None:
             for chart_filter in chart_filters:
                 if chart_filter.filter_key == 'charts':
