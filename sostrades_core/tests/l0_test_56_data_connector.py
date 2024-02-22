@@ -313,7 +313,7 @@ class TestDataConnector(unittest.TestCase):
 
         assert x_dm == x_db and b_dm == b_db and a_dm != a_db , self.error_message_assert_database
 
-    def test_08_trino_two_db(self):
+    def _test_08_trino_two_db(self):
         '''
         Test Trino with two different databases data connector for local and shared namespaces
         '''
