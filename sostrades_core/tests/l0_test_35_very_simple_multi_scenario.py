@@ -683,6 +683,96 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.prepare_execution()
         self.assertEqual(len(self.exec_eng.ns_manager.ns_list), 8)  # maybe should be 8 ?
 
+    def test_11_multi_scenario_driver_multi_post_pro_double_configure(self):
+        '''
+        Test multi-scenario with a postprocessing per scenario and one for the multi-scenario
+        '''
+        # instantiate factory # get instantiator from Discipline class
+
+        builder_list = self.factory.get_builder_from_process(repo=self.repo,
+                                                             mod_id='test_disc1_scenario')
+
+        mod_list = f'{self.base_path}.disc3_scenario.Disc3'
+        disc3_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc3', mod_list)
+        builder_list.append(disc3_builder)
+        self.exec_eng.ns_manager.add_ns(
+            'ns_disc3', 'MyCase.Disc3')
+        self.exec_eng.ns_manager.add_ns(
+            'ns_out_disc3', 'MyCase')
+
+        # add post-processing to a given scenario
+        self.exec_eng.post_processing_manager.add_post_processing_module_to_namespace('ns_out_disc3',
+                                                                                'sostrades_core.sos_wrapping.test_discs.chart_post_proc_disc')
+
+
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', builder_list)
+
+        # add post-processing on 'Post-processing' node by loading a module
+        # with implemented graphs
+        # Add new namespaces needed for the scatter multiscenario
+        ns_dict = {'ns_post_proc': f'{self.study_name}.multi_scenarios',
+                   }
+        self.exec_eng.ns_manager.add_ns_def(ns_dict)
+        self.exec_eng.post_processing_manager.add_post_processing_module_to_namespace(
+            'ns_post_proc', 'sostrades_core.sos_wrapping.test_discs.chart_post_proc_multi_scenario')
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            multi_scenarios)
+        self.exec_eng.configure()
+
+        dict_values = {}
+        samples_df = pd.DataFrame({'selected_scenario': [True, True],
+                                   'scenario_name': ['scenario_1',
+                                                     'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
+        dict_values[f'{self.study_name}.multi_scenarios.instance_reference'] = False
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.display_treeview_nodes()
+
+        scenario_list = ['scenario_1', 'scenario_2']
+        for scenario in scenario_list:
+            x1 = 2.
+            x2 = 4.
+            a1 = 3
+            b1 = 4
+            a2 = 6
+            b2 = 2
+
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.a'] = a1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.x'] = x1
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.constant'] = 3
+            dict_values[f'{self.study_name}.multi_scenarios.{scenario}.Disc3.power'] = 2
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_1.Disc1.b'] = b1
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_2.Disc1.b'] = b2
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_1.Disc3.z'] = 1.2
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_2.Disc3.z'] = 1.5
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        self.exec_eng.display_treeview_nodes()
+
+        self.exec_eng.execute()
+
+        self.assertEqual(self.exec_eng.dm.get_value(
+            'MyCase.multi_scenarios.samples_df')['scenario_name'].values.tolist(), ['scenario_1',
+                                                                                    'scenario_2'])
+
+        y1 = a1 * x1 + b1
+        y2 = a1 * x1 + b2
+
+        self.assertEqual(self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_1.y'), y1)
+        self.assertEqual(self.exec_eng.dm.get_value(
+            f'{self.study_name}.multi_scenarios.scenario_2.y'), y2)
+
+        # post-proc namespace should only have one value for the post-proc node
+        self.assertEqual(len(self.exec_eng.ns_manager.get_all_namespace_with_name('ns_post_proc')), 1)
+        # dashboard namespace should have 1 value per scenario, hence 2
+        self.assertEqual(len(self.exec_eng.ns_manager.get_all_namespace_with_name('ns_out_disc3')), 2)
+
+
+
+
 
 if '__main__' == __name__:
     cls = TestVerySimpleMultiScenario()
