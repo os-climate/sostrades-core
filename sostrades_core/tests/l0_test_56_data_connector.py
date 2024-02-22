@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/18-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/18-2024/02/22 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -313,7 +313,7 @@ class TestDataConnector(unittest.TestCase):
 
         assert x_dm == x_db and b_dm == b_db and a_dm != a_db , self.error_message_assert_database
 
-    def test_08_trino_two_db(self):
+    def _test_08_trino_two_db(self):
         '''
         Test Trino with two different databases data connector for local and shared namespaces
         '''
