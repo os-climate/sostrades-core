@@ -269,14 +269,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # set samples_df editable
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
-
-            # Clean up post_processing
-            self.ee.post_processing_manager.remove_post_processing_module_to_namespace(ProxySampleGenerator.NS_SAMPLING, 'sostrades_core.sos_wrapping.analysis_discs.chart_post_proc_sensitivity_analysis', missing_ok=True)
-            
-            # Add sensitivity_analysis if needed
-            if self.sample_generator_disc.sampling_method == self.sample_generator_disc.SENSITIVITY_ANALYSIS:
-                self.ee.post_processing_manager.add_post_processing_module_to_namespace(ProxySampleGenerator.NS_SAMPLING, 'sostrades_core.sos_wrapping.analysis_discs.chart_post_proc_sensitivity_analysis') 
-
+        
     def configure_samples_df(self):
         # set samples_df editable so that when it changes in samples generator, it is reinit at each configure
         if self.SAMPLES_DF in self.get_data_in():
