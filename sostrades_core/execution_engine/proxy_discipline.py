@@ -227,7 +227,7 @@ class ProxyDiscipline:
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',  # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto', POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                              NUMERICAL: True, STRUCTURING: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                      POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
