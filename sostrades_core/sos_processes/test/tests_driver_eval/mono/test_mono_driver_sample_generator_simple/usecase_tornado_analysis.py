@@ -69,7 +69,7 @@ class Study(StudyManager):
 
 
 if '__main__' == __name__:
-    ns = 'usecase_doe'
+    ns = 'usecase_tornado_analysis'
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     #uc_cls.run()
@@ -77,10 +77,17 @@ if '__main__' == __name__:
     scenario_namespace = dm.get_value(f'{ns}.tornado_chart_analysis.scenario_variations')
     print(scenario_namespace)
     samples_df = dm.get_value(f'{ns}.Eval.samples_df')
+    print(samples_df)
+
+    uc_cls.run()
+    variations_output_df = dm.get_value(f'{ns}.tornado_chart_analysis.y_dict_variations')
+    print(variations_output_df)
+
+    # check that the sensitivity analysis is well removed
     values_dict = {}
     values_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
     values_dict[f'{ns}.SampleGenerator.overwrite_samples_df'] = True
     uc_cls.ee.load_study_from_input_dict(values_dict)
     uc_cls.ee.display_treeview_nodes()
 
-    print('ns_analysis' in uc_cls.ee.ns_manager.all_ns_dict.keys())
+    
