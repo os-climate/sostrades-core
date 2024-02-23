@@ -21,7 +21,6 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import InstanciatedPieChart
 from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
 
-
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Post processing manager allowing to coeespond namespace with post processing to execute
@@ -208,7 +207,7 @@ class PostProcessingManager:
         if namespace_identifier in self.__namespace_postprocessing_dict:
             del self.__namespace_postprocessing_dict[namespace_identifier]
 
-    def get_post_processing(self, namespace_identifier: str): #-> list["PostProcessing"]:
+    def get_post_processing(self, namespace_identifier: str):  # -> list["PostProcessing"]:
         """ Method that retrieve post processing object using a given namespace
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -246,8 +245,9 @@ class PostProcessing:
         self.__filter_func = filter_func
         self.__post_processing_func = post_processing_func
         self.__logger = logger
+        self.post_processing_error = ''
 
-    def resolve_filters(self, execution_engine: "ExecutionEngine", namespace: str): #-> list[ChartFilter]:
+    def resolve_filters(self, execution_engine: "ExecutionEngine", namespace: str):  # -> list[ChartFilter]:
         """ Method that execute filters stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
@@ -269,12 +269,14 @@ class PostProcessing:
             if self.__filter_func is not None:
                 filters = self.__filter_func(execution_engine, namespace)
         except:
+            self.post_processing_error += f'An error occurs in the filter of the following post-processing namespace "{namespace}"'
             filters = []
 
         return filters
 
-    def resolve_post_processings(self, execution_engine: "ExecutionEngine", namespace: str, filters): #list[ChartFilter])
-        #-> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
+    def resolve_post_processings(self, execution_engine: "ExecutionEngine", namespace: str,
+                                 filters):  # list[ChartFilter])
+        # -> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
         """ Method that execute stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
@@ -299,9 +301,10 @@ class PostProcessing:
             if self.__post_processing_func is not None:
                 post_processings = self.__post_processing_func(
                     execution_engine, namespace, filters)
+
         except:
-            self.__logger.exception(
-                f'An error occurs in the following post-processing namespace "{namespace}"')
+            self.post_processing_error += f'An error occurs in the following post-processing namespace "{namespace}"'
+            self.__logger.exception(self.post_processing_error)
             post_processings = []
 
         return post_processings

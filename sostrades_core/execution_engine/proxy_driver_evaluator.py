@@ -708,18 +708,31 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # these sorts are just for aesthetics
             possible_in_values.sort()
             self.eval_in_possible_values = possible_in_values
-            # TODO: BEFORE THERE WAS A CHECK_EVAL_IO THAT MOVED TO THE SAMPLER,
-            #  NOW THE DRIVER MUST CHECK WRT SAMPLES-DF. DOUBLE-CHECK IT IS DONE SOMEWHERE
         if possible_out_values and io_type_out:
             # NB: if io_type_out then we are in mono_instance so it's driver's responsibility to do this
             # get already set eval_output
-            eval_output_new_dm = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
-            eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, disc_in)
+            possible_out_values = list(possible_out_values)
+            possible_out_values.sort()
+            self.eval_out_possible_values = possible_out_values
+            self._update_eval_output_with_possible_out_values(possible_out_values=possible_out_values,
+                                                              disc_in=disc_in)
 
-            # get all possible outputs and merge with current eval_output
-            eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
-            if len(error_msg) > 0:
-                for msg in error_msg:
-                    self.logger.warning(msg)
-            self.dm.set_data(eval_outputs_f_name,
-                             'value', eval_output_df, check_value=False)
+    def _update_eval_output_with_possible_out_values(self, possible_out_values, disc_in):
+        eval_output_new_dm = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
+        eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, disc_in)
+
+        # get all possible outputs and merge with current eval_output
+        eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
+        if len(error_msg) > 0:
+            for msg in error_msg:
+                self.logger.warning(msg)
+        self.dm.set_data(eval_outputs_f_name,
+                         'value', eval_output_df, check_value=False)
+
+    def _compose_with_driver_ns(self, sub_name):
+        driver_name = self.get_disc_full_name()
+        if isinstance(sub_name, str):
+            return self.ee.ns_manager.compose_ns([driver_name, sub_name])
+        else:
+            return list(map(lambda _sname: self.ee.ns_manager.compose_ns([driver_name, _sname]),
+                            sub_name))

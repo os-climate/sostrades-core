@@ -666,9 +666,25 @@ class NamespaceManager:
             self.__clean_namespace(ns)
 
     def clean_unused_namespaces(self, post_proc_ns_list):
+        '''
+        Delete namespace values that are not used in the MDO/MDA process
+        Namespaces that are used have a non-empty dependency list except for namespaces used for post-processing
+        that may have an empty dependency list
+        Those particular post-processing namespaces are therefore treated separately
+        Args:
+        post_proc_ns_list: [list of strings] : list of namespace names associated to postprocessing
+        '''
         full_ns_list = list(self.all_ns_dict.values())
+        # determine post-processing namespaces with dependencies so that they can be cleaned
+        post_proc_ns_w_dependency = []
         for ns in full_ns_list:
-            if self.unused_namespace(ns, post_proc_ns_list=post_proc_ns_list):
+            if ns.name in post_proc_ns_list and ns.check_namespace_is_used():
+                post_proc_ns_w_dependency.append(ns.name)
+        post_proc_ns_wo_dependency = [ns_name for ns_name in post_proc_ns_list if ns_name not in list(set(post_proc_ns_w_dependency))]
+
+        # clean nampespaces except post-pro namespaces without dependencies
+        for ns in full_ns_list:
+            if self.unused_namespace(ns, post_proc_ns_list=post_proc_ns_wo_dependency):
                 self.__clean_namespace(ns)
 
     def unused_namespace(self, ns, post_proc_ns_list=[]):

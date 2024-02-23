@@ -23,6 +23,18 @@ class ProxyMonoInstanceDriverException(Exception):
 
 
 class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
+    _ontology_data = {
+        'label': ' Mono-Instance Driver',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     SUBCOUPLING_NAME = 'subprocess'
     # TODO: manage desc_in in correct classes
     DESC_IN = {
@@ -52,8 +64,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 selected_outputs_dict = gather_selected_outputs(gather_outputs, self.GATHER_DEFAULT_SUFFIX)
                 self.selected_outputs = selected_outputs_dict.keys()
                 if len(selected_outputs_dict) > 0:
-                    self.eval_out_list = [f'{self.get_disc_full_name()}.{element}' for element in
-                                          selected_outputs_dict.keys()]
+                    self.eval_out_list = self._compose_with_driver_ns(selected_outputs_dict.keys())
                     self.eval_out_names = selected_outputs_dict.values()
                     # setting dynamic outputs. One output of type dict per selected output
                     dynamic_outputs.update(
@@ -63,7 +74,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
                     self.add_outputs(dynamic_outputs)
 
-            
     def configure_driver(self):
         if len(self.proxy_disciplines) > 0:
             # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
@@ -158,7 +168,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             self).get_display_value()
         self.ee.ns_manager.add_display_ns_to_builder(
             disc_builder, driver_display_value)
-        
 
     def check_data_integrity(self):
         '''
@@ -168,36 +177,32 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         super().check_data_integrity()
         disc_in = self.get_data_in()
 
-        if self.SAMPLES_DF in disc_in :
+        if self.SAMPLES_DF in disc_in:
             value_check = True
             # if we are at run time no need to check the samples and output
             if self.sample_generator_disc is not None:
                 sampling_generation_mode = self.sample_generator_disc.sampling_generation_mode
                 if sampling_generation_mode == ProxySampleGenerator.AT_RUN_TIME:
                     value_check = False
-            if value_check:        
+            if value_check:
                 # check that there is at least one trade variables 
                 # (the trades variables are column with variable names in samples_df)
                 samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
                 variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
                 if len(variables_column) == 0:
-                    
                     warning_msg = f'There should be at least one trade variable column in samples_df'
                     self.check_integrity_msg_list.append(warning_msg)
-                    #save inetrgity message on samples_df
+                    # save inetrgity message on samples_df
                     self.driver_data_integrity = False
                     data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
                     self.dm.set_data(
                         self.get_var_full_name(self.SAMPLES_DF, disc_in),
                         self.CHECK_INTEGRITY_MSG, data_integrity_msg)
 
-            #check that there is at least one gather output selected
+            # check that there is at least one gather output selected
             gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
             selected_outputs_dict = gather_selected_outputs(gather_outputs, self.GATHER_DEFAULT_SUFFIX)
             if selected_outputs_dict is None or len(selected_outputs_dict) == 0:
                 self.dm.set_data(
                     self.get_var_full_name(self.GATHER_OUTPUTS, disc_in),
                     self.CHECK_INTEGRITY_MSG, "There should be at least one selected output")
-            
-            
-

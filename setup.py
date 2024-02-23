@@ -17,7 +17,6 @@ limitations under the License.
 # coding: utf-8
 
 from setuptools import setup, find_packages
-import platform
 
 with open('README.md') as f:
     readme = f.read()
@@ -29,13 +28,10 @@ with open('LICENSE') as f:
 with open('requirements.in', 'r') as requirements_file:
     reqs_list = [line.strip() for line in requirements_file if line.strip()]
 
-# platform-specific dependencies added conditionally
-if platform.system() != 'Windows':
-    reqs_list.append('petsc==3.12.3')
-    reqs_list.append('petsc4py==3.12.0')
+reqs_list.append('gemseo @ git+https://gitlab.com/sostrades/gemseo.git@sos_develop')
 
 setup(
-    name='sos-trades-core',
+    name='sostrades_core',
     version='0.1.0',
     description='Core of System of System Trades',
     long_description=readme,

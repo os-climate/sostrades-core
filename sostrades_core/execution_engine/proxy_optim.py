@@ -18,7 +18,7 @@ from typing import List
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from gemseo.core.scenario import Scenario
 from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
-from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_output_values
+from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values #find_possible_output_values
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -41,6 +41,7 @@ from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWr
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.tools.design_space import design_space as dspace_tool
 
 
 class ProxyOptim(ProxyDriverEvaluator):
@@ -99,7 +100,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.execution_engine.sos_scenario',
+        'label': ' Optimization Driver',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -123,14 +124,14 @@ class ProxyOptim(ProxyDriverEvaluator):
                                 'wait_time_between_fork': 0}
     USER_GRAD = 'user'
     # Design space dataframe headers
-    VARIABLES = "variable"
-    VALUES = "value"
-    UPPER_BOUND = "upper_bnd"
-    LOWER_BOUND = "lower_bnd"
     TYPE = "type"
-    ENABLE_VARIABLE_BOOL = "enable_variable"
-    LIST_ACTIVATED_ELEM = "activated_elem"
-    VARIABLE_TYPE = "variable_type"
+    VARIABLES = dspace_tool.VARIABLES
+    VALUES = dspace_tool.VALUES
+    UPPER_BOUND = dspace_tool.UPPER_BOUND
+    LOWER_BOUND = dspace_tool.LOWER_BOUND
+    ENABLE_VARIABLE_BOOL = dspace_tool.ENABLE_VARIABLE_BOOL
+    LIST_ACTIVATED_ELEM = dspace_tool.LIST_ACTIVATED_ELEM
+    VARIABLE_TYPE = dspace_tool.VARIABLE_TYPE
     ALGO = "algo"
     MAX_ITER = "max_iter"
     ALGO_OPTIONS = "algo_options"
@@ -153,6 +154,27 @@ class ProxyOptim(ProxyDriverEvaluator):
     PARALLEL_OPTIONS = 'parallel_options'
     # FD step
     FD_STEP = "fd_step"
+
+    DESIGN_SPACE = 'design_space' # TODO: proxysamplegenerator.design_space ?
+    FORMULATION = 'formulation'
+    MAXIMIZE_OBJECTIVE = 'maximize_objective'
+    OBJECTIVE_NAME = 'objective_name'
+    FORMULATION_OPTIONS = 'formulation_options'
+
+    #        self.SEARCH_PATHS = 'search_paths'
+    SCENARIO_MANDATORY_FIELDS = [
+        DESIGN_SPACE,
+        FORMULATION,
+        MAXIMIZE_OBJECTIVE,
+        OBJECTIVE_NAME]
+    #            self.SEARCH_PATHS]
+    OPTIMAL_OBJNAME_SUFFIX = "opt"
+    ALGO_MANDATORY_FIELDS = [ALGO, MAX_ITER]
+
+    DIFFERENTIATION_METHOD = 'differentiation_method'
+    EVAL_JAC = 'eval_jac'
+    EVAL_MODE = 'eval_mode'
+    EXECUTE_AT_XOPT = 'execute_at_xopt'
 
     default_algo_options = {'max_iter': 999, 'ftol_rel': 1e-9,
                             'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
@@ -211,8 +233,8 @@ class ProxyOptim(ProxyDriverEvaluator):
                  "PYMOO_UNSGA3": {"normalize_design_space": False, "ref_dirs_name": "energy"},
                  }
 
-    DESC_IN = {'algo': {'type': 'string', 'structuring': True},
-               'design_space': {'type': 'dataframe', 'structuring': True,
+    DESC_IN = {ALGO: {'type': 'string', 'structuring': True},
+               DESIGN_SPACE: {'type': 'dataframe', 'structuring': True,
                                 'dataframe_descriptor': {VARIABLES: ('string', None, True),
                                                          VALUES: ('multiple', None, True),
                                                          LOWER_BOUND: ('multiple', None, True),
@@ -220,15 +242,15 @@ class ProxyOptim(ProxyDriverEvaluator):
                                                          ENABLE_VARIABLE_BOOL: ('bool', None, True),
                                                          LIST_ACTIVATED_ELEM: ('list', None, True), }},
 
-               'formulation': {'type': 'string', 'structuring': True},
-               'maximize_objective': {'type': 'bool', 'structuring': True, 'default': False},
-               'objective_name': {'type': 'string', 'structuring': True},
-               'differentiation_method': {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
+               FORMULATION: {'type': 'string', 'structuring': True},
+               MAXIMIZE_OBJECTIVE: {'type': 'bool', 'structuring': True, 'default': False},
+               OBJECTIVE_NAME: {'type': 'string', 'structuring': True},
+               DIFFERENTIATION_METHOD: {'type': 'string', 'default': Scenario.FINITE_DIFFERENCES,
                                           'possible_values': [USER_GRAD, Scenario.FINITE_DIFFERENCES,
                                                               Scenario.COMPLEX_STEP],
                                           'structuring': True},
-               'fd_step': {'type': 'float', 'structuring': True, 'default': 1e-6},
-               'algo_options': {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
+               FD_STEP: {'type': 'float', 'structuring': True, 'default': 1e-6},
+               ALGO_OPTIONS: {'type': 'dict', 'dataframe_descriptor': {VARIABLES: ('string', None, False),
                                                                          VALUES: ('string', None, True)},
                                 'dataframe_edition_locked': False,
                                 'default': default_algo_options,
@@ -243,10 +265,10 @@ class ProxyOptim(ProxyDriverEvaluator):
                                   'dataframe_edition_locked': False,
                                   'default': default_parallel_options,
                                   'structuring': True},
-               'eval_mode': {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False], 'structuring': True},
-               'eval_jac': {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
-               'execute_at_xopt': {'type': 'bool', 'default': True},
-               'max_iter': {'type': 'float'},
+               EVAL_MODE: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False], 'structuring': True},
+               EVAL_JAC: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
+               EXECUTE_AT_XOPT: {'type': 'bool', 'default': True},
+               MAX_ITER: {'type': 'float'},
                INEQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
                                   'structuring': True},
                EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
@@ -269,27 +291,19 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.with_data_io = with_data_io
         self.formulation = None
         self.maximize_objective = None
+        self.algo_name = None
+        self.algo_options = None
+        self.max_iter = None
+
+        self.objective_name = None
+        self.design_space = None
+
         self.opt_problem = None
         self.eval_mode = False
         self.eval_jac = False
 
-        self.DESIGN_SPACE = 'design_space'
-        self.FORMULATION = 'formulation'
-        self.MAXIMIZE_OBJECTIVE = 'maximize_objective'
-        self.OBJECTIVE_NAME = 'objective_name'
-        self.FORMULATION_OPTIONS = 'formulation_options'
-
-        #        self.SEARCH_PATHS = 'search_paths'
-        self.SCENARIO_MANDATORY_FIELDS = [
-            self.DESIGN_SPACE,
-            self.FORMULATION,
-            self.MAXIMIZE_OBJECTIVE,
-            self.OBJECTIVE_NAME]
-        #            self.SEARCH_PATHS]
-        self.OPTIMAL_OBJNAME_SUFFIX = "opt"
         self.dict_desactivated_elem = {}
         self.activated_variables = []
-        self.ALGO_MANDATORY_FIELDS = [self.ALGO, self.MAX_ITER]
         self.is_optim_scenario = True
         self.functions_before_run = []
 
@@ -299,72 +313,65 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
         """
-        # super().setup_sos_disciplines()
         if self.ALGO_OPTIONS in self.get_sosdisc_inputs().keys():
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
             if algo_name is not None:
+                # TODO: worth some refacto ?
                 default_dict = self.get_algo_options(algo_name)
                 if algo_options is not None:
                     values_dict = deepcopy(default_dict)
 
                     for k in algo_options.keys():
-                        if algo_options[k] != 'None' or not isinstance(algo_options[k], type(None)):
+                        if algo_options[k] != 'None' or not isinstance(algo_options[k], type(None)): # TODO: condition makes no sense?
                             values_dict.update({k: algo_options[k]})
                     self.inst_desc_in[self.ALGO_OPTIONS] = values_dict
-
-                    # {(key, id(
-                    #     value[self.NS_REFERENCE])): value for key, value in self.get_data_in().items()}
-                    # id(
-                    #     value[self.NS_REFERENCE])
                     for key in self._data_in.keys():
                         if self.ALGO_OPTIONS == key[0]:
-                            self._data_in[key]['value'] = values_dict
+                            self._data_in[key][self.VALUE] = values_dict
         self.set_edition_inputs_if_eval_mode()
 
     def prepare_build(self):
         """
         To be overload by subclasses with special builds.
         """
-
         if not isinstance(self.cls_builder, list):
             builder_list = [self.cls_builder]
         else:
             builder_list = self.cls_builder
-
         return builder_list
 
-    def configure(self):
-        """
-        Configuration of SoSScenario, call to super Class and
-        """
-        self.configure_io()
-        self._update_status_dm(self.STATUS_CONFIGURE)
-
-    def configure_io(self):
-        """
-        Configure discipline  and all sub-disciplines
-        """
-        if self._data_in == {} or self.check_structuring_variables_changes():
-            super().configure()
-
-        disc_to_configure = self.get_disciplines_to_configure()
-
-        if len(disc_to_configure) > 0:
-            self.set_configure_status(False)
-        else:
-            self.set_children_numerical_inputs()
-            self.set_configure_status(True)
-
-        for disc in disc_to_configure:
-            disc.configure()
-
-    def get_disciplines_to_configure(self):
-        """
-        Get sub disciplines list to configure
-        """
-        # TODO: not yet adapted ProxyOptim to case self.flatten_subprocess == True
-        return self._get_disciplines_to_configure(self.proxy_disciplines)
+    # TODO: double-check but in theory can inherit from proxydriverevaluator...
+    # def configure(self):
+    #     """
+    #     Configuration of SoSScenario, call to super Class and
+    #     """
+    #     self.configure_io()
+    #     self._update_status_dm(self.STATUS_CONFIGURE)
+    #
+    # def configure_io(self):
+    #     """
+    #     Configure discipline  and all sub-disciplines
+    #     """
+    #     if self._data_in == {} or self.check_structuring_variables_changes():
+    #         super().configure()
+    #
+    #     disc_to_configure = self.get_disciplines_to_configure()
+    #
+    #     if len(disc_to_configure) > 0:
+    #         self.set_configure_status(False)
+    #     else:
+    #         self.set_children_numerical_inputs()
+    #         self.set_configure_status(True)
+    #
+    #     for disc in disc_to_configure:
+    #         disc.configure()
+    #
+    # def get_disciplines_to_configure(self):
+    #     """
+    #     Get sub disciplines list to configure
+    #     """
+    #     return self._get_disciplines_to_configure(self.proxy_disciplines)
 
     def set_edition_inputs_if_eval_mode(self):
         '''
@@ -372,11 +379,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         '''
 
         if 'eval_mode' in [key[0] for key in self._data_in.keys()]:
-            eval_mode = self.get_sosdisc_inputs('eval_mode')
+            eval_mode = self.get_sosdisc_inputs(self.EVAL_MODE)
             if eval_mode:
                 data_in = self.get_data_in()
                 self.eval_mode = True
-                self.eval_jac = self.get_sosdisc_inputs('eval_jac')
+                self.eval_jac = self.get_sosdisc_inputs(self.EVAL_JAC)
                 self._data_in[(self.ALGO, id(data_in[self.ALGO][self.NS_REFERENCE]))][self.EDITABLE] = False
                 self._data_in[(self.ALGO_OPTIONS, id(data_in[self.ALGO_OPTIONS][self.NS_REFERENCE]))][
                     self.EDITABLE] = False
@@ -405,9 +412,13 @@ class ProxyOptim(ProxyDriverEvaluator):
         '''
         Preparation of the GEMSEO process, including GEMSEO objects instanciation
         '''
+        self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs([self.ALGO,
+                                                                                    self.ALGO_OPTIONS,
+                                                                                    self.MAX_ITER])
+        self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
-        self.ee.dm.create_reduced_dm()
-        # prepare_execution of proxy_disciplines
+        # self.ee.dm.create_reduced_dm()
+        # prepare_execution of proxy_disciplines and extract GEMSEO objects
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
@@ -416,15 +427,8 @@ class ProxyOptim(ProxyDriverEvaluator):
                 sub_mdo_disciplines.append(
                     disc.mdo_discipline_wrapp.mdo_discipline)
 
-        self.setup_sos_disciplines()
-
-        self.algo_name, self.algo_options, self.max_iter = self.get_sosdisc_inputs(self.ALGO), self.get_sosdisc_inputs(
-            self.ALGO_OPTIONS), self.get_sosdisc_inputs(self.MAX_ITER)
-        self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
-
         # create_mdo_scenario from MDODisciplineWrapp
-        self.mdo_discipline_wrapp.create_mdo_scenario(
-            sub_mdo_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
+        self.mdo_discipline_wrapp.create_mdo_scenario(sub_mdo_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
         self.set_constraints()
         self.set_diff_method()
         self.set_design_space_for_complex_step()
@@ -432,9 +436,9 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         self.set_formulation_for_func_manager(sub_mdo_disciplines)
 
-        # Extract variables for eval analysis
-        if self.proxy_disciplines is not None and len(self.proxy_disciplines) > 0:
-            self.set_eval_possible_values()
+        # # Extract variables for eval analysis TODO: IN PRINCIPLE DONE IN CONFIGURE
+        # if self.proxy_disciplines is not None and len(self.proxy_disciplines) > 0:
+        #     self.set_eval_possible_values()
 
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
@@ -469,23 +473,23 @@ class ProxyOptim(ProxyDriverEvaluator):
         formulation = None
         obj_full_name = None
         maximize_objective = False
-
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
-            if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
-                   dspace['value'].tolist()):
-                raise ValueError(
-                    f"A design variable must obligatory be an array {[type(design_variable).__name__ for design_variable in dspace['value'].tolist()]}")
+            # TODO: data integrity checks
+            # if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
+            #        dspace['value'].tolist()):
+            #     raise ValueError(
+            #         f"A design variable must obligatory be an array {[type(design_variable).__name__ for design_variable in dspace['value'].tolist()]}")
 
             # build design space
-            design_space = self.set_design_space()
+            design_space = self.set_design_space() ## TODO: CHECK but it should be OK because already checked in data integrity
             if design_space.variables_names:
                 _, formulation, maximize_objective, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
 
                 # get full objective ids
                 obj_name = self.get_sosdisc_inputs(self.OBJECTIVE_NAME)
-                obj_full_name = self._update_names([obj_name])[0]
+                obj_full_name = self._update_names([obj_name], self.IO_TYPE_OUT)[0]
 
         return formulation, obj_full_name, design_space, maximize_objective
 
@@ -493,46 +497,41 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         reads design space (set_design_space)
         """
-
-        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+        ## FIXME: use possible values
+        # dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         # update design space dv with full names
-        dvs = list(dspace_df[self.VARIABLES])
-        full_dvs = []
-        dspace_dict_updated = {}
-
-        for key in dvs:
-
-            full_key_l = self.get_full_names([key])
-            if len(full_key_l) > 0:
-                full_key = full_key_l[0]
-                full_dvs.append(full_key)
-                # dspace_dict_updated[full_key] = dspace_df[key]
-            else:
-                raise Exception(f" The design variable {key} is not in the dm : {key}")
-
-        dspace_dict_updated = dspace_df.copy()
-        dspace_dict_updated[self.VARIABLES] = full_dvs
-
-        design_space = self.read_from_dataframe(dspace_dict_updated)
-
+        # dvs = list(dspace_df[self.VARIABLES])
+        # full_dvs = []
+        # dspace_dict_updated = {}
+        # for key in dvs:
+        #     full_key_l = self.get_full_names([key])
+        #     if len(full_key_l) > 0:
+        #         full_key = full_key_l[0]
+        #         full_dvs.append(full_key)
+        #         # dspace_dict_updated[full_key] = dspace_df[key]
+        #     else:
+        #         raise Exception(f" The design variable {key} is not in the dm : {key}") # TODO: data integrity!
+        dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE).copy()
+        dspace_df[self.VARIABLES] = self._update_names(dspace_df[self.VARIABLES], self.IO_TYPE_IN)
+        design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df)
         return design_space
 
-    def get_full_names(self, names):
-        '''
-        get full names of variables
-        '''
-        full_names = []
-        for i_name in names:
-            full_id_l = self.dm.get_all_namespaces_from_var_name(i_name)
-            if full_id_l != []:
-                if len(full_id_l) > 1:
-                    # full_id = full_id_l[0]
-                    full_id = self.get_scenario_lagr(full_id_l)
-                else:
-                    full_id = full_id_l[0]
-                full_names.append(full_id)
-
-        return full_names
+    # def get_full_names(self, names):
+    #     '''
+    #     get full names of variables
+    #     '''
+    #     full_names = []
+    #     for i_name in names:
+    #         full_id_l = self.dm.get_all_namespaces_from_var_name(i_name)
+    #         if full_id_l != []:
+    #             if len(full_id_l) > 1:
+    #                 # full_id = full_id_l[0]
+    #                 full_id = self.get_scenario_lagr(full_id_l)
+    #             else:
+    #                 full_id = full_id_l[0]
+    #             full_names.append(full_id)
+    #
+    #     return full_names
 
     def get_chart_filter_list(self):
         chart_filters = []
@@ -631,24 +630,23 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         return instanciated_charts
 
-    def get_scenario_lagr(self, full_id_l):
-        """
-        get the corresponding lagrangian formulation of a given
-        optimization scenario
-        """
-
-        possible_full_id_list = [ns for ns in full_id_l if f'{self.sos_name}.' in ns]
-
-        if len(possible_full_id_list) == 1:
-            return possible_full_id_list[0]
-        else:
-            raise Exception(f'Cannot find the only objective of the optim {self.sos_name} ')
+    # def get_scenario_lagr(self, full_id_l):
+    #     """
+    #     get the corresponding lagrangian formulation of a given
+    #     optimization scenario
+    #     """
+    #     possible_full_id_list = [ns for ns in full_id_l if f'{self.sos_name}.' in ns]
+    #     # TODO: data integrity !
+    #     if len(possible_full_id_list) == 1:
+    #         return possible_full_id_list[0]
+    #     else:
+    #         raise Exception(f'Cannot find the only objective of the optim {self.sos_name} ')
 
     def set_design_space_for_complex_step(self):
         '''
         Set design space values to complex if the differentiation method is complex_step
         '''
-        diff_method = self.get_sosdisc_inputs('differentiation_method')
+        diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
         if diff_method == self.COMPLEX_STEP:
             dspace = deepcopy(self.mdo_discipline_wrapp.mdo_discipline.formulation.opt_problem.design_space)
             curr_x = dspace._current_x
@@ -688,49 +686,83 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         return default_dict
 
-    def _update_names(self, names):
+    # def _update_names(self, names):
+    #     """
+    #     if no dot in the name, it looks for the full name in the dm
+    #     else we suppose that this is a full name that needs to be updated with current
+    #     study name
+    #     |!| it will NOT work for names with a dot in data_io...
+    #     """
+    #     local_names = []
+    #     full_names = []
+    #     for name in names:
+    #         if NamespaceManager.NS_SEP not in name:
+    #             local_names.append(name)
+    #         else:
+    #             full_names.append(name)
+    #     return self.get_full_names(local_names) + \
+    #         self._update_study_ns_in_varname(full_names)
+
+    def configure_driver(self):
         """
-        if no dot in the name, it looks for the full name in the dm
-        else we suppose that this is a full name that needs to be updated with current
-        study name
-        |!| it will NOT work for names with a dot in data_io...
+        Specific configuration actions for the optimisation driver do be done after the subprocess is configured:
+        extraction of the subprocess inputs and outputs, GEMSEO algorithms and formulations.
         """
-        local_names = []
-        full_names = []
-        for name in names:
-            if NamespaceManager.NS_SEP not in name:
-                local_names.append(name)
-            else:
-                full_names.append(name)
-        return self.get_full_names(local_names) + \
-            self._update_study_ns_in_varname(full_names)
+        self.set_eval_possible_values(strip_first_ns=False)
 
-    def set_eval_possible_values(self):
+        # FIXME: no good ! with the short name logic we cannot check directly the data integrity w/ POSSIBLE VALUES
+        #  or maybe overriding the generic check data integrity ? [discuss & fix]
+        # # Fill the possible_values of obj and constraints
+        # self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
+        #                  self.POSSIBLE_VALUES, self.eval_out_possible_values)
+        # if self.is_constraints:
+        #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
+        #                      self.POSSIBLE_VALUES, self.eval_out_possible_values)
+        #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
+        #                      self.POSSIBLE_VALUES, self.eval_out_possible_values)
 
-        possible_out_values = find_possible_output_values(self, strip_first_ns=True)
-
-        # Fill the possible_values of obj and constraints
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
-                         self.POSSIBLE_VALUES, possible_out_values)
-
-        if self.is_constraints:
-            self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
-                             self.POSSIBLE_VALUES, possible_out_values)
-            self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
-                             self.POSSIBLE_VALUES, possible_out_values)
         # fill the possible values of algos
-        self.mdo_discipline_wrapp.mdo_discipline._init_algo_factory()
-        avail_algos = self.mdo_discipline_wrapp.mdo_discipline._algo_factory.algorithms
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}',
-                         self.POSSIBLE_VALUES, avail_algos)
+        _algo_factory = OptimizersFactory()
+        avail_algos = _algo_factory.algorithms
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}', self.POSSIBLE_VALUES, avail_algos)
+
         # fill the possible values of formulations
-        self._form_factory = MDOFormulationsFactory()
-        avail_formulations = self._form_factory.formulations
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}',
-                         self.POSSIBLE_VALUES, avail_formulations)
+        _form_factory = MDOFormulationsFactory()
+        avail_formulations = _form_factory.formulations
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}', self.POSSIBLE_VALUES, avail_formulations)
+
         # fill the possible values of maximize_objective
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',
-                         self.POSSIBLE_VALUES, [False, True])
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',  self.POSSIBLE_VALUES, [False, True])
+
+    def _update_eval_output_with_possible_out_values(self, possible_out_values, disc_in):
+        pass
+
+    # def set_eval_possible_values(self):
+    #
+    #     possible_out_values = find_possible_output_values(self, strip_first_ns=True)
+    #
+    #     # Fill the possible_values of obj and constraints
+    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
+    #                      self.POSSIBLE_VALUES, possible_out_values)
+    #
+    #     if self.is_constraints:
+    #         self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
+    #                          self.POSSIBLE_VALUES, possible_out_values)
+    #         self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
+    #                          self.POSSIBLE_VALUES, possible_out_values)
+    #     # fill the possible values of algos
+    #     self.mdo_discipline_wrapp.mdo_discipline._init_algo_factory()
+    #     avail_algos = self.mdo_discipline_wrapp.mdo_discipline._algo_factory.algorithms
+    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}',
+    #                      self.POSSIBLE_VALUES, avail_algos)
+    #     # fill the possible values of formulations
+    #     self._form_factory = MDOFormulationsFactory()
+    #     avail_formulations = self._form_factory.formulations
+    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}',
+    #                      self.POSSIBLE_VALUES, avail_formulations)
+    #     # fill the possible values of maximize_objective
+    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',
+    #                      self.POSSIBLE_VALUES, [False, True])
 
     def set_diff_method(self):
         """
@@ -792,7 +824,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             ineq_names.append(name)
             is_positive.append(is_pos)
 
-        ineq_full_names = self._update_names(ineq_names)
+        ineq_full_names = self._update_names(ineq_names, self.IO_TYPE_OUT)
 
         for ineq, is_pos in zip(ineq_full_names, is_positive):
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
@@ -800,100 +832,11 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         # -- equality constraints
         eq_names = self.get_sosdisc_inputs(self.EQ_CONSTRAINTS)
-        eq_full_names = self._update_names(eq_names)
+        eq_full_names = self._update_names(eq_names, self.IO_TYPE_OUT)
         for eq in eq_full_names:
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
                 self, eq, MDOFunction.TYPE_EQ, eq, value=None,
                 positive=False)
-
-    def read_from_dict(self, dp_dict):
-        """Parses a dictionary to read the DesignSpace
-
-        :param dp_dict : design space dictionary
-        :returns:  the design space
-        """
-        design_space = DesignSpace()
-        for key in dp_dict:
-            print(key)
-            if type(dp_dict[key]['value']) != list and type(dp_dict[key]['value']) != ndarray:
-                name = key
-                var_type = ['float']
-
-                size = 1
-                l_b = array([dp_dict[key]['lower_bnd']])
-                u_b = array([dp_dict[key]['upper_bnd']])
-                value = array([dp_dict[key]['value']])
-            else:
-                size = len(dp_dict[key]['value'])
-                var_type = ['float'] * size
-
-                name = key
-                l_b = array(dp_dict[key]['lower_bnd'])
-                u_b = array(dp_dict[key]['upper_bnd'])
-                value = array(dp_dict[key]['value'])
-
-            design_space.add_variable(name, size, var_type, l_b, u_b, value)
-        return design_space
-
-    def read_from_dataframe(self, df):
-        """Parses a DataFrame to read the DesignSpace
-
-        :param df : design space df
-        :returns:  the design space
-        """
-        names = list(df[self.VARIABLES])
-        values = list(df[self.VALUES])
-        l_bounds = list(df[self.LOWER_BOUND])
-        u_bounds = list(df[self.UPPER_BOUND])
-        enabled_variable = list(df[self.ENABLE_VARIABLE_BOOL])
-        list_activated_elem = list(df[self.LIST_ACTIVATED_ELEM])
-
-        # looking for the optionnal variable type in the design space
-        if self.VARIABLE_TYPE in df:
-            var_types = df[self.VARIABLE_TYPE]
-        else:
-            # set to None for all variables if not exists
-            var_types = [None] * len(names)
-
-        design_space = DesignSpace()
-
-        for dv, val, lb, ub, l_activated, enable_var, vtype in zip(names, values, l_bounds, u_bounds,
-                                                                   list_activated_elem, enabled_variable, var_types):
-
-            # check if variable is enabled to add it or not in the design var
-            if enable_var:
-                self.dict_desactivated_elem[dv] = {}
-
-                if type(val) != list and type(val) != ndarray:
-                    size = 1
-                    var_type = ['float']
-                    l_b = array([lb])
-                    u_b = array([ub])
-                    value = array([val])
-                else:
-                    # check if there is any False in l_activated
-                    if not all(l_activated):
-                        index_false = l_activated.index(False)
-                        self.dict_desactivated_elem[dv] = {
-                            'value': val[index_false], 'position': index_false}
-
-                        val = delete(val, index_false)
-                        lb = delete(lb, index_false)
-                        ub = delete(ub, index_false)
-
-                    size = len(val)
-                    var_type = ['float'] * size
-                    l_b = array(lb)
-                    u_b = array(ub)
-                    value = array(val)
-
-                # 'automatic' var_type values are overwritten if filled by the user
-                if vtype is not None:
-                    var_type = vtype
-
-                design_space.add_variable(
-                    dv, size, var_type, l_b, u_b, value)
-        return design_space
 
     def _set_flush_submdas_to_true(self):
         # update MDA flag to flush residuals between each mda run
@@ -919,5 +862,64 @@ class ProxyOptim(ProxyDriverEvaluator):
             msg += self.formulation.__class__.__name__
             msg += "\nAlgorithm: "
             msg += str(self.get_sosdisc_inputs(self.ALGO)) + "\n"
-
         return msg
+
+    def check_data_integrity(self):
+        # TODO: design space data integrity, full name checks of inputs objective, design space, constraints...
+        pass
+
+    def _get_subprocess_var_names(self, var_names, io_type):
+        """
+        Method that searches for a list of variable names inside the eval_in/out_possible_values attribute. If the entry
+        exists (actual full name of a variable anonymized wrt. driver node), then the entry is added to _out_names.
+        If a short name is used that cannot be associated to one and only one variable in the subprocess, an error
+        string is added to _out_errors.
+
+        Arguments:
+            var_names (list[string]): list of variable names to query
+            io_type (string): 'in'/'out' for input/output subprocess variables resp.
+        Returns:
+            _out_names (list[string]): output list of variable full names anonymized wrt. driver node.
+            _out_errors (list[string]): list of error strings obtained from the queries for data integrity (empty if OK)
+        """
+        if io_type == self.IO_TYPE_IN:
+            subpr_vars = self.eval_in_possible_types
+        elif io_type == self.IO_TYPE_OUT:
+            subpr_vars = set(self.eval_out_possible_values)
+        else:
+            raise ValueError(f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
+        # TODO: move code below to possible values tool ?
+        _out_names = []
+        _out_errors = []
+        for var_name in var_names:
+            if var_name in subpr_vars:
+                _out_names.append(var_name)
+            else:
+                subpr_var_names = [var for var in subpr_vars if var.endswith(f".{var_name}")]
+                if not subpr_var_names:
+                    _out_names.append(None)
+                    _out_errors.append(f'Variable {var_name} is not among subprocess {io_type}puts.')
+                elif len(subpr_var_names) > 1:
+                    _out_names.append(None)
+                    _out_errors.append(f'Variable {var_name} appears more than once among optimisation subprocess '
+                                       f'{io_type}puts, please use a non-ambiguous variable name.')
+                else:
+                    _out_names.append(subpr_var_names[0])
+        return _out_names, _out_errors
+
+    def _update_names(self, var_names, io_type):
+        """
+        Utility function for getting full name from a short name of a variable in the subprocess. Should not be called
+        before data integrity checks as it will raise an error if no solution found, or if ambiguity determining
+        the variable full name.
+        Arguments:
+            var_names (list[string]): list of variable names to query
+            io_type (string): 'in'/'out' for input/output subprocess variables resp.
+        Returns:
+            f_names (list[string]): output list of variable full names (absolute, with study name too)
+        """
+        f_names, query_err = self._get_subprocess_var_names(var_names, io_type)
+        if query_err:
+            raise ValueError(" ".join(query_err))  # this already has been checked on data_integrity.
+        f_names = self._compose_with_driver_ns(f_names)
+        return f_names
