@@ -175,8 +175,8 @@ class TornadoChartAnalysis(SoSWrapp):
 
         instanciated_charts = []
         # Default value if no filter
-        selected_outputs_list = list(self.selected_outputs_dict.values())
-        selected_inputs_list, _ = self.__get_input_variables_list_and_df()
+        selected_outputs_list = []
+        selected_inputs_list = []
 
         if filters is not None:
             for chart_filter in filters:
