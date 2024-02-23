@@ -82,6 +82,13 @@ if '__main__' == __name__:
     uc_cls.run()
     variations_output_df = dm.get_value(f'{ns}.tornado_chart_analysis.y_dict_variations')
     print(variations_output_df)
+    
+    from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+    post_processing_factory = PostProcessingFactory()
+    charts = post_processing_factory.get_post_processing_by_namespace(uc_cls.execution_engine, f'{uc_cls.study_name}.tornado_chart_analysis', None, as_json=False)
+    
+    for chart in charts:
+        chart.to_plotly().show()
 
     # check that the sensitivity analysis is well removed
     values_dict = {}
