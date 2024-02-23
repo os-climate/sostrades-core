@@ -214,7 +214,12 @@ class TornadoChartAnalysis(SoSWrapp):
             assert(len(result) == 1)
             return result.iloc[0]
 
-        chart_name = f'{output_variable_name} sensitivity to a [{variation_value_neg}%, {variation_value_pos}%] input variations'
+
+        if abs(variation_value_neg) == abs(variation_value_pos):
+            # If both variations are the same, simplify title
+            chart_name = f'{output_variable_name} sensitivity to input variations of {abs(variation_value_neg)}%'
+        else:
+            chart_name = f'{output_variable_name} sensitivity to input variations of [{variation_value_neg}%, {variation_value_pos}%]'
         new_chart = TwoAxesInstanciatedChart('Sensitivity (%)', '', chart_name=chart_name, stacked_bar=True, bar_orientation='h')
 
         # Compute all bars
