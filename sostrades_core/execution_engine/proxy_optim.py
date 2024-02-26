@@ -309,6 +309,9 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, logger=self.logger.getChild("MDODisciplineWrapp"))
 
+        self.check_integrity_msg_list = []
+        self.opt_data_integrity = True
+
     def setup_sos_disciplines(self):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
@@ -806,8 +809,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         is_positive = []
         for data in ineq_data:
             if type(data) == str:
-                # if no tuple, the default value of ineq sign is
-                # negative
+                # if no tuple, the default value of ineq sign is negative
                 name = data
                 is_pos = False
             else:
@@ -817,7 +819,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     is_pos = True
                 elif sign == self.INEQ_NEGATIVE:
                     is_pos = False
-                else:
+                else: # TODO: already checked by data integrity
                     msg = "Sign of constraint %s is not among %s" % (
                         name, self.INEQ_SIGNS)
                     raise ValueError(msg)
@@ -865,8 +867,94 @@ class ProxyOptim(ProxyDriverEvaluator):
         return msg
 
     def check_data_integrity(self):
-        # TODO: design space data integrity, full name checks of inputs objective, design space, constraints...
-        pass
+        """
+        Specific check data integrity of the ProxyOptim.
+        """
+        super().check_data_integrity()
+
+        self.opt_data_integrity = True
+        disc_in = self.get_data_in()
+
+        # DESIGN SPACE -------------------------------------------------------------------------
+        design_space_integrity_msg = []
+        if self.DESIGN_SPACE in disc_in:
+            design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
+            if design_space is not None:
+                # TODO: no check of possible values because of the short name, specific check below that needs to be
+                #  changed if changing name rule
+                design_space_integrity_msg = dspace_tool.check_design_space_data_integrity(design_space,
+                                                                                           possible_variables_types=None)
+                # specific check for the short names
+                var_names = design_space[self.VARIABLES].tolist()
+                _, out_errors = self._get_subprocess_var_names(var_names,
+                                                               io_type=self.IO_TYPE_IN)
+                design_space_integrity_msg.extend(out_errors)
+
+                # type checks based on design space value  # TODO: [discuss] should these be based on dm ?
+                for var_name, var_value in zip(var_names, design_space[self.VALUE].tolist()):
+                    var_type = type(var_value).__name__
+                    if var_type not in ['array', 'list', 'ndarray']:
+                        design_space_integrity_msg.append(
+                            f"A design variable must obligatory be an array, {var_name} is of type {var_type}.")
+
+        if design_space_integrity_msg:
+            self.opt_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.DESIGN_SPACE, disc_in),
+                                self.CHECK_INTEGRITY_MSG, '\n'.join(design_space_integrity_msg))
+        # OBJECTIVE ---------------------------------------------------------------------------
+        obj_integrity_msg = []
+        if self.OBJECTIVE_NAME in disc_in:
+            obj_name = self.get_sosdisc_inputs(self.OBJECTIVE_NAME)
+            if obj_name is not None:
+                # specific checks that the objective short name can be identified
+                _, obj_out_err = self._get_subprocess_var_names([obj_name],
+                                                                io_type=self.IO_TYPE_OUT)
+                obj_integrity_msg.extend(obj_out_err)
+        if obj_integrity_msg:
+            self.opt_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.OBJECTIVE_NAME, disc_in),
+                                self.CHECK_INTEGRITY_MSG, '\n'.join(obj_integrity_msg))
+        # INEQ CONSTRAINTS --------------------------------------------------------------------
+        ineq_integrity_msg = []
+        if self.INEQ_CONSTRAINTS in disc_in:
+            ineq_data = self.get_sosdisc_inputs(self.INEQ_CONSTRAINTS)
+            if ineq_data:
+                ineq_names = []
+                for data in ineq_data:
+                    if type(data) == str:
+                        ineq_names.append(data)
+                    elif type(data) in (tuple, list) and len(data) == 2: # FIXME: ineq_positive, ineq_negative and ineq_signs UNDEFINED! is the functionality really to be kept ?
+                        name = data[0]
+                        sign = data[1]
+                        if not (sign == self.INEQ_POSITIVE or sign == self.INEQ_NEGATIVE):
+                            msg = "Sign of constraint %s is not among %s" % (
+                                name, self.INEQ_SIGNS)
+                            ineq_integrity_msg.append(msg)
+                        ineq_names.append(name)
+                    else:
+                        ineq_integrity_msg.append(f"Ineq. constraint definition by {data} is wrong, need to use either "
+                                                  f"a string with output name, or "
+                                                  f"a tuple of length two with output name and sign.")
+                # specific checks that the short names can be identified
+                _, ineq_out_err = self._get_subprocess_var_names(ineq_names,
+                                                                 io_type=self.IO_TYPE_OUT)
+                ineq_integrity_msg.extend(ineq_out_err)
+        if ineq_integrity_msg:
+            self.opt_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.INEQ_CONSTRAINTS, disc_in),
+                                self.CHECK_INTEGRITY_MSG, '\n'.join(ineq_integrity_msg))
+        # EQ CONSTRAINTS ----------------------------------------------------------------------
+        eq_integrity_msg = []
+        if self.INEQ_CONSTRAINTS in disc_in:
+            eq_names = self.get_sosdisc_inputs(self.EQ_CONSTRAINTS)
+            # specific checks that the short names can be identified
+            _, eq_out_err = self._get_subprocess_var_names(eq_names,
+                                                           io_type=self.IO_TYPE_OUT)
+            eq_integrity_msg.extend(eq_out_err)
+        if eq_integrity_msg:
+            self.opt_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.EQ_CONSTRAINTS, disc_in),
+                                self.CHECK_INTEGRITY_MSG, '\n'.join(eq_integrity_msg))
 
     def _get_subprocess_var_names(self, var_names, io_type):
         """
