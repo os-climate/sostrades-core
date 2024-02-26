@@ -64,7 +64,7 @@ class PostProcessingFactory:
         """
 
         logger = execution_engine.logger.getChild("PostProcessing")
-
+        execution_engine.clean_unused_namespaces()
         all_post_processings_bundle = {}
 
         # Manage disciplines
