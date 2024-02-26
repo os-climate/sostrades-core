@@ -22,6 +22,7 @@ from time import sleep
 from shutil import rmtree
 from pathlib import Path
 from os.path import join
+from os import getenv
 
 import numpy as np
 from numpy import array
@@ -1416,6 +1417,79 @@ class TestMDALoop(unittest.TestCase):
         # for graph in graph_list:
         #     graph.to_plotly().show()
 
+    def test_22_sellarcoupling_gmres_scipy_vs_petsc(self):
+        """
+        Test that executes some iterations of the SellarCoupling MDA with GMRES scipy and if the PETSC env. var. is
+        active, then will perform the same operations with GMRES_PETSC and check results equivalence.
+        :return:
+        """
+
+
+
+        exec_eng = ExecutionEngine(self.name)
+
+        # add disciplines Sellaroupling
+        coupling_name = "SellarCoupling"
+        mda_builder = exec_eng.factory.get_builder_from_process(
+            'sostrades_core.sos_processes.test', 'test_sellar_coupling')
+        exec_eng.factory.set_builders_to_coupling_builder(mda_builder)
+        exec_eng.configure()
+
+        # Sellar inputs
+        values_dict = {}
+        values_dict[f'{self.name}.{coupling_name}.x'] = array([1.])
+        values_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
+        values_dict[f'{self.name}.{coupling_name}.y_2'] = array([1.])
+        values_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
+        values_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
+        # Coupling inputs
+        values_dict[f'{self.name}.{coupling_name}.max_mda_iter'] = 5
+        values_dict[f'{self.name}.{coupling_name}.linear_solver_MDO'] = 'GMRES'
+        values_dict[f'{self.name}.{coupling_name}.linear_solver_MDO_preconditioner'] = 'None'
+        values_dict[f'{self.name}.{coupling_name}.linear_solver_MDA'] = 'GMRES'
+        values_dict[f'{self.name}.{coupling_name}.linear_solver_MDA_preconditioner'] = 'None'
+
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        if getenv("USE_PETSC", "").lower() in ("true", "1"):
+            # save execution outputs
+            disc_0 = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+            out_0 = {}
+            for disc in disc_0:
+                k = disc.get_data_out().keys()
+                v = [disc.get_sosdisc_outputs(_k) for _k in k]
+                out_0.update({_k: _v for _k, _v in zip(k, v)})
+            rh_0 = exec_eng.root_process.proxy_disciplines[0].get_sosdisc_outputs('residuals_history')
+            rh_0 = [_r[0] for _r in rh_0['MDAJacobi']]
+
+            # instantiate another exec engine, load data with petsc and execute
+            exec_eng2 = ExecutionEngine(self.name)
+            values_dict[f'{self.name}.{coupling_name}.linear_solver_MDO'] = 'GMRES_PETSC'
+            values_dict[f'{self.name}.{coupling_name}.linear_solver_MDO_preconditioner'] = 'gasm'
+            values_dict[f'{self.name}.{coupling_name}.linear_solver_MDA'] = 'GMRES_PETSC'
+            values_dict[f'{self.name}.{coupling_name}.linear_solver_MDA_preconditioner'] = 'gasm'
+
+            exec_eng2.load_study_from_input_dict(values_dict)
+
+            exec_eng2.execute()
+
+            # save new results
+            disc_p = exec_eng2.root_process.proxy_disciplines[0].proxy_disciplines
+            out_p = {}
+            for disc in disc_p:
+                k = disc.get_data_out().keys()
+                v = [disc.get_sosdisc_outputs(_k) for _k in k]
+                out_p.update({_k: _v for _k, _v in zip(k, v)})
+            rh_p = exec_eng2.root_process.proxy_disciplines[0].get_sosdisc_outputs('residuals_history')
+            rh_p = [_r[0] for _r in rh_p['MDAJacobi']]
+
+            # Test results equivalence
+            for _r0, _rp in zip(rh_0, rh_p):
+                self.assertAlmostEqual(_r0, _rp)
+            for _k, _v in out_0.items():
+                self.assertAlmostEqual(_v, out_p[_k])
 
 if '__main__' == __name__:
     cls = TestMDALoop()
