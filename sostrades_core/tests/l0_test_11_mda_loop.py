@@ -1466,6 +1466,11 @@ class TestMDALoop(unittest.TestCase):
 
             # instantiate another exec engine, load data with petsc and execute
             exec_eng2 = ExecutionEngine(self.name)
+            mda_builder = exec_eng2.factory.get_builder_from_process(
+                'sostrades_core.sos_processes.test', 'test_sellar_coupling')
+            exec_eng2.factory.set_builders_to_coupling_builder(mda_builder)
+            exec_eng2.configure()
+
             values_dict[f'{self.name}.{coupling_name}.linear_solver_MDO'] = 'GMRES_PETSC'
             values_dict[f'{self.name}.{coupling_name}.linear_solver_MDO_preconditioner'] = 'gasm'
             values_dict[f'{self.name}.{coupling_name}.linear_solver_MDA'] = 'GMRES_PETSC'
