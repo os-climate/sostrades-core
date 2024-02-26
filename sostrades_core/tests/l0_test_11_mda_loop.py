@@ -1417,7 +1417,6 @@ class TestMDALoop(unittest.TestCase):
         # for graph in graph_list:
         #     graph.to_plotly().show()
 
-
     def test_22_sellarcoupling_gmres_scipy_vs_petsc(self):
         """
         Test that executes some iterations of the SellarCoupling MDA with GMRES scipy and if the PETSC env. var. is
