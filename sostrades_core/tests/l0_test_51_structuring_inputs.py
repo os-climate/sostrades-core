@@ -383,7 +383,7 @@ class TestStructuringInputs(unittest.TestCase):
 #=========================================================================
 
 #=========================================================================
-    def test_05_proxycoupling_numerical_inputs_and_petsc_execution(self):
+    def test_05_proxycoupling_numerical_inputs_including_petsc(self):
         """
         Test proper definition of coupling numerical inputs, possible values, etc. and execute using GSOrNewtonMDA
         for sub-mdas and GMRES/GMRES_PETSC depending on PETSC availability.
