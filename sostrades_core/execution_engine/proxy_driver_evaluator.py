@@ -95,6 +95,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     EVAL_INPUTS = ProxySampleGenerator.EVAL_INPUTS
 
+    DRIVER_EVAL_MODE_MONO = 'mono'
+    DRIVER_EVAL_MODE_MULTI = 'multi'
+    
+
     SAMPLES_DF = ProxySampleGenerator.SAMPLES_DF
     SAMPLES_DF_DESC = ProxySampleGenerator.SAMPLES_DF_DESC.copy()
     SAMPLES_DF_DESC[ProxyDiscipline.STRUCTURING] = True
@@ -213,6 +217,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.there_are_new_scenarios = False
 
         self.gather_names = None
+        self.driver_eval_mode = None
 
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
@@ -265,15 +270,18 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.sample_generator_disc.set_eval_in_possible_values(possible_values=self.eval_in_possible_values,
                                                                possible_types=self.eval_in_possible_types)
         self.sample_generator_disc.samples_df_f_name = self.get_input_var_full_name(self.SAMPLES_DF)
+        self.sample_generator_disc.driver_is_multi_eval = self.driver_eval_mode == self.DRIVER_EVAL_MODE_MULTI
+
         self.configure_samples_df()
         # set samples_df editable
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
         
     def configure_samples_df(self):
-        # set samples_df editable so that when it changes in samples generator, it is reinit at each configure
+        # set samples_df editable so that when it changes in samples generator, it is reinitiated at each configure
         if self.SAMPLES_DF in self.get_data_in():
             samples_df_full_path = self.get_input_var_full_name(self.SAMPLES_DF)
+            # set samples_df editable so that when it is set to not editable in sample generator it is reinit each time
             self.dm.set_data(samples_df_full_path,
                              self.EDITABLE,
                              True,

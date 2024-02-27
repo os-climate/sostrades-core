@@ -162,6 +162,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.check_integrity_msg_list = []
         self.sg_data_integrity = True
 
+        self.driver_is_multi_eval = None 
         self.sampling_method = None
         self.sampling_generation_mode = None
 
@@ -173,6 +174,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.eval_in_possible_values = []
         self.eval_in_possible_types = {}
         self.samples_df_f_name = None
+        self.analysis_disc = None
         # FIXME: using samples_df_f_name to sample means configuration-time sampling needs to be banned on standalone sample gen.
 
     def set_eval_in_possible_values(self,
@@ -248,6 +250,16 @@ class ProxySampleGenerator(ProxyDiscipline):
                     self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_GENERATION_MODE, disc_in),
                                         self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
 
+        if self.SAMPLING_METHOD in disc_in and \
+                self.get_sosdisc_inputs(self.SAMPLING_METHOD) == self.SENSITIVITY_ANALYSIS and \
+                self.driver_is_multi_eval:
+            method_mode_integrity_msg.append(
+                f"Input {self.SAMPLING_METHOD} cannot be {self.SENSITIVITY_ANALYSIS} "
+                f"with a driver multi-scenario."
+            )
+            self.sg_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_METHOD, disc_in),
+                                    self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
         # check integrity for eval_inputs # TODO: move to cartesian product sample generator ?
         eval_inputs_integrity_msg = []
         if self.configurator and self.EVAL_INPUTS in disc_in:
