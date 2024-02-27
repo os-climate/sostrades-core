@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import numpy as np
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
@@ -42,14 +43,16 @@ class Disc1(SoSWrapp):
     }
     DESC_OUT = {
         'indicator': {'type': 'float', 'unit': '-'},
-        'y': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'y_array': {'type': 'array', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
     }
 
     def run(self):
         x = self.get_sosdisc_inputs('x')
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
-        dict_values = {'indicator': a * b, 'y': a * x + b}
+        y_array = np.array([a*i + (5-i)*b for i in range(0,10)])
+        dict_values = {'indicator': a * b, 'y': a * x + b, 'y_array':y_array}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 

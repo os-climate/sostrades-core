@@ -18,6 +18,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 import logging
+import numpy as np
 
 import pandas as pd
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -138,21 +139,129 @@ class TornadoChartAnalysis(SoSWrapp):
                     # build the variations results: the input, the variation on input, the variation on output
                     output_variations_dict[self.INPUT_COL].extend([input_name]*len(input_variations_df))
                     output_variations_dict[self.VARIATION_INPUT_COL].extend(list(input_variations_df[input_name].values))
+                    
+                    #initialize with None values
+                    computed_variations = [None] * len(input_variations_df)
                     # compute the variations
-                    if reference_value != 0.0:
-                        output_variations_dict[self.VARIATION_OUTPUT_COL].extend([100.0 * (output_value - reference_value)/reference_value 
-                                                                             for output_value 
-                                                                             in list(input_variations_df[output_name])])
-                    else:
-                        output_variations_dict[self.VARIATION_OUTPUT_COL].extend([100.0 * output_value 
-                                                                             for output_value 
-                                                                             in list(input_variations_df[output_name])])
+                    if reference_value is not None:
+                        
+                        if isinstance(reference_value, dict):
+                            if len(reference_value) > 0 and reference_value.values().first() is not None:
+                                
+                                # check subtype
+                                if isinstance(reference_value.values().first(), dict):
+                                    # case dict of dict
+                                    computed_variations = [self._compute_dict_of_dict_outputs(reference_value, output_dict_dict)
+                                                           for output_dict_dict in input_variations_df[output_name].values
+                                                          ]
+                                        
+                                elif isinstance(reference_value.values().first(), pd.DataFrame):
+                                    # case dict of df
+                                    computed_variations = [self._compute_dict_of_dataframe_outputs(reference_value, output_dict_df)
+                                                           for output_dict_df in input_variations_df[output_name].values
+                                                          ]
+                                elif isinstance(reference_value.values().first(), float) or isinstance(reference_value.values().first(), int):
+                                    # case dict
+                                    computed_variations = [self._compute_dict_outputs(reference_value, output)
+                                                           for output in input_variations_df[output_name].values
+                                                          ]
 
-                
+                        elif isinstance(reference_value, pd.DataFrame):
+                            computed_variations = [self._compute_dataframe_outputs(reference_value, output_df)
+                                                           for output_df in input_variations_df[output_name].values
+                                                          ]
+                        elif isinstance(reference_value, list) or isinstance(reference_value, np.ndarray):
+                            computed_variations = [self._compute_array_output(reference_value, output)
+                                                           for output in input_variations_df[output_name].values]
+                        elif isinstance(reference_value, float) or isinstance(reference_value, int):
+                            computed_variations = [self._compute_output(reference_value, output)
+                                                           for output in input_variations_df[output_name].values]
+
+                    output_variations_dict[self.VARIATION_OUTPUT_COL].extend(computed_variations)
                 dict_values[f'{output_name}{self.OUTPUT_VARIATIONS_SUFFIX}'] = pd.DataFrame(output_variations_dict)
         
         self.store_sos_outputs_values(dict_values)
               
+    
+    def _compute_output(self, reference_value:float, output:float)-> float:
+        result = 0.0
+        if reference_value != 0.0 and reference_value is not None:
+            result = 100.0 * (output - reference_value) / reference_value
+        
+        return result
+    
+    def _compute_array_output(self, reference_value, output):
+        result = [self._compute_output(reference_value[i],output[i]) 
+                  for i in range(0,len(reference_value)) 
+                  if reference_value[i] != 0.0 and isinstance(reference_value[i], float)]
+        
+        return result
+
+    def _compute_dict_outputs(self, reference_value_dict:dict, output_dict: dict)-> dict:
+        '''
+            Compute the variation of outputs in case of output type is dict of float or int, else return empty array
+            :param reference_value_dict_dict: reference value (variation at 0%)
+            :type reference_value_dict_dict: dict of float or int
+            :param output_dict_dict_data: output values at each variation (+/-%)
+            :type output_dict_dict_data: dict of float or int
+            :return: computed variations 
+            :return type: dict of float or int
+        '''
+        output_variations = {key: self._compute_output(float(reference_value_dict[key]), float(output_dict[key]))
+                             for key in output_dict.keys()
+                             if isinstance(reference_value_dict[key], float) or isinstance(reference_value_dict[key], int)
+                            }
+                                
+        return output_variations
+    
+    def _compute_dataframe_outputs(self, reference_value:pd.DataFrame, output_df: pd.DataFrame)-> dict:
+        '''
+            Compute the variation of outputs in case of output type is dict of float or int, else return empty array
+            :param reference_value_dict_dict: reference value (variation at 0%)
+            :type reference_value_dict_dict: dict of float or int
+            :param output_dict_dict_data: output values at each variation (+/-%)
+            :type output_dict_dict_data: dict of float or int
+            :return: computed variations 
+            :return type: dict of float or int
+        '''
+        return 100.0 * (output_df - reference_value).divide(reference_value, fill_value=0.0)
+    
+    def _compute_dict_of_dict_outputs(self, reference_value_dict_dict:dict, output_dict_dict: dict)-> dict:
+        '''
+            Compute the variation of outputs in case of output type is dict of dict of float or int, else return empty array
+            :param reference_value_dict_dict: reference value (variation at 0%)
+            :type reference_value_dict_dict: dict of dict of float or int
+            :param output_dict_dict: output values at each variation (+/-%)
+            :type output_dict_dict: dict of dict of float or int
+            :return: computed variations 
+            :return type: dict of dict of float or int
+        '''
+        #check sub type:
+        reference_value_dict = reference_value_dict_dict.values().first()
+        if (isinstance(reference_value_dict.values().first(), float) or isinstance(reference_value_dict.values().first(), int)):
+            output_variations = {key: self._compute_dict_of_outputs(reference_value_dict_dict[key], output_dict_dict[key]) 
+                                     for key in output_dict_dict.keys()
+                                    }
+
+        return output_variations
+    
+
+    def _compute_dict_of_dataframe_outputs(self, reference_value_dict_df:dict, output_dict_df: dict)-> dict:
+        '''
+            Compute the variation of outputs in case of output type is dict of dataframe of float or int, else return empty array
+            :param reference_value_dict_df: reference value (variation at 0%)
+            :type reference_value_dict_df: dict of dataframe of float or int
+            :param output_dict_df_data: output values at each variation (+/-%)
+            :type output_dict_df_data: dict of dataframe of float or int
+            :return: computed variations 
+            :return type: dict of dataframe of float or int
+        '''
+        output_variations = {key: self._compute_dataframe_outputs(reference_value_dict_df[key], output_dict_df[key])
+                                for key in output_dict_df.keys()
+                            }
+
+        return output_variations
+
     def get_chart_filter_list(self):
         """ 
         post processing function designed to build filters
@@ -177,17 +286,19 @@ class TornadoChartAnalysis(SoSWrapp):
         # Default value if no filter
         selected_outputs_list = []
         selected_inputs_list = []
-
+        if filters is None:
+            filters = self.get_chart_filter_list()
         if filters is not None:
             for chart_filter in filters:
                 if chart_filter.filter_key == TornadoChartAnalysis.CHART_FILTER_KEY_SELECTED_OUTPUTS:
                     selected_outputs_list = chart_filter.selected_values
                 if chart_filter.filter_key == TornadoChartAnalysis.CHART_FILTER_KEY_SELECTED_INPUTS:
                     selected_inputs_list = chart_filter.selected_values
-        
+
         for selected_output in selected_outputs_list:
             selected_output_df = self.get_sosdisc_outputs(f'{selected_output}{self.OUTPUT_VARIATIONS_SUFFIX}')
-            instanciated_charts.append(self.__make_tornado_chart(variation_df=selected_output_df, selected_inputs=selected_inputs_list, output_variable_name=selected_output))
+            if isinstance(selected_output_df[self.VARIATION_OUTPUT_COL].iloc[0], float):
+                instanciated_charts.append(self.__make_tornado_chart(variation_df=selected_output_df, selected_inputs=selected_inputs_list, output_variable_name=selected_output))
         return instanciated_charts
 
     @staticmethod

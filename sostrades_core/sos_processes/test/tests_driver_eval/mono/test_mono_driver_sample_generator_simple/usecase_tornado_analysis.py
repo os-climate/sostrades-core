@@ -43,8 +43,8 @@ class Study(StudyManager):
                              'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
-        output_selection_ind = {'selected_output': [True, False],
-                                'full_name': ['y', 'Disc1.indicator']}
+        output_selection_ind = {'selected_output': [True, False, True],
+                                'full_name': ['y', 'Disc1.indicator', 'y_array']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {}
@@ -80,7 +80,7 @@ if '__main__' == __name__:
     print(samples_df)
 
     uc_cls.run()
-    variations_output_df = dm.get_value(f'{ns}.tornado_chart_analysis.y_dict_variations')
+    variations_output_df = dm.get_value(f'{ns}.tornado_chart_analysis.y_array_dict_variations')
     print(variations_output_df)
     
     from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
