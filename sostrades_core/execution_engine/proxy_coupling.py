@@ -111,8 +111,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'sub_mda_class': {ProxyDiscipline.TYPE: 'string',
                           ProxyDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
                                                             'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
-                                                            'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential',
-                                                            'GSPureNewtonorGSMDA'],
+                                                            'GSPureNewtonMDA',
+                                                            # 'GSorNewtonMDA', # TODO: functionality needs EEv4 update
+                                                            'MDASequential', 'GSPureNewtonorGSMDA'],
                           ProxyDiscipline.DEFAULT: 'MDAJacobi', ProxyDiscipline.NUMERICAL: True,
                           ProxyDiscipline.STRUCTURING: True},
         'max_mda_iter': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 30, ProxyDiscipline.NUMERICAL: True,

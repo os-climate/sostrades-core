@@ -66,7 +66,7 @@ class ProxySampleGenerator(ProxyDiscipline):
     N_SAMPLES = "n_samples"
     ALGO = SampleGeneratorWrapper.ALGO
     ALGO_OPTIONS = SampleGeneratorWrapper.ALGO_OPTIONS
-    DESIGN_SPACE = SampleGeneratorWrapper.DESIGN_SPACE
+    DESIGN_SPACE = dspace_tool.DESIGN_SPACE
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
