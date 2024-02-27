@@ -16,9 +16,7 @@ limitations under the License.
 '''
 from typing import List
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
-from gemseo.core.scenario import Scenario
 from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
-from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values #find_possible_output_values
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -155,7 +153,7 @@ class ProxyOptim(ProxyDriverEvaluator):
     # FD step
     FD_STEP = "fd_step"
 
-    DESIGN_SPACE = 'design_space' # TODO: proxysamplegenerator.design_space ?
+    DESIGN_SPACE = dspace_tool.DESIGN_SPACE
     FORMULATION = 'formulation'
     MAXIMIZE_OBJECTIVE = 'maximize_objective'
     OBJECTIVE_NAME = 'objective_name'
@@ -320,13 +318,11 @@ class ProxyOptim(ProxyDriverEvaluator):
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
             if algo_name is not None:
-                # TODO: worth some refacto ?
                 default_dict = self.get_algo_options(algo_name)
                 if algo_options is not None:
                     values_dict = deepcopy(default_dict)
-
                     for k in algo_options.keys():
-                        if algo_options[k] != 'None' or not isinstance(algo_options[k], type(None)): # TODO: condition makes no sense?
+                        if algo_options[k] is not None and algo_options[k] != 'None':
                             values_dict.update({k: algo_options[k]})
                     self.inst_desc_in[self.ALGO_OPTIONS] = values_dict
                     for key in self._data_in.keys():
@@ -343,38 +339,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         else:
             builder_list = self.cls_builder
         return builder_list
-
-    # TODO: double-check but in theory can inherit from proxydriverevaluator...
-    # def configure(self):
-    #     """
-    #     Configuration of SoSScenario, call to super Class and
-    #     """
-    #     self.configure_io()
-    #     self._update_status_dm(self.STATUS_CONFIGURE)
-    #
-    # def configure_io(self):
-    #     """
-    #     Configure discipline  and all sub-disciplines
-    #     """
-    #     if self._data_in == {} or self.check_structuring_variables_changes():
-    #         super().configure()
-    #
-    #     disc_to_configure = self.get_disciplines_to_configure()
-    #
-    #     if len(disc_to_configure) > 0:
-    #         self.set_configure_status(False)
-    #     else:
-    #         self.set_children_numerical_inputs()
-    #         self.set_configure_status(True)
-    #
-    #     for disc in disc_to_configure:
-    #         disc.configure()
-    #
-    # def get_disciplines_to_configure(self):
-    #     """
-    #     Get sub disciplines list to configure
-    #     """
-    #     return self._get_disciplines_to_configure(self.proxy_disciplines)
 
     def set_edition_inputs_if_eval_mode(self):
         '''
@@ -420,7 +384,6 @@ class ProxyOptim(ProxyDriverEvaluator):
                                                                                     self.MAX_ITER])
         self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
-        # self.ee.dm.create_reduced_dm()
         # prepare_execution of proxy_disciplines and extract GEMSEO objects
         sub_mdo_disciplines = []
         for disc in self.proxy_disciplines:
@@ -438,10 +401,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.set_parallel_options()
 
         self.set_formulation_for_func_manager(sub_mdo_disciplines)
-
-        # # Extract variables for eval analysis TODO: IN PRINCIPLE DONE IN CONFIGURE
-        # if self.proxy_disciplines is not None and len(self.proxy_disciplines) > 0:
-        #     self.set_eval_possible_values()
 
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
@@ -478,12 +437,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         maximize_objective = False
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
-            # TODO: data integrity checks
-            # if any(type(design_variable).__name__ not in ['array', 'list', 'ndarray'] for design_variable in
-            #        dspace['value'].tolist()):
-            #     raise ValueError(
-            #         f"A design variable must obligatory be an array {[type(design_variable).__name__ for design_variable in dspace['value'].tolist()]}")
-
             # build design space
             design_space = self.set_design_space() ## TODO: CHECK but it should be OK because already checked in data integrity
             if design_space.variables_names:
@@ -500,41 +453,10 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         reads design space (set_design_space)
         """
-        ## FIXME: use possible values
-        # dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-        # update design space dv with full names
-        # dvs = list(dspace_df[self.VARIABLES])
-        # full_dvs = []
-        # dspace_dict_updated = {}
-        # for key in dvs:
-        #     full_key_l = self.get_full_names([key])
-        #     if len(full_key_l) > 0:
-        #         full_key = full_key_l[0]
-        #         full_dvs.append(full_key)
-        #         # dspace_dict_updated[full_key] = dspace_df[key]
-        #     else:
-        #         raise Exception(f" The design variable {key} is not in the dm : {key}") # TODO: data integrity!
         dspace_df = self.get_sosdisc_inputs(self.DESIGN_SPACE).copy()
         dspace_df[self.VARIABLES] = self._update_names(dspace_df[self.VARIABLES], self.IO_TYPE_IN)
         design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df)
         return design_space
-
-    # def get_full_names(self, names):
-    #     '''
-    #     get full names of variables
-    #     '''
-    #     full_names = []
-    #     for i_name in names:
-    #         full_id_l = self.dm.get_all_namespaces_from_var_name(i_name)
-    #         if full_id_l != []:
-    #             if len(full_id_l) > 1:
-    #                 # full_id = full_id_l[0]
-    #                 full_id = self.get_scenario_lagr(full_id_l)
-    #             else:
-    #                 full_id = full_id_l[0]
-    #             full_names.append(full_id)
-    #
-    #     return full_names
 
     def get_chart_filter_list(self):
         chart_filters = []
@@ -633,18 +555,6 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         return instanciated_charts
 
-    # def get_scenario_lagr(self, full_id_l):
-    #     """
-    #     get the corresponding lagrangian formulation of a given
-    #     optimization scenario
-    #     """
-    #     possible_full_id_list = [ns for ns in full_id_l if f'{self.sos_name}.' in ns]
-    #     # TODO: data integrity !
-    #     if len(possible_full_id_list) == 1:
-    #         return possible_full_id_list[0]
-    #     else:
-    #         raise Exception(f'Cannot find the only objective of the optim {self.sos_name} ')
-
     def set_design_space_for_complex_step(self):
         '''
         Set design space values to complex if the differentiation method is complex_step
@@ -689,23 +599,6 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         return default_dict
 
-    # def _update_names(self, names):
-    #     """
-    #     if no dot in the name, it looks for the full name in the dm
-    #     else we suppose that this is a full name that needs to be updated with current
-    #     study name
-    #     |!| it will NOT work for names with a dot in data_io...
-    #     """
-    #     local_names = []
-    #     full_names = []
-    #     for name in names:
-    #         if NamespaceManager.NS_SEP not in name:
-    #             local_names.append(name)
-    #         else:
-    #             full_names.append(name)
-    #     return self.get_full_names(local_names) + \
-    #         self._update_study_ns_in_varname(full_names)
-
     def configure_driver(self):
         """
         Specific configuration actions for the optimisation driver do be done after the subprocess is configured:
@@ -740,33 +633,6 @@ class ProxyOptim(ProxyDriverEvaluator):
     def _update_eval_output_with_possible_out_values(self, possible_out_values, disc_in):
         pass
 
-    # def set_eval_possible_values(self):
-    #
-    #     possible_out_values = find_possible_output_values(self, strip_first_ns=True)
-    #
-    #     # Fill the possible_values of obj and constraints
-    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
-    #                      self.POSSIBLE_VALUES, possible_out_values)
-    #
-    #     if self.is_constraints:
-    #         self.dm.set_data(f'{self.get_disc_full_name()}.{self.INEQ_CONSTRAINTS}',
-    #                          self.POSSIBLE_VALUES, possible_out_values)
-    #         self.dm.set_data(f'{self.get_disc_full_name()}.{self.EQ_CONSTRAINTS}',
-    #                          self.POSSIBLE_VALUES, possible_out_values)
-    #     # fill the possible values of algos
-    #     self.mdo_discipline_wrapp.mdo_discipline._init_algo_factory()
-    #     avail_algos = self.mdo_discipline_wrapp.mdo_discipline._algo_factory.algorithms
-    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}',
-    #                      self.POSSIBLE_VALUES, avail_algos)
-    #     # fill the possible values of formulations
-    #     self._form_factory = MDOFormulationsFactory()
-    #     avail_formulations = self._form_factory.formulations
-    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}',
-    #                      self.POSSIBLE_VALUES, avail_formulations)
-    #     # fill the possible values of maximize_objective
-    #     self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',
-    #                      self.POSSIBLE_VALUES, [False, True])
-
     def set_diff_method(self):
         """
         Set differentiation method and send a WARNING
@@ -800,10 +666,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.mdo_discipline_wrapp.mdo_discipline.formulation.opt_problem.parallel_differentiation_options = options
 
     def set_constraints(self):
-        # -- equality constraints
-        # retrieve ineq_constraints data
-        # the data is either a string "variable name" or
-        # a tuple with the variable name and the ineq sign
+        # -- inequality constraints
+        # an element of ineq_data is either a string "variable name" or a tuple with the variable name and the ineq sign
         ineq_data = self.get_sosdisc_inputs(self.INEQ_CONSTRAINTS)
         ineq_names = []
         is_positive = []
@@ -812,14 +676,14 @@ class ProxyOptim(ProxyDriverEvaluator):
                 # if no tuple, the default value of ineq sign is negative
                 name = data
                 is_pos = False
-            else:
+            else: # FIXME: remove tuple definition functionality
                 name = data[0]
                 sign = data[1]
                 if sign == self.INEQ_POSITIVE:
                     is_pos = True
                 elif sign == self.INEQ_NEGATIVE:
                     is_pos = False
-                else: # TODO: already checked by data integrity
+                else: # NB: already checked by data integrity
                     msg = "Sign of constraint %s is not among %s" % (
                         name, self.INEQ_SIGNS)
                     raise ValueError(msg)
@@ -890,7 +754,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                                                                io_type=self.IO_TYPE_IN)
                 design_space_integrity_msg.extend(out_errors)
 
-                # type checks based on design space value  # TODO: [discuss] should these be based on dm ?
+                # type checks based on design space value  # TODO: [discuss] should these be based on dm ? --->
                 for var_name, var_value in zip(var_names, design_space[self.VALUE].tolist()):
                     var_type = type(var_value).__name__
                     if var_type not in ['array', 'list', 'ndarray']:
@@ -976,7 +840,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             subpr_vars = set(self.eval_out_possible_values)
         else:
             raise ValueError(f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]')
-        # TODO: move code below to possible values tool ?
+        # TODO: related to short names logic
         _out_names = []
         _out_errors = []
         for var_name in var_names:

@@ -1423,9 +1423,6 @@ class TestMDALoop(unittest.TestCase):
         active, then will perform the same operations with GMRES_PETSC and check results equivalence.
         :return:
         """
-
-
-
         exec_eng = ExecutionEngine(self.name)
 
         # add disciplines Sellaroupling
