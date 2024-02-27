@@ -438,7 +438,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         dspace = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         if dspace is not None:
             # build design space
-            design_space = self.set_design_space() ## TODO: CHECK but it should be OK because already checked in data integrity
+            design_space = self.set_design_space()
             if design_space.variables_names:
                 _, formulation, maximize_objective, obj_name = self.get_sosdisc_inputs(
                     self.SCENARIO_MANDATORY_FIELDS)
@@ -606,8 +606,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         self.set_eval_possible_values(strip_first_ns=False)
 
-        # FIXME: no good ! with the short name logic we cannot check directly the data integrity w/ POSSIBLE VALUES
-        #  or maybe overriding the generic check data integrity ? [discuss & fix]
+        # TODO: with the short name logic we cannot check directly the data integrity w/ POSSIBLE VALUES, reminder
+        #  to re-activate possible values setting when short name logic is abolished
         # # Fill the possible_values of obj and constraints
         # self.dm.set_data(f'{self.get_disc_full_name()}.{self.OBJECTIVE_NAME}',
         #                  self.POSSIBLE_VALUES, self.eval_out_possible_values)
@@ -667,31 +667,10 @@ class ProxyOptim(ProxyDriverEvaluator):
 
     def set_constraints(self):
         # -- inequality constraints
-        # an element of ineq_data is either a string "variable name" or a tuple with the variable name and the ineq sign
-        ineq_data = self.get_sosdisc_inputs(self.INEQ_CONSTRAINTS)
-        ineq_names = []
-        is_positive = []
-        for data in ineq_data:
-            if type(data) == str:
-                # if no tuple, the default value of ineq sign is negative
-                name = data
-                is_pos = False
-            else: # FIXME: remove tuple definition functionality
-                name = data[0]
-                sign = data[1]
-                if sign == self.INEQ_POSITIVE:
-                    is_pos = True
-                elif sign == self.INEQ_NEGATIVE:
-                    is_pos = False
-                else: # NB: already checked by data integrity
-                    msg = "Sign of constraint %s is not among %s" % (
-                        name, self.INEQ_SIGNS)
-                    raise ValueError(msg)
-            ineq_names.append(name)
-            is_positive.append(is_pos)
-
+        # NB: ineq constraint definition as [(var_name, cstr_sign), ...] deprecated
+        ineq_names = self.get_sosdisc_inputs(self.INEQ_CONSTRAINTS)
+        is_positive = [False for _ in ineq_names]
         ineq_full_names = self._update_names(ineq_names, self.IO_TYPE_OUT)
-
         for ineq, is_pos in zip(ineq_full_names, is_positive):
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
                 ineq, MDOFunction.TYPE_INEQ, ineq, value=None, positive=is_pos)
@@ -754,7 +733,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                                                                io_type=self.IO_TYPE_IN)
                 design_space_integrity_msg.extend(out_errors)
 
-                # type checks based on design space value  # TODO: [discuss] should these be based on dm ? --->
+                # type checks based on design space value  # TODO: type checks based on DM
                 for var_name, var_value in zip(var_names, design_space[self.VALUE].tolist()):
                     var_type = type(var_value).__name__
                     if var_type not in ['array', 'list', 'ndarray']:
@@ -781,28 +760,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         # INEQ CONSTRAINTS --------------------------------------------------------------------
         ineq_integrity_msg = []
         if self.INEQ_CONSTRAINTS in disc_in:
-            ineq_data = self.get_sosdisc_inputs(self.INEQ_CONSTRAINTS)
-            if ineq_data:
-                ineq_names = []
-                for data in ineq_data:
-                    if type(data) == str:
-                        ineq_names.append(data)
-                    elif type(data) in (tuple, list) and len(data) == 2: # FIXME: ineq_positive, ineq_negative and ineq_signs UNDEFINED! is the functionality really to be kept ?
-                        name = data[0]
-                        sign = data[1]
-                        if not (sign == self.INEQ_POSITIVE or sign == self.INEQ_NEGATIVE):
-                            msg = "Sign of constraint %s is not among %s" % (
-                                name, self.INEQ_SIGNS)
-                            ineq_integrity_msg.append(msg)
-                        ineq_names.append(name)
-                    else:
-                        ineq_integrity_msg.append(f"Ineq. constraint definition by {data} is wrong, need to use either "
-                                                  f"a string with output name, or "
-                                                  f"a tuple of length two with output name and sign.")
-                # specific checks that the short names can be identified
-                _, ineq_out_err = self._get_subprocess_var_names(ineq_names,
-                                                                 io_type=self.IO_TYPE_OUT)
-                ineq_integrity_msg.extend(ineq_out_err)
+            ineq_names = self.get_sosdisc_inputs(self.INEQ_CONSTRAINTS)
+            # specific checks that the short names can be identified
+            _, ineq_out_err = self._get_subprocess_var_names(ineq_names,
+                                                             io_type=self.IO_TYPE_OUT)
+            ineq_integrity_msg.extend(ineq_out_err)
         if ineq_integrity_msg:
             self.opt_data_integrity = False
             self.ee.dm.set_data(self.get_var_full_name(self.INEQ_CONSTRAINTS, disc_in),
