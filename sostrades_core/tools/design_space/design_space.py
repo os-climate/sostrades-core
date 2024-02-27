@@ -111,12 +111,12 @@ def check_design_space_data_integrity(design_space, possible_variables_types):
         for wrong_dim_var in wrong_dim_vars:
             if possible_variables_types:
                 design_space_integrity_msg.append(
-                    f'Columns {LOWER_BOUND}, {UPPER_BOUND} and {VALUES} should be of type '
+                    f'Columns {LOWER_BOUND}, {UPPER_BOUND}, {LIST_ACTIVATED_ELEM} and {VALUES} should be of type '
                     f'{possible_variables_types[wrong_dim_var]} for variable {wrong_dim_var} '
                     f'and should have coherent shapes.')
             else:
                 design_space_integrity_msg.append(
-                    f'Columns {LOWER_BOUND}, {UPPER_BOUND} and {VALUES} '
+                    f'Columns {LOWER_BOUND}, {UPPER_BOUND}, {LIST_ACTIVATED_ELEM} and {VALUES} '
                     f'should have coherent shapes for variable {wrong_dim_var}.')
 
     return design_space_integrity_msg
