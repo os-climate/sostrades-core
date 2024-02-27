@@ -418,6 +418,17 @@ def test_double_run(study: BaseStudyManager, force_run: bool = False) -> tuple[b
     return run_test_passed, error_msg_run
 
 
+def check_if_all_post_processings_succeeded(ee_postprocessing_manager):
+    error_msg_post_processing_list = []
+    for post_processing_list in ee_postprocessing_manager.namespace_post_processing.values():
+        error_msg_post_processing_list.extend([post_proc.post_processing_error for post_proc in post_processing_list if
+                                               post_proc.post_processing_error != ""])
+
+    error_msg_post_processing = '\n'.join(error_msg_post_processing_list)
+
+    return len(error_msg_post_processing_list) == 0, error_msg_post_processing
+
+
 def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tuple[bool, str]:
     """This tests evaluates if the data_dict remains the same after computing the post_processings in a usecase"""
     error_msg_post_processing = ''
@@ -428,7 +439,6 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
             study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
         except Exception as e:
-
 
             error_msg_post_processing += f'\nERROR while computing the usecase {study.study_full_path}:\n' \
                                          f'\n {traceback.format_exc()}'
@@ -451,6 +461,12 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
     except Exception as e:
         error_msg_post_processing += f'\nERROR while computing post processing for usecase {study.study_full_path}:\n {e}'
         post_processing_test_passed = False
+        return post_processing_test_passed, error_msg_post_processing
+
+    # There is exception in the post processing manager that could be lost. Retrieve it in each post processing manager and check that there are no error messages
+    post_processing_test_passed, error_msg_post_processing = check_if_all_post_processings_succeeded(
+        study.ee.post_processing_manager)
+    if not post_processing_test_passed:
         return post_processing_test_passed, error_msg_post_processing
 
     post_processing_test_passed, error_msg_post_processing = test_compare_dm(dm_1=dm_before_pp, dm_2=dm_after_pp,
