@@ -1499,8 +1499,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         with self.assertRaises(ValueError) as cm:
             exec_eng.execute()
-        error_message = "A design variable must obligatory be an array, x is of type str."
-        self.assertTrue(str(cm.exception).endswith(error_message))
+        error_message = "Variable optim.SellarOptimScenario.design_space : Columns value, lower_bnd and upper_bnd must be arrays or lists for variable x."
+        self.assertTrue(str(cm.exception).startswith(error_message))
 
         disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = ['w']
