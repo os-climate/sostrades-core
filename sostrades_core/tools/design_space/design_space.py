@@ -15,7 +15,9 @@ limitations under the License.
 '''
 from gemseo.algos.design_space import DesignSpace
 from numpy import array, ndarray, delete, nonzero, logical_not
+from itertools import combinations
 
+DESIGN_SPACE = "design_space"
 VARIABLES = "variable"
 VALUES = "value"
 UPPER_BOUND = "upper_bnd"
@@ -103,62 +105,71 @@ def check_design_space_data_integrity(design_space, possible_variables_types):
                 design_space_integrity_msg.append(
                     f'Variable {var_not_possible} is not among the possible input values.'
                 )
+
         # check of dimensions coherences
         wrong_dim_vars = design_space[VARIABLES][
             ~design_space.apply(_check_design_space_dimensions_for_one_variable, axis=1)].to_list()
         for wrong_dim_var in wrong_dim_vars:
+            if possible_variables_types:
+                design_space_integrity_msg.append(
+                    f'Columns {LOWER_BOUND}, {UPPER_BOUND}, {LIST_ACTIVATED_ELEM} and {VALUES} should be of type '
+                    f'{possible_variables_types[wrong_dim_var]} for variable {wrong_dim_var} '
+                    f'and should have coherent shapes.')
+            else:
+                design_space_integrity_msg.append(
+                    f'Columns {LOWER_BOUND}, {UPPER_BOUND}, {LIST_ACTIVATED_ELEM} and {VALUES} '
+                    f'should have coherent shapes for variable {wrong_dim_var}.')
+
+        # check vars that need to be deactivated (the var is active but all activated_elem are False)
+        vars_to_deactivate = design_space[VARIABLES][
+            design_space.apply(_check_deactivation_for_one_variable, axis=1)].to_list()
+        for var_to_deactivate in vars_to_deactivate:
             design_space_integrity_msg.append(
-                f'Columns {LOWER_BOUND}, {UPPER_BOUND} and {VALUES} should be of type '
-                f'{possible_variables_types[wrong_dim_var]} for variable {wrong_dim_var} '
-                f'and should have coherent shapes.')
+                f'Please deactivate variable {var_to_deactivate} using {ENABLE_VARIABLE_BOOL} rather than '
+                f'deactivating all its elements using {LIST_ACTIVATED_ELEM}.')
 
     return design_space_integrity_msg
 
 def _check_design_space_dimensions_for_one_variable(design_space_row):
     """
-    Utility method that checks that values in the columns 'lower_bnd', 'upper_bnd', 'value' of the design space do
-    have the same shape for a same variable.
+    Utility method that checks that values in the columns 'lower_bnd', 'upper_bnd', 'value' and 'activated_elem' of the
+    design space do have the same shape for a same variable, the check is ignored if the entry is None.
 
     Arguments:
-        eval_inputs_row (pd.Series): row of the design space dataframe to check
+        design_space_row (pd.Series): row of the design space dataframe to check
     """
     lb = design_space_row[LOWER_BOUND] if LOWER_BOUND in design_space_row.index else None
     ub = design_space_row[UPPER_BOUND] if UPPER_BOUND in design_space_row.index else None
     val = design_space_row[VALUES] if VALUES in design_space_row.index else None
+    act = design_space_row[LIST_ACTIVATED_ELEM] if LIST_ACTIVATED_ELEM in design_space_row.index else None
+    # since an empty list_activated_elem means all elements activated, omit the checks to accommodate this case
+    if array(act).size == 0:
+        act = None
     lb_shape = array(lb).shape
     ub_shape = array(ub).shape
     val_shape = array(val).shape
-    lb_ub_dim_mismatch = lb is not None and ub is not None and lb_shape != ub_shape
-    lb_val_dim_mismatch = lb is not None and val is not None and lb_shape != val_shape
-    val_ub_dim_mismatch = val is not None and ub is not None and val_shape != ub_shape
-    return not (lb_ub_dim_mismatch or lb_val_dim_mismatch or val_ub_dim_mismatch)
+    act_shape = array(act).shape
 
-## TODO: looks unused
-# def read_from_dict(self, dp_dict):
-#     """Parses a dictionary to read the DesignSpace
-#
-#     :param dp_dict : design space dictionary
-#     :returns:  the design space
-#     """
-#     design_space = DesignSpace()
-#     for key in dp_dict:
-#         print(key)
-#         if type(dp_dict[key]['value']) != list and type(dp_dict[key]['value']) != ndarray:
-#             name = key
-#             var_type = ['float']
-#
-#             size = 1
-#             l_b = array([dp_dict[key]['lower_bnd']])
-#             u_b = array([dp_dict[key]['upper_bnd']])
-#             value = array([dp_dict[key]['value']])
-#         else:
-#             size = len(dp_dict[key]['value'])
-#             var_type = ['float'] * size
-#
-#             name = key
-#             l_b = array(dp_dict[key]['lower_bnd'])
-#             u_b = array(dp_dict[key]['upper_bnd'])
-#             value = array(dp_dict[key]['value'])
-#
-#         design_space.add_variable(name, size, var_type, l_b, u_b, value)
-#     return design_space
+    # check the shape mismatch for all combinations that do not contain a None
+    to_check_mismatch = [(lb, lb_shape), (ub, ub_shape), (val, val_shape), (act, act_shape)]
+
+    def check_mismatch(_x, _y):
+        return _x[0] is not None and _y[0] is not None and _x[1] != _y[1]
+
+    mismatch = map(check_mismatch, *zip(*combinations(to_check_mismatch, 2)))
+    return not any(mismatch)
+
+def _check_deactivation_for_one_variable(design_space_row):
+    """
+    Utility method that checks whether a variable needs to be deactivated i.e. the variable is activated but all its
+    elements are deactivated (provoking GEMSEO crash). Returns True for a deactivation suggestion error.
+
+    Arguments:
+        design_space_row (pd.Series): row of the design space dataframe to check
+    """
+    act = design_space_row[LIST_ACTIVATED_ELEM] if LIST_ACTIVATED_ELEM in design_space_row.index else None
+    enabled = design_space_row[ENABLE_VARIABLE_BOOL]  # if ENABLE_VARIABLE_BOOL in design_space_row.index else True
+    if act:  # LIST_ACTIVATED_ELEM entry is neither None (not given) nor an empty list (all activated)
+        if enabled and not any(act):
+            return True
+    return False
