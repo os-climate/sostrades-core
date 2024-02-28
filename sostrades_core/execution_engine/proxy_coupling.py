@@ -20,7 +20,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import numpy as np
 from copy import deepcopy, copy
 from multiprocessing import cpu_count
-from pandas import DataFrame
+from pandas import DataFrame, concat
 import logging
 from os import getenv
 
@@ -40,8 +40,9 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
+
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
-   from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
+    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
@@ -97,7 +98,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
         POSSIBLE_VALUES_PRECONDITIONER = [
-            'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+                                             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
     else:
         DEFAULT_LINEAR_SOLVER = 'GMRES'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
@@ -528,7 +529,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for discipline in self.proxy_disciplines:
             if isinstance(discipline, ProxyCoupling):
                 df_couplings = discipline.export_couplings()
-                df = df.append(df_couplings, ignore_index=True)
+                df = concat([df, df_couplings], ignore_index=True)
 
         if in_csv:
             # writing of the file

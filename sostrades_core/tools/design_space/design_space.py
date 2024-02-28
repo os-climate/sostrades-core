@@ -24,6 +24,7 @@ ENABLE_VARIABLE_BOOL = "enable_variable"
 LIST_ACTIVATED_ELEM = "activated_elem"
 VARIABLE_TYPE = "variable_type"  # TODO: to discuss
 
+
 def create_gemseo_dspace_from_dspace_df(dspace_df):
     """
     Create gemseo dspace from sostrades updated dspace_df
@@ -41,7 +42,6 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
     u_bounds = list(dspace_df[UPPER_BOUND])
     enabled_variable = list(dspace_df[ENABLE_VARIABLE_BOOL])
     list_activated_elem = list(dspace_df[LIST_ACTIVATED_ELEM])
-
 
     # looking for the optionnal variable type in the design space
     if VARIABLE_TYPE in dspace_df:
@@ -90,6 +90,7 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
                 dv, size, var_type, l_b, u_b, value)
     return design_space, dict_desactivated_elem
 
+
 def check_design_space_data_integrity(design_space, possible_variables_types):
     design_space_integrity_msg = []
     if design_space.empty or not design_space[VARIABLES].tolist():
@@ -113,6 +114,7 @@ def check_design_space_data_integrity(design_space, possible_variables_types):
                 f'and should have coherent shapes.')
 
     return design_space_integrity_msg
+
 
 def _check_design_space_dimensions_for_one_variable(design_space_row):
     """

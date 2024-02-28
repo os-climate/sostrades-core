@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import pandas as pd
+
 from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
 from collections import defaultdict
 
@@ -116,9 +118,9 @@ class ScatterTool(SosTool):
             samples_df = self.driver.get_sosdisc_inputs(self.driver.SAMPLES_DF)
             # sce_df = copy.deepcopy(samples_df)
             if instance_reference:
-                samples_df = samples_df.append(
-                    {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'},
-                    ignore_index=True)
+                ref_series = pd.Series(
+                    {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'})
+                samples_df = pd.concat([samples_df, pd.DataFrame([ref_series])], ignore_index=True)
 
             self.set_scatter_list(
                 samples_df[samples_df[self.driver.SELECTED_SCENARIO] == True][
