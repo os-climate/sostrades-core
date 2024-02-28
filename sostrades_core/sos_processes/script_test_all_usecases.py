@@ -489,7 +489,7 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
     If test_mdo is true : tests sets 1 iteration to mdo and then test integrity of data after computing post-processings
 
     """
-    logging.disable(logging.INFO)
+    #logging.disable(logging.INFO)
     info_msg = ""
     study_1, study_2, dm_1, dm_2, double_configuration_passed, error_msg_double_config = test_double_configuration(
         usecase=usecase)
@@ -532,8 +532,9 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
 def run_test_check_outputs(usecase):
     """ Runs the outputs check for the test """
     imported_module = import_module(usecase)
-    uc = getattr(imported_module, 'Study')()
+    uc = getattr(imported_module, 'Study')(run_usecase=True)
     uc.load_data()
+
     if uc.check_outputs:
         uc.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
         uc.specific_check_outputs()
