@@ -111,8 +111,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'sub_mda_class': {ProxyDiscipline.TYPE: 'string',
                           ProxyDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
                                                             'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
-                                                            'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential',
-                                                            'GSPureNewtonorGSMDA'],
+                                                            'GSPureNewtonMDA',
+                                                            # 'GSorNewtonMDA', # TODO: functionality needs EEv4 update
+                                                            'MDASequential', 'GSPureNewtonorGSMDA'],
                           ProxyDiscipline.DEFAULT: 'MDAJacobi', ProxyDiscipline.NUMERICAL: True,
                           ProxyDiscipline.STRUCTURING: True},
         'max_mda_iter': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 30, ProxyDiscipline.NUMERICAL: True,
@@ -913,8 +914,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                                      chart_name=chart_name,
                                                      y_axis_log=True)
 
-                for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
-                    new_chart.series.append(series)
+                if iterations:  # TODO: quickfix to avoid post-proc crash when coupling is cached, will give empty plot
+                    for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
+                        new_chart.series.append(series)
 
                 instanciated_charts.append(new_chart)
 
