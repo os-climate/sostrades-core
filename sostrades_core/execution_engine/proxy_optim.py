@@ -735,7 +735,9 @@ class ProxyOptim(ProxyDriverEvaluator):
                                                                design_space[self.LOWER_BOUND].tolist(),
                                                                design_space[self.UPPER_BOUND].tolist()):
 
-                    if not all([var_value, var_lb, var_ub]):
+                    if var_value is None or '' == var_value or \
+                            var_lb is None or '' == var_lb or \
+                            var_ub is None or '' == var_ub:
                         design_space_integrity_msg.append(
                             f"Please fill columns {self.VALUE}, {self.LOWER_BOUND} and {self.UPPER_BOUND} "
                             f"for variable {var_name}.")
@@ -748,6 +750,10 @@ class ProxyOptim(ProxyDriverEvaluator):
                             design_space_integrity_msg.append(
                                 f"Columns {self.VALUE}, {self.LOWER_BOUND} and {self.UPPER_BOUND} must "
                                 f"be arrays or lists for variable {var_name}.")
+                        elif len(var_value) == 0 or len(var_lb) == 0 or len(var_ub) == 0:
+                            design_space_integrity_msg.append(
+                                f"Please fill columns {self.VALUE}, {self.LOWER_BOUND} and {self.UPPER_BOUND} "
+                                f"for variable {var_name}.")
 
                 # TODO: no check of possible values because of the short name, specific check below that needs to be
                 #  changed if changing name rule
