@@ -26,11 +26,6 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 
-
-class TornadoChartAnalysisSampleTypeError(SampleTypeError):
-    pass
-
-
 class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
     """
     Tornado chart Analysis class that generates sampling
