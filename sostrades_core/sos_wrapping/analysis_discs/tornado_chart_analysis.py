@@ -358,7 +358,7 @@ class TornadoChartAnalysis(SoSWrapp):
         Make a tornado chart
 
         :param variation_df: the output variation df
-        :type variation_df: pd.DataFrame
+        :type variation_df: pandas.DataFrame
         :param selected_inputs: the selected inputs
         :type selected_inputs: list[str]
         :param output_variable_name: the name of the output variable
