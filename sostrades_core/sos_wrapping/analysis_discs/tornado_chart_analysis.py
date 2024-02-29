@@ -35,7 +35,7 @@ from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
 
 class TornadoChartAnalysis(SoSWrapp):
     """
-    Generic Uncertainty Quantification class
+    Tornado chart Analysis class
     """
 
     # ontology information

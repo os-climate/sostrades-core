@@ -23,8 +23,9 @@ Contents
 .. toctree::
    :Caption: How to
 
-   create-postprocessing.md
-   create-process-disc.md
-   create-process.md
-   create-usecase.md
-   wrap-model.md
+   how-to/use-sphinx-rtd.md
+   how-to/create-postprocessing.md
+   how-to/create-process-disc.md
+   how-to/create-process.md
+   how-to/create-usecase.md
+   how-to/wrap-model.md
