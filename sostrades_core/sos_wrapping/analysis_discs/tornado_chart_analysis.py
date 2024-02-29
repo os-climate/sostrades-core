@@ -358,8 +358,11 @@ class TornadoChartAnalysis(SoSWrapp):
         Make a tornado chart
 
         :param variation_df: the output variation df
+        :type variation_df: pd.DataFrame
         :param selected_inputs: the selected inputs
+        :type selected_inputs: list[str]
         :param output_variable_name: the name of the output variable
+        :type output_variable_name: str
         :return: The tornado chart as a TwoAxesInstanciatedChart
         """
         # We should only have 2 variations, otherwise there is an issue before
