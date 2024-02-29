@@ -77,12 +77,13 @@ if "__main__" == __name__:
     from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
     post_processing_factory = PostProcessingFactory()
-    charts = post_processing_factory.get_post_processing_by_namespace(
-        uc_cls.execution_engine, f"{uc_cls.study_name}.tornado_chart_analysis", None, as_json=False
-    )
+    for disc in uc_cls.execution_engine.root_process.proxy_disciplines:
+        if disc.sos_name.endswith('tornado_chart_analysis'):
+            filters = post_processing_factory.get_post_processing_filters_by_discipline(disc)
+            graph_list = post_processing_factory.get_post_processing_by_discipline(disc, filters, as_json=False)
 
-    for chart in charts:
-        chart.to_plotly().show()
+            for chart in graph_list:
+                chart.to_plotly().show()
 
     # check that the sensitivity analysis is well removed
     values_dict = {}
