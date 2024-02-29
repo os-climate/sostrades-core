@@ -57,7 +57,7 @@ def strip_signatures(app, what, name, obj, options, signature, return_annotation
                                                                                 
     ret = None                                                                  
     if return_annotation is not None:                                           
-        ret = re.sub('sostrades_core\.[^.]*\.', '', signature)                           
+        ret = re.sub('sostrades_core\.[^.]*\.', '', return_annotation)                           
                                                                                 
     return sig, ret                                                             
                                                                                 
