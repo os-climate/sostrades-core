@@ -33,22 +33,21 @@ class Study(StudyManager):
             "lower_bnd": [0.0],
             "upper_bnd": [1.0],
         }
-        dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_a = {"selected_input": [False, True, True], "full_name": ["x", "Disc1.a", "Disc1.b"]}
+        input_selection_a = {
+            "selected_input": [False, True, True],
+            "full_name": ["x", "Coupling.Disc1.a", "Coupling.Disc1.b"],
+        }
         input_selection_a = pd.DataFrame(input_selection_a)
 
         output_selection_ind = {
             "selected_output": [True, False, True],
-            "full_name": ["y", "Disc1.indicator", "y_array"],
+            "full_name": ["y", "Coupling.Disc1.indicator", "y_array"],
         }
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {}
         # DoE + Eval inputs
-        n_samples = 10
-        levels = [0.25, 0.5, 0.75]
-        centers = [5]
         disc_dict[f"{ns}.SampleGenerator.sampling_method"] = "tornado_chart_analysis"
         disc_dict[f"{ns}.SampleGenerator.variation_list"] = [-10.0, 10.0]
         disc_dict[f"{ns}.Eval.with_sample_generator"] = True
@@ -57,10 +56,10 @@ class Study(StudyManager):
 
         # Disc1 inputs
         disc_dict[f"{ns}.Eval.x"] = 10.0
-        disc_dict[f"{ns}.Eval.Disc1.a"] = 1.0
-        disc_dict[f"{ns}.Eval.Disc1.b"] = 100.0
+        disc_dict[f"{ns}.Eval.Coupling.Disc1.a"] = 1.0
+        disc_dict[f"{ns}.Eval.Coupling.Disc1.b"] = 100.0
         disc_dict[f"{ns}.y"] = 4.0
-        disc_dict[f"{ns}.Eval.Disc1.indicator"] = 53.0
+        disc_dict[f"{ns}.Eval.Coupling.Disc1.indicator"] = 53.0
 
         return [disc_dict]
 

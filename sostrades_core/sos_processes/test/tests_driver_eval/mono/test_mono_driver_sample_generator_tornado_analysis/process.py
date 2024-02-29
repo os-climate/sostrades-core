@@ -28,10 +28,12 @@ class ProcessBuilder(BaseProcessBuilder):
     def get_builders(self):
         disc_dir = "sostrades_core.sos_wrapping.test_discs."
         mods_dict = {"Disc1": disc_dir + "disc1_array_output.Disc1"}
-        builder_list_sellar = self.create_builder_list(
+        builder_list = self.create_builder_list(
             mods_dict,
             ns_dict={"ns_ac": self.ee.study_name},
         )
-        eval_builder = self.ee.factory.create_mono_instance_driver("Eval", builder_list_sellar)
+        coupling_builder = self.ee.factory.create_builder_coupling("Coupling")
+        coupling_builder.set_builder_info("cls_builder", builder_list)
+        eval_builder = self.ee.factory.create_mono_instance_driver("Eval", coupling_builder)
 
         return eval_builder
