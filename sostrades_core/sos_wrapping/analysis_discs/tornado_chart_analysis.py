@@ -364,6 +364,7 @@ class TornadoChartAnalysis(SoSWrapp):
         :param output_variable_name: the name of the output variable
         :type output_variable_name: str
         :return: The tornado chart as a TwoAxesInstanciatedChart
+        :rtype: TwoAxesInstanciatedChart
         """
         # We should only have 2 variations, otherwise there is an issue before
         variations = list(variation_df[TornadoChartAnalysis.VARIATION_INPUT_COL].unique())
