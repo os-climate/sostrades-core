@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import re
 
 # -- Project information
 
@@ -48,3 +49,18 @@ html_theme = 'sphinx_rtd_theme'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
+
+def strip_signatures(app, what, name, obj, options, signature, return_annotation):
+    sig = None                                                                  
+    if signature is not None:                                                   
+        sig = re.sub('sostrades_core\.[^.]*\.', '', signature)                           
+                                                                                
+    ret = None                                                                  
+    if return_annotation is not None:                                           
+        ret = re.sub('sostrades_core\.[^.]*\.', '', signature)                           
+                                                                                
+    return sig, ret                                                             
+                                                                                
+                                                                                
+def setup(app):                                                                 
+    app.connect('autodoc-process-signature', strip_signatures)
