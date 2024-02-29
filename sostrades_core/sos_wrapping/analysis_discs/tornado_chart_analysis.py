@@ -20,6 +20,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import logging
 
 import pandas as pd
+import numpy as np
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
@@ -68,6 +69,8 @@ class TornadoChartAnalysis(SoSWrapp):
 
     CHART_FILTER_KEY_SELECTED_OUTPUTS = "outputs"
     CHART_FILTER_KEY_SELECTED_INPUTS = "inputs"
+
+    ACCEPTED_OUTPUT_TYPES = (int, float, np.float32, np.float64)
     
     def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name, logger)
@@ -152,20 +155,31 @@ class TornadoChartAnalysis(SoSWrapp):
                 dict_values[f'{output_name}{self.OUTPUT_VARIATIONS_SUFFIX}'] = pd.DataFrame(output_variations_dict)
         
         self.store_sos_outputs_values(dict_values)
-              
+
+    def __get_outputs_compatible_tornado_types(self):
+        """
+        Get outputs with valid types for tornado chart analysis
+        """
+        outputs_list = list(self.selected_outputs_dict.values())
+        outputs_with_valid_types = []
+        for output_name in outputs_list:
+            output_df = self.get_sosdisc_outputs(f'{output_name}{self.OUTPUT_VARIATIONS_SUFFIX}')
+            values = output_df[TornadoChartAnalysis.VARIATION_OUTPUT_COL].values()
+            if len(values) > 0:
+                if isinstance(values[0], TornadoChartAnalysis.ACCEPTED_OUTPUT_TYPES):
+                    outputs_with_valid_types.append(output_name)
+
     def get_chart_filter_list(self):
         """ 
         post processing function designed to build filters
         """
         filters = []
-
-        outputs_list = list(self.selected_outputs_dict.values())
+        outputs_list = self.__get_outputs_compatible_tornado_types()
         filters.append(ChartFilter('Outputs variables', outputs_list, outputs_list, TornadoChartAnalysis.CHART_FILTER_KEY_SELECTED_OUTPUTS))
 
         inputs_list, _ = self.__get_input_variables_list_and_df()
         filters.append(ChartFilter('Input variables', inputs_list, inputs_list, TornadoChartAnalysis.CHART_FILTER_KEY_SELECTED_INPUTS))
         return filters
-    
     
     def get_post_processing_list(self, filters=None):
         """ 
