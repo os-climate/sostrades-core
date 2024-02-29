@@ -7,9 +7,9 @@ Refer to [Sphinx Autodoc extension](https://www.sphinx-doc.org/en/master/usage/e
 .. autoclass:: sostrades_core.sos_wrapping.analysis_discs.tornado_chart_analysis::TornadoChartAnalysis
 ```
 
-## Document a method
+## Document a function
 ```{eval-rst}
-.. automethod:: sostrades_core.sos_wrapping.analysis_discs.tornado_chart_analysis::TornadoChartAnalysis.__make_tornado_chart
+.. autofunction:: sostrades_core.sos_wrapping.analysis_discs.tornado_chart_analysis::TornadoChartAnalysis.__make_tornado_chart
 ```
 
 ## Document an exception
