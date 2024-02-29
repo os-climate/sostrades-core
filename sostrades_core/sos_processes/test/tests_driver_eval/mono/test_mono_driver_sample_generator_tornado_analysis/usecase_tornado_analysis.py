@@ -28,11 +28,6 @@ class Study(StudyManager):
         """
 
         ns = f"{self.study_name}"
-        dspace_dict = {
-            "variable": ["Disc1.a"],
-            "lower_bnd": [0.0],
-            "upper_bnd": [1.0],
-        }
 
         input_selection_a = {
             "selected_input": [False, True, True],
