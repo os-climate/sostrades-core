@@ -215,7 +215,16 @@ class NamespaceManager:
                 f'The namespace {ns_name} is not defined in the namespace manager')
         else:
             return self.shared_ns_dict[ns_name]
-
+    
+    def get_ns_from_id(self, ns_id):
+        '''
+        Get namespace object from namespace id
+        '''
+        if ns_id in self.all_ns_dict.keys():
+            return self.all_ns_dict[ns_id]
+        else:
+           raise Exception(
+                f'The namespace id {ns_id} is not defined in the namespace manager') 
     # -- Disciplinary name space management
 
     def reset_current_disc_ns(self):

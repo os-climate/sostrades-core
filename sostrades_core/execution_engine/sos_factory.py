@@ -317,6 +317,15 @@ class SosFactory:
             sos_name, mod_path)
 
         return builder
+    
+    def add_tornado_chart_analysis_builder(self, sos_name):
+        '''
+        Add tornado chart analysis builder
+        '''
+        mod_path = 'sostrades_core.sos_wrapping.analysis_discs.tornado_chart_analysis.TornadoChartAnalysis'
+        builder = self.get_builder_from_module( sos_name, mod_path)
+
+        return builder
 
     def create_mono_instance_driver(self, sos_name, cls_builder):
         '''
