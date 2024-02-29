@@ -184,7 +184,6 @@ class TornadoChartAnalysis(SoSWrapp):
                 dict_values[f'{output_name}{self.OUTPUT_VARIATIONS_SUFFIX}'] = pd.DataFrame(output_variations_dict)
         
         self.store_sos_outputs_values(dict_values)
-<<<<<<< HEAD
 
     def __get_outputs_compatible_tornado_types(self):
         """
@@ -198,7 +197,6 @@ class TornadoChartAnalysis(SoSWrapp):
             if len(values) > 0:
                 if isinstance(values[0], TornadoChartAnalysis.ACCEPTED_OUTPUT_TYPES):
                     outputs_with_valid_types.append(output_name)
-=======
               
     
     def _compute_output(self, reference_value:float, output:float)-> float:
@@ -279,7 +277,6 @@ class TornadoChartAnalysis(SoSWrapp):
                             }
 
         return output_variations
->>>>>>> 0ada9f45fdeddb11637216508b07d26544579d94
 
     def get_chart_filter_list(self):
         """ 
