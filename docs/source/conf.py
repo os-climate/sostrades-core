@@ -51,13 +51,17 @@ html_theme = 'sphinx_rtd_theme'
 epub_show_urls = 'footnote'
 
 def strip_signatures(app, what, name, obj, options, signature, return_annotation):
+    """
+    Replaces path to a class in annotation and return type
+    """
+    REGEX_MATCH_CORE_MODULE = 'sostrades_core\.([^.]|\.)*\.'
     sig = None                                                                  
     if signature is not None:                                                   
-        sig = re.sub('sostrades_core\.[^.]*\.', '', signature)                           
+        sig = re.sub(REGEX_MATCH_CORE_MODULE, '', signature)                           
                                                                                 
     ret = None                                                                  
     if return_annotation is not None:                                           
-        ret = re.sub('sostrades_core\.[^.]*\.', '', return_annotation)                           
+        ret = re.sub(REGEX_MATCH_CORE_MODULE, '', return_annotation)                           
                                                                                 
     return sig, ret                                                             
                                                                                 
