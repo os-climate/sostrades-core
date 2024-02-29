@@ -14,5 +14,5 @@ Refer to [Sphinx Autodoc extension](https://www.sphinx-doc.org/en/master/usage/e
 
 ## Document an exception
 ```{eval-rst}
-.. autoexception:: sostrades_core.tools.post_processing.two_axes_instanciated_chart::InstanciatedSeriesException
+.. autoexception:: sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart::InstanciatedSeriesException
 ```
