@@ -39,11 +39,11 @@ class Study(StudyManager):
                        }
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_a = {'selected_input': [False, True, True],
+        input_selection_a = {'selected_input': [False, True, False],
                              'full_name': ['x', 'Disc1.a', 'Disc1.b']}
         input_selection_a = pd.DataFrame(input_selection_a)
 
-        output_selection_ind = {'selected_output': [True, False],
+        output_selection_ind = {'selected_output': [False, True],
                                 'full_name': ['y', 'Disc1.indicator']}
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
@@ -52,16 +52,18 @@ class Study(StudyManager):
         n_samples = 10
         levels = [0.25, 0.5, 0.75]
         centers = [5]
-        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "tornado_chart_analysis"
-        disc_dict[f'{ns}.SampleGenerator.variation_list'] = [-10.0,10.0]
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "doe_algo"
+        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = 'OT_FACTORIAL'
+        disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
+        disc_dict[f'{ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples, 'levels': levels, 'centers': centers}
         disc_dict[f'{ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a
         disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_ind
 
         # Disc1 inputs
         disc_dict[f'{ns}.Eval.x'] = 10.
-        disc_dict[f'{ns}.Eval.Disc1.a'] = 1.0
-        disc_dict[f'{ns}.Eval.Disc1.b'] = 100.0
+        disc_dict[f'{ns}.Eval.Disc1.a'] = 0.5
+        disc_dict[f'{ns}.Eval.Disc1.b'] = 25.
         disc_dict[f'{ns}.y'] = 4.
         disc_dict[f'{ns}.Eval.Disc1.indicator'] = 53.
 
@@ -69,18 +71,6 @@ class Study(StudyManager):
 
 
 if '__main__' == __name__:
-    ns = 'usecase_doe'
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
-    #uc_cls.run()
-    dm = uc_cls.execution_engine.dm
-    scenario_namespace = dm.get_value(f'{ns}.tornado_chart_analysis.scenario_variations')
-    print(scenario_namespace)
-    samples_df = dm.get_value(f'{ns}.Eval.samples_df')
-    values_dict = {}
-    values_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
-    values_dict[f'{ns}.SampleGenerator.overwrite_samples_df'] = True
-    uc_cls.ee.load_study_from_input_dict(values_dict)
-    uc_cls.ee.display_treeview_nodes()
-
-    print('ns_analysis' in uc_cls.ee.ns_manager.all_ns_dict.keys())
+    uc_cls.run()
