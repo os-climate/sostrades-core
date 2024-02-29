@@ -19,8 +19,6 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
     SampleTypeError
 
-import itertools
-
 import logging
 LOGGER = logging.getLogger(__name__)
 

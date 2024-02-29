@@ -194,11 +194,11 @@ class TornadoChartAnalysis(SoSWrapp):
         outputs_with_valid_types = []
         for output_name in outputs_list:
             output_df = self.get_sosdisc_outputs(f'{output_name}{self.OUTPUT_VARIATIONS_SUFFIX}')
-            values = output_df[TornadoChartAnalysis.VARIATION_OUTPUT_COL].values()
+            values = output_df[TornadoChartAnalysis.VARIATION_OUTPUT_COL].values
             if len(values) > 0:
                 if isinstance(values[0], TornadoChartAnalysis.ACCEPTED_OUTPUT_TYPES):
                     outputs_with_valid_types.append(output_name)
-              
+        return outputs_with_valid_types
     
     def _compute_output(self, reference_value:float, output:float)-> float:
         result = 0.0
@@ -346,7 +346,7 @@ class TornadoChartAnalysis(SoSWrapp):
             chart_name = f'{output_variable_name} sensitivity to input variations of {abs(variation_value_neg)}%'
         else:
             chart_name = f'{output_variable_name} sensitivity to input variations of [{variation_value_neg}%, {variation_value_pos}%]'
-        new_chart = TwoAxesInstanciatedChart('Sensitivity (%)', '', chart_name=chart_name, stacked_bar=True, bar_orientation='h')
+        new_chart = TwoAxesInstanciatedChart('Sensitivity (%)', '', chart_name=chart_name, stacked_bar=False, bar_orientation='h')
 
         # Compute all bars
         abscissa_list = []
