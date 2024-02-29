@@ -22,6 +22,7 @@ import numpy as np
 
 import pandas as pd
 import numpy as np
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
@@ -71,7 +72,7 @@ class TornadoChartAnalysis(SoSWrapp):
     CHART_FILTER_KEY_SELECTED_OUTPUTS = "outputs"
     CHART_FILTER_KEY_SELECTED_INPUTS = "inputs"
 
-    ACCEPTED_OUTPUT_TYPES = (int, float, np.float32, np.float64)
+    ACCEPTED_OUTPUT_TYPES = ProxyDiscipline.VAR_TYPE_MAP['float']
     
     def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name, logger)
