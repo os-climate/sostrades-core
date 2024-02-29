@@ -42,12 +42,11 @@ class Study(StudyManager):
         output_selection_ind = pd.DataFrame(output_selection_ind)
 
         disc_dict = {}
-        # DoE + Eval inputs
-        disc_dict[f"{ns}.SampleGenerator.sampling_method"] = "tornado_chart_analysis"
-        disc_dict[f"{ns}.SampleGenerator.variation_list"] = [-10.0, 10.0]
-        disc_dict[f"{ns}.Eval.with_sample_generator"] = True
-        disc_dict[f"{ns}.SampleGenerator.eval_inputs"] = input_selection_a
-        disc_dict[f"{ns}.Eval.gather_outputs"] = output_selection_ind
+        disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "tornado_chart_analysis"
+        disc_dict[f'{ns}.SampleGenerator.variation_list'] = [-10.0,10.0]
+        disc_dict[f'{ns}.Eval.with_sample_generator'] = True
+        disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a
+        disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_ind
 
         # Disc1 inputs
         disc_dict[f"{ns}.Eval.x"] = 10.0
