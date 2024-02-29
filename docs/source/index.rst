@@ -17,8 +17,8 @@ Contents
 .. toctree::
    :Caption: Caption
 
-   glossary.md
-   namespace.md
+   caption/glossary.md
+   caption/namespace.md
 
 .. toctree::
    :Caption: How to
