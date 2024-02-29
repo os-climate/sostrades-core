@@ -60,6 +60,7 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
         self.selected_inputs = []
         self.selected_inputs_types = {}
         self.ns_sampling = None
+        
         super().__init__(self.GENERATOR_NAME, logger=logger)
 
     def _check_samples(self, samples_df):
@@ -209,7 +210,11 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
         if self.selected_inputs is not None:
             samples_df = {}
             for selected_input in self.selected_inputs:
-                samples_df[selected_input] = wrapper.dm.get_value(f'{self.ns_sampling}.{selected_input}')
+                # check that the value is defined
+                if f'{self.ns_sampling}.{selected_input}' in wrapper.dm.data_id_map.keys():
+                    samples_df[selected_input] = wrapper.dm.get_value(f'{self.ns_sampling}.{selected_input}')
+                else:
+                    self.logger.info(f'the variable {selected_input} is not found in data manager')
             arguments[self.DICT_OF_VALUE] = samples_df
 
         # set the proxy to set the scenario_variations into dm values

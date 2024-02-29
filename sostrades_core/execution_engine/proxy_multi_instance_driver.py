@@ -90,7 +90,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             process_display_options  [dict] still keep the possibility to modify display options through the process for archibuilder
         """
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces, map_name)
-
+        self.driver_eval_mode = self.DRIVER_EVAL_MODE_MULTI
         self.display_options = None
         if process_display_options is not None:
             self.display_options = process_display_options
