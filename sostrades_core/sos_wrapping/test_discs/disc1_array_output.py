@@ -15,43 +15,45 @@ limitations under the License.
 '''
 import numpy as np
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
-    TwoAxesInstanciatedChart
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+    InstanciatedSeries,
+    TwoAxesInstanciatedChart,
+)
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
 
 class Disc1(SoSWrapp):
     # ontology information
     _ontology_data = {
-        'label': 'Disc1',
-        'type': 'Research',
-        'source': 'SoSTrades Project',
-        'validated': '',
-        'validated_by': 'SoSTrades Project',
-        'last_modification_date': '',
-        'category': '',
-        'definition': '',
-        'icon': 'fas fa-plane fa-fw',
-        'version': '',
+        "label": "Disc1",
+        "type": "Research",
+        "source": "SoSTrades Project",
+        "validated": "",
+        "validated_by": "SoSTrades Project",
+        "last_modification_date": "",
+        "category": "",
+        "definition": "",
+        "icon": "fas fa-plane fa-fw",
+        "version": "",
     }
-    _maturity = 'Fake'
+    _maturity = "Fake"
     DESC_IN = {
-        'x': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
-        'a': {'type': 'float', 'unit': '-'},
-        'b': {'type': 'float', 'unit': '-'}
+        "x": {"type": "float", "unit": "-", "visibility": SoSWrapp.SHARED_VISIBILITY, "namespace": "ns_ac"},
+        "a": {"type": "float", "unit": "-"},
+        "b": {"type": "float", "unit": "-"},
     }
     DESC_OUT = {
-        'indicator': {'type': 'float', 'unit': '-'},
-        'y': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
-        'y_array': {'type': 'array', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        "indicator": {"type": "float", "unit": "-"},
+        "y": {"type": "float", "unit": "-", "visibility": SoSWrapp.SHARED_VISIBILITY, "namespace": "ns_ac"},
+        "y_array": {"type": "array", "unit": "-", "visibility": SoSWrapp.SHARED_VISIBILITY, "namespace": "ns_ac"},
     }
 
     def run(self):
-        x = self.get_sosdisc_inputs('x')
-        a = self.get_sosdisc_inputs('a')
-        b = self.get_sosdisc_inputs('b')
-        y_array = np.array([a*i + (5-i)*b for i in range(0,10)])
-        dict_values = {'indicator': a * b, 'y': a * x + b, 'y_array':y_array}
+        x = self.get_sosdisc_inputs("x")
+        a = self.get_sosdisc_inputs("a")
+        b = self.get_sosdisc_inputs("b")
+        y_array = np.array([a * i + (5 - i) * b for i in range(0, 10)])
+        dict_values = {"indicator": a * b, "y": a * x + b, "y_array": y_array}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 
@@ -59,10 +61,9 @@ class Disc1(SoSWrapp):
 
         chart_filters = []
 
-        chart_list = ['y vs x']
+        chart_list = ["y vs x"]
 
-        chart_filters.append(ChartFilter(
-            'Charts', chart_list, chart_list, 'graphs'))
+        chart_filters.append(ChartFilter("Charts", chart_list, chart_list, "graphs"))
 
         return chart_filters
 
@@ -73,19 +74,17 @@ class Disc1(SoSWrapp):
         # Overload default value with chart filter
         if filters is not None:
             for chart_filter in filters:
-                if chart_filter.filter_key == 'graphs':
+                if chart_filter.filter_key == "graphs":
                     charts_list = chart_filter.selected_values
 
-        if 'y vs x' in charts_list:
-            chart_name = 'y vs x'
+        if "y vs x" in charts_list:
+            chart_name = "y vs x"
 
-            y = self.get_sosdisc_outputs('y')
-            x = self.get_sosdisc_inputs('x')
+            y = self.get_sosdisc_outputs("y")
+            x = self.get_sosdisc_inputs("x")
             print(y, x)
-            new_chart = TwoAxesInstanciatedChart('x (-)', 'y (-)',
-                                                 chart_name=chart_name)
-            serie = InstanciatedSeries(
-                [x], [y], '', 'scatter')
+            new_chart = TwoAxesInstanciatedChart("x (-)", "y (-)", chart_name=chart_name)
+            serie = InstanciatedSeries([x], [y], "", "scatter")
 
             new_chart.series.append(serie)
 
