@@ -33,6 +33,13 @@ The wrap should inherit from
 
 ## DESC_IN
 Description of inputs
+```python
+DESC_IN = {
+    'x': {'type': 'float', 'default': 10, 'unit': 'year', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_one'},
+    'a': {'type': 'float', 'unit': '-', 'namespace': 'ns_one'},
+    'b': {'type': 'float', 'unit': '-',},
+}
+```
 
 * `type` : mandatory could be : `'float'`, `'int'`, `'dict'`, `'dataframe'`, `'bool'`
 * `subtype_descriptor` (or `dataframe_descriptor`) : if the variable is a dict/list (or dataframe), gives the types (or descriptor) of the sub-elements (or columns).
@@ -40,6 +47,16 @@ Description of inputs
 * `unit` : (string) unity of the variable used for the ontology
 * `user_level` : (optional) to filter the display in the GUI  (1=Standard by default, 2=Advanced, 3=Expert)
 * Other options are available …
+
+## DESC_OUT
+Description of outputs
+```python
+DESC_OUT = {
+    'y': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_one'}
+}
+```
+
+cf DESC_IN
 
 ## Dataframe Descriptors
 Here is an example dataframe descriptor.
