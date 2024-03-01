@@ -260,6 +260,8 @@ class CheckDataIntegrity():
                         check_integrity_msg_df_descriptor = f'Dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
                         self.__add_msg_to_check_integrity_msg_list(
                             check_integrity_msg_df_descriptor)
+                    elif key == "Unnamed: 0":
+                        pass
                     else:
                         self.__check_dataframe_column_with_df_descriptor(
                             self.variable_value[key], dataframe_descriptor[key], key)
