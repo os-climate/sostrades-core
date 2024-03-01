@@ -30,6 +30,7 @@ The wrap should inherit from
 * `version` : 
 
 ## Maturity
+Defines the maturity of discipline. Can be `Fake`, `Research`, `Official`.
 
 ## DESC_IN
 Description of inputs
