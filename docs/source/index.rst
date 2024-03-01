@@ -24,8 +24,8 @@ Contents
    :Caption: How to
 
    how-to/use-sphinx-rtd.md
+   how-to/wrap-model.md
    how-to/create-postprocessing.md
-   how-to/create-process-disc.md
+   how-to/test-wrap.md
    how-to/create-process.md
    how-to/create-usecase.md
-   how-to/wrap-model.md
