@@ -1,10 +1,7 @@
 # Create a postprocessing in a wrapper discipline
-
-
-## Document a function
 Two methods need to be implemented for post-processings.
 
-### get_chart_filter_list
+## get_chart_filter_list
 This method is used to make the list of available filters.
 ```{eval-rst}
 .. automethod:: sostrades_core.execution_engine.sos_wrapp.SoSWrapp.get_chart_filter_list
@@ -21,7 +18,7 @@ Here is how ChartFilter is defined :
 * selected_values : list of filter items currently selected for the given filter
 * filter_key : unique key used to identify the current filter
 
-### get_post_processing_list
+## get_post_processing_list
 ```{eval-rst}
 .. automethod:: sostrades_core.execution_engine.sos_wrapp.SoSWrapp.get_post_processing_list
 ```
@@ -33,7 +30,7 @@ Remember that this method should not make any heavy computation so graph data sh
 We can create a plotly figure (in the example a table). We then call the method InstantiatedPlotlyChart(plotly_figure). This returned chart is then used as in the previous example
 
 
-#### TwoAxesInstanciatedChart
+### TwoAxesInstanciatedChart
 Here is an example to make a simple chart
 ```python
 def get_post_processing_list(self, chart_filters=None):
@@ -67,5 +64,5 @@ def get_post_processing_list(self, chart_filters=None):
     return instanciated_charts
 ```
 
-#### InstantiatedPlotlyChart
+### InstantiatedPlotlyChart
 To use a plotly figure already created
