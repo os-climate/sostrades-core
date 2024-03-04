@@ -27,7 +27,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
         disc_dir = "sostrades_core.sos_wrapping.test_discs."
-        mods_dict = {"Disc1": disc_dir + "disc1_array_output.Disc1"}
+        mods_dict = {"Disc1": disc_dir + "disc1_array_output.Disc1ArrayOutput"}
         builder_list = self.create_builder_list(
             mods_dict,
             ns_dict={"ns_ac": self.ee.study_name},
