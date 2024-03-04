@@ -105,6 +105,7 @@ def check_design_space_data_integrity(design_space, possible_variables_types):
                 design_space_integrity_msg.append(
                     f'Variable {var_not_possible} is not among the possible input values.'
                 )
+
         # check of dimensions coherences
         wrong_dim_vars = design_space[VARIABLES][
             ~design_space.apply(_check_design_space_dimensions_for_one_variable, axis=1)].to_list()
@@ -119,6 +120,14 @@ def check_design_space_data_integrity(design_space, possible_variables_types):
                     f'Columns {LOWER_BOUND}, {UPPER_BOUND}, {LIST_ACTIVATED_ELEM} and {VALUES} '
                     f'should have coherent shapes for variable {wrong_dim_var}.')
 
+        # check vars that need to be deactivated (the var is active but all activated_elem are False)
+        vars_to_deactivate = design_space[VARIABLES][
+            design_space.apply(_check_deactivation_for_one_variable, axis=1)].to_list()
+        for var_to_deactivate in vars_to_deactivate:
+            design_space_integrity_msg.append(
+                f'Please deactivate variable {var_to_deactivate} using {ENABLE_VARIABLE_BOOL} rather than '
+                f'deactivating all its elements using {LIST_ACTIVATED_ELEM}.')
+
     return design_space_integrity_msg
 
 def _check_design_space_dimensions_for_one_variable(design_space_row):
@@ -127,7 +136,7 @@ def _check_design_space_dimensions_for_one_variable(design_space_row):
     design space do have the same shape for a same variable, the check is ignored if the entry is None.
 
     Arguments:
-        eval_inputs_row (pd.Series): row of the design space dataframe to check
+        design_space_row (pd.Series): row of the design space dataframe to check
     """
     lb = design_space_row[LOWER_BOUND] if LOWER_BOUND in design_space_row.index else None
     ub = design_space_row[UPPER_BOUND] if UPPER_BOUND in design_space_row.index else None
@@ -149,3 +158,18 @@ def _check_design_space_dimensions_for_one_variable(design_space_row):
 
     mismatch = map(check_mismatch, *zip(*combinations(to_check_mismatch, 2)))
     return not any(mismatch)
+
+def _check_deactivation_for_one_variable(design_space_row):
+    """
+    Utility method that checks whether a variable needs to be deactivated i.e. the variable is activated but all its
+    elements are deactivated (provoking GEMSEO crash). Returns True for a deactivation suggestion error.
+
+    Arguments:
+        design_space_row (pd.Series): row of the design space dataframe to check
+    """
+    act = design_space_row[LIST_ACTIVATED_ELEM] if LIST_ACTIVATED_ELEM in design_space_row.index else None
+    enabled = design_space_row[ENABLE_VARIABLE_BOOL]  # if ENABLE_VARIABLE_BOOL in design_space_row.index else True
+    if act:  # LIST_ACTIVATED_ELEM entry is neither None (not given) nor an empty list (all activated)
+        if enabled and not any(act):
+            return True
+    return False

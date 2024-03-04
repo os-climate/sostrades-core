@@ -16,18 +16,16 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from copy import copy, deepcopy
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+from sostrades_core.execution_engine.sample_generators.tornado_chart_analysis_sample_generator import TornadoChartAnalysisSampleGenerator
 from sostrades_core.execution_engine.sample_generators.simple_sample_generator import SimpleSampleGenerator
 from sostrades_core.execution_engine.sample_generators.grid_search_sample_generator import GridSearchSampleGenerator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
     CartesianProductSampleGenerator
 from sostrades_core.tools.design_space import design_space as dspace_tool
-from sostrades_core.tools.gather.gather_tool import check_eval_io
 import pandas as pd
-from numpy import array
 
 
 class ProxySampleGeneratorException(Exception):
@@ -116,13 +114,15 @@ class ProxySampleGenerator(ProxyDiscipline):
     DOE_ALGO = 'doe_algo'
     CARTESIAN_PRODUCT = 'cartesian_product'
     GRID_SEARCH = 'grid_search'
-    AVAILABLE_SAMPLING_METHODS = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
+    SENSITIVITY_ANALYSIS = 'tornado_chart_analysis'
+    AVAILABLE_SAMPLING_METHODS = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH, SENSITIVITY_ANALYSIS]
     # classes of the sample generator tools associated to each method in AVAILABLE_SAMPLING_METHODS
     SAMPLE_GENERATOR_CLS = {
         SIMPLE_SAMPLING_METHOD: SimpleSampleGenerator,
         DOE_ALGO: DoeSampleGenerator,
         CARTESIAN_PRODUCT: CartesianProductSampleGenerator,
-        GRID_SEARCH: GridSearchSampleGenerator
+        GRID_SEARCH: GridSearchSampleGenerator,
+        SENSITIVITY_ANALYSIS: TornadoChartAnalysisSampleGenerator
     }
 
     SAMPLING_GENERATION_MODE = 'sampling_generation_mode'
@@ -159,6 +159,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.check_integrity_msg_list = []
         self.sg_data_integrity = True
 
+        self.driver_is_multi_eval = None 
         self.sampling_method = None
         self.sampling_generation_mode = None
 
@@ -170,6 +171,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.eval_in_possible_values = []
         self.eval_in_possible_types = {}
         self.samples_df_f_name = None
+        self.analysis_disc = None
         # FIXME: using samples_df_f_name to sample means configuration-time sampling needs to be banned on standalone sample gen.
 
     def set_eval_in_possible_values(self,
@@ -245,6 +247,16 @@ class ProxySampleGenerator(ProxyDiscipline):
                     self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_GENERATION_MODE, disc_in),
                                         self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
 
+        if self.SAMPLING_METHOD in disc_in and \
+                self.get_sosdisc_inputs(self.SAMPLING_METHOD) == self.SENSITIVITY_ANALYSIS and \
+                self.driver_is_multi_eval:
+            method_mode_integrity_msg.append(
+                f"Input {self.SAMPLING_METHOD} cannot be {self.SENSITIVITY_ANALYSIS} "
+                f"with a driver multi-scenario."
+            )
+            self.sg_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_METHOD, disc_in),
+                                    self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
         # check integrity for eval_inputs # TODO: move to cartesian product sample generator ?
         eval_inputs_integrity_msg = []
         if self.configurator and self.EVAL_INPUTS in disc_in:
@@ -337,8 +349,42 @@ class ProxySampleGenerator(ProxyDiscipline):
             if self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
                 sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
                 if self.mdo_discipline_wrapp.wrapper.sample_generator.__class__ != sample_generator_cls:
-                    self.mdo_discipline_wrapp.wrapper.sample_generator = sample_generator_cls(
-                        logger=self.logger.getChild(sample_generator_cls.__name__))
+                    self.mdo_discipline_wrapp.wrapper.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
+                    self.configure_analysis_tool()
+    
+    def configure_analysis_tool(self):
+        if self.sampling_method == self.SENSITIVITY_ANALYSIS:
+            # add the tornado chart analysis discipline and namespace
+                # create the builder of an analysis disc
+            analysis_builder = self.ee.factory.add_tornado_chart_analysis_builder(self.SENSITIVITY_ANALYSIS)
+            # create discipline in factory as sister not daughter
+            self.ee.factory.current_discipline = self.father_executor
+            analysis_disc = analysis_builder.build()
+            self.ee.factory.add_discipline(analysis_disc)
+            # associate ns_analysis for analysis output
+            ns_analysis_id = self.ee.ns_manager.add_ns(TornadoChartAnalysisSampleGenerator.NS_ANALYSIS,
+                                                self.ee.ns_manager.get_local_namespace_value(analysis_disc))
+            # add dependency of the namespace for the discipline
+            self.ee.ns_manager.add_disc_in_dependency_list_of_namespace(ns_analysis_id, analysis_disc.disc_id)
+            ns_analysis = self.ee.ns_manager.get_ns_from_id(ns_analysis_id)
+            self.add_new_shared_ns(ns_analysis)
+            self.analysis_disc = analysis_disc
+            
+        else:
+            # remove the tornado chart analysis discipline
+            if self.analysis_disc is not None:
+
+                
+                self.father_executor.remove_discipline(self.analysis_disc)
+                self.ee.factory.remove_sos_discipline(self.analysis_disc)
+                
+                
+                ns = self.ee.ns_manager.shared_ns_dict[TornadoChartAnalysisSampleGenerator.NS_ANALYSIS]
+                self.ee.ns_manager.clean_namespace_from_discipline(ns, self.analysis_disc)
+                self.ee.ns_manager.clean_namespace_from_discipline(ns, self)
+                
+                
+                self.analysis_disc = None
 
     def configure_generation_mode(self, disc_in):
         """
@@ -411,6 +457,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if eval_inputs is not None:
                 eval_inputs = eval_inputs.reindex(columns=eval_inputs_df_desc.keys(),
                                                   fill_value=[])  # hardcoded compliance with 'list_of_values' column default
+                
                 self.dm.set_data(eval_inputs_f_name,
                                  self.VALUE,
                                  eval_inputs,

@@ -723,10 +723,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         if self.DESIGN_SPACE in disc_in:
             design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
             if design_space is not None:
-                # TODO: no check of possible values because of the short name, specific check below that needs to be
-                #  changed if changing name rule
-                design_space_integrity_msg = dspace_tool.check_design_space_data_integrity(design_space,
-                                                                                           possible_variables_types=None)
                 # specific check for the short names
                 var_names = design_space[self.VARIABLES].tolist()
                 _, out_errors = self._get_subprocess_var_names(var_names,
@@ -734,11 +730,35 @@ class ProxyOptim(ProxyDriverEvaluator):
                 design_space_integrity_msg.extend(out_errors)
 
                 # type checks based on design space value  # TODO: type checks based on DM
-                for var_name, var_value in zip(var_names, design_space[self.VALUE].tolist()):
-                    var_type = type(var_value).__name__
-                    if var_type not in ['array', 'list', 'ndarray']:
+                for var_name, var_value, var_lb, var_ub in zip(var_names,
+                                                               design_space[self.VALUE].tolist(),
+                                                               design_space[self.LOWER_BOUND].tolist(),
+                                                               design_space[self.UPPER_BOUND].tolist()):
+
+                    if var_value is None or '' == var_value or \
+                            var_lb is None or '' == var_lb or \
+                            var_ub is None or '' == var_ub:
                         design_space_integrity_msg.append(
-                            f"A design variable must obligatory be an array, {var_name} is of type {var_type}.")
+                            f"Please fill columns {self.VALUE}, {self.LOWER_BOUND} and {self.UPPER_BOUND} "
+                            f"for variable {var_name}.")
+                    else:
+                        var_type = type(var_value).__name__
+                        var_lb_type = type(var_lb).__name__
+                        var_ub_type = type(var_ub).__name__
+                        ok_types = {'array', 'list', 'ndarray'}
+                        if var_type not in ok_types or var_lb_type not in ok_types or var_ub_type not in ok_types:
+                            design_space_integrity_msg.append(
+                                f"Columns {self.VALUE}, {self.LOWER_BOUND} and {self.UPPER_BOUND} must "
+                                f"be arrays or lists for variable {var_name}.")
+                        elif len(var_value) == 0 or len(var_lb) == 0 or len(var_ub) == 0:
+                            design_space_integrity_msg.append(
+                                f"Please fill columns {self.VALUE}, {self.LOWER_BOUND} and {self.UPPER_BOUND} "
+                                f"for variable {var_name}.")
+
+                # TODO: no check of possible values because of the short name, specific check below that needs to be
+                #  changed if changing name rule
+                design_space_integrity_msg.extend(
+                    dspace_tool.check_design_space_data_integrity(design_space, possible_variables_types=None))
 
         if design_space_integrity_msg:
             self.opt_data_integrity = False
