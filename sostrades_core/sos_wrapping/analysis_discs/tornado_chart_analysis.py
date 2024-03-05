@@ -58,8 +58,8 @@ class TornadoChartAnalysis(SoSWrapp):
 
     OUTPUT_VARIATIONS_SUFFIX = "_variations"
     INPUT_COL = "input"
-    VARIATION_INPUT_COL = "input_variation"
-    VARIATION_OUTPUT_COL = "output_variation"
+    VARIATION_INPUT_COL = "input_variation [%]"
+    VARIATION_OUTPUT_COL = "output_variation [%]"
 
     REFERENCE_SCENARIO_NAME = TornadoChartAnalysisSampleGenerator.REFERENCE_SCENARIO_NAME
     SCENARIO_NAME_COL = TornadoChartAnalysisSampleGenerator.SCENARIO_NAMES
@@ -171,7 +171,7 @@ class TornadoChartAnalysis(SoSWrapp):
                                         for output_dict_df in input_variations_df[output_name].values
                                     ]
                                 elif isinstance(reference_value.values().first(), float) or isinstance(
-                                    reference_value.values().first(), int
+                                        reference_value.values().first(), int
                                 ):
                                     # case dict
                                     computed_variations = [
@@ -210,7 +210,9 @@ class TornadoChartAnalysis(SoSWrapp):
             output_df = self.get_sosdisc_outputs(f"{output_name}{self.OUTPUT_VARIATIONS_SUFFIX}")
             values = output_df[TornadoChartAnalysis.VARIATION_OUTPUT_COL].values
             if len(values) > 0:
-                if isinstance(values[0], TornadoChartAnalysis.ACCEPTED_OUTPUT_TYPES):
+                # String are not possible in tornado chart analysis
+                # but that means that there are not applicable % computation in the output variation dict
+                if isinstance(values[0], (TornadoChartAnalysis.ACCEPTED_OUTPUT_TYPES, str)):
                     outputs_with_valid_types.append(output_name)
         return outputs_with_valid_types
 
@@ -218,7 +220,9 @@ class TornadoChartAnalysis(SoSWrapp):
         result = 0.0
         if reference_value != 0.0 and reference_value is not None:
             result = 100.0 * (output - reference_value) / reference_value
-
+        if reference_value == 0.0:
+            # Not applicable output because division by zero
+            result = 'N/A'
         return result
 
     def _compute_array_output(self, reference_value, output):
@@ -273,7 +277,7 @@ class TornadoChartAnalysis(SoSWrapp):
         # check sub type:
         reference_value_dict = reference_value_dict_dict.values().first()
         if isinstance(reference_value_dict.values().first(), float) or isinstance(
-            reference_value_dict.values().first(), int
+                reference_value_dict.values().first(), int
         ):
             output_variations = {
                 key: self._compute_dict_of_outputs(reference_value_dict_dict[key], output_dict_dict[key])
@@ -348,11 +352,18 @@ class TornadoChartAnalysis(SoSWrapp):
                         output_variable_name=selected_output,
                     )
                 )
+            # Not applicable case
+            elif isinstance(selected_output_df[self.VARIATION_OUTPUT_COL].iloc[0], str):
+                chart_name = f"{selected_output} sensitivity not applicable because reference value is equal to zero (division by zero for % computation)"
+                empty_chart = TwoAxesInstanciatedChart(
+                    "Sensitivity (%)", "", chart_name=chart_name, stacked_bar=False, bar_orientation="h"
+                )
+                instanciated_charts.append(empty_chart)
         return instanciated_charts
 
     @staticmethod
     def __make_tornado_chart(
-        variation_df: pd.DataFrame, selected_inputs: list[str], output_variable_name: str
+            variation_df: pd.DataFrame, selected_inputs: list[str], output_variable_name: str
     ) -> TwoAxesInstanciatedChart:
         """
         Make a tornado chart
@@ -378,7 +389,7 @@ class TornadoChartAnalysis(SoSWrapp):
             result = variation_df[
                 (variation_df[TornadoChartAnalysis.INPUT_COL] == input_name)
                 & (variation_df[TornadoChartAnalysis.VARIATION_INPUT_COL] == variation_value)
-            ][TornadoChartAnalysis.VARIATION_OUTPUT_COL]
+                ][TornadoChartAnalysis.VARIATION_OUTPUT_COL]
 
             # We should have 1 result, otherwise there is an internal error
             # Because we have multiple results for the same variation
