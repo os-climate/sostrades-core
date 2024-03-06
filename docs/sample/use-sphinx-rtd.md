@@ -2,6 +2,13 @@
 
 Refer to [Sphinx Autodoc extension](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html)
 
+
+## Document a module
+### sostrades_core
+```{eval-rst}
+.. automodule:: sostrades_core
+```
+
 ## Document a class
 ### TornadoChartAnalysis
 ```{eval-rst}

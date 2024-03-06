@@ -15,17 +15,22 @@ Contents
    HOME <self>
 
 .. toctree::
-   :Caption: Caption
+   :Caption: General
 
-   caption/glossary.md
+   caption/overview.md
    caption/namespace.md
 
 .. toctree::
-   :Caption: How to
+   :Caption: How to?
 
-   how-to/use-sphinx-rtd.md
+   how-to/plan.md
    how-to/wrap-model.md
    how-to/create-postprocessing.md
    how-to/test-wrap.md
    how-to/create-process.md
    how-to/create-usecase.md
+
+.. toctree::
+   :Caption: Other
+
+   caption/glossary.md
