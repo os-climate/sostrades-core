@@ -1,7 +1,9 @@
 # SoSTrades platform overview
 
-The SoSTrades platform is a cloud based scalable cooperative simulation​.\
-You can access it by follwoing this [link](https://validation.osc-tsa.com/).
+The SoSTrades platform is a cloud based collaborative generic simulation platform​.\
+You can access it by following this [link](https://validation.osc-tsa.com/) :
+
+[![homepage](../images/platform_logo.png)](https://validation.osc-tsa.com/ "Access open SoSTrades simulation platform")
 
 > *Note: The connection to the platform is free but you will be asked to use a GitHub account.*
 
