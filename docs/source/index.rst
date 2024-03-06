@@ -22,8 +22,6 @@ Contents
 
 .. toctree::
    :Caption: How to?
-   
-   .. how-to/use-sphinx-rtd.md
 
    how-to/plan.md
    how-to/wrap-model.md
