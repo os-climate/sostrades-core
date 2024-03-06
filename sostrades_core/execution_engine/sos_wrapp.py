@@ -469,8 +469,8 @@ class SoSWrapp(object):
         """ Return a list of post processing instance using the ChartFilter list given
         as parameter, to be overload in subclasses
 
-        :params: chart_fiters : filter to apply during post processing making
-        :type: ChartFilter[]
+        :param filters: filter to apply during post processing making
+        :type filters: ChartFilter[]
 
         :return post processing instance list
         """

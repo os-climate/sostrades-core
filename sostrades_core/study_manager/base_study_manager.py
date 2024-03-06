@@ -78,6 +78,7 @@ class BaseStudyManager():
         self.loaded_cache = None
         self.dumped_cache = False
         self.dump_cache_map = None
+        self.check_outputs = False
 
     @property
     def run_usecase(self):
@@ -218,7 +219,7 @@ class BaseStudyManager():
         self.execution_engine.load_study_from_input_dict(input_dict_to_load)
         self.load_connectors(
             from_dict=from_connectors_dict, from_path=from_path)
-        self.specific_check()
+        self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
             self.execution_engine.display_treeview_nodes()
@@ -227,8 +228,14 @@ class BaseStudyManager():
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
 
-    def specific_check(self):
+    def specific_check_inputs(self):
         """ Method to overload to have a specific check on input datas
+
+        """
+        pass
+
+    def specific_check_outputs(self):
+        """ Method to overload to have a specific check on some output datas
 
         """
         pass

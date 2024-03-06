@@ -279,7 +279,7 @@ def multiple_configure(usecase):
 
     delete_keys_from_dict(dm_dict_1), delete_keys_from_dict(dm_dict_2)
 
-    return study_1, study_2, dm_dict_1, dm_dict_2,
+    return study_1, study_2, dm_dict_1, dm_dict_2
 
 
 def test_compare_dm(dm_1: dict, dm_2: dict, usecase: str, msg: str) -> tuple[bool, str]:
@@ -523,6 +523,19 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
             else:
                 info_msg += f"\nINFO: {usecase}, post processing and double run not tested because usecase is MDO"
 
+            run_test_check_outputs(usecase)
+
     if message_queue is not None:
         message_queue.put([test_passed, info_msg])
     return test_passed, info_msg
+
+def run_test_check_outputs(usecase):
+    """ Runs the outputs check for the test """
+    imported_module = import_module(usecase)
+    uc = getattr(imported_module, 'Study')()
+    if uc.check_outputs:
+        # put flag run_usecase to True
+        uc.run_usecase = True
+        uc.load_data()
+        uc.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
+        uc.specific_check_outputs()
