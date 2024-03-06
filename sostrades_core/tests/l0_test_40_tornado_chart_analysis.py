@@ -15,7 +15,7 @@ limitations under the License.
 '''
 import unittest
 import pandas as pd
-
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 from sostrades_core.sos_processes.test.tests_driver_eval.mono.test_mono_driver_sample_generator_tornado_analysis.usecase_tornado_analysis import (
     Study,
 )
@@ -27,7 +27,6 @@ class TestTornadoChartAnalysis(unittest.TestCase):
     """
 
     def test_01_tornado_chart_analysis(self):
-
         ns = "usecase_tornado_analysis"
 
         input_selection_a = {
@@ -83,8 +82,6 @@ class TestTornadoChartAnalysis(unittest.TestCase):
         variations_output_df_computed = dm.get_value(f"{ns}.tornado_chart_analysis.y_dict_variations")
         self.assertIsNotNone(variations_output_df_computed)
 
-        from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-
         post_processing_factory = PostProcessingFactory()
         charts = post_processing_factory.get_post_processing_by_namespace(
             uc_cls.execution_engine, f"{uc_cls.study_name}.tornado_chart_analysis", None, as_json=False
@@ -92,3 +89,51 @@ class TestTornadoChartAnalysis(unittest.TestCase):
 
         self.assertIsNotNone(charts)
         self.assertTrue(len(charts) > 0)
+
+    def test_02_tornado_chart_analysis_notapplicable_variations(self):
+        ns = "usecase_tornado_analysis"
+
+        input_selection_a = {
+            "selected_input": [False, True, True],
+            "full_name": ["x", "Coupling.Disc1.a", "Coupling.Disc1.b"],
+        }
+        input_selection_a = pd.DataFrame(input_selection_a)
+
+        output_selection_ind = {
+            "selected_output": [True, True, False],
+            "full_name": ["y", "Coupling.Disc1.indicator", "y_array"],
+        }
+        output_selection_ind = pd.DataFrame(output_selection_ind)
+
+        disc_dict = {}
+        disc_dict[f"{ns}.SampleGenerator.sampling_method"] = "tornado_chart_analysis"
+        disc_dict[f"{ns}.SampleGenerator.variation_list"] = [-10.0, 10.0]
+        disc_dict[f"{ns}.Eval.with_sample_generator"] = True
+        disc_dict[f"{ns}.SampleGenerator.eval_inputs"] = input_selection_a
+        disc_dict[f"{ns}.Eval.gather_outputs"] = output_selection_ind
+
+        # Disc1 inputs
+        disc_dict[f"{ns}.Eval.x"] = 10.0
+        disc_dict[f"{ns}.Eval.Coupling.Disc1.a"] = 0.0
+        disc_dict[f"{ns}.Eval.Coupling.Disc1.b"] = 100.0
+        disc_dict[f"{ns}.y"] = 4.0
+        disc_dict[f"{ns}.Eval.Coupling.Disc1.indicator"] = 53.0
+
+        uc_cls = Study(run_usecase=True)
+        uc_cls.load_data(from_input_dict=disc_dict)
+
+        dm = uc_cls.execution_engine.dm
+
+        uc_cls.run()
+        variations_output_df_computed = dm.get_value(
+            f'{ns}.tornado_chart_analysis.Coupling.Disc1.indicator_dict_variations')
+        self.assertIsNotNone(variations_output_df_computed)
+        self.assertTrue(variations_output_df_computed['output_variation [%]'].values.tolist() == ['N/A'] * 4)
+        post_processing_factory = PostProcessingFactory()
+        charts = post_processing_factory.get_post_processing_by_namespace(
+            uc_cls.execution_engine, f"{uc_cls.study_name}.tornado_chart_analysis", None, as_json=False
+        )
+        # for chart in charts:
+        #     chart.to_plotly().show()
+        self.assertIsNotNone(charts)
+        self.assertTrue(len(charts) == 2)

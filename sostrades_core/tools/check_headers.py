@@ -297,16 +297,14 @@ class HeaderTools:
             file.write(new_content)
         
 
-    def get_first_commit_time(self,repo_path, full_file_path: str) -> datetime:
+    def get_first_commit_time(self, git_git, full_file_path: str) -> datetime:
         """
         Check if the header inside the file is matching the added file header requirement if not return an HeaderError
 
         :param file_path: path to the file where to check the header status
         :type file_path: str
         """
-        g = git.Git(repo_path)
-    
-        logs = g.log("--follow",os.path.join(os.getcwd(), full_file_path))
+        logs = git_git.log("--follow", os.path.join(os.getcwd(), full_file_path))
 
         # isolate : "Date:   Wed Nov 22 11:08:54 2023" like  note that it is the time string by default easy to convert
         # Parse logs Getting Date keep the last one that is the older
@@ -321,10 +319,10 @@ class HeaderTools:
         return datetime.fromtimestamp(mktime(d), tz=timezone.utc)
 
 
-    def has_been_commited_from_airbus(self,git_repo,full_file_path: str, refcommit: git.Commit) -> bool:
+    def has_been_commited_from_airbus(self, git_git, full_file_path: str, refcommit: git.Commit) -> bool:
         # True if committed from Airbus
 
-        commit_date = self.get_first_commit_time(git_repo, full_file_path)
+        commit_date = self.get_first_commit_time(git_git, full_file_path)
         if (commit_date is not None):
             return refcommit.committed_datetime > commit_date
         else:
@@ -336,10 +334,11 @@ class HeaderTools:
         print("Start to analyse Headers for repository "+ os.path.abspath(os.path.dirname(repo_dir) + "..."))
         
         # Initialize a Git Repo object
-        repo = git.Repo(repo_dir)
+        git_repo = git.Repo(repo_dir)
+        git_git = git.Git(repo_dir)
 
-        commit_dev = repo.commit(BRANCH)
-        commit_origin_dev = repo.commit(sha)
+        commit_dev = git_repo.commit(BRANCH)
+        commit_origin_dev = git_repo.commit(sha)
         diff_index = commit_origin_dev.diff(commit_dev)
 
         for diff_item in diff_index.iter_change_type("A"):
@@ -388,7 +387,7 @@ class HeaderTools:
                 # Get the commit that modified this file
                 modifications_dates = [
                     modification_commit.committed_datetime.date()
-                    for modification_commit in repo.iter_commits(BRANCH, paths=item_path)
+                    for modification_commit in git_repo.iter_commits(BRANCH, paths=item_path)
                     if modification_commit.committed_datetime
                     >= commit_origin_dev.committed_datetime
                 ]
@@ -414,7 +413,7 @@ class HeaderTools:
                             f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT.format(date_str)}\n{LICENCE}"
                         ),
                     )
-                    if not self.has_been_commited_from_airbus(repo_dir, file_path, commit_origin_dev):
+                    if not self.has_been_commited_from_airbus(git_git, file_path, commit_origin_dev):
                             self.parse_and_replace_add_cartouche(file_path, CARTOUCHE_CAP)
                 elif item_path.split(".")[-1].lower() in ignored_exts:
                     # Do nothing for pkl, markdown, csv, ...
@@ -433,7 +432,7 @@ class HeaderTools:
                             f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT.format(date_str)}\n{LICENCE}"
                         ),
                     )
-                    if not self.has_been_commited_from_airbus(repo_dir, file_path, commit_origin_dev):
+                    if not self.has_been_commited_from_airbus(git_git, file_path, commit_origin_dev):
                             self.parse_and_replace_add_cartouche(file_path, CARTOUCHE_CAP)
                     print("UNHANDLED", file_path)
 
@@ -452,6 +451,7 @@ class HeaderTools:
 
         # Initialize a Git Repo object wity current directory
         repo = git.Repo(repo_dir)
+        git_git = git.Git(repo_dir)
 
         # fetch all
         for remote in repo.remotes:
@@ -533,7 +533,7 @@ class HeaderTools:
                 # Need to add Cap Modified Header section for python file
                 if item_path.endswith(".py"):
                     error = self.check_header_for_modified_file(file_path)
-                    if not self.has_been_commited_from_airbus(repo_dir, file_path, commit_airbus):
+                    if not self.has_been_commited_from_airbus(git_git, file_path, commit_airbus):
                         error = self.check_header_for_added_file(
                             file_path
                         )  # if not commited from Airbus then it is an added file detected by error by diff has a modified file
@@ -553,7 +553,7 @@ class HeaderTools:
                 else:
                     # Need to check not handled file too
                     error = self.check_header_for_modified_file(file_path)
-                    if not self.has_been_commited_from_airbus(repo_dir, file_path, commit_airbus):
+                    if not self.has_been_commited_from_airbus(git_git, file_path, commit_airbus):
                         error = self.check_header_for_added_file(
                             file_path
                         )  # if not commited from Airbus then it is an added file detected by error by diff has a modified file
