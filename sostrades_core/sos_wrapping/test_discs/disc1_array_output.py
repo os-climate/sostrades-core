@@ -25,7 +25,7 @@ from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 class Disc1ArrayOutput(SoSWrapp):
     # ontology information
     _ontology_data = {
-        "label": "Disc1",
+        "label": "Disc1 Array Output",
         "type": "Research",
         "source": "SoSTrades Project",
         "validated": "",
