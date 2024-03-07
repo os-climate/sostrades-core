@@ -142,11 +142,6 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
         """
-        # -- need to clear cash to avoir GEMS preventing execution when using disciplinary variables
-        # self.attributes['sub_mdo_discipline'].clear_cache() # TODO: cache
-        # management?
-
-        
         values_dict = x
 
         local_data = self.attributes['sub_mdo_disciplines'][0].execute(

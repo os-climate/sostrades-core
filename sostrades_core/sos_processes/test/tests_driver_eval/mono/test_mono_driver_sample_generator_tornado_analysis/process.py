@@ -19,7 +19,7 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
-        "label": "Core Test Disc1 Mono Instance Eval with Sample Generator",
+        "label": "Core Test Disc1 Tornado Chart",
         "description": "",
         "category": "",
         "version": "",
