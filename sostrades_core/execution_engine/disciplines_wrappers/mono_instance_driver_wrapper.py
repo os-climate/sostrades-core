@@ -143,7 +143,6 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
         """
         values_dict = x
-
         local_data = self.attributes['sub_mdo_disciplines'][0].execute(
             self._get_input_data(values_dict))
         out_local_data = self._select_output_data(
@@ -236,11 +235,15 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         #build samples dict
         self.samples = []
+        scenario_names = set()
         scenario_nb = len(samples_df[SampleGeneratorWrapper.SCENARIO_NAME])
         for i in range(scenario_nb):
-            self.samples.append(samples_df.iloc[i].to_dict())
-        #add reference scenario
-        self.samples.append(reference_scenario)
+            sample = samples_df.iloc[i].to_dict()
+            self.samples.append(sample)
+            scenario_names.add(sample[SampleGeneratorWrapper.SCENARIO_NAME])
+        # add reference_scenario if not added already by a SampleGenerator or user
+        if 'reference_scenario' not in scenario_names:
+            self.samples.append(reference_scenario)
 
         # evaluation of the samples through a call to samples_evaluation
         evaluation_outputs = self.samples_evaluation(
