@@ -5,8 +5,54 @@ A SosWrap is a model wrapper for SoSTrades application
 
 Here is the minimal working example of a SoSWrap :
 ```python
-class MyCustomWrap(SoSWrapp):
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
+    TwoAxesInstanciatedChart
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
+class MyCustomWrap(SoSWrapp):
+    # Ontology information
+    _ontology_data = {
+        'label': 'Label of the discipline',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'version': '',
+    }
+
+    # Maturity of the model
+    _maturity = 'Fake'
+
+    # Description of inputs
+    DESC_IN = {
+        'x': {'type': 'float', 'default': 10, 'unit': 'year', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_one'},
+        'a': {'type': 'float', 'unit': '-', 'namespace': 'ns_one'},
+        'b': {'type': 'float', 'unit': '-',},
+    }
+
+    # Description of outputs
+    DESC_OUT = {
+        'y': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_one'}
+    }
+
+    # Method that runs the model
+    def run(self):
+        """
+        Method that runs the model
+        """
+        # get input of discipline
+        param_in = self.get_sosdisc_inputs()
+
+        # performs the "computation"
+        x = param_in['x']
+        a = param_in['a']
+        b = param_in['b']
+
+        y = a * x + b
+
+        output_values = {'y': y}
+
+        # store data
+        self.store_sos_outputs_values(output_values)
 ```
 
 ## Base class

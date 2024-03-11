@@ -16,13 +16,13 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 '''
-
-
+import pstats
 from sostrades_core.tools.check_headers import HeaderTools
 import unittest
 import pprint
 import os
 import json
+import cProfile
 
 class Testheader(unittest.TestCase):
     """
@@ -45,8 +45,20 @@ class Testheader(unittest.TestCase):
             #commit from where to compare added, modeified deleted ...
             self.airbus_rev_commit = headers_ignore_config["airbus_rev_commit"]
 
-        
-
     def test_Headers(self):
         ht = HeaderTools()
         ht.check_headers(self.extension_to_ignore, self.files_to_ignore, self.airbus_rev_commit)
+
+if __name__ == "__main__":
+    with cProfile.Profile() as pr:
+        # Run your function within the context manager
+        pr.enable()
+
+        test = Testheader()
+        test.setUp()
+        test.test_Headers()
+        pr.disable()
+    # Print the profiling results
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.CUMULATIVE)
+    stats.print_stats()
