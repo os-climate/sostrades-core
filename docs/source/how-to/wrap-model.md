@@ -13,14 +13,12 @@ from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 class MyCustomWrap(SoSWrapp):
     # Ontology information
     _ontology_data = {
-        'label': 'Label of the discipline',
+        'label': 'Label of the wrapp',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'version': '',
     }
 
-    # Maturity of the model
-    _maturity = 'Fake'
 
     # Description of inputs
     DESC_IN = {
@@ -64,50 +62,48 @@ The wrap should inherit from
 
 ## Ontology data
 
-* `label` : 
-* `type` : 
-* `source` : 
-* `validated` : 
-* `validated_by` : 
-* `last_modification_date` : 
-* `category` : 
-* `definition` : 
-* `icon` : 
-* `version` : 
+The ontology data specify all data regarding your SoSWrapp including : 
+* `label` : Name of the wrapp on the ontology panel of the SoSTrades platform 
+* `type` : Type of the model 'Research', 'Industrial' or 'Other'
+* `source` : the person or project that has implemented the wrapp AND the model behind it
+* `version` : A version of the model if necessary
 
-## Maturity
-Defines the maturity of discipline. Can be `Fake`, `Research`, `Official`.
+## DESC_IN & DESC_OUT 
 
-## DESC_IN
-Description of inputs
+The DESC_IN and DESC_OUT dictionaries are the input and output variable descriptors. It gives information on variables in the wrapp used by the model. 
+
 ```python
 DESC_IN = {
     'x': {'type': 'float', 'default': 10, 'unit': 'year', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_one'},
-    'a': {'type': 'float', 'unit': '-', 'namespace': 'ns_one'},
+    'a': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_one'},
     'b': {'type': 'float', 'unit': '-',},
 }
-```
-
-* `type` : mandatory could be : `'float'`, `'int'`, `'dict'`, `'dataframe'`, `'bool'`
-* `subtype_descriptor` (or `dataframe_descriptor`) : if the variable is a dict/list (or dataframe), gives the types (or descriptor) of the sub-elements (or columns).
-* `default` : if the variable has a default value. The default must be the same type as the type!!!
-* `unit` : (string) unity of the variable used for the ontology
-* `user_level` : (optional) to filter the display in the GUI  (1=Standard by default, 2=Advanced, 3=Expert)
-* Other options are available …
-
-## DESC_OUT
-Description of outputs
-```python
 DESC_OUT = {
     'y': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_one'}
 }
 ```
 
-cf DESC_IN
+* `type` : mandatory could be : `'float'`, `'int'`, `'dict'`, `'dataframe'`, `'bool'`
+* `subtype_descriptor` (or `dataframe_descriptor`) : if the variable is a dict/list (or dataframe), gives the types (or descriptor) of the sub-elements (or columns). See next sections
+* `default` : if the variable has a default value. The default must be the same type as the type
+* `unit` : (string) unity of the variable used for the ontology
+* `user_level` : (optional) to filter the display in the GUI  (1=Standard by default, 2=Advanced, 3=Expert)
+* `visibility`  : `'Shared'` if you need to specify a namespace for the variable or `'Local'` if the variable by default needs to be stored in the same namespace as the wrapp. If not specified the visibility is considered as `'Local'`.
+* `namespace`  : must be identified by a string name, and its value must be defined within the process utilizing the wrapp. This feature allows for parameterizing the variable's location based on the specific process.
+* `user_level`  : Specify the display level in the GUI: 1 for Standard view, 2 for Advanced, and 3 for Expert. If a variable is assigned an expert user level, it will only be visible in the expert view. This feature is useful for concealing complex variables that may be challenging to define. By default the display levvel is 1. 
+* `range` : for float or int, range of the variable. the range will be checked by a data integrity method
+* `possible_values` : for string, possible values list of the variable. the possible values will be checked by a data integrity method
+* `optional` : A boolean flag that makes a variable optional to fill in the GUI
+* `editable` : A boolean flag that makes a variable editable or not in the GUI. By default input and coupling variables are editable, outputs are not.
+* `structuring` : A boolean flag that  that defines a structuring variable, indicating its impact on the configuration of the wrapp or other variables within the wrapp. For instance, it may be used for an assumption flag, and when activated, it creates new variables.
+
+
 
 ## Dataframe Descriptors
-Here is an example dataframe descriptor.
-Tuples define type, range or possible values, editable or not.
+Here is an example dataframe descriptor. For each column you define a tuple which defines: 
+-  first the type of the values in the column, 
+-  second the range (for int or float) or possible values (for string), None if nothing is specified 
+- third if the column is editable in the GUI or not.
 
 ```python
 TransportChoiceData = {
@@ -123,7 +119,7 @@ TransportChoiceData = {
 ```
 
 ## Subtype descriptor for dicts
-Here is an example of dict subtype descriptors.
+Here is an example of dict subtype descriptors. You can define an infinite depth for dictionaries and the type at the lower level will be checked.
 
 ```python
 "dict_of_dict_in" : {"type": "dict", ProxyDiscipline.SUBTYPE: {"dict": {"dict": "float"}}, "user_level": 1}
