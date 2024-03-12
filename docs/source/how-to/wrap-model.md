@@ -260,5 +260,7 @@ During the call to `check_jacobian`, the analytic jacobian (exact) will be compa
 
 This reference jacobian computation can be costly according to the number of design variables and outputs provided to the `check_jacobian` method.
 During the gradient validation, you may want to avoid the full computation of the reference jacobian when the `run` method content is unchanged (no change in the functions evaluations).
-To this purpose, it is possible to set a flag `AbstractJacobianUnittest.DUMP_JACOBIAN` to `True` so that the result is persisted in a file described by `location` and `filename` arguments.
+To this purpose, it is possible to set a flag `AbstractJacobianUnittest.DUMP_JACOBIAN` to `True` so that the result is persisted in a pickle file described by `location` and `filename` arguments.
+
+Once the reference is generated once, you can set the `AbstractJacobianUnittest.DUMP_JACOBIAN` to `False` so that the reference jacobian will not be computed twice : it will be loaded from the provided pickle file.
 
