@@ -380,7 +380,10 @@ class TestSerializeDF(unittest.TestCase):
             dump_dir)
 
     def test_06_load_using_pandas2_a_dm_with_a_df_dumped_in_pandas1(self):
-
+        """
+        This test is based on the pickle of test5 dumped in pandas1 and loaded using current pandas version to validate
+        retro-compatibility.
+        """
         self.assertTrue(pd.__version__.startswith("2.2"))
         dump_dir = join('data', 'dm_df_pandas1')
         # load process in GUI
@@ -413,4 +416,3 @@ class TestSerializeDF(unittest.TestCase):
                                                 '.multi_scenarios.scenario_1.Disc1.a'), a1)
         self.assertEqual(y1, a1 * x1 + b1)
         self.assertEqual(y2, a2 * x2 + b2)
-
