@@ -160,14 +160,14 @@ def run(self):
 ## Gradients computation method
 
 ### Context
-In some situations, you may want to implement analytical gradients of some outputs of your model, with respect to given inputs.
+In some situations, you may want to implement analytic gradients of some outputs of your model, with respect to given inputs.
 
 Gradients are indeed required if, for example, you want to solve a Multidisciplinary Design Analysis (MDA) by using numerical methods like Newton-Raphson. Gradients are also involved by gradient-based optimization solvers (e.g., SLSQP, L-BFGS-B) to solve optimization problems.
 
-Gradients can be computed automatically by finite differences (or complex step) by the core execution engine. However, this method can be costly in terms of number of calls to the discipline (cost linearly dependent to the number of inputs and outputs of the model).
-The model developer can also implement its own [analytical gradient](#analytic-gradient-computation-method) formula in the model.
+Gradients can be computed automatically by finite differences (or complex step) by the core execution engine, with [GEMSEO](https://gemseo.readthedocs.io/) behind the scene. However, this method can be costly in terms of number of calls to the discipline (cost linearly dependent to the number of inputs and outputs of the model).
+The model developer can also implement its own [analytic gradient](#analytic-gradient-computation-method) formula in the model.
 
-In the WITNESS framework for example, analytical gradients are involved at both optimization and MDA levels. It allows to reduce the execution time. This is why it is asked to contributors to update/implement the gradients corresponding to their contribution.
+In the WITNESS framework for example, analytic gradients are involved at both optimization and MDA levels. It allows to reduce the execution time. This is why it is asked to contributors to update/implement the gradients corresponding to their contribution.
 
 ### Analytic gradient computation method
 
