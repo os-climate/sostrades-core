@@ -380,6 +380,8 @@ class TestSerializeDF(unittest.TestCase):
             dump_dir)
 
     def test_06_load_using_pandas2_a_dm_with_a_df_dumped_in_pandas1(self):
+
+        self.assertTrue(pd.__version__.startswith("2.2"))
         dump_dir = join('data', 'dm_df_pandas1')
         # load process in GUI
         self.name = 'dm_w_df_pandas1'
