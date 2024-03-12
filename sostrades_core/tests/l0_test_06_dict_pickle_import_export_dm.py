@@ -378,3 +378,37 @@ class TestSerializeDF(unittest.TestCase):
         self.assertEqual(y2, a2 * x2 + b2)
         self.dir_to_del.append(
             dump_dir)
+
+    def test_06_load_using_pandas2_a_dm_with_a_df_dumped_in_pandas1(self):
+        dump_dir = join('data', 'dm_df_pandas1')
+        # load process in GUI
+        self.name = 'dm_w_df_pandas1'
+        self.repo = 'sostrades_core.sos_processes.test.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver'
+
+        x1 = 2.
+        x2 = 4.
+        a1 = 3
+        b1 = 4
+        a2 = 6
+        b2 = 2
+
+        exec_eng2 = ExecutionEngine(self.name)
+        builders = exec_eng2.factory.get_builder_from_process(
+            repo=self.repo, mod_id=proc_name)
+        exec_eng2.factory.set_builders_to_coupling_builder(builders)
+
+        exec_eng2.configure()
+
+        BaseStudyManager.static_load_data(
+            dump_dir, exec_eng2, DirectLoadDump())
+
+        y1 = exec_eng2.dm.get_value(
+            self.name + '.multi_scenarios.scenario_1.y')
+        y2 = exec_eng2.dm.get_value(
+            self.name + '.multi_scenarios.scenario_2.y')
+        self.assertEqual(exec_eng2.dm.get_value(self.name +
+                                                '.multi_scenarios.scenario_1.Disc1.a'), a1)
+        self.assertEqual(y1, a1 * x1 + b1)
+        self.assertEqual(y2, a2 * x2 + b2)
+
