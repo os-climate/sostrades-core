@@ -155,3 +155,49 @@ def run(self):
 * The core of the model can be written here or loaded from an external model 
 * Output values are stored in a dictionary {variable_name : value} with the value coming from the model
 * The dictionary is sent to the data manager with the function store_sos_output_values(dict_values)
+
+
+## Gradients computation method
+
+### Context
+In some situations, you may want to implement analytical gradients of some outputs of your model, with respect to given inputs.
+
+Gradients are indeed required if, for example, you want to solve a Multidisciplinary Design Analysis (MDA) by using numerical methods like Newton-Raphson. Gradients are also involved by gradient-based optimization solvers (e.g., SLSQP, L-BFGS-B) to solve optimization problems.
+
+Gradients can be computed automatically by finite differences (or complex step) by the core execution engine. However, this method can be costly in terms of number of calls to the discipline (cost linearly dependent to the number of inputs and outputs of the model).
+The model developer can also implement its own [analytical gradient](#analytic-gradient-computation-method) formula in the model.
+
+In the WITNESS framework for example, analytical gradients are involved at both optimization and MDA levels. It allows to reduce the execution time. This is why it is asked to contributors to update/implement the gradients corresponding to their contribution.
+
+### Analytic gradient computation method
+
+You need to implement the gradient in a method named `compute_sos_jacobian`, in the model wrap.
+
+In this method, you can set the gradients of variables of type numerical like (1D) `array` as follows :
+
+```python
+
+def compute_sos_jacobian(self):
+    """
+    Analytic gradients computation
+    """
+
+    # retrieve the model input values
+    param_in = self.get_sosdisc_inputs()
+
+    # set the gradient values
+    self.set_partial_derivative('y', 'x', atleast_2d(array(param_in['a'])))
+    self.set_partial_derivative('y', 'a', atleast_2d(array(param_in['x'])))
+    self.set_partial_derivative('y', 'b', atleast_2d(array([1])))
+```
+
+For gradients involving `dataframe`, `dict`, `float` types, you have to call the method `set_partial_derivative_for_other_types`.
+
+For example, if you want to compute the gradient of a variable `y_2` (a dataframe with a column `value`) with respect to an array `z` :
+```python
+self.set_partial_derivative_for_other_types(('y_2', 'value'), ('z',), my_gradient_value)
+```
+
+Example of gradients can be found in the implementation of [these examples](https://github.com/os-climate/sostrades-core/blob/main/sostrades_core/sos_wrapping/test_discs/sellar_new_types.py).
+
+
