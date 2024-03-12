@@ -155,3 +155,112 @@ def run(self):
 * The core of the model can be written here or loaded from an external model 
 * Output values are stored in a dictionary {variable_name : value} with the value coming from the model
 * The dictionary is sent to the data manager with the function store_sos_output_values(dict_values)
+
+
+## Gradients computation method
+
+### Context
+In some situations, you may want to implement analytic gradients of some outputs of your model, with respect to given inputs.
+
+Gradients are indeed required if, for example, you want to solve a Multidisciplinary Design Analysis (MDA) by using numerical methods like Newton-Raphson. Gradients are also involved by gradient-based optimization solvers (e.g., SLSQP, L-BFGS-B) to solve optimization problems.
+
+Gradients can be computed automatically by finite differences (or complex step) by the core execution engine, with [GEMSEO](https://gemseo.readthedocs.io/) behind the scene. However, this method can be costly in terms of number of calls to the discipline (cost linearly dependent to the number of inputs and outputs of the model).
+The model developer can also implement its own [analytic gradient](#analytic-gradient-computation-method) formula in the model.
+
+In the WITNESS framework for example, analytic gradients are involved at both optimization and MDA levels. It allows to reduce the execution time. This is why it is asked to contributors to update/implement the gradients corresponding to their contribution.
+
+### Analytic gradient computation method
+
+You need to implement the gradient in a method named `compute_sos_jacobian`, in the model wrap.
+
+In this method, you can set the gradients of variables of type numerical like (1D) `array` as follows :
+
+```python
+
+def compute_sos_jacobian(self):
+    """
+    Analytic gradients computation
+    """
+
+    # retrieve the model input values
+    param_in = self.get_sosdisc_inputs()
+
+    # set the gradient values
+    self.set_partial_derivative('y', 'x', atleast_2d(array(param_in['a'])))
+    self.set_partial_derivative('y', 'a', atleast_2d(array(param_in['x'])))
+    self.set_partial_derivative('y', 'b', atleast_2d(array([1])))
+```
+
+For gradients involving `dataframe`, `dict`, `float` types, you have to call the method `set_partial_derivative_for_other_types`.
+
+For example, if you want to compute the gradient of a variable `y_2` (a dataframe with a column `value`) with respect to an array `z` :
+```python
+self.set_partial_derivative_for_other_types(('y_2', 'value'), ('z',), my_gradient_value)
+```
+
+Example of gradients can be found in the implementation of [these examples](https://github.com/os-climate/sostrades-core/blob/main/sostrades_core/sos_wrapping/test_discs/sellar_new_types.py).
+
+### Check analytic gradients
+
+Once your analytic gradient implementation is done, you will need to validate it.
+You can implement a test in a subclass of `AbstractJacobianUnittest` (itself a subclass of `unittest.TestCase`, part of the python builtin `unittest` package).
+The analytic jacobian accuracy is checked during a call to `check_jacobian`, as follows :
+
+```python
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
+
+class GradientSellar(AbstractJacobianUnittest):
+    """
+    Sellar gradients test class
+    """
+    def test_01_analytic_gradient_default_dataframe_fill(self):
+        """Test gradient for Sellar1 """
+
+        # create exec engine and build a process with one discipline called Sellar1
+        self.ee = ExecutionEngine(self.study_name)
+        factory = self.ee.factory
+        SellarDisc1Path = 'sostrades_core.sos_wrapping.test_discs.sellar_for_design_var.Sellar1'
+        sellar1_disc = factory.get_builder_from_module('Sellar1', SellarDisc1Path)
+        self.ee.ns_manager.add_ns_def({'ns_OptimSellar': self.ns})
+        self.ee.factory.set_builders_to_coupling_builder(sellar1_disc)
+        self.ee.configure()
+
+        # update input dictionary with values
+        values_dict = {f'{self.ns}.x': pd.DataFrame(data={'index': [0, 1, 2, 3], 'value': [1., 1., 1., 1.]}),
+                       f'{self.ns}.z': np.array([5., 2.]), f'{self.ns}.y_2': 12.058488150611574}
+
+        self.ee.load_study_from_input_dict(values_dict)
+        self.ee.configure()
+
+        self.ee.update_from_dm()
+        self.ee.prepare_execution()
+
+        # get the discipline where you want to check the gradients
+        disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+
+        # activate this option if you want to write the reference jacobian matrix in a file.
+        # this is useful to avoid the (costly) computation of the reference jacobian for nexts calls to check_jacobians
+        AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        self.check_jacobian(location=dirname(__file__),
+                            filename=f'jacobian_sellar_1.pkl',
+                            discipline=disc,
+                            step=1e-16,
+                            derr_approx='complex_step',
+                            threshold=1e-5,
+                            local_data=values_dict,
+                            inputs=[f'{self.ns}.x', f'{self.ns}.z', f'{self.ns}.y_2'],
+                            outputs=[f'{self.ns}.y_1']
+                            )
+```
+The choice of `derr_appox` numerical method is among `complex_step` and `finite_differences`. 
+The step has to be chosen carefully : not too small to avoid round-off error and not too large to avoid truncation error.
+
+During the call to `check_jacobian`, the analytic jacobian (exact) will be compared to a reference jacobian (derivative approximation) by [GEMSEO](https://gemseo.readthedocs.io/en/stable/examples/disciplines/basics/plot_check_jacobian.html).
+
+This reference jacobian computation can be costly according to the number of design variables and outputs provided to the `check_jacobian` method.
+During the gradient validation, you may want to avoid the full computation of the reference jacobian when the `run` method content is unchanged (no change in the functions evaluations).
+To this purpose, it is possible to set a flag `AbstractJacobianUnittest.DUMP_JACOBIAN` to `True` so that the result is persisted in a pickle file described by `location` and `filename` arguments.
+
+Once the reference is generated once, you can set the `AbstractJacobianUnittest.DUMP_JACOBIAN` to `False` so that the reference jacobian will not be computed twice : it will be loaded from the provided pickle file.
+
