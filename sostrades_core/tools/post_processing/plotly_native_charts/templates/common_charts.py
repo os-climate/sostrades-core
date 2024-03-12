@@ -402,7 +402,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         columns_info_dict = self.generate_columns_infos_table(infos)
         columns_names = []
         columns_data = []
-        for (key, data) in infos.iteritems():
+        for (key, data) in infos.items():
             if key in columns_info_dict:
                 columns_names.append(
                     f'<b>{columns_info_dict[key].get("label", key)}</b>'
