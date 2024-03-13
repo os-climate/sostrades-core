@@ -21,7 +21,7 @@ import unittest
 import pandas as pd
 from copy import deepcopy
 from os import makedirs
-from os.path import join, dirname, basename
+from os.path import join, dirname, basename, realpath
 from pathlib import Path
 from shutil import rmtree, unpack_archive
 from time import sleep
@@ -385,7 +385,7 @@ class TestSerializeDF(unittest.TestCase):
         retro-compatibility.
         """
         self.assertTrue(pd.__version__.startswith("2.2"))
-        dump_dir = join('data', 'dm_df_pandas1')
+        dump_dir = join(dirname(realpath(__file__)), 'dm_df_pandas1')
         # load process in GUI
         self.name = 'dm_w_df_pandas1'
         self.repo = 'sostrades_core.sos_processes.test.tests_driver_eval.multi'
