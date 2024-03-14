@@ -16,17 +16,16 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from copy import copy, deepcopy
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+from sostrades_core.execution_engine.sample_generators.tornado_chart_analysis_sample_generator import TornadoChartAnalysisSampleGenerator
 from sostrades_core.execution_engine.sample_generators.simple_sample_generator import SimpleSampleGenerator
 from sostrades_core.execution_engine.sample_generators.grid_search_sample_generator import GridSearchSampleGenerator
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
 from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
     CartesianProductSampleGenerator
-from sostrades_core.tools.gather.gather_tool import check_eval_io
+from sostrades_core.tools.design_space import design_space as dspace_tool
 import pandas as pd
-from numpy import array
 
 
 class ProxySampleGeneratorException(Exception):
@@ -54,7 +53,7 @@ class ProxySampleGenerator(ProxyDiscipline):
 
     INPUT_TYPE = ['float', 'array', 'int', 'string']
 
-    MULTIPLIER_PARTICULE = "__MULTIPLIER__" # todo: to delete
+    MULTIPLIER_PARTICULE = "__MULTIPLIER__"  # todo: to delete
 
     SAMPLES_DF = SampleGeneratorWrapper.SAMPLES_DF
     SELECTED_SCENARIO = SampleGeneratorWrapper.SELECTED_SCENARIO
@@ -65,7 +64,7 @@ class ProxySampleGenerator(ProxyDiscipline):
     N_SAMPLES = "n_samples"
     ALGO = SampleGeneratorWrapper.ALGO
     ALGO_OPTIONS = SampleGeneratorWrapper.ALGO_OPTIONS
-    DESIGN_SPACE = SampleGeneratorWrapper.DESIGN_SPACE
+    DESIGN_SPACE = dspace_tool.DESIGN_SPACE
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
@@ -103,8 +102,8 @@ class ProxySampleGenerator(ProxyDiscipline):
                         ProxyDiscipline.DATAFRAME_EDITION_LOCKED: False,
                         ProxyDiscipline.STRUCTURING: True,
                         ProxyDiscipline.DEFAULT: pd.DataFrame(columns=[SELECTED_INPUT, FULL_NAME]),
-                        #ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
-                        #ProxyDiscipline.NAMESPACE: NS_SAMPLING,
+                        # ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
+                        # ProxyDiscipline.NAMESPACE: NS_SAMPLING,
                         }
     EVAL_INPUTS_CP_DF_DESC = EVAL_INPUTS_DF_DESC.copy()
     LIST_OF_VALUES = SampleGeneratorWrapper.LIST_OF_VALUES
@@ -115,13 +114,15 @@ class ProxySampleGenerator(ProxyDiscipline):
     DOE_ALGO = 'doe_algo'
     CARTESIAN_PRODUCT = 'cartesian_product'
     GRID_SEARCH = 'grid_search'
-    AVAILABLE_SAMPLING_METHODS = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH]
+    SENSITIVITY_ANALYSIS = 'tornado_chart_analysis'
+    AVAILABLE_SAMPLING_METHODS = [SIMPLE_SAMPLING_METHOD, DOE_ALGO, CARTESIAN_PRODUCT, GRID_SEARCH, SENSITIVITY_ANALYSIS]
     # classes of the sample generator tools associated to each method in AVAILABLE_SAMPLING_METHODS
     SAMPLE_GENERATOR_CLS = {
         SIMPLE_SAMPLING_METHOD: SimpleSampleGenerator,
         DOE_ALGO: DoeSampleGenerator,
         CARTESIAN_PRODUCT: CartesianProductSampleGenerator,
-        GRID_SEARCH: GridSearchSampleGenerator
+        GRID_SEARCH: GridSearchSampleGenerator,
+        SENSITIVITY_ANALYSIS: TornadoChartAnalysisSampleGenerator
     }
 
     SAMPLING_GENERATION_MODE = 'sampling_generation_mode'
@@ -158,18 +159,20 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.check_integrity_msg_list = []
         self.sg_data_integrity = True
 
+        self.driver_is_multi_eval = None 
         self.sampling_method = None
         self.sampling_generation_mode = None
 
         self.sample_pending = False
-        self.samples_gene_df = None   # sample generated at configuration-time
+        self.samples_gene_df = None  # sample generated at configuration-time
 
         self.force_sampling_at_configuration_time = False
         # TODO: actually no need for two variables as the type dict could be sorted and its keys be the possible_values
         self.eval_in_possible_values = []
         self.eval_in_possible_types = {}
         self.samples_df_f_name = None
-        #FIXME: using samples_df_f_name to sample means configuration-time sampling needs to be banned on standalone sample gen.
+        self.analysis_disc = None
+        # FIXME: using samples_df_f_name to sample means configuration-time sampling needs to be banned on standalone sample gen.
 
     def set_eval_in_possible_values(self,
                                     possible_values: list[str],
@@ -205,25 +208,6 @@ class ProxySampleGenerator(ProxyDiscipline):
                 isinstance(list_of_values, list) and
                 all(map(lambda _val: isinstance(_val, self.VAR_TYPE_MAP[var_type]),
                         list_of_values)))
-
-    def _check_design_space_dimensions_for_one_variable(self, design_space_row):
-        """
-        Utility method that checks that values in the columns 'lower_bnd', 'upper_bnd', 'value' of the design space do
-        have the same shape for a same variable.
-
-        Arguments:
-            eval_inputs_row (pd.Series): row of the design space dataframe to check
-        """
-        lb = design_space_row[self.LOWER_BOUND] if self.LOWER_BOUND in design_space_row.index else None
-        ub = design_space_row[self.UPPER_BOUND] if self.UPPER_BOUND in design_space_row.index else None
-        val = design_space_row[self.VALUES] if self.VALUES in design_space_row.index else None
-        lb_shape = array(lb).shape
-        ub_shape = array(ub).shape
-        val_shape = array(val).shape
-        lb_ub_dim_mismatch = lb is not None and ub is not None and lb_shape != ub_shape
-        lb_val_dim_mismatch = lb is not None and val is not None and lb_shape != val_shape
-        val_ub_dim_mismatch = val is not None and ub is not None and val_shape != ub_shape
-        return not (lb_ub_dim_mismatch or lb_val_dim_mismatch or val_ub_dim_mismatch)
 
     def check_data_integrity(self):
         """
@@ -263,6 +247,16 @@ class ProxySampleGenerator(ProxyDiscipline):
                     self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_GENERATION_MODE, disc_in),
                                         self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
 
+        if self.SAMPLING_METHOD in disc_in and \
+                self.get_sosdisc_inputs(self.SAMPLING_METHOD) == self.SENSITIVITY_ANALYSIS and \
+                self.driver_is_multi_eval:
+            method_mode_integrity_msg.append(
+                f"Input {self.SAMPLING_METHOD} cannot be {self.SENSITIVITY_ANALYSIS} "
+                f"with a driver multi-scenario."
+            )
+            self.sg_data_integrity = False
+            self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_METHOD, disc_in),
+                                    self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
         # check integrity for eval_inputs # TODO: move to cartesian product sample generator ?
         eval_inputs_integrity_msg = []
         if self.configurator and self.EVAL_INPUTS in disc_in:
@@ -270,7 +264,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if eval_inputs is not None:
                 # possible value checks (with current implementation should be OK by construction)
                 vars_not_possible = eval_inputs[self.FULL_NAME][
-                        ~eval_inputs[self.FULL_NAME].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
+                    ~eval_inputs[self.FULL_NAME].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
                 for var_not_possible in vars_not_possible:
                     eval_inputs_integrity_msg.append(
                         f'Variable {var_not_possible} is not among the possible input values.'
@@ -289,27 +283,15 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.ee.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),
                                 self.CHECK_INTEGRITY_MSG, '\n'.join(eval_inputs_integrity_msg))
 
-        # check integrity for design space # todo: move to doe and gridsearch generators ?
+        # check integrity for design space
         design_space_integrity_msg = []
         if self.DESIGN_SPACE in disc_in:
             design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
-            if design_space is not None and not design_space.empty:
-                if self.configurator:
-                    # possible value checks (with current implementation should be OK by construction)
-                    vars_not_possible = design_space[self.VARIABLES][
-                            ~design_space[self.VARIABLES].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
-                    for var_not_possible in vars_not_possible:
-                        design_space_integrity_msg.append(
-                            f'Variable {var_not_possible} is not among the possible input values.'
-                        )
-                # check of dimensions coherences
-                wrong_dim_vars = design_space[self.VARIABLES][
-                    ~design_space.apply(self._check_design_space_dimensions_for_one_variable, axis=1)].to_list()
-                for wrong_dim_var in wrong_dim_vars:
-                    design_space_integrity_msg.append(
-                        f'Columns {self.LOWER_BOUND}, {self.UPPER_BOUND} and {self.VALUES} should be of type '
-                        f'{self.eval_in_possible_types[wrong_dim_var]} for variable {wrong_dim_var} '
-                        f'and should have coherent shapes.')
+            if design_space is not None:
+                possible_variables_types = self.eval_in_possible_types if self.configurator else None
+                design_space_integrity_msg = dspace_tool.check_design_space_data_integrity(design_space,
+                                                                                           possible_variables_types)
+                # specific check nb_points of the sample generator
                 if self.NB_POINTS in design_space.columns:
                     wrong_nb_points_vars = design_space[self.VARIABLES][~design_space[self.NB_POINTS].apply(
                         lambda _nb_pts: isinstance(_nb_pts, self.VAR_TYPE_MAP['int']) and _nb_pts >= 0)
@@ -317,6 +299,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                     if wrong_nb_points_vars:
                         design_space_integrity_msg.append(
                             f'Column {self.NB_POINTS} should contain non-negative integers only.')
+
         if design_space_integrity_msg:
             self.sg_data_integrity = False
             self.ee.dm.set_data(self.get_var_full_name(self.DESIGN_SPACE, disc_in),
@@ -339,7 +322,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.instantiate_sampling_tool()
             self.update_eval_inputs(disc_in)
             dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(self)
-            
+
             self.check_data_integrity()
             if self.sampling_generation_mode == self.AT_RUN_TIME:
                 # if sampling at run-time add the corresponding output
@@ -367,6 +350,41 @@ class ProxySampleGenerator(ProxyDiscipline):
                 sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
                 if self.mdo_discipline_wrapp.wrapper.sample_generator.__class__ != sample_generator_cls:
                     self.mdo_discipline_wrapp.wrapper.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
+                    self.configure_analysis_tool()
+    
+    def configure_analysis_tool(self):
+        if self.sampling_method == self.SENSITIVITY_ANALYSIS:
+            # add the tornado chart analysis discipline and namespace
+                # create the builder of an analysis disc
+            analysis_builder = self.ee.factory.add_tornado_chart_analysis_builder(self.SENSITIVITY_ANALYSIS)
+            # create discipline in factory as sister not daughter
+            self.ee.factory.current_discipline = self.father_executor
+            analysis_disc = analysis_builder.build()
+            self.ee.factory.add_discipline(analysis_disc)
+            # associate ns_analysis for analysis output
+            ns_analysis_id = self.ee.ns_manager.add_ns(TornadoChartAnalysisSampleGenerator.NS_ANALYSIS,
+                                                self.ee.ns_manager.get_local_namespace_value(analysis_disc))
+            # add dependency of the namespace for the discipline
+            self.ee.ns_manager.add_disc_in_dependency_list_of_namespace(ns_analysis_id, analysis_disc.disc_id)
+            ns_analysis = self.ee.ns_manager.get_ns_from_id(ns_analysis_id)
+            self.add_new_shared_ns(ns_analysis)
+            self.analysis_disc = analysis_disc
+            
+        else:
+            # remove the tornado chart analysis discipline
+            if self.analysis_disc is not None:
+
+                
+                self.father_executor.remove_discipline(self.analysis_disc)
+                self.ee.factory.remove_sos_discipline(self.analysis_disc)
+                
+                
+                ns = self.ee.ns_manager.shared_ns_dict[TornadoChartAnalysisSampleGenerator.NS_ANALYSIS]
+                self.ee.ns_manager.clean_namespace_from_discipline(ns, self.analysis_disc)
+                self.ee.ns_manager.clean_namespace_from_discipline(ns, self)
+                
+                
+                self.analysis_disc = None
 
     def configure_generation_mode(self, disc_in):
         """
@@ -439,6 +457,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if eval_inputs is not None:
                 eval_inputs = eval_inputs.reindex(columns=eval_inputs_df_desc.keys(),
                                                   fill_value=[])  # hardcoded compliance with 'list_of_values' column default
+                
                 self.dm.set_data(eval_inputs_f_name,
                                  self.VALUE,
                                  eval_inputs,
@@ -461,12 +480,14 @@ class ProxySampleGenerator(ProxyDiscipline):
                 self.dm.set_data(eval_inputs_f_name,
                                  'value', default_in_dataframe, check_value=False)
             # check if the eval_inputs need to be updated after a subprocess input change
-            elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (set(default_in_dataframe[self.FULL_NAME].tolist())):
+            elif set(eval_input_new_dm[self.FULL_NAME].tolist()) != (
+                    set(default_in_dataframe[self.FULL_NAME].tolist())):
                 # reindex eval_inputs to the possible values keeping other values and columns of the df
-                eval_input_new_dm = eval_input_new_dm.\
-                    drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(self.eval_in_possible_values).\
+                eval_input_new_dm = eval_input_new_dm. \
+                    drop_duplicates(self.FULL_NAME).set_index(self.FULL_NAME).reindex(self.eval_in_possible_values). \
                     reset_index().reindex(columns=eval_input_new_dm.columns)
-                eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype('bool')
+                eval_input_new_dm[self.SELECTED_INPUT] = eval_input_new_dm[self.SELECTED_INPUT].fillna(False).astype(
+                    'bool')
                 # manage the empty lists on column list_of_values (as df.fillna([]) will not work)
                 if self.LIST_OF_VALUES in eval_input_new_dm.columns:
                     new_in = eval_input_new_dm[self.LIST_OF_VALUES].isna()
@@ -505,7 +526,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                 # avoid sampling and pushing the generated samples_df into the dm, UNLESS:
                 # - the current scenario names are the default (i.e. no previous modification or sampling made), or
                 # - the user asked to force re-sampling on reconfiguration using input flag overwrite_samples_df
-                overwrite_samples_df =\
+                overwrite_samples_df = \
                     samples_df_dm[self.SCENARIO_NAME].equals(self.SAMPLES_DF_DEFAULT[self.SCENARIO_NAME]) or \
                     self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)
                 if overwrite_samples_df:

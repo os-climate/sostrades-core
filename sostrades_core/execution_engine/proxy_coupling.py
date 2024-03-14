@@ -21,33 +21,27 @@ import numpy as np
 from copy import deepcopy, copy
 from multiprocessing import cpu_count
 from pandas import DataFrame
-import platform
 import logging
+from os import getenv
 
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-from sostrades_core.execution_engine.archi_builder import ArchiBuilder
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.mda.sequential_mda import MDASequential
 
 from collections import ChainMap
-from gemseo.core.scenario import Scenario
-from numpy import array, ndarray, delete, inf
+from numpy import ndarray
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
-
-# if platform.system() != 'Windows':
-#    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-# - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
-MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
-ksp_lib_petsc = MyFakeKSPLib()
+if getenv("USE_PETSC", "").lower() in ("true", "1"):
+   from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
@@ -99,16 +93,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
 
     # set default value of linear solver according to the operating system
-    #     if platform.system() == 'Windows':
-    #         DEFAULT_LINEAR_SOLVER = 'GMRES'
-    #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
-    #         POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
-    #     else:
-    #         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
-    #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
-    #         POSSIBLE_VALUES_PRECONDITIONER = [
-    #             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
-
+    if getenv("USE_PETSC", "").lower() in ("true", "1"):
+        DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
+        POSSIBLE_VALUES_PRECONDITIONER = [
+            'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+    else:
+        DEFAULT_LINEAR_SOLVER = 'GMRES'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
+        POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
     DEFAULT_LINEAR_SOLVER_OPTIONS = {
         'max_iter': 1000,
         'tol': 1.0e-8}
@@ -252,7 +245,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     # reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         '''
-        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
+        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches and its children recursively
         '''
         mda_chain = self.mdo_discipline_wrapp.mdo_discipline
 
@@ -878,8 +871,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         instanciated_charts = []
         # Overload default value with chart filter
-        # Overload default value with chart filter
         select_all = False
+        chart_list = []
         if chart_filters is not None:
             for chart_filter in chart_filters:
                 if chart_filter.filter_key == 'charts':
@@ -913,8 +906,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                                      chart_name=chart_name,
                                                      y_axis_log=True)
 
-                for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
-                    new_chart.series.append(series)
+                if iterations:  # TODO: quickfix to avoid post-proc crash when coupling is cached, will give empty plot
+                    for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
+                        new_chart.series.append(series)
 
                 instanciated_charts.append(new_chart)
 

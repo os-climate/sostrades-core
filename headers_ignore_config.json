@@ -1,0 +1,28 @@
+{
+    "extension_to_ignore" : [
+        "pkl",
+        "png",
+        "jpg",
+        "csv",
+        "md",
+        "markdown",
+        "avif",
+        "json",
+        "in",
+        "gitignore",
+        "cfg",
+        "puml",
+        "pdf",
+        "txt",
+        "ipynb",
+        "zip",
+        "rst",
+        "ini"
+    ],
+    "files_to_ignore" : ["sostrades_core/execution_engine/gemseo_addon/mda/gauss_seidel.py",
+    ".readthedocs.yaml",
+    "docs/make.bat",
+    "docs/Makefile"
+    ],
+    "airbus_rev_commit" : "11d7f9f"
+}

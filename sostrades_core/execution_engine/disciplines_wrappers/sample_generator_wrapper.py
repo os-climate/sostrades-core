@@ -21,6 +21,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.design_space import design_space as dspace_tool
 import pandas as pd
 
 
@@ -56,7 +57,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     # TODO: move to doe tool ?
     ALGO = "sampling_algo"
     ALGO_OPTIONS = "algo_options"
-    DESIGN_SPACE = "design_space"
+    DESIGN_SPACE = dspace_tool.DESIGN_SPACE
 
     def __init__(self, sos_name, logger: logging.Logger):
         super().__init__(sos_name=sos_name, logger=logger)

@@ -293,8 +293,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.dm.set_values_from_dict(values_dict)
-        exec_eng.configure()
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
@@ -451,9 +450,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
-        exec_eng.configure()
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
@@ -617,9 +615,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.dm.set_values_from_dict(values_dict)
-
-        exec_eng.configure()
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
@@ -945,9 +941,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.dm.set_values_from_dict(values_dict)
+        exec_eng.load_study_from_input_dict(values_dict)
 
-        exec_eng.configure()
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
@@ -1033,9 +1028,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.dm.set_values_from_dict(values_dict)
-
-        exec_eng.configure()
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
@@ -1124,9 +1117,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.dm.set_values_from_dict(values_dict)
-
-        exec_eng.configure()
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
@@ -1306,9 +1297,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
-        exec_eng.dm.set_values_from_dict(values_dict)
-
-        exec_eng.configure()
+        exec_eng.load_study_from_input_dict(values_dict)
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
@@ -1404,6 +1393,130 @@ class TestSoSOptimScenario(unittest.TestCase):
         for graph in graph_list:
             #graph.to_plotly().show()
             pass
+
+    def test_19_proxyoptim_data_integrity(self):
+        """
+        Checks data integrity errors are raised for dspace, ineq_constraints and objective_name variables in ProxyOptim.
+        """
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+        repo_discopt = 'sostrades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_opt_discopt'
+        builder = factory.get_builder_from_process(repo=repo_discopt,
+                                                   mod_id=proc_name_discopt)
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+        exec_eng.configure()
+
+        # -- set up design space OK
+        dspace_dict = {'variable': ['x', 'z'],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True]]}
+        dspace = pd.DataFrame(dspace_dict)
+
+        # -- set up design space wrong
+        dspace_dict_wrong_var = {'variable': ['w', 'z'],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True]]}
+        dspace_wrong_var = pd.DataFrame(dspace_dict_wrong_var)
+
+        dspace_dict_wrong_act = {'variable': ['x', 'z'],
+                       'value': [[1.], [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True, False]]}
+        dspace_wrong_act = pd.DataFrame(dspace_dict_wrong_act)
+
+        dspace_dict_wrong_val = {'variable': ['x', 'z'],
+                       'value': ['hello', [5., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True]]}
+        dspace_wrong_val = pd.DataFrame(dspace_dict_wrong_val)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # Optim inputs
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "L-BFGS-B"
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = []
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
+                                                                    "ineq_tolerance": 1e-6,
+                                                                    "normalize_design_space": True}
+        exec_eng.dm.set_values_from_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+            1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+            1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+            1., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ optim',
+                       f'\t|_ {self.sc_name}',
+                       f'\t\t|_ {self.c_name}',
+                       '\t\t\t|_ Sellar_Problem',
+                       '\t\t\t|_ Sellar_2',
+                       '\t\t\t|_ Sellar_1', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace_wrong_var
+        exec_eng.load_study_from_input_dict(disc_dict)
+        with self.assertRaises(ValueError) as cm:
+            exec_eng.execute()
+        error_message = "Variable optim.SellarOptimScenario.design_space : Variable w is not among subprocess inputs."
+        self.assertTrue(str(cm.exception).startswith(error_message))
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace_wrong_act
+        exec_eng.load_study_from_input_dict(disc_dict)
+        with self.assertRaises(ValueError) as cm:
+            exec_eng.execute()
+        error_message = "Variable optim.SellarOptimScenario.design_space : Columns lower_bnd, upper_bnd, " \
+                        "activated_elem and value should have coherent shapes for variable z."
+        self.assertTrue(str(cm.exception).startswith(error_message))
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace_wrong_val
+        exec_eng.load_study_from_input_dict(disc_dict)
+        with self.assertRaises(ValueError) as cm:
+            exec_eng.execute()
+        error_message = "Variable optim.SellarOptimScenario.design_space : Columns value, lower_bnd and upper_bnd must be arrays or lists for variable x."
+        self.assertTrue(str(cm.exception).startswith(error_message))
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = ['w']
+        exec_eng.load_study_from_input_dict(disc_dict)
+        with self.assertRaises(ValueError) as cm:
+            exec_eng.execute()
+        error_message = "Variable optim.SellarOptimScenario.ineq_constraints : Variable w is not among subprocess outputs."
+        self.assertTrue(str(cm.exception).startswith(error_message))
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = []
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'wrong_obj'
+        exec_eng.load_study_from_input_dict(disc_dict)
+        with self.assertRaises(ValueError) as cm:
+            exec_eng.execute()
+        error_message = "Variable optim.SellarOptimScenario.objective_name : Variable wrong_obj is not among subprocess outputs."
+        self.assertTrue(str(cm.exception).startswith(error_message))
 
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()

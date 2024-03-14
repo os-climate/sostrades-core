@@ -4,19 +4,19 @@
 #
 #    pip-compile --output-file=./sostrades-core/dev.requirements.txt ./GreenProductPortfolio/requirements.in ./gemseo/requirements.txt ./portfolio-management/requirements.in ./sostrades-core/requirements.in ./sostrades-ontology/requirements.in ./sostrades-webapi/requirements.in ./witness-core/requirements.in ./witness-energy/requirements.in
 #
-alembic==1.13.0
+alembic==1.13.1
     # via flask-migrate
-attrs==23.1.0
+attrs==23.2.0
     # via dremio-client
 autograd==1.6.2
     # via pymoo
-bidict==0.22.1
+bidict==0.23.1
     # via python-socketio
 black==22.3.0
     # via -r ./sostrades-core/requirements.in
-cachetools==5.3.2
+cachetools==5.3.3
     # via google-auth
-certifi==2023.11.17
+certifi==2024.2.2
     # via
     #   kubernetes
     #   requests
@@ -36,10 +36,8 @@ cma==2.7.0
     #   pymoo
 confuse==2.0.1
     # via dremio-client
-coverage[toml]==7.3.2
-    # via
-    #   nose2
-    #   pytest-cov
+coverage[toml]==7.4.3
+    # via pytest-cov
 custom-inherit==2.4.0
     # via -r ./gemseo/requirements.txt
 cvxpy==1.1.18
@@ -50,7 +48,7 @@ decorator==5.1.1
     # via networkx
 defusedxml==0.7.1
     # via python3-saml
-dill==0.3.7
+dill==0.3.8
     # via openturns
 dnspython==2.2.1
     # via
@@ -59,7 +57,7 @@ dnspython==2.2.1
     #   pymongo
 dremio-client==0.15.1
     # via -r ./sostrades-core/requirements.in
-ecos==2.0.12
+ecos==2.0.13
     # via cvxpy
 et-xmlfile==1.1.0
     # via openpyxl
@@ -94,7 +92,7 @@ flask-sqlalchemy==2.4.1
     #   flask-migrate
 furl==2.1.3
     # via -r ./sostrades-webapi/requirements.in
-future==0.18.3
+future==1.0.0
     # via
     #   -r ./gemseo/requirements.txt
     #   autograd
@@ -106,19 +104,19 @@ gitpython==3.1.31
     # via
     #   -r ./sostrades-ontology/requirements.in
     #   -r ./sostrades-webapi/requirements.in
-google-auth==2.25.2
+google-auth==2.28.2
     # via kubernetes
 graphviz==0.16
     # via
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-webapi/requirements.in
-greenlet==3.0.2
+greenlet==3.0.3
     # via eventlet
 h5py==3.2.1
     # via -r ./gemseo/requirements.txt
 idna==3.6
     # via requests
-importlib-metadata==7.0.0
+importlib-metadata==7.0.2
     # via numpoly
 iniconfig==2.0.0
     # via pytest
@@ -145,11 +143,11 @@ kiwisolver==1.4.5
     # via matplotlib
 kubernetes==11.0.0
     # via -r ./sostrades-webapi/requirements.in
-lxml==4.9.3
+lxml==5.1.0
     # via xmlsec
-mako==1.3.0
+mako==1.3.2
     # via alembic
-markupsafe==2.1.3
+markupsafe==2.1.5
     # via
     #   jinja2
     #   mako
@@ -171,15 +169,6 @@ networkx==2.5
     # via -r ./gemseo/requirements.txt
 nlopt==2.7.0 ; python_version >= "3"
     # via -r ./gemseo/requirements.txt
-nose2==0.9.1
-    # via
-    #   -r ./GreenProductPortfolio/requirements.in
-    #   -r ./portfolio-management/requirements.in
-    #   -r ./sostrades-core/requirements.in
-    #   -r ./sostrades-ontology/requirements.in
-    #   -r ./sostrades-webapi/requirements.in
-    #   -r ./witness-core/requirements.in
-    #   -r ./witness-energy/requirements.in
 numpoly==1.2.11
     # via chaospy
 numpy==1.24.3
@@ -202,7 +191,6 @@ numpy==1.24.3
     #   osqp
     #   pandas
     #   pdfo
-    #   petsc4py
     #   pydoe2
     #   pymoo
     #   pyxdsm
@@ -224,7 +212,7 @@ openturns==1.18
     #   -r ./sostrades-core/requirements.in
 orderedmultidict==1.0.1
     # via furl
-osqp==0.6.3
+osqp==0.6.5
     # via cvxpy
 packaging==21.3
     # via
@@ -244,17 +232,9 @@ pathspec==0.12.1
     # via black
 pdfo==1.0 ; python_version >= "3"
     # via -r ./gemseo/requirements.txt
-petsc==3.19.4 ; platform_system != "Windows"
-    # via
-    #   -r ./sostrades-core/requirements.in
-    #   petsc4py
-petsc4py==3.19.4 ; platform_system != "Windows"
-    # via
-    #   -r ./gemseo/requirements.txt
-    #   -r ./sostrades-core/requirements.in
-pillow==10.1.0
+pillow==10.2.0
     # via matplotlib
-platformdirs==4.1.0
+platformdirs==4.2.0
     # via black
 plotly==5.3.0
     # via
@@ -263,7 +243,7 @@ plotly==5.3.0
     #   -r ./sostrades-webapi/requirements.in
     #   -r ./witness-core/requirements.in
     #   -r ./witness-energy/requirements.in
-pluggy==1.3.0
+pluggy==1.4.0
     # via pytest
 psutil==5.9.5
     # via
@@ -290,7 +270,7 @@ pymongo==4.4.1
     # via -r ./sostrades-core/requirements.in
 pymoo==0.5.0
     # via -r ./gemseo/requirements.txt
-pyparsing==3.1.1
+pyparsing==3.1.2
     # via
     #   matplotlib
     #   packaging
@@ -299,17 +279,44 @@ pyside2==5.15.2 ; python_version >= "3"
     # via -r ./gemseo/requirements.txt
 pytest==7.4.3
     # via
+    #   -r ./GreenProductPortfolio/requirements.in
+    #   -r ./portfolio-management/requirements.in
     #   -r ./sostrades-core/requirements.in
+    #   -r ./sostrades-ontology/requirements.in
+    #   -r ./sostrades-webapi/requirements.in
+    #   -r ./witness-core/requirements.in
+    #   -r ./witness-energy/requirements.in
     #   pytest-cov
     #   pytest-durations
     #   pytest-xdist
 pytest-cov==4.1.0
-    # via -r ./sostrades-core/requirements.in
+    # via
+    #   -r ./GreenProductPortfolio/requirements.in
+    #   -r ./portfolio-management/requirements.in
+    #   -r ./sostrades-core/requirements.in
+    #   -r ./sostrades-ontology/requirements.in
+    #   -r ./sostrades-webapi/requirements.in
+    #   -r ./witness-core/requirements.in
+    #   -r ./witness-energy/requirements.in
 pytest-durations==1.2.0
-    # via -r ./sostrades-core/requirements.in
+    # via
+    #   -r ./GreenProductPortfolio/requirements.in
+    #   -r ./portfolio-management/requirements.in
+    #   -r ./sostrades-core/requirements.in
+    #   -r ./sostrades-ontology/requirements.in
+    #   -r ./sostrades-webapi/requirements.in
+    #   -r ./witness-core/requirements.in
+    #   -r ./witness-energy/requirements.in
 pytest-xdist==3.4.0
-    # via -r ./sostrades-core/requirements.in
-python-dateutil==2.8.2
+    # via
+    #   -r ./GreenProductPortfolio/requirements.in
+    #   -r ./portfolio-management/requirements.in
+    #   -r ./sostrades-core/requirements.in
+    #   -r ./sostrades-ontology/requirements.in
+    #   -r ./sostrades-webapi/requirements.in
+    #   -r ./witness-core/requirements.in
+    #   -r ./witness-energy/requirements.in
+python-dateutil==2.9.0.post0
     # via
     #   kubernetes
     #   matplotlib
@@ -358,7 +365,7 @@ requests==2.31.0
     #   kubernetes
     #   requests-oauthlib
     #   trino
-requests-oauthlib==1.3.1
+requests-oauthlib==1.4.0
     # via kubernetes
 rsa==4.9
     # via google-auth
@@ -401,7 +408,6 @@ six==1.16.0
     #   furl
     #   isodate
     #   kubernetes
-    #   nose2
     #   orderedmultidict
     #   plotly
     #   python-dateutil
@@ -418,13 +424,13 @@ sympy==1.4
     # via
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-core/requirements.in
-table-logger @ git+https://github.com/AleksTk/table-logger.git@refs/pull/11/head
+table-logger @ git+https://github.com/AleksTk/table-logger.git@v0.3.7
     # via -r ./sostrades-ontology/requirements.in
 tenacity==8.2.3
     # via plotly
 textdistance==4.2.0
     # via -r ./sostrades-ontology/requirements.in
-threadpoolctl==3.2.0
+threadpoolctl==3.3.0
     # via scikit-learn
 tomli==2.0.1
     # via
@@ -438,7 +444,7 @@ tqdm==4.61.0
     #   -r ./witness-core/requirements.in
 trino==0.327.0
     # via -r ./sostrades-core/requirements.in
-typing-extensions==4.9.0
+typing-extensions==4.10.0
     # via
     #   alembic
     #   black
@@ -461,7 +467,7 @@ xdsmjs==1.0.1
     # via -r ./gemseo/requirements.txt
 xmlsec==1.3.13
     # via python3-saml
-zipp==3.17.0
+zipp==3.18.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
