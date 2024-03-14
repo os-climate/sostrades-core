@@ -69,16 +69,16 @@ class SoSMDAChain(MDAChain):
                             "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
     RESIDUALS_HISTORY = "residuals_history"
     NUM_DESC_IN = {
-        SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', 
+        SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',
                                               # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                               NUMERICAL: True},
-        CACHE_TYPE: {TYPE: 'string', 
+        CACHE_TYPE: {TYPE: 'string', DEFAULT: 'None',
                      # POSSIBLE_VALUES: ['None', MDODiscipline.SIMPLE_CACHE],
                      # ['None', MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                      NUMERICAL: True,
                      STRUCTURING: True},
-        CACHE_FILE_PATH: {TYPE: 'string',  NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
-        DEBUG_MODE: {TYPE: 'string', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
+        CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
+        DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                      NUMERICAL: True, STRUCTURING: True}
     }
 

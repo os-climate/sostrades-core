@@ -65,7 +65,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #     self.built_sos_disciplines = None
     PROPAGATE_CACHE = 'propagate_cache_to_children'
     NUM_DESC_IN = {PROPAGATE_CACHE: {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
-                                     ProxyDiscipline.NUMERICAL: True,
+                                     ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,
                                      ProxyDiscipline.STRUCTURING: True},
                    }
     NUM_DESC_IN.update(ProxyDiscipline.NUM_DESC_IN)
