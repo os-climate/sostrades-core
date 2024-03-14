@@ -23,28 +23,38 @@ import numpy as np
 
 class StudyManager(BaseStudyManager):
 
-    def __init__(self, process_module_name:str, study_name, run_usecase=True, execution_engine=None):
+    def __init__(self, file_path, run_usecase=True, execution_engine=None):
         """
         Constructor
 
-        :params: process_module_name, module name of the process, ex : sostrades_core.sos_processes.process_name
-        :type: str
-
-        :params: study_name, Name of the study
+        :params: file_path, path of the file of the usecase
         :type: str
         """
+        # get the process folder name
+        study_file_path = abspath(file_path)
+        study_file_name = splitext(basename(study_file_path))[0]
+        module_path = dirname(study_file_path)
+        process_name = basename(module_path)
+
+        # Find the module path
+        module_path = dirname(module_path)
+        module_path_list = []
+
+        # Check if __init__.py exists in the parent directory
+        # If yes, it is a module
+        # If not, we stop
+        while exists(join(module_path, '__init__.py')):
+            module_path_list.append(basename(module_path))
+            module_path = dirname(module_path)
+
+        repository_name = '.'.join(module_path_list[::-1])
+
         # init dspace dict
         self.dspace = {}
         self.dspace['dspace_size'] = 0
 
-        process_module_name_split = process_module_name.split(".")
-
-        super().__init__(
-            repository_name=".".join(process_module_name_split[:-1]),
-            process_name=process_module_name_split[-1],
-            study_name=study_name,
-            run_usecase=run_usecase,
-            execution_engine=execution_engine)
+        super().__init__(repository_name, process_name, study_file_name,
+                         run_usecase=run_usecase, execution_engine=execution_engine)
 
     def update_dspace_with(self, name, value, lower, upper):
         ''' type(value) has to be ndarray
