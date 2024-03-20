@@ -17,7 +17,8 @@
         "ipynb",
         "zip",
         "rst",
-        "ini"
+        "ini",
+        "coveragerc"
     ],
     "files_to_ignore" : ["sostrades_core/execution_engine/gemseo_addon/mda/gauss_seidel.py",
     ".readthedocs.yaml",
