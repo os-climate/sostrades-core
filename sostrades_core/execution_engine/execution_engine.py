@@ -30,8 +30,6 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.data_connector.data_connector_factory import (
-    PersistentConnectorContainer, ConnectorFactory)
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
 
 
@@ -90,8 +88,6 @@ class ExecutionEngine:
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.check_data_integrity: bool = True
-        self.__connector_container = PersistentConnectorContainer(
-            logger=self.logger.getChild("PersistentConnectorContainer"))
 
     @property
     def factory(self) -> SosFactory:
@@ -110,14 +106,6 @@ class ExecutionEngine:
             :type: PostProcessingManager
         """
         return self.__post_processing_manager
-
-    @property
-    def connector_container(self) -> PersistentConnectorContainer:
-        """
-        Read-only accessor on the connector_container object
-        :return: PersistentConnectorContainer
-        """
-        return self.__connector_container
 
     # -- Public methods
     def select_root_process(self, repo, mod_id):
@@ -184,120 +172,8 @@ class ExecutionEngine:
         self.clean_unused_namespaces()
 
         self.__factory.init_execution()
-        self.fill_data_connector_prepare_exec()
         # - execution
         self.root_process.prepare_execution()
-
-    def fill_data_connector_prepare_exec(self):
-        """
-        Mehtod called in prepare_execution
-        Checks if a namespace is related to a database, create connector, load data and fill dm with the collected data
-        """
-
-        def load_data_for_ns_with_connector(namespace, database_info):
-            """
-            Load data for given namespace using associated connector
-            :param namespace: Namespace for which data is retrieved from the database
-            :type: Namespace
-            :param database_infos: database informations 
-            :type: dict  
-            :return connector: create connector
-            :type AbstractDataConnector
-            :return database_data: loaded data from database
-            :type dict, pandas.DataFrame
-            """
-
-            # set namespace database infos
-            namespace.database_infos = database_info
-            database_label = database_info['database_label']
-            # create (or get if already exists) connector 
-            connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'],
-                                                                               database_label,
-                                                                               conf_data[database_label][
-                                                                                   'connection_data'])
-            # load data using created connector
-            database_data = connector.load_data(namespace.database_infos['database_query'])
-            self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
-
-            return connector, database_data
-
-        # if database is activated
-        if self.ns_manager.database_infos is not None:
-            if self.ns_manager.database_conf_path is not None:
-                loaded_data = {}
-                connector_dict = {}
-                # load configuration file of databases
-                with open(self.ns_manager.database_conf_path, 'r') as openfile:
-                    conf_data = json.load(openfile)
-                # create connectors and pull data for shared namespaces
-                if 'shared_ns' in self.ns_manager.database_infos:
-                    for ns_id, database_info in self.ns_manager.database_infos['shared_ns'].items():
-                        # check if ns_id if all_ns_dict
-                        if ns_id in self.ns_manager.all_ns_dict:
-                            # get namespace using namespace id
-                            ns = self.ns_manager.all_ns_dict[ns_id]
-                            # get data for shared namespace
-                            self.logger.info(f"Loading data in database for shared namespace {ns_id}")
-                            connector, database_data = load_data_for_ns_with_connector(ns, database_info)
-                            # store data and connector for later use
-                            connector_dict[ns_id] = connector
-                            loaded_data[ns_id] = database_data
-
-                # create connectors and pull data for local namespaces
-                if 'local_ns' in self.ns_manager.database_infos:
-                    for disc_id, database_info in self.ns_manager.database_infos['local_ns'].items():
-                        # discipline name is unique
-                        disc = self.dm.get_disciplines_with_name(disc_id)[0]
-                        # get local ns of discipline 
-                        ns = self.ns_manager.get_local_namespace(disc)
-                        self.logger.info(f"Loading data in database for local variables of discipline {disc_id}")
-                        # get data for local namespace
-                        connector, database_data = load_data_for_ns_with_connector(ns, database_info)
-                        ns_id = ns.get_ns_id()
-                        connector_dict[ns_id] = connector
-                        loaded_data[ns_id] = database_data
-
-                # TODO must be refactored to not loop on all variables
-                for var_id, dict_val in self.dm.data_dict.items():
-                    # loop on all variable, get associated namespace and get data from loaded database using correct method
-                    var_name = dict_val[ProxyDiscipline.VAR_NAME]
-                    ns_var = dict_val[ProxyDiscipline.NS_REFERENCE]
-                    ns_id = ns_var.get_ns_id()
-                    if ns_id in loaded_data and ns_id in connector_dict:
-                        # get variable value from loaded database with the used connector
-                        loaded_value = connector_dict[ns_id].get_data_from_loaded_db(loaded_data[ns_id], var_name)
-                        if loaded_value is not None:
-                            # log variable name as from database
-                            self.logger.info(f"Loading variable {var_name} from database")
-                            # set value got from database in data dict
-                            dict_val[ProxyDiscipline.VALUE] = loaded_value
-            else:
-                self.logger.warning("Database activated but no path is set, database can't be loaded")
-
-    def fill_data_in_with_connector(self):
-        """
-        Use data connector if needed, in the following case
-        1) data is in input, and come from the output of another model --> no data connector used
-        2) data is in output --> no data connector use here
-        is in input, and does not come from another model --> data connector is used
-        """
-
-        dm_data_dict = self.dm.data_dict
-        for variable_id in dm_data_dict:
-            data = None
-            # if connector is needed
-            if ProxyDiscipline.CONNECTOR_DATA in dm_data_dict[variable_id]:
-                if dm_data_dict[variable_id][ProxyDiscipline.CONNECTOR_DATA] is not None:
-                    if dm_data_dict[variable_id][ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN:
-                        # if variable io_type is in --> use data_connector
-                        data = ConnectorFactory.use_data_connector(
-                            dm_data_dict[variable_id][ProxyDiscipline.CONNECTOR_DATA],
-                            self.logger)
-                    # else, variable is an output of a disc --> no use of data
-                    # connector
-
-            if data is not None:  # update variable value
-                dm_data_dict[variable_id][ProxyDiscipline.VALUE] = data
 
     def __configure_io(self):
         self.logger.info('Configuring IO...')
@@ -781,7 +657,6 @@ class ExecutionEngine:
         '''
         self.logger.info('PROCESS EXECUTION %s STARTS...', self.root_process.get_disc_full_name())
         #         self.root_process.clear_cache()
-        self.fill_data_in_with_connector()
         self.update_from_dm()
 
         self.__check_data_integrity_msg()

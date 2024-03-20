@@ -36,7 +36,6 @@ from numpy import ndarray
 from numpy import int32 as np_int32, float32 as np_float32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
 from numpy import bool_ as np_bool
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
-from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
     convert_new_type_into_array

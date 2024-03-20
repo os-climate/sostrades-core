@@ -214,7 +214,7 @@ class BaseStudyManager():
         logger.info(message)
 
 
-    def load_data(self, from_path=None, from_input_dict=None, display_treeview=True, from_connectors_dict=None):
+    def load_data(self, from_path=None, from_input_dict=None, display_treeview=True):
         """ Method that load data into the execution engine
 
         :params: from_path, location of pickle file to load (optional parameter)
@@ -257,8 +257,6 @@ class BaseStudyManager():
         # import ipdb
         # ipdb.set_trace()
         self.execution_engine.load_study_from_input_dict(input_dict_to_load)
-        self.load_connectors(
-            from_dict=from_connectors_dict, from_path=from_path)
         self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
@@ -279,41 +277,6 @@ class BaseStudyManager():
 
         """
         pass
-
-    def load_connectors(self, from_dict=None, from_path=None):
-        """Method that load connectors into the execution engine
-
-        :params: from_dict, connectors to save in dm
-        :type: dict
-
-        :params: from_path, study folder path to get connectors into file and to set them in dm
-        :type: str
-        """
-        connectors_dict = {}
-        if from_dict is not None:
-            # connector list is given in input
-            connectors_dict = from_dict
-        else:
-            # if there is no from path, we get the data from dump directory
-            if from_path is None and self.dump_directory is not None and isdir(self.dump_directory):
-                from_path = self.dump_directory
-            # else we get it from the path in input
-
-            if from_path is not None:
-                # get connectors from file data
-                serializer = DataSerializer(root_dir=from_path)
-                ## TODO : Hard fix need to understand why we need a dm.pkl to load connector ? FOr the first load of a never dumped usecase it crashes
-                try:
-                    loaded_dict = serializer.get_dict_from_study(
-                        from_path, self.__rw_strategy)
-                except:
-                    loaded_dict = {}
-                for key, param_data in loaded_dict.items():
-                    if ProxyDiscipline.CONNECTOR_DATA in param_data.keys():
-                        connectors_dict[key] = param_data[ProxyDiscipline.CONNECTOR_DATA]
-
-        if len(connectors_dict) > 0:
-            self.execution_engine.load_connectors_from_dict(connectors_dict)
 
     def dump_data(self, study_folder_path: Optional[str] = None):
         """ Method that dump data from the execution engine to a file

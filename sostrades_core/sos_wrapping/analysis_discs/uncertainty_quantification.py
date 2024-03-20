@@ -200,21 +200,6 @@ class UncertaintyQuantification(SoSWrapp):
                     parameter_list = in_param + out_param
                     parameter_list = [val.split('.')[-1] for val in parameter_list]
 
-                    # ontology_connector = (
-                    #     self.ee.connector_container.get_persistent_connector(
-                    #         GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER
-                    #     )
-                    # )
-                    # if ontology_connector is not None:
-                    #     data_request = {
-                    #         OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
-                    #         OntologyDataConnector.REQUEST_ARGS: parameter_list,
-                    #     }
-                    #     conversion_full_ontology = ontology_connector.load_data(
-                    #         data_request
-                    #     )
-                    # else:
-                    # Cannot make a call to ontology so set default data
                     conversion_full_ontology = {
                         parameter: [parameter, ''] for parameter in parameter_list
                     }

@@ -18,7 +18,6 @@ limitations under the License.
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
 import logging
 # debug mode
 from copy import deepcopy
@@ -98,9 +97,6 @@ class SoSMDODiscipline(MDODiscipline):
         local_data = self.sos_wrapp._run()
         # local data update
         self.store_local_data(**local_data)
-
-        # get output from data connector
-        self.fill_output_value_connector()
 
         # debug modes
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
@@ -351,20 +347,6 @@ class SoSMDODiscipline(MDODiscipline):
 
     # def io_short_name_to_full(self, short_name_key):
     #     return self.io_full_name_map[short_name_key]
-
-    def fill_output_value_connector(self):
-        """
-        Get value of output variables with data connectors and update local_data.
-        """
-        updated_values = {}
-        for key in self.get_output_data_names():
-            # if data connector is needed, use it
-            if self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA] is not None:
-                updated_values[key] = ConnectorFactory.use_data_connector(
-                    self.reduced_dm[key][SoSWrapp.CONNECTOR_DATA],
-                    self.logger)
-
-        self.store_local_data(**updated_values)
 
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """
