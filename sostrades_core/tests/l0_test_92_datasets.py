@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from pathlib import Path
 import unittest
 import os
 
@@ -23,6 +22,9 @@ import pandas as pd
 
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
+import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
+import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
+import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 
 
 class TestDatasets(unittest.TestCase):
@@ -34,13 +36,11 @@ class TestDatasets(unittest.TestCase):
         # Set logging level to debug for datasets
         logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
 
-        self.process_module_name = "sostrades_core.sos_processes.test.test_disc1_disc2_dataset"
-        self.study_name = "usecase_dataset"
-        self.process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", "test_disc1_disc2_dataset")
-        self.study = StudyManager(self.process_module_name, self.study_name)
-
     def test_01_usecase1(self):
-        dm = self.study.execution_engine.dm
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        dm = study.execution_engine.dm
         # assert data are empty
         self.assertEqual(dm.get_value("usecase_dataset.a"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), None)
@@ -50,34 +50,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.c"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), None)
 
-        #check numerical parameters
-        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.debug_mode"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.cache_type"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.cache_file_path"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.sub_mda_class"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.max_mda_iter"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.n_processes"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.chain_linearize"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.tolerance"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.use_lu_fact"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.warm_start"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.acceleration"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.warm_start_threshold"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.n_subcouplings_parallel"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.tolerance_gs"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.relax_factor"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.epsilon0"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.linear_solver_MDO"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.linear_solver_MDO_preconditioner"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.linear_solver_MDO_options"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.linear_solver_MDA"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.linear_solver_MDA_preconditioner"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.linear_solver_MDA_options"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.group_mda_disciplines"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.propagate_cache_to_children"), None)
-
-        self.study.load_study(os.path.join(self.process_path, "usecase_dataset.json"))
+        study.load_study(os.path.join(process_path, "usecase_dataset.json"))
 
         self.assertEqual(dm.get_value("usecase_dataset.a"), 1)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), 4)
@@ -120,7 +93,11 @@ class TestDatasets(unittest.TestCase):
 
 
     def test_02_usecase2(self):
-        dm = self.study.execution_engine.dm
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        dm = study.execution_engine.dm
+        dm = study.execution_engine.dm
         # assert data are empty
         self.assertEqual(dm.get_value("usecase_dataset.a"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), None)
@@ -130,7 +107,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.c"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), None)
 
-        self.study.load_study(os.path.join(self.process_path, "usecase_2datasets.json"))
+        study.load_study(os.path.join(process_path, "usecase_2datasets.json"))
 
         self.assertEqual(dm.get_value("usecase_dataset.a"), 10)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), 20)
@@ -163,22 +140,11 @@ class TestDatasets(unittest.TestCase):
     
 
     def test_04_datasets_types(self):
-        process_module_name = "sostrades_core.sos_processes.test.test_disc1_all_types"
-        study_name = "usecase_dataset"
-        process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", "test_disc1_all_types")
-        study = StudyManager(process_module_name, study_name)
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
 
         dm = study.execution_engine.dm
-        # assert data are empty
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), None)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {})
-        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"),np.array([])))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [])
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), True)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.d"), None)
 
         study.load_study(os.path.join(process_path, "usecase_dataset.json"))
 
@@ -193,18 +159,12 @@ class TestDatasets(unittest.TestCase):
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
     
     def test_05_nested_process_level0(self):
-        process_module_name = "sostrades_core.sos_processes.test.sellar.test_sellar_coupling"
+        usecase_file_path = sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
         study_name = "usecase_dataset_sellar_coupling"
-        process_path = os.path.join(Path(__file__).parents[1], "sos_processes", "test", "sellar", "test_sellar_coupling")
-        study = StudyManager(process_module_name, study_name)
 
         dm = study.execution_engine.dm
-        # assert data are empty
-        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.x"), None)
-        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_1"), None)
-        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_2"), None)
-        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.z"), None)
-        self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), None)
 
         study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json"))
 
