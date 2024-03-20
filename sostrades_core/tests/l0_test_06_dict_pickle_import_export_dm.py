@@ -292,7 +292,7 @@ class TestSerializeDF(unittest.TestCase):
             if a_file == 'dm_values':
                 n_p = ref_df.loc[st_name + '.n_processes']['value']
                 key_ns = 'TestDiscAllTypes.n_processes'
-                out_df.loc[key_ns]['value'] = n_p
+                out_df.loc[key_ns, 'value'] = n_p
 
             self.assertTrue(ref_df.equals(out_df),
                             f'exported csv files differ:\n{exp_f_p}\nVS\n{out_f_p}')

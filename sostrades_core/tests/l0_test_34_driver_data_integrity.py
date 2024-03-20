@@ -125,7 +125,7 @@ class TestDriverDataIntegrity(unittest.TestCase):
         dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        samples_df['scenario_name'].iloc[2] = 'scenario_1'
+        samples_df.iloc[2].loc['scenario_name'] = 'scenario_1'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         exp_tv = 'Nodes representation for Treeview MyCase\n' \

@@ -33,7 +33,7 @@ from sostrades_core.sos_processes.test.test_disc1_data_connector_dremio.usecase 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
-class TestMetadataDiscipline(SoSWrapp):
+class MetadataDisciplineTest(SoSWrapp):
     """
     Discipline to test desc_in metadata for connector
     """
@@ -54,7 +54,7 @@ class TestMetadataDiscipline(SoSWrapp):
         print(self.deliveries)
 
 
-class TestWriteDataDiscipline(SoSWrapp):
+class WriteDataDisciplineTest(SoSWrapp):
     """
     Discipline to test writting data with connector
     """
@@ -169,7 +169,7 @@ class TestDataConnector(unittest.TestCase):
         """
         ns_dict = {'ns_market_deliveries': self.name}
         self.ee.ns_manager.add_ns_def(ns_dict)
-        mod_path = 'sostrades_core.tests.l0_test_56_data_connector.TestMetadataDiscipline'
+        mod_path = 'sostrades_core.tests.l0_test_56_data_connector.MetadataDisciplineTest'
         builder = self.ee.factory.get_builder_from_module(
             self.model_name, mod_path)
         self.ee.factory.set_builders_to_coupling_builder(builder)
@@ -239,7 +239,7 @@ class TestDataConnector(unittest.TestCase):
         """
         ns_dict = {'ns_market_deliveries': self.name}
         self.ee.ns_manager.add_ns_def(ns_dict)
-        mod_path = 'sostrades_core.tests.l0_test_56_data_connector.TestWriteDataDiscipline'
+        mod_path = 'sostrades_core.tests.l0_test_56_data_connector.WriteDataDisciplineTest'
         builder = self.ee.factory.get_builder_from_module(
             self.model_name, mod_path)
         self.ee.factory.set_builders_to_coupling_builder(builder)
