@@ -348,7 +348,7 @@ class DataManager:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
 
-    def fill_data_dict_from_dict(self, values_dict: dict[str:Any], already_set_data: set[str]) -> None:
+    def fill_data_dict_from_dict(self, values_dict: dict[str:Any], already_set_data: set[str], in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None:
         '''
         Set values in data_dict from dict with namespaced keys
         
@@ -357,6 +357,15 @@ class DataManager:
         
         :param already_set_data: set of data already set
         :type already_set_data: set[str]
+        
+        :param in_vars: set in vars
+        :type in_vars: bool
+        
+        :param init_coupling_vars: init coupling vars
+        :type init_coupling_vars: bool
+        
+        :param out_vars: set out vars
+        :type out_vars: bool
         '''
         # keys of data stored in dumped study file are namespaced, convert them
         # to uuids
@@ -366,15 +375,25 @@ class DataManager:
         for key, value in self.data_dict.items():
             if key in convert_values_dict:
                 # Only inject key which are set as input
-                # Discipline configuration only take care of input
-                # variables
+                # Discipline configuration only take care of input variables
                 # Variables are only set once
-                if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and not key in already_set_data:
+                is_in_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
+                if in_vars and is_in_var and not key in already_set_data:
+                    value["value"] = convert_values_dict[key]["value"]
+                    already_set_data.add(key)
+
+                    
+                # check if the key is an output variable
+                is_output_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
+                # check if this is a strongly coupled input necessary to
+                # initialize a MDA
+                is_init_coupling_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING]
+                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
                     value["value"] = convert_values_dict[key]["value"]
                     already_set_data.add(key)
 
     def fill_data_dict_from_datasets(
-        self, datasets_mapping: DatasetsMapping, already_set_data: set[str]
+        self, datasets_mapping: DatasetsMapping, already_set_data: set[str], in_vars:bool, init_coupling_vars:bool, out_vars:bool
     ) -> None:
         '''
         Set values in data_dict from datasets
@@ -384,6 +403,15 @@ class DataManager:
         
         :param already_set_data: set of data already set
         :type already_set_data: set[str]
+        
+        :param in_vars: set in vars
+        :type in_vars: bool
+        
+        :param init_coupling_vars: init coupling vars
+        :type init_coupling_vars: bool
+        
+        :param out_vars: set out vars
+        :type out_vars: bool
         '''
         # do a map between namespace and data from data_dict not already fetched
         # to have a list of data by namespace
@@ -391,8 +419,14 @@ class DataManager:
         KEY = 'key'
         
         for key, data_value in self.data_dict.items():
+            # check if the key is an output variable
+            is_output_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
+            # check if this is a strongly coupled input necessary to
+            # initialize a MDA
+            is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[ProxyDiscipline.COUPLING]
             # get all input values not already set
-            if data_value[IO_TYPE] == IO_TYPE_IN and not key in already_set_data:
+            is_in_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
+            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
                 data_ns = data_value[NS_REFERENCE].value
                 data_name = data_value[VAR_NAME]
                 data_type = data_value[TYPE]
