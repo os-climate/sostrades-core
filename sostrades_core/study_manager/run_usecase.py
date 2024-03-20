@@ -58,6 +58,7 @@ def run_usecase(dataset_mapping_json_file:str):
     # study_name => study_001_test
     study_name = ".".join(os.path.basename(dataset_mapping_json_file).split(".")[:-1])
 
+    # TODO fix this, may not work with latest changes
     uc_cls = StudyManager(process_module_name=process_module_name, study_name=study_name)
     uc_cls.load_study(dataset_mapping_json_file)
     uc_cls.run()

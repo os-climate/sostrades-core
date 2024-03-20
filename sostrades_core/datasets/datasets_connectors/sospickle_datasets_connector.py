@@ -219,8 +219,3 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
         
         self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
-
-if __name__ == "__main__":
-    file_path = os.path.join(os.path.dirname(__file__), "uc1_test_damage_ggo.pickle")
-    connector = SoSPickleDatasetsConnector(file_path=file_path)
-    print(connector.get_values_all("<study_ph>2.Macroeconomics").keys())

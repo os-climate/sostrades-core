@@ -258,32 +258,3 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
                 self.db.create_collection(name=mapping[dataset_identifier])
 
         self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
-
-    
-
-if __name__ == "__main__":
-    """
-    Example usage using docker deployment for arango
-    """
-    
-    logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
-    connector_values = {
-        "host": "http://127.0.0.1:8529",
-        "db_name": "os-climate",
-        "username": "root",
-        "password": "ArangoDB_BfPM",
-    }
-
-    connector = ArangoDatasetsConnector(**connector_values)
-    # Write values
-    connector.write_values(dataset_identifier="test_dataset_collection", values_to_write={"x": 1, "y": "str_y2"})
-
-    # Read values
-    print(connector.get_values(dataset_identifier="test_dataset_collection", data_to_get={"x":'int', "y":'string'}))
-
-    # Read dataset
-    print(connector.get_values_all(dataset_identifier="test_dataset_collection"), data_to_get={"x":'int', "y":'string'})
-
-    # Write dataset
-    #connector.write_dataset(dataset_identifier="test_dataset_collection_2", values_to_write={"x": 1, "y": "str_y2"})
-    print(connector.get_datasets_available())
