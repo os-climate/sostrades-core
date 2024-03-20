@@ -19,7 +19,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import logging
 from copy import copy
-from typing import Any, List
+from typing import Any
 from uuid import uuid4
 from hashlib import sha256
 

@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 """
