@@ -3,13 +3,13 @@
         "connector_id":"MVP0_datasets_connector",
         "connector_type":"JSON",
         "connector_args": {
-            "file_path":"./platform/sostrades-core/sostrades_core/tests/data/test_92_datasets_db.json"
+            "file_path":"./sostrades_core/tests/data/test_92_datasets_db.json"
         }
     },{
         "connector_id":"Sospickle",
         "connector_type":"SoSpickle",
         "connector_args": {
-            "file_path":"./platform/sostrades-core/sostrades_core/datasets/datasets_connectors/uc1_test_damage_ggo.pickle"
+            "file_path":"./sostrades_core/datasets/datasets_connectors/uc1_test_damage_ggo.pickle"
         }
     }
 ]
