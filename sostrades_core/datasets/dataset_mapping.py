@@ -82,7 +82,7 @@ class DatasetsMapping:
                     sub_namespace_datasets_mapping = sub_mapping.get_namespace_datasets_mapping_for_parent(namespace)
                     namespace_datasets_mapping.update(sub_namespace_datasets_mapping)
                 else:
-                    raise Exception("the dataset mapping file does not exists")
+                    raise Exception(f"The dataset mapping file {sub_process_mapping_path} does not exists")
                 
         # Parse datasets info
         if DatasetsMapping.DATASETS_INFO_KEY in input_dict.keys():
