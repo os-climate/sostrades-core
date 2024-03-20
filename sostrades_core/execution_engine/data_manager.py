@@ -348,7 +348,7 @@ class DataManager:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
 
-    def fill_data_dict_from_dict(self, values_dict: dict[str:Any], already_set_data: set[str]) -> dict[str:Any]:
+    def fill_data_dict_from_dict(self, values_dict: dict[str:Any], already_set_data: set[str]) -> None:
         '''
         Set values in data_dict from dict with namespaced keys
         
@@ -358,21 +358,24 @@ class DataManager:
         :param already_set_data: set of data already set
         :type already_set_data: set[str]
         '''
+        # keys of data stored in dumped study file are namespaced, convert them
+        # to uuids
+        convert_values_dict = self.convert_data_dict_with_ids(values_dict)
+
         # convert data_dict with uuids
         for key, value in self.data_dict.items():
-            if key in values_dict:
+            if key in convert_values_dict:
                 # Only inject key which are set as input
                 # Discipline configuration only take care of input
                 # variables
                 # Variables are only set once
                 if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and not key in already_set_data:
-                    value["value"] = values_dict[key]["value"]
+                    value["value"] = convert_values_dict[key]["value"]
                     already_set_data.add(key)
-        return values_dict
 
     def fill_data_dict_from_datasets(
         self, datasets_mapping: DatasetsMapping, already_set_data: set[str]
-    ) -> dict[str:Any]:
+    ) -> None:
         '''
         Set values in data_dict from datasets
 
@@ -381,8 +384,6 @@ class DataManager:
         
         :param already_set_data: set of data already set
         :type already_set_data: set[str]
-
-        :return: loaded_data_dict, dict of data ids with data values set in dm
         '''
         # do a map between namespace and data from data_dict not already fetched
         # to have a list of data by namespace
@@ -402,7 +403,6 @@ class DataManager:
                 namespaced_data_dict[data_ns][TYPE][data_name] = data_type
 
         # iterate on each namespace to retrieve data in this namespace
-        loaded_data_dict = {}
         for namespace, data_dict in namespaced_data_dict.items():
             datasets_info = datasets_mapping.get_datasets_info_from_namespace(namespace, self.name)
             # retrieve the list of dataset associated to the namespace from the mapping
@@ -415,13 +415,9 @@ class DataManager:
                 for data_name, value in updated_data.items():
                     key = data_dict[KEY][data_name]
                     self.data_dict[key][VALUE] = value
-                    loaded_data_dict[key] = value  # save witch data has been retrieved
+                    already_set_data.add(key)
             else:
                 self.logger.warning(f"the namespace {namespace} is not referenced in the datasets mapping of the study")
-
-        # update the already set data list for the next loop
-        already_set_data.update(loaded_data_dict.keys())
-        return loaded_data_dict
 
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys
@@ -555,7 +551,6 @@ class DataManager:
             f'store and update the discipline data into the DM dictionary {list(disc_dict.keys())[:10]} ...')
 
         def _dm_update(var_name, io_type, var_f_name):
-            
             if var_f_name in self.data_id_map.keys():
                 # If data already exists in DM
                 var_id = self.get_data_id(var_f_name)

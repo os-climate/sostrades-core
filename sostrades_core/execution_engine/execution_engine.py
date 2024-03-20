@@ -587,22 +587,21 @@ class ExecutionEngine:
             for key, value in dict_to_load.items():
                 converted_key = anonymize_function(key)
                 data_cache.update({converted_key: value})
-        convert_data_cache = self.dm.convert_data_dict_with_ids(data_cache)
 
         # call the configure function with the set dm data from dict
-        self.configure_study_with_data(convert_data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
+        self.configure_study_with_data(data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
 
     def configure_study_with_data(
         self,
         dict_or_datasets_to_load: Union[dict, DatasetsMapping],
-        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str]], dict[str:Any]],
+        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str]], None],
         update_status_configure: bool,
     ):
         '''
         method that insert data into dm and configure the process
 
         :param set_data_in_dm_function: a function sets data in datamanager data_dict using dict_or_datasets_to_load, with signature:
-        set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: set of data name) -> dict[str:Any] list of loaded data
+        set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: set of data name) -> None
         :type set_data_in_dm_function: Callable
 
         '''
@@ -622,13 +621,12 @@ class ExecutionEngine:
 
             self.dm.no_change = True
             # call the function that will set data in dm
-            loaded_data = set_data_in_dm_function(dict_or_datasets_to_load, checked_keys)
+            set_data_in_dm_function(dict_or_datasets_to_load, checked_keys)
 
             self.__configure_io()
 
             if self.__yield_method is not None:
                 self.__yield_method()
-            convert_data_cache = self.dm.convert_data_dict_with_ids(loaded_data)
 
             iteration = iteration + 1
 
@@ -641,8 +639,9 @@ class ExecutionEngine:
 
         # Convergence is ended
         # Set all output variables and strong couplings
+        convert_values_dict = self.dm.convert_data_dict_with_ids(dict_or_datasets_to_load)
         for key, value in self.dm.data_dict.items():
-            if key in convert_data_cache:
+            if key in convert_values_dict:
                 # check if the key is an output variable
                 is_output_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
                 # check if this is a strongly coupled input necessary to
@@ -651,7 +650,7 @@ class ExecutionEngine:
                     value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING]
                 )
                 if is_output_var or is_init_coupling_var:
-                    value["value"] = convert_data_cache[key]["value"]
+                    value["value"] = convert_values_dict[key]["value"]
 
         if self.__yield_method is not None:
             self.__yield_method()
@@ -659,7 +658,7 @@ class ExecutionEngine:
         #         self.__configure_execution()
 
         # -- Init execute, to fully initialize models in discipline
-        if len(loaded_data):
+        if len(checked_keys):
             self.update_from_dm()
             self.dm.create_reduced_dm()
             if update_status_configure:
