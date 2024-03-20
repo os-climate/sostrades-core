@@ -587,9 +587,10 @@ class ExecutionEngine:
             for key, value in dict_to_load.items():
                 converted_key = anonymize_function(key)
                 data_cache.update({converted_key: value})
+        convert_data_cache = self.dm.convert_data_dict_with_ids(data_cache)
 
         # call the configure function with the set dm data from dict
-        self.configure_study_with_data(data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
+        self.configure_study_with_data(convert_data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
 
     def configure_study_with_data(
         self,
