@@ -191,7 +191,6 @@ numpy==1.24.3
     #   osqp
     #   pandas
     #   pdfo
-    #   petsc4py
     #   pydoe2
     #   pymoo
     #   pyxdsm
@@ -232,10 +231,6 @@ pandas==2.2.1
 pathspec==0.12.1
     # via black
 pdfo==1.0 ; python_version >= "3"
-    # via -r ./gemseo/requirements.txt
-petsc==3.20.5
-    # via petsc4py
-petsc4py==3.20.5 ; platform_system != "Windows"
     # via -r ./gemseo/requirements.txt
 pillow==10.2.0
     # via matplotlib
