@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
 
 class Study(StudyManager):
@@ -22,3 +23,9 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         return []
+
+    def get_dataset_mapping(self):
+        # Get dataset file
+        datasets_file = __file__.replace(".py", ".json")
+        # Deserialize it
+        return DatasetsMapping.from_json_file(datasets_file)

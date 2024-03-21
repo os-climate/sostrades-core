@@ -213,7 +213,6 @@ class BaseStudyManager():
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
 
-
     def load_data(self, from_path=None, from_input_dict=None, display_treeview=True, from_connectors_dict=None):
         """ Method that load data into the execution engine
 
@@ -245,6 +244,8 @@ class BaseStudyManager():
         else:
             usecase_data = self.setup_usecase(study_folder_path=from_path)
 
+        datasets_mapping = self.get_dataset_mapping()
+
         if not isinstance(usecase_data, list):
             usecase_data = [usecase_data]
         input_dict_to_load = {}
@@ -256,6 +257,10 @@ class BaseStudyManager():
         # import ipdb
         # ipdb.set_trace()
         self.execution_engine.load_study_from_input_dict(input_dict_to_load)
+
+        # Load datasets data
+        if datasets_mapping is not None:
+            self.execution_engine.load_study_from_dataset(datasets_mapping=datasets_mapping)
         self.load_connectors(from_dict=from_connectors_dict, from_path=from_path)
         self.specific_check_inputs()
         if display_treeview:
@@ -495,6 +500,14 @@ class BaseStudyManager():
         # manage what to dump for the cache
         self.manage_dump_cache()
         self.dump_cache(dump_dir)
+
+    def get_dataset_mapping(self) -> Optional[DatasetsMapping]:
+        """ Method to overload in order to provide datasets mapping to load
+
+        :return: Optional[DatasetsMapping]
+        """
+
+        return None
 
     def setup_usecase(self, study_folder_path=None):
         """ Method to overload in order to provide data to the loaded study process

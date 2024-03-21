@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
 import time
 
@@ -25,6 +26,12 @@ class Study(StudyManager):
 
     def setup_usecase(self):
         return {}
+
+    def get_dataset_mapping(self):
+        # Get dataset file
+        datasets_file = __file__.replace(".py", ".json")
+        # Deserialize it
+        return DatasetsMapping.from_json_file(datasets_file)
 
 
 if '__main__' == __name__:
