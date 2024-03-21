@@ -243,8 +243,7 @@ class BaseStudyManager():
         elif from_path is None:
             usecase_data = self.setup_usecase()
         else:
-            usecase_data = self.setup_usecase(
-                study_folder_path=from_path)
+            usecase_data = self.setup_usecase(study_folder_path=from_path)
 
         if not isinstance(usecase_data, list):
             usecase_data = [usecase_data]
@@ -257,8 +256,7 @@ class BaseStudyManager():
         # import ipdb
         # ipdb.set_trace()
         self.execution_engine.load_study_from_input_dict(input_dict_to_load)
-        self.load_connectors(
-            from_dict=from_connectors_dict, from_path=from_path)
+        self.load_connectors(from_dict=from_connectors_dict, from_path=from_path)
         self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
