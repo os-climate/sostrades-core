@@ -21,8 +21,7 @@ import logging
 from copy import copy
 from uuid import uuid4
 from hashlib import sha256
-from copy import deepcopy
-from numpy import can_cast
+from pandas import concat
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
@@ -729,7 +728,8 @@ class DataManager:
             df = sosc.export_couplings()
             for sosc in sosc_list:
                 df_sosc = sosc.export_couplings()
-                df = df.append(df_sosc, ignore_index=True)
+
+                df = concat([df, df_sosc], ignore_index=True)
             # write data or return dataframe
             if in_csv:
                 # writing of the file
