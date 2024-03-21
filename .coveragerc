@@ -1,13 +1,14 @@
 [run]
+relative_files = True
 branch = True
 omit = 
     */tests/*
     */__init__.py
 	docs/
 
-[report]
-show_missing = True
-omit = sos_trades_core/sos_processes/*,sos_trades_core/tools/yaml/*,sos_trades_core/tools/controllers/*,sos_trades_core/tools/cst_manager/*,sos_trades_core/tools/time_logger/*
-exclude_lines =
-    raise NotImplementedError
-    if __name__ == .__main__.:
+# [report]
+# show_#issing = True
+# omit = sos_trades_core/sos_processes/*,sos_trades_core/tools/yaml/*,sos_trades_core/tools/controllers/*,sos_trades_core/tools/cst_manager/*,sos_trades_core/tools/time_logger/*
+# exclude_lines =
+#     raise NotImplementedError
+#     if __name__ == .__main__.:
