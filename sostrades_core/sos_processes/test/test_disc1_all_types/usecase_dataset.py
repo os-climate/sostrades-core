@@ -14,10 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
-from sostrades_core.study_manager.run_usecase import run_usecase
 from sostrades_core.study_manager.study_manager import StudyManager
-from os.path import join, dirname
 
 class Study(StudyManager):
 

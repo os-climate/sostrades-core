@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.study_manager.study_manager import StudyManager
-from numpy import array
-from sostrades_core.study_manager.run_usecase import run_usecase
-from os.path import join, dirname
 
 class Study(StudyManager):
 
