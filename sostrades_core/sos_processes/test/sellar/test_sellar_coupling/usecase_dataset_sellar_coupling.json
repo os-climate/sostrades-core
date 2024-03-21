@@ -14,6 +14,6 @@
         "<study_ph>": ["numericals"]
     },
     "sub_process_datasets_mapping": {
-        "<study_ph>.SellarCoupling": "./platform/sostrades-core/sostrades_core/sos_processes/test/sellar/test_sellar_list/usecase_dataset_sellar_list.json"
+        "<study_ph>.SellarCoupling": "./sostrades_core/sos_processes/test/sellar/test_sellar_list/usecase_dataset_sellar_list.json"
     }
 }

@@ -469,14 +469,14 @@ class ExecutionEngine:
     def configure_study_with_data(
         self,
         dict_or_datasets_to_load: Union[dict, DatasetsMapping],
-        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str]], None],
+        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str], bool, bool, bool], None],
         update_status_configure: bool,
     ):
         '''
         method that insert data into dm and configure the process
 
         :param set_data_in_dm_function: a function sets data in datamanager data_dict using dict_or_datasets_to_load, with signature:
-        set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: set of data name) -> None
+        set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: set of data name, in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None
         :type set_data_in_dm_function: Callable
 
         '''
@@ -496,7 +496,7 @@ class ExecutionEngine:
 
             self.dm.no_change = True
             # call the function that will set data in dm
-            set_data_in_dm_function(dict_or_datasets_to_load, checked_keys)
+            set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, in_vars=True, init_coupling_vars=False, out_vars=False)
 
             self.__configure_io()
 
@@ -509,23 +509,11 @@ class ExecutionEngine:
                 loop_stop = True
             elif iteration >= 100:
                 self.logger.warning('CONFIGURE WARNING: root process is not configured after 100 iterations')
-                raise Exception('too much iterations')
-                loop_stop = True
+                raise Exception('Too many iterations')
 
         # Convergence is ended
         # Set all output variables and strong couplings
-        convert_values_dict = self.dm.convert_data_dict_with_ids(dict_or_datasets_to_load)
-        for key, value in self.dm.data_dict.items():
-            if key in convert_values_dict:
-                # check if the key is an output variable
-                is_output_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
-                # check if this is a strongly coupled input necessary to
-                # initialize a MDA
-                is_init_coupling_var = (
-                    value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING]
-                )
-                if is_output_var or is_init_coupling_var:
-                    value["value"] = convert_values_dict[key]["value"]
+        set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, in_vars=False, init_coupling_vars=True, out_vars=True)
 
         if self.__yield_method is not None:
             self.__yield_method()

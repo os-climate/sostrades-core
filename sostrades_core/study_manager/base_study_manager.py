@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/09-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/03/09-2024/03/20 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -204,7 +204,7 @@ class BaseStudyManager():
         self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
         
         # keep old next steps after loading data
-        self.specific_check()
+        self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
             self.execution_engine.display_treeview_nodes()
