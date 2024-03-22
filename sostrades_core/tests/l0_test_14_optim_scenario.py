@@ -1043,30 +1043,6 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.prepare_execution()
         res = exec_eng.execute()
 
-#=========================================================================
-#     def _test_14_optim_sellar_idf_process(self):
-#
-#         exec_eng = ExecutionEngine(self.study_name)
-#         builder_process = exec_eng.factory.get_builder_from_process(
-#             'sostrades_core.sos_processes.test', 'test_sellar_opt_idf')
-#
-#         exec_eng.factory.set_builders_to_coupling_builder(builder_process)
-#
-#         exec_eng.configure()
-#
-#         study_dremio = study_sellar_idf()
-#         study_dremio.study_name = self.study_name
-#         dict_values_list = study_dremio.setup_usecase()
-#
-#         dict_values = {}
-#         for dict_val in dict_values_list:
-#             dict_values.update(dict_val)
-#
-#         exec_eng.load_study_from_input_dict(dict_values)
-#
-#         exec_eng.execute()
-#=========================================================================
-
     def test_16_test_post_run(self):
         print("\n Test 16 : Sellar optim check post run exception")
         exec_eng = ExecutionEngine(self.study_name)

@@ -33,13 +33,9 @@ os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 from copy import deepcopy
 from pandas import DataFrame
 from numpy import ndarray
-from numpy import int32 as np_int32, float32 as np_float32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
+from numpy import int32 as np_int32, float32 as np_float32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64
 from numpy import bool_ as np_bool
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
-from sostrades_core.execution_engine.data_connector.data_connector_factory import ConnectorFactory
-
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
-    convert_new_type_into_array
 
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
@@ -145,7 +141,6 @@ class ProxyDiscipline:
     DISCIPLINES_DEPENDENCIES = 'disciplines_dependencies'
     VAR_NAME = SoSWrapp.VAR_NAME
     VISIBLE = SoSWrapp.VISIBLE
-    CONNECTOR_DATA = SoSWrapp.CONNECTOR_DATA
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
     FORMULA = 'formula'
@@ -1399,8 +1394,6 @@ class ProxyDiscipline:
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
                 if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
-                    curr_data[self.EDITABLE] = False
-                elif self.CONNECTOR_DATA in curr_data.keys() and curr_data[self.CONNECTOR_DATA] is not None:
                     curr_data[self.EDITABLE] = False
                 else:
                     curr_data[self.EDITABLE] = (io_type == self.IO_TYPE_IN)
