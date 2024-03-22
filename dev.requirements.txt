@@ -117,7 +117,9 @@ h5py==3.2.1
 idna==3.6
     # via requests
 importlib-metadata==7.1.0
-    # via numpoly
+    # via
+    #   numpoly
+    #   python-arango
 iniconfig==2.0.0
     # via pytest
 isodate==0.6.1
@@ -267,6 +269,7 @@ pyjwt==1.7.1
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   flask-jwt-extended
+    #   python-arango
 pymongo==4.4.1
     # via -r ./sostrades-core/requirements.in
 pymoo==0.5.0
@@ -317,6 +320,8 @@ pytest-xdist==3.4.0
     #   -r ./sostrades-webapi/requirements.in
     #   -r ./witness-core/requirements.in
     #   -r ./witness-energy/requirements.in
+python-arango==7.5.8
+    # via -r ./sostrades-core/requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   kubernetes
@@ -364,10 +369,14 @@ requests==2.31.0
     #   -r ./sostrades-webapi/requirements.in
     #   dremio-client
     #   kubernetes
+    #   python-arango
     #   requests-oauthlib
+    #   requests-toolbelt
     #   trino
 requests-oauthlib==1.4.0
     # via kubernetes
+requests-toolbelt==1.0.0
+    # via python-arango
 rsa==4.9
     # via google-auth
 scikit-learn==1.0.1
@@ -457,6 +466,7 @@ urllib3==2.1.0
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   kubernetes
+    #   python-arango
     #   requests
 websocket-client==1.7.0
     # via kubernetes
