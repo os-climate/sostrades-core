@@ -18,15 +18,12 @@ import abc
 import logging
 from typing import Any
 
-from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer import AbstractDatasetsSerializer
-
 
 class AbstractDatasetsConnector(abc.ABC):
     """
     Abstract class to inherit in order to build specific datasets connector
     """
     __logger = logging.getLogger(__name__)
-    __datasets_serializer: AbstractDatasetsSerializer
 
     @abc.abstractmethod
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
