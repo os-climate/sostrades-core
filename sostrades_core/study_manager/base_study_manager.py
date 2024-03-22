@@ -257,6 +257,10 @@ class BaseStudyManager():
         # import ipdb
         # ipdb.set_trace()
         self.execution_engine.load_study_from_input_dict(input_dict_to_load)
+        
+        # Load datasets data
+        if datasets_mapping is not None:
+            self.execution_engine.load_study_from_dataset(datasets_mapping=datasets_mapping)
         self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
