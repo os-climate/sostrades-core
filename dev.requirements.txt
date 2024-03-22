@@ -6,8 +6,6 @@
 #
 alembic==1.13.1
     # via flask-migrate
-attrs==23.2.0
-    # via dremio-client
 autograd==1.6.2
     # via pymoo
 bidict==0.23.1
@@ -28,14 +26,11 @@ click==8.1.7
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   black
-    #   dremio-client
     #   flask
 cma==2.7.0
     # via
     #   -r ./sostrades-core/requirements.in
     #   pymoo
-confuse==2.0.1
-    # via dremio-client
 coverage[toml]==7.4.4
     # via pytest-cov
 custom-inherit==2.4.0
@@ -54,9 +49,6 @@ dnspython==2.2.1
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   eventlet
-    #   pymongo
-dremio-client==0.15.1
-    # via -r ./sostrades-core/requirements.in
 ecos==2.0.13
     # via cvxpy
 et-xmlfile==1.1.0
@@ -270,8 +262,6 @@ pyjwt==1.7.1
     #   -r ./sostrades-webapi/requirements.in
     #   flask-jwt-extended
     #   python-arango
-pymongo==4.4.1
-    # via -r ./sostrades-core/requirements.in
 pymoo==0.5.0
     # via -r ./gemseo/requirements.txt
 pyparsing==3.1.2
@@ -327,7 +317,6 @@ python-dateutil==2.9.0.post0
     #   kubernetes
     #   matplotlib
     #   pandas
-    #   trino
 python-dotenv==0.12.0
     # via
     #   -r ./sostrades-core/requirements.in
@@ -348,14 +337,12 @@ pytz==2023.3.post1
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   pandas
-    #   trino
 pyxdsm==2.2.0 ; python_version >= "3"
     # via -r ./gemseo/requirements.txt
 pyyaml==6.0.1
     # via
     #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-webapi/requirements.in
-    #   confuse
     #   kubernetes
 qdldl==0.1.7.post0
     # via osqp
@@ -367,12 +354,10 @@ requests==2.31.0
     #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-ontology/requirements.in
     #   -r ./sostrades-webapi/requirements.in
-    #   dremio-client
     #   kubernetes
     #   python-arango
     #   requests-oauthlib
     #   requests-toolbelt
-    #   trino
 requests-oauthlib==1.4.0
     # via kubernetes
 requests-toolbelt==1.0.0
@@ -405,14 +390,11 @@ seaborn==0.9.0
 shiboken2==5.15.2
     # via pyside2
 simplejson==3.19.2
-    # via
-    #   -r ./sostrades-webapi/requirements.in
-    #   dremio-client
+    # via -r ./sostrades-webapi/requirements.in
 six==1.16.0
     # via
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-core/requirements.in
-    #   dremio-client
     #   eventlet
     #   flask-jwt-extended
     #   furl
@@ -452,16 +434,12 @@ tqdm==4.61.0
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-core/requirements.in
     #   -r ./witness-core/requirements.in
-trino==0.327.0
-    # via -r ./sostrades-core/requirements.in
 typing-extensions==4.10.0
     # via
     #   alembic
     #   black
 tzdata==2024.1
     # via pandas
-tzlocal==5.2
-    # via trino
 urllib3==2.1.0
     # via
     #   -r ./sostrades-webapi/requirements.in
