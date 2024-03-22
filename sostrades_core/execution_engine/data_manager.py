@@ -545,8 +545,7 @@ class DataManager:
     def create_reduced_dm(self):
         self.reduced_dm = self.get_data_dict_list_attr(
             [ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA, ProxyDiscipline.NUMERICAL,
-             ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING,
-             ProxyDiscipline.CONNECTOR_DATA])
+             ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING])
 
     def convert_dict_with_maps(self, dict_to_convert, map_full_names_ids, keys='full_names'):
         ''' Convert dict keys with ids to full_names or full_names to ids

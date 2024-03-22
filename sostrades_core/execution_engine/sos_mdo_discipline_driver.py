@@ -20,10 +20,6 @@ from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 import logging
-# debug mode
-from copy import deepcopy
-from pandas import DataFrame
-from numpy import ndarray, floating
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
