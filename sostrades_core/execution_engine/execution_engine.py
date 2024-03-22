@@ -560,24 +560,6 @@ class ExecutionEngine:
         if data_integrity_msg != '':
             raise ValueError(data_integrity_msg)
 
-    def load_connectors_from_dict(self, connectors_to_load):
-        '''
-        set connectors data into dm
-        :params: connectors_to_load, connectors data for each variables
-        :type: dict with variableId, dict with connector values
-        '''
-        data_cache = {}
-        for key, value in connectors_to_load.items():
-            converted_key = self.__unanonimize_key(key)
-            data_cache.update({converted_key: value})
-        # keys of data stored in dumped study file are namespaced, convert them
-        # to uuids
-        convert_data_cache = self.dm.convert_data_dict_with_ids(data_cache)
-        for key, value in convert_data_cache.items():
-            if key in self.dm.data_dict.keys():
-                variable_to_update = self.dm.data_dict[key]
-                variable_to_update[ProxyDiscipline.CONNECTOR_DATA] = value
-
     def set_debug_mode(self, mode=None, disc=None):
         ''' set recursively <disc> debug options of in ProxyDiscipline
         '''

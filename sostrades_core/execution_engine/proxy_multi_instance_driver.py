@@ -252,10 +252,10 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         if instance_reference:
             # Addition of Reference Scenario
-            samples_df = samples_df.append(
-                {self.SELECTED_SCENARIO: True,
-                 self.SCENARIO_NAME: self.REFERENCE_SCENARIO_NAME},
-                ignore_index=True)
+            ref_series = pd.Series(
+                {self.SELECTED_SCENARIO: True, self.SCENARIO_NAME: 'ReferenceScenario'})
+            samples_df = pd.concat([samples_df, pd.DataFrame([ref_series])], ignore_index=True)
+
         # NB assuming that the samples_df entries are unique otherwise there
         # is some intelligence to be added
         scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]

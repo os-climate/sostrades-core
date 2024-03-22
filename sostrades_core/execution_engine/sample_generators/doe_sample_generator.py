@@ -17,7 +17,7 @@ limitations under the License.
 from typing import Optional
 import logging
 
-from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator,\
+from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator, \
     SampleTypeError
 from sostrades_core.tools.design_space import design_space as dspace_tool
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -54,7 +54,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     LIST_ACTIVATED_ELEM = dspace_tool.LIST_ACTIVATED_ELEM
     NB_POINTS = "nb_points"
 
-    
     DIMENSION = "dimension"
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
@@ -74,25 +73,25 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     # algorithms not listed below will have input constrained to floats and arrays
     TYPE_PERMISSIVE_ALGORITHMS = {'fullfact', 'OT_FULLFACT', 'pbdesign', 'ff2n'}
 
-    def __init__(self, logger:Optional[logging.Logger]=None):
+    def __init__(self, logger: Optional[logging.Logger] = None):
         '''
         Constructor
         '''
         logger_aux = logger
         if logger_aux is None:
             logger_aux = logging.getLogger(__name__)
-        #- inits super class
+        # - inits super class
         super().__init__(self.GENERATOR_NAME, logger=logger_aux)
-        #- create attributes
+        # - create attributes
         self.doe_factory = None
         self.__available_algo_names = None
-        #- set attribute values
+        # - set attribute values
         self._reload()
 
         self.selected_inputs = []
         self.selected_inputs_types = {}
         # self.dict_desactivated_elem = {}
-        
+
     def _reload(self):
         '''
         Reloads all attributes of the class
@@ -104,8 +103,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         # all the DOE algorithms in GEMSEO that are available in current environment
         all_names = self.doe_factory.algorithms
         # filter with the unsupported GEMSEO algorithms.
-        self.__available_algo_names = list(set(all_names)-set(self.UNSUPPORTED_GEMSEO_ALGORITHMS))
-        
+        self.__available_algo_names = list(set(all_names) - set(self.UNSUPPORTED_GEMSEO_ALGORITHMS))
+
     def get_available_algo_names(self):
         '''
         Method that provides the already created list of available algo_names, filtered by the unsupported ones
@@ -114,7 +113,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
              algo_names_list (list): list of available algo names
         '''
         return self.__available_algo_names
-    
+
     def _check_algo_name(self, algo_name):
         '''
         Check provided algo name before getting its algo_options
@@ -155,14 +154,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         # Remark: The following lines of code should be in gemseo
         # We should use only one line or two provided by gemseo
-#         default_opt = algo_lib._get_options()
-#        # provided options and not providing default options
+        #         default_opt = algo_lib._get_options()
+        #        # provided options and not providing default options
 
         fn = algo_lib.__class__._get_options
 
         # retrieve description of options provided in docstrings
         algo_options_descr_dict = get_options_doc(fn)
-        
+
         # retrieve default algo options and values
         def get_default_args(func):
             import inspect
@@ -172,18 +171,19 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                 for k, v in signature.parameters.items()
                 if v.default is not inspect.Parameter.empty
             }
+
         algo_options = get_default_args(fn)
-        
+
         # get option keys dedicated to algo
         opts_gram = algo_lib.init_options_grammar(sampling_algo_name)
         opt_to_keep = opts_gram.get_data_names()
-        
+
         # remove options that are not in the grammar of the algo
         all_options = list(algo_options.keys())
         for k in all_options:
             if k not in opt_to_keep:
-                algo_options.pop(k,None)
-                algo_options_descr_dict.pop(k,None)
+                algo_options.pop(k, None)
+                algo_options_descr_dict.pop(k, None)
 
         return algo_options, algo_options_descr_dict
 
@@ -197,7 +197,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         if self.N_SAMPLES not in algo_options:
             self.logger.warning("N_samples is not defined; pay attention you use fullfact algo "
-                           "and that levels are well defined")
+                                "and that levels are well defined")
 
         pass
 
@@ -209,7 +209,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Raises:
             Exception if samples_df is not a dataframe                   
         '''
-        if not(isinstance(samples_df, pd.DataFrame)):
+        if not (isinstance(samples_df, pd.DataFrame)):
             msg = "Expected sampling output type should be pandas.core.frame.DataFrame"
             msg += "however sampling type of sampling generator <%s> " % str(
                 self.__class__.__name__)
@@ -313,7 +313,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                                  any variable of dim m will be in m columns of the matrix 
 
         """
-#         doe_factory = DOEFactory()
+        #         doe_factory = DOEFactory()
         algo = self.doe_factory.create(sampling_algo_name)
         normalized_samples = algo._generate_samples(**gemseo_options)
         return normalized_samples
@@ -378,16 +378,15 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             # Find the dictionary version of the current point sample
             current_point_dict = design_space.array_to_dict(current_point)
 
-        
             reformated_current_point = []
             for in_variable in selected_inputs:
 
                 # convert array into data when needed
                 if in_variable in self.selected_inputs_types.keys() and (
-                    self.selected_inputs_types[in_variable] in ['float', 'int', 'string']):
+                        self.selected_inputs_types[in_variable] in ['float', 'int', 'string']):
                     current_point_dict[in_variable] = current_point_dict[in_variable][0]
                 if in_variable in self.selected_inputs_types.keys() and (
-                    self.selected_inputs_types[in_variable] in ['list']):
+                        self.selected_inputs_types[in_variable] in ['list']):
                     current_point_dict[in_variable] = list(current_point_dict[in_variable])
 
                 reformated_current_point.append(
@@ -395,7 +394,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             reformated_samples.append(reformated_current_point)
 
         return reformated_samples
-    
+
     def _put_samples_in_df_format(self, samples, design_space):
         """
         construction of a dataframe of the generated samples
@@ -413,10 +412,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         samples_df = pd.DataFrame(data=samples,
                                   columns=selected_inputs)
-        
 
         return samples_df
-
 
     # TODO: REFACTOR IF POSSIBLE W/O PROXY REFs (note for the moment proxy is the wrapper until config. actions moved)
     def setup(self, proxy):
@@ -481,7 +478,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
                 if set(selected_inputs) != set(self.selected_inputs):
                     self.selected_inputs = selected_inputs
-                    
 
                 default_design_space = pd.DataFrame()
                 design_space_dataframe_descriptor = {
@@ -501,7 +497,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                                          self.ENABLE_VARIABLE_BOOL: [False] * len(self.selected_inputs),
                                                          self.VALUES: [None] * len(self.selected_inputs),
                                                          })
-                    default_design_space[self.ENABLE_VARIABLE_BOOL] = default_design_space[self.ENABLE_VARIABLE_BOOL].astype(bool)
+                    default_design_space[self.ENABLE_VARIABLE_BOOL] = default_design_space[
+                        self.ENABLE_VARIABLE_BOOL].astype(bool)
                 elif proxy.sampling_method == proxy.GRID_SEARCH:
                     default_design_space = pd.DataFrame({self.VARIABLES: self.selected_inputs,
                                                          self.LOWER_BOUND: [0.0] * len(self.selected_inputs),
@@ -531,15 +528,16 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
                     df_cols = [self.VARIABLES, self.LOWER_BOUND, self.UPPER_BOUND] + (
                         [self.NB_POINTS] if proxy.sampling_method == proxy.GRID_SEARCH else []) + (
-                        [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
+                                  [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
                     final_dataframe = pd.DataFrame(columns=df_cols)
-
+                    if proxy.sampling_method == proxy.GRID_SEARCH:
+                        final_dataframe[self.NB_POINTS] = final_dataframe[self.NB_POINTS].astype(int)
                     for element in from_eval_inputs:
-                        default_row = default_design_space[default_design_space[self.VARIABLES] == element].iloc[0]
-                        final_dataframe = final_dataframe.append(default_row, ignore_index=True)
+                        default_df = default_design_space[default_design_space[self.VARIABLES] == element]
+                        final_dataframe = pd.concat([final_dataframe, default_df], ignore_index=True)
                         if element in from_design_space:
                             to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
-                                                                          self.VARIABLES] == element]
+                                                                                 self.VARIABLES] == element]
                             # TODO: in the current implementation it would be more proper that GridSearch setup its
                             #  own design space instead of having particular cases in the Doe sample generator.
                             if proxy.sampling_method == proxy.DOE_ALGO:
@@ -548,13 +546,16 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                             elif proxy.sampling_method == proxy.GRID_SEARCH and self.NB_POINTS not in to_append.columns:
                                 # for GridSearch need to eventually insert the self.NB_POINTS column
                                 to_append.insert(3, self.NB_POINTS, 2)
-                            final_dataframe.loc[len(final_dataframe)-1, to_append.columns] = to_append.iloc[0, :]
+                            # I want to update the dataframes following the variable name and not the index
+                            final_dataframe.set_index('variable', inplace=True)
+                            final_dataframe.update(to_append.set_index('variable'), overwrite=True)
+                            final_dataframe.reset_index(inplace=True)
                     proxy.dm.set_data(proxy.get_var_full_name(proxy.DESIGN_SPACE, disc_in),
                                       proxy.VALUE, final_dataframe, check_value=False)
 
     def setup_algo_options(self, dynamic_inputs, proxy):
         """
-            Method that setup 'algo_options'
+            Method that setup 'algo_options''
             Arguments:
                 dynamic_inputs (dict): the dynamic input dict to be updated
         """
@@ -565,11 +566,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             if algo_name is not None:  # and algo_name_has_changed:
                 default_dict = self.get_algo_default_options(algo_name)
                 algo_options_dict = {proxy.ALGO_OPTIONS: {proxy.TYPE: 'dict', proxy.DEFAULT: default_dict,
-                                                         proxy.DATAFRAME_EDITION_LOCKED: False,
-                                                         proxy.STRUCTURING: True,
-                                                         proxy.DATAFRAME_DESCRIPTOR: {
-                                                             self.VARIABLES: ('string', None, False),
-                                                             self.VALUES: ('string', None, True)}}}
+                                                          proxy.DATAFRAME_EDITION_LOCKED: False,
+                                                          proxy.STRUCTURING: True,
+                                                          proxy.DATAFRAME_DESCRIPTOR: {
+                                                              self.VARIABLES: ('string', None, False),
+                                                              self.VALUES: ('string', None, True)}}}
                 dynamic_inputs.update(algo_options_dict)
                 all_options = list(default_dict.keys())
                 if proxy.ALGO_OPTIONS in disc_in and disc_in[proxy.ALGO_OPTIONS][proxy.VALUE] is not None and list(
@@ -664,5 +665,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         if proxy.ALGO in disc_in and proxy.get_sosdisc_inputs(proxy.ALGO) in self.TYPE_PERMISSIVE_ALGORITHMS:
             pass
         elif proxy.eval_in_possible_types:
-            proxy.eval_in_possible_types = {_v: _t for (_v, _t) in proxy.eval_in_possible_types.items() if _t in ('array', 'float')}
-            proxy.eval_in_possible_values = [_v for _v in proxy.eval_in_possible_values if _v in proxy.eval_in_possible_types]
+            proxy.eval_in_possible_types = {_v: _t for (_v, _t) in proxy.eval_in_possible_types.items() if
+                                            _t in ('array', 'float')}
+            proxy.eval_in_possible_values = [_v for _v in proxy.eval_in_possible_values if
+                                             _v in proxy.eval_in_possible_types]

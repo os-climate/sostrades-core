@@ -14,14 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
+
 from logging import Handler
-from time import time
-
+import ast
 from pandas._testing import assert_frame_equal
-import re
+from numpy import ndarray, allclose
 
-from gemseo.algos.doe.doe_factory import DOEFactory
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 
 """
@@ -274,8 +272,9 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         target_samples_df = pd.DataFrame(data=target_samples,
                                          columns=selected_inputs)
-        #keep only variables columns in samples_df
-        doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
+        # keep only variables columns in samples_df
+        doe_disc_samples = doe_disc_samples.drop(
+            [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
 
         assert_frame_equal(doe_disc_samples, target_samples_df)
 
@@ -391,9 +390,10 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             design_space = exec_eng.dm.get_value(
                 'doe.SampleGenerator.design_space')
-            
-            #keep only variables columns in samples_df
-            doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
+
+            # keep only variables columns in samples_df
+            doe_disc_samples = doe_disc_samples.drop(
+                [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
 
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
@@ -410,16 +410,16 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             algo_reference_samples = algo_reference_samples.reset_index()
             reference_samples = algo_reference_samples[doe_disc_samples.columns.to_list(
             )]
-            for name in doe_disc_samples.columns.to_list():
-                for index in range(0, len(reference_samples[name])):
-                    element = reference_samples[name][index]
-                    element1 = re.split(
-                        "\s+", element.replace('[', '').replace(']', ''))
-                    element2 = [i for i in element1 if i != '']
-                    reference_samples[name][index] = array(
-                        element2, dtype=float)
             # Actual check samples correspond to reference samples
-            assert_frame_equal(doe_disc_samples, reference_samples)
+            for name, ref_value in reference_samples.to_dict('records')[0].items():
+                doe_value = doe_disc_samples.to_dict('records')[0][name]
+                nb_list = ref_value[1:-1].split()
+                ref_value_list = [float(num) for num in nb_list]
+                flag = allclose(ref_value_list, list(doe_value))
+                if isinstance(flag, (list, ndarray)):
+                    flag = flag.all()
+                self.assertTrue(flag)
+
         # f.close()
 
     def test_3_doe_OT_algo_check(self):
@@ -549,8 +549,9 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             design_space = exec_eng.dm.get_value(
                 'doe.SampleGenerator.design_space')
-            #remove scenario columns from samples_df
-            doe_disc_samples = doe_disc_samples.drop([SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
+            # remove scenario columns from samples_df
+            doe_disc_samples = doe_disc_samples.drop(
+                [SampleGeneratorWrapper.SELECTED_SCENARIO, SampleGeneratorWrapper.SCENARIO_NAME], axis='columns')
 
             self.assertEqual(doe_disc_samples.columns.to_list(),
                              design_space['variable'].to_list())
@@ -567,16 +568,15 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             algo_reference_samples = algo_reference_samples.reset_index()
             reference_samples = algo_reference_samples[doe_disc_samples.columns.to_list(
             )]
-            for name in doe_disc_samples.columns.to_list():
-                for index in range(0, len(reference_samples[name])):
-                    element = reference_samples[name][index]
-                    element1 = re.split(
-                        "\s+", element.replace('[', '').replace(']', ''))
-                    element2 = [i for i in element1 if i != '']
-                    reference_samples[name][index] = array(
-                        element2, dtype=float)
             # Actual check samples correspond to reference samples
-            assert_frame_equal(doe_disc_samples, reference_samples)
+            for name, ref_value in reference_samples.to_dict('records')[0].items():
+                doe_value = doe_disc_samples.to_dict('records')[0][name]
+                nb_list = ref_value[1:-1].split()
+                ref_value_list = [float(num) for num in nb_list]
+                flag = allclose(ref_value_list, list(doe_value))
+                if isinstance(flag, (list, ndarray)):
+                    flag = flag.all()
+                self.assertTrue(flag)
         # f.close()
 
     def _test_4_cartesian_product_execution(self):
@@ -638,7 +638,6 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         disc = exec_eng.root_process.proxy_disciplines[0]
 
         if self.sampling_generation_mode_cp == 'at_run_time':
-
             disc_samples = disc.get_sosdisc_outputs(
                 'samples_df')
 

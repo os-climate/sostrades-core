@@ -33,14 +33,14 @@ class UnitTestHandler(logging.Handler):
         self.msg_list.append(record.msg)
 
 
-class TestLoggingDiscipline(SoSWrapp):
+class LoggingDisciplineTest(SoSWrapp):
     """
     Discipline to test logging
     """
     DISC_LOGGING_MESSAGE = "Testing logger Discipline"
 
     def run(self):
-        self.logger.info(TestLoggingDiscipline.DISC_LOGGING_MESSAGE)
+        self.logger.info(LoggingDisciplineTest.DISC_LOGGING_MESSAGE)
 
 
 class TestLoggers(unittest.TestCase):
@@ -61,12 +61,12 @@ class TestLoggers(unittest.TestCase):
         Tests if a log made in self.logger of a SoSWrap is correctly linked to execution engine
         """
         self.ee.ns_manager.add_ns_def({})
-        mod_path = 'sostrades_core.tests.l0_test_91_logging_chain.TestLoggingDiscipline'
+        mod_path = 'sostrades_core.tests.l0_test_91_logging_chain.LoggingDisciplineTest'
         builder = self.ee.factory.get_builder_from_module(self.model_name, mod_path)
         self.ee.factory.set_builders_to_coupling_builder(builder)
 
         self.ee.load_study_from_input_dict({})
         self.ee.display_treeview_nodes()
         self.ee.execute()
-        self.assertIn(TestLoggingDiscipline.DISC_LOGGING_MESSAGE, self.my_handler.msg_list,
+        self.assertIn(LoggingDisciplineTest.DISC_LOGGING_MESSAGE, self.my_handler.msg_list,
                       "Discipline logging message was not found at execution engine level logger. Logging link is broken")

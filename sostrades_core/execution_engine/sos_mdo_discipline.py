@@ -23,7 +23,7 @@ import logging
 from copy import deepcopy
 from pandas import DataFrame
 from numpy import ndarray, floating
-from scipy.sparse.lil import lil_matrix
+from scipy.sparse import lil_matrix
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 
 '''

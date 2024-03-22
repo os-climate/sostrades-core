@@ -22,6 +22,7 @@ from copy import copy
 from typing import Any
 from uuid import uuid4
 from hashlib import sha256
+from pandas import concat
 
 from gemseo.caches.simple_cache import SimpleCache
 
@@ -837,7 +838,8 @@ class DataManager:
             df = sosc.export_couplings()
             for sosc in sosc_list:
                 df_sosc = sosc.export_couplings()
-                df = df.append(df_sosc, ignore_index=True)
+
+                df = concat([df, df_sosc], ignore_index=True)
             # write data or return dataframe
             if in_csv:
                 # writing of the file
