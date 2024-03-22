@@ -22,8 +22,8 @@ Coupled derivatives calculations
 from collections import defaultdict
 from numpy import empty, ones, zeros
 from scipy.sparse import dia_matrix
-from scipy.sparse.dok import dok_matrix
-from scipy.sparse.lil import lil_matrix
+from scipy.sparse import dok_matrix
+from scipy.sparse import lil_matrix
 from os import getenv
 from copy import deepcopy
 from multiprocessing import Pool

@@ -229,7 +229,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         ):
             rows_to_delete = []
             modified_activation_df = deepcopy(activation_df)
-            for (colname, colval) in activation_df.iteritems():
+            for (colname, colval) in activation_df.items():
                 if self.default_df_descriptor[colname][0] == 'string':
                     # if 'string' type is defined in default_df_descriptor, then
                     # convert values into string

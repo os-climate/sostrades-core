@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/02/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,7 +41,7 @@ def get_parent_path(PATH):
 
 
 def merge_df_dict_with_path(
-    df_dict: dict, path_name: str = BREAKDOWN_COLUMN
+        df_dict: dict, path_name: str = BREAKDOWN_COLUMN
 ) -> pd.DataFrame:
     """Method to merge a dictionary of dataframe into a single dataframe.
     A new column for the aircraft_breakdown is created and the dictionary key is used as the value for the resulting dataframe
@@ -56,7 +57,8 @@ def merge_df_dict_with_path(
         # dict of dict
         df_copy = df.copy(deep=True)
         df_copy.insert(0, path_name, key)
-        df_with_path = df_with_path.append(df_copy, ignore_index=True)
+
+        df_with_path = pd.concat([df_with_path, df_copy], ignore_index=True)
 
     return df_with_path.fillna(0.0)
 
@@ -93,12 +95,12 @@ def check_compute_parent_path_sum(df, columns_not_to_sum, based_on):
 # return input_parameter filtered on PATH parameter
 # if parent_path_admissible, return iput_parameter filtered on parent path if existing
 def get_inputs_for_path(
-    input_parameter: pd.DataFrame,
-    PATH: str,
-    parent_path_admissible: bool = False,
-    unique_value: bool = False,
-    allow_empty_dataframe: bool = False,
-    parameter_name: str = '',
+        input_parameter: pd.DataFrame,
+        PATH: str,
+        parent_path_admissible: bool = False,
+        unique_value: bool = False,
+        allow_empty_dataframe: bool = False,
+        parameter_name: str = '',
 ):
     search_path = PATH
     filtered_input_parameter = None
@@ -107,7 +109,7 @@ def get_inputs_for_path(
             if PATH in input_parameter[BREAKDOWN_COLUMN].unique():
                 filtered_input_parameter = input_parameter.loc[
                     input_parameter[BREAKDOWN_COLUMN] == PATH
-                ]
+                    ]
             else:
 
                 if parent_path_admissible:
@@ -148,10 +150,10 @@ def get_inputs_for_path(
 
 
 def change_column_values_delimiter(
-    data_df: pd.DataFrame,
-    column_name: list = [BREAKDOWN_COLUMN],
-    old_delimiter: str = '.',
-    new_delimiter: str = ' ↦ ',
+        data_df: pd.DataFrame,
+        column_name: list = [BREAKDOWN_COLUMN],
+        old_delimiter: str = '.',
+        new_delimiter: str = ' ↦ ',
 ):
     for col in column_name:
         for g in data_df[col].unique():
@@ -162,11 +164,11 @@ def change_column_values_delimiter(
 
 
 def check_aircraft_breakdown_in_inputs(
-    inputs_dict: dict,
-    parameters_dict: dict,
-    aircraft_breakdown_tree: list,
-    logger: Logger,
-    sos_discipline: SoSWrapp,
+        inputs_dict: dict,
+        parameters_dict: dict,
+        aircraft_breakdown_tree: list,
+        logger: Logger,
+        sos_discipline: SoSWrapp,
 ):
     aircraft_breakdown_list = flatten(nested_dict=aircraft_breakdown_tree)
     for param_name, conf_dict in parameters_dict.items():
@@ -190,7 +192,7 @@ def check_aircraft_breakdown_in_inputs(
 
 
 def flatten(
-    nested_dict: dict, flatten_list: list = None, parent_key: str = None
+        nested_dict: dict, flatten_list: list = None, parent_key: str = None
 ) -> list:
     if flatten_list is None:
         flatten_list = []
@@ -237,10 +239,10 @@ def generate_breakdown_by_level(aircraft_breakdown_tree: list) -> dict:
 
 
 def compute_sum_df(
-    df_dict: dict,
-    parent_key: str,
-    children_keys: list,
-    columns_not_to_sum: list = [],
+        df_dict: dict,
+        parent_key: str,
+        children_keys: list,
+        columns_not_to_sum: list = [],
 ):
     """
     Method to compute sum of dict of dataframes
