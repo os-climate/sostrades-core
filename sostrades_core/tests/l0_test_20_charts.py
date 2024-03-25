@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-
+Modifications on 02/01/2024 Copyright 2024 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -110,6 +110,8 @@ class TestChartTemplate(unittest.TestCase):
         dict_series['y_axis'] = 'y'
         dict_series['custom_data'] = ''
         dict_series['marker_symbol'] = 'circle'
+        dict_series['marker'] = dict(color='LightSkyBlue', size=20, line=dict(color='MediumPurple', width=2))
+        dict_series['line'] = dict(color='black')
 
         dict_obj['series'] = [dict_series]
 
@@ -136,7 +138,7 @@ class TestChartTemplate(unittest.TestCase):
         serie_bar = InstanciatedSeries(
             x_bar, y_bar, 'bar serie', InstanciatedSeries.BAR_DISPLAY)
         serie_lines = InstanciatedSeries(
-            x_line, y_line, 'line serie', InstanciatedSeries.LINES_DISPLAY)
+            x_line, y_line, 'line serie', InstanciatedSeries.LINES_DISPLAY, line=dict(color='black'))
         serie_scatter = InstanciatedSeries(
             x_scatter, y_scatter, 'scatter serie', InstanciatedSeries.SCATTER_DISPLAY, marker_symbol='cross')
 

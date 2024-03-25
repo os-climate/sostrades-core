@@ -21,8 +21,8 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `python-dotenv (0.12.0) <https://github.com/theskumar/python-dotenv>`_
     BSD-3-Clause
 
-`dremio_client (0.15.1) <https://github.com/rymurr/dremio_client>`_
-    Apache Software License 2.0
+`python-arango (7.9.1) <https://github.com/arangodb/python-arango>`_
+    MIT
 
 `matplotlib (3.4.3) <https://matplotlib.org>`_
     PSF
@@ -45,9 +45,6 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `plotly (5.3.0) <https://plotly.com/python/>`_
     MIT
 
-`pymongo (4.4.1) <http://github.com/mongodb/mongo-python-driver>`_
-    Apache Software License
-
 `PyYAML (6.0.1) <https://pyyaml.org/>`_
     MIT
 
@@ -68,9 +65,6 @@ sostrades-core depends on software with compatible licenses that are listed belo
 
 `tqdm (4.61.0) <https://tqdm.github.io>`_
     MPL-2.0 AND MIT
-
-`trino (0.327.0) <https://github.com/trinodb/trino-python-client>`_
-    Apache 2.0
 
 `nose2 (0.9.1) <https://docs.nose2.io/>`_
     BSD-2-Clause

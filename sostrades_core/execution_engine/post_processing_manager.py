@@ -21,7 +21,6 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import InstanciatedPieChart
 from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
 
-
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Post processing manager allowing to coeespond namespace with post processing to execute
@@ -63,6 +62,27 @@ class PostProcessingManager:
         """
 
         return self.__namespace_postprocessing_dict
+    
+    def get_post_processing_functions_from_module(self, module_name:str):
+        """
+        Function to get the post processing functions from a module
+        Since filter function is optional, returns None if not found
+        For post_processing function, raises ValueError if not found
+
+        :params: module_name, python module that contains functions to process post processing 
+                (see PostProcessingManager.FILTER_FUNCTION_NAME and PostProcessingManager.POST_PROCESSING_FUNCTION_NAME)
+        :type: string (python module like)
+        """
+        filter_function = None
+        try:
+            filter_function = getattr(import_module(module_name),PostProcessingManager.FILTER_FUNCTION_NAME)
+        except (ModuleNotFoundError, AttributeError, TypeError) as ex:
+            self.__logger.exception(f'The following error occurs when trying to load post processing filter function for module f{module_name}.')
+        try:
+            return filter_function, getattr(import_module(module_name), PostProcessingManager.POST_PROCESSING_FUNCTION_NAME)
+        except (ModuleNotFoundError, AttributeError, TypeError) as ex:
+            self.__logger.exception(f'The following error occurs when trying to load post processing function for module f{module_name}.')
+            raise ValueError(f'Unable to load post processing function in the module : {module_name}.{PostProcessingManager.POST_PROCESSING_FUNCTION_NAME}') from ex
 
     def add_post_processing_module_to_namespace(self, namespace_identifier: str, module_name: str):
         """ Method that add a couple of filter+post processing function to a dedicated namespace into
@@ -78,31 +98,74 @@ class PostProcessingManager:
 
         # Try to resolve post processings functions keeping in mind that filter
         # function can be optional
-        filters_function = None
-        post_processing_function = None
+        filters_function, post_processing_function = self.get_post_processing_functions_from_module(module_name=module_name)
 
-        try:
-            filters_function = getattr(import_module(module_name),
-                                       PostProcessingManager.FILTER_FUNCTION_NAME)
-        except (ModuleNotFoundError, AttributeError, TypeError) as ex:
-            self.__logger.exception(
-                'The following error occurs when trying to load post processing filter function.')
-            filters_function = None
+        self.add_post_processing_functions_to_namespace(namespace_identifier, filters_function, post_processing_function)
 
-        try:
-            post_processing_function = getattr(import_module(module_name),
-                                               PostProcessingManager.POST_PROCESSING_FUNCTION_NAME)
-        except (ModuleNotFoundError, AttributeError, TypeError) as ex:
-            self.__logger.exception(
-                'The following error occurs when trying to load post processing function.')
-            post_processing_function = None
+    def remove_post_processing_module_to_namespace(self, namespace_identifier: str, module_name: str, missing_ok:bool=True):
+        """ Method that removes a couple of filter+post processing function to a dedicated namespace into
+        the PostProcessingManager
 
-        if post_processing_function is not None:
-            self.add_post_processing_functions_to_namespace(
-                namespace_identifier, filters_function, post_processing_function)
-        else:
-            raise ValueError(
-                f'Unable to load post processing function in the module : {module_name}.{PostProcessingManager.POST_PROCESSING_FUNCTION_NAME}')
+        :params: namespace_identifier, namespace that hold post processing given as arguments
+        :type: string
+
+        :params: module_name, python module that contains functions to process post processing 
+                (see PostProcessingManager.FILTER_FUNCTION_NAME and PostProcessingManager.POST_PROCESSING_FUNCTION_NAME)
+        :type: string (python module like)
+
+        :params: missing_ok, if false, raises an exception if post_processing is not found.
+        :type: bool
+        """
+        # Try to resolve post processings functions keeping in mind that filter
+        # function can be optional
+        filters_function, post_processing_function = self.get_post_processing_functions_from_module(module_name=module_name)
+
+        self.remove_post_processing_functions_to_namespace(namespace_identifier, filters_function, post_processing_function, missing_ok=missing_ok)
+    
+    def remove_post_processing_functions_to_namespace(self,
+                                                   namespace_identifier: str,
+                                                   filter_func: callable,
+                                                   post_processing_func: callable, 
+                                                   missing_ok:bool=True):
+        """ Method that removes a couple of filter+post processing function to a dedicated namespace into
+        the PostProcessingManager
+
+        :params: namespace_identifier, namespace that hold post processing given as arguments
+        :type: string
+
+        :params: filter_func, methods that generate filter for the associated post processing
+        :type: (func)(ExecutionEngine, namespace): ChartFilter[]
+
+        :params: post_processing_func, methods that generate post processing for the associated post processing
+        :type: (func)(ExecutionEngine, namespace, ChartFilter[]): list (TwoAxesInstanciatedChart/InstanciatedPieChart/InstanciatedTable) or json oject list
+
+        :params: missing_ok, if false, raises an exception if post_processing is not found.
+        :type: bool
+        """
+
+        # Initialize the namespace placeholder in dictionary if needed
+        if namespace_identifier not in self.__namespace_postprocessing_dict:
+            if missing_ok:
+                return
+            else:
+                raise ValueError(f"Namespace {namespace_identifier} not found in namespace_postprocessing_dict.")
+
+        # Update post processing list
+        matchs = []
+        for i, post_proc in enumerate(self.__namespace_postprocessing_dict[namespace_identifier]):
+            if post_proc.matchs_functions(filter_func, post_processing_func):
+                matchs.append(i)
+
+        if len(matchs) == 0:
+            if missing_ok:
+                return
+            else:
+                raise ValueError(f"Post processing not found in namespace f{namespace_identifier}")
+        elif len(matchs) > 1:
+            raise ValueError(f"Multiple matching post processing to delete found in namespace f{namespace_identifier}")
+        
+        # Delete found post_proc
+        del self.__namespace_postprocessing_dict[namespace_identifier][matchs[0]]
 
     def add_post_processing_functions_to_namespace(self,
                                                    namespace_identifier: str,
@@ -144,7 +207,7 @@ class PostProcessingManager:
         if namespace_identifier in self.__namespace_postprocessing_dict:
             del self.__namespace_postprocessing_dict[namespace_identifier]
 
-    def get_post_processing(self, namespace_identifier: str): #-> list["PostProcessing"]:
+    def get_post_processing(self, namespace_identifier: str):  # -> list["PostProcessing"]:
         """ Method that retrieve post processing object using a given namespace
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -182,8 +245,9 @@ class PostProcessing:
         self.__filter_func = filter_func
         self.__post_processing_func = post_processing_func
         self.__logger = logger
+        self.post_processing_error = ''
 
-    def resolve_filters(self, execution_engine: "ExecutionEngine", namespace: str): #-> list[ChartFilter]:
+    def resolve_filters(self, execution_engine: "ExecutionEngine", namespace: str):  # -> list[ChartFilter]:
         """ Method that execute filters stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
@@ -205,12 +269,14 @@ class PostProcessing:
             if self.__filter_func is not None:
                 filters = self.__filter_func(execution_engine, namespace)
         except:
+            self.post_processing_error += f'An error occurs in the filter of the following post-processing namespace "{namespace}"'
             filters = []
 
         return filters
 
-    def resolve_post_processings(self, execution_engine: "ExecutionEngine", namespace: str, filters): #list[ChartFilter])
-        #-> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
+    def resolve_post_processings(self, execution_engine: "ExecutionEngine", namespace: str,
+                                 filters):  # list[ChartFilter])
+        # -> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
         """ Method that execute stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
@@ -235,9 +301,17 @@ class PostProcessing:
             if self.__post_processing_func is not None:
                 post_processings = self.__post_processing_func(
                     execution_engine, namespace, filters)
+
         except:
-            self.__logger.exception(
-                f'An error occurs in the following post-processing namespace "{namespace}"')
+            self.post_processing_error += f'\nERROR: {execution_engine.factory.process_identifier}.{execution_engine.study_name}, An error occurs in the following post-processing namespace "{namespace}"'
+            self.__logger.exception(self.post_processing_error)
             post_processings = []
 
         return post_processings
+
+    def matchs_functions(self, filter_func: callable, post_processing_func: callable):
+        """
+        Returns True if functions match
+        """
+        return filter_func == self.__filter_func and post_processing_func == self.__post_processing_func
+    

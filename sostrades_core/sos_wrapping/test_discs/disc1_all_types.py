@@ -14,9 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+import numpy as np
+import pandas as pd
 
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 class Disc1(SoSWrapp):
     # ontology information
@@ -38,7 +39,14 @@ class Disc1(SoSWrapp):
         'a': {'type': 'int'},
         'b': {'type': 'int', 'possible_values': [0, 2, 5]},
         'name': {'type': 'string', 'possible_values': ['A1', 'A2', 'A3']},
-        'x_dict': {'type': 'dict', 'default': {}}
+        'x_dict': {'type': 'dict', 'default': {}},
+
+        'y_array': {'type': 'array', 'default': np.array([])},
+        'z_list': {'type': 'list', 'default': []},
+        'b_bool': {'type': 'bool', 'default':True},
+        'd': {'type': 'dataframe', 
+              'dataframe_descriptor': {"years":('int',None,True),"x":('float',None,True)},
+              'default':pd.DataFrame(columns=["years", "x"])}
     }
     DESC_OUT = {
         'indicator': {'type': 'int'},

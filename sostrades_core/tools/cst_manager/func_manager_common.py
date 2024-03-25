@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/02/13 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +27,8 @@ import warnings
 def smooth_maximum(cst, alpha=3):
     """
     Function
+    #-- smooth maximum of values return the value if it was a float
+    #-- return smooth maximum if objective was an array
     """
     max_exp = 650  # max value for exponent input, higher value gives infinity
     min_exp = -300

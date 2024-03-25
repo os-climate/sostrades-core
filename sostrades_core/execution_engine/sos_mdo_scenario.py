@@ -331,9 +331,9 @@ class SoSMDOScenario(MDOScenario):
                     [full_name_var])])
                 if self.dict_desactivated_elem[full_name_var] != {}:
                     # insert a desactivated element
-                    value_x_opt.insert(
-                        self.dict_desactivated_elem[full_name_var]['position'],
-                        self.dict_desactivated_elem[full_name_var]['value'])
+                    for _pos, _val in zip(self.dict_desactivated_elem[full_name_var]['position'],
+                                          self.dict_desactivated_elem[full_name_var]['value']):
+                        value_x_opt.insert(_pos, _val)
 
                 design_space.loc[design_space['variable'] == var, 'value'] = pd.Series(
                     [value_x_opt] * len(design_space))

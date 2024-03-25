@@ -61,9 +61,11 @@ class SeriesTemplate:
     Y_AXIS_SECONDARY = 'y2'
     CUSTOM_DATA = 'custom_data'
     MARKER_SYMBOL = 'marker_symbol'
+    MARKER = 'marker'
+    LINE = 'line'
 
     def __init__(self, abscissa=[], ordinate=[], series_name='', display_type='lines', visible=True,
-                 y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle'):
+                 y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle', marker=None, line=None):
         """ Create a new series to add in a chart
 
         :param abscissa: list of number values for abscissa
@@ -82,6 +84,10 @@ class SeriesTemplate:
         :type custom_data: str
         :param marker_symbol: symbol to use to display point on chart ('circle' by default) see: https://plotly.com/python/marker-style/
         :type marker_symbol: str
+        :param marker: symbol to use to describe the markers displayed on the chart
+        :type marker: dict(), ex: marker=dict(color='LightSkyBlue', size=20, line=dict(color='MediumPurple', width=2))
+        :param line: symbol to use to describe the line displayed on the chart
+        :type line: dict(), ex: line=dict(color='black')
         """
 
         self.__ordinate = []
@@ -103,6 +109,8 @@ class SeriesTemplate:
 
         self.custom_data = custom_data
         self.marker_symbol = marker_symbol
+        self.marker = marker
+        self.line = line
 
     @property
     def abscissa(self):
@@ -187,7 +195,9 @@ class SeriesTemplate:
                          f'visible: {self.visible}\n',
                          f'y_axis: {self.y_axis}\n',
                          f'custom_data: {self.custom_data}\n',
-                         f'marker_symbol: {self.marker_symbol}\n'
+                         f'marker_symbol: {self.marker_symbol}\n',
+                         f'marker: {self.marker}\n',
+                         f'line: {self.line}\n'
                          ]
 
         return '\n'.join(series_string)
@@ -225,6 +235,12 @@ class SeriesTemplate:
 
         # Serialize marker_symbol attribute
         dict_obj.update({SeriesTemplate.MARKER_SYMBOL: self.marker_symbol})
+
+        # Serialize marker attribute
+        dict_obj.update({SeriesTemplate.MARKER: self.marker})
+
+        # Serialize line attribute
+        dict_obj.update({SeriesTemplate.LINE: self.line})
 
         return dict_obj
 
@@ -264,6 +280,14 @@ class SeriesTemplate:
         # Deserialize marker_symbol attribute
         if SeriesTemplate.MARKER_SYMBOL in dict_obj:
             self.marker_symbol = dict_obj[SeriesTemplate.MARKER_SYMBOL]
+
+        # Deserialize marker attribute
+        if SeriesTemplate.MARKER in dict_obj:
+            self.marker = dict_obj[SeriesTemplate.MARKER]
+
+        # Deserialize line attribute
+        if SeriesTemplate.LINE in dict_obj:
+            self.line = dict_obj[SeriesTemplate.LINE]
 
 
 class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):

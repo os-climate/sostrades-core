@@ -20,34 +20,29 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 import numpy as np
 from copy import deepcopy, copy
 from multiprocessing import cpu_count
-from pandas import DataFrame
-import platform
+from pandas import DataFrame, concat
 import logging
+from os import getenv
 
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-from sostrades_core.execution_engine.archi_builder import ArchiBuilder
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.mda.sequential_mda import MDASequential
 
 from collections import ChainMap
-from gemseo.core.scenario import Scenario
-from numpy import array, ndarray, delete, inf
+from numpy import ndarray
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
     TwoAxesInstanciatedChart
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from typing import List
 
-# if platform.system() != 'Windows':
-#    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
-# - TEMPORARY for testing purpose (09/06/23) : ugly fix to mimic ksp lib import
-MyFakeKSPLib = type('MyFakeKSPLib', (object,), {'AVAILABLE_PRECONDITIONER': ""})
-ksp_lib_petsc = MyFakeKSPLib()
+if getenv("USE_PETSC", "").lower() in ("true", "1"):
+    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
 
 # from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
 
@@ -100,16 +95,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
 
     # set default value of linear solver according to the operating system
-    #     if platform.system() == 'Windows':
-    #         DEFAULT_LINEAR_SOLVER = 'GMRES'
-    #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
-    #         POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
-    #     else:
-    #         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
-    #         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
-    #         POSSIBLE_VALUES_PRECONDITIONER = [
-    #             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
-
+    if getenv("USE_PETSC", "").lower() in ("true", "1"):
+        DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
+        POSSIBLE_VALUES_PRECONDITIONER = [
+                                             'None'] + ksp_lib_petsc.AVAILABLE_PRECONDITIONER
+    else:
+        DEFAULT_LINEAR_SOLVER = 'GMRES'
+        DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
+        POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
     DEFAULT_LINEAR_SOLVER_OPTIONS = {
         'max_iter': 1000,
         'tol': 1.0e-8}
@@ -119,10 +113,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'inner_mda_name': {ProxyDiscipline.TYPE: 'string',
                            ProxyDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
                                                              'PureNewtonRaphson', 'MDAQuasiNewton', 'GSNewtonMDA',
-                                                             'GSPureNewtonMDA', 'GSorNewtonMDA', 'MDASequential',
-                                                             'GSPureNewtonorGSMDA'],
+                                                             'GSPureNewtonMDA',
+                                                             # 'GSorNewtonMDA', # TODO: functionality needs EEv4 update
+                                                             'MDASequential', 'GSPureNewtonorGSMDA'],
                            ProxyDiscipline.DEFAULT: 'MDAJacobi', ProxyDiscipline.NUMERICAL: True,
                            ProxyDiscipline.STRUCTURING: True},
+
         'max_mda_iter': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 30, ProxyDiscipline.NUMERICAL: True,
                          ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         'n_processes': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 1, ProxyDiscipline.NUMERICAL: True,
@@ -157,16 +153,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                      ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         # Linear solver for MD0
         'linear_solver_MDO': {ProxyDiscipline.TYPE: 'string',
-                              ProxyDiscipline.DEFAULT: 'GMRES',
-                              #                               ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
-                              # ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
+                              # ProxyDiscipline.DEFAULT: 'GMRES',
+                              ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
+                              ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
                               ProxyDiscipline.NUMERICAL: True,
                               ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDO_preconditioner': {ProxyDiscipline.TYPE: 'string',
-                                             ProxyDiscipline.DEFAULT: 'None',
-                                             #                                              ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
-                                             # ProxyDiscipline.POSSIBLE_VALUES:
-                                             # POSSIBLE_VALUES_PRECONDITIONER,
+                                             # ProxyDiscipline.DEFAULT: 'None',
+                                             ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
+                                             ProxyDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
                                              ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDO_options': {ProxyDiscipline.TYPE: 'dict',
                                       ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
@@ -174,16 +169,15 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                       ProxyDiscipline.UNIT: '-'},
         # Linear solver for MDA
         'linear_solver_MDA': {ProxyDiscipline.TYPE: 'string',
-                              ProxyDiscipline.DEFAULT: 'GMRES',
-                              #                               ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
-                              # ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
+                              # ProxyDiscipline.DEFAULT: 'GMRES',
+                              ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
+                              ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
                               ProxyDiscipline.NUMERICAL: True,
                               ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDA_preconditioner': {ProxyDiscipline.TYPE: 'string',
-                                             ProxyDiscipline.DEFAULT: 'None',
-                                             #                                              ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
-                                             # ProxyDiscipline.POSSIBLE_VALUES:
-                                             # POSSIBLE_VALUES_PRECONDITIONER,
+                                             # ProxyDiscipline.DEFAULT: 'None',
+                                             ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
+                                             ProxyDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
                                              ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
         'linear_solver_MDA_options': {ProxyDiscipline.TYPE: 'dict',
                                       ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_OPTIONS,
@@ -259,7 +253,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     # reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         '''
-        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches, and its children recursively
+        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches and its children recursively
         '''
         mda_chain = self.mdo_discipline_wrapp.mdo_discipline
 
@@ -324,9 +318,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if 'linear_solver_MDA' in disc_in:
             linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
             if linear_solver_MDA.endswith('_PETSC'):
-                if platform.system() == 'Windows':
-                    raise Exception(
-                        f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
+                if getenv("USE_PETSC", "").lower() not in ("true", "1"):
+                    raise ValueError(
+                        f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
+                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
+                        f'USE_PETSC')
                 disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                                                                                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDA_preconditioner') not in \
@@ -343,9 +339,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if 'linear_solver_MDO' in disc_in:
             linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
             if linear_solver_MDO.endswith('_PETSC'):
-                if platform.system() == 'Windows':
-                    raise Exception(
-                        f'Petsc solvers cannot be used on Windows platform, modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA}')
+                if getenv("USE_PETSC", "").lower() not in ("true", "1"):
+                    raise ValueError(
+                        f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
+                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
+                        f'USE_PETSC')
                 disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = ['None'] + \
                                                                                     ksp_lib_petsc.AVAILABLE_PRECONDITIONER
                 if self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') not in \
@@ -533,7 +531,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         for discipline in self.proxy_disciplines:
             if isinstance(discipline, ProxyCoupling):
                 df_couplings = discipline.export_couplings()
-                df = df.append(df_couplings, ignore_index=True)
+                df = concat([df, df_couplings], ignore_index=True)
 
         if in_csv:
             # writing of the file
@@ -880,8 +878,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         instanciated_charts = []
         # Overload default value with chart filter
-        # Overload default value with chart filter
         select_all = False
+        chart_list = []
         if chart_filters is not None:
             for chart_filter in chart_filters:
                 if chart_filter.filter_key == 'charts':
@@ -915,8 +913,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                                      chart_name=chart_name,
                                                      y_axis_log=True)
 
-                for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
-                    new_chart.series.append(series)
+                if iterations:  # TODO: quickfix to avoid post-proc crash when coupling is cached, will give empty plot
+                    for series in to_series(varname="Residuals", x=iterations, y=residuals_through_iterations):
+                        new_chart.series.append(series)
 
                 instanciated_charts.append(new_chart)
 

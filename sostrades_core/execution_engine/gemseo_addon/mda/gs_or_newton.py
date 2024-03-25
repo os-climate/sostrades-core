@@ -117,17 +117,21 @@ class GSorNewtonMDA(MDASequential):
         try:
             mda_i = self.mda_sequence[1]
             mda_i.reset_statuses_for_run()
-            dm_values = deepcopy(self._disciplines[0].dm.get_data_dict_values())
+            # TODO: [discuss limitations] mechanism not possible in EEV4 --> remove
+            # dm_values = deepcopy(self.disciplines[0].dm.get_data_dict_values())
+
             self.local_data = mda_i.execute(self.local_data)
         except:
             LOGGER.warning(
                 'The GSNewtonMDA has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
             mda_i.reset_statuses_for_run()
-            dm = self._disciplines[0].ee.dm
-            # set values directrly in dm to avoid reconfigure of disciplines
-            dm.set_values_from_dict(dm_values)
-            # self._disciplines[0].ee.load_study_from_input_dict(dm_values)
+
+            # TODO: [discuss limitations] mechanism not possible in EEV4 --> remove
+            # dm = self.disciplines[0].ee.dm
+            # # set values directrly in dm to avoid reconfigure of disciplines
+            # dm.set_values_from_dict(dm_values)
+            # self.disciplines[0].ee.load_study_from_input_dict(dm_values)
             self.local_data = mda_i.execute(self.local_data)
 
         self.residual_history += mda_i.residual_history

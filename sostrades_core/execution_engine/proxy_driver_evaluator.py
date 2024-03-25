@@ -29,8 +29,7 @@ from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDiscip
 from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
-# from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import ProxySampleGenerator
-from sostrades_core.tools.gather.gather_tool import check_eval_io, get_eval_output
+from sostrades_core.tools.gather.gather_tool import get_eval_output
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
 from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
 from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values
@@ -95,6 +94,10 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     }
 
     EVAL_INPUTS = ProxySampleGenerator.EVAL_INPUTS
+
+    DRIVER_EVAL_MODE_MONO = 'mono'
+    DRIVER_EVAL_MODE_MULTI = 'multi'
+    
 
     SAMPLES_DF = ProxySampleGenerator.SAMPLES_DF
     SAMPLES_DF_DESC = ProxySampleGenerator.SAMPLES_DF_DESC.copy()
@@ -214,6 +217,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.there_are_new_scenarios = False
 
         self.gather_names = None
+        self.driver_eval_mode = None
 
     def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
@@ -266,9 +270,23 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.sample_generator_disc.set_eval_in_possible_values(possible_values=self.eval_in_possible_values,
                                                                possible_types=self.eval_in_possible_types)
         self.sample_generator_disc.samples_df_f_name = self.get_input_var_full_name(self.SAMPLES_DF)
+        self.sample_generator_disc.driver_is_multi_eval = self.driver_eval_mode == self.DRIVER_EVAL_MODE_MULTI
+
+        self.configure_samples_df()
+        # set samples_df editable
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
-
+        
+    def configure_samples_df(self):
+        # set samples_df editable so that when it changes in samples generator, it is reinitiated at each configure
+        if self.SAMPLES_DF in self.get_data_in():
+            samples_df_full_path = self.get_input_var_full_name(self.SAMPLES_DF)
+            # set samples_df editable so that when it is set to not editable in sample generator it is reinit each time
+            self.dm.set_data(samples_df_full_path,
+                             self.EDITABLE,
+                             True,
+                             check_value=False)
+        
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
@@ -691,18 +709,31 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # these sorts are just for aesthetics
             possible_in_values.sort()
             self.eval_in_possible_values = possible_in_values
-            # TODO: BEFORE THERE WAS A CHECK_EVAL_IO THAT MOVED TO THE SAMPLER,
-            #  NOW THE DRIVER MUST CHECK WRT SAMPLES-DF. DOUBLE-CHECK IT IS DONE SOMEWHERE
         if possible_out_values and io_type_out:
             # NB: if io_type_out then we are in mono_instance so it's driver's responsibility to do this
             # get already set eval_output
-            eval_output_new_dm = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
-            eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, disc_in)
+            possible_out_values = list(possible_out_values)
+            possible_out_values.sort()
+            self.eval_out_possible_values = possible_out_values
+            self._update_eval_output_with_possible_out_values(possible_out_values=possible_out_values,
+                                                              disc_in=disc_in)
 
-            # get all possible outputs and merge with current eval_output
-            eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
-            if len(error_msg) > 0:
-                for msg in error_msg:
-                    self.logger.warning(msg)
-            self.dm.set_data(eval_outputs_f_name,
-                             'value', eval_output_df, check_value=False)
+    def _update_eval_output_with_possible_out_values(self, possible_out_values, disc_in):
+        eval_output_new_dm = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
+        eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, disc_in)
+
+        # get all possible outputs and merge with current eval_output
+        eval_output_df, error_msg = get_eval_output(possible_out_values, eval_output_new_dm)
+        if len(error_msg) > 0:
+            for msg in error_msg:
+                self.logger.warning(msg)
+        self.dm.set_data(eval_outputs_f_name,
+                         'value', eval_output_df, check_value=False)
+
+    def _compose_with_driver_ns(self, sub_name):
+        driver_name = self.get_disc_full_name()
+        if isinstance(sub_name, str):
+            return self.ee.ns_manager.compose_ns([driver_name, sub_name])
+        else:
+            return list(map(lambda _sname: self.ee.ns_manager.compose_ns([driver_name, _sname]),
+                            sub_name))

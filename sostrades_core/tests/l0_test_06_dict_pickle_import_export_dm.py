@@ -21,7 +21,7 @@ import unittest
 import pandas as pd
 from copy import deepcopy
 from os import makedirs
-from os.path import join, dirname, basename
+from os.path import join, dirname, basename, realpath
 from pathlib import Path
 from shutil import rmtree, unpack_archive
 from time import sleep
@@ -292,7 +292,7 @@ class TestSerializeDF(unittest.TestCase):
             if a_file == 'dm_values':
                 n_p = ref_df.loc[st_name + '.n_processes']['value']
                 key_ns = 'TestDiscAllTypes.n_processes'
-                out_df.loc[key_ns]['value'] = n_p
+                out_df.loc[key_ns, 'value'] = n_p
 
             self.assertTrue(ref_df.equals(out_df),
                             f'exported csv files differ:\n{exp_f_p}\nVS\n{out_f_p}')
@@ -378,3 +378,41 @@ class TestSerializeDF(unittest.TestCase):
         self.assertEqual(y2, a2 * x2 + b2)
         self.dir_to_del.append(
             dump_dir)
+
+    def test_06_load_using_pandas2_a_dm_with_a_df_dumped_in_pandas1(self):
+        """
+        This test is based on the pickle of test5 dumped in pandas1 and loaded using current pandas version to validate
+        retro-compatibility.
+        """
+        self.assertTrue(pd.__version__.startswith("2.2"))
+        dump_dir = join(dirname(realpath(__file__)), 'dm_df_pandas1')
+        # load process in GUI
+        self.name = 'dm_w_df_pandas1'
+        self.repo = 'sostrades_core.sos_processes.test.tests_driver_eval.multi'
+        proc_name = 'test_multi_driver'
+
+        x1 = 2.
+        x2 = 4.
+        a1 = 3
+        b1 = 4
+        a2 = 6
+        b2 = 2
+
+        exec_eng2 = ExecutionEngine(self.name)
+        builders = exec_eng2.factory.get_builder_from_process(
+            repo=self.repo, mod_id=proc_name)
+        exec_eng2.factory.set_builders_to_coupling_builder(builders)
+
+        exec_eng2.configure()
+
+        BaseStudyManager.static_load_data(
+            dump_dir, exec_eng2, DirectLoadDump())
+
+        y1 = exec_eng2.dm.get_value(
+            self.name + '.multi_scenarios.scenario_1.y')
+        y2 = exec_eng2.dm.get_value(
+            self.name + '.multi_scenarios.scenario_2.y')
+        self.assertEqual(exec_eng2.dm.get_value(self.name +
+                                                '.multi_scenarios.scenario_1.Disc1.a'), a1)
+        self.assertEqual(y1, a1 * x1 + b1)
+        self.assertEqual(y2, a2 * x2 + b2)

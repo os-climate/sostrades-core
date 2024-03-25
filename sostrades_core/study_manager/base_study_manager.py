@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/09-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/03/09-2024/03/20 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 """
@@ -63,7 +63,7 @@ class BaseStudyManager():
         :params: process_name, process name of the target process to load
         :type: str
 
-        :params: study_name, study name
+        :params: study_name, name of the study 
         :type: str
         """
         self._run_usecase = run_usecase
@@ -79,6 +79,7 @@ class BaseStudyManager():
         self.loaded_cache = None
         self.dumped_cache = False
         self.dump_cache_map = None
+        self.check_outputs = False
 
     @property
     def run_usecase(self):
@@ -174,7 +175,46 @@ class BaseStudyManager():
     def setup_process(self):
         pass
 
-    def load_data(self, from_path=None, from_input_dict=None, display_treeview=True, from_connectors_dict=None):
+    def load_study(self, from_json_file_path=None, display_treeview=True):
+        """
+        Method that load data into the execution engine with datasets
+
+        :params: display_treeview, display or not treeview state (optional parameter)
+        :type: boolean
+        """
+        start_time = time()
+
+        logger = self.execution_engine.logger
+
+        if display_treeview:
+            logger.info('TreeView display BEFORE data setup & configure')
+            self.execution_engine.display_treeview_nodes()
+
+        # load json mapping data file
+        #TODO: to be changed in next version 
+        if from_json_file_path is not None:
+            json_file_path = from_json_file_path
+        else:
+            # if the file is not given in argument, we take the one saved at the old pkl place
+            # not tested in the POC
+            json_file_path = join(self.dump_directory, f'{self.study_name}.json')
+        # read json mapping file
+        datasets_mapping_dict = DatasetsMapping.from_json_file(file_path=json_file_path)
+
+        # load study by retieving data from datasets, set them into the dm and configure study
+        self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
+        
+        # keep old next steps after loading data
+        self.specific_check_inputs()
+        if display_treeview:
+            logger.info('TreeView display AFTER  data setup & configure')
+            self.execution_engine.display_treeview_nodes()
+
+        study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
+        message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
+        logger.info(message)
+
+    def load_data(self, from_path=None, from_input_dict=None, display_treeview=True):
         """ Method that load data into the execution engine
 
         :params: from_path, location of pickle file to load (optional parameter)
@@ -203,8 +243,9 @@ class BaseStudyManager():
         elif from_path is None:
             usecase_data = self.setup_usecase()
         else:
-            usecase_data = self.setup_usecase(
-                study_folder_path=from_path)
+            usecase_data = self.setup_usecase(study_folder_path=from_path)
+
+        datasets_mapping = self.get_dataset_mapping()  # pylint: disable=assignment-from-none
 
         if not isinstance(usecase_data, list):
             usecase_data = [usecase_data]
@@ -217,9 +258,11 @@ class BaseStudyManager():
         # import ipdb
         # ipdb.set_trace()
         self.execution_engine.load_study_from_input_dict(input_dict_to_load)
-        self.load_connectors(
-            from_dict=from_connectors_dict, from_path=from_path)
-        self.specific_check()
+        
+        # Load datasets data
+        if datasets_mapping is not None:
+            self.execution_engine.load_study_from_dataset(datasets_mapping=datasets_mapping)
+        self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
             self.execution_engine.display_treeview_nodes()
@@ -228,46 +271,17 @@ class BaseStudyManager():
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
 
-    def specific_check(self):
+    def specific_check_inputs(self):
         """ Method to overload to have a specific check on input datas
 
         """
         pass
 
-    def load_connectors(self, from_dict=None, from_path=None):
-        """Method that load connectors into the execution engine
+    def specific_check_outputs(self):
+        """ Method to overload to have a specific check on some output datas
 
-        :params: from_dict, connectors to save in dm
-        :type: dict
-
-        :params: from_path, study folder path to get connectors into file and to set them in dm
-        :type: str
         """
-        connectors_dict = {}
-        if from_dict is not None:
-            # connector list is given in input
-            connectors_dict = from_dict
-        else:
-            # if there is no from path, we get the data from dump directory
-            if from_path is None and self.dump_directory is not None and isdir(self.dump_directory):
-                from_path = self.dump_directory
-            # else we get it from the path in input
-
-            if from_path is not None:
-                # get connectors from file data
-                serializer = DataSerializer(root_dir=from_path)
-                ## TODO : Hard fix need to understand why we need a dm.pkl to load connector ? FOr the first load of a never dumped usecase it crashes
-                try:
-                    loaded_dict = serializer.get_dict_from_study(
-                        from_path, self.__rw_strategy)
-                except:
-                    loaded_dict = {}
-                for key, param_data in loaded_dict.items():
-                    if ProxyDiscipline.CONNECTOR_DATA in param_data.keys():
-                        connectors_dict[key] = param_data[ProxyDiscipline.CONNECTOR_DATA]
-
-        if len(connectors_dict) > 0:
-            self.execution_engine.load_connectors_from_dict(connectors_dict)
+        pass
 
     def dump_data(self, study_folder_path: Optional[str] = None):
         """ Method that dump data from the execution engine to a file
@@ -451,6 +465,14 @@ class BaseStudyManager():
         # manage what to dump for the cache
         self.manage_dump_cache()
         self.dump_cache(dump_dir)
+
+    def get_dataset_mapping(self) -> Optional[DatasetsMapping]:
+        """ Method to overload in order to provide datasets mapping to load
+
+        :return: Optional[DatasetsMapping]
+        """
+
+        return None
 
     def setup_usecase(self, study_folder_path=None):
         """ Method to overload in order to provide data to the loaded study process

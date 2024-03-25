@@ -200,21 +200,6 @@ class UncertaintyQuantification(SoSWrapp):
                     parameter_list = in_param + out_param
                     parameter_list = [val.split('.')[-1] for val in parameter_list]
 
-                    # ontology_connector = (
-                    #     self.ee.connector_container.get_persistent_connector(
-                    #         GLOBAL_EXECUTION_ENGINE_ONTOLOGY_IDENTIFIER
-                    #     )
-                    # )
-                    # if ontology_connector is not None:
-                    #     data_request = {
-                    #         OntologyDataConnector.REQUEST_TYPE: OntologyDataConnector.PARAMETER_REQUEST,
-                    #         OntologyDataConnector.REQUEST_ARGS: parameter_list,
-                    #     }
-                    #     conversion_full_ontology = ontology_connector.load_data(
-                    #         data_request
-                    #     )
-                    # else:
-                    # Cannot make a call to ontology so set default data
                     conversion_full_ontology = {
                         parameter: [parameter, ''] for parameter in parameter_list
                     }
@@ -281,15 +266,14 @@ class UncertaintyQuantification(SoSWrapp):
                                         ex,
                                     )
                                     [name, unit] = [input_param, '']
-                                data_details_default = data_details_default.append(
-                                    {
-                                        SoSWrapp.TYPE: 'input',
-                                        'variable': input_param,
-                                        'name': name,
-                                        SoSWrapp.UNIT: unit,
-                                    },
-                                    ignore_index=True,
-                                )
+                                input_serie = pd.Series({
+                                    SoSWrapp.TYPE: 'input',
+                                    'variable': input_param,
+                                    'name': name,
+                                    SoSWrapp.UNIT: unit,
+                                })
+                                data_details_default = pd.concat([data_details_default, pd.DataFrame([input_serie])],
+                                                                 ignore_index=True)
                             for output_param in list(set(out_param)):
                                 try:
                                     [name, unit] = conversion_full_ontology[
@@ -302,15 +286,14 @@ class UncertaintyQuantification(SoSWrapp):
                                     )
                                     [name, unit] = [output_param, None]
 
-                                data_details_default = data_details_default.append(
-                                    {
-                                        SoSWrapp.TYPE: 'output',
-                                        'variable': output_param,
-                                        'name': name,
-                                        SoSWrapp.UNIT: unit,
-                                    },
-                                    ignore_index=True,
-                                )
+                                output_serie = pd.Series({
+                                    SoSWrapp.TYPE: 'output',
+                                    'variable': output_param,
+                                    'name': name,
+                                    SoSWrapp.UNIT: unit,
+                                })
+                                data_details_default = pd.concat([data_details_default, pd.DataFrame([output_serie])],
+                                                                 ignore_index=True)
 
                             dynamic_inputs['input_distribution_parameters_df'] = {
                                 SoSWrapp.TYPE: 'dataframe',
@@ -507,7 +490,7 @@ class UncertaintyQuantification(SoSWrapp):
         self.float_output_names = []
         for output_name in self.output_names:
             example_value = self.all_samples_df[output_name].values[0]
-            if isinstance(example_value, (float,int)):
+            if isinstance(example_value, (float, int)):
                 self.float_output_names.append(output_name)
             elif isinstance(example_value, np.ndarray):
                 if example_value.ndim != 1:
@@ -533,7 +516,8 @@ class UncertaintyQuantification(SoSWrapp):
         """
         Delete the reference scenario in a df for UQ
         """
-        reference_scenario_samples_list = [scen for scen in samples_df['scenario_name'].values if 'reference_scenario' in scen]
+        reference_scenario_samples_list = [scen for scen in samples_df['scenario_name'].values if
+                                           'reference_scenario' in scen]
         samples_df_wo_ref = samples_df.loc[~samples_df['scenario_name'].isin(reference_scenario_samples_list)]
 
         return samples_df_wo_ref
@@ -573,9 +557,10 @@ class UncertaintyQuantification(SoSWrapp):
         self.float_input_parameters_samples_df = pd.DataFrame()
         distrib_list = []
         for input_name in self.float_input_names:
-            distribution, lower_parameter, upper_parameter, most_probable_value = self.float_input_distribution_parameters_df.loc[
-                        self.float_input_distribution_parameters_df['parameter'] == input_name
-                        ][['distribution', 'lower_parameter', 'upper_parameter', 'most_probable_value']].values[0]
+            distribution, lower_parameter, upper_parameter, most_probable_value = \
+                self.float_input_distribution_parameters_df.loc[
+                    self.float_input_distribution_parameters_df['parameter'] == input_name
+                    ][['distribution', 'lower_parameter', 'upper_parameter', 'most_probable_value']].values[0]
             distrib = None
             if distribution == 'Normal':
                 distrib = self.get_Normal_distrib(
@@ -668,7 +653,7 @@ class UncertaintyQuantification(SoSWrapp):
         input_parameters_single_values_tuple = tuple(
             [
                 self.float_input_distribution_parameters_df.loc[
-                        self.float_input_distribution_parameters_df['parameter'] == input_name
+                    self.float_input_distribution_parameters_df['parameter'] == input_name
                     ]['values'].values[0]
                 for input_name in self.float_input_names
             ]
@@ -1122,10 +1107,12 @@ class UncertaintyQuantification(SoSWrapp):
 
         input_distribution_parameters_df = self.get_sosdisc_inputs("input_distribution_parameters_df")
         distribution = input_distribution_parameters_df.loc[
-            input_distribution_parameters_df["parameter"] == name]['distribution'].values[0] if not is_output\
+            input_distribution_parameters_df["parameter"] == name]['distribution'].values[0] if not is_output \
             else ''
         if distribution == 'PERT':
-            lower_parameter, upper_parameter = input_distribution_parameters_df.loc[input_distribution_parameters_df["parameter"] == name][['lower_parameter', 'upper_parameter']].values[0]
+            lower_parameter, upper_parameter = \
+                input_distribution_parameters_df.loc[input_distribution_parameters_df["parameter"] == name][
+                    ['lower_parameter', 'upper_parameter']].values[0]
             fig.add_trace(go.Scatter(x=arrays_x, y=list(lower_parameter),
                                      line=dict(color='green', dash='dash'),
                                      name='lower parameter'))
@@ -1140,10 +1127,10 @@ class UncertaintyQuantification(SoSWrapp):
             quantile_upper = np.nanquantile(list_of_arrays, q=qu, axis=0)
             fig.add_trace(go.Scatter(x=arrays_x, y=quantile_lower.tolist(),
                                      line=dict(color='green', dash='dash'),
-                                     name=f'quantile {int(100*ql)}%'))
+                                     name=f'quantile {int(100 * ql)}%'))
             fig.add_trace(go.Scatter(x=arrays_x, y=quantile_upper.tolist(),
                                      line=dict(color='blue', dash='dash'),
-                                     name=f'quantile {int(100*qu)}%'))
+                                     name=f'quantile {int(100 * qu)}%'))
 
         fig.update_layout(title='Multiple Time Series')
 

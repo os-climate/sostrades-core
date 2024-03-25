@@ -1,0 +1,9 @@
+[
+    {
+        "connector_id":"MVP0_datasets_connector",
+        "connector_type":"JSON",
+        "connector_args": {
+            "file_path":"./sostrades_core/tests/data/test_92_datasets_db.json"
+        }
+    }
+]

@@ -32,8 +32,10 @@ os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 from copy import deepcopy
 from pandas import DataFrame
 from numpy import ndarray
-from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, floating
+from numpy import int32 as np_int32, float32 as np_float32, float64 as np_float64, complex128 as np_complex128, \
+    int64 as np_int64
 from numpy import bool_ as np_bool
+
 from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 from gemseo.core.discipline import MDODiscipline
@@ -139,7 +141,6 @@ class ProxyDiscipline:
     DISCIPLINES_DEPENDENCIES = 'disciplines_dependencies'
     VAR_NAME = SoSWrapp.VAR_NAME
     VISIBLE = SoSWrapp.VISIBLE
-    CONNECTOR_DATA = SoSWrapp.CONNECTOR_DATA
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
     FORMULA = 'formula'
@@ -165,7 +166,7 @@ class ProxyDiscipline:
     VAR_TYPE_ID = 'type'
     # complex can also be a type if we use complex step
     INT_MAP = (int, np_int32, np_int64, np_complex128)
-    FLOAT_MAP = (float, np_float64, np_complex128)
+    FLOAT_MAP = (float, np_float64, np_float32, np_complex128)
     BOOL_MAP = (bool, np_bool)
     PROC_BUILDER_MODAL = 'proc_builder_modal'
     VAR_TYPE_MAP = {
@@ -222,7 +223,8 @@ class ProxyDiscipline:
 
     NUM_DESC_IN = {
         LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,
-                             # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+                             POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+
                              NUMERICAL: True, STRUCTURING: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: MDODiscipline.CacheType.NONE,
                      POSSIBLE_VALUES: [MDODiscipline.CacheType.NONE, MDODiscipline.CacheType.SIMPLE],
@@ -1397,8 +1399,6 @@ class ProxyDiscipline:
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
                 if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
-                    curr_data[self.EDITABLE] = False
-                elif self.CONNECTOR_DATA in curr_data.keys() and curr_data[self.CONNECTOR_DATA] is not None:
                     curr_data[self.EDITABLE] = False
                 else:
                     curr_data[self.EDITABLE] = (io_type == self.IO_TYPE_IN)

@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 29/01/2024 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,4 +38,3 @@ if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
     uc_cls.run(for_test=True)
-    

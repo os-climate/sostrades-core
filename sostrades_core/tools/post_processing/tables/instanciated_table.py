@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 29/02/2024 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +21,7 @@ Class that define a table display as post post processing
 """
 
 import plotly.graph_objects as go
+import pandas as pd
 from sostrades_core.tools.post_processing.post_processing_tools import escape_str_with_comma
 from copy import deepcopy
 
@@ -164,6 +166,10 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
                 annotations=chart_annotations)
 
             return fig
+
+    @staticmethod
+    def from_pd_df(table_name:str, df:pd.DataFrame):
+        return InstanciatedTable(table_name=table_name, header=df.columns.to_list(), cells=df.values.T.tolist())
 
     def __to_csv(self):
         header_text_list = [str(hd).replace('<b>', '').replace(

@@ -29,7 +29,18 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     '''
     Class for driver on multi instance mode
     '''
-
+    _ontology_data = {
+        'label': ' Multi-Instance Driver',
+        'type': 'Research',
+        'source': 'SoSTrades Project',
+        'validated': '',
+        'validated_by': 'SoSTrades Project',
+        'last_modification_date': '',
+        'category': '',
+        'definition': '',
+        'icon': '',
+        'version': '',
+    }
     DISPLAY_OPTIONS_POSSIBILITIES = ScatterTool.DISPLAY_OPTIONS_POSSIBILITIES
 
     #            display_options (optional): Dictionary of display_options for multiinstance mode (value True or False) with options :
@@ -79,7 +90,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             process_display_options  [dict] still keep the possibility to modify display options through the process for archibuilder
         """
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces, map_name)
-
+        self.driver_eval_mode = self.DRIVER_EVAL_MODE_MULTI
         self.display_options = None
         if process_display_options is not None:
             self.display_options = process_display_options
@@ -241,10 +252,10 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         if instance_reference:
             # Addition of Reference Scenario
-            samples_df = samples_df.append(
-                {self.SELECTED_SCENARIO: True,
-                 self.SCENARIO_NAME: self.REFERENCE_SCENARIO_NAME},
-                ignore_index=True)
+            ref_series = pd.Series(
+                {self.SELECTED_SCENARIO: True, self.SCENARIO_NAME: 'ReferenceScenario'})
+            samples_df = pd.concat([samples_df, pd.DataFrame([ref_series])], ignore_index=True)
+
         # NB assuming that the samples_df entries are unique otherwise there
         # is some intelligence to be added
         scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]
@@ -342,9 +353,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         # ref_discipline_full_name =
         # ref_discipline.get_disc_full_name() # do provide the sting
         # path of data in flatten
-        driver_evaluator_ns = self.get_disc_full_name()
-        reference_scenario_ns = self.ee.ns_manager.compose_ns(
-            [driver_evaluator_ns, self.REFERENCE_SCENARIO_NAME])
+        reference_scenario_ns = self._compose_with_driver_ns(self.REFERENCE_SCENARIO_NAME)
         # ref_discipline_full_name may need to be renamed has it is not
         # true in flatten mode
         ref_discipline_full_name = reference_scenario_ns
@@ -453,8 +462,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.save_editable_attr = False
 
     def get_reference_scenario_disciplines(self):
-        reference_scenario_root_name = self.ee.ns_manager.compose_ns([self.get_disc_full_name(),
-                                                                      self.REFERENCE_SCENARIO_NAME])
+        reference_scenario_root_name = self._compose_with_driver_ns(self.REFERENCE_SCENARIO_NAME)
         return [disc for disc in self.scenarios if reference_scenario_root_name in disc.get_disc_full_name()]
 
     # def get_reference_scenario_index(self):

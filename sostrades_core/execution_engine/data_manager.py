@@ -19,15 +19,18 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import logging
 from copy import copy
+from typing import Any
 from uuid import uuid4
 from hashlib import sha256
-from copy import deepcopy
-from numpy import can_cast
+from pandas import concat
 
+from gemseo.caches.simple_cache import SimpleCache
+
+from sostrades_core.datasets.dataset_manager import DatasetsManager
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
-from gemseo.caches.simple_cache import SimpleCache
 
 TYPE = ProxyDiscipline.TYPE
 VALUE = ProxyDiscipline.VALUE
@@ -86,6 +89,8 @@ class DataManager:
         self.reset()
         self.data_check_integrity = False
         self.logger = logger
+
+        self.dataset_manager = DatasetsManager(logger=logger.getChild("DatasetsManager"))
 
     @staticmethod
     def get_an_uuid():
@@ -344,6 +349,111 @@ class DataManager:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
 
+    def fill_data_dict_from_dict(self, values_dict: dict[str:Any], already_set_data: set[str], in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None:
+        '''
+        Set values in data_dict from dict with namespaced keys
+        
+        :param values_dict: Dictionnary {name : values}
+        :type values_dict: dict[str:Any]
+        
+        :param already_set_data: set of data already set
+        :type already_set_data: set[str]
+        
+        :param in_vars: set in vars
+        :type in_vars: bool
+        
+        :param init_coupling_vars: init coupling vars
+        :type init_coupling_vars: bool
+        
+        :param out_vars: set out vars
+        :type out_vars: bool
+        '''
+        # keys of data stored in dumped study file are namespaced, convert them
+        # to uuids
+        convert_values_dict = self.convert_data_dict_with_ids(values_dict)
+
+        # convert data_dict with uuids
+        for key, value in self.data_dict.items():
+            if key in convert_values_dict:
+                # Only inject key which are set as input
+                # Discipline configuration only take care of input variables
+                # Variables are only set once
+                is_in_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
+                if in_vars and is_in_var and not key in already_set_data:
+                    value["value"] = convert_values_dict[key]["value"]
+                    already_set_data.add(key)
+
+                    
+                # check if the key is an output variable
+                is_output_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
+                # check if this is a strongly coupled input necessary to
+                # initialize a MDA
+                is_init_coupling_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING]
+                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
+                    value["value"] = convert_values_dict[key]["value"]
+                    already_set_data.add(key)
+
+    def fill_data_dict_from_datasets(
+        self, datasets_mapping: DatasetsMapping, already_set_data: set[str], in_vars:bool, init_coupling_vars:bool, out_vars:bool
+    ) -> None:
+        '''
+        Set values in data_dict from datasets
+
+        :param: datasets_mapping, adatset list and mapping with study namespaces
+        :type: DatasetsMapping
+        
+        :param already_set_data: set of data already set
+        :type already_set_data: set[str]
+        
+        :param in_vars: set in vars
+        :type in_vars: bool
+        
+        :param init_coupling_vars: init coupling vars
+        :type init_coupling_vars: bool
+        
+        :param out_vars: set out vars
+        :type out_vars: bool
+        '''
+        # do a map between namespace and data from data_dict not already fetched
+        # to have a list of data by namespace
+        namespaced_data_dict = {}
+        KEY = 'key'
+        
+        for key, data_value in self.data_dict.items():
+            # check if the key is an output variable
+            is_output_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
+            # check if this is a strongly coupled input necessary to
+            # initialize a MDA
+            is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[ProxyDiscipline.COUPLING]
+            # get all input values not already set
+            is_in_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
+            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
+                data_ns = data_value[NS_REFERENCE].value
+                data_name = data_value[VAR_NAME]
+                data_type = data_value[TYPE]
+
+                # create a dict with namespace, datas with keys (to fill dm after) and types (to convert from dataset)
+                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY:{}, TYPE:{}})
+                namespaced_data_dict[data_ns][KEY][data_name] = key
+                namespaced_data_dict[data_ns][TYPE][data_name] = data_type
+
+        # iterate on each namespace to retrieve data in this namespace
+        for namespace, data_dict in namespaced_data_dict.items():
+            datasets_info = datasets_mapping.get_datasets_info_from_namespace(namespace, self.name)
+            # retrieve the list of dataset associated to the namespace from the mapping
+            if len(datasets_info) > 0:
+                # get data values into the dataset into the right format
+                updated_data = self.dataset_manager.fetch_data_from_datasets(
+                    datasets_info=datasets_info, data_dict=data_dict[TYPE])
+
+                # update data values in dm
+                for data_name, value in updated_data.items():
+                    key = data_dict[KEY][data_name]
+                    self.data_dict[key][VALUE] = value
+                    already_set_data.add(key)
+            else:
+                self.logger.warning(f"the namespace {namespace} is not referenced in the datasets mapping of the study")
+
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys
         '''
@@ -435,8 +545,7 @@ class DataManager:
     def create_reduced_dm(self):
         self.reduced_dm = self.get_data_dict_list_attr(
             [ProxyDiscipline.TYPE, ProxyDiscipline.SUBTYPE, ProxyDiscipline.TYPE_METADATA, ProxyDiscipline.NUMERICAL,
-             ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING,
-             ProxyDiscipline.CONNECTOR_DATA])
+             ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING])
 
     def convert_dict_with_maps(self, dict_to_convert, map_full_names_ids, keys='full_names'):
         ''' Convert dict keys with ids to full_names or full_names to ids
@@ -476,7 +585,6 @@ class DataManager:
             f'store and update the discipline data into the DM dictionary {list(disc_dict.keys())[:10]} ...')
 
         def _dm_update(var_name, io_type, var_f_name):
-
             if var_f_name in self.data_id_map.keys():
                 # If data already exists in DM
                 var_id = self.get_data_id(var_f_name)
@@ -729,7 +837,8 @@ class DataManager:
             df = sosc.export_couplings()
             for sosc in sosc_list:
                 df_sosc = sosc.export_couplings()
-                df = df.append(df_sosc, ignore_index=True)
+
+                df = concat([df, df_sosc], ignore_index=True)
             # write data or return dataframe
             if in_csv:
                 # writing of the file
