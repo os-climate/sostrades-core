@@ -244,7 +244,7 @@ class BaseStudyManager():
         else:
             usecase_data = self.setup_usecase(study_folder_path=from_path)
 
-        datasets_mapping = self.get_dataset_mapping()
+        datasets_mapping = self.get_dataset_mapping()  # pylint: disable=assignment-from-none
 
         if not isinstance(usecase_data, list):
             usecase_data = [usecase_data]
