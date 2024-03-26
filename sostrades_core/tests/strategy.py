@@ -50,7 +50,7 @@ def run_tests_l0_l1_l2(main_folder, file_pattern):
         return 0
     try:
         # Use subprocess to run the pytest command on the specified file
-        exitcode = pytest.main(['-W', 'ignore', '--durations=5', '--durations-min=2.0'] + test_files)
+        exitcode = pytest.main(['-W', 'ignore', '-v', '--durations=5', '--durations-min=2.0'] + test_files)
     except Exception as e:
         # Handle any errors or exceptions here
         print(f"Error while running pytest on {test_files}: {e}")
