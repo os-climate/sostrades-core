@@ -27,7 +27,6 @@ class DatasetsMapping:
     Stores namespace/dataset mapping
     """
     # Keys for parsing json
-    DATASETS_INFO_KEY = "datasets_infos"
     NAMESPACE_KEY = "namespace_datasets_mapping"
     PROCESS_MODULE_PATH_KEY = "process_module_path"
     STUDY_PLACEHOLDER = "<study_ph>"
