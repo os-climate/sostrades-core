@@ -223,7 +223,7 @@ class ProxyDiscipline:
 
     NUM_DESC_IN = {
         LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,
-                             POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
+                             POSSIBLE_VALUES: list(MDODiscipline.ApproximationMode),
 
                              NUMERICAL: True, STRUCTURING: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: MDODiscipline.CacheType.NONE,

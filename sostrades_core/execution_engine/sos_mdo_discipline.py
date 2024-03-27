@@ -141,86 +141,86 @@ class SoSMDODiscipline(MDODiscipline):
             raise error
         return self._local_data
 
-    def linearize(self, input_data=None, force_all=False, execute=True,
-                  exec_before_linearize=True):
-        """overloads GEMS linearize function
-        """
-
-        # self.default_inputs = self._default_inputs
-        # if input_data is not None:
-        #     self.default_inputs.update(input_data)
-
-        if self.linearization_mode == self.LinearizationMode.COMPLEX_STEP:
-            # is complex_step, switch type of inputs variables
-            # perturbed to complex
-            inputs, _ = self._retreive_diff_inouts(force_all)
-            def_inputs = self.default_inputs
-            for name in inputs:
-                def_inputs[name] = def_inputs[name].astype('complex128')
-        else:
-            pass
-
-        # need execution before the linearize
-        if execute and exec_before_linearize:
-            self.reset_statuses_for_run()
-            self.exec_for_lin = True
-            self.execute(input_data)
-            self.exec_for_lin = False
-            execute = False
-            need_execution_after_lin = False
-
-        # need execution but after linearize, in the NR GEMSEO case an
-        # execution is done bfore the while loop which udates the local_data of
-        # each discipline
-        elif execute and not exec_before_linearize:
-            execute = False
-            need_execution_after_lin = True
-
-        # no need of any execution
-        else:
-            need_execution_after_lin = False
-            # maybe no exec before the first linearize, GEMSEO needs a
-            # local_data with inputs and outputs for the jacobian computation
-            # if the local_data is empty
-            if self._local_data == {}:
-                own_data = {
-                    k: v for k, v in self.default_inputs.items() if
-                    self.is_input_existing(k) or self.is_output_existing(k)}
-                self._local_data = own_data
-
-        # The local_data shall be reset to their original values
-        # in case an input is also an output,
-        # if we don't want to keep the computed state (as in MDAs).
-        if not self._linearize_on_last_state:
-            self._local_data.update(input_data)
-
-        if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
-                self.default_inputs).items() if key in self.input_grammar.keys()}
-
-        # Set STATUS to LINEARIZE for GUI visualization
-        self.status = self.ExecutionStatus.LINEARIZE
-        result = MDODiscipline.linearize(
-            self, self.default_inputs, force_all, execute)
-        self.status = self.ExecutionStatus.DONE
-
-        self._check_nan_in_data(result)
-        if self.check_linearize_data_changes and not self.is_sos_coupling:
-            disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(
-                self.default_inputs).items() if key in disc_data_before_linearize.keys()}
-            is_output_error = True
-            output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
-                                                                disc_data_after_linearize,
-                                                                'Discipline data integrity through linearize',
-                                                                is_output_error=is_output_error)
-            if output_error != '':
-                raise ValueError(output_error)
-
-        if need_execution_after_lin:
-            self.reset_statuses_for_run()
-            self.execute(self.default_inputs)
-
-        return result
+    # def linearize(self, input_data=None, force_all=False, execute=True,
+    #               exec_before_linearize=True):
+    #     """overloads GEMS linearize function
+    #     """
+    #
+    #     # self.default_inputs = self._default_inputs
+    #     # if input_data is not None:
+    #     #     self.default_inputs.update(input_data)
+    #
+    #     if self.linearization_mode == self.LinearizationMode.COMPLEX_STEP:
+    #         # is complex_step, switch type of inputs variables
+    #         # perturbed to complex
+    #         inputs, _ = self._retreive_diff_inouts(force_all)
+    #         def_inputs = self.default_inputs
+    #         for name in inputs:
+    #             def_inputs[name] = def_inputs[name].astype('complex128')
+    #     else:
+    #         pass
+    #
+    #     # need execution before the linearize
+    #     if execute and exec_before_linearize:
+    #         self.reset_statuses_for_run()
+    #         self.exec_for_lin = True
+    #         self.execute(input_data)
+    #         self.exec_for_lin = False
+    #         execute = False
+    #         need_execution_after_lin = False
+    #
+    #     # need execution but after linearize, in the NR GEMSEO case an
+    #     # execution is done bfore the while loop which udates the local_data of
+    #     # each discipline
+    #     elif execute and not exec_before_linearize:
+    #         execute = False
+    #         need_execution_after_lin = True
+    #
+    #     # no need of any execution
+    #     else:
+    #         need_execution_after_lin = False
+    #         # maybe no exec before the first linearize, GEMSEO needs a
+    #         # local_data with inputs and outputs for the jacobian computation
+    #         # if the local_data is empty
+    #         if self._local_data == {}:
+    #             own_data = {
+    #                 k: v for k, v in self.default_inputs.items() if
+    #                 self.is_input_existing(k) or self.is_output_existing(k)}
+    #             self._local_data = own_data
+    #
+    #     # The local_data shall be reset to their original values
+    #     # in case an input is also an output,
+    #     # if we don't want to keep the computed state (as in MDAs).
+    #     if not self._linearize_on_last_state:
+    #         self._local_data.update(input_data)
+    #
+    #     if self.check_linearize_data_changes and not self.is_sos_coupling:
+    #         disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
+    #             self.default_inputs).items() if key in self.input_grammar.keys()}
+    #
+    #     # Set STATUS to LINEARIZE for GUI visualization
+    #     self.status = self.ExecutionStatus.LINEARIZE
+    #     result = MDODiscipline.linearize(
+    #         self, self.default_inputs, force_all, execute)
+    #     self.status = self.ExecutionStatus.DONE
+    #
+    #     self._check_nan_in_data(result)
+    #     if self.check_linearize_data_changes and not self.is_sos_coupling:
+    #         disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(
+    #             self.default_inputs).items() if key in disc_data_before_linearize.keys()}
+    #         is_output_error = True
+    #         output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
+    #                                                             disc_data_after_linearize,
+    #                                                             'Discipline data integrity through linearize',
+    #                                                             is_output_error=is_output_error)
+    #         if output_error != '':
+    #             raise ValueError(output_error)
+    #
+    #     if need_execution_after_lin:
+    #         self.reset_statuses_for_run()
+    #         self.execute(self.default_inputs)
+    #
+    #     return result
 
     def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
                        step=1e-7, threshold=1e-8, linearization_mode=MDODiscipline.LinearizationMode.AUTO,
@@ -264,9 +264,9 @@ class SoSMDODiscipline(MDODiscipline):
             wait_time_between_fork,
         )
         if inputs is None:
-            inputs = self.get_input_data_names(filtered_inputs=True)
+            inputs = self.get_input_data_names()
         if outputs is None:
-            outputs = self.get_output_data_names(filtered_outputs=True)
+            outputs = self.get_output_data_names()
 
         if auto_set_step:
             approx.auto_set_step(outputs, inputs, print_errors=True)
@@ -306,6 +306,37 @@ class SoSMDODiscipline(MDODiscipline):
         )
         return o_k
 
+    def _compute_jacobian(self, inputs=None, outputs=None):
+        """Over load of the GEMS function
+        Compute the analytic jacobian of a discipline/model
+        Check if the jacobian in compute_sos_jacobian is OK
+
+        :param inputs: linearization should be performed with respect
+            to inputs list. If None, linearization should
+            be performed wrt all inputs (Default value = None)
+        :param outputs: linearization should be performed on outputs list.
+            If None, linearization should be performed
+            on all outputs (Default value = None)
+        """
+        if self.check_linearize_data_changes:
+            disc_data_before_linearize = self.local_data
+
+        if self.jac is None:
+            self._init_jacobian(inputs, outputs, init_type=self.InitJacobianType.SPARSE)
+        else:
+            self._init_jacobian(
+                inputs, outputs, init_type=self.InitJacobianType.SPARSE, fill_missing_keys=True)
+
+        self.compute_sos_jacobian()
+        if self.check_linearize_data_changes:
+            disc_data_after_linearize = self.local_data
+
+            self.check_discipline_data_integrity(disc_data_before_linearize,
+                                                 disc_data_after_linearize,
+                                                 'Discipline data integrity through compute_sos_jacobian')
+        if self.check_min_max_gradients:
+            self._check_min_max_gradients(self.jac)
+
     def compute_sos_jacobian(self):
         """
         Overload compute_sos_jacobian of MDODiscipline to call the function in the discipline wrapp
@@ -314,7 +345,8 @@ class SoSMDODiscipline(MDODiscipline):
         self.sos_wrapp.compute_sos_jacobian()
         for y_key, x_key_dict in self.sos_wrapp.jac_dict.items():
             for x_key, value in x_key_dict.items():
-                self.set_partial_derivative(y_key, x_key, value)
+                if y_key in self.jac:
+                    self.set_partial_derivative(y_key, x_key, value)
 
     def set_partial_derivative(self, y_key, x_key, value):
         '''
