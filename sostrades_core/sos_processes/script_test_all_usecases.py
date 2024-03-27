@@ -151,7 +151,7 @@ def get_all_usecases(processes_repo: str) -> list[str]:
                     process_directory = dirname(imported_module.__file__)
                     # Run all usecases
                     for usecase_py in listdir(process_directory):
-                        if usecase_py.startswith('usecase'):
+                        if usecase_py.startswith('usecase') and usecase_py.endswith(".py"):
                             usecase = usecase_py.replace('.py', '')
                             usecase_list.append('.'.join([repository, process, usecase]))
             except Exception as error:

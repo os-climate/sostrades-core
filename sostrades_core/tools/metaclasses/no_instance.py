@@ -11,5 +11,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
 '''
+class NoInstanceMeta(type):
+    """
+    Metaclass for a class that should not be instanciated
+    """
+    def __call__(cls, *args, **kwargs):
+        raise TypeError(f"{cls.__name__} cannot be instantiated")

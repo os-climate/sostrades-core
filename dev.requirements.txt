@@ -6,8 +6,6 @@
 #
 alembic==1.13.1
     # via flask-migrate
-attrs==23.2.0
-    # via dremio-client
 autograd==1.6.2
     # via pymoo
 bidict==0.23.1
@@ -28,15 +26,12 @@ click==8.1.7
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   black
-    #   dremio-client
     #   flask
 cma==2.7.0
     # via
     #   -r ./sostrades-core/requirements.in
     #   pymoo
-confuse==2.0.1
-    # via dremio-client
-coverage[toml]==7.4.3
+coverage[toml]==7.4.4
     # via pytest-cov
 custom-inherit==2.4.0
     # via -r ./gemseo/requirements.txt
@@ -54,9 +49,6 @@ dnspython==2.2.1
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   eventlet
-    #   pymongo
-dremio-client==0.15.1
-    # via -r ./sostrades-core/requirements.in
 ecos==2.0.13
     # via cvxpy
 et-xmlfile==1.1.0
@@ -104,7 +96,7 @@ gitpython==3.1.31
     # via
     #   -r ./sostrades-ontology/requirements.in
     #   -r ./sostrades-webapi/requirements.in
-google-auth==2.28.2
+google-auth==2.29.0
     # via kubernetes
 graphviz==0.16
     # via
@@ -116,8 +108,10 @@ h5py==3.2.1
     # via -r ./gemseo/requirements.txt
 idna==3.6
     # via requests
-importlib-metadata==7.0.2
-    # via numpoly
+importlib-metadata==7.1.0
+    # via
+    #   numpoly
+    #   python-arango
 iniconfig==2.0.0
     # via pytest
 isodate==0.6.1
@@ -222,6 +216,7 @@ pandas==2.2.1
     # via
     #   -r ./GreenProductPortfolio/requirements.in
     #   -r ./gemseo/requirements.txt
+    #   -r ./portfolio-management/requirements.in
     #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-ontology/requirements.in
     #   -r ./sostrades-webapi/requirements.in
@@ -266,8 +261,7 @@ pyjwt==1.7.1
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   flask-jwt-extended
-pymongo==4.4.1
-    # via -r ./sostrades-core/requirements.in
+    #   python-arango
 pymoo==0.5.0
     # via -r ./gemseo/requirements.txt
 pyparsing==3.1.2
@@ -316,12 +310,13 @@ pytest-xdist==3.4.0
     #   -r ./sostrades-webapi/requirements.in
     #   -r ./witness-core/requirements.in
     #   -r ./witness-energy/requirements.in
+python-arango==7.5.8
+    # via -r ./sostrades-core/requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   kubernetes
     #   matplotlib
     #   pandas
-    #   trino
 python-dotenv==0.12.0
     # via
     #   -r ./sostrades-core/requirements.in
@@ -342,14 +337,12 @@ pytz==2023.3.post1
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   pandas
-    #   trino
 pyxdsm==2.2.0 ; python_version >= "3"
     # via -r ./gemseo/requirements.txt
 pyyaml==6.0.1
     # via
     #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-webapi/requirements.in
-    #   confuse
     #   kubernetes
 qdldl==0.1.7.post0
     # via osqp
@@ -361,12 +354,14 @@ requests==2.31.0
     #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-ontology/requirements.in
     #   -r ./sostrades-webapi/requirements.in
-    #   dremio-client
     #   kubernetes
+    #   python-arango
     #   requests-oauthlib
-    #   trino
+    #   requests-toolbelt
 requests-oauthlib==1.4.0
     # via kubernetes
+requests-toolbelt==1.0.0
+    # via python-arango
 rsa==4.9
     # via google-auth
 scikit-learn==1.0.1
@@ -395,14 +390,11 @@ seaborn==0.9.0
 shiboken2==5.15.2
     # via pyside2
 simplejson==3.19.2
-    # via
-    #   -r ./sostrades-webapi/requirements.in
-    #   dremio-client
+    # via -r ./sostrades-webapi/requirements.in
 six==1.16.0
     # via
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-core/requirements.in
-    #   dremio-client
     #   eventlet
     #   flask-jwt-extended
     #   furl
@@ -430,7 +422,7 @@ tenacity==8.2.3
     # via plotly
 textdistance==4.2.0
     # via -r ./sostrades-ontology/requirements.in
-threadpoolctl==3.3.0
+threadpoolctl==3.4.0
     # via scikit-learn
 tomli==2.0.1
     # via
@@ -442,20 +434,17 @@ tqdm==4.61.0
     #   -r ./gemseo/requirements.txt
     #   -r ./sostrades-core/requirements.in
     #   -r ./witness-core/requirements.in
-trino==0.327.0
-    # via -r ./sostrades-core/requirements.in
 typing-extensions==4.10.0
     # via
     #   alembic
     #   black
 tzdata==2024.1
     # via pandas
-tzlocal==5.2
-    # via trino
 urllib3==2.1.0
     # via
     #   -r ./sostrades-webapi/requirements.in
     #   kubernetes
+    #   python-arango
     #   requests
 websocket-client==1.7.0
     # via kubernetes
@@ -469,7 +458,7 @@ xdsmjs==1.0.1
     # via -r ./gemseo/requirements.txt
 xmlsec==1.3.13
     # via python3-saml
-zipp==3.18.0
+zipp==3.18.1
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:

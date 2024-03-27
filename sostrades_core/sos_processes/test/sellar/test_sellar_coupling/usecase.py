@@ -16,7 +16,8 @@ limitations under the License.
 '''
 from sostrades_core.study_manager.study_manager import StudyManager
 from numpy import array
-
+from sostrades_core.study_manager.run_usecase import run_usecase
+from os.path import join, dirname
 
 class Study(StudyManager):
 
@@ -44,8 +45,11 @@ class Study(StudyManager):
 
 
 if '__main__' == __name__:
-    uc_cls = Study()
-    uc_cls.load_data()
-    uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
-    uc_cls.run()
-#     uc_cls.execution_engine.root_process.coupling_structure.graph.write_full_graph("here.pdf")
+    # uc_cls = Study()
+    # uc_cls.load_data()
+    # uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
+    # uc_cls.run()
+    #  uc_cls.execution_engine.root_process.coupling_structure.graph.write_full_graph("here.pdf")
+    proc_name = "sostrades_core.sos_processes.test.sellar.test_sellar_coupling"
+    run_usecase(proc_name, join(dirname(__file__),'usecase_dataset_sellar_coupling.json'))
+

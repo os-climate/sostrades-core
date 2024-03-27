@@ -17,9 +17,12 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
-from typing import Union, Optional
+from typing import Any, Callable, Union, Optional
 # Execution engine SoSTrades code
 import logging
+import json 
+
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
@@ -27,11 +30,8 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.data_connector.data_connector_factory import (
-    PersistentConnectorContainer, ConnectorFactory)
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-import os
-import json
+
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -88,8 +88,6 @@ class ExecutionEngine:
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.check_data_integrity: bool = True
-        self.__connector_container = PersistentConnectorContainer(
-            logger=self.logger.getChild("PersistentConnectorContainer"))
 
     @property
     def factory(self) -> SosFactory:
@@ -108,14 +106,6 @@ class ExecutionEngine:
             :type: PostProcessingManager
         """
         return self.__post_processing_manager
-
-    @property
-    def connector_container(self) -> PersistentConnectorContainer:
-        """
-        Read-only accessor on the connector_container object
-        :return: PersistentConnectorContainer
-        """
-        return self.__connector_container
 
     # -- Public methods
     def select_root_process(self, repo, mod_id):
@@ -182,120 +172,8 @@ class ExecutionEngine:
         self.clean_unused_namespaces()
 
         self.__factory.init_execution()
-        self.fill_data_connector_prepare_exec()
         # - execution
         self.root_process.prepare_execution()
-
-    def fill_data_connector_prepare_exec(self):
-        """
-        Mehtod called in prepare_execution
-        Checks if a namespace is related to a database, create connector, load data and fill dm with the collected data
-        """
-
-        def load_data_for_ns_with_connector(namespace, database_info):
-            """
-            Load data for given namespace using associated connector
-            :param namespace: Namespace for which data is retrieved from the database
-            :type: Namespace
-            :param database_infos: database informations 
-            :type: dict  
-            :return connector: create connector
-            :type AbstractDataConnector
-            :return database_data: loaded data from database
-            :type dict, pandas.DataFrame
-            """
-
-            # set namespace database infos
-            namespace.database_infos = database_info
-            database_label = database_info['database_label']
-            # create (or get if already exists) connector 
-            connector = self.connector_container.register_persistent_connector(conf_data[database_label]['type'],
-                                                                               database_label,
-                                                                               conf_data[database_label][
-                                                                                   'connection_data'])
-            # load data using created connector
-            database_data = connector.load_data(namespace.database_infos['database_query'])
-            self.logger.info(f"database {database_label} was loaded for namespace {ns_id}")
-
-            return connector, database_data
-
-        # if database is activated
-        if self.ns_manager.database_infos is not None:
-            if self.ns_manager.database_conf_path is not None:
-                loaded_data = {}
-                connector_dict = {}
-                # load configuration file of databases
-                with open(self.ns_manager.database_conf_path, 'r') as openfile:
-                    conf_data = json.load(openfile)
-                # create connectors and pull data for shared namespaces
-                if 'shared_ns' in self.ns_manager.database_infos:
-                    for ns_id, database_info in self.ns_manager.database_infos['shared_ns'].items():
-                        # check if ns_id if all_ns_dict
-                        if ns_id in self.ns_manager.all_ns_dict:
-                            # get namespace using namespace id
-                            ns = self.ns_manager.all_ns_dict[ns_id]
-                            # get data for shared namespace
-                            self.logger.info(f"Loading data in database for shared namespace {ns_id}")
-                            connector, database_data = load_data_for_ns_with_connector(ns, database_info)
-                            # store data and connector for later use
-                            connector_dict[ns_id] = connector
-                            loaded_data[ns_id] = database_data
-
-                # create connectors and pull data for local namespaces
-                if 'local_ns' in self.ns_manager.database_infos:
-                    for disc_id, database_info in self.ns_manager.database_infos['local_ns'].items():
-                        # discipline name is unique
-                        disc = self.dm.get_disciplines_with_name(disc_id)[0]
-                        # get local ns of discipline 
-                        ns = self.ns_manager.get_local_namespace(disc)
-                        self.logger.info(f"Loading data in database for local variables of discipline {disc_id}")
-                        # get data for local namespace
-                        connector, database_data = load_data_for_ns_with_connector(ns, database_info)
-                        ns_id = ns.get_ns_id()
-                        connector_dict[ns_id] = connector
-                        loaded_data[ns_id] = database_data
-
-                # TODO must be refactored to not loop on all variables
-                for var_id, dict_val in self.dm.data_dict.items():
-                    # loop on all variable, get associated namespace and get data from loaded database using correct method
-                    var_name = dict_val[ProxyDiscipline.VAR_NAME]
-                    ns_var = dict_val[ProxyDiscipline.NS_REFERENCE]
-                    ns_id = ns_var.get_ns_id()
-                    if ns_id in loaded_data and ns_id in connector_dict:
-                        # get variable value from loaded database with the used connector
-                        loaded_value = connector_dict[ns_id].get_data_from_loaded_db(loaded_data[ns_id], var_name)
-                        if loaded_value is not None:
-                            # log variable name as from database
-                            self.logger.info(f"Loading variable {var_name} from database")
-                            # set value got from database in data dict
-                            dict_val[ProxyDiscipline.VALUE] = loaded_value
-            else:
-                self.logger.warning("Database activated but no path is set, database can't be loaded")
-
-    def fill_data_in_with_connector(self):
-        """
-        Use data connector if needed, in the following case
-        1) data is in input, and come from the output of another model --> no data connector used
-        2) data is in output --> no data connector use here
-        is in input, and does not come from another model --> data connector is used
-        """
-
-        dm_data_dict = self.dm.data_dict
-        for variable_id in dm_data_dict:
-            data = None
-            # if connector is needed
-            if ProxyDiscipline.CONNECTOR_DATA in dm_data_dict[variable_id]:
-                if dm_data_dict[variable_id][ProxyDiscipline.CONNECTOR_DATA] is not None:
-                    if dm_data_dict[variable_id][ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN:
-                        # if variable io_type is in --> use data_connector
-                        data = ConnectorFactory.use_data_connector(
-                            dm_data_dict[variable_id][ProxyDiscipline.CONNECTOR_DATA],
-                            self.logger)
-                    # else, variable is an output of a disc --> no use of data
-                    # connector
-
-            if data is not None:  # update variable value
-                dm_data_dict[variable_id][ProxyDiscipline.VALUE] = data
 
     def __configure_io(self):
         self.logger.info('Configuring IO...')
@@ -520,14 +398,25 @@ class ExecutionEngine:
 
         return converted_dict
 
+    def load_study_from_dataset(self, datasets_mapping: DatasetsMapping, update_status_configure:bool=True):
+        '''
+        Load a study from a datasets mapping dictionary : retreive dataset value and load study
+        
+        :param datasets_mapping: Dataset mapping to use
+        :type datasets_mapping: DatasetsMapping
+        :param update_status_configure: whether to update the status for configure
+        :type update_status_configure: bool
+        '''
+        # call the configure function with the set dm data from datasets
+        self.configure_study_with_data(datasets_mapping, self.dm.fill_data_dict_from_datasets, update_status_configure)
+
     def load_study_from_input_dict(self, input_dict_to_load, update_status_configure=True):
         '''
         Load a study from an input dictionary : Convert the input_dictionary into a dm-like dictionary
         and compute the function load_study_from_dict
         '''
         dict_to_load = self.convert_input_dict_into_dict(input_dict_to_load)
-        self.load_study_from_dict(
-            dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
+        self.load_study_from_dict(dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
 
     def get_anonimated_data_dict(self):
         '''
@@ -545,11 +434,12 @@ class ExecutionEngine:
 
     def convert_input_dict_into_dict(self, input_dict):
 
-        dm_dict = {key: {ProxyDiscipline.VALUE: value}
-                   for key, value in input_dict.items()}
+        dm_dict = {key: {ProxyDiscipline.VALUE: value} for key, value in input_dict.items()}
         return dm_dict
 
-    def load_study_from_dict(self, dict_to_load, anonymize_function=None, update_status_configure=True):
+    def load_study_from_dict(
+        self, dict_to_load: dict[str:Any], anonymize_function=None, update_status_configure: bool = True
+    ):
         '''
         method that imports data from dictionary to discipline tree
 
@@ -563,7 +453,7 @@ class ExecutionEngine:
         Optional parameter used only for evaluator process to avoid the configuration of all disciplines
         :type: SoSEval object
         '''
-        self.logger.debug('Loading study from dictionary')
+        self.logger.debug("Loading study from dictionary")
 
         if anonymize_function is None:
             data_cache = dict_to_load
@@ -572,9 +462,24 @@ class ExecutionEngine:
             for key, value in dict_to_load.items():
                 converted_key = anonymize_function(key)
                 data_cache.update({converted_key: value})
-        # keys of data stored in dumped study file are namespaced, convert them
-        # to uuids
-        convert_data_cache = self.dm.convert_data_dict_with_ids(data_cache)
+
+        # call the configure function with the set dm data from dict
+        self.configure_study_with_data(data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
+
+    def configure_study_with_data(
+        self,
+        dict_or_datasets_to_load: Union[dict, DatasetsMapping],
+        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str], bool, bool, bool], None],
+        update_status_configure: bool,
+    ):
+        '''
+        method that insert data into dm and configure the process
+
+        :param set_data_in_dm_function: a function sets data in datamanager data_dict using dict_or_datasets_to_load, with signature:
+        set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: set of data name, in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None
+        :type set_data_in_dm_function: Callable
+
+        '''
         iteration = 0
 
         loop_stop = False
@@ -582,7 +487,7 @@ class ExecutionEngine:
         # that should mean all disciplines under discipline to load are deeply
         # configured
 
-        checked_keys = []
+        checked_keys = set()
 
         while not loop_stop:
             self.logger.info("Configuring loop iteration %i.", iteration)
@@ -590,21 +495,13 @@ class ExecutionEngine:
                 self.__yield_method()
 
             self.dm.no_change = True
-            for key, value in self.dm.data_dict.items():
-                if key in convert_data_cache:
-                    # Only inject key which are set as input
-                    # Discipline configuration only take care of input
-                    # variables
-                    # Variables are only set once
-                    if value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and not key in checked_keys:
-                        value['value'] = convert_data_cache[key]['value']
-                        checked_keys.append(key)
+            # call the function that will set data in dm
+            set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, in_vars=True, init_coupling_vars=False, out_vars=False)
 
             self.__configure_io()
 
             if self.__yield_method is not None:
                 self.__yield_method()
-            convert_data_cache = self.dm.convert_data_dict_with_ids(data_cache)
 
             iteration = iteration + 1
 
@@ -612,22 +509,11 @@ class ExecutionEngine:
                 loop_stop = True
             elif iteration >= 100:
                 self.logger.warning('CONFIGURE WARNING: root process is not configured after 100 iterations')
-                raise Exception('too much iterations')
-                loop_stop = True
+                raise Exception('Too many iterations')
 
         # Convergence is ended
         # Set all output variables and strong couplings
-        for key, value in self.dm.data_dict.items():
-            if key in convert_data_cache:
-                # check if the key is an output variable
-                is_output_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
-                # check if this is a strongly coupled input necessary to
-                # initialize a MDA
-                is_init_coupling_var = (
-                        value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[
-                    ProxyDiscipline.COUPLING])
-                if is_output_var or is_init_coupling_var:
-                    value['value'] = convert_data_cache[key]['value']
+        set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, in_vars=False, init_coupling_vars=True, out_vars=True)
 
         if self.__yield_method is not None:
             self.__yield_method()
@@ -635,7 +521,7 @@ class ExecutionEngine:
         #         self.__configure_execution()
 
         # -- Init execute, to fully initialize models in discipline
-        if len(dict_to_load):
+        if len(checked_keys):
             self.update_from_dm()
             self.dm.create_reduced_dm()
             if update_status_configure:
@@ -673,24 +559,6 @@ class ExecutionEngine:
         data_integrity_msg = self.get_data_integrity_msg()
         if data_integrity_msg != '':
             raise ValueError(data_integrity_msg)
-
-    def load_connectors_from_dict(self, connectors_to_load):
-        '''
-        set connectors data into dm
-        :params: connectors_to_load, connectors data for each variables
-        :type: dict with variableId, dict with connector values
-        '''
-        data_cache = {}
-        for key, value in connectors_to_load.items():
-            converted_key = self.__unanonimize_key(key)
-            data_cache.update({converted_key: value})
-        # keys of data stored in dumped study file are namespaced, convert them
-        # to uuids
-        convert_data_cache = self.dm.convert_data_dict_with_ids(data_cache)
-        for key, value in convert_data_cache.items():
-            if key in self.dm.data_dict.keys():
-                variable_to_update = self.dm.data_dict[key]
-                variable_to_update[ProxyDiscipline.CONNECTOR_DATA] = value
 
     def set_debug_mode(self, mode=None, disc=None):
         ''' set recursively <disc> debug options of in ProxyDiscipline
@@ -759,7 +627,6 @@ class ExecutionEngine:
         '''
         self.logger.info('PROCESS EXECUTION %s STARTS...', self.root_process.get_disc_full_name())
         #         self.root_process.clear_cache()
-        self.fill_data_in_with_connector()
         self.update_from_dm()
 
         self.__check_data_integrity_msg()

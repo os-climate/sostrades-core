@@ -1,0 +1,24 @@
+{
+    "process_module_path": "sostrades_core.sos_processes.test.test_disc1_disc2_dataset",
+    "datasets_infos": {
+        "Dataset1": {
+            "connector_id": "MVP0_datasets_connector",
+            "dataset_id": "dataset_ax"
+        },
+        "Dataset2": {
+            "connector_id": "MVP0_datasets_connector",
+            "dataset_id": "dataset_bc"
+        },
+        "numericals": {
+            "connector_id": "MVP0_datasets_connector",
+            "dataset_id": "default_numerical_parameters"
+        }
+    },
+    "namespace_datasets_mapping": {
+        "<study_ph>": ["numericals", "Dataset1"],
+        "<study_ph>.Disc1VirtualNode" : ["numericals","Dataset1"],
+        "<study_ph>.Disc2VirtualNode": ["numericals","Dataset1"],
+        "<study_ph>.Disc1": ["numericals","Dataset2"],
+        "<study_ph>.Disc2": ["numericals","Dataset2"]
+    }
+}
