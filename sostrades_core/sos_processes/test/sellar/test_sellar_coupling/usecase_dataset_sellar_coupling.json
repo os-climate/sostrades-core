@@ -1,0 +1,19 @@
+{
+    "process_module_path": "sostrades_core.sos_processes.test.sellar.test_sellar_coupling",
+    "datasets_infos": {
+        "Dataset1": {
+            "connector_id": "MVP0_datasets_connector",
+            "dataset_id": "dataset_sellar"
+        },
+        "numericals": {
+            "connector_id": "MVP0_datasets_connector",
+            "dataset_id": "default_numerical_parameters"
+        }
+    },
+    "namespace_datasets_mapping": {
+        "v0|<study_ph>|*": ["MySQL.v0|numericals|*"]
+    },
+    "sub_process_datasets_mapping": {
+        "v0|<study_ph>.SellarCoupling|*": "./sostrades_core/sos_processes/test/sellar/test_sellar_list/usecase_dataset_sellar_list.json"
+    }
+}

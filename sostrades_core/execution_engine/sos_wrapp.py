@@ -68,7 +68,6 @@ class SoSWrapp(object):
     NUMERICAL = 'numerical'
     DESCRIPTION = 'description'
     VISIBLE = 'visible'
-    CONNECTOR_DATA = 'connector_data'
     VAR_NAME = 'var_name'
     # Dict  ex: {'ColumnName': (column_data_type, column_data_range,
     # column_editable)}

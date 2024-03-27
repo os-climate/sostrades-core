@@ -1,5 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
+Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,26 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
+from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
-
 
 class Study(StudyManager):
 
     def __init__(self, execution_engine=None):
-        super().__init__(__file__, execution_engine=execution_engine, run_usecase=False)
+        super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
+        return []
 
-        dict_values = {}
-        dict_values[self.study_name + '.Disc1_data_connector_dremio.a'] = 3
-        dict_values[self.study_name + '.Disc1_data_connector_dremio.b'] = 2
-        dict_values[self.study_name + '.x'] = 4
-
-        return [dict_values]
-
-
-if '__main__' == __name__:
-    uc_cls = Study()
-    uc_cls.load_data()
-    uc_cls.run(for_test=True)
+    def get_dataset_mapping(self):
+        # Get dataset file
+        datasets_file = __file__.replace(".py", ".json")
+        # Deserialize it
+        return DatasetsMapping.from_json_file(datasets_file)
