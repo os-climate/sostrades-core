@@ -11,7 +11,7 @@
         }
     },
     "namespace_datasets_mapping": {
-        "<study_ph>": ["numericals","Dataset1"],
-        "<study_ph>.Disc1": ["numericals","Dataset1"]
+        "v0|<study_ph>|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"],
+        "v0|<study_ph>.Disc1|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"]
     }
 }

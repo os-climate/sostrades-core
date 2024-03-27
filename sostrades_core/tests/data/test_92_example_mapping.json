@@ -11,7 +11,8 @@
         }
     },
     "namespace_datasets_mapping": {
-        "namespace1" : ["Dataset1"],
-        "namespace2" : ["Dataset1", "Dataset2"]
+        "v0|namespace1|*" : ["MySQL.v0|Dataset1|*"],
+        "v0|namespace2|*" : ["MySQL.v0|Dataset1|*",
+                             "MySQL.v0|Dataset2|*"]
     }
 }
