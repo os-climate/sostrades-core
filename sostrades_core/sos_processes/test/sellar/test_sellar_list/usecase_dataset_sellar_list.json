@@ -1,19 +1,9 @@
 {
     "process_module_path": "sostrades_core.sos_processes.test.sellar.test_sellar_list",
-    "datasets_infos": {
-        "Dataset1": {
-            "connector_id": "MVP0_datasets_connector",
-            "dataset_id": "dataset_sellar"
-        },
-        "numericals": {
-            "connector_id": "MVP0_datasets_connector",
-            "dataset_id": "default_numerical_parameters"
-        }
-    },
     "namespace_datasets_mapping": {
-        "v0|<study_ph>|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"],
-        "v0|<study_ph>.Sellar_1|*": ["MySQL.v0|numericals|*"],
-        "v0|<study_ph>.Sellar_2|*": ["MySQL.v0|numericals|*"],
-        "v0|<study_ph>.Sellar_Problem|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"]
+        "v0|<study_ph>|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_sellar|*"],
+        "v0|<study_ph>.Sellar_1|*": ["MVP0_datasets_connector|default_numerical_parameters|*"],
+        "v0|<study_ph>.Sellar_2|*": ["MVP0_datasets_connector|default_numerical_parameters|*"],
+        "v0|<study_ph>.Sellar_Problem|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_sellar|*"]
     }
 }
