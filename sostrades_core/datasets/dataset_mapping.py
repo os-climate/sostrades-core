@@ -34,7 +34,7 @@ class DatasetsMapping:
     SUB_PROCESS_MAPPING = "sub_process_datasets_mapping"
 
     # Mapping format
-    # e.g.: {map_version|namespace_value|parameter_name: [config_id.version|dataset|parameter_name,...], ...}
+    # e.g.: {"map_version|namespace_value|parameter_name": ["config_id.version|dataset|parameter_name",...], ...}
     MAPPING_SEP = "|"
     MAP_VERSION = "map_version"
     NAMESPACE_VALUE = "namespace_value"
