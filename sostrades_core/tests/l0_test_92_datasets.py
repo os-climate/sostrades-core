@@ -97,7 +97,6 @@ class TestDatasets(unittest.TestCase):
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
         dm = study.execution_engine.dm
-        dm = study.execution_engine.dm
         # assert data are empty
         self.assertEqual(dm.get_value("usecase_dataset.a"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), None)

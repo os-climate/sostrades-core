@@ -11,9 +11,9 @@
         }
     },
     "namespace_datasets_mapping": {
-        "<study_ph>": ["numericals"]
+        "v0|<study_ph>|*": ["MySQL.v0|numericals|*"]
     },
     "sub_process_datasets_mapping": {
-        "<study_ph>.SellarCoupling": "./sostrades_core/sos_processes/test/sellar/test_sellar_list/usecase_dataset_sellar_list.json"
+        "v0|<study_ph>.SellarCoupling|*": "./sostrades_core/sos_processes/test/sellar/test_sellar_list/usecase_dataset_sellar_list.json"
     }
 }

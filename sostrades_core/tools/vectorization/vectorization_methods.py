@@ -74,7 +74,7 @@ def compute_parent_path_sum(df, path, based_on, columns_not_to_sum):
     ).drop_duplicates()
     df_merged[BREAKDOWN_COLUMN] = path
     df_merged = df_merged[all_columns]
-    df = df.append(df_merged)
+    df = pd.concat([df, df_merged])
     return df
 
 

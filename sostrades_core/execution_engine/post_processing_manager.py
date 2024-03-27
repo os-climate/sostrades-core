@@ -303,7 +303,7 @@ class PostProcessing:
                     execution_engine, namespace, filters)
 
         except:
-            self.post_processing_error += f'An error occurs in the following post-processing namespace "{namespace}"'
+            self.post_processing_error += f'\nERROR: {execution_engine.factory.process_identifier}.{execution_engine.study_name}, An error occurs in the following post-processing namespace "{namespace}"'
             self.__logger.exception(self.post_processing_error)
             post_processings = []
 

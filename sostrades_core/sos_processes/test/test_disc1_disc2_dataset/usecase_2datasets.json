@@ -15,10 +15,10 @@
         }
     },
     "namespace_datasets_mapping": {
-        "<study_ph>": ["numericals", "Dataset1"],
-        "<study_ph>.Disc1VirtualNode" : ["numericals","Dataset1"],
-        "<study_ph>.Disc2VirtualNode": ["numericals","Dataset1"],
-        "<study_ph>.Disc1": ["numericals","Dataset2"],
-        "<study_ph>.Disc2": ["numericals","Dataset2"]
+        "v0|<study_ph>|*": ["MySQL.v0|numericals|*", "MySQL.v0|Dataset1|*"],
+        "v0|<study_ph>.Disc1VirtualNode|*" : ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"],
+        "v0|<study_ph>.Disc2VirtualNode|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"],
+        "v0|<study_ph>.Disc1|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset2|*"],
+        "v0|<study_ph>.Disc2|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset2|*"]
     }
 }
