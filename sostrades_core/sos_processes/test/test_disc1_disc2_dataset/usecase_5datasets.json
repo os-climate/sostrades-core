@@ -4,7 +4,7 @@
         "v0|<study_ph>|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_ax|*"],
         "v0|<study_ph>.Disc1VirtualNode|*" : ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_ax|*"],
         "v0|<study_ph>.Disc2VirtualNode|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_ax|*"],
-        "v0|<study_ph>.Disc1|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_bw|*","MVP0_datasets_connector|Dataset1.2|*"],
-        "v0|<study_ph>.Disc2|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_b|*","MVP0_datasets_connector|Dataset2.2|*"]
+        "v0|<study_ph>.Disc1|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_bw|*","MVP0_datasets_connector|dataset_c_1|*"],
+        "v0|<study_ph>.Disc2|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_b|*","MVP0_datasets_connector|dataset_c_2|*"]
     }
 }
