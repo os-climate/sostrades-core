@@ -45,7 +45,7 @@ class DatasetsMapping:
 
     # Process module name
     process_module_path:str
-    # Dataset info [dataset_name : DatasetInfo]
+    # Dataset info [connector_id|dataset_id|* : DatasetInfo]
     datasets_infos: dict[str:DatasetInfo]
     # Namespace mapping [namespace_name : List[DatasetInfo]]
     namespace_datasets_mapping: dict[str : list[DatasetInfo]]
@@ -102,7 +102,7 @@ class DatasetsMapping:
                     if dataset not in datasets_infos:
                         datasets_infos.update({dataset: DatasetInfo(connector_id, dataset_id)})
                     namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
-            
+        
         return DatasetsMapping(
             process_module_path=input_dict[DatasetsMapping.PROCESS_MODULE_PATH_KEY],
             datasets_infos=datasets_infos,
