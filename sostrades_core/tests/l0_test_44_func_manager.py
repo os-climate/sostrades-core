@@ -520,6 +520,7 @@ class TestFuncManager(unittest.TestCase):
                             INEQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
         func_df['weight'] = [1., 1., 1., 1, 1, 0.8, 0.2]
         func_df['aggr'] = ['sum', 'sum', 'sum', 'sum', 'sum', 'smax', 'sum']
+        func_df['parent'] = ['ineqcst', 'ineqcst', 'ineqcst', 'eqcst', 'eqcst', 'obj', 'obj']
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 

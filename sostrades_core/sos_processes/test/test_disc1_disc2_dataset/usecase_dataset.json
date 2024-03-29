@@ -1,20 +1,10 @@
 {
     "process_module_path": "sostrades_core.sos_processes.test.test_disc1_disc2_dataset",
-    "datasets_infos": {
-        "Dataset1": {
-            "connector_id": "MVP0_datasets_connector",
-            "dataset_id": "dataset_all_in_one"
-        },
-        "numericals": {
-            "connector_id": "MVP0_datasets_connector",
-            "dataset_id": "default_numerical_parameters"
-        }
-    },
     "namespace_datasets_mapping": {
-        "v0|<study_ph>|*": ["MySQL.v0|numericals|*", "MySQL.v0|Dataset1|*"],
-        "v0|<study_ph>.Disc1VirtualNode|*" : ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"],
-        "v0|<study_ph>.Disc2VirtualNode|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"],
-        "v0|<study_ph>.Disc1|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"],
-        "v0|<study_ph>.Disc2|*": ["MySQL.v0|numericals|*","MySQL.v0|Dataset1|*"]
+        "v0|<study_ph>|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_all_in_one|*"],
+        "v0|<study_ph>.Disc1VirtualNode|*" : ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_all_in_one|*"],
+        "v0|<study_ph>.Disc2VirtualNode|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_all_in_one|*"],
+        "v0|<study_ph>.Disc1|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_all_in_one|*"],
+        "v0|<study_ph>.Disc2|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_all_in_one|*"]
     }
 }

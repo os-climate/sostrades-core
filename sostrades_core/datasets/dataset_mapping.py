@@ -27,26 +27,25 @@ class DatasetsMapping:
     Stores namespace/dataset mapping
     """
     # Keys for parsing json
-    DATASETS_INFO_KEY = "datasets_infos"
     NAMESPACE_KEY = "namespace_datasets_mapping"
     PROCESS_MODULE_PATH_KEY = "process_module_path"
     STUDY_PLACEHOLDER = "<study_ph>"
     SUB_PROCESS_MAPPING = "sub_process_datasets_mapping"
 
     # Mapping format
-    # e.g.: {map_version|namespace_value|parameter_name: [config_id.version|dataset|parameter_name,...], ...}
+    # e.g.: {"map_version|namespace_value|parameter_name": ["connector_id|dataset_id|parameter_name",...], ...}
     MAPPING_SEP = "|"
     MAP_VERSION = "map_version"
     NAMESPACE_VALUE = "namespace_value"
     PARAMETER_NAME = "parameter_name"
-    CONFIG_ID_VERSION = "config_id.version"
-    DATASET_NAME = "dataset"
+    CONNECTOR_ID_KEY = DatasetInfo.CONNECTOR_ID_KEY
+    DATASET_ID_KEY = DatasetInfo.DATASET_ID_KEY
     MAPPING_KEY_FIELDS = [MAP_VERSION, NAMESPACE_VALUE, PARAMETER_NAME]
-    MAPPING_ITEM_FIELDS = [CONFIG_ID_VERSION, DATASET_NAME, PARAMETER_NAME]
+    MAPPING_ITEM_FIELDS = [CONNECTOR_ID_KEY, DATASET_ID_KEY, PARAMETER_NAME]
 
     # Process module name
     process_module_path:str
-    # Dataset info [dataset_name : DatasetInfo]
+    # Dataset info [connector_id|dataset_id|* : DatasetInfo]
     datasets_infos: dict[str:DatasetInfo]
     # Namespace mapping [namespace_name : List[DatasetInfo]]
     namespace_datasets_mapping: dict[str : list[DatasetInfo]]
@@ -58,19 +57,9 @@ class DatasetsMapping:
         expected example
         {
             "process_module_path": "process.module.path"
-            "datasets_infos": {
-                "Dataset1": {
-                    "connector_id": <connector_id>,
-                    "dataset_id": <dataset_id>,
-                },
-                "Dataset2": {
-                    "connector_id": <connector_id>,
-                    "dataset_id": <dataset_id>,
-                }
-            },
             "namespace_datasets_mapping": {
-                "v0|namespace1|*" : ["MySQL.v0|Dataset1|*"],
-                "v0|namespace2|*" : ["MySQL.v0|Dataset1|*", "MySQL.v0|Dataset2|*"]
+                "v0|namespace1|*" : ["connector1|dataset1|*"],
+                "v0|namespace2|*" : ["connector1|dataset1|*", "connector1|dataset2|*"]
             },
             "sub_process_datasets_mapping":{
                 "v0|namespace3|*": path to other mapping json file
@@ -96,26 +85,24 @@ class DatasetsMapping:
                     namespace_datasets_mapping.update(sub_namespace_datasets_mapping)
                 else:
                     raise Exception(f"The dataset mapping file {sub_process_mapping_path} does not exists")
-                
-        # Parse datasets info
-        if DatasetsMapping.DATASETS_INFO_KEY in input_dict.keys():
-            for dataset in input_dict[DatasetsMapping.DATASETS_INFO_KEY]:
-                datasets_infos[dataset] = DatasetInfo.deserialize(
-                    input_dict=input_dict[DatasetsMapping.DATASETS_INFO_KEY][dataset]
-                )
 
         # Parse namespace datasets mapping
         if DatasetsMapping.NAMESPACE_KEY in input_dict.keys():
             input_dict_dataset_mapping = input_dict[DatasetsMapping.NAMESPACE_KEY]
             for mapping_key, datasets in input_dict_dataset_mapping.items():
                 mapping_key_fields = DatasetsMapping.extract_mapping_key_fields(mapping_key)
+                # TODO: version, parameter not handled
                 namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
                 namespace_datasets_mapping[namespace] = []
                 for dataset in datasets:
                     dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
-                    dataset_name = dataset_fields[DatasetsMapping.DATASET_NAME]
-                    namespace_datasets_mapping[namespace].append(datasets_infos[dataset_name])
-            
+                    connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
+                    dataset_id = dataset_fields[DatasetsMapping.DATASET_ID_KEY]
+                    # TODO: parameter not handled
+                    if dataset not in datasets_infos:
+                        datasets_infos.update({dataset: DatasetInfo(connector_id, dataset_id)})
+                    namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
+        
         return DatasetsMapping(
             process_module_path=input_dict[DatasetsMapping.PROCESS_MODULE_PATH_KEY],
             datasets_infos=datasets_infos,
