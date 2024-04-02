@@ -1253,8 +1253,8 @@ class FunctionManagerDisc(SoSWrapp):
                                    self.PARENT: parent_parent,
                                    self.WEIGHT: 1.0, self.AGGR_TYPE: 'sum',
                                    'value': [value]}
-                    parameters_df = parameters_df.append(
-                        pd.DataFrame(dict_parent, index=[parent]))
+                    parameters_df = pd.concat([parameters_df,
+                        pd.DataFrame(dict_parent, index=[parent])], axis=0)
 
         for row in parameters_df.iterrows():
             vis = False
