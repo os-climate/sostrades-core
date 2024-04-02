@@ -213,7 +213,10 @@ class BaseStudyManager():
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
 
-    def load_data(self, from_path=None, from_input_dict=None, display_treeview=True):
+    def load_data(self, from_path=None,
+                  from_input_dict=None,
+                  display_treeview=True,
+                  from_datasets_mapping=None):
         """ Method that load data into the execution engine
 
         :params: from_path, location of pickle file to load (optional parameter)
@@ -244,7 +247,11 @@ class BaseStudyManager():
         else:
             usecase_data = self.setup_usecase(study_folder_path=from_path)
 
-        datasets_mapping = self.get_dataset_mapping()  # pylint: disable=assignment-from-none
+        # todo: improve style
+        if from_datasets_mapping is not None:
+            from_datasets_mapping = DatasetsMapping.deserialize(from_datasets_mapping)
+        else:
+            from_datasets_mapping = self.get_dataset_mapping()  # pylint: disable=assignment-from-none
 
         if not isinstance(usecase_data, list):
             usecase_data = [usecase_data]
@@ -259,8 +266,8 @@ class BaseStudyManager():
         self.execution_engine.load_study_from_input_dict(input_dict_to_load)
         
         # Load datasets data
-        if datasets_mapping is not None:
-            self.execution_engine.load_study_from_dataset(datasets_mapping=datasets_mapping)
+        if from_datasets_mapping is not None:
+            self.execution_engine.load_study_from_dataset(datasets_mapping=from_datasets_mapping)
         self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
