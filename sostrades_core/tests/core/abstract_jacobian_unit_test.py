@@ -38,8 +38,12 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
     unit test jacobian management implement
     """
 
-    DUMP_JACOBIAN = False
+    DUMP_JACOBIAN_ENV_VAR = "DUMP_JACOBIAN_UNIT_TEST"
     PICKLE_DIRECTORY = 'jacobian_pkls'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__override_dump_jacobian = False
 
     def generate_analytic_gradient_pickle(self, test_names=[]):
         """ Main method to launch associated jacobian test and force dump of jacobian pickle
@@ -61,11 +65,24 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                 local_logger.info(
                     f'Jacobian launched on {str(entry)}')
                 self.setUp()
-                AbstractJacobianUnittest.DUMP_JACOBIAN = True
+                self.override_dump_jacobian = True
                 entry()
+                self.override_dump_jacobian = False
             except Exception as ex:
                 local_logger.exception(
                     f'Jacobian fail on {str(entry)}')
+
+    @property
+    def dump_jacobian(self):
+        return os.getenv(AbstractJacobianUnittest.DUMP_JACOBIAN_ENV_VAR, "").lower() in ("true", "1")
+
+    @property
+    def override_dump_jacobian(self):
+        return self.__override_dump_jacobian
+
+    @override_dump_jacobian.setter
+    def override_dump_jacobian(self, do_override):
+        self.__override_dump_jacobian = bool(do_override)
 
     @abstractmethod
     def analytic_grad_entry(self):
@@ -88,19 +105,22 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         file_path = join(location, directory,
                          filename)
 
-        if AbstractJacobianUnittest.DUMP_JACOBIAN:
+        if self.override_dump_jacobian or self.dump_jacobian:
             local_logger.info(
                 f'Jacobian dump mode enable on {join(location, filename)}')
             check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
                                                    outputs=outputs, derr_approx=derr_approx,
-                                                   dump_jac_path=file_path, input_column=input_column, output_column=output_column, parallel=parallel,
+                                                   dump_jac_path=file_path, input_column=input_column,
+                                                   output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
         else:
             check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
                                                    outputs=outputs, derr_approx=derr_approx,
-                                                   load_jac_path=file_path, input_column=input_column, output_column=output_column, parallel=parallel,
+                                                   load_jac_path=file_path, input_column=input_column,
+                                                   output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
 
+        # self.override_dump_jacobian = False # todo[discuss]: deactivate after check ?
         self.assertTrue(check_flag, msg=f"Wrong gradient in {discipline.name}")
 
     @staticmethod
