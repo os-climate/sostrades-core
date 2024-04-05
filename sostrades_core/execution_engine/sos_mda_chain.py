@@ -156,6 +156,9 @@ class SoSMDAChain(MDAChain):
                          initialize_defaults=initialize_defaults,
                          **inner_mda_options
                          )
+        # pass the reduced_dm to the data_converter
+        self.input_grammar.data_converter.reduced_dm = self.reduced_dm
+        self.output_grammar.data_converter.reduced_dm = self.reduced_dm
 
     def _run(self):
         '''
@@ -200,7 +203,7 @@ class SoSMDAChain(MDAChain):
 
     def __set_local_data(self, data):
         self._local_data = data
-        
+
     def pre_run_mda(self):
         '''
         Pre run needed if one of the strong coupling variables is None in a MDA 

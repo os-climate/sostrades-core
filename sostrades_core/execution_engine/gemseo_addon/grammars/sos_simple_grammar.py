@@ -18,7 +18,7 @@ limitations under the License.
 """Most basic grammar implementation."""
 
 import logging
-from typing import Any, Mapping
+from typing import ClassVar
 
 from gemseo.core.grammars.simpler_grammar import SimplerGrammar
 
@@ -33,6 +33,7 @@ class SoSSimpleGrammar(SimplerGrammar):
         data_types (List[type]): The types of the elements,
             stored in the same order as ``data_names``.
     """
+    DATA_CONVERTER_CLASS: ClassVar[str] = "SoSTradesDataConverter"
 
     # def load_data(
     #         self,

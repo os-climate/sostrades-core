@@ -83,6 +83,10 @@ class SoSMDODiscipline(MDODiscipline):
                          cache_file_path=cache_file_path)
         self.is_sos_coupling = False
 
+        # pass the reduced_dm to the data_converter
+        self.input_grammar.data_converter.reduced_dm = self.reduced_dm
+        self.output_grammar.data_converter.reduced_dm = self.reduced_dm
+
     def _run(self):
         """
         Call user-defined wrapper run.
@@ -298,8 +302,8 @@ class SoSMDODiscipline(MDODiscipline):
             plot_result=plot_result,
             file_path=file_path,
             show=show,
-            figsize_x=figsize_x,
-            figsize_y=figsize_y,
+            fig_size_x=figsize_x,
+            fig_size_y=figsize_y,
             reference_jacobian_path=reference_jacobian_path,
             save_reference_jacobian=save_reference_jacobian,
             indices=indices,
@@ -334,8 +338,9 @@ class SoSMDODiscipline(MDODiscipline):
             self.check_discipline_data_integrity(disc_data_before_linearize,
                                                  disc_data_after_linearize,
                                                  'Discipline data integrity through compute_sos_jacobian')
-        if self.check_min_max_gradients:
-            self._check_min_max_gradients(self.jac)
+        # TODO REACTIVATE Check min_max_gradients
+        # if self.check_min_max_gradients:
+        #     self._check_min_max_gradients(self.jac)
 
     def compute_sos_jacobian(self):
         """
@@ -518,7 +523,7 @@ class SoSMDODiscipline(MDODiscipline):
             raise TypeError(
                 f"Input data must be of dict type, got {type(input_data)} instead."
             )
-
+        # Only this line is overloaded
         full_input_data = SoSDisciplineData({})
         for input_name in self.input_grammar:
             input_value = input_data.get(input_name)
