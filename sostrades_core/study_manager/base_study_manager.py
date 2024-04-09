@@ -256,11 +256,12 @@ class BaseStudyManager():
         # Initialize execution engine with data
         # import ipdb
         # ipdb.set_trace()
-        self.execution_engine.load_study_from_input_dict(input_dict_to_load)
+        parameter_changes = self.execution_engine.load_study_from_input_dict(input_dict_to_load)
         
         # Load datasets data
         if datasets_mapping is not None:
-            self.execution_engine.load_study_from_dataset(datasets_mapping=datasets_mapping)
+            datasets_parameter_changes = self.execution_engine.load_study_from_dataset(datasets_mapping=datasets_mapping)
+            parameter_changes.extend(datasets_parameter_changes)
         self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
@@ -269,6 +270,7 @@ class BaseStudyManager():
         study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
+        return parameter_changes
 
     def specific_check_inputs(self):
         """ Method to overload to have a specific check on input datas
