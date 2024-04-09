@@ -201,7 +201,7 @@ class BaseStudyManager():
         datasets_mapping_dict = DatasetsMapping.from_json_file(file_path=json_file_path)
 
         # load study by retieving data from datasets, set them into the dm and configure study
-        self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
+        parameter_changes = self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
         
         # keep old next steps after loading data
         self.specific_check_inputs()
@@ -212,6 +212,7 @@ class BaseStudyManager():
         study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
+        return parameter_changes
 
     def load_data(self, from_path=None, from_input_dict=None, display_treeview=True):
         """ Method that load data into the execution engine
