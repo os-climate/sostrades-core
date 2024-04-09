@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from memory_profiler import profile
 
 from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
@@ -135,6 +136,7 @@ class SoSMDODiscipline(MDODiscipline):
             raise error
         return self.local_data
 
+    @profile
     def linearize(self, input_data=None, force_all=False, force_no_exec=False,
                   exec_before_linearize=True):
         """overloads GEMS linearize function
@@ -293,6 +295,7 @@ class SoSMDODiscipline(MDODiscipline):
         )
         return o_k
 
+    @profile
     def compute_sos_jacobian(self):
         """
         Overload compute_sos_jacobian of MDODiscipline to call the function in the discipline wrapp
@@ -303,6 +306,7 @@ class SoSMDODiscipline(MDODiscipline):
             for x_key, value in x_key_dict.items():
                 self.set_partial_derivative(y_key, x_key, value)
 
+    @profile
     def set_partial_derivative(self, y_key, x_key, value):
         '''
         Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac

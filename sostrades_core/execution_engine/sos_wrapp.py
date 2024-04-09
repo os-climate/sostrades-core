@@ -17,6 +17,8 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+from memory_profiler import profile
+
 import logging
 from sostrades_core.tools.base_functions.compute_len import compute_len
 from sostrades_core.execution_engine.design_var.design_var import DesignVar
@@ -430,6 +432,7 @@ class SoSWrapp(object):
         values_dict = dict(zip(keys, map(self.local_data.get, query_keys)))
         return values_dict
 
+    @profile
     def _run(self):
         """
         Run user-defined model.
@@ -475,6 +478,7 @@ class SoSWrapp(object):
         """
         return []
 
+    @profile
     def set_partial_derivative(self, y_key, x_key, value):
         """
         Method to fill the jacobian dict attribute of the wrapp with a partial derivative (value) given
@@ -490,6 +494,7 @@ class SoSWrapp(object):
             self.jac_dict[y_key_full] = {}
         self.jac_dict[y_key_full].update({x_key_full: value})
 
+    @profile
     def set_partial_derivative_for_other_types(self, y_key_column, x_key_column, value):
         '''
         Set the derivative of the column y_key by the column x_key inside the jacobian of GEMS self.jac

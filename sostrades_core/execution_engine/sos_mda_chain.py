@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from memory_profiler import profile
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 '''
@@ -386,6 +387,7 @@ class SoSMDAChain(MDAChain):
                                        reference_jacobian_path=reference_jacobian_path,
                                        indices=indices)
 
+    @profile
     def _compute_jacobian(self, inputs=None, outputs=None):
         """Overload of the GEMSEO function 
         """

@@ -18,6 +18,8 @@ limitations under the License.
 Coupled derivatives calculations
 ********************************
 """
+from memory_profiler import profile
+import gc
 
 from collections import defaultdict
 from numpy import empty, ones, zeros
@@ -43,7 +45,6 @@ def none_factory():
     To be used for defaultdict
     """
 
-
 def default_dict_factory():
     """Instantiates a defaultdict(None) object."""
     return defaultdict(none_factory)
@@ -60,6 +61,10 @@ class SoSJacobianAssembly(JacobianAssembly):
 
         self.parallel_linearize = SoSDiscParallelLinearization(
             self.coupling_structure.disciplines, n_processes=self.n_processes, use_threading=True)
+        
+    def release_memory(self):
+        gc.collect()
+        self.coupled_system.release_memory()
 
     def _dres_dvar_sparse(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
@@ -124,6 +129,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return dres_dvar.tocsr()
 
     # SoSTrades modif
+    @profile
     def _dres_dvar_sparse_lil(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
@@ -180,6 +186,7 @@ class SoSJacobianAssembly(JacobianAssembly):
             out_i += residual_size
         return dres_dvar.real
 
+    @profile
     def dres_dvar(
         self,
         residuals,
@@ -283,6 +290,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return dres_dvar
     # end of SoSTrades modif
 
+    @profile
     def total_derivatives(
         self,
         in_data,
@@ -474,6 +482,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         :returns: The Newton step -[dR/dy]^-1 . R as a dict of steps
             per coupling variable
         """
+        raise
         # linearize the disciplines
         self._add_differentiated_inouts(couplings, couplings, couplings)
 
@@ -521,6 +530,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return newton_step_dict
 
     # Newton step computation
+    @profile
     def compute_newton_step_pure(
         self,
         res,
@@ -573,6 +583,7 @@ class SoSJacobianAssembly(JacobianAssembly):
 
         return newton_step_dict
 
+    @profile
     def _adjoint_mode(
         self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy, linear_solver, **kwargs
     ):

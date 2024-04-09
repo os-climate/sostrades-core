@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 """A PETSC KSP linear solvers library wrapper."""
+from memory_profiler import profile
 import logging
 import sys
 from typing import Any
@@ -250,6 +251,7 @@ class PetscKSPAlgos(LinearSolverLib):
 
         return self.problem.solution
 
+    @profile
     def _run_petsc_strategy(self, **options):
         # Initialize the KSP solver.
         # Create the options database

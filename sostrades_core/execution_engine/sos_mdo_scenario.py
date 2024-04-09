@@ -24,6 +24,7 @@ from copy import deepcopy
 import logging
 import pandas as pd
 from numpy import ndarray
+import gc
 
 from gemseo.core.mdo_scenario import MDOScenario
 
@@ -100,6 +101,8 @@ class SoSMDOScenario(MDOScenario):
         self.update_design_space_out()
         if not self.eval_mode:
             self.update_post_processing_df()
+        
+        #self.release_memory()
 
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
@@ -173,6 +176,16 @@ class SoSMDOScenario(MDOScenario):
         MDOScenario._run(self)
 
         self.execute_at_xopt()
+        
+    def release_memory(self):
+        
+        for d in self.disciplines:
+            if hasattr(d, "disciplines"):
+                del d.disciplines
+                del d.mdo_chain
+                del d.sub_mda_list
+        del self.disciplines
+        gc.collect()
 
     def run_eval_mode(self):
         '''

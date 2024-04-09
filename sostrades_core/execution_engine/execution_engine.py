@@ -17,6 +17,9 @@ limitations under the License.
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+import tracemalloc, linecache
+from memory_profiler import profile
+
 from typing import Any, Callable, Union, Optional
 # Execution engine SoSTrades code
 import logging
@@ -36,7 +39,6 @@ from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFacto
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
 DEFAULT_scattermap_manager_NAME = 'default_smap_namanger'
-
 
 class ExecutionEngineException(Exception):
     pass
@@ -64,6 +66,15 @@ class ExecutionEngine:
             # Use rsplit to get sostrades_core.execution_engine instead of sostrades_core.execution_engine.execution_engine
             # as a default logger if not initialized
             self.logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
+            # # create console handler and set level to debug
+            # ch = logging.StreamHandler()
+            # ch.setLevel(logging.DEBUG)
+            # # create formatter
+            # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            # # add formatter to ch
+            # ch.setFormatter(formatter)
+            # # add ch to logger
+            # self.logger.addHandler(ch)
         else:
             self.logger = logger
 
@@ -622,6 +633,7 @@ class ExecutionEngine:
         '''
         self.dm.set_values_from_dict(local_data)
 
+    @profile
     def execute(self, loaded_cache=None):
         ''' execution of the execution engine
         '''
@@ -632,8 +644,14 @@ class ExecutionEngine:
         self.__check_data_integrity_msg()
 
         # -- prepare execution
+        self.logger.info("\nSNAPSHOT BEFORE PREPARE EXEC\n")
+        snapshot = tracemalloc.take_snapshot()
+        display_top(self.logger, snapshot)
         self.prepare_execution()
-
+        self.logger.info("\nSNAPSHOT AFTER PREPARE EXEC\n")
+        snapshot = tracemalloc.take_snapshot()
+        display_top(self.logger, snapshot)
+        
         if loaded_cache is not None:
             self.load_cache_from_map(loaded_cache)
 
@@ -641,13 +659,18 @@ class ExecutionEngine:
         ex_proc = self.root_process
         input_data = self.dm.get_data_dict_values()
         self.logger.info("Executing.")
+        self.logger.info("\nSNAPSHOT BEFORE ROOTPROCESS EXEC\n")
+        snapshot = tracemalloc.take_snapshot()
+        display_top(self.logger, snapshot)
         try:
             ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
                 input_data=input_data)
         except:
             ex_proc.set_status_from_mdo_discipline()
             raise
-
+        self.logger.info("\nSNAPSHOT AFTER ROOTPROCESS EXEC\n")
+        snapshot = tracemalloc.take_snapshot()
+        display_top(self.logger, snapshot)
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.', self.root_process.get_disc_full_name())
 
@@ -660,3 +683,26 @@ class ExecutionEngine:
         ex_proc.set_status_from_mdo_discipline()
 
         return ex_proc
+
+def display_top(logger, snapshot, key_type='lineno', limit=15):
+    snapshot = snapshot.filter_traces((
+        tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+        tracemalloc.Filter(False, "<unknown>"),
+    ))
+    top_stats = snapshot.statistics(key_type)
+
+    logger.info("Top %s lines" % limit)
+    for index, stat in enumerate(top_stats[:limit], 1):
+        frame = stat.traceback[0]
+        logger.info("#%s: %s:%s: %.1f KiB"
+              % (index, frame.filename, frame.lineno, stat.size / 1024))
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            logger.info('    %s' % line)
+
+    other = top_stats[limit:]
+    if other:
+        size = sum(stat.size for stat in other)
+        logger.info("%s other: %.1f KiB" % (len(other), size / 1024))
+    total = sum(stat.size for stat in top_stats)
+    logger.info("Total allocated size: %.1f KiB" % (total / 1024))

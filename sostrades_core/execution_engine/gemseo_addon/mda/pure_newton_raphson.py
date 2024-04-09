@@ -107,6 +107,7 @@ class PureNewtonRaphson(MDARoot):
             )
         return relax_factor
 
+    @profile
     def _run(self):  # type: (...) -> None
         '''
             R = self.__R(self.__W)

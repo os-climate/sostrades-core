@@ -21,6 +21,10 @@ from sostrades_core.tools.post_processing.post_processing_factory import PostPro
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that manage a whole study process (load, execute, save, dump..)
 """
+from memory_profiler import profile
+import tracemalloc
+from sostrades_core.execution_engine.execution_engine import display_top
+
 from typing import Union, Optional
 from time import time
 from importlib import import_module
@@ -65,6 +69,8 @@ class BaseStudyManager():
         :params: study_name, name of the study 
         :type: str
         """
+        tracemalloc.start()
+        
         self._run_usecase = run_usecase
         self.study_name = study_name
         self.repository_name = repository_name
@@ -213,6 +219,7 @@ class BaseStudyManager():
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
 
+    @profile
     def load_data(self, from_path=None, from_input_dict=None, display_treeview=True):
         """ Method that load data into the execution engine
 
@@ -229,6 +236,10 @@ class BaseStudyManager():
         start_time = time()
 
         logger = self.execution_engine.logger
+        
+        logger.info("\nSNAPSHOT BEFORE LOAD\n")
+        snapshot = tracemalloc.take_snapshot()
+        display_top(logger, snapshot)
 
         if display_treeview:
             logger.info('TreeView display BEFORE data setup & configure')
@@ -422,8 +433,14 @@ class BaseStudyManager():
         start_time = time()
         if self._run_usecase:
             try:
+                logger.info("\nSNAPSHOT BEFORE EXECUTE\n")
+                snapshot = tracemalloc.take_snapshot()
+                display_top(logger, snapshot)
                 self.execution_engine.execute(loaded_cache=self.loaded_cache)
                 message = f'Study {study_display_name} execution time : {time() - start_time} seconds'
+                logger.info("\nSNAPSHOT AFTER EXECUTE\n")
+                snapshot = tracemalloc.take_snapshot()
+                display_top(logger, snapshot)
                 logger.info(message)
                 print(message)
                 if for_test:
