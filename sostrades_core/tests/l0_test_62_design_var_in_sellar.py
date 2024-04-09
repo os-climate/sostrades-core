@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/04/13 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,7 +37,6 @@ class TestDesignVar(AbstractJacobianUnittest):
     """
     DesignVar test class
     """
-    AbstractJacobianUnittest.DUMP_JACOBIAN = False
 
     def analytic_grad_entry(self):
         return [self.test_derivative
