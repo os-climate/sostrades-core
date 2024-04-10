@@ -56,8 +56,7 @@ class DatasetsManager:
 
             # Retrieve values
             dataset_values = dataset.get_values(data_dict=data_dict)
-            # Update internal dictionnary
-            # TODO handle conflict, data may come from several datasets --> [discuss] add provenance
+            # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
             dataset_data = {key: {self.VALUE: value,
                                   self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
             data_retrieved.update(dataset_data)

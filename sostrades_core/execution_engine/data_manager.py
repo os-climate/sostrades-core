@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/04/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
 
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
-from sostrades_core.datasets.parameter_change import ParameterChange
+from typing import Any, Union
+from dataclasses import dataclass
 from datetime import datetime
 
 TYPE = ProxyDiscipline.TYPE
@@ -58,6 +59,18 @@ DATAFRAME_DESCRIPTOR = ProxyDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
 
+@dataclass()
+class ParameterChange:
+    """
+    Dataclass used to log parameter changes when configuring the data in a study.
+    """
+    parameter_id: str
+    variable_type: str
+    old_value: Any
+    new_value: Any
+    dataset_id: Union[str, None]
+    connector_id: Union[str, None]
+    date: datetime
 
 class DataManager:
     """
@@ -490,8 +503,8 @@ class DataManager:
         if not dict_are_equal({VALUE: old_value}, {VALUE: new_value}):
             parameter_changes.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                      variable_type=dm_data[TYPE],
-                                                     old_value=deepcopy(old_value),
-                                                     new_value=deepcopy(new_value),
+                                                     old_value=deepcopy(old_value),     # FIXME: deepcopies avoidable ?
+                                                     new_value=deepcopy(new_value),     # FIXME: deepcopies avoidable ?
                                                      connector_id=connector_id,
                                                      dataset_id=dataset_id,
                                                      date=datetime.now()))
@@ -977,3 +990,4 @@ class DataManager:
                 if compare_data(data_name):
                     self.logger.debug(
                         f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")
+

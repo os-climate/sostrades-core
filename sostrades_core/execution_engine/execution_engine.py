@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/04/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManag
 from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-from sostrades_core.datasets.parameter_change import ParameterChange
+from sostrades_core.execution_engine.data_manager import ParameterChange
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
