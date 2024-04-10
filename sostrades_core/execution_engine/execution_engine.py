@@ -66,15 +66,15 @@ class ExecutionEngine:
             # Use rsplit to get sostrades_core.execution_engine instead of sostrades_core.execution_engine.execution_engine
             # as a default logger if not initialized
             self.logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
-            # # create console handler and set level to debug
-            # ch = logging.StreamHandler()
-            # ch.setLevel(logging.DEBUG)
-            # # create formatter
-            # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            # # add formatter to ch
-            # ch.setFormatter(formatter)
-            # # add ch to logger
-            # self.logger.addHandler(ch)
+            # create console handler and set level to debug
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.DEBUG)
+            # create formatter
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            # add formatter to ch
+            ch.setFormatter(formatter)
+            # add ch to logger
+            self.logger.addHandler(ch)
         else:
             self.logger = logger
 
