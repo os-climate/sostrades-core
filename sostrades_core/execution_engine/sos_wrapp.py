@@ -24,6 +24,7 @@ from sostrades_core.tools.base_functions.compute_len import compute_len
 from sostrades_core.execution_engine.design_var.design_var import DesignVar
 from numpy import zeros, array, ndarray, complex128
 from functools import wraps
+from scipy.sparse import lil_matrix
 
 
 # decorator for delegating a method to the ProxyDiscipline object during configuration
@@ -432,7 +433,6 @@ class SoSWrapp(object):
         values_dict = dict(zip(keys, map(self.local_data.get, query_keys)))
         return values_dict
 
-    @profile
     def _run(self):
         """
         Run user-defined model.
@@ -535,8 +535,11 @@ class SoSWrapp(object):
         if y_key_full not in self.jac_dict.keys():
             self.jac_dict[y_key_full] = {}
         if x_key_full not in self.jac_dict[y_key_full]:
-            self.jac_dict[y_key_full][x_key_full] = zeros(
+            # self.jac_dict[y_key_full][x_key_full] = zeros(
+            #     self.get_jac_matrix_shape(y_key, x_key))
+            self.jac_dict[y_key_full][x_key_full] = lil_matrix(
                 self.get_jac_matrix_shape(y_key, x_key))
+            
         # Check if value is or has complex
         if type(value[0]) in [complex, complex128]:
             self.jac_dict[y_key_full][x_key_full] = array(
