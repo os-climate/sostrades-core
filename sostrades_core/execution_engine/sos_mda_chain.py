@@ -387,7 +387,6 @@ class SoSMDAChain(MDAChain):
                                        reference_jacobian_path=reference_jacobian_path,
                                        indices=indices)
 
-    @profile
     def _compute_jacobian(self, inputs=None, outputs=None):
         """Overload of the GEMSEO function 
         """

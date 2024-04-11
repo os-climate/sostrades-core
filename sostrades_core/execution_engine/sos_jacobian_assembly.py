@@ -186,7 +186,6 @@ class SoSJacobianAssembly(JacobianAssembly):
             out_i += residual_size
         return dres_dvar.real
 
-    @profile
     def dres_dvar(
         self,
         residuals,

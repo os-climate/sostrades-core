@@ -644,13 +644,7 @@ class ExecutionEngine:
         self.__check_data_integrity_msg()
 
         # -- prepare execution
-        self.logger.info("\nSNAPSHOT BEFORE PREPARE EXEC\n")
-        snapshot = tracemalloc.take_snapshot()
-        display_top(self.logger, snapshot)
         self.prepare_execution()
-        self.logger.info("\nSNAPSHOT AFTER PREPARE EXEC\n")
-        snapshot = tracemalloc.take_snapshot()
-        display_top(self.logger, snapshot)
         
         if loaded_cache is not None:
             self.load_cache_from_map(loaded_cache)
