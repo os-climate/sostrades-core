@@ -182,6 +182,8 @@ class TestDatasets(unittest.TestCase):
         uc = uc_dataset_dict.Study()
         param_changes = study.load_data(from_input_dict=uc.setup_usecase())
         param_changes.extend(study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
-        self.assertEqual(len(param_changes), 9)
+        if len(param_changes) != 9:
+            msg = ["WRONG ParameterChanges : "] + [p.__str__() for p in param_changes]
+            raise ValueError("\n".join(msg))
         self.assertEqual(len([p for p in param_changes if p.connector_id is None and p.dataset_id is None]), 5)
         self.assertEqual(len([p for p in param_changes if p.connector_id is not None and p.dataset_id is not None]), 4) # there is one variable in common
