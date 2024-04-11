@@ -486,7 +486,7 @@ class DataManager:
                                parameter_changes: list[ParameterChange],
                                connector_id: (str, None) = None,
                                dataset_id: (str, None) = None,
-                               ) -> None:
+                               update_parameter_changes: bool = False) -> None:
         """
         Applies and logs an input value change on variable with uuid key. It appends to parameter_changes a
         ParameterChange object with deepcopies of the old and new values and the date, if and only if the old and new
@@ -499,15 +499,16 @@ class DataManager:
         :return: None, inplace update of the data manager value for variable
         """
         dm_data = self.data_dict[key]
-        old_value = dm_data[VALUE]
-        if not dict_are_equal({VALUE: old_value}, {VALUE: new_value}):
-            parameter_changes.append(ParameterChange(parameter_id=self.get_var_full_name(key),
-                                                     variable_type=dm_data[TYPE],
-                                                     old_value=deepcopy(old_value),     # FIXME: deepcopies avoidable ?
-                                                     new_value=deepcopy(new_value),     # FIXME: deepcopies avoidable ?
-                                                     connector_id=connector_id,
-                                                     dataset_id=dataset_id,
-                                                     date=datetime.now()))
+        if update_parameter_changes:
+            old_value = dm_data[VALUE]
+            if not dict_are_equal({VALUE: old_value}, {VALUE: new_value}):
+                parameter_changes.append(ParameterChange(parameter_id=self.get_var_full_name(key),
+                                                         variable_type=dm_data[TYPE],
+                                                         old_value=deepcopy(old_value),     # FIXME: deepcopies avoidable ?
+                                                         new_value=deepcopy(new_value),     # FIXME: deepcopies avoidable ?
+                                                         connector_id=connector_id,
+                                                         dataset_id=dataset_id,
+                                                         date=datetime.now()))
         dm_data[VALUE] = new_value
 
     def convert_data_dict_with_full_name(self):
