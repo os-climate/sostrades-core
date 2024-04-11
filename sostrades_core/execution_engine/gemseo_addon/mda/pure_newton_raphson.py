@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+from memory_profiler import profile
+
 from copy import deepcopy
 import logging
 import numpy as np
