@@ -25,6 +25,7 @@ from sostrades_core.study_manager.study_manager import StudyManager
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
+import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 
 
 class TestDatasets(unittest.TestCase):
@@ -172,3 +173,18 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_2"), [3.0])
         self.assertTrue((dm.get_value(f"{study_name}.SellarCoupling.z")== [4.0,5.0]).all())
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)
+
+
+    def _test_06_parameter_change_returned_in_load_data_using_both_dict_and_datasets(self):
+        # FIXME: needs to be updated because on platform the PETSC config implies more parameter changes (17)
+        usecase_file_path = uc_dataset_dict.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        uc = uc_dataset_dict.Study()
+        param_changes = study.load_data(from_input_dict=uc.setup_usecase())
+        param_changes.extend(study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
+        if len(param_changes) != 9:
+            msg = ["WRONG ParameterChanges : "] + [p.__str__() for p in param_changes]
+            raise ValueError("\n".join(msg))
+        self.assertEqual(len([p for p in param_changes if p.connector_id is None and p.dataset_id is None]), 5)
+        self.assertEqual(len([p for p in param_changes if p.connector_id is not None and p.dataset_id is not None]), 4) # there is one variable in common
