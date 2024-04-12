@@ -16,6 +16,7 @@ limitations under the License.
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
 from numpy import array
+from os.path import dirname, join, realpath
 
 class Study(StudyManager):
 
@@ -40,7 +41,7 @@ class Study(StudyManager):
         return [disc_dict]
 
     def get_dataset_mapping(self):
-        # Get dataset file
-        datasets_file = __file__.replace(".py", ".json")
+        # Get dataset file NOTE it is not the same as the usecase name because it uses same dataset as other use case
+        datasets_file = join(dirname(realpath(__file__)), "usecase_dataset_sellar_coupling.json")
         # Deserialize it
         return DatasetsMapping.from_json_file(datasets_file)
