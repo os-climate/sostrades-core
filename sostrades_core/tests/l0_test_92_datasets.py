@@ -181,6 +181,7 @@ class TestDatasets(unittest.TestCase):
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
         uc = uc_dataset_dict.Study()
+        # TODO: Marie-Audrey suggestion --> do not assert on number of params but on changes of certain params
         param_changes = study.load_data(from_input_dict=uc.setup_usecase())
         param_changes.extend(study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
         if len(param_changes) != 9:

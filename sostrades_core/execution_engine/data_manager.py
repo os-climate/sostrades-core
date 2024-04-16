@@ -486,7 +486,7 @@ class DataManager:
                                parameter_changes: list[ParameterChange],
                                connector_id: (str, None) = None,
                                dataset_id: (str, None) = None,
-                               update_parameter_changes: bool = False) -> None:
+                               update_parameter_changes: bool = True) -> None:
         """
         Applies and logs an input value change on variable with uuid key. It appends to parameter_changes a
         ParameterChange object with deepcopies of the old and new values and the date, if and only if the old and new
