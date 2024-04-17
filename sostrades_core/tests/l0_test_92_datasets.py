@@ -175,16 +175,35 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)
 
 
-    def _test_06_parameter_change_returned_in_load_data_using_both_dict_and_datasets(self):
-        # FIXME: needs to be updated because on platform the PETSC config implies more parameter changes (17)
+    def test_06_parameter_change_returned_in_load_data_using_both_dict_and_datasets(self):
         usecase_file_path = uc_dataset_dict.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
         uc = uc_dataset_dict.Study()
+
         param_changes = study.load_data(from_input_dict=uc.setup_usecase())
         param_changes.extend(study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
-        if len(param_changes) != 9:
-            msg = ["WRONG ParameterChanges : "] + [p.__str__() for p in param_changes]
-            raise ValueError("\n".join(msg))
-        self.assertEqual(len([p for p in param_changes if p.connector_id is None and p.dataset_id is None]), 5)
-        self.assertEqual(len([p for p in param_changes if p.connector_id is not None and p.dataset_id is not None]), 4) # there is one variable in common
+        x_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.x']
+        z_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.z']
+
+        self.assertEqual(x_parameterchanges[0].variable_type, 'array')
+        self.assertEqual(x_parameterchanges[0].old_value, None)
+        self.assertTrue(np.all(x_parameterchanges[0].new_value == [21.]))
+        self.assertEqual(z_parameterchanges[0].variable_type, 'array')
+        self.assertEqual(z_parameterchanges[0].old_value, None)
+        self.assertTrue(np.all(z_parameterchanges[0].new_value == [21., 21.]))
+        self.assertEqual(x_parameterchanges[0].dataset_id, None)
+        self.assertEqual(x_parameterchanges[0].connector_id, None)
+        self.assertEqual(z_parameterchanges[0].dataset_id, None)
+        self.assertEqual(z_parameterchanges[0].connector_id, None)
+
+        self.assertEqual(x_parameterchanges[1].variable_type, 'array')
+        self.assertTrue(np.all(x_parameterchanges[1].old_value == [21.]))
+        self.assertTrue(np.all(x_parameterchanges[1].new_value == [1.]))
+        self.assertEqual(z_parameterchanges[1].variable_type, 'array')
+        self.assertTrue(np.all(z_parameterchanges[1].old_value == [21., 21.]))
+        self.assertTrue(np.all(z_parameterchanges[1].new_value == [4., 5.]))
+        self.assertEqual(x_parameterchanges[1].dataset_id, 'dataset_sellar')
+        self.assertEqual(x_parameterchanges[1].connector_id, 'MVP0_datasets_connector')
+        self.assertEqual(z_parameterchanges[1].dataset_id, 'dataset_sellar')
+        self.assertEqual(z_parameterchanges[1].connector_id, 'MVP0_datasets_connector')
