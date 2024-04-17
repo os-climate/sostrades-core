@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/04/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManag
 from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-
+from sostrades_core.execution_engine.data_manager import ParameterChange
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -408,7 +408,7 @@ class ExecutionEngine:
         :type update_status_configure: bool
         '''
         # call the configure function with the set dm data from datasets
-        self.configure_study_with_data(datasets_mapping, self.dm.fill_data_dict_from_datasets, update_status_configure)
+        return self.configure_study_with_data(datasets_mapping, self.dm.fill_data_dict_from_datasets, update_status_configure)
 
     def load_study_from_input_dict(self, input_dict_to_load, update_status_configure=True):
         '''
@@ -416,7 +416,7 @@ class ExecutionEngine:
         and compute the function load_study_from_dict
         '''
         dict_to_load = self.convert_input_dict_into_dict(input_dict_to_load)
-        self.load_study_from_dict(dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
+        return self.load_study_from_dict(dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
 
     def get_anonimated_data_dict(self):
         '''
@@ -464,12 +464,12 @@ class ExecutionEngine:
                 data_cache.update({converted_key: value})
 
         # call the configure function with the set dm data from dict
-        self.configure_study_with_data(data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
+        return self.configure_study_with_data(data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
 
     def configure_study_with_data(
         self,
         dict_or_datasets_to_load: Union[dict, DatasetsMapping],
-        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str], bool, bool, bool], None],
+        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str], list[ParameterChange], bool, bool, bool], None],
         update_status_configure: bool,
     ):
         '''
@@ -488,6 +488,7 @@ class ExecutionEngine:
         # configured
 
         checked_keys = set()
+        parameter_changes = list()
 
         while not loop_stop:
             self.logger.info("Configuring loop iteration %i.", iteration)
@@ -496,7 +497,7 @@ class ExecutionEngine:
 
             self.dm.no_change = True
             # call the function that will set data in dm
-            set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, in_vars=True, init_coupling_vars=False, out_vars=False)
+            set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, parameter_changes, in_vars=True, init_coupling_vars=False, out_vars=False)
 
             self.__configure_io()
 
@@ -513,7 +514,7 @@ class ExecutionEngine:
 
         # Convergence is ended
         # Set all output variables and strong couplings
-        set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, in_vars=False, init_coupling_vars=True, out_vars=True)
+        set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, parameter_changes, in_vars=False, init_coupling_vars=True, out_vars=True)
 
         if self.__yield_method is not None:
             self.__yield_method()
@@ -530,6 +531,7 @@ class ExecutionEngine:
             self.dm.create_reduced_dm()
 
         self.dm.treeview = None
+        return parameter_changes
 
     def clean_unused_namespaces(self):
         '''

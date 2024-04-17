@@ -28,8 +28,6 @@ class TestDesignVar(AbstractJacobianUnittest):
     """
     DesignVar unitary test class
     """
-    AbstractJacobianUnittest.DUMP_JACOBIAN = False
-
     def analytic_grad_entry(self):
         return [self.test_derivative
                 ]

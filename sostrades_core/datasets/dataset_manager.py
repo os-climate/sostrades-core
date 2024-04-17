@@ -20,17 +20,22 @@ from sostrades_core.datasets.dataset import Dataset
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
     DatasetsConnectorManager,
 )
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class DatasetsManager:
     """
     Manages connections to datasets
     """
+    VALUE = ProxyDiscipline.VALUE
+    DATASET_INFO = 'dataset_info'
+
     def __init__(self, logger:logging.Logger):
         self.datasets = {}
         self.__logger = logger
 
-    def fetch_data_from_datasets(self, datasets_info: List[DatasetInfo], data_dict: dict[str:str]) -> dict[str:Any]:
+    def fetch_data_from_datasets(self, datasets_info: List[DatasetInfo],
+                                 data_dict: dict[str:str]) -> dict[str:dict[str:Any]]:
         """
         get data from datasets and fill data_dict
 
@@ -40,7 +45,7 @@ class DatasetsManager:
         :param data_dict: dict of data to be fetch in datasets with their types
         :type data_dict: dict[name str: type str]
 
-        :return: data_dict of data names and retrieved values
+        :return: data_dict of data names and retrieved values plus a DATASET_INFO field with DatasetInfo object
         """
         self.__logger.debug(f"Fetching data {data_dict.keys()} from datasets {datasets_info}")
         data_retrieved = {}
@@ -50,12 +55,11 @@ class DatasetsManager:
             dataset = self.get_dataset(dataset_info=dataset_info)
 
             # Retrieve values
-            dataset_data = dataset.get_values(data_dict=data_dict)
-
-            # Update internal dictionnary
-            # TODO handle conflict, data may come from several datasets
+            dataset_values = dataset.get_values(data_dict=data_dict)
+            # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
+            dataset_data = {key: {self.VALUE: value,
+                                  self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
             data_retrieved.update(dataset_data)
-
         return data_retrieved
 
     def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:

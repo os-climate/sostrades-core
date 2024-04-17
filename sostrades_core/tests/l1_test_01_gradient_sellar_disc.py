@@ -27,7 +27,6 @@ class GradientSellar(AbstractJacobianUnittest):
     """
     Sellar gradients test class
     """
-    # AbstractJacobianUnittest.DUMP_JACOBIAN = True
     np.random.seed(42)
 
     def analytic_grad_entry(self):
@@ -65,7 +64,6 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.update_from_dm()
         self.ee.prepare_execution()
         disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
         self.check_jacobian(location=dirname(__file__),
                             filename=f'jacobian_sellar_1.pkl',
                             discipline=disc,
@@ -96,7 +94,6 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.update_from_dm()
         self.ee.prepare_execution()
         disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
         self.check_jacobian(location=dirname(__file__),
                             filename=f'jacobian_sellar_2.pkl',
                             discipline=disc,
@@ -130,7 +127,6 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.update_from_dm()
         self.ee.prepare_execution()
         disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
         self.check_jacobian(location=dirname(__file__),
                             filename=f'jacobian_sellar_problem.pkl',
                             discipline=disc,

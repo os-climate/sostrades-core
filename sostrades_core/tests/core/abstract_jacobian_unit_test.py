@@ -38,8 +38,12 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
     unit test jacobian management implement
     """
 
-    DUMP_JACOBIAN = False
+    DUMP_JACOBIAN_ENV_VAR = "DUMP_JACOBIAN_UNIT_TEST"
     PICKLE_DIRECTORY = 'jacobian_pkls'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__override_dump_jacobian = False
 
     def generate_analytic_gradient_pickle(self, test_names=[]):
         """ Main method to launch associated jacobian test and force dump of jacobian pickle
@@ -61,11 +65,36 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                 local_logger.info(
                     f'Jacobian launched on {str(entry)}')
                 self.setUp()
-                AbstractJacobianUnittest.DUMP_JACOBIAN = True
+                self.override_dump_jacobian = True
                 entry()
             except Exception as ex:
                 local_logger.exception(
                     f'Jacobian fail on {str(entry)}')
+
+    @property
+    def dump_jacobian(self):
+        """
+        Whether to recompute and dump jacobian matrix in pickle form for all check_jacobian calls, this is defined by an
+        environment variable and defaulting to False when this does not exist (which means using the existing pickle
+        files). Note that there is a mechanism to override this configuration and recompute jacobian in any case,
+        by setting the override_dump_jacobian property to True. The override_dump_jacobian mechanism will only affect
+        the next check_jacobian_call in the instance (then override_dump_jacobian is automatically set back to False).
+        """
+        return os.getenv(AbstractJacobianUnittest.DUMP_JACOBIAN_ENV_VAR, "").lower() in ("true", "1")
+
+    @property
+    def override_dump_jacobian(self):
+        """
+        Whether to force a jacobian recomputation and dump ONLY for the next check_jacobian call.
+        """
+        return self.__override_dump_jacobian
+
+    @override_dump_jacobian.setter
+    def override_dump_jacobian(self, do_override):
+        """
+        Whether to force a jacobian recomputation and dump ONLY for the next check_jacobian call.
+        """
+        self.__override_dump_jacobian = bool(do_override)
 
     @abstractmethod
     def analytic_grad_entry(self):
@@ -88,19 +117,22 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         file_path = join(location, directory,
                          filename)
 
-        if AbstractJacobianUnittest.DUMP_JACOBIAN:
+        if self.override_dump_jacobian or self.dump_jacobian:
             local_logger.info(
                 f'Jacobian dump mode enable on {join(location, filename)}')
             check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
                                                    outputs=outputs, derr_approx=derr_approx,
-                                                   dump_jac_path=file_path, input_column=input_column, output_column=output_column, parallel=parallel,
+                                                   dump_jac_path=file_path, input_column=input_column,
+                                                   output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
         else:
             check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
                                                    outputs=outputs, derr_approx=derr_approx,
-                                                   load_jac_path=file_path, input_column=input_column, output_column=output_column, parallel=parallel,
+                                                   load_jac_path=file_path, input_column=input_column,
+                                                   output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
 
+        self.override_dump_jacobian = False  # Note systematic de-activation after each check
         self.assertTrue(check_flag, msg=f"Wrong gradient in {discipline.name}")
 
     @staticmethod

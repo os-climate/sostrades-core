@@ -34,9 +34,8 @@ from scipy.sparse import csr_matrix
 from scipy.sparse import find
 from scipy.sparse.base import issparse
 
-# Must be done before from petsc4py import PETSc, this loads the options from
-# command args in the options database.
-petsc4py.init(sys.argv)  # NB: triggers PETSc warning on unused options e.g. with tests
+# Must be done before from petsc4py import PETSc
+petsc4py.init([])
 from petsc4py import PETSc  # pylint: disable-msg=E0401
 
 LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_lib")
