@@ -21,9 +21,9 @@ from sostrades_core.tools.post_processing.post_processing_factory import PostPro
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that manage a whole study process (load, execute, save, dump..)
 """
-from memory_profiler import profile
+# from memory_profiler import profile
 import tracemalloc
-from sostrades_core.execution_engine.execution_engine import display_top
+# from sostrades_core.execution_engine.execution_engine import display_top
 
 from typing import Union, Optional
 from time import time
