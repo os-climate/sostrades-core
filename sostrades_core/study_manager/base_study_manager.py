@@ -219,7 +219,7 @@ class BaseStudyManager():
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
 
-    @profile
+    # @profile
     def load_data(self, from_path=None, from_input_dict=None, display_treeview=True):
         """ Method that load data into the execution engine
 
@@ -237,9 +237,9 @@ class BaseStudyManager():
 
         logger = self.execution_engine.logger
         
-        logger.info("\nSNAPSHOT BEFORE LOAD\n")
-        snapshot = tracemalloc.take_snapshot()
-        display_top(logger, snapshot)
+        # logger.info("\nSNAPSHOT BEFORE LOAD\n")
+        # snapshot = tracemalloc.take_snapshot()
+        # display_top(logger, snapshot)
 
         if display_treeview:
             logger.info('TreeView display BEFORE data setup & configure')
@@ -433,14 +433,14 @@ class BaseStudyManager():
         start_time = time()
         if self._run_usecase:
             try:
-                logger.info("\nSNAPSHOT BEFORE EXECUTE\n")
-                snapshot = tracemalloc.take_snapshot()
-                display_top(logger, snapshot)
+                # logger.info("\nSNAPSHOT BEFORE EXECUTE\n")
+                # snapshot = tracemalloc.take_snapshot()
+                # display_top(logger, snapshot)
                 self.execution_engine.execute(loaded_cache=self.loaded_cache)
                 message = f'Study {study_display_name} execution time : {time() - start_time} seconds'
-                logger.info("\nSNAPSHOT AFTER EXECUTE\n")
-                snapshot = tracemalloc.take_snapshot()
-                display_top(logger, snapshot)
+                # logger.info("\nSNAPSHOT AFTER EXECUTE\n")
+                # snapshot = tracemalloc.take_snapshot()
+                # display_top(logger, snapshot)
                 logger.info(message)
                 print(message)
                 if for_test:

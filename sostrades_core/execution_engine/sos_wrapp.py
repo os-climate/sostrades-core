@@ -478,7 +478,7 @@ class SoSWrapp(object):
         """
         return []
 
-    @profile
+    # @profile
     def set_partial_derivative(self, y_key, x_key, value):
         """
         Method to fill the jacobian dict attribute of the wrapp with a partial derivative (value) given
@@ -494,7 +494,7 @@ class SoSWrapp(object):
             self.jac_dict[y_key_full] = {}
         self.jac_dict[y_key_full].update({x_key_full: value})
 
-    @profile
+    # @profile
     def set_partial_derivative_for_other_types(self, y_key_column, x_key_column, value):
         '''
         Set the derivative of the column y_key by the column x_key inside the jacobian of GEMS self.jac
@@ -537,6 +537,7 @@ class SoSWrapp(object):
         if x_key_full not in self.jac_dict[y_key_full]:
             # self.jac_dict[y_key_full][x_key_full] = zeros(
             #     self.get_jac_matrix_shape(y_key, x_key))
+            # FIX to avoid large memory usage
             self.jac_dict[y_key_full][x_key_full] = lil_matrix(
                 self.get_jac_matrix_shape(y_key, x_key))
             

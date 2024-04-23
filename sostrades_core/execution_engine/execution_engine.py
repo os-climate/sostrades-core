@@ -633,7 +633,7 @@ class ExecutionEngine:
         '''
         self.dm.set_values_from_dict(local_data)
 
-    @profile
+    # @profile
     def execute(self, loaded_cache=None):
         ''' execution of the execution engine
         '''
@@ -653,18 +653,18 @@ class ExecutionEngine:
         ex_proc = self.root_process
         input_data = self.dm.get_data_dict_values()
         self.logger.info("Executing.")
-        self.logger.info("\nSNAPSHOT BEFORE ROOTPROCESS EXEC\n")
-        snapshot = tracemalloc.take_snapshot()
-        display_top(self.logger, snapshot)
+        # self.logger.info("\nSNAPSHOT BEFORE ROOTPROCESS EXEC\n")
+        # snapshot = tracemalloc.take_snapshot()
+        # display_top(self.logger, snapshot)
         try:
             ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
                 input_data=input_data)
         except:
             ex_proc.set_status_from_mdo_discipline()
             raise
-        self.logger.info("\nSNAPSHOT AFTER ROOTPROCESS EXEC\n")
-        snapshot = tracemalloc.take_snapshot()
-        display_top(self.logger, snapshot)
+        # self.logger.info("\nSNAPSHOT AFTER ROOTPROCESS EXEC\n")
+        # snapshot = tracemalloc.take_snapshot()
+        # display_top(self.logger, snapshot)
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.', self.root_process.get_disc_full_name())
 
@@ -678,29 +678,29 @@ class ExecutionEngine:
 
         return ex_proc
 
-def display_top(logger, snapshot, key_type='lineno', limit=15):
-    ''' This method allows to log the snapshot statistics with the provided logger.
-        (adapted from https://docs.python.org/3/library/tracemalloc.html)
-        It displays the 15 (by default) lines allocating the most memory.
-    '''
-    snapshot = snapshot.filter_traces((
-        tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
-        tracemalloc.Filter(False, "<unknown>"),
-    ))
-    top_stats = snapshot.statistics(key_type)
+# def display_top(logger, snapshot, key_type='lineno', limit=15):
+#     ''' This method allows to log the snapshot statistics with the provided logger.
+#         (adapted from https://docs.python.org/3/library/tracemalloc.html)
+#         It displays the 15 (by default) lines allocating the most memory.
+#     '''
+#     snapshot = snapshot.filter_traces((
+#         tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+#         tracemalloc.Filter(False, "<unknown>"),
+#     ))
+#     top_stats = snapshot.statistics(key_type)
 
-    logger.info("Top %s lines" % limit)
-    for index, stat in enumerate(top_stats[:limit], 1):
-        frame = stat.traceback[0]
-        logger.info("#%s: %s:%s: %.1f KiB"
-              % (index, frame.filename, frame.lineno, stat.size / 1024))
-        line = linecache.getline(frame.filename, frame.lineno).strip()
-        if line:
-            logger.info('    %s' % line)
+#     logger.info("Top %s lines" % limit)
+#     for index, stat in enumerate(top_stats[:limit], 1):
+#         frame = stat.traceback[0]
+#         logger.info("#%s: %s:%s: %.1f KiB"
+#               % (index, frame.filename, frame.lineno, stat.size / 1024))
+#         line = linecache.getline(frame.filename, frame.lineno).strip()
+#         if line:
+#             logger.info('    %s' % line)
 
-    other = top_stats[limit:]
-    if other:
-        size = sum(stat.size for stat in other)
-        logger.info("%s other: %.1f KiB" % (len(other), size / 1024))
-    total = sum(stat.size for stat in top_stats)
-    logger.info("Total allocated size: %.1f KiB" % (total / 1024))
+#     other = top_stats[limit:]
+#     if other:
+#         size = sum(stat.size for stat in other)
+#         logger.info("%s other: %.1f KiB" % (len(other), size / 1024))
+#     total = sum(stat.size for stat in top_stats)
+#     logger.info("Total allocated size: %.1f KiB" % (total / 1024))
