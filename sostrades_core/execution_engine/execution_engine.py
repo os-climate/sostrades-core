@@ -679,6 +679,10 @@ class ExecutionEngine:
         return ex_proc
 
 def display_top(logger, snapshot, key_type='lineno', limit=15):
+    ''' This method allows to log the snapshot statistics with the provided logger.
+        (adapted from https://docs.python.org/3/library/tracemalloc.html)
+        It displays the 15 (by default) lines allocating the most memory.
+    '''
     snapshot = snapshot.filter_traces((
         tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
         tracemalloc.Filter(False, "<unknown>"),
