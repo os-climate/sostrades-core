@@ -19,7 +19,7 @@
 
 # pylint: skip-file
 """A Gauss Seidel algorithm for solving MDAs."""
-from memory_profiler import profile
+#from memory_profiler import profile
 
 from typing import Optional, Sequence
 
@@ -79,7 +79,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         )
         self.warm_start_threshold = warm_start_threshold
 
-    @profile
+    #@profile
     def _run(self):
         # Run the disciplines in a sequential way
         # until the difference between outputs is under tolerance.

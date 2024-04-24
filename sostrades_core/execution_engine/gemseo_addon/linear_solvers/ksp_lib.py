@@ -251,7 +251,7 @@ class PetscKSPAlgos(LinearSolverLib):
 
         return self.problem.solution
 
-    @profile
+    #@profile
     def _run_petsc_strategy(self, **options):
         # Initialize the KSP solver.
         # Create the options database

@@ -18,7 +18,7 @@ limitations under the License.
 Coupled derivatives calculations
 ********************************
 """
-from memory_profiler import profile
+#from memory_profiler import profile
 import gc
 
 from collections import defaultdict
@@ -129,7 +129,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return dres_dvar.tocsr()
 
     # SoSTrades modif
-    @profile
+    #@profile
     def _dres_dvar_sparse_lil(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
@@ -289,7 +289,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return dres_dvar
     # end of SoSTrades modif
 
-    @profile
+    #@profile
     def total_derivatives(
         self,
         in_data,
@@ -529,7 +529,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return newton_step_dict
 
     # Newton step computation
-    @profile
+    #@profile
     def compute_newton_step_pure(
         self,
         res,
@@ -582,7 +582,7 @@ class SoSJacobianAssembly(JacobianAssembly):
 
         return newton_step_dict
 
-    @profile
+    #@profile
     def _adjoint_mode(
         self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy, linear_solver, **kwargs
     ):
