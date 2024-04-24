@@ -18,7 +18,7 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 import tracemalloc, linecache
-from memory_profiler import profile
+# from memory_profiler import profile
 
 from typing import Any, Callable, Union, Optional
 # Execution engine SoSTrades code
@@ -68,13 +68,14 @@ class ExecutionEngine:
             self.logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
             # create console handler and set level to debug
             ch = logging.StreamHandler()
-            ch.setLevel(logging.DEBUG)
+            #ch.setLevel(logging.DEBUG)
             # create formatter
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             # add formatter to ch
             ch.setFormatter(formatter)
             # add ch to logger
             self.logger.addHandler(ch)
+            #print("logger id" + str(id(self.logger)))
         else:
             self.logger = logger
 
@@ -633,7 +634,7 @@ class ExecutionEngine:
         '''
         self.dm.set_values_from_dict(local_data)
 
-    @profile
+    # @profile
     def execute(self, loaded_cache=None):
         ''' execution of the execution engine
         '''
