@@ -680,7 +680,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         eq_full_names = self._update_names(eq_names, self.IO_TYPE_OUT)
         for eq in eq_full_names:
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
-                self, eq, MDOFunction.TYPE_EQ, eq, value=None,
+                eq, MDOFunction.TYPE_EQ, eq, value=None,
                 positive=False)
 
     def _set_flush_submdas_to_true(self):
