@@ -18,7 +18,7 @@ limitations under the License.
 Coupled derivatives calculations
 ********************************
 """
-#from memory_profiler import profile
+# from memory_profiler import profile
 import gc
 
 from collections import defaultdict
@@ -129,7 +129,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return dres_dvar.tocsr()
 
     # SoSTrades modif
-    #@profile
+    # @profile
     def _dres_dvar_sparse_lil(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
@@ -143,48 +143,49 @@ class SoSJacobianAssembly(JacobianAssembly):
         :param n_residuals: number of residuals
         :param n_variables: number of variables
         """
-        dres_dvar = lil_matrix((n_residuals, n_variables))
-        # end of SoSTrades modif
+        #dres_dvar = lil_matrix((n_residuals, n_variables))
+        with lil_matrix((n_residuals, n_variables)) as dres_dvar:
+            # end of SoSTrades modif
 
-        out_i = 0
-        # Row blocks
-        for residual in residuals:
-            residual_size = self.sizes[residual]
-            # Find the associated discipline
-            discipline = self.disciplines[residual]
-            residual_jac = discipline.jac[residual]
-            # Column blocks
-            out_j = 0
-            for variable in variables:
-                variable_size = self.sizes[variable]
-                if residual == variable:
-                    # residual Yi-Yi: put -I in the Jacobian
-                    ones_mat = (ones(variable_size), 0)
-                    shape = (variable_size, variable_size)
-                    diag_mat = -dia_matrix(ones_mat, shape=shape)
+            out_i = 0
+            # Row blocks
+            for residual in residuals:
+                residual_size = self.sizes[residual]
+                # Find the associated discipline
+                discipline = self.disciplines[residual]
+                residual_jac = discipline.jac[residual]
+                # Column blocks
+                out_j = 0
+                for variable in variables:
+                    variable_size = self.sizes[variable]
+                    if residual == variable:
+                        # residual Yi-Yi: put -I in the Jacobian
+                        ones_mat = (ones(variable_size), 0)
+                        shape = (variable_size, variable_size)
+                        diag_mat = -dia_matrix(ones_mat, shape=shape)
 
-                    if self.coupling_structure.is_self_coupled(discipline):
+                        if self.coupling_structure.is_self_coupled(discipline):
+                            jac = residual_jac.get(variable, None)
+                            if jac is not None:
+                                diag_mat += jac
+                        dres_dvar[
+                        out_i: out_i + variable_size, out_j: out_j + variable_size
+                        ] = diag_mat
+
+                    else:
+                        # block Jacobian
                         jac = residual_jac.get(variable, None)
                         if jac is not None:
-                            diag_mat += jac
-                    dres_dvar[
-                    out_i: out_i + variable_size, out_j: out_j + variable_size
-                    ] = diag_mat
-
-                else:
-                    # block Jacobian
-                    jac = residual_jac.get(variable, None)
-                    if jac is not None:
-                        n_i, n_j = jac.shape
-                        assert n_i == residual_size
-                        assert n_j == variable_size
-                        # Fill the sparse Jacobian block
-                        dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
-                # Shift the column by block width
-                out_j += variable_size
-            # Shift the row by block height
-            out_i += residual_size
-        return dres_dvar.real
+                            n_i, n_j = jac.shape
+                            assert n_i == residual_size
+                            assert n_j == variable_size
+                            # Fill the sparse Jacobian block
+                            dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
+                    # Shift the column by block width
+                    out_j += variable_size
+                # Shift the row by block height
+                out_i += residual_size
+            return dres_dvar.real
 
     def dres_dvar(
         self,
@@ -289,7 +290,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return dres_dvar
     # end of SoSTrades modif
 
-    #@profile
+    # @profile
     def total_derivatives(
         self,
         in_data,
@@ -529,7 +530,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         return newton_step_dict
 
     # Newton step computation
-    #@profile
+    # @profile
     def compute_newton_step_pure(
         self,
         res,
@@ -582,7 +583,7 @@ class SoSJacobianAssembly(JacobianAssembly):
 
         return newton_step_dict
 
-    #@profile
+    # @profile
     def _adjoint_mode(
         self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy, linear_solver, **kwargs
     ):
