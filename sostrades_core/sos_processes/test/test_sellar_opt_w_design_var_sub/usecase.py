@@ -65,7 +65,6 @@ class Study(StudyManager):
         disc_dict[
             f'{ns}.{self.coupling_name}.DesignVar.design_var_descriptor'] = design_var_descriptor
 
-
         # Sellar and design var inputs
         disc_dict[f'{ns}.x_in'] = array([1., 1., 1., 1.])
         disc_dict[f'{ns}.y_1'] = 5.
@@ -73,7 +72,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.z_in'] = array([5., 2.])
         disc_dict[f'{ns}.max_mda_iter'] = 50
         disc_dict[f'{ns}.design_space'] = dspace
-        disc_dict[f'{ns}.{self.coupling_name}.sub_mda_class'] = 'MDAGaussSeidel'
+        disc_dict[f'{ns}.{self.coupling_name}.inner_mda_name'] = 'MDAGaussSeidel'
 
         disc_dict[f'{ns}.{self.coupling_name}.max_mda_iter'] = 50
         disc_dict[f'{ns}.tolerance'] = 1e-16

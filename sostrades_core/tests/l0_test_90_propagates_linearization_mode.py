@@ -103,19 +103,20 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
-                         'auto')
+                         FINITE_DIFFERENCES)
 
         # the activation has been properly logged
         self.assertIn(f'Discipline Sellar_1 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
         self.assertIn(f'Discipline Sellar_3 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
         self.assertIn(f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
                       self.my_handler.msg_list)
-        self.assertIn(f'Discipline {self.study_name} set to linearization mode auto', self.my_handler.msg_list)
+        self.assertIn(f'Discipline {self.study_name} set to linearization mode finite_differences',
+                      self.my_handler.msg_list)
 
         exec_eng.execute()
         self.assertEqual(
             exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode,
-            MDODiscipline.LinearizationMode.AUTO)
+            MDODiscipline.LinearizationMode.FINITE_DIFFERENCES)
         self.assertEqual(
             proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
             FINITE_DIFFERENCES)
@@ -219,35 +220,35 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         # the dm has the proper values
         self.assertEqual(
             exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_Problem.{LINEARIZATION_MODE}'),
-            MDODiscipline.LinearizationMode.AUTO)
+            FINITE_DIFFERENCES)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_1.{LINEARIZATION_MODE}'),
-                         MDODiscipline.LinearizationMode.AUTO)
+                         FINITE_DIFFERENCES)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
-                         MDODiscipline.LinearizationMode.AUTO)
+                         FINITE_DIFFERENCES)
 
         # the activation has been properly logged
-        self.assertIn(f'Discipline Sellar_1 set to linearization mode {MDODiscipline.LinearizationMode.AUTO}',
+        self.assertIn(f'Discipline Sellar_1 set to linearization mode {FINITE_DIFFERENCES}',
                       self.my_handler.msg_list)
         self.assertIn(f'Discipline Sellar_3 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
         self.assertIn(
-            f'Discipline {coupling_name} set to linearization mode {MDODiscipline.LinearizationMode.AUTO}',
+            f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
             self.my_handler.msg_list)
         self.assertIn(
-            f'Discipline {self.study_name} set to linearization mode {MDODiscipline.LinearizationMode.AUTO}',
+            f'Discipline {self.study_name} set to linearization mode {FINITE_DIFFERENCES}',
             self.my_handler.msg_list)
 
         exec_eng.execute()
         self.assertEqual(
             exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode,
-            MDODiscipline.LinearizationMode.AUTO)
+            FINITE_DIFFERENCES)
         self.assertEqual(
             proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
-            MDODiscipline.LinearizationMode.AUTO)
+            FINITE_DIFFERENCES)
         self.assertEqual(
             proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
-            MDODiscipline.LinearizationMode.AUTO)
+            FINITE_DIFFERENCES)
         self.assertEqual(
             proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
             FINITE_DIFFERENCES)

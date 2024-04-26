@@ -21,15 +21,11 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
 import pprint
-import numpy as np
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
 from os.path import join
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
-from copy import deepcopy
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, \
+    convert_array_into_new_type
 from tempfile import gettempdir
 
 
@@ -66,38 +62,50 @@ class TestExtendString(unittest.TestCase):
         dict_float = self.exec_eng.dm.get_value('EE.Disc.dict_float')
         var_dict = {'EE.Disc.dict_float': dict_float}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_float': conversion_into_array['EE.Disc.dict_float']}, self.exec_eng.dm)
-        self.assertDictEqual(conversion_back['EE.Disc.dict_float'], dict_float)
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            self.assertDictEqual(conversion_back, dict_float)
 
         dict_df = self.exec_eng.dm.get_value('EE.Disc.dict_dataframe')
         var_dict = {'EE.Disc.dict_dataframe': dict_df}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_dataframe': conversion_into_array['EE.Disc.dict_dataframe']}, self.exec_eng.dm)
-        for key in [f'key{i}' for i in range(1, 6)]:
-            assert_frame_equal(conversion_back['EE.Disc.dict_dataframe'][key], dict_df[key], check_dtype=False)
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            for key in [f'key{i}' for i in range(1, 6)]:
+                assert_frame_equal(conversion_back[key], dict_df[key], check_dtype=False)
 
         dict_df_array = self.exec_eng.dm.get_value('EE.Disc.dict_dataframe_array')
         var_dict = {'EE.Disc.dict_dataframe_array': dict_df_array}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_dataframe_array': conversion_into_array['EE.Disc.dict_dataframe_array']}, self.exec_eng.dm)
-        for key in [f'key{i}' for i in range(1, 6)]:
-            assert_frame_equal(conversion_back['EE.Disc.dict_dataframe_array'][key], dict_df_array[key],
-                               check_dtype=False)
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            for key in [f'key{i}' for i in range(1, 6)]:
+                assert_frame_equal(conversion_back[key], dict_df_array[key],
+                                   check_dtype=False)
 
         dict_array = self.exec_eng.dm.get_value('EE.Disc.dict_array')
         var_dict = {'EE.Disc.dict_array': dict_array}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_array': conversion_into_array['EE.Disc.dict_array']}, self.exec_eng.dm)
-        for key in [f'key{i}' for i in range(1, 6)]:
-            assert_array_equal(conversion_back['EE.Disc.dict_array'][key], dict_array[key])
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            for key in [f'key{i}' for i in range(1, 6)]:
+                assert_array_equal(conversion_back[key], dict_array[key])
 
     def test_02_recursive_dict_conversion(self):
         """ This test proves the ability to convert recursive  dict
@@ -116,34 +124,43 @@ class TestExtendString(unittest.TestCase):
         dict_dict_float = self.exec_eng.dm.get_value('EE.Disc.dict_dict_float')
         var_dict = {'EE.Disc.dict_dict_float': dict_dict_float}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_dict_float': conversion_into_array['EE.Disc.dict_dict_float']}, self.exec_eng.dm)
-        self.assertDictEqual(conversion_back['EE.Disc.dict_dict_float'], dict_dict_float)
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            self.assertDictEqual(conversion_back, dict_dict_float)
 
         dict_dict_dict_array = self.exec_eng.dm.get_value('EE.Disc.dict_dict_dict_array')
         var_dict = {'EE.Disc.dict_dict_dict_array': dict_dict_dict_array}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_dict_dict_array': conversion_into_array['EE.Disc.dict_dict_dict_array']}, self.exec_eng.dm)
-        for key1 in [f'key{i}' for i in range(1, 6)]:
-            for key2 in [f'key{i}' for i in range(1, 6)]:
-                for key3 in [f'key{i}' for i in range(1, 6)]:
-                    assert_array_equal(conversion_back['EE.Disc.dict_dict_dict_array'][key1][key2][key3],
-                                       dict_dict_dict_array[key1][key2][key3])
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            for key1 in [f'key{i}' for i in range(1, 6)]:
+                for key2 in [f'key{i}' for i in range(1, 6)]:
+                    for key3 in [f'key{i}' for i in range(1, 6)]:
+                        assert_array_equal(conversion_back[key1][key2][key3],
+                                           dict_dict_dict_array[key1][key2][key3])
 
         dict_dict_dataframe = self.exec_eng.dm.get_value('EE.Disc.dict_dict_dataframe')
         var_dict = {'EE.Disc.dict_dict_dataframe': dict_dict_dataframe}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_dict_dataframe': conversion_into_array['EE.Disc.dict_dict_dataframe']}, self.exec_eng.dm)
-        for key1 in [f'key{i}' for i in range(1, 6)]:
-            for key2 in [f'key{i}' for i in range(1, 6)]:
-                assert_frame_equal(conversion_back['EE.Disc.dict_dict_dataframe'][key1][key2],
-                                   dict_dict_dataframe[key1][key2],
-                                   check_dtype=False)
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            for key1 in [f'key{i}' for i in range(1, 6)]:
+                for key2 in [f'key{i}' for i in range(1, 6)]:
+                    assert_frame_equal(conversion_back[key1][key2],
+                                       dict_dict_dataframe[key1][key2],
+                                       check_dtype=False)
 
     def test_03_recursive_dict_list_conversion(self):
         """ This test proves the ability to convert recursive  dict of list
@@ -162,33 +179,42 @@ class TestExtendString(unittest.TestCase):
         dict_list_float = self.exec_eng.dm.get_value('EE.Disc.dict_list_float')
         var_dict = {'EE.Disc.dict_list_float': dict_list_float}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_list_float': conversion_into_array['EE.Disc.dict_list_float']}, self.exec_eng.dm)
-        self.assertDictEqual(conversion_back['EE.Disc.dict_list_float'], dict_list_float)
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            self.assertDictEqual(conversion_back, dict_list_float)
 
         dict_list_list_dataframe = self.exec_eng.dm.get_value('EE.Disc.dict_list_list_dataframe')
         var_dict = {'EE.Disc.dict_list_list_dataframe': dict_list_list_dataframe}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_list_list_dataframe': conversion_into_array['EE.Disc.dict_list_list_dataframe']}, self.exec_eng.dm)
-        for key1 in [f'key{i}' for i in range(1, 6)]:
-            for i in range(3):
-                for j in range(5):
-                    assert_frame_equal(conversion_back['EE.Disc.dict_list_list_dataframe'][key1][i][j],
-                                       dict_list_list_dataframe[key1][i][j],
-                                       check_dtype=False)
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            for key1 in [f'key{i}' for i in range(1, 6)]:
+                for i in range(3):
+                    for j in range(5):
+                        assert_frame_equal(conversion_back[key1][i][j],
+                                           dict_list_list_dataframe[key1][i][j],
+                                           check_dtype=False)
 
         dict_list_dict_dataframe = self.exec_eng.dm.get_value('EE.Disc.dict_list_dict_dataframe')
         var_dict = {'EE.Disc.dict_list_dict_dataframe': dict_list_dict_dataframe}
 
-        conversion_into_array = convert_new_type_into_array(var_dict, self.exec_eng.dm)
-        conversion_back = convert_array_into_new_type(
-            {'EE.Disc.dict_list_dict_dataframe': conversion_into_array['EE.Disc.dict_list_dict_dataframe']}, self.exec_eng.dm)
-        for key1 in [f'key{i}' for i in range(1, 6)]:
-            for i in range(3):
-                for key2 in [f'key{i}' for i in range(1, 6)]:
-                    assert_frame_equal(conversion_back['EE.Disc.dict_list_dict_dataframe'][key1][i][key2],
-                                       dict_list_dict_dataframe[key1][i][key2],
-                                       check_dtype=False)
+        for key, value in var_dict.items():
+            red_dm = self.exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
+            for key1 in [f'key{i}' for i in range(1, 6)]:
+                for i in range(3):
+                    for key2 in [f'key{i}' for i in range(1, 6)]:
+                        assert_frame_equal(conversion_back[key1][i][key2],
+                                           dict_list_dict_dataframe[key1][i][key2],
+                                           check_dtype=False)

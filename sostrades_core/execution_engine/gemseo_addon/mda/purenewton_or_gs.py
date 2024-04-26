@@ -26,7 +26,7 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 """
 
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
-from gemseo.api import create_mda
+from gemseo import create_mda
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.sequential_mda import MDASequential
@@ -43,7 +43,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             self,
             disciplines,  # type: Sequence[MDODiscipline]
             name=None,  # type: Optional[str]
-            grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+            grammar_type=MDODiscipline.GrammarType.JSON,  # type: str
             tolerance=1e-6,  # type: float
             max_mda_iter=10,  # type: int
             relax_factor=0.99,  # type: float

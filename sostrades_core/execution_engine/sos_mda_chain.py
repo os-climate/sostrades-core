@@ -324,31 +324,31 @@ class SoSMDAChain(MDAChain):
 
     # -- Protected methods
 
-    def linearize(self, input_data=None, force_all=False, execute=True):
-        '''
-        Overload the linearize of soscoupling to use the one of sosdiscipline and not the one of MDAChain
-        '''
-        # LOGGER.info(
-        # f'Computing the gradient for the MDA : {self.get_disc_full_name()}')
-        self.logger.info(
-            f'Computing the gradient for the MDA : {self.name}')
+    # def linearize(self, input_data=None, force_all=False, execute=True):
+    #     '''
+    #     Overload the linearize of soscoupling to use the one of sosdiscipline and not the one of MDAChain
+    #     '''
+    #     # LOGGER.info(
+    #     # f'Computing the gradient for the MDA : {self.get_disc_full_name()}')
+    #     self.logger.info(
+    #         f'Computing the gradient for the MDA : {self.name}')
+    #
+    #     return self._old_discipline_linearize(input_data=input_data,
+    #                                           force_all=force_all,
+    #                                           execute=execute)
 
-        return self._old_discipline_linearize(input_data=input_data,
-                                              force_all=force_all,
-                                              execute=execute)
-
-    def _old_discipline_linearize(self, input_data=None, force_all=False, execute=True,
-                                  exec_before_linearize=True):
-        """ Temporary call to sostrades linearize that was previously in SoSDiscipline
-        TODO: see with IRT how we can handle it
-        """
-        # set GEM's default_inputs for gradient computation purposes
-        # to be deleted during GEMS update
-
-        result = SoSMDODiscipline.linearize(
-            self, input_data, force_all, execute)
-
-        return result
+    # def _old_discipline_linearize(self, input_data=None, force_all=False, execute=True,
+    #                               exec_before_linearize=True):
+    #     """ Temporary call to sostrades linearize that was previously in SoSDiscipline
+    #     TODO: see with IRT how we can handle it
+    #     """
+    #     # set GEM's default_inputs for gradient computation purposes
+    #     # to be deleted during GEMS update
+    #
+    #     result = SoSMDODiscipline.linearize(
+    #         self, input_data, force_all, execute)
+    #
+    #     return result
 
     def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
                        step=1e-7, threshold=1e-8, linearization_mode='auto',
@@ -635,6 +635,26 @@ class SoSMDAChain(MDAChain):
                 self.logger.debug(data_value)
                 has_nan = True
         return has_nan
+
+    def _retrieve_diff_inouts(
+            self, compute_all_jacobians: bool = False):
+        if compute_all_jacobians:
+            strong_cpl = set(self.strong_couplings)
+            inputs = set(self.get_input_data_names(filtered_inputs=True))
+            outputs = self.get_output_data_names(filtered_outputs=True)
+            # Don't linearize wrt
+            inputs -= strong_cpl & inputs
+            # Don't do this with output couplings because
+            # their derivatives wrt design variables may be needed
+            # outputs = outputs - (strong_cpl & outputs)
+        else:
+            inputs, outputs = SoSMDODiscipline._retrieve_diff_inouts(self)
+
+        if self.RESIDUALS_NORM in outputs:
+            outputs = list(outputs)
+            outputs.remove(self.RESIDUALS_NORM)
+
+        return inputs, outputs
 
     def get_input_data_names(self, filtered_inputs=False):
         """

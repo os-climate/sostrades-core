@@ -60,12 +60,12 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.c"), "string_3")
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), "string_3")
 
-        #check numerical parameters
+        # check numerical parameters
         self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
         self.assertEqual(dm.get_value("usecase_dataset.debug_mode"), "")
         self.assertEqual(dm.get_value("usecase_dataset.cache_type"), "None")
         self.assertEqual(dm.get_value("usecase_dataset.cache_file_path"), "")
-        self.assertEqual(dm.get_value("usecase_dataset.sub_mda_class"), "MDAJacobi")
+        self.assertEqual(dm.get_value("usecase_dataset.inner_mda_name"), "MDAJacobi")
         self.assertEqual(dm.get_value("usecase_dataset.max_mda_iter"), 30)
         self.assertEqual(dm.get_value("usecase_dataset.n_processes"), 1)
         self.assertEqual(dm.get_value("usecase_dataset.chain_linearize"), False)
@@ -73,7 +73,6 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.use_lu_fact"), False)
         self.assertEqual(dm.get_value("usecase_dataset.warm_start"), False)
         self.assertEqual(dm.get_value("usecase_dataset.acceleration"), "m2d")
-        self.assertEqual(dm.get_value("usecase_dataset.warm_start_threshold"), -1)
         self.assertEqual(dm.get_value("usecase_dataset.n_subcouplings_parallel"), 1)
         self.assertEqual(dm.get_value("usecase_dataset.tolerance_gs"), 10.0)
         self.assertEqual(dm.get_value("usecase_dataset.relax_factor"), 0.99)
@@ -90,7 +89,6 @@ class TestDatasets(unittest.TestCase):
             "tol": 1.0e-8})
         self.assertEqual(dm.get_value("usecase_dataset.group_mda_disciplines"), False)
         self.assertEqual(dm.get_value("usecase_dataset.propagate_cache_to_children"), False)
-
 
     def test_02_usecase2(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset.__file__
@@ -137,7 +135,6 @@ class TestDatasets(unittest.TestCase):
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
             set([dataset_mapping.datasets_infos["Dataset1"], dataset_mapping.datasets_infos["Dataset2"]]),
         )
-    
 
     def test_04_datasets_types(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
@@ -152,12 +149,13 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
-        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
-        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
-    
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame(
+            {"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
+
     def test_05_nested_process_level0(self):
         usecase_file_path = sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling.__file__
         process_path = os.path.dirname(usecase_file_path)
@@ -171,5 +169,5 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.x"), [1.0])
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_1"), [2.0])
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_2"), [3.0])
-        self.assertTrue((dm.get_value(f"{study_name}.SellarCoupling.z")== [4.0,5.0]).all())
+        self.assertTrue((dm.get_value(f"{study_name}.SellarCoupling.z") == [4.0, 5.0]).all())
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)

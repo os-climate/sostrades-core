@@ -17,6 +17,7 @@ from sostrades_core.study_manager.study_manager import StudyManager
 from numpy import array
 import pandas as pd
 
+
 class Study(StudyManager):
 
     def __init__(self, execution_engine=None):
@@ -28,14 +29,14 @@ class Study(StudyManager):
 
         disc_dict = {}
         # Sellar inputs
-        disc_dict[f'{ns}.{coupling_name}.x'] = pd.DataFrame(data={'index': [0,1,2,3], 'value' : [1., 1., 1., 1.]})
+        disc_dict[f'{ns}.{coupling_name}.x'] = pd.DataFrame(data={'index': [0, 1, 2, 3], 'value': [1., 1., 1., 1.]})
         disc_dict[f'{ns}.{coupling_name}.y_1'] = 1.
         disc_dict[f'{ns}.{coupling_name}.y_2'] = 1.
         disc_dict[f'{ns}.{coupling_name}.z'] = array([5., 2.])
         disc_dict[f'{ns}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
         disc_dict[f'{ns}.{coupling_name}.max_mda_iter'] = 100
         disc_dict[f'{ns}.{coupling_name}.tolerance'] = 1e-12
-        disc_dict[f'{ns}.{coupling_name}.sub_mda_class'] = 'MDAGaussSeidel'
+        disc_dict[f'{ns}.{coupling_name}.inner_mda_name'] = 'MDAGaussSeidel'
 
         return [disc_dict]
 

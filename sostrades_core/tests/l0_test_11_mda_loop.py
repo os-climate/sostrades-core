@@ -794,7 +794,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.n_processes'] = 4
         values_dict['EE.max_mda_iter'] = 50
         values_dict['EE.tolerance_gs'] = 1.0
-        values_dict['EE.inner_mda_name'] = 'GSNewtonMDA'
+        values_dict['EE.inner_mda_name'] = 'MDAGSNewton'
         values_dict['EE.linear_solver_MDA_options'] = {
             'max_iter': 5000,
             'tol': 1e-15}
@@ -1495,6 +1495,7 @@ class TestMDALoop(unittest.TestCase):
                 self.assertAlmostEqual(_r0, _rp)
             for _k, _v in out_0.items():
                 self.assertAlmostEqual(_v, out_p[_k])
+
 
 if '__main__' == __name__:
     cls = TestMDALoop()

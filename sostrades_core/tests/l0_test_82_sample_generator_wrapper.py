@@ -438,6 +438,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         OT_algo_default_options = {'levels': None,
                                    'centers': None,
                                    'eval_jac': False,
+                                   'eval_second_order': False,
                                    'n_samples': None,
                                    'n_processes': 1,
                                    'wait_time_between_samples': 0.0,
@@ -451,6 +452,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         OT_algo_used_options = {'levels': None,
                                 'centers': None,
                                 'eval_jac': False,
+                                'eval_second_order': False,
                                 # Must be non null at least for OT_SOBOL.
                                 'n_samples': 10,
                                 'n_processes': 1,

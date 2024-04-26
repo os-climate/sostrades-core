@@ -28,7 +28,7 @@ class SoSParallelChain(MDOParallelChain):
     N_CPUS = mp.cpu_count()
 
     def __init__(self, disciplines, name=None,
-                 grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
+                 grammar_type=MDODiscipline.GrammarType.JSON,
                  use_threading=True, n_processes=N_CPUS):
         '''
         Constructor

@@ -16,8 +16,8 @@ limitations under the License.
 '''
 import logging
 
-from gemseo.core.parallel_execution import DiscParallelExecution, \
-    DiscParallelLinearization
+from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.disc_parallel_linearization import DiscParallelLinearization
 import multiprocessing as mp
 
 VALUE = 'value'

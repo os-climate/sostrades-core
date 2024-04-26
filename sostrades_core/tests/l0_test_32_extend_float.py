@@ -71,10 +71,19 @@ class TestExtendFloat(unittest.TestCase):
 
         target = {'study.Disc0.r': array([r])}
         data_dm = {key: self.ee.dm.get_value(key) for key in target.keys()}
-        converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
+
+        reconverted_data_dm = {}
+        converted_data_dm = {}
+        for key, value in data_dm.items():
+            red_dm = self.ee.dm.reduced_dm.get(key, {})
+            converted_data_dm[key], new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+
+            red_dm.update(new_reduced_dm)
+            reconverted_data_dm[key] = convert_array_into_new_type(key, converted_data_dm[key], red_dm)
+
         # check new_types conversion into array
         self.assertTrue(dict_are_equal(converted_data_dm, target))
-        reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
+
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
 

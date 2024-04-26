@@ -15,11 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
-from copy import deepcopy
+
 import logging
 import numpy as np
 from copy import copy
-from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelExecution
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
 
 """
@@ -28,7 +27,7 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 """
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.newton import MDARoot
+from gemseo.mda.root import MDARoot
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 
@@ -44,7 +43,7 @@ class PureNewtonRaphson(MDARoot):
             max_mda_iter=10,  # type: int
             relax_factor=0.99,  # type: float
             name=None,  # type: Optional[str]
-            grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+            grammar_type=MDODiscipline.GrammarType.JSON,  # type: str
             linear_solver="DEFAULT",  # type: str
             tolerance=1e-6,  # type: float
             linear_solver_tolerance=1e-12,  # type: float
@@ -84,12 +83,12 @@ class PureNewtonRaphson(MDARoot):
         self.linear_solver_options.update(
             {'tol': self.linear_solver_tolerance})
 
-        self.parallel_execution = SoSDiscParallelExecution(
-            disciplines, n_processes=self.n_processes, use_threading=True
-        )
+        # self.parallel_execution = SoSDiscParallelExecution(
+        #     disciplines, n_processes=self.n_processes, use_threading=True
+        # )
 
-        self.assembly.parallel_linearize.configure_linearize_options(
-            force_no_exec=True)
+        # self.assembly.parallel_linearize.configure_linearize_options(
+        #     force_no_exec=True)
 
     @staticmethod
     def __check_relax_factor(

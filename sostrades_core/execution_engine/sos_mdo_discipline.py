@@ -145,6 +145,26 @@ class SoSMDODiscipline(MDODiscipline):
             raise error
         return self._local_data
 
+    def _retrieve_diff_inouts(
+            self,
+            compute_all_jacobians: bool = False,
+    ) -> tuple[list[str], list[str]]:
+        """Get the inputs and outputs used in the differentiation of the discipline.
+
+        Args:
+            compute_all_jacobians: Whether to compute the Jacobians of all the output
+                with respect to all the inputs.
+                Otherwise,
+                set the input variables against which to differentiate the output ones
+                with :meth:`.add_differentiated_inputs`
+                and set these output variables to differentiate
+                with :meth:`.add_differentiated_outputs`.
+        """
+        if compute_all_jacobians:
+            return self.get_input_data_names(filtered_inputs=True), self.get_output_data_names(filtered_outputs=True)
+
+        return self._differentiated_inputs, self._differentiated_outputs
+
     # def linearize(self, input_data=None, force_all=False, execute=True,
     #               exec_before_linearize=True):
     #     """overloads GEMS linearize function

@@ -602,6 +602,8 @@ def convert_new_type_into_array(
                     var_converted, metadata = convert_list_into_array(var, subtype)
                 else:
                     var_converted, metadata = var, None
+
+                var_converted = array(var_converted)
             else:
                 var_converted = var
     else:

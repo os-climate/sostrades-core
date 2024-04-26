@@ -39,7 +39,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             disciplines,  # type: Sequence[MDODiscipline]
             name=None,  # type: Optional[str]
             max_mda_iter=10,  # type: int
-            grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+            grammar_type=MDODiscipline.GrammarType.JSON,  # type: str
             tolerance=1e-6,  # type: float
             linear_solver_tolerance=1e-12,  # type: float
             warm_start=False,  # type: bool

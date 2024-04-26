@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
-from copy import deepcopy
+
 import logging
 
 """
@@ -25,7 +25,7 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.sequential_mda import GSNewtonMDA
+from gemseo.mda.sequential_mda import MDAGSNewton
 from gemseo.mda.sequential_mda import MDASequential
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
@@ -37,7 +37,7 @@ class GSorNewtonMDA(MDASequential):
     """
 
     def __init__(self, disciplines, name=None,
-                 grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
+                 grammar_type=MDODiscipline.GrammarType.JSON,
                  tolerance=1e-6, max_mda_iter=10, relax_factor=0.99,
                  linear_solver="lgmres", tolerance_gs=10.0,
                  linear_solver_tolerance=1e-12,  # type: str
@@ -84,7 +84,7 @@ class GSorNewtonMDA(MDASequential):
                                    name=None, grammar_type=grammar_type)
         mda_gs.tolerance = tolerance
 
-        mda_newton = GSNewtonMDA(disciplines, max_mda_iter=max_mda_iter,
+        mda_newton = MDAGSNewton(disciplines, max_mda_iter=max_mda_iter,
                                  name=None, grammar_type=grammar_type,
                                  linear_solver=linear_solver,
                                  linear_solver_options=linear_solver_options,
@@ -123,7 +123,7 @@ class GSorNewtonMDA(MDASequential):
             self.local_data = mda_i.execute(self.local_data)
         except:
             LOGGER.warning(
-                'The GSNewtonMDA has not converged try with MDAGaussSeidel')
+                'The MDAGSNewton has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
             mda_i.reset_statuses_for_run()
 

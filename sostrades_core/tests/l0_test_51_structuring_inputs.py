@@ -399,12 +399,12 @@ class TestStructuringInputs(unittest.TestCase):
 
         self.exec_eng.load_study_from_input_dict({})
 
-        coupling_inputs = {'sub_mda_class': {'type': 'string', 'default': 'MDAJacobi',
-                                             'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
-                                                                 'PureNewtonRaphson',
-                                                                 'MDAQuasiNewton', 'GSNewtonMDA', 'GSPureNewtonMDA',
-                                                                 'GSorNewtonMDA', 'MDASequential',
-                                                                 'GSPureNewtonorGSMDA']},
+        coupling_inputs = {'inner_mda_name': {'type': 'string', 'default': 'MDAJacobi',
+                                              'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
+                                                                  'PureNewtonRaphson',
+                                                                  'MDAQuasiNewton', 'MDAGSNewton', 'GSPureNewtonMDA',
+                                                                  'GSorNewtonMDA', 'MDASequential',
+                                                                  'GSPureNewtonorGSMDA']},
                            'max_mda_iter': {'type': 'int', 'default': 30, 'possible_values': None},
                            'n_processes': {'type': 'int', 'default': 1, 'possible_values': None},
                            'chain_linearize': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
@@ -413,7 +413,6 @@ class TestStructuringInputs(unittest.TestCase):
                            'warm_start': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
                            'acceleration': {'type': 'string', 'default': 'm2d',
                                             'possible_values': ['m2d', 'secant', 'none']},
-                           'warm_start_threshold': {'type': 'float', 'default': -1, 'possible_values': None},
                            'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
                            'tolerance_gs': {'type': 'float', 'default': 10.0, 'possible_values': None},
                            'relax_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
@@ -432,7 +431,7 @@ class TestStructuringInputs(unittest.TestCase):
                                                            'default': False},
                            # 'authorize_self_coupled_disciplines': {'type': 'bool', 'possible_values': [True, False],
                            #                                        'default': False},
-                           'linearization_mode': {'type': 'string', 'default': 'auto',
+                           'linearization_mode': {'type': 'string', 'default': FINITE_DIFFERENCES,
                                                   'possible_values': ['auto', 'direct', 'adjoint', 'reverse',
                                                                       'finite_differences', 'complex_step']},
                            'cache_type': {'type': 'string', 'default': 'None',
@@ -489,7 +488,7 @@ class TestStructuringInputs(unittest.TestCase):
         uc_cls = study_sellar_opt()
         uc_cls.study_name = 'MyCase'
         dict_values = uc_cls.setup_usecase()
-        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.sub_mda_class'] = 'GSorNewtonMDA'
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.inner_mda_name'] = 'GSorNewtonMDA'
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter'] = 20
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.tolerance'] = 1e-3
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.relax_factor'] = 0.85

@@ -23,7 +23,8 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
 from sostrades_core.sos_processes.test.test_sellar_sub_opt_w_design_var.usecase import Study
 from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var_sub.usecase import Study as study_sellar_sub
-from sostrades_core.sos_processes.test.test_sellar_coupling_for_design_var.usecase import Study as study_sellar_sub_wodvar
+from sostrades_core.sos_processes.test.test_sellar_coupling_for_design_var.usecase import \
+    Study as study_sellar_sub_wodvar
 
 from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
 
@@ -83,7 +84,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_01.pkl'
         inputs = ['Test.Sellar.SellarOptimScenario.x_in', 'Test.Sellar.SellarOptimScenario.z_in']
         outputs = ['Test.Sellar.SellarOptimScenario.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-4, derr_approx='finite_differences', threshold=1e-15,
@@ -119,7 +120,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # load_data
         ee.load_study_from_input_dict(full_values_dict)
         # call the two methods used before an execute (to ensure that the execution in the linearize step is done in
@@ -132,7 +133,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_02.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
 
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -168,7 +169,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # load_data
         ee.load_study_from_input_dict(full_values_dict)
         # execute
@@ -179,7 +180,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_03.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
 
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -215,7 +216,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # load_data
         ee.load_study_from_input_dict(full_values_dict)
         # call the two methods used before an execute (to ensure that the execution in the linearize step is done in
@@ -228,7 +229,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_04.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
 
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -265,7 +266,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # load_data
         ee.load_study_from_input_dict(full_values_dict)
         # call the two methods used before an execute (to ensure that the execution in the linearize step is done in
@@ -278,7 +279,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_05.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
 
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -314,7 +315,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # load_data
         ee.load_study_from_input_dict(full_values_dict)
         # execute
@@ -325,7 +326,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_06.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
         local_data_after_execute = coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -361,7 +362,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # load_data
         ee.load_study_from_input_dict(full_values_dict)
         # call the two methods used before an execute (to ensure that the execution in the linearize step is done in
@@ -374,7 +375,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_07.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
         local_data = self.execute_sellar()
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -411,7 +412,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # load_data
         ee.load_study_from_input_dict(full_values_dict)
         # execute
@@ -422,7 +423,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_08.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
         local_data_after_execute = coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -430,7 +431,6 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
                             local_data=deepcopy(local_data_after_execute),
                             inputs=inputs,
                             outputs=outputs)
-
 
     def execute_sellar(self):
         """
@@ -457,7 +457,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         self.data_sellar = full_values_dict
         ee.load_study_from_input_dict(full_values_dict)
         ee.execute()
@@ -527,7 +527,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # load_data
         ee.load_study_from_input_dict(full_values_dict)
         # execute
@@ -538,7 +538,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = f'jacobian_obj_vs_design_var_sellar_test_11.pkl'
         inputs = ['Test.SellarCoupling.x', 'Test.SellarCoupling.z']
         outputs = ['Test.SellarCoupling.obj', 'Test.SellarCoupling.c_1', 'Test.SellarCoupling.c_2']
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # AbstractJacobianUnittest.DUMP_JACOBIAN = True
 
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -638,6 +638,6 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         full_values_dict['Test.propagate_cache_to_children'] = True
         full_values_dict['Test.SellarCoupling.max_mda_iter'] = 30
         full_values_dict['Test.SellarCoupling.tolerance'] = 1e-20
-        full_values_dict['Test.SellarCoupling.sub_mda_class'] = 'MDAGaussSeidel'
+        full_values_dict['Test.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
         # ee.load_study_from_input_dict(full_values_dict)
         return ee, deepcopy(full_values_dict)

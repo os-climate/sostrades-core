@@ -259,10 +259,10 @@ class MDODisciplineWrapp(object):
         '''
 
         for key, value in proxy.get_data_in().items():
-            if value['default'] is not None:
+            if value['value'] is not None:
                 full_key = proxy.get_var_full_name(key, proxy.get_data_in())
                 self.mdo_discipline.default_inputs.update(
-                    {full_key: value['default']})
+                    {full_key: value['value']})
 
     def __update_gemseo_grammar(self, proxy, mdachain):
         ''' 

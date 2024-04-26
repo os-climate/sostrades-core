@@ -75,9 +75,9 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         for proxy_disc in exec_eng.root_process.proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
-            mdo_disc.linearize(values_dict)
+            mdo_disc.linearize(values_dict, compute_all_jacobians=True)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
-        exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearize(values_dict)
+        exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearize(values_dict, compute_all_jacobians=True)
         print('LINEARIZE performed for root coupling')
 
     def test_02_linearize_on_sellar_coupling(self):
@@ -101,9 +101,10 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
-            mdo_disc.linearize(values_dict)
+            mdo_disc.linearize(values_dict, compute_all_jacobians=True)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
-        exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict)
+        exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict,
+                                                                                                 compute_all_jacobians=True)
         print('LINEARIZE performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
     def test_03_linearize_on_sellar_coupling_new_types(self):
@@ -127,9 +128,10 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
-            mdo_disc.linearize(values_dict)
+            mdo_disc.linearize(values_dict, compute_all_jacobians=True)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
-        exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict)
+        exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict,
+                                                                                                 compute_all_jacobians=True)
         print('LINEARIZE performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
     def test_04_check_jacobian_on_sellar_coupling(self):

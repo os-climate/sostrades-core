@@ -18,15 +18,16 @@ limitations under the License.
 
 from typing import Any, Final
 from numpy import ndarray
-
+from numpy import complex128 as np_complex128
+from collections import defaultdict
 from gemseo.core.data_converters.base import _NUMERIC_TYPES
 from gemseo.core.data_converters.simple import SimpleGrammarDataConverter
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
-    convert_new_type_into_array
+    convert_new_type_into_array, STANDARD_TYPES
 from sostrades_core.tools.base_functions.compute_len import compute_len
 
-ValueTypes: Final[tuple[type]] = (int, float, complex, ndarray)
-ValueTypes_String = ['int', 'float', 'array']
+ValueTypes: Final[tuple[type]] = tuple(STANDARD_TYPES + [complex, ndarray, np_complex128])
+ValueTypes_Numeric = ['int', 'float']
 
 
 class SoSTradesDataConverter(SimpleGrammarDataConverter):
@@ -34,7 +35,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
 
     def __init__(self, grammar):
         super().__init__(grammar)
-        self.reduced_dm = {}
+        self.reduced_dm = defaultdict(dict)
 
     def is_numeric(self, name: str) -> bool:  # noqa: D102
         element_type = self._grammar[name]
@@ -44,8 +45,10 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
 
     def _convert_array_to_value(self, name: str, array: ndarray) -> Any:  # noqa: D102
 
-        if self.reduced_dm[name]['type'] in ValueTypes_String:
-            return super()._convert_array_to_value(name, array)
+        if name not in self.reduced_dm or self.reduced_dm[name]['type'] == 'array':
+            return array
+        elif self.reduced_dm[name]['type'] in ValueTypes_Numeric:
+            return array[0]
         else:
             return convert_array_into_new_type(name, array, self.reduced_dm.get(name, {}))
 

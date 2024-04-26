@@ -24,7 +24,6 @@ from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobi
 from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
 from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
 
-
 AGGR_TYPE = FunctionManagerDisc.AGGR_TYPE
 AGGR_TYPE_SUM = FunctionManager.AGGR_TYPE_SUM
 AGGR_TYPE_SMAX = FunctionManager.AGGR_TYPE_SMAX
@@ -43,7 +42,6 @@ class TestDesignVar(AbstractJacobianUnittest):
                 ]
 
     def setUp(self):
-
         self.study_name = 'Test'
         self.ns = f'{self.study_name}'
         self.sc_name = "SellarOptimScenario"
@@ -58,26 +56,25 @@ class TestDesignVar(AbstractJacobianUnittest):
         self.dspace = pd.DataFrame(dspace_dict)
 
         self.design_var_descriptor = {'x_in': {'out_name': 'x',
-                                           'type': 'array',
-                                           'out_type': 'dataframe',
-                                           'key': 'value',
-                                           'index': np.arange(0, 4, 1),
-                                           'index_name': 'test',
-                                           'namespace_in': 'ns_OptimSellar',
-                                           'namespace_out': 'ns_OptimSellar'
+                                               'type': 'array',
+                                               'out_type': 'dataframe',
+                                               'key': 'value',
+                                               'index': np.arange(0, 4, 1),
+                                               'index_name': 'test',
+                                               'namespace_in': 'ns_OptimSellar',
+                                               'namespace_out': 'ns_OptimSellar'
                                                },
-                                  'z_in': {'out_name': 'z',
-                                           'type': 'array',
-                                           'out_type': 'array',
-                                           'index': np.arange(0, 10, 1),
-                                           'index_name': 'index',
-                                           'namespace_in': 'ns_OptimSellar',
-                                           'namespace_out': 'ns_OptimSellar'
-                                           }
+                                      'z_in': {'out_name': 'z',
+                                               'type': 'array',
+                                               'out_type': 'array',
+                                               'index': np.arange(0, 10, 1),
+                                               'index_name': 'index',
+                                               'namespace_in': 'ns_OptimSellar',
+                                               'namespace_out': 'ns_OptimSellar'
+                                               }
                                       }
         self.repo = 'sostrades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_w_design_var'
-
 
         self.ee = ExecutionEngine(self.study_name)
         factory = self.ee.factory
@@ -92,7 +89,8 @@ class TestDesignVar(AbstractJacobianUnittest):
         values_dict = {}
 
         # design var
-        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.DesignVar.design_var_descriptor'] = self.design_var_descriptor
+        values_dict[
+            f'{self.ns}.{self.sc_name}.{self.c_name}.DesignVar.design_var_descriptor'] = self.design_var_descriptor
 
         # Optim inputs
         values_dict[f'{self.ns}.{self.sc_name}.max_iter'] = 1
@@ -126,9 +124,9 @@ class TestDesignVar(AbstractJacobianUnittest):
         values_dict[prefix +
                     FunctionManagerDisc.FUNC_DF] = func_df
 
-        # load and run
+        # load and runkuu
         self.ee.load_study_from_input_dict(values_dict)
-        self.values_dict=values_dict
+        self.values_dict = values_dict
 
     def test_01_check_execute(self):
         print("\n Test 1 : check configure and treeview")
@@ -140,7 +138,8 @@ class TestDesignVar(AbstractJacobianUnittest):
         # checks output type is well created for dataframes (most commonly used)
         df = disc.get_sosdisc_outputs('x')
         assert isinstance(df, pd.DataFrame)
-        assert all(df.columns == [self.design_var_descriptor['x_in']['index_name'], self.design_var_descriptor['x_in']['key']])
+        assert all(
+            df.columns == [self.design_var_descriptor['x_in']['index_name'], self.design_var_descriptor['x_in']['key']])
 
         filters = disc.get_chart_filter_list()
         graph_list = disc.get_post_processing_list(filters)
@@ -148,7 +147,7 @@ class TestDesignVar(AbstractJacobianUnittest):
         #     graph.to_plotly().show()
 
     def test_derivative(self):
-        self.ee.prepare_execution()
+        self.ee.execute()
         disc = self.ee.dm.get_disciplines_with_name(f'{self.ns}.{self.sc_name}.{self.c_name}.DesignVar')[0]
 
         input_names = [f'{self.ns}.{self.sc_name}.x_in',
@@ -159,8 +158,8 @@ class TestDesignVar(AbstractJacobianUnittest):
                         f'{self.ns}.{self.sc_name}.z',
                         ]
 
-
-        self.check_jacobian(local_data=self.values_dict, location=dirname(__file__), filename=f'jacobian_design_var_bspline.pkl',
+        self.check_jacobian(local_data=self.values_dict, location=dirname(__file__),
+                            filename=f'jacobian_design_var_bspline.pkl',
                             discipline=disc.mdo_discipline_wrapp.mdo_discipline, step=1e-15, inputs=input_names,
                             outputs=output_names, derr_approx='complex_step')
 

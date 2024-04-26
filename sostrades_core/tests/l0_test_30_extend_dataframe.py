@@ -70,12 +70,14 @@ class TestExtendDataframe(unittest.TestCase):
         target = {'EE.df': array([0.5, 0.5]), 'EE.dict_df': array([5., 3., 5., 3.]), 'EE.h': array([0.75, 0.75])}
 
         data_dm = {key: exec_eng.dm.get_value(key) for key in target.keys()}
-        converted_data_dm = convert_new_type_into_array(data_dm, exec_eng.dm)
 
-        # check new_types conversion into array
-        self.assertTrue(dict_are_equal(converted_data_dm, target))
-
-        reconverted_data_dm = convert_array_into_new_type(converted_data_dm, exec_eng.dm)
+        reconverted_data_dm = {}
+        for key, value in data_dm.items():
+            red_dm = exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+            self.assertListEqual(list(target[key]), list(converted_inputs))
+            red_dm.update(new_reduced_dm)
+            reconverted_data_dm[key] = convert_array_into_new_type(key, converted_inputs, red_dm)
 
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
@@ -108,12 +110,13 @@ class TestExtendDataframe(unittest.TestCase):
         target = {'EE.h': array([8., 9.]), 'EE.dict_df': array([5., 3., 5., 3.]), 'EE.df': array([5., 3.])}
 
         data_dm = {key: exec_eng.dm.get_value(key) for key in target.keys()}
-        converted_data_dm = convert_new_type_into_array(data_dm, exec_eng.dm)
-
-        # check new_types conversion into array
-        self.assertTrue(dict_are_equal(converted_data_dm, target))
-
-        reconverted_data_dm = convert_array_into_new_type(converted_data_dm, exec_eng.dm)
+        reconverted_data_dm = {}
+        for key, value in data_dm.items():
+            red_dm = exec_eng.dm.reduced_dm.get(key, {})
+            converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
+            self.assertListEqual(list(target[key]), list(converted_inputs))
+            red_dm.update(new_reduced_dm)
+            reconverted_data_dm[key] = convert_array_into_new_type(key, converted_inputs, red_dm)
 
         # check array conversion into new_types
         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
@@ -134,7 +137,7 @@ class TestExtendDataframe(unittest.TestCase):
 
         # Check residual history
         self.assertLessEqual(len(residual_history), max_mda_iter)
-        self.assertLessEqual(residual_history[-1][0], tolerance)
+        self.assertLessEqual(residual_history[-1], tolerance)
 
     def test_03_check_df_excluded_columns(self):
 
@@ -165,9 +168,11 @@ class TestExtendDataframe(unittest.TestCase):
         disc6 = exec_eng.root_process.proxy_disciplines[0]
 
         # convert dataframe into array and check data converted and metadata
-        data_dict_converted = convert_new_type_into_array({'EE.df': exec_eng.dm.get_value('EE.df')}, exec_eng.dm)
-        self.assertListEqual(list(data_dict_converted['EE.df']), [0.5, 0.5])
-        metadata = exec_eng.dm.get_data('EE.df', 'type_metadata')[0]
+        key = 'EE.df'
+        red_dm = exec_eng.dm.reduced_dm.get(key, {})
+        data_dict_converted, new_reduced_dm = convert_new_type_into_array(key, exec_eng.dm.get_value(key), red_dm)
+        self.assertListEqual(list(data_dict_converted), [0.5, 0.5])
+        metadata = new_reduced_dm['type_metadata'][0]
         self.assertListEqual(metadata['years'], [2020.0])
         self.assertListEqual(metadata['year'], [2020.0])
         self.assertListEqual(metadata['__columns__'].values.tolist(), ['c1', 'c2'])
@@ -250,19 +255,21 @@ class TestExtendDataframe(unittest.TestCase):
             'df').equals(df_multi_index_columns))
 
         df_in_dm = disc6.get_sosdisc_inputs('df')
-        df_converted_array = convert_new_type_into_array(
-            {'EE.df': df_in_dm}, exec_eng.dm)
+        key = 'EE.df'
+        red_dm = exec_eng.dm.reduced_dm.get(key, {})
+        df_converted_array, new_reduced_dm = convert_new_type_into_array(
+            key, df_in_dm, red_dm)
+        red_dm.update(new_reduced_dm)
+        df_reconverted = convert_array_into_new_type(key, df_converted_array, red_dm)
 
-        df_reconverted = convert_array_into_new_type(df_converted_array, exec_eng.dm)
-        self.assertTrue(df_reconverted['EE.df'].equals(df_multi_index_columns))
-        self.assertTrue(df_reconverted['EE.df'].columns.equals(col))
-        self.assertTrue(exec_eng.dm.get_data(
-            'EE.df', 'type_metadata')[0]['__columns__'].equals(col))
+        self.assertTrue(df_reconverted.equals(df_multi_index_columns))
+        self.assertTrue(df_reconverted.columns.equals(col))
 
         exec_eng.execute()
 
         target = [0.7071067811865475, 0.7071067811865475]
-        self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
+        for i, value in enumerate(list(exec_eng.dm.get_value('EE.h'))):
+            self.assertAlmostEqual(value, target[i])
 
     def test_06_multi_index_rows_df(self):
 
@@ -300,18 +307,21 @@ class TestExtendDataframe(unittest.TestCase):
             'df').equals(df))
 
         df_in_dm = disc6.get_sosdisc_inputs('df')
-        df_converted_array = convert_new_type_into_array(
-            {'EE.df': df_in_dm}, exec_eng.dm)
-        df_reconverted = convert_array_into_new_type(df_converted_array, exec_eng.dm)
-        self.assertTrue(df_reconverted['EE.df'].equals(df))
-        self.assertTrue(df_reconverted['EE.df'].index.equals(mux))
-        self.assertTrue(exec_eng.dm.get_data(
-            'EE.df', 'type_metadata')[0]['__indices__'].equals(mux))
+        key = 'EE.df'
+        reconverted_data_dm = {}
+        red_dm = exec_eng.dm.reduced_dm.get(key, {})
+        data_dict_converted, new_reduced_dm = convert_new_type_into_array(key, df_in_dm, red_dm)
+        red_dm.update(new_reduced_dm)
+        reconverted_data_dm[key] = convert_array_into_new_type(key, data_dict_converted, red_dm)
+
+        self.assertTrue(reconverted_data_dm[key].equals(df))
+        self.assertTrue(reconverted_data_dm[key].index.equals(mux))
 
         exec_eng.execute()
 
         target = [0.7071067811865475, 0.7071067811865475]
-        self.assertListEqual(list(exec_eng.dm.get_value('EE.h')), target)
+        for i, value in enumerate(list(exec_eng.dm.get_value('EE.h'))):
+            self.assertAlmostEqual(value, target[i])
 
     def test_07_convert_array_into_df(self):
 
@@ -618,7 +628,7 @@ class TestExtendDataframe(unittest.TestCase):
             list(df_after_exec.dtypes),
             [object, int, float, bool, complex, float]
         )
-        converted_array = convert_new_type_into_array({'EE.df': df_after_exec}, exec_eng.dm.reduced_dm)['EE.df']
+        converted_array, new_reduced_dm = convert_new_type_into_array('EE.df', df_after_exec, exec_eng.dm.reduced_dm)
         self.assertEqual(converted_array.size, (6 - 2) * 5)
 
         excluded_col = exec_eng.dm.reduced_dm['EE.df']['dataframe_excluded_columns']
