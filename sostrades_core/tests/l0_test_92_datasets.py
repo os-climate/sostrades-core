@@ -51,7 +51,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.c"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), None)
 
-        study.load_study(os.path.join(process_path, "usecase_dataset.json"))
+        study.update_data_from_dataset_mapping(os.path.join(process_path, "usecase_dataset.json"))
 
         self.assertEqual(dm.get_value("usecase_dataset.a"), 1)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), 4)
@@ -107,7 +107,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.c"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), None)
 
-        study.load_study(os.path.join(process_path, "usecase_2datasets.json"))
+        study.update_data_from_dataset_mapping(os.path.join(process_path, "usecase_2datasets.json"))
 
         self.assertEqual(dm.get_value("usecase_dataset.a"), 10)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), 20)
@@ -146,7 +146,7 @@ class TestDatasets(unittest.TestCase):
 
         dm = study.execution_engine.dm
 
-        study.load_study(os.path.join(process_path, "usecase_dataset.json"))
+        study.update_data_from_dataset_mapping(os.path.join(process_path, "usecase_dataset.json"))
 
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
@@ -166,7 +166,7 @@ class TestDatasets(unittest.TestCase):
 
         dm = study.execution_engine.dm
 
-        study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json"))
+        study.update_data_from_dataset_mapping(os.path.join(process_path, "usecase_dataset_sellar_coupling.json"))
 
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.x"), [1.0])
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_1"), [2.0])
@@ -182,7 +182,7 @@ class TestDatasets(unittest.TestCase):
         uc = uc_dataset_dict.Study()
 
         param_changes = study.load_data(from_input_dict=uc.setup_usecase())
-        param_changes.extend(study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
+        param_changes.extend(study.update_data_from_dataset_mapping(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
         x_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.x']
         z_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.z']
 

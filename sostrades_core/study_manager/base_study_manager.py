@@ -174,45 +174,37 @@ class BaseStudyManager():
     def setup_process(self):
         pass
 
-    def load_study(self, from_json_file_path=None, display_treeview=True):
+    def update_data_from_dataset_mapping(self, from_datasets_mapping=None, display_treeview=True):
         """
         Method that load data into the execution engine with datasets
 
         :params: display_treeview, display or not treeview state (optional parameter)
         :type: boolean
+
+        :return: list of parameters which has been changed
         """
-        start_time = time()
+        if from_datasets_mapping is not None:
+            start_time = time()
 
-        logger = self.execution_engine.logger
+            logger = self.execution_engine.logger
 
-        if display_treeview:
-            logger.info('TreeView display BEFORE data setup & configure')
-            self.execution_engine.display_treeview_nodes()
+            if display_treeview:
+                logger.info('TreeView display BEFORE data setup & configure')
+                self.execution_engine.display_treeview_nodes()
 
-        # load json mapping data file
-        #TODO: to be changed in next version 
-        if from_json_file_path is not None:
-            json_file_path = from_json_file_path
-        else:
-            # if the file is not given in argument, we take the one saved at the old pkl place
-            # not tested in the POC
-            json_file_path = join(self.dump_directory, f'{self.study_name}.json')
-        # read json mapping file
-        datasets_mapping_dict = DatasetsMapping.from_json_file(file_path=json_file_path)
+            # load study by retieving data from datasets, set them into the dm and configure study
+            parameter_changes = self.execution_engine.load_study_from_dataset(from_datasets_mapping)
 
-        # load study by retieving data from datasets, set them into the dm and configure study
-        parameter_changes = self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
-        
-        # keep old next steps after loading data
-        self.specific_check_inputs()
-        if display_treeview:
-            logger.info('TreeView display AFTER  data setup & configure')
-            self.execution_engine.display_treeview_nodes()
+            # keep old next steps after loading data
+            self.specific_check_inputs()
+            if display_treeview:
+                logger.info('TreeView display AFTER  data setup & configure')
+                self.execution_engine.display_treeview_nodes()
 
-        study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
-        message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
-        logger.info(message)
-        return parameter_changes
+            study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
+            message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
+            logger.info(message)
+            return parameter_changes
 
     def load_data(self, from_path=None,
                   from_input_dict=None,
