@@ -19,10 +19,11 @@ import os
 from typing import Any
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException
+from sostrades_core.datasets.datasets_connectors.json_datasets_connector import JSONDatasetsConnector
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
 
 
-class LocalDatasetsConnector(AbstractDatasetsConnector):
+class LocalDatasetsConnector(JSONDatasetsConnector):
     """
     Specific dataset connector for dataset in local filesystem
     """
@@ -30,7 +31,7 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
 
     def __init__(self, root_directory_path: str,
                  create_if_not_exists: bool=False,
-                 serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):
+                 serializer_type:DatasetSerializerType=DatasetSerializerType.FileSystem):
         """
         Constructor for JSON data connector
 
@@ -42,17 +43,15 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
         :param serializer_type: type of serializer to deserialize data from connector
         :type serializer_type: DatasetSerializerType (JSON for jsonDatasetSerializer)
         """
-        super().__init__()
         self.__root_directory_path = os.path.abspath(root_directory_path)
-        # create file if not exist
-        if create_if_not_exists and not os.path.isdir(root_directory_path):
-            os.makedirs(root_directory_path, exist_ok=True)
+        super().__init__(file_path=os.path.join(self.__root_directory_path,
+                                                self.DESCRIPTOR_FILE_NAME),
+                         create_if_not_exists=create_if_not_exists,
+                         serializer_type=serializer_type)
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug(f"Initializing local connector on {root_directory_path}")
-        self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
-
-        # In json, we have to load the full file to retrieve values, so cache it
-        self.__json_data = None
+        # link the serialiser to the root directory path so it knows where to dump certain types
+        self._datasets_serializer.set_root_directory_path(self.__root_directory_path)
 
     # def __load_json_data(self):
     #     """

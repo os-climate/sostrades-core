@@ -16,17 +16,29 @@ limitations under the License.
 from typing import Any
 import pandas as pd
 import numpy as np
+from os.path import join
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import JSONDatasetsSerializer
 
 
-class FileSystemDatasetsSerializer(JSONDatasetsSerializer): # FIXME: REWRITE without inheritance
+class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     """
     Specific dataset serializer for dataset
     """
     # TYPE_IN_FILESYSTEM_PREFIXES = ['@dataframe@', '@array@']  # TODO: discuss
     TYPE_IN_FILESYSTEM_PARTICLE = '@'
-    TYPES_IN_FILESYSTEM = {'dataframe', 'array'}
+    TYPE_DATAFRAME = 'dataframe'
+    TYPE_ARRAY = 'array'
+    EXTENSION = 'csv'
+    EXTENSION_SEP = '.'
+    TYPES_IN_FILESYSTEM = {TYPE_DATAFRAME, TYPE_ARRAY}
+
+    def __init__(self):
+        super().__init__()
+        self.__root_directory_path = None
+
+    def set_root_directory_path(self, root_directory_path):
+        self.__root_directory_path = root_directory_path
 
     def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
         '''
@@ -43,13 +55,12 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer): # FIXME: REWRITE wit
         '''
         # sanity checks allowing not to load a @...@ into variable type not requiring filesystem storage.
         sanity = True
-        filesystem_type = self._get_filesystem_type(data_value)
+        filesystem_type = self.__get_filesystem_type(data_value)
         if data_name in data_types_dict:
             # unknown data type is handled in mother class method
             data_type = data_types_dict[data_name]
             # insane if there is an @...@ descriptor that is unknown or mismatching
-            if filesystem_type is not None and (filesystem_type != data_type or
-                                                filesystem_type not in self.TYPES_IN_FILESYSTEM):
+            if filesystem_type is not None and filesystem_type != data_type:
                 sanity = False
                 self.__logger.warning(f"Error while trying to load {data_name} with filesystem descriptor "
                                       f"{data_value} into the type {data_type} required by the process. Types"
@@ -67,24 +78,55 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer): # FIXME: REWRITE wit
         else:
             return data_value
 
-    def _get_filesystem_type(self, data_value):
-        filesystem_type = None
+    def __get_filesystem_type(self, data_value):
         if isinstance(data_value, str):
             _tmp = data_value.split(self.TYPE_IN_FILESYSTEM_PARTICLE)
             if len(_tmp) > 3:
-                filesystem_type = _tmp[1]
-        return filesystem_type
+                _fs_type = _tmp[1]
+                if _fs_type in self.TYPES_IN_FILESYSTEM:
+                    return _fs_type
+
+    def __get_data_path(self, data_value):
+        _tmp = data_value.split(self.TYPE_IN_FILESYSTEM_PARTICLE)
+        _subpath = self.TYPE_IN_FILESYSTEM_PARTICLE.join(_tmp[2:])
+        return _subpath
+
+    def __deserialize_from_filesystem(self, deserialization_function, data_value, *args, **kwargs):
+        if self.__root_directory_path is None:
+            self.__logger.warning(f"Error while trying to deserialize {data_value} because dataset root directory "
+                                  f"is undefined")
+            return data_value
+        else:
+            data_subpath = self.__get_data_path(data_value)
+            data_path = join(self.__root_directory_path, data_subpath)
+            return deserialization_function(data_path, *args, **kwargs)
 
     def _deserialize_dataframe(self, data_value):
-        return NotImplementedError()
+        return self.__deserialize_from_filesystem(pd.read_csv, data_value)
 
     def _deserialize_array(self, data_value):
-        return NotImplementedError()
+        return self.__deserialize_from_filesystem(np.loadtxt, data_value)
 
-    def _serialize_dataframe(self, data_value, dump_file_name):
-        # TODO: the conector needs to oversee the dump in order to provide meaningful file names
-        return NotImplementedError()
+    def __serialize_into_filesystem(self, serialization_function, data_value, data_name, *args, **kwargs):
+        if self.__root_directory_path is None:
+            self.__logger.warning(f"Error while trying to serialize {data_value} because dataset root directory "
+                                  f"is undefined")
+            return data_value
+        else:
+            # TODO: may need updating when datasets down to parameter level
+            data_subpath = self.EXTENSION_SEP.join((data_name, self.EXTENSION))
+            data_path = join(self.__root_directory_path, data_subpath)
+            serialization_function(data_path, data_value, *args, **kwargs)
 
-    def _serialize_array(self, data_value, dump_file_name):
-        # TODO: the conector needs to oversee the dump in order to provide meaningful file names
-        return NotImplementedError()
+    def __dump_dataframe(self, dump_path, df, *args, **kwargs):
+        df.to_csv(dump_path, *args, **kwargs)
+
+    def _serialize_dataframe(self, data_value, data_name):
+        self.__serialize_into_filesystem(self.__dump_dataframe, data_value, data_name)
+        # TODO: may need updating when datasets down to parameter level
+        return self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name))
+
+    def _serialize_array(self, data_value, data_name):
+        self.__serialize_into_filesystem(np.savetxt, data_value, data_name)
+        # TODO: may need updating when datasets down to parameter level
+        return self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name))

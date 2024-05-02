@@ -19,6 +19,9 @@ from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer i
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
 )
+from sostrades_core.datasets.datasets_serializers.filesystem_datasets_serializer import (
+    FileSystemDatasetsSerializer,
+)
 
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
@@ -29,6 +32,7 @@ class DatasetSerializerType(Enum):
     """
 
     JSON = JSONDatasetsSerializer
+    FileSystem = FileSystemDatasetsSerializer
 
     @classmethod
     def get_enum_value(cls, value_str):

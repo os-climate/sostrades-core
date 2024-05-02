@@ -49,9 +49,9 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
             if data_type in ['string', 'int', 'float', 'bool', 'list', 'dict']:
                 converted_data = data_value
             elif data_type == 'dataframe':
-                converted_data = pd.DataFrame.from_dict(data_value)
+                converted_data = self._deserialize_dataframe(data_value)
             elif data_type == 'array':
-                converted_data = np.array(data_value)
+                converted_data = self._deserialize_array(data_value)
             else:
                 converted_data = data_value
                 self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
@@ -83,9 +83,9 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
                 converted_data = data_value
             elif data_type == 'dataframe':
                 # convert dataframe into dict with orient='list' to have {column:values}
-                converted_data = pd.DataFrame.to_dict(data_value,'list')
+                converted_data = self._serialize_dataframe(data_value, data_name)
             elif data_type == 'array':
-                converted_data = list(data_value)
+                converted_data = self._serialize_array(data_value, data_name)
             else:
                 converted_data = data_value
                 self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
@@ -94,4 +94,21 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
             self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
 
         return converted_data
-    
+
+    # def _deserialize_standard(self, data_value):
+    #     return data_value
+
+    def _deserialize_dataframe(self, data_value):
+        return pd.DataFrame.from_dict(data_value)
+
+    def _deserialize_array(self, data_value):
+        return np.array(data_value)
+
+    # def _serialize_standard(self, data_value):
+    #     return data_value
+
+    def _serialize_dataframe(self, data_value, data_name):
+        return pd.DataFrame.to_dict(data_value, 'list')
+
+    def _serialize_array(self, data_value, data_name):
+        return list(data_value)  # why not tolist() ?
