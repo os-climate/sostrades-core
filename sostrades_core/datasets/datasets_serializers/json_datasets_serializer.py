@@ -24,7 +24,6 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
     """
     Specific dataset serializer for dataset in json format
     """
-
     def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
         '''
         Convert data_value into data_type from the connector
@@ -92,20 +91,13 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
         except Exception as error:
             converted_data = data_value
             self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
-
         return converted_data
-
-    # def _deserialize_standard(self, data_value):
-    #     return data_value
 
     def _deserialize_dataframe(self, data_value):
         return pd.DataFrame.from_dict(data_value)
 
     def _deserialize_array(self, data_value):
         return np.array(data_value)
-
-    # def _serialize_standard(self, data_value):
-    #     return data_value
 
     def _serialize_dataframe(self, data_value, data_name):
         return pd.DataFrame.to_dict(data_value, 'list')
