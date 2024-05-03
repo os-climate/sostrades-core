@@ -57,9 +57,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.dspace = pd.DataFrame(dspace_dict)
         self.repo = 'sostrades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_discopt'
-
-    def test_00_optim_stop_merge(self):
-        self.assertTrue(False, "Code WIP in core, Remove the clear database at the end of scenario computation")
+        
 
     def _test_01_optim_scenario_check_treeview(self):
         print("\n Test 1 : check configure and treeview")

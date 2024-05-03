@@ -101,10 +101,6 @@ class SoSMDOScenario(MDOScenario):
         if not self.eval_mode:
             self.update_post_processing_df()
         
-        # test to release memory after run
-        # TODO: remove this line after test
-        self.formulation.opt_problem.database.clear()
-        
 
 
     def update_post_processing_df(self):
