@@ -188,18 +188,19 @@ class BaseStudyManager():
 
             logger = self.execution_engine.logger
 
-            if display_treeview:
-                logger.info('TreeView display BEFORE data setup & configure')
-                self.execution_engine.display_treeview_nodes()
-
-            # load study by retieving data from datasets, set them into the dm and configure study
+            # load study by retrieving data from datasets, set them into the dm and configure study
             parameter_changes = self.execution_engine.load_study_from_dataset(from_datasets_mapping)
 
-            # keep old next steps after loading data
-            self.specific_check_inputs()
-            if display_treeview:
-                logger.info('TreeView display AFTER  data setup & configure')
-                self.execution_engine.display_treeview_nodes()
+            if parameter_changes is not None and len(parameter_changes) > 0:
+                if display_treeview:
+                    logger.info('TreeView display BEFORE data setup & configure')
+                    self.execution_engine.display_treeview_nodes()
+
+                # keep old next steps after loading data
+                self.specific_check_inputs()
+                if display_treeview:
+                    logger.info('TreeView display AFTER  data setup & configure')
+                    self.execution_engine.display_treeview_nodes()
 
             study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
             message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
