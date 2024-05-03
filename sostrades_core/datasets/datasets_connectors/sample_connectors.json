@@ -12,5 +12,5 @@
         "connector_args": {
             "root_directory_path":"./sostrades_core/tests/data/local_datasets_db/"
         }
-    },
+    }
 ]
