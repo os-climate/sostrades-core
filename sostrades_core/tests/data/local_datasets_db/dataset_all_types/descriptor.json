@@ -1,0 +1,11 @@
+{
+    "a": 1,
+    "b": 2,
+    "b_bool": false,
+    "name": "A1",
+    "x":4.0,
+    "x_dict":{"test1":1,"test2":2},
+    "y_array":"@array@y_array.csv",
+    "z_list":[1.0,2.0,3.0],
+    "d":"@dataframe@d.csv"
+}

@@ -18,6 +18,9 @@ import logging
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
     JSONDatasetsConnector,
 )
+from sostrades_core.datasets.datasets_connectors.local_datasets_connector import (
+    LocalDatasetsConnector,
+)
 from sostrades_core.datasets.datasets_connectors.arango_datasets_connector import (
     ArangoDatasetsConnector,
 )
@@ -35,6 +38,7 @@ class DatasetConnectorType(Enum):
     """
 
     JSON = JSONDatasetsConnector
+    Local = LocalDatasetsConnector
     Arango = ArangoDatasetsConnector
     SoSpickle = SoSPickleDatasetsConnector
 
