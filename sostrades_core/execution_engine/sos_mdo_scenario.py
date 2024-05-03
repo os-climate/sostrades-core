@@ -100,6 +100,12 @@ class SoSMDOScenario(MDOScenario):
         self.update_design_space_out()
         if not self.eval_mode:
             self.update_post_processing_df()
+        
+        # test to release memory after run
+        # TODO: remove this line after test
+        self.formulation.opt_problem.database.clear()
+        
+
 
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
@@ -250,9 +256,7 @@ class SoSMDOScenario(MDOScenario):
                 func(x_opt)
 
 
-        # test to release memory after run
-        # TODO: remove this line after test
-        problem.database.clear()
+        
 
     def evaluate_functions(self,
                            problem,
