@@ -249,6 +249,11 @@ class SoSMDOScenario(MDOScenario):
             for func in self.functions_before_run:
                 func(x_opt)
 
+
+        # test to release memory after run
+        # TODO: remove this line after test
+        problem.database.clear()
+
     def evaluate_functions(self,
                            problem,
                            x_vect=None,  # type: ndarray
