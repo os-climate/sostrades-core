@@ -23,7 +23,7 @@ from sostrades_core.datasets.datasets_connectors.json_datasets_connector import 
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
 
 
-class LocalDatasetsConnector(JSONDatasetsConnector):
+class LocalDatasetsConnector(AbstractDatasetsConnector):
     """
     Specific dataset connector for dataset in local filesystem
     """
@@ -43,151 +43,137 @@ class LocalDatasetsConnector(JSONDatasetsConnector):
         :param serializer_type: type of serializer to deserialize data from connector
         :type serializer_type: DatasetSerializerType (JSON for jsonDatasetSerializer)
         """
+        super().__init__()
         self.__root_directory_path = os.path.abspath(root_directory_path)
-        super().__init__(file_path=os.path.join(self.__root_directory_path,
-                                                self.DESCRIPTOR_FILE_NAME),
-                         create_if_not_exists=create_if_not_exists,
-                         serializer_type=serializer_type)
+        self._create_if_not_exists = create_if_not_exists
+        if self._create_if_not_exists and not os.path.isdir(self.__root_directory_path):
+            os.makedirs(self.__root_directory_path, exist_ok=True)
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug(f"Initializing local connector on {root_directory_path}")
-        # link the serialiser to the root directory path so it knows where to dump certain types
-        self._datasets_serializer.set_root_directory_path(self.__root_directory_path)
+        self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
 
-    # def __load_json_data(self):
-    #     """
-    #     Method to load data from json file
-    #     Populates self.__json_data
-    #     """
-    #     db_path = self.__file_path
-    #     if not os.path.exists(db_path):
-    #         raise DatasetGenericException(f"The connector json file is not found at {db_path}") from FileNotFoundError()
-    #
-    #     with open(db_path, "r", encoding="utf-8") as file:
-    #         self.__json_data = json.load(fp=file)
-    #
-    # def __save_json_data(self):
-    #     """
-    #     Method to save data to json file
-    #     """
-    #     db_path = self.__file_path
-    #     if not os.path.exists(db_path):
-    #         raise DatasetGenericException() from FileNotFoundError(f"The connector json file is not found at {db_path}")
-    #
-    #     with open(db_path, "w", encoding="utf-8") as file:
-    #         json.dump(obj=self.__json_data, fp=file, indent=4)
-    #
-    # def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
-    #     """
-    #     Method to retrieve data from JSON and fill a data_dict
-    #
-    #     :param dataset_identifier: identifier of the dataset
-    #     :type dataset_identifier: str
-    #
-    #     :param data_to_get: data to retrieve, dict of names and types
-    #     :type data_to_get: dict[str:str]
-    #     """
-    #     self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
-    #     # Read JSON if not read already
-    #     if self.__json_data is None:
-    #         self.__load_json_data()
-    #
-    #     if dataset_identifier not in self.__json_data:
-    #         raise DatasetNotFoundException(dataset_identifier)
-    #
-    #     dataset_data = self.__json_data[dataset_identifier]
-    #
-    #     # Filter data
-    #     filtered_data = {key:self.__datasets_serializer.convert_from_dataset_data(key,
-    #                                                           dataset_data[key],
-    #                                                           data_to_get)
-    #                     for key in dataset_data if key in data_to_get}
-    #     self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
-    #     return filtered_data
-    #
-    # def get_datasets_available(self) -> list[str]:
-    #     """
-    #     Get all available datasets for a specific API
-    #     """
-    #     self.__logger.debug(f"Getting all datasets for connector {self}")
-    #     # Read JSON if not read already
-    #     if self.__json_data is None:
-    #         self.__load_json_data()
-    #     return list(self.__json_data.keys())
-    #
-    # def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
-    #     """
-    #     Method to write data
-    #     :param dataset_identifier: dataset identifier for connector
-    #     :type dataset_identifier: str
-    #     :param values_to_write: dict of data to write {name: value}
-    #     :type values_to_write: dict[str], name, value
-    #     :param data_types_dict: dict of data type {name: type}
-    #     :type data_types_dict: dict[str:str]
-    #     """
-    #     # Read JSON if not read already
-    #     self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
-    #     if self.__json_data is None:
-    #         self.__load_json_data()
-    #
-    #     if dataset_identifier not in self.__json_data:
-    #         raise DatasetNotFoundException(dataset_identifier)
-    #
-    #     # Write data
-    #     self.__json_data[dataset_identifier].update({key:self.__datasets_serializer.convert_to_dataset_data(key,
-    #                                                                                     value,
-    #                                                                                     data_types_dict)
-    #                                                 for key, value in values_to_write.items()})
-    #
-    #     self.__save_json_data()
-    #
-    # def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
-    #     """
-    #     Abstract method to get all values from a dataset for a specific API
-    #     :param dataset_identifier: dataset identifier for connector
-    #     :type dataset_identifier: str
-    #     :param data_types_dict: dict of data type {name: type}
-    #     :type data_types_dict: dict[str:str]
-    #     """
-    #     self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
-    #     # Read JSON if not read already
-    #     if self.__json_data is None:
-    #         self.__load_json_data()
-    #
-    #     if dataset_identifier not in self.__json_data:
-    #         raise DatasetNotFoundException(dataset_identifier)
-    #
-    #     dataset_data ={key:self.__datasets_serializer.convert_from_dataset_data(key,
-    #                                                       value,
-    #                                                       data_types_dict)
-    #                     for key, value in self.__json_data[dataset_identifier].items()}
-    #     return dataset_data
-    #
-    #
-    # def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
-    #     """
-    #     Abstract method to overload in order to write a dataset from a specific API
-    #     :param dataset_identifier: dataset identifier for connector
-    #     :type dataset_identifier: str
-    #     :param values_to_write: dict of data to write {name: value}
-    #     :type values_to_write: dict[str:Any]
-    #     :param data_types_dict: dict of data types {name: type}
-    #     :type data_types_dict: dict[str:str]
-    #     :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
-    #     :type create_if_not_exists: bool
-    #     :param override: override dataset if it exists (raises otherwise)
-    #     :type override: bool
-    #     """
-    #     self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
-    #     if dataset_identifier not in self.__json_data:
-    #         # Handle dataset creation
-    #         if create_if_not_exists:
-    #             self.__json_data = {}
-    #         else:
-    #             raise DatasetNotFoundException(dataset_identifier)
-    #     else:
-    #         # Handle override
-    #         if not override:
-    #             raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-    #
-    #     self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
-            
+    def __load_dataset_descriptor(self, dataset_identifier: str):
+        """
+        Method to load data from json file
+        """
+        dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
+        dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
+        if not os.path.exists(dataset_descriptor_path):
+            raise DatasetNotFoundException(dataset_identifier)
+        with open(dataset_descriptor_path, "r", encoding="utf-8") as file:
+            descriptor_data = json.load(fp=file)
+        return descriptor_data
+
+    def __save_dataset_descriptor(self, dataset_identifier:str, descriptor_data:dict[str:Any]):
+        dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
+        dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
+        if not os.path.exists(dataset_descriptor_path):
+            raise DatasetGenericException() from FileNotFoundError(f"The dataset descriptor json file is not found at "
+                                                                   f"{dataset_descriptor_path}")
+        with open(dataset_descriptor_path, "w", encoding="utf-8") as file:
+            json.dump(obj=descriptor_data, fp=file, indent=4)
+
+    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
+        """
+        Method to retrieve data from JSON and fill a data_dict
+
+        :param dataset_identifier: identifier of the dataset
+        :type dataset_identifier: str
+
+        :param data_to_get: data to retrieve, dict of names and types
+        :type data_to_get: dict[str:str]
+        """
+        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
+
+        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
+
+        # Filter data
+        filtered_data = {key:self.__datasets_serializer.convert_from_dataset_data(key,
+                                                                                  dataset_descriptor[key],
+                                                                                  data_to_get)
+                        for key in dataset_descriptor if key in data_to_get}
+        self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
+        return filtered_data
+
+    def get_datasets_available(self) -> list[str]:
+        """
+        Get all available datasets for a specific API
+        """
+        self.__logger.debug(f"Getting all datasets for connector {self}")
+        return next(os.walk(self.__root_directory_path))[1]
+
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+        """
+        Method to write data
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: dict[str], name, value
+        :param data_types_dict: dict of data type {name: type}
+        :type data_types_dict: dict[str:str]
+        """
+        self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
+        # read the already existing values
+        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
+
+        # Write data
+        dataset_descriptor.update({key: self.__datasets_serializer.convert_to_dataset_data(key,
+                                                                                           value,
+                                                                                           data_types_dict)
+                                   for key, value in values_to_write.items()})
+
+        self.__save_dataset_descriptor(dataset_identifier=dataset_identifier,
+                                       descriptor_data=dataset_descriptor)
+
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
+        """
+        Abstract method to get all values from a dataset for a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param data_types_dict: dict of data type {name: type}
+        :type data_types_dict: dict[str:str]
+        """
+        self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
+        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
+
+        dataset_data = {key: self.__datasets_serializer.convert_from_dataset_data(key,
+                                                                                 value,
+                                                                                 data_types_dict)
+                        for key, value in dataset_descriptor.items()}
+
+        return dataset_data
+
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
+        """
+        Abstract method to overload in order to write a dataset from a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: str
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: dict[str:Any]
+        :param data_types_dict: dict of data types {name: type}
+        :type data_types_dict: dict[str:str]
+        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
+        :type create_if_not_exists: bool
+        :param override: override dataset if it exists (raises otherwise)
+        :type override: bool
+        """
+        self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
+        dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
+        dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
+
+        if not os.path.exists(dataset_descriptor_path):
+            # Handle dataset creation
+            if create_if_not_exists:
+                os.makedirs(dataset_directory, exist_ok=True)
+                with open(dataset_descriptor_path, "w", encoding="utf-8") as f:
+                    json.dump({}, f)
+            else:
+                raise DatasetNotFoundException(dataset_identifier)
+        else:
+            # Handle override
+            if not override:
+                raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
+        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)

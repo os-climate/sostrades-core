@@ -35,10 +35,10 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     def __init__(self):
         super().__init__()
-        self.__root_directory_path = None
+        self.__current_dataset_directory = None
 
-    def set_root_directory_path(self, root_directory_path):
-        self.__root_directory_path = root_directory_path
+    def set_dataset_directory(self, dataset_directory):
+        self.__current_dataset_directory = dataset_directory
 
     def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
         '''
@@ -92,13 +92,13 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         return _subpath
 
     def __deserialize_from_filesystem(self, deserialization_function, data_value, *args, **kwargs):
-        if self.__root_directory_path is None:
-            self.__logger.warning(f"Error while trying to deserialize {data_value} because dataset root directory "
+        if self.__current_dataset_directory is None:
+            self.__logger.warning(f"Error while trying to deserialize {data_value} because dataset directory "
                                   f"is undefined")
             return data_value
         else:
             data_subpath = self.__get_data_path(data_value)
-            data_path = join(self.__root_directory_path, data_subpath)
+            data_path = join(self.__current_dataset_directory, data_subpath)
             return deserialization_function(data_path, *args, **kwargs)
 
     def _deserialize_dataframe(self, data_value):
@@ -108,14 +108,14 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         return self.__deserialize_from_filesystem(np.loadtxt, data_value)
 
     def __serialize_into_filesystem(self, serialization_function, data_value, data_name, *args, **kwargs):
-        if self.__root_directory_path is None:
-            self.__logger.warning(f"Error while trying to serialize {data_value} because dataset root directory "
+        if self.__current_dataset_directory is None:
+            self.__logger.warning(f"Error while trying to serialize {data_value} because dataset directory "
                                   f"is undefined")
             return data_value
         else:
             # TODO: may need updating when datasets down to parameter level
             data_subpath = self.EXTENSION_SEP.join((data_name, self.EXTENSION))
-            data_path = join(self.__root_directory_path, data_subpath)
+            data_path = join(self.__current_dataset_directory, data_subpath)
             serialization_function(data_path, data_value, *args, **kwargs)
 
     def __dump_dataframe(self, dump_path, df, *args, **kwargs):
