@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
 from typing import Any
 import pandas as pd
 import numpy as np
@@ -24,6 +25,10 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
     """
     Specific dataset serializer for dataset in json format
     """
+    def __init__(self):
+        super().__init__()
+        self.__logger = logging.getLogger(__name__)
+
     def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
         '''
         Convert data_value into data_type from the connector

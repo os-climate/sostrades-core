@@ -16,6 +16,7 @@ limitations under the License.
 import json
 import logging
 import os
+from shutil import rmtree
 from typing import Any
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException
@@ -177,3 +178,12 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
         self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
+
+    def clear(self, remove_root_directory:bool=False):
+        if remove_root_directory:
+            rmtree(self.__root_directory_path)
+        else:
+            map(self.clear_dataset, self.get_datasets_available())
+
+    def clear_dataset(self, dataset_id:str):
+        rmtree(os.path.join(self.__root_directory_path, dataset_id))

@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
 from typing import Any
 import pandas as pd
 import numpy as np
@@ -35,6 +36,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     def __init__(self):
         super().__init__()
+        self.__logger = logging.getLogger(__name__)
         self.__current_dataset_directory = None
 
     def set_dataset_directory(self, dataset_directory):
@@ -81,7 +83,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     def __get_filesystem_type(self, data_value):
         if isinstance(data_value, str):
             _tmp = data_value.split(self.TYPE_IN_FILESYSTEM_PARTICLE)
-            if len(_tmp) > 3:
+            if len(_tmp) >= 3:
                 _fs_type = _tmp[1]
                 if _fs_type in self.TYPES_IN_FILESYSTEM:
                     return _fs_type
@@ -102,31 +104,36 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             return deserialization_function(data_path, *args, **kwargs)
 
     def _deserialize_dataframe(self, data_value):
-        return self.__deserialize_from_filesystem(pd.read_csv, data_value)
+        return self.__deserialize_from_filesystem(pd.read_csv, data_value, index_col=[0])
 
     def _deserialize_array(self, data_value):
         return self.__deserialize_from_filesystem(np.loadtxt, data_value)
 
-    def __serialize_into_filesystem(self, serialization_function, data_value, data_name, *args, **kwargs):
+    def __serialize_into_filesystem(self, serialization_function, data_value, descriptor_value, *args, **kwargs):
         if self.__current_dataset_directory is None:
             self.__logger.warning(f"Error while trying to serialize {data_value} because dataset directory "
                                   f"is undefined")
             return data_value
         else:
             # TODO: may need updating when datasets down to parameter level
-            data_subpath = self.EXTENSION_SEP.join((data_name, self.EXTENSION))
-            data_path = join(self.__current_dataset_directory, data_subpath)
+            _fname = self.__get_data_path(descriptor_value)
+            data_path = join(self.__current_dataset_directory, _fname)
             serialization_function(data_path, data_value, *args, **kwargs)
+            return descriptor_value
 
     def __dump_dataframe(self, dump_path, df, *args, **kwargs):
         df.to_csv(dump_path, *args, **kwargs)
 
     def _serialize_dataframe(self, data_value, data_name):
-        self.__serialize_into_filesystem(self.__dump_dataframe, data_value, data_name)
+        descriptor_value = self.EXTENSION_SEP.join((
+            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name)),
+            self.EXTENSION))
         # TODO: may need updating when datasets down to parameter level
-        return self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name))
+        return self.__serialize_into_filesystem(self.__dump_dataframe, data_value, descriptor_value)
 
     def _serialize_array(self, data_value, data_name):
-        self.__serialize_into_filesystem(np.savetxt, data_value, data_name)
+        descriptor_value = self.EXTENSION_SEP.join((
+            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name)),
+            self.EXTENSION))
         # TODO: may need updating when datasets down to parameter level
-        return self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name))
+        return self.__serialize_into_filesystem(np.savetxt, data_value, descriptor_value)
