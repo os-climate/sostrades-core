@@ -616,6 +616,7 @@ class TestFuncManager(unittest.TestCase):
         func_df['aggr'] = ['sum', 'sum', 'sum', 'sum', 'delta', 'lin_to_quad', 'lin_to_quad', 'smax', 'sum']
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
+        ee.load_study_from_input_dict(values_dict)
 
         # -- data to simulate disciplinary chain outputs
         values_dict[prefix + 'ineq_cst'] = ineq_cst
@@ -629,8 +630,6 @@ class TestFuncManager(unittest.TestCase):
         values_dict[prefix + 'obj2'] = obj2
         values_dict[prefix + 'aggr_mod_eq'] = 'sum'
         values_dict[prefix + 'aggr_mod_ineq'] = 'smooth_max'
-
-        ee.load_study_from_input_dict(values_dict)
 
         ee.dm.set_data(prefix + 'ineq_cst_array', 'type', 'array')
         ee.dm.set_data(prefix + 'eqcst_delta_array', 'type', 'array')
