@@ -5,5 +5,20 @@
         "connector_args": {
             "file_path":"./sostrades_core/tests/data/test_92_datasets_db.json"
         }
+    },
+    {
+        "connector_id":"MVP0_local_datasets_connector",
+        "connector_type":"Local",
+        "connector_args": {
+            "root_directory_path":"./sostrades_core/tests/data/local_datasets_db/"
+        }
+    },
+    {
+        "connector_id":"MVP0_local_datasets_connector_copy_test",
+        "connector_type":"Local",
+        "connector_args": {
+            "root_directory_path":"./sostrades_core/tests/data/local_datasets_db_copy_test/",
+            "create_if_not_exists": true
+        }
     }
 ]

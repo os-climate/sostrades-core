@@ -520,14 +520,15 @@ class ExecutionEngine:
             self.__yield_method()
 
         #         self.__configure_execution()
-
         # -- Init execute, to fully initialize models in discipline
-        if len(checked_keys):
+        if len(parameter_changes) > 0:
             self.update_from_dm()
-            self.dm.create_reduced_dm()
             if update_status_configure:
                 self.update_status_configure()
-        elif self.dm.reduced_dm is None:
+        else:
+            if self.dm.treeview is not None:
+                self.root_process.status = self.dm.treeview.root.status
+        if self.dm.reduced_dm is None or len(parameter_changes) > 0:
             self.dm.create_reduced_dm()
 
         self.dm.treeview = None
