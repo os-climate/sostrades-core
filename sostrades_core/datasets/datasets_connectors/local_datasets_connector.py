@@ -20,7 +20,6 @@ from shutil import rmtree
 from typing import Any
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException
-from sostrades_core.datasets.datasets_connectors.json_datasets_connector import JSONDatasetsConnector
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
 
 
@@ -53,9 +52,13 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Initializing local connector on {root_directory_path}")
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
 
-    def __load_dataset_descriptor(self, dataset_identifier: str):
+    def __load_dataset_descriptor(self, dataset_identifier: str) -> dict[str: Any]:
         """
-        Method to load data from json file
+        Method to load dataset descriptor from JSON file containing the basic types variables as well as the dataset
+        descriptor values type "@dataframe@d.csv" for the types stored in filesystem.
+        :param dataset_identifier: identifier of the dataset whose descriptor is to be loaded
+        :type dataset_identifier: str
+        :return: dictionary of descriptor keys and values
         """
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
@@ -65,7 +68,16 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
             descriptor_data = json.load(fp=file)
         return descriptor_data
 
-    def __save_dataset_descriptor(self, dataset_identifier:str, descriptor_data:dict[str:Any]):
+    def __save_dataset_descriptor(self, dataset_identifier: str, descriptor_data: dict[str: Any]) -> None:
+        """
+        Method to save dataset descriptor into JSON file containing the basic types variables as well as the dataset
+        descriptor values type "@dataframe@d.csv" for the types stored in filesystem.
+        :param dataset_identifier: identifier of the dataset whose descriptor is to be saved
+        :type dataset_identifier: str
+        :return: dictionary of descriptor keys and values
+        :param descriptor_data: data as it will be saved into te descriptor
+        :type descriptor_data: dict
+        """
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
         if not os.path.exists(dataset_descriptor_path):
@@ -76,7 +88,7 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
 
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
-        Method to retrieve data from JSON and fill a data_dict
+        Method to retrieve data from local dataset and fill a data_dict
 
         :param dataset_identifier: identifier of the dataset
         :type dataset_identifier: str
@@ -100,6 +112,7 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
     def get_datasets_available(self) -> list[str]:
         """
         Get all available datasets for a specific API
+        :return: list of datasets identifiers
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
         return next(os.walk(self.__root_directory_path))[1]
@@ -113,6 +126,7 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
         :type values_to_write: dict[str], name, value
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
+        :return: None
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         # read the already existing values
@@ -135,6 +149,7 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
         :type dataset_identifier: str
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
+        :return: None
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
@@ -160,6 +175,7 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
+        :return: None
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
@@ -179,11 +195,23 @@ class LocalDatasetsConnector(AbstractDatasetsConnector):
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
         self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
-    def clear(self, remove_root_directory:bool=False):
+    def clear(self, remove_root_directory:bool=False) -> None:
+        """
+        Utility method to remove all datasets in the connector root directory.
+        :param remove_root_directory: whether to delete the root directory itself too.
+        :type remove_root_directory: bool
+        :return: None
+        """
         if remove_root_directory:
             rmtree(self.__root_directory_path)
         else:
             map(self.clear_dataset, self.get_datasets_available())
 
-    def clear_dataset(self, dataset_id:str):
+    def clear_dataset(self, dataset_id: str) -> None:
+        """
+        Utility method to remove the directory corresponding to a given dataset_id within the root directory.
+        :param dataset_id: identifier of the dataset to be removed
+        :type dataset_id: str
+        :return: None
+        """
         rmtree(os.path.join(self.__root_directory_path, dataset_id))
