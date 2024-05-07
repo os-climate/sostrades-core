@@ -528,7 +528,9 @@ class ExecutionEngine:
         else:
             if self.dm.treeview is not None:
                 self.root_process.status = self.dm.treeview.root.status
-        if self.dm.reduced_dm is None or len(parameter_changes) > 0:
+
+        # Reduced dm recreation might be necessary without value change (i.e. a type changed during config.)
+        if checked_keys or self.dm.reduced_dm is None:
             self.dm.create_reduced_dm()
 
         self.dm.treeview = None

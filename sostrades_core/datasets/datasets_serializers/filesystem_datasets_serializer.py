@@ -14,12 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from typing import Any
+from typing import Any, Callable
 import pandas as pd
 import numpy as np
 from os.path import join
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import JSONDatasetsSerializer
+from sostrades_core.tools.tree.serializer import CSV_SEP
+from sostrades_core.tools.tree.deserialization import isevaluatable
+
+
+# Utility functions that mimic exactly the fashion in which api loads and saves dataframes from/to .csv
+def _save_dataframe(file_path: str, df: pd.DataFrame) -> None:
+    df.to_csv(file_path, sep=CSV_SEP, header=True, index=False)
+
+
+def _load_dataframe(file_path: str) -> pd.DataFrame:
+    df_value = pd.read_csv(file_path, na_filter=False)
+    return df_value.applymap(isevaluatable)
 
 
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
@@ -40,6 +52,9 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         self.__current_dataset_directory = None
 
     def set_dataset_directory(self, dataset_directory):
+        """
+        Define the current dataset directory where specific data types will be serialized.
+        """
         self.__current_dataset_directory = dataset_directory
 
     def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
@@ -80,7 +95,13 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         else:
             return data_value
 
-    def __get_filesystem_type(self, data_value):
+    def __get_filesystem_type(self, data_value: str) -> str:
+        """
+        Get the dataset descriptor type for a filesystem stored variable (e.g. dataframe, array)
+        :param data_value: dataset descriptor value (e.g. @dataframe@d.csv)
+        :type data_value: str
+        :return: the dataset descriptor type (e.g. dataframe) or None if the variable does not have the @type@ prefix.
+        """
         if isinstance(data_value, str):
             _tmp = data_value.split(self.TYPE_IN_FILESYSTEM_PARTICLE)
             if len(_tmp) >= 3:
@@ -88,52 +109,81 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
                 if _fs_type in self.TYPES_IN_FILESYSTEM:
                     return _fs_type
 
-    def __get_data_path(self, data_value):
+    def __get_data_path(self, data_value: str) -> str:
+        """
+        Get the dataset descriptor path for a filesystem stored variable (e.g. dataframe, array) without sanity check.
+        :param data_value: dataset descriptor value (e.g. @dataframe@d.csv)
+        :type data_value: str
+        :return: the dataset descriptor path (e.g. d.csv).
+        """
         _tmp = data_value.split(self.TYPE_IN_FILESYSTEM_PARTICLE)
         _subpath = self.TYPE_IN_FILESYSTEM_PARTICLE.join(_tmp[2:])
         return _subpath
 
-    def __deserialize_from_filesystem(self, deserialization_function, data_value, *args, **kwargs):
+    def __deserialize_from_filesystem(self, deserialization_function: Callable[[str, ...], Any], descriptor_value: str,
+                                      *args, **kwargs) -> Any:
+        """
+        Wrapper for a deserialization from filesystem function.
+        :param deserialization_function: function to deserialize a given type taking the filesystem path.
+        :type deserialization_function: callable
+        :param descriptor_value: dataset descriptor value for the variable (e.g. "@dataframe@d.csv")
+        :type descriptor_value: str
+        :param args: for deserialization_function
+        :param kwargs: for deserialization_function
+        :return: the deserialized value for the variable
+        """
         if self.__current_dataset_directory is None:
-            self.__logger.warning(f"Error while trying to deserialize {data_value} because dataset directory "
+            self.__logger.warning(f"Error while trying to deserialize {descriptor_value} because dataset directory "
                                   f"is undefined")
-            return data_value
+            return descriptor_value
         else:
-            data_subpath = self.__get_data_path(data_value)
+            data_subpath = self.__get_data_path(descriptor_value)
             data_path = join(self.__current_dataset_directory, data_subpath)
             return deserialization_function(data_path, *args, **kwargs)
 
-    def _deserialize_dataframe(self, data_value):
-        return self.__deserialize_from_filesystem(pd.read_csv, data_value, index_col=[0])
-
-    def _deserialize_array(self, data_value):
-        return self.__deserialize_from_filesystem(np.loadtxt, data_value)
-
-    def __serialize_into_filesystem(self, serialization_function, data_value, descriptor_value, *args, **kwargs):
+    def __serialize_into_filesystem(self, serialization_function: Callable[[str, Any, ...], None], data_value: Any,
+                                    descriptor_value: str, *args, **kwargs):
+        """
+        Wrapper for a serialization into filesystem function.
+        :param serialization_function: function to serialize a given type taking the filesystem path and object.
+        :type serialization_function: callable
+        :param data_value: variable value
+        :type data_value: Any
+        :param descriptor_value: dataset descriptor value for the variable (e.g. "@dataframe@d.csv")
+        :type descriptor_value: str
+        :param args: for serialization_function
+        :param kwargs: for serialization_function
+        :return: dataset descriptor value for the variable (e.g. "@dataframe@d.csv")
+        """
         if self.__current_dataset_directory is None:
             self.__logger.warning(f"Error while trying to serialize {data_value} because dataset directory "
                                   f"is undefined")
             return data_value
         else:
-            # TODO: may need updating when datasets down to parameter level
+            # TODO: may need updating when datasets down to parameter level as assuming that the filename is linked to data name.
             _fname = self.__get_data_path(descriptor_value)
             data_path = join(self.__current_dataset_directory, _fname)
             serialization_function(data_path, data_value, *args, **kwargs)
             return descriptor_value
 
-    def __dump_dataframe(self, dump_path, df, *args, **kwargs):
-        df.to_csv(dump_path, *args, **kwargs)
+    def _deserialize_dataframe(self, data_value: str) -> pd.DataFrame:
+        # NB: dataframe csv deserialization as in webapi
+        return self.__deserialize_from_filesystem(_load_dataframe, data_value)
 
-    def _serialize_dataframe(self, data_value, data_name):
+    def _deserialize_array(self, data_value: str) -> np.ndarray:
+        # NB: to be improved with astype(subtype) along subtype management
+        return self.__deserialize_from_filesystem(np.loadtxt, data_value)
+
+    def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name)),
             self.EXTENSION))
-        # TODO: may need updating when datasets down to parameter level
-        return self.__serialize_into_filesystem(self.__dump_dataframe, data_value, descriptor_value)
+        # NB: dataframe csv serialization as in webapi
+        return self.__serialize_into_filesystem(_save_dataframe, data_value, descriptor_value)
 
-    def _serialize_array(self, data_value, data_name):
+    def _serialize_array(self, data_value: np.ndarray, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name)),
             self.EXTENSION))
-        # TODO: may need updating when datasets down to parameter level
+        # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, descriptor_value)

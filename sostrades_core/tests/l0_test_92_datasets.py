@@ -208,7 +208,6 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(z_parameterchanges[1].dataset_id, 'dataset_sellar')
         self.assertEqual(z_parameterchanges[1].connector_id, 'MVP0_datasets_connector')
 
-
     def test_07_datasets_local_connector_with_all_non_nested_types(self):
         """
         Check correctness of loaded values after loading a handcrafted local directories' dataset,  testing usage of
@@ -235,7 +234,7 @@ class TestDatasets(unittest.TestCase):
     def test_08_json_to_local_connector_conversion_and_loading(self):
         """
         Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
-        thus testing ability of LocalConnector to write values.
+        thus testing ability of LocalConnector to both write and load values.
         """
         from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
             DatasetsConnectorManager,
