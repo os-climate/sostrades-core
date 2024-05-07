@@ -20,8 +20,18 @@ import numpy as np
 from os.path import join
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import JSONDatasetsSerializer
-# from sostrades_core.tools.tree.serializer import CSV_SEP
-# from sos_trades_api.tools.code_tools import isevaluatable
+from sostrades_core.tools.tree.serializer import CSV_SEP
+from sostrades_core.tools.tree.deserialization import isevaluatable
+
+
+# Utility functions that mimic exactly the fashion in which api loads and saves dataframes from/to .csv
+def _save_dataframe(file_path: str, df: pd.DataFrame) -> None:
+    df.to_csv(file_path, sep=CSV_SEP, header=True, index=False)
+
+
+def _load_dataframe(file_path: str) -> pd.DataFrame:
+    df_value = pd.read_csv(file_path, na_filter=False)
+    return df_value.applymap(isevaluatable)
 
 
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
@@ -131,12 +141,6 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             data_path = join(self.__current_dataset_directory, data_subpath)
             return deserialization_function(data_path, *args, **kwargs)
 
-    def _deserialize_dataframe(self, data_value: str) -> pd.DataFrame:
-        return self.__deserialize_from_filesystem(pd.read_csv, data_value, index_col=[0])
-
-    def _deserialize_array(self, data_value: str) -> np.ndarray:
-        return self.__deserialize_from_filesystem(np.loadtxt, data_value)
-
     def __serialize_into_filesystem(self, serialization_function: Callable[[str, Any, ...], None], data_value: Any,
                                     descriptor_value: str, *args, **kwargs):
         """
@@ -162,17 +166,24 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             serialization_function(data_path, data_value, *args, **kwargs)
             return descriptor_value
 
-    def __dump_dataframe(self, dump_path: str, df: pd.DataFrame, *args, **kwargs) -> None:
-        df.to_csv(dump_path, *args, **kwargs)
+    def _deserialize_dataframe(self, data_value: str) -> pd.DataFrame:
+        # NB: dataframe csv deserialization as in webapi
+        return self.__deserialize_from_filesystem(_load_dataframe, data_value)
+
+    def _deserialize_array(self, data_value: str) -> np.ndarray:
+        # NB: to be improved with astype(subtype) along subtype management
+        return self.__deserialize_from_filesystem(np.loadtxt, data_value)
 
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name)),
             self.EXTENSION))
-        return self.__serialize_into_filesystem(self.__dump_dataframe, data_value, descriptor_value)
+        # NB: dataframe csv serialization as in webapi
+        return self.__serialize_into_filesystem(_save_dataframe, data_value, descriptor_value)
 
     def _serialize_array(self, data_value: np.ndarray, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name)),
             self.EXTENSION))
+        # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, descriptor_value)
