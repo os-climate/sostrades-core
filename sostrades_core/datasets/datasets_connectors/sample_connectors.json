@@ -24,7 +24,7 @@
         "connector_id":"MVP0_local_datasets_connector_for_witness_coarse_dev",
         "connector_type":"Local",
         "connector_args": {
-            "root_directory_path":"../../models/witness-core/climateeconomics/test/data/datasets/local_datasets_db.json"
+            "root_directory_path":"../../models/witness-core/climateeconomics/test/data/datasets/local_datasets_db/"
         }
     }
 ]
