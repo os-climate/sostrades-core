@@ -14,11 +14,17 @@
         }
     },
     {
-        "connector_id":"MVP0_local_datasets_connector_copy_test",
+        "connector_id":"MVP0_JSON_connector_for_witness_coarse_dev",
+        "connector_type":"JSON",
+        "connector_args": {
+            "file_path":"../../models/witness-core/climateeconomics/test/data/datasets/witness_coarse_dev_storytelling_test_dataset_db.json"
+        }
+    },
+    {
+        "connector_id":"MVP0_local_datasets_connector_for_witness_coarse_dev",
         "connector_type":"Local",
         "connector_args": {
-            "root_directory_path":"./sostrades_core/tests/data/local_datasets_db_copy_test/",
-            "create_if_not_exists": true
+            "root_directory_path":"../../models/witness-core/climateeconomics/test/data/datasets/witness_coarse_dev_storytelling_test_dataset_db.json"
         }
     }
 ]
