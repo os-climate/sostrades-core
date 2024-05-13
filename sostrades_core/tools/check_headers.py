@@ -157,7 +157,7 @@ class HeaderTools:
         :type file_path: str
         """
 
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
 
         cartouche_match = re.search(
