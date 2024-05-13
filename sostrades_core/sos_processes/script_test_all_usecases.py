@@ -507,21 +507,18 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
                 study_2.ee.dm.set_values_from_dict({max_mdo_iter_var: 1 for max_mdo_iter_var in max_iter_mdo_var_names})
             max_iter_mda_vars_name = study_2.ee.dm.get_all_namespaces_from_var_name("max_mda_iter")
             study_2.ee.dm.set_values_from_dict({mda_max_iter_var: 2 for mda_max_iter_var in max_iter_mda_vars_name})
-            if not study_2.ee.factory.contains_mdo or force_run:
-                post_processing_passed, error_msg_post_processing = test_post_processing_study(
-                    study=study_2, force_run=force_run)
-                test_passed = post_processing_passed
-                info_msg += error_msg_post_processing
+            post_processing_passed, error_msg_post_processing = test_post_processing_study(
+                study=study_2, force_run=force_run)
+            test_passed = post_processing_passed
+            info_msg += error_msg_post_processing
 
-                if post_processing_passed and not study_2.ee.factory.contains_mdo:
-                    if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
-                        run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
-                        test_passed = run_test_passed
-                        info_msg += error_msg_run
-                    else:
-                        info_msg += f"\nINFO: {usecase}, double run not tested because usecase is MDA with strong couplings"
-            else:
-                info_msg += f"\nINFO: {usecase}, post processing and double run not tested because usecase is MDO"
+            if post_processing_passed and not study_2.ee.factory.contains_mdo:
+                if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
+                    run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
+                    test_passed = run_test_passed
+                    info_msg += error_msg_run
+                else:
+                    info_msg += f"\nINFO: {usecase}, double run not tested because usecase is MDA with strong couplings"
 
             run_test_check_outputs(usecase)
 
