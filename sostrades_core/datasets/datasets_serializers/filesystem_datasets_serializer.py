@@ -18,6 +18,8 @@ from typing import Any, Callable
 import pandas as pd
 import numpy as np
 from os.path import join
+import pickle as pkl
+
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import JSONDatasetsSerializer
 from sostrades_core.tools.tree.serializer import CSV_SEP
@@ -34,6 +36,16 @@ def _load_dataframe(file_path: str) -> pd.DataFrame:
     return df_value.applymap(isevaluatable)
 
 
+def _save_pkl(file_path: str, obj: Any) -> None:
+    with open(file_path, 'wb') as w:
+        pkl.dump(obj, w)
+
+
+def _load_pkl(file_path: str) -> Any:
+    with open(file_path, 'rb') as r:
+        return pkl.load(r)
+
+
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     """
     Specific dataset serializer for dataset
@@ -42,7 +54,9 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     TYPE_IN_FILESYSTEM_PARTICLE = '@'
     TYPE_DATAFRAME = 'dataframe'
     TYPE_ARRAY = 'array'
-    EXTENSION = 'csv'
+    TYPE_OBJECT = 'object'
+    CSV_EXTENSION = 'csv'
+    PKL_EXTENSION = 'pkl'
     EXTENSION_SEP = '.'
     TYPES_IN_FILESYSTEM = {TYPE_DATAFRAME, TYPE_ARRAY}
 
@@ -76,12 +90,21 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         if data_name in data_types_dict:
             # unknown data type is handled in mother class method
             data_type = data_types_dict[data_name]
+
+            # shortcut and load from pickle if an @object@ is encountered, in which case no need to check data type
+            # this if clause is to be deleted when the subtype management based on descriptors is implemented(
+            if filesystem_type == self.TYPE_OBJECT:
+                self.__logger.debug(f"Loading {data_name} with filesystem descriptor {data_value} into the type "
+                                    f"{data_type} required by the process.")
+                return self._deserialize_object(data_value)
+
             # insane if there is an @...@ descriptor that is unknown or mismatching
-            if filesystem_type is not None and filesystem_type != data_type:
+            elif filesystem_type is not None and filesystem_type != data_type:
                 sanity = False
                 self.__logger.warning(f"Error while trying to load {data_name} with filesystem descriptor "
                                       f"{data_value} into the type {data_type} required by the process. Types"
                                       f"supported for storage in filesystem are {self.TYPES_IN_FILESYSTEM}")
+
             # insane if there is no @...@ for a data type expecting it
             elif filesystem_type is None and data_type in self.TYPES_IN_FILESYSTEM:
                 sanity = False
@@ -94,6 +117,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
                                                      data_types_dict=data_types_dict)
         else:
             return data_value
+
 
     def __get_filesystem_type(self, data_value: str) -> str:
         """
@@ -174,16 +198,29 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         # NB: to be improved with astype(subtype) along subtype management
         return self.__deserialize_from_filesystem(np.loadtxt, data_value)
 
+    def _deserialize_object(self, data_value: str) -> Any:
+        return self.__deserialize_from_filesystem(_load_pkl, data_value)
+
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
+        # TODO: TEST whether api serialization methods suffice for dataframe nested types
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name)),
-            self.EXTENSION))
+            self.CSV_EXTENSION))
         # NB: dataframe csv serialization as in webapi
         return self.__serialize_into_filesystem(_save_dataframe, data_value, descriptor_value)
 
     def _serialize_array(self, data_value: np.ndarray, data_name: str) -> str:
+        # TODO: [discuss] using pickle storage for anything that has dtype object
+        if data_value.dtype == np.dtype('O'):
+            return self._serialize_object(data_value, data_name)
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name)),
-            self.EXTENSION))
+            self.CSV_EXTENSION))
         # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, descriptor_value)
+
+    def _serialize_object(self, data_value: Any, data_name: str) -> str:
+        descriptor_value = self.EXTENSION_SEP.join((
+            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_OBJECT, data_name)),
+            self.PKL_EXTENSION))
+        return self.__serialize_into_filesystem(_save_pkl, data_value, descriptor_value)
