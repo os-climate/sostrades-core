@@ -108,4 +108,4 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
         return pd.DataFrame.to_dict(data_value, 'list')
 
     def _serialize_array(self, data_value, data_name):
-        return list(data_value)  # why not tolist() ?
+        return data_value.tolist()

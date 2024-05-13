@@ -239,6 +239,14 @@ class TestDatasets(unittest.TestCase):
         from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
             DatasetsConnectorManager,
         )
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
+        connector_args = {
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
+            "create_if_not_exists": True
+        }
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    **connector_args)
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
