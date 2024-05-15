@@ -23,15 +23,15 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
 
 
-class LocalDatasetsConnector(AbstractDatasetsConnector):
+class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
     """
     Specific dataset connector for dataset in local filesystem
     """
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
 
     def __init__(self, root_directory_path: str,
-                 create_if_not_exists: bool=False,
-                 serializer_type:DatasetSerializerType=DatasetSerializerType.FileSystem):
+                 create_if_not_exists: bool = False,
+                 serializer_type: DatasetSerializerType = DatasetSerializerType.FileSystem):
         """
         Constructor for JSON data connector
 
