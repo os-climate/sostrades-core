@@ -1,5 +1,6 @@
 """
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,10 +17,9 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 from sys import maxsize
 
-from numpy import ones, inf, array
-
 from gemseo.problems.analytical.knapsack import Knapsack
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from numpy import array, inf, ones
+
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 

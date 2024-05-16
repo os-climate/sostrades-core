@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/06 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
-from os.path import join, dirname
+from os.path import dirname, join
 from pathlib import Path
 from shutil import rmtree
 
@@ -164,8 +159,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
         eval_inputs_cp = pd.DataFrame({'selected_input': [True, False, True, False],
                                        'full_name': [f'subprocess.{disc1_name}.a',
                                                      f'subprocess.{disc1_name}.b',
-                                                     f'x',
-                                                     f'subprocess.Disc2.power'],
+                                                     'x',
+                                                     'subprocess.Disc2.power'],
                                        'list_of_values': [a_list, [], x_list, []]
                                        })
         disc_dict[f'{self.ee.study_name}.Eval.with_sample_generator'] = True

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/17-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/17-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,37 +14,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-import numpy as np
-from copy import deepcopy, copy
-from multiprocessing import cpu_count
-from pandas import DataFrame, concat
 import logging
-from os import getenv
-
-from sostrades_core.execution_engine.ns_manager import NS_SEP
-from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.tools.filter.filter import filter_variables_to_convert
-from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-
-from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
-from gemseo.mda.sequential_mda import MDASequential
-
 from collections import ChainMap
-from numpy import ndarray
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
-    TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from copy import copy, deepcopy
+from multiprocessing import cpu_count
+from os import getenv
 from typing import List
 
-if getenv("USE_PETSC", "").lower() in ("true", "1"):
-    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import PetscKSPAlgos as ksp_lib_petsc
+import numpy as np
+from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.mda.sequential_mda import MDASequential
+from numpy import ndarray
+from pandas import DataFrame, concat
 
-# from sostrades_core.execution_engine.parallel_execution.sos_parallel_mdo_chain import SoSParallelChain
+from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.ns_manager import NS_SEP
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_discipline_builder import (
+    ProxyDisciplineBuilder,
+)
+from sostrades_core.tools.filter.filter import filter_variables_to_convert
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+    InstanciatedSeries,
+    TwoAxesInstanciatedChart,
+)
+
+if getenv("USE_PETSC", "").lower() in ("true", "1"):
+    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import (
+        PetscKSPAlgos as ksp_lib_petsc,
+    )
+
 
 N_CPUS = cpu_count()
 

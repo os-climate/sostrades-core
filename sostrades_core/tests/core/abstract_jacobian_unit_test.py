@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
+import glob
+import inspect
+import logging
+import os
 import unittest
 from abc import ABC, abstractmethod
-
-import inspect
-
-import glob
 from importlib import import_module
-from os.path import join, basename, dirname
-import os
-import logging
 from multiprocessing import Process
+from os.path import basename, dirname, join
+
 from gemseo.core.discipline import MDODiscipline
 
 PROCESS_IN_PARALLEL = 5
@@ -68,8 +64,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                 self.override_dump_jacobian = True
                 entry()
             except Exception as ex:
-                local_logger.exception(
-                    f'Jacobian fail on {str(entry)}')
+                local_logger.exception(f'Jacobian fail on {str(entry)}', exc_info=ex)
 
     @property
     def dump_jacobian(self):

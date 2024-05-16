@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/27-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/27-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from numpy import float64 as np_float64
+from numpy import int32 as np_int32
+from numpy import int64 as np_int64
+
 from sostrades_core.sos_wrapping.valueblock_discipline import ValueBlockDiscipline
 from sostrades_core.tools.sumdfdict.toolboxsum import toolboxsum
-from numpy import int32 as np_int32, float64 as np_float64, int64 as np_int64
 
 
 class SumValueBlockDiscipline(ValueBlockDiscipline):

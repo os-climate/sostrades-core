@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/11/14 Copyright 2023 Capgemini
+Modifications on 2023/11/14-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +14,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import plotly.graph_objects as go
+
+from sostrades_core.tools.post_processing.charts.two_axes_chart_template import (
+    SeriesTemplate,
+    TwoAxesChartTemplate,
+)
+from sostrades_core.tools.post_processing.post_processing_tools import (
+    escape_str_with_comma,
+)
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a 2 dimensional instantiated chart 
 """
-import plotly.graph_objects as go
-from sostrades_core.tools.post_processing.post_processing_tools import escape_str_with_comma
-from sostrades_core.tools.post_processing.charts.two_axes_chart_template import TwoAxesChartTemplate, SeriesTemplate
 
 
 class InstanciatedSeriesException(Exception):
@@ -70,7 +76,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
         cumulated_dictionary = {}
         merged_abscissa = []
 
-        if self.cumulative_surface == True:
+        if self.cumulative_surface:
             cumulative_surface_value = TwoAxesInstanciatedChart.CUMULATIVE_TO_ZERO_Y
 
             # Homogeneize ordinate for all series
@@ -91,7 +97,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
             abscissa = []
 
             # first series to add (initialize cumulative surface value)
-            if self.cumulative_surface == True and cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_ZERO_Y:
+            if self.cumulative_surface and cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_ZERO_Y:
 
                 abscissa = merged_abscissa
 
@@ -103,7 +109,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
 
                 cumulated_values = list(cumulated_dictionary.values())
 
-            elif self.cumulative_surface == True and cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_NEXT_Y:
+            elif self.cumulative_surface and cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_NEXT_Y:
 
                 abscissa = merged_abscissa
                 abscissa_filtered = serie.abscissa_filtered(logger)
@@ -119,7 +125,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                 abscissa = serie.abscissa_filtered(logger)
                 cumulated_values = serie.ordinate_filtered(logger)
 
-            if self.cumulative_surface == True and \
+            if self.cumulative_surface and \
                     (cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_ZERO_Y or cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_NEXT_Y):
 
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name, visible=True if serie.visible else 'legendonly',

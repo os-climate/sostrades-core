@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,12 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import numpy as np
+
 '''
 Exp_min function minimize an array with a min_value with a smooth decreasing exponential 
 The gradient of this function can also be used
 '''
-
-import numpy as np
 
 
 def compute_func_with_exp_min(values, min_value):
@@ -31,7 +32,7 @@ def compute_func_with_exp_min(values, min_value):
     if min_value < 0:
         raise Exception('The function is not suitable for negative min_value')
 
-    if type(values) != type(np.array([])):
+    if not isinstance(values, type(np.array([]))):
         raise Exception('The function uses np.array as values argument')
     if values.min() < min_value:
         values_copy = values.copy()
@@ -41,8 +42,7 @@ def compute_func_with_exp_min(values, min_value):
         # than min_value
         # To avoid underflow : exp(-200) is considered to be the
         # minimum value for the exp
-        values_copy[values_copy < -200.0 *
-                    min_value] = -200.0 * min_value
+        values_copy[values_copy < -200.0 * min_value] = -200.0 * min_value
 
         min_array = np.ones(len(values_copy)) * min_value
         values_new = np.maximum(
@@ -58,10 +58,9 @@ def compute_dfunc_with_exp_min(values, min_value):
 
     if min_value < 0:
         raise Exception('The function is not suitable for negative min_value')
-    if type(values) != type(np.array([])):
+    if not isinstance(values, type(np.array([]))):
         raise Exception('The function uses np.array as values argument')
-    dvalues = np.ones(
-        len(values))
+    dvalues = np.ones(len(values))
     if values.min() < min_value:
         values_copy = values.copy()
             # To avoid underflow : exp(-200) is considered to be the

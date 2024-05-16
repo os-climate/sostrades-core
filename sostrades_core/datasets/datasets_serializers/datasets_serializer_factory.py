@@ -13,13 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from enum import Enum
 import logging
-from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer import AbstractDatasetsSerializer
+from enum import Enum
+
+from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer import (
+    AbstractDatasetsSerializer,
+)
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
 )
-
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 

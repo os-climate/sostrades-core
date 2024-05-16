@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from __future__ import annotations
-from dataclasses import dataclass
-import os
+
 import json
+import os
+from dataclasses import dataclass
 
 from sostrades_core.datasets.dataset_info import DatasetInfo
 

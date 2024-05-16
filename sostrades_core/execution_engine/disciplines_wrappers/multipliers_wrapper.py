@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,34 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import copy
+import logging
 import re
 
-import platform
-from tqdm import tqdm
-import time
-
-from numpy import array, ndarray, delete, NaN
-
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+import pandas as pd
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-import logging
-
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
+    SampleGeneratorWrapper,
+)
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
-from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
-    CartesianProductSampleGenerator
-import pandas as pd
-import numpy as np
-from collections import ChainMap
-from gemseo.api import get_available_doe_algorithms
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class MultipliersWrapper(SoSWrapp):

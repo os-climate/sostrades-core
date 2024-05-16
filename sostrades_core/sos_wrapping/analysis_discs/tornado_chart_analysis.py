@@ -15,22 +15,23 @@ limitations under the License.
 '''
 
 import logging
+
 import numpy as np
 import pandas as pd
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 from sostrades_core.execution_engine.sample_generators.tornado_chart_analysis_sample_generator import (
     TornadoChartAnalysisSampleGenerator,
 )
-from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
     InstanciatedSeries,
     TwoAxesInstanciatedChart,
 )
-from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
 
 
 class TornadoChartAnalysis(SoSWrapp):

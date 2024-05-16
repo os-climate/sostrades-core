@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from sostrades_core.tools.scenario.scenario import Scenario
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
-
-from sostrades_core.tools.scenario.scenario import Scenario
 
 
 class ScenarioManager:

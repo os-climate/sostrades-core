@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,32 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import copy
-import logging
+import unittest
+from importlib import import_module
 from logging import Handler
-from time import time
+from os.path import dirname, join
 
+import pandas as pd
+from numpy import array, std
 from pandas._testing import assert_frame_equal
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-unit test for doe scenario
-"""
-
-import unittest
-from numpy import array, std, NaN
-import pandas as pd
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
+    SampleGeneratorWrapper,
+)
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
-import os
-from os.path import dirname, join
-import math
-
-from importlib import import_module
-
+"""
+unit test for doe scenario
+"""
 
 class UnitTestHandler(Handler):
     """
@@ -201,9 +192,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ Simple_Disc',
-                       f'\t|_ SampleGenerator',
-                       f'\t|_ Eval',
+                       '\t|_ Simple_Disc',
+                       '\t|_ SampleGenerator',
+                       '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
@@ -343,7 +334,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ Simple_Disc1',
+                       '\t|_ Simple_Disc1',
                        '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
@@ -463,9 +454,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ Simple_Disc',
-                       f'\t|_ SampleGenerator',
-                       f'\t|_ Eval',
+                       '\t|_ Simple_Disc',
+                       '\t|_ SampleGenerator',
+                       '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
@@ -536,7 +527,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ root',
-                       f'\t|_ Eval',
+                       '\t|_ Eval',
                        '\t\t|_ Disc1']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
@@ -618,7 +609,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {study_name}',
                        '|_ root',
-                       f'\t|_ UpperCoupling',
+                       '\t|_ UpperCoupling',
                        '\t\t|_ LowerCoupling',
                        '\t\t\t|_ Disc1',
                        '\t\t\t|_ Disc2']
@@ -675,7 +666,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ root',
                        '\t|_ SampleGenerator',
-                       f'\t|_ Eval',
+                       '\t|_ Eval',
                        '\t\t|_ Disc1',
                        ]
         exp_tv_str = '\n'.join(exp_tv_list)
@@ -920,8 +911,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         # assert x_all_nan == True
 
     def test_9_nested_very_simple_multi_scenarios(self):
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver.usecase_without_ref import \
-            Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver.usecase_without_ref import (
+            Study,
+        )
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1004,8 +996,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         whereas the inner multi scenario driver represents scenarios on the Production process. The test is load from a
         usecase and it checks only the treeviews both for namespaces and for proxy objects.
         """
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver_archibuilder.usecase import \
-            Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver_archibuilder.usecase import (
+            Study,
+        )
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1127,8 +1120,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         """
         This test checks the usecase import capability in multi instance mode.
         """
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -1213,8 +1204,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         are non-trade variables.
         '''
 
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import \
-            Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import (
+            Study,
+        )
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1571,8 +1563,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
         are non-trade variables.
         '''
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref_2 import \
-            Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref_2 import (
+            Study,
+        )
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1832,8 +1825,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         """
         This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val. 
         """
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 

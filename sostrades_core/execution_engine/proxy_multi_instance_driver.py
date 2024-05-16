@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import copy
-import pandas as pd
+
 import numpy as np
-from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+import pandas as pd
+
 from sostrades_core.execution_engine.builder_tools.scatter_tool import ScatterTool
+from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 
 
 class ProxyMultiInstanceDriverException(Exception):
@@ -641,7 +642,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                     new_key = key.split(self.sos_name, 1)[0] + self.sos_name + '.' + sc + \
                               key.split(self.sos_name,
                                         1)[-1].split(self.REFERENCE_SCENARIO_NAME, 1)[-1]
-                elif self.REFERENCE_SCENARIO_NAME in key and not self.sos_name in key:
+                elif self.REFERENCE_SCENARIO_NAME in key and self.sos_name not in key:
                     new_key = key.split(self.REFERENCE_SCENARIO_NAME, 1)[
                                   0] + sc + key.split(self.REFERENCE_SCENARIO_NAME, 1)[-1]
                 else:

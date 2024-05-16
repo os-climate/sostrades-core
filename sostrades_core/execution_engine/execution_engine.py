@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2024/04/10 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-from typing import Any, Callable, Union, Optional
 # Execution engine SoSTrades code
 import logging
-import json 
+from typing import Any, Callable, Optional, Union
 
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.execution_engine.data_manager import DataManager
-from sostrades_core.execution_engine.sos_factory import SosFactory
+from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
+from sostrades_core.execution_engine.data_manager import DataManager, ParameterChange
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
+from sostrades_core.execution_engine.post_processing_manager import (
+    PostProcessingManager,
+)
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
-from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-from sostrades_core.execution_engine.data_manager import ParameterChange
+from sostrades_core.execution_engine.sos_factory import SosFactory
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'

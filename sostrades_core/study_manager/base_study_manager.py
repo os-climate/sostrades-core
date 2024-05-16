@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/09-2024/03/20 Copyright 2023 Capgemini
+Modifications on 2023/03/09-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,27 +14,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from copy import deepcopy
+from importlib import import_module
+from logging import DEBUG, INFO
+from os import remove
+from os.path import exists, isdir, join
+from time import time
+from typing import Optional, Union
+
+from gemseo.utils.compare_data_manager_tooling import compare_dict
+
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.post_processing.post_processing_factory import (
+    PostProcessingFactory,
+)
+from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump, DirectLoadDump
+from sostrades_core.tools.tree.serializer import DataSerializer
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that manage a whole study process (load, execute, save, dump..)
 """
-from typing import Union, Optional
-from time import time
-from importlib import import_module
-from os.path import join, isdir, exists
-from logging import INFO, DEBUG
-from os import remove
-
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-# from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-from sostrades_core.tools.tree.serializer import DataSerializer
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump, AbstractLoadDump
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from copy import deepcopy
-from gemseo.utils.compare_data_manager_tooling import compare_dict
 
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20
@@ -439,10 +441,10 @@ class BaseStudyManager():
 
         else:
             print(f'Study {study_display_name} is configured not to run.')
-            print(f'Skipping execute.')
+            print('Skipping execute.')
             logger.info(
                 f'Study {study_display_name} is configured not to run.')
-            logger.info(f'Skipping execute.')
+            logger.info('Skipping execute.')
 
         # Method after execute and before dump
         try:
@@ -520,14 +522,14 @@ class BaseStudyManager():
             self.execution_engine.get_anonimated_data_dict())
 
         logger.info(
-            f'------ Check post-processing integrity ------')
+            '------ Check post-processing integrity ------')
         ppf = PostProcessingFactory()
         ppf.get_all_post_processings(
             execution_engine=self.execution_engine, filters_only=False,
             for_test=True)
 
         logger.info(
-            f'------ Check data manager integrity after post-processing calls ------')
+            '------ Check data manager integrity after post-processing calls ------')
 
         # Save data manager after post-processing
         dm_dict_after = deepcopy(
@@ -688,7 +690,7 @@ class BaseStudyManager():
 
         if not isinstance(rw_strategy, AbstractLoadDump):
             raise TypeError(
-                f'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
 
         if study_folder_path is not None:
             serializer = DataSerializer()
@@ -712,7 +714,7 @@ class BaseStudyManager():
 
         if not isinstance(rw_strategy, AbstractLoadDump):
             raise TypeError(
-                f'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
 
         if isdir(study_folder_path):
             serializer = DataSerializer()
@@ -739,7 +741,7 @@ class BaseStudyManager():
 
         if not isinstance(rw_strategy, AbstractLoadDump):
             raise TypeError(
-                f'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
 
         result = []
 

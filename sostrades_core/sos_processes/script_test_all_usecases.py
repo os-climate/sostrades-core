@@ -13,28 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from typing import Union, Optional
-
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-
-"""
-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-"""
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
-from importlib import import_module
-from os.path import dirname, isdir, join
-from os import listdir, makedirs, environ
 import logging
-
-from copy import deepcopy
-from tempfile import gettempdir
-import traceback
-from gemseo.utils.compare_data_manager_tooling import compare_dict, \
-    delete_keys_from_dict
-from multiprocessing import Process, Queue
-from queue import Empty
 import time
+import traceback
+from copy import deepcopy
+from importlib import import_module
+from multiprocessing import Process, Queue
+from os import environ, listdir, makedirs
+from os.path import dirname, isdir, join
+from queue import Empty
+from tempfile import gettempdir
+from typing import Optional, Union
+
+from gemseo.utils.compare_data_manager_tooling import (
+    compare_dict,
+    delete_keys_from_dict,
+)
+
+from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
+from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.post_processing.post_processing_factory import (
+    PostProcessingFactory,
+)
 
 PROCESS_IN_PARALLEL = 5
 
@@ -324,7 +324,7 @@ bool, str]:
     error_msg_compare = ''
     try:
         study_1, study_2, dm_1, dm_2 = multiple_configure(usecase=usecase)
-    except Exception as e:
+    except Exception:
         double_config_passed = False
         error_msg_compare += f'\nERROR while Configuring twice {usecase}:\n {traceback.format_exc()}'
         error_msg_compare += '\n---------------------------------------------------------\n'
@@ -409,7 +409,7 @@ def test_double_run(study: BaseStudyManager, force_run: bool = False) -> tuple[b
         for key in unwanted_keys:
             data_dict.pop(key)
 
-    clean_keys(dm_1);
+    clean_keys(dm_1)
     clean_keys(dm_2)
 
     run_test_passed, error_msg_run = test_compare_dm(dm_1=dm_1, dm_2=dm_2, usecase=study_2.study_full_path,
@@ -438,7 +438,7 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
         try:
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
             study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
-        except Exception as e:
+        except Exception:
 
             error_msg_post_processing += f'\nERROR while computing the usecase {study.study_full_path}:\n' \
                                          f'\n {traceback.format_exc()}'

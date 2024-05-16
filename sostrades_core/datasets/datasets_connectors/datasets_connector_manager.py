@@ -17,8 +17,13 @@ import json
 import logging
 import os
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetsConnectorFactory, DatasetConnectorType
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    AbstractDatasetsConnector,
+)
+from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+    DatasetConnectorType,
+    DatasetsConnectorFactory,
+)
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 

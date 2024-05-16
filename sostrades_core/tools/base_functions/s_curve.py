@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,11 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import numpy as np
+
 '''
 S-Curve function to be used for efficiency improvement for example
 '''
-
-import numpy as np
 
 
 def s_curve(x, coeff=0.1, power=1, x0=0.0, y_min=0.0, y_max=1.0):

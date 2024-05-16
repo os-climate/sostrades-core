@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2023/11/06 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,36 +14,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import copy
 import logging
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-# set-up the folder where GEMSEO will look-up for new wrapps (solvers,
-# grammars etc)
-from typing import Union, List, Optional
 import os
 from os.path import dirname, join
+from typing import List, Union
+
+from numpy import bool_ as np_bool
+from numpy import complex128 as np_complex128
+from numpy import float32 as np_float32
+from numpy import float64 as np_float64
+from numpy import int32 as np_int32
+from numpy import int64 as np_int64
+from numpy import ndarray
+from pandas import DataFrame
+
+# set-up the folder where GEMSEO will look-up for new wrapps (solvers,
+# grammars etc)
 
 parent_dir = dirname(__file__)
 GEMSEO_ADDON_DIR = "gemseo_addon"
 os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 
 from copy import deepcopy
-from pandas import DataFrame
-from numpy import ndarray
-from numpy import int32 as np_int32, float32 as np_float32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64
-from numpy import bool_ as np_bool
+
+from gemseo.core.chain import MDOChain
+from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
-from gemseo.core.discipline import MDODiscipline
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from gemseo.core.chain import MDOChain
-from sostrades_core.tools.controllers.simpy_formula import SympyFormula
-from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
+from sostrades_core.tools.check_data_integrity.check_data_integrity import (
+    CheckDataIntegrity,
+)
 
 
 class ProxyDisciplineException(Exception):
@@ -824,7 +827,7 @@ class ProxyDiscipline:
         '''
 
         new_var_dict = {key: value for key, value in var_dict.items() if
-                        not key in self.get_data_io_dict_keys(io_type) and not key in self.get_data_io_dict_tuple_keys(
+                        key not in self.get_data_io_dict_keys(io_type) and key not in self.get_data_io_dict_tuple_keys(
                             io_type)}
 
         return new_var_dict

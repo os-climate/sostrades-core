@@ -34,10 +34,6 @@ from sostrades_core.tools.post_processing.post_processing_tools import (
     format_currency_legend,
 )
 
-"""
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-"""
-
 
 class UncertaintyQuantification(SoSWrapp):
     """
@@ -820,7 +816,7 @@ class UncertaintyQuantification(SoSWrapp):
         distribution_type = distrib_param.loc[distrib_param['parameter'] == data_name][
             'distribution'
         ].values[0]
-        data_list = [x for x in data if np.isnan(x) == False]
+        data_list = [x for x in data if not np.isnan(x)]
         bins = np.histogram_bin_edges(data_list, bins=100)
         hist = np.histogram(data_list, bins=bins)[0]
         norm_hist = hist / np.cumsum(hist)[-1]
@@ -957,7 +953,7 @@ class UncertaintyQuantification(SoSWrapp):
         hist_y.add_trace(go.Histogram(x=list(data), nbinsx=100, histnorm='probability'))
 
         # statistics on data list
-        data_list = [x for x in data if np.isnan(x) == False]
+        data_list = [x for x in data if not np.isnan(x)]
         bins = np.histogram_bin_edges(data_list, bins=100)
         hist = np.histogram(data_list, bins=bins)[0]
         norm_hist = hist / np.cumsum(hist)[-1]
