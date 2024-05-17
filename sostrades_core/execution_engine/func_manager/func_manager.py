@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/08/10-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/08/10-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -127,6 +127,8 @@ class FunctionManager:
                     res = smooth_maximum(values, alpha)
                 elif aggr_type == 'sum':
                     res = values.sum()
+                else:
+                    raise Exception(f"Unhandled aggr_type {aggr_type}")
             elif self.functions[tag][self.FTYPE] == self.INEQ_CONSTRAINT:
                 #-- scale between (0., +inf) and take smooth maximum
                 cst = self.cst_func_ineq(values, eps, tag)
@@ -139,6 +141,8 @@ class FunctionManager:
                 else:
                     cst = self.cst_func_eq(values)
                 res = smooth_maximum(cst, alpha)
+            else:
+                raise Exception(f"Unknown function type {self.functions[tag][self.FTYPE]}")
 
             dict_mod_func[self.VALUE] = res
             self.mod_functions[tag] = dict_mod_func

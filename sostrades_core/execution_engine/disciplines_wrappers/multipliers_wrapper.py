@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -360,6 +360,8 @@ class MultipliersWrapper(SoSWrapp):
                         for df_keys in var_to_update
                         if var_to_update[df_keys].dtype == 'float'
                     ]
+                else:
+                    raise Exception(f"Unknown var_to_update type : {type(var_to_update)}")
                 for key in float_cols_ids_list:
                     var_updated[key] = multiplier_value * var_to_update[key]
             else:

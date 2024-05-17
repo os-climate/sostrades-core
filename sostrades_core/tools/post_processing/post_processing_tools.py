@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/02-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/02-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -305,5 +305,7 @@ def get_value_axis(value, min_or_max):
             value_out = value * 1.1
         else:
             value_out = 0
+    else:
+        raise Exception(f"Unhandled value for min_or_max {min_or_max} expected min or max")
 
     return value_out

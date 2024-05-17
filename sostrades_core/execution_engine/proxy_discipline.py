@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -929,6 +929,7 @@ class ProxyDiscipline:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             clean_variables (bool): flag to remove old variables from data_in/data_out, inst_desc_in/inst_desc_out, datamanger
         '''
+        variables_to_remove = []
         if io_type == self.IO_TYPE_IN:
             variables_to_remove = [
                 key for key in self.inst_desc_in if key not in data_dict]

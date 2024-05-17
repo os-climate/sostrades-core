@@ -86,6 +86,8 @@ if __name__ == "__main__":
     usecase_file = sys.argv[1]
     if (len(sys.argv) > 2):
         dataset_mapping_json_file = sys.argv[2]
+    else:
+        dataset_mapping_json_file = None
 
     # Call the main function with the provided arguments
     run_usecase(usecase_file=usecase_file, dataset_mapping_json_file=dataset_mapping_json_file)

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/05/17 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -83,6 +83,8 @@ class Disc10(SoSWrapp):
             b = input_dict['b']
             power = input_dict['power']
             y = a * x**power + b
+        else:
+            raise Exception(f"Unhandled model type {Model_Type}")
         dict_values = {}
         dict_values['y'] = y
         # put new field value in data_out

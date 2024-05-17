@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/09-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/03/09-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -587,8 +587,9 @@ class BaseStudyManager():
             loaded_dict = serializer.get_dict_from_study(
                 study_folder_path, self.__rw_strategy)
 
-            input_dict = {key: value[ProxyDiscipline.VALUE]
-                          for key, value in loaded_dict.items()}
+            input_dict = {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
+        else:
+            raise Exception(f"study_folder_path is None, can't get data from file")
 
         result.append(input_dict)
 

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/04-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/04-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -422,6 +422,8 @@ class FunctionManagerDisc(SoSWrapp):
                         grad_value = float(weight) * \
                                      np.array(get_dsmooth_dvariable(
                                          self.func_manager.functions[variable_name][self.VALUE]))
+                    else:
+                        raise Exception(f"Unknown aggr type {self.func_manager.functions[variable_name][self.AGGR_TYPE]}")
 
                     self.set_partial_derivative(
                         'objective_lagrangian', variable_name, 100.0 * np.atleast_2d(grad_value))
@@ -840,11 +842,10 @@ class FunctionManagerDisc(SoSWrapp):
         if 'objective (colored)' in charts:
             if not self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.OBJECTIVE].empty and not \
                     self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF)[self.INEQ_CONSTRAINT].empty:
-                optim_output_df = deepcopy(
-                    self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
+                optim_output_df = deepcopy(self.get_sosdisc_outputs(self.OPTIM_OUTPUT_DF))
                 new_chart = self.get_chart_obj_constraints_iterations(func_df, optim_output_df, [self.OBJECTIVE],
                                                                       'objective (colored)')
-            instanciated_charts.append(new_chart)
+                instanciated_charts.append(new_chart)
 
         chart_list = ['lagrangian objective', 'aggregated objectives',
                       'objectives', 'ineq_constraints', 'eq_constraints', ]
@@ -1060,10 +1061,12 @@ class FunctionManagerDisc(SoSWrapp):
         for parameter in main_parameters[self.VARIABLE]:
             if 'objective' in parameter:
                 customdata = ['aggr', 'obj']
-            if 'ineq_constraint' in parameter:
+            elif 'ineq_constraint' in parameter:
                 customdata = ['aggr', 'ineq']
             elif 'eq_constraint' in parameter:
                 customdata = ['aggr', 'eq']
+            else:
+                raise Exception(f"Can't get customdata for parameter {parameter}")
             y = [value[0] for value in optim_output[parameter].values]
             if 'complex' in str(type(y[0])):
                 y = [np.real(value[0])

@@ -69,6 +69,7 @@ class Disc1(SoSWrapp):
     def get_post_processing_list(self, filters=None):
 
         instanciated_charts = []
+        charts_list = []
 
         # Overload default value with chart filter
         if filters is not None:
@@ -77,7 +78,6 @@ class Disc1(SoSWrapp):
                     charts_list = chart_filter.selected_values
 
         if 'y vs x' in charts_list:
-
             chart_name = 'y vs x'
 
             y = self.get_sosdisc_outputs('y')

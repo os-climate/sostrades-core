@@ -71,6 +71,7 @@ class Disc1ArrayOutput(SoSWrapp):
     def get_post_processing_list(self, filters=None):
 
         instanciated_charts = []
+        charts_list = []
 
         # Overload default value with chart filter
         if filters is not None:

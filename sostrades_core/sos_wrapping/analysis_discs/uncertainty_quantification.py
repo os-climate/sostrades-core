@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -730,6 +730,7 @@ class UncertaintyQuantification(SoSWrapp):
         """For the outputs, making a bar graph with gradients values"""
 
         instanciated_charts = []
+        graphs_list = []
 
         if filters is not None:
             for chart_filter in filters:

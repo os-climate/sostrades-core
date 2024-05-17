@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/05/17 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ class Disc6(SoSWrapp):
     def get_post_processing_list(self, filters=None):
 
         instanciated_charts = []
+        charts_list = []
 
         # Overload default value with chart filter
         if filters is not None:

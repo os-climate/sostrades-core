@@ -277,13 +277,13 @@ class TornadoChartAnalysis(SoSWrapp):
         """
         # check sub type:
         reference_value_dict = reference_value_dict_dict.values().first()
-        if isinstance(reference_value_dict.values().first(), float) or isinstance(
-                reference_value_dict.values().first(), int
-        ):
+        if isinstance(reference_value_dict.values().first(), float) or isinstance(reference_value_dict.values().first(), int):
             output_variations = {
                 key: self._compute_dict_of_outputs(reference_value_dict_dict[key], output_dict_dict[key])
                 for key in output_dict_dict.keys()
             }
+        else:
+            raise Exception(f"Unhandled type {type(reference_value_dict.values().first())}")
 
         return output_variations
 

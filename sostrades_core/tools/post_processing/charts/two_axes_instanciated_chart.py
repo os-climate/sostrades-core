@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/11/14-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/11/14-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -75,6 +75,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
         # Variable used to build cumulated surface chart
         cumulated_dictionary = {}
         merged_abscissa = []
+        cumulative_surface_value = None
 
         if self.cumulative_surface:
             cumulative_surface_value = TwoAxesInstanciatedChart.CUMULATIVE_TO_ZERO_Y

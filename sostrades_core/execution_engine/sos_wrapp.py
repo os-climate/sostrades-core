@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -611,13 +611,16 @@ class SoSWrapp(object):
             else:
                 key_type = self.DESC_IN[key]['type']
             value = self.get_sosdisc_inputs(key)
-        if io_type == self.IO_TYPE_OUT:
+        elif io_type == self.IO_TYPE_OUT:
             # var_full_name = self.attributes['output_full_name_map'][key]
             if key not in self.DESC_OUT:
                 key_type = self.inst_desc_out[key]['type']
             else:
                 key_type = self.DESC_OUT[key]['type']
             value = self.get_sosdisc_outputs(key)
+        else:
+            raise Exception(f"Unknown IO type {io_type}")
+
 
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
@@ -633,6 +636,9 @@ class SoSWrapp(object):
             dict_keys = list(value.keys())
             lines_nb = len(value[column])
             index_column = dict_keys.index(column)
+        else:
+            raise Exception(f"Unknown key_type type {io_type}")
+
         return lines_nb, index_column
 
 
