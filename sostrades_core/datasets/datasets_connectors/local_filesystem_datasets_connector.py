@@ -19,7 +19,7 @@ import os
 from shutil import rmtree
 from typing import Any
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetDeserializeException, DatasetGenericException, DatasetNotFoundException
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
 
 
@@ -64,8 +64,14 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
         if not os.path.exists(dataset_descriptor_path):
             raise DatasetNotFoundException(dataset_identifier)
-        with open(dataset_descriptor_path, "r", encoding="utf-8") as file:
-            descriptor_data = json.load(fp=file)
+        descriptor_data = None
+        try:
+            with open(dataset_descriptor_path, "r", encoding="utf-8") as file:
+                descriptor_data = json.load(fp=file)
+        except TypeError as exception:
+            raise DatasetDeserializeException(dataset_identifier, f'type error exception in dataset descriptor, {str(exception)}')
+        except json.JSONDecodeError as exception:
+            raise DatasetDeserializeException(dataset_identifier, f'dataset descriptor has not a valid json format, {str(exception.msg)}')
         return descriptor_data
 
     def __save_dataset_descriptor(self, dataset_identifier: str, descriptor_data: dict[str: Any]) -> None:

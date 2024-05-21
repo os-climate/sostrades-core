@@ -20,6 +20,11 @@ import json
 
 from sostrades_core.datasets.dataset_info import DatasetInfo
 
+class DatasetsMappingException(Exception):
+    """
+    Generic exception for dataset mapping
+    """
+    pass
 
 @dataclass()
 class DatasetsMapping:
@@ -70,39 +75,42 @@ class DatasetsMapping:
         """
         datasets_infos = {}
         namespace_datasets_mapping = {}
-        # parse sub process datasets info
-        # do it first so that info in this mapping will override the sub mappings 
-        if DatasetsMapping.SUB_PROCESS_MAPPING in input_dict.keys():
-            for mapping_key, sub_process_mapping_path in input_dict[DatasetsMapping.SUB_PROCESS_MAPPING].items():
-                mapping_key_fields = DatasetsMapping.extract_mapping_key_fields(mapping_key)
-                namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
-                if os.path.exists(sub_process_mapping_path):
-                    # read the json mapping file
-                    sub_mapping = DatasetsMapping.from_json_file(sub_process_mapping_path)
-                    # retreive the datasets from this maping
-                    datasets_infos.update(sub_mapping.datasets_infos)
-                    sub_namespace_datasets_mapping = sub_mapping.get_namespace_datasets_mapping_for_parent(namespace)
-                    namespace_datasets_mapping.update(sub_namespace_datasets_mapping)
-                else:
-                    raise Exception(f"The dataset mapping file {sub_process_mapping_path} does not exists")
 
-        # Parse namespace datasets mapping
-        if DatasetsMapping.NAMESPACE_KEY in input_dict.keys():
-            input_dict_dataset_mapping = input_dict[DatasetsMapping.NAMESPACE_KEY]
-            for mapping_key, datasets in input_dict_dataset_mapping.items():
-                mapping_key_fields = DatasetsMapping.extract_mapping_key_fields(mapping_key)
-                # TODO: version, parameter not handled
-                namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
-                namespace_datasets_mapping[namespace] = []
-                for dataset in datasets:
-                    dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
-                    connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
-                    dataset_id = dataset_fields[DatasetsMapping.DATASET_ID_KEY]
-                    # TODO: parameter not handled
-                    if dataset not in datasets_infos:
-                        datasets_infos.update({dataset: DatasetInfo(connector_id, dataset_id)})
-                    namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
-        
+        try:
+            # parse sub process datasets info
+            # do it first so that info in this mapping will override the sub mappings 
+            if DatasetsMapping.SUB_PROCESS_MAPPING in input_dict.keys():
+                for mapping_key, sub_process_mapping_path in input_dict[DatasetsMapping.SUB_PROCESS_MAPPING].items():
+                    mapping_key_fields = DatasetsMapping.extract_mapping_key_fields(mapping_key)
+                    namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
+                    if os.path.exists(sub_process_mapping_path):
+                        # read the json mapping file
+                        sub_mapping = DatasetsMapping.from_json_file(sub_process_mapping_path)
+                        # retreive the datasets from this maping
+                        datasets_infos.update(sub_mapping.datasets_infos)
+                        sub_namespace_datasets_mapping = sub_mapping.get_namespace_datasets_mapping_for_parent(namespace)
+                        namespace_datasets_mapping.update(sub_namespace_datasets_mapping)
+                    else:
+                        raise DatasetsMappingException(f"The dataset mapping file {sub_process_mapping_path} does not exists")
+
+            # Parse namespace datasets mapping
+            if DatasetsMapping.NAMESPACE_KEY in input_dict.keys():
+                input_dict_dataset_mapping = input_dict[DatasetsMapping.NAMESPACE_KEY]
+                for mapping_key, datasets in input_dict_dataset_mapping.items():
+                    mapping_key_fields = DatasetsMapping.extract_mapping_key_fields(mapping_key)
+                    # TODO: version, parameter not handled
+                    namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
+                    namespace_datasets_mapping[namespace] = []
+                    for dataset in datasets:
+                        dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
+                        connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
+                        dataset_id = dataset_fields[DatasetsMapping.DATASET_ID_KEY]
+                        # TODO: parameter not handled
+                        if dataset not in datasets_infos:
+                            datasets_infos.update({dataset: DatasetInfo(connector_id, dataset_id)})
+                        namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
+        except Exception as exception:
+            raise DatasetsMappingException(f'Error reading the dataset mapping file: \n{str(exception)}')
         return DatasetsMapping(
             process_module_path=input_dict[DatasetsMapping.PROCESS_MODULE_PATH_KEY],
             datasets_infos=datasets_infos,

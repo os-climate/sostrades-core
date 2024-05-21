@@ -20,7 +20,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from sostrades_core.datasets.dataset_mapping import DatasetsMapping
+from sostrades_core.datasets.dataset_mapping import DatasetsMappingException, DatasetsMapping
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import DatasetGenericException
 from sostrades_core.study_manager.study_manager import StudyManager
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
@@ -288,3 +289,23 @@ class TestDatasets(unittest.TestCase):
         except Exception as cm:
             connector_to.clear(remove_root_directory=True)
             raise cm
+
+    def test_09_dataset_error(self):
+        """
+        Some example to check datasets error
+        """
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+
+        # check mapping file error
+        mapping_error_json_file_path = os.path.join(test_data_folder, "test_92_example_mapping_error_format.json")
+        with self.assertRaises(DatasetsMappingException):
+            DatasetsMapping.from_json_file(mapping_error_json_file_path)
+
+        # check dataset reading error
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        mapping = DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset_error.json"))
+        with self.assertRaises(DatasetGenericException):
+            study.update_data_from_dataset_mapping(mapping)
+        
