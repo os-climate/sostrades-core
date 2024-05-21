@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/12-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ limitations under the License.
 # pylint: disable=line-too-long
 
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
-    TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
+from sostrades_core.tools.post_processing.tables.instanciated_table import (
+    InstanciatedTable,
+)
 
 
 def post_processing_filters(execution_engine, namespace):
@@ -40,6 +40,7 @@ def post_processings(execution_engine, namespace, filters):
     post processing function designed to build graphs
     """
     instanciated_charts = []
+    charts_list = []
 
     # Overload default value with chart filter
     if filters is not None:

@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,12 +17,13 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding: iso-8859-1 -*-
 
 from copy import deepcopy
+
 import numpy
 from numpy.linalg import norm, solve
 from scipy.optimize import fsolve
 
-from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
 from sostrades_core.tools.grad_solvers.validgrad.FDGradient import FDGradient
+from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
 
 
 class NewtonRaphsonProblem():
@@ -129,7 +131,7 @@ class NewtonRaphsonProblem():
         - N: the dimension of the problem
         - W: the state vector used during the Newton-Raphson iterations
         """
-        if type(W0) == type([]):
+        if isinstance(W0, list):
             W0 = numpy.array(W0)
         self.__N = len(W0)
         self.__W0 = W0

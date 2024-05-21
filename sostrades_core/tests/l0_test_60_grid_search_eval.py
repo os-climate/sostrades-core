@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/02-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/06/02-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import unittest
+from logging import DEBUG, Handler, getLogger
+
+import pandas as pd
 from numpy import array
 
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-import unittest
-import pandas as pd
-import numpy as np
-from pandas.testing import assert_frame_equal
-
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from logging import Handler, getLogger, DEBUG
 
 
 class UnitTestHandler(Handler):

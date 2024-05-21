@@ -13,19 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from enum import Enum
 import logging
-from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
-    JSONDatasetsConnector,
-)
-from sostrades_core.datasets.datasets_connectors.arango_datasets_connector import (
-    ArangoDatasetsConnector,
-)
+from enum import Enum
+
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetUnableToInitializeConnectorException,
 )
-from sostrades_core.datasets.datasets_connectors.sospickle_datasets_connector import SoSPickleDatasetsConnector
+from sostrades_core.datasets.datasets_connectors.arango_datasets_connector import (
+    ArangoDatasetsConnector,
+)
+from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
+    JSONDatasetsConnector,
+)
+from sostrades_core.datasets.datasets_connectors.sospickle_datasets_connector import (
+    SoSPickleDatasetsConnector,
+)
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 

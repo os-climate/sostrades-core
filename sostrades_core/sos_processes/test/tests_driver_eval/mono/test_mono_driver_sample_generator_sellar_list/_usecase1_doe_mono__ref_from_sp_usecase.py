@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/11-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/11-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ import pandas as pd
 from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
-from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import (
+    ProcessBuilderParameterType,
+)
 
 
 class Study(StudyManager):

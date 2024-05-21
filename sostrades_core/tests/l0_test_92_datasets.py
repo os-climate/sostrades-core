@@ -14,18 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-import unittest
 import os
+import unittest
 
 import numpy as np
 import pandas as pd
 
+import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
+import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
+import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
+import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
-import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
-import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
-import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
-import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 
 
 class TestDatasets(unittest.TestCase):

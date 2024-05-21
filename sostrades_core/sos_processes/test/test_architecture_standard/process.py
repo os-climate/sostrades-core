@@ -1,5 +1,6 @@
 '''
-Copyright 2022 Remy SAS
+Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +18,7 @@ limitations under the License.
 #-- Generate test 2 process
 
 import pandas as pd
+
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 

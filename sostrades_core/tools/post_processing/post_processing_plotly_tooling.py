@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from abc import ABC
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define annotations for post processing
 """
-
-from abc import ABC
-
 
 class AbstractPostProcessingPlotlyTooling(ABC):
     """ Class that define general tools for post processing with plotly
@@ -265,7 +265,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
                     self._plot_csv_data = plot_csv_data
                 else:
                     raise ValueError(
-                        f'Parameter plot_csv_data elements must all be str')
+                        'Parameter plot_csv_data elements must all be str')
             else:
                 raise ValueError(
                     f'Parameter plot_csv_data is not a list => type({type(plot_csv_data)})')

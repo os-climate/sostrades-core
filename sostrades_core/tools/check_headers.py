@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from datetime import datetime, timezone
-import time
-from time import mktime
-import git
 import os
 import re
+import time
+from datetime import datetime, timezone
 from enum import Enum
+from time import mktime
+
+import git
 
 VERBOSE = False
 

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/03-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/03-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
+from tempfile import gettempdir
+
 import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from tempfile import gettempdir
 
 
 class TestMultiScenarioArchiBuilder(unittest.TestCase):
@@ -69,7 +67,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        '\t\t\t|_ Business',
                        '\t\t\t\t|_ Remy',
@@ -99,7 +97,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        f'\t\t\t|_ {vb_builder_name}',
                        '\t\t\t\t|_ Remy',
@@ -128,7 +126,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        f'\t\t\t|_ {vb_builder_name}',
                        '\t\t\t\t|_ Remy',
@@ -192,7 +190,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        f'\t\t\t|_ {vb_builder_name}',
                        '\t\t\t\t|_ Remy',
@@ -254,7 +252,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        '\t\t\t|_ Business',
                        '\t\t\t\t|_ Remy',
@@ -288,7 +286,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        '\t\t\t|_ Business',
                        '\t\t\t\t|_ Remy',
@@ -350,7 +348,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        '\t\t\t|_ Business',
                        '\t\t\t\t|_ Remy',
@@ -382,7 +380,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        '\t\t\t|_ Business',
                        '\t\t\t\t|_ Remy',
@@ -485,7 +483,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        '\t\t\t|_ Business',
                        '\t\t\t\t|_ Remy',
@@ -532,7 +530,7 @@ class TestMultiScenarioArchiBuilder(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
-                       f'\t|_ multi_scenarios',
+                       '\t|_ multi_scenarios',
                        '\t\t|_ scenario_1',
                        f'\t\t\t|_ {vb_builder_name}',
                        '\t\t\t\t|_ Remy',
