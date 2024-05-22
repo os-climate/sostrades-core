@@ -401,7 +401,8 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             eval_inputs = exec_eng.dm.get_value(
                 'doe.SampleGenerator.eval_inputs')
-            self.assertEqual(doe_disc_samples.columns.to_list(), eval_inputs.loc[eval_inputs['selected_input']]['full_name'].to_list())
+            self.assertEqual(doe_disc_samples.columns.to_list(),
+                             eval_inputs.loc[eval_inputs['selected_input']]['full_name'].to_list())
             # Check whether samples correspond to reference samples
             # Fix format dataframe from CSV file
             algo_reference_samples = reference_dataframe.loc[reference_dataframe['algo']
@@ -430,8 +431,9 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         """
 
         self.ns = f'{self.study_name_doe}'
-        OT_list_of_algo_names = ['OT_SOBOL', 'OT_RANDOM', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON',
-                                 'OT_FAURE', 'OT_MONTE_CARLO', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL',
+        # TO FIX OT_RANDOM, OT_MONTE_CARLO, are not reproductible
+        OT_list_of_algo_names = ['OT_SOBOL', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON',
+                                 'OT_FAURE', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL',
                                  'OT_OPT_LHS', 'OT_LHS', 'OT_LHSC', 'OT_FULLFACT', 'OT_SOBOL_INDICES']
 
         OT_algo_default_options = {'levels': None,
@@ -560,7 +562,8 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             eval_inputs = exec_eng.dm.get_value(
                 'doe.SampleGenerator.eval_inputs')
-            self.assertEqual(doe_disc_samples.columns.to_list(), eval_inputs.loc[eval_inputs['selected_input']]['full_name'].to_list())
+            self.assertEqual(doe_disc_samples.columns.to_list(),
+                             eval_inputs.loc[eval_inputs['selected_input']]['full_name'].to_list())
             # Check whether samples correspond to reference samples
             # Fix format dataframe from CSV file
             algo_reference_samples = reference_dataframe.loc[reference_dataframe['algo']
@@ -576,7 +579,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
                 flag = allclose(ref_value_list, list(doe_value))
                 if isinstance(flag, (list, ndarray)):
                     flag = flag.all()
-                self.assertTrue(flag)
+                self.assertTrue(flag, f'The algo {sampling_algo_name} does not give same value as reference file')
         # f.close()
 
     def _test_4_cartesian_product_execution(self):

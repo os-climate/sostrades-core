@@ -639,8 +639,7 @@ class TestExtendDataframe(unittest.TestCase):
         converted_array, new_reduced_dm = convert_new_type_into_array('EE.df', df_after_exec, exec_eng.dm.reduced_dm)
         self.assertEqual(converted_array.size, (6 - 2) * 5)
 
-        excluded_col = exec_eng.dm.reduced_dm['EE.df']['dataframe_excluded_columns']
-        self.assertListEqual(excluded_col, DEFAULT_EXCLUDED_COLUMNS + ['name', 'adult'])
+        self.assertListEqual(new_reduced_dm['dataframe_excluded_columns'], DEFAULT_EXCLUDED_COLUMNS + ['name', 'adult'])
 
 
 if '__main__' == __name__:

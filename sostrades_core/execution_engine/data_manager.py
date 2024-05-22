@@ -23,7 +23,7 @@ from typing import Any, Union
 from uuid import uuid4
 
 from gemseo.caches.simple_cache import SimpleCache
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 from pandas import concat
 
 from sostrades_core.datasets.dataset_manager import DatasetsManager
@@ -54,6 +54,7 @@ DATAFRAME_DESCRIPTOR = ProxyDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
 
+
 @dataclass()
 class ParameterChange:
     """
@@ -66,6 +67,7 @@ class ParameterChange:
     dataset_id: Union[str, None]
     connector_id: Union[str, None]
     date: datetime
+
 
 class DataManager:
     """
@@ -363,7 +365,7 @@ class DataManager:
 
     def fill_data_dict_from_dict(self, values_dict: dict[str:Any],
                                  already_set_data: set[str], parameter_changes: list[ParameterChange],
-                                 in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None:
+                                 in_vars: bool, init_coupling_vars: bool, out_vars: bool) -> None:
         '''
         Set values in data_dict from dict with namespaced keys
         
@@ -404,16 +406,18 @@ class DataManager:
                 is_output_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
                 # check if this is a strongly coupled input necessary to
                 # initialize a MDA
-                is_init_coupling_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and dm_data[ProxyDiscipline.COUPLING]
-                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
+                is_init_coupling_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and dm_data[
+                    ProxyDiscipline.COUPLING]
+                if ((out_vars and is_output_var) or (
+                        init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                     new_value = convert_values_dict[key][VALUE]
                     self.apply_parameter_change(key, new_value, parameter_changes)
                     already_set_data.add(key)
 
     def fill_data_dict_from_datasets(self, datasets_mapping: DatasetsMapping,
                                      already_set_data: set[str], parameter_changes: list[ParameterChange],
-                                     in_vars:bool, init_coupling_vars:bool, out_vars:bool
-    ) -> None:
+                                     in_vars: bool, init_coupling_vars: bool, out_vars: bool
+                                     ) -> None:
         '''
         Set values in data_dict from datasets
 
@@ -439,22 +443,24 @@ class DataManager:
         # to have a list of data by namespace
         namespaced_data_dict = {}
         KEY = 'key'
-        
+
         for key, data_value in self.data_dict.items():
             # check if the key is an output variable
             is_output_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
             # check if this is a strongly coupled input necessary to
             # initialize a MDA
-            is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[ProxyDiscipline.COUPLING]
+            is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[
+                ProxyDiscipline.COUPLING]
             # get all input values not already set
             is_in_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
-            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
+            if (in_vars and is_in_var or (out_vars and is_output_var) or (
+                    init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                 data_ns = data_value[NS_REFERENCE].value
                 data_name = data_value[VAR_NAME]
                 data_type = data_value[TYPE]
 
                 # create a dict with namespace, datas with keys (to fill dm after) and types (to convert from dataset)
-                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY:{}, TYPE:{}})
+                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY: {}, TYPE: {}})
                 namespaced_data_dict[data_ns][KEY][data_name] = key
                 namespaced_data_dict[data_ns][TYPE][data_name] = data_type
 
@@ -499,8 +505,8 @@ class DataManager:
             if not dict_are_equal({VALUE: old_value}, {VALUE: new_value}):
                 parameter_changes.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                          variable_type=dm_data[TYPE],
-                                                         old_value=deepcopy(old_value),     # FIXME: deepcopies avoidable ?
-                                                         new_value=deepcopy(new_value),     # FIXME: deepcopies avoidable ?
+                                                         old_value=deepcopy(old_value),  # FIXME: deepcopies avoidable ?
+                                                         new_value=deepcopy(new_value),  # FIXME: deepcopies avoidable ?
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
                                                          date=datetime.now()))
@@ -986,4 +992,3 @@ class DataManager:
                 if compare_data(data_name):
                     self.logger.debug(
                         f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")
-

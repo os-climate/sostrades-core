@@ -26,7 +26,6 @@ from numpy import array
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
-
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest
@@ -239,7 +238,8 @@ class TestMDALoop(unittest.TestCase):
         self.assertIn('Discipline Sellar_1 set to debug mode input_change', self.my_handler.msg_list)
         self.assertIn('Discipline Sellar_1 set to debug mode min_max_couplings', self.my_handler.msg_list)
         self.assertIn('Discipline Sellar_1 set to debug mode linearize_data_change', self.my_handler.msg_list)
-        self.assertIn('Discipline Sellar_1 set to debug mode min_max_grad', self.my_handler.msg_list)
+
+    # self.assertIn('Discipline Sellar_1 set to debug mode min_max_grad', self.my_handler.msg_list)
 
     def test_06_debug_mode_coupling_activation_and_deactivation(self):
         """
@@ -271,7 +271,7 @@ class TestMDALoop(unittest.TestCase):
 
         disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'] = 'all'
         disc_dict[f'{self.name}.{coupling_name}.Sellar_1.debug_mode'] = 'nan'
-        disc_dict[f'{self.name}.{coupling_name}.Sellar_3.debug_mode'] = 'min_max_grad'
+        # disc_dict[f'{self.name}.{coupling_name}.Sellar_3.debug_mode'] = 'min_max_grad'
         disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = 'linearize_data_change'
         disc_dict[f'{self.name}.debug_mode'] = ''
 

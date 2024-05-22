@@ -16,7 +16,7 @@ limitations under the License.
 '''
 from itertools import repeat
 from multiprocessing import cpu_count
-
+from typing import Any
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 
 from gemseo import create_mda
@@ -62,7 +62,7 @@ class SoSMDAChain(MDAChain):
     DEBUG_MODE = "debug_mode"
     OPTIONAL = "optional"
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
-                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]
+                            "linearize_data_change", "min_max_couplings", "all"]
     RESIDUALS_HISTORY = "residuals_history"
     NUM_DESC_IN = {
         SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',
@@ -352,14 +352,14 @@ class SoSMDAChain(MDAChain):
                        use_threading=False, wait_time_between_fork=0,
                        auto_set_step=False, plot_result=False,
                        file_path="jacobian_errors.pdf",
-                       show=False, figsize_x=10, figsize_y=10,
+                       show=False, fig_size_x=10, fig_size_y=10,
                        input_column=None, output_column=None,
                        dump_jac_path=None, load_jac_path=None):
         """
         Overload check jacobian to execute the init_execution
         """
-        for disc in self.sos_disciplines:
-            disc.init_execution()
+        for disc in self.disciplines:
+            disc.sos_wrapp.init_execution()
 
         indices = SoSMDODiscipline._get_columns_indices(
             self, inputs, outputs, input_column, output_column)
@@ -377,16 +377,16 @@ class SoSMDAChain(MDAChain):
             save_reference_jacobian = False
 
         if outputs is None:
-            output_list = []
-            for disc in self.sos_disciplines:
-                output_list += disc.get_output_data_names(
-                    filtered_outputs=True)
+            # output_list = []
+            # for disc in self.disciplines:
+            #     output_list += disc.get_output_data_names(
+            #         filtered_outputs=True)
             outputs = self.get_output_data_names(
-                filtered_outputs=True)  # list(set(output_list))
+                filtered_outputs=True, residual_norm_removal=True)  # list(set(output_list))
         if inputs is None:
-            input_list = []
-            for disc in self.sos_disciplines:
-                input_list += disc.get_input_data_names(filtered_inputs=True)
+            # input_list = []
+            # for disc in self.disciplines:
+            #     input_list += disc.get_input_data_names(filtered_inputs=True)
             inputs = self.get_input_data_names(
                 filtered_inputs=True)  # list(set(input_list))
         print('Check jacobian mda_chain : ', linearization_mode)
@@ -406,8 +406,8 @@ class SoSMDAChain(MDAChain):
                                        plot_result=plot_result,
                                        file_path=file_path,
                                        show=show,
-                                       figsize_x=figsize_x,
-                                       figsize_y=figsize_y,
+                                       fig_size_x=fig_size_x,
+                                       fig_size_y=fig_size_y,
                                        save_reference_jacobian=save_reference_jacobian,
                                        reference_jacobian_path=reference_jacobian_path,
                                        indices=indices)
@@ -422,9 +422,9 @@ class SoSMDAChain(MDAChain):
 
         MDAChain._compute_jacobian(self, inputs, outputs)
 
-        if self.check_min_max_gradients:
-            print("IN CHECK of soscoupling")
-            self._check_min_max_gradients(self.jac)
+        # if self.check_min_max_gradients:
+        #     print("IN CHECK of soscoupling")
+        #     self._check_min_max_gradients(self.jac)
 
     def _create_mdo_chain(
             self,
@@ -636,7 +636,7 @@ class SoSMDAChain(MDAChain):
         if compute_all_jacobians:
             strong_cpl = set(self.strong_couplings)
             inputs = set(self.get_input_data_names(filtered_inputs=True))
-            outputs = self.get_output_data_names(filtered_outputs=True)
+            outputs = self.get_output_data_names(filtered_outputs=True, residual_norm_removal=True)
             # Don't linearize wrt
             inputs -= strong_cpl & inputs
             # Don't do this with output couplings because
@@ -644,10 +644,6 @@ class SoSMDAChain(MDAChain):
             # outputs = outputs - (strong_cpl & outputs)
         else:
             inputs, outputs = SoSMDODiscipline._retrieve_diff_inouts(self)
-
-        if self.RESIDUALS_NORM in outputs:
-            outputs = list(outputs)
-            outputs.remove(self.RESIDUALS_NORM)
 
         return inputs, outputs
 
@@ -667,17 +663,26 @@ class SoSMDAChain(MDAChain):
             return filter_variables_to_convert(self.reduced_dm, self.input_grammar.names,
                                                logger=self.logger)
 
-    def get_output_data_names(self, filtered_outputs=False):
+    def get_output_data_names(self, filtered_outputs: bool = False, residual_norm_removal: bool = False) -> list[str]:
         """
-        Retrieve the names of the output variables from the output_grammar
+        Retrieve the names of the output variables from the output_grammar.
 
-        Arguments:
-            filtered_outputs (bool): flag whether to filter variables
+        Args:
+            filtered_outputs (bool): If True, filter variables using the filter_variables_to_convert method.
+            residual_norm_removal (bool): If True, remove the residual_norm from output_data_names.
 
-        Return:
-            List[string] The names of the output variables.
+        Returns:
+            List[str]: The names of the output variables.
         """
-        if not filtered_outputs:
-            return self.output_grammar.names
-        else:
-            return filter_variables_to_convert(self.reduced_dm, self.output_grammar.names)
+        # Initialize the output data names from the output grammar
+        output_data_names = set(self.output_grammar.names)
+
+        # Remove the residual norm if the flag is set and it's present in the output data names
+        if residual_norm_removal:
+            output_data_names.discard(self.RESIDUALS_NORM)
+
+        # Return filtered or unfiltered output data names
+        if filtered_outputs:
+            return filter_variables_to_convert(self.reduced_dm, output_data_names)
+
+        return list(output_data_names)

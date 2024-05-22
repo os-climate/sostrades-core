@@ -246,7 +246,7 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
                 raise ValueError(
                     f'Variable {name} cannot be converted since no metadata is available')
             metadata = metadata_list[0]
-            excluded_columns = reduced_dm.get(DF_EXCLUDED_COLUMNS, [])
+            excluded_columns = reduced_dm.get(DF_EXCLUDED_COLUMNS, DEFAULT_EXCLUDED_COLUMNS)
 
             var_new_type = convert_array_into_df(
                 var_array, metadata, excluded_columns)
@@ -594,7 +594,7 @@ def convert_new_type_into_array(
                 if new_excluded_columns != excluded_columns:
                     var_converted, metadata = convert_df_into_array(
                         var, init_var_converted, init_metadata, prev_key, new_excluded_columns)
-                    reduced_dm[DF_EXCLUDED_COLUMNS] = new_excluded_columns
+                    new_reduced_dm[DF_EXCLUDED_COLUMNS] = new_excluded_columns
 
             elif var_type == list:
 

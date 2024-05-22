@@ -593,7 +593,7 @@ class ExecutionEngine:
             disc.nan_check = True
             disc.check_if_input_change_after_run = True
             disc.check_linearize_data_changes = True
-            disc.check_min_max_gradients = True
+            # disc.check_min_max_gradients = True
             disc.check_min_max_couplings = True
         elif mode == "nan":
             disc.nan_check = True
@@ -601,8 +601,8 @@ class ExecutionEngine:
             disc.check_if_input_change_after_run = True
         elif mode == "linearize_data_change":
             disc.check_linearize_data_changes = True
-        elif mode == "min_max_grad":
-            disc.check_min_max_gradients = True
+        # elif mode == "min_max_grad":
+        #     disc.check_min_max_gradients = True
         elif mode == "min_max_couplings":
             if isinstance(disc, ProxyCoupling):
                 for sub_mda in disc.sub_mda_list:
@@ -612,7 +612,7 @@ class ExecutionEngine:
 
         else:
             avail_debug = ["nan", "input_change",
-                           "linearize_data_change", "min_max_grad", "min_max_couplings", 'data_check_integrity']
+                           "linearize_data_change", "min_max_couplings", 'data_check_integrity']
             raise ValueError("Debug mode %s is not among %s" % (mode, str(avail_debug)))
         # set debug modes of subdisciplines
         for disc in disc.proxy_disciplines:

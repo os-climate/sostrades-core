@@ -432,7 +432,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'cache_file_path': {'type': 'string', 'default': '', 'possible_values': None},
                            'debug_mode': {'type': 'string', 'default': '',
                                           'possible_values': ["", "nan", "input_change", "linearize_data_change",
-                                                              "min_max_grad", "min_max_couplings", "all"], }
+                                                              "min_max_couplings", "all"], }
                            }
 
         if getenv("USE_PETSC", "").lower() not in ("true", "1"):
