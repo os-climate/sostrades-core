@@ -13,23 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import numpy as np
-
-import platform
-from tqdm import tqdm
-import time
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array
-
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
-from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
+import platform
+import time
+import numpy as np
 import pandas as pd
+from tqdm import tqdm
+
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from gemseo.core.parallel_execution.callable_parallel_execution import CallableParallelExecution
+
+from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
+    DriverEvaluatorWrapper,
+)
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
+    SampleGeneratorWrapper,
+)
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
+    convert_new_type_into_array,
+)
 
 
 class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):

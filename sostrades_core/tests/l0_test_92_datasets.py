@@ -14,17 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-import unittest
 import os
+import unittest
 
 import numpy as np
 import pandas as pd
 
+import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
+import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
+import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
+import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
-import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
-import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
-import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 
 
 class TestDatasets(unittest.TestCase):
@@ -95,7 +96,6 @@ class TestDatasets(unittest.TestCase):
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
         dm = study.execution_engine.dm
-        dm = study.execution_engine.dm
         # assert data are empty
         self.assertEqual(dm.get_value("usecase_dataset.a"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), None)
@@ -123,17 +123,17 @@ class TestDatasets(unittest.TestCase):
         json_file_path = os.path.join(test_data_folder, "test_92_example_mapping.json")
 
         dataset_mapping = DatasetsMapping.from_json_file(file_path=json_file_path)
-        self.assertEqual(dataset_mapping.datasets_infos["Dataset1"].connector_id, "<1connector_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["Dataset1"].dataset_id, "<1dataset_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["Dataset2"].connector_id, "<2connector_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["Dataset2"].dataset_id, "<2dataset_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"].connector_id, "<1connector_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"].dataset_id, "<1dataset_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"].connector_id, "<2connector_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"].dataset_id, "<2dataset_id>")
 
         self.assertEqual(
-            dataset_mapping.namespace_datasets_mapping["namespace1"], [dataset_mapping.datasets_infos["Dataset1"]]
+            dataset_mapping.namespace_datasets_mapping["namespace1"], [dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"]]
         )
         self.assertEqual(
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
-            set([dataset_mapping.datasets_infos["Dataset1"], dataset_mapping.datasets_infos["Dataset2"]]),
+            set([dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"], dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"]]),
         )
 
     def test_04_datasets_types(self):
@@ -171,3 +171,37 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_2"), [3.0])
         self.assertTrue((dm.get_value(f"{study_name}.SellarCoupling.z") == [4.0, 5.0]).all())
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)
+
+
+    def test_06_parameter_change_returned_in_load_data_using_both_dict_and_datasets(self):
+        usecase_file_path = uc_dataset_dict.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        uc = uc_dataset_dict.Study()
+
+        param_changes = study.load_data(from_input_dict=uc.setup_usecase())
+        param_changes.extend(study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
+        x_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.x']
+        z_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.z']
+
+        self.assertEqual(x_parameterchanges[0].variable_type, 'array')
+        self.assertEqual(x_parameterchanges[0].old_value, None)
+        self.assertTrue(np.all(x_parameterchanges[0].new_value == [21.]))
+        self.assertEqual(z_parameterchanges[0].variable_type, 'array')
+        self.assertEqual(z_parameterchanges[0].old_value, None)
+        self.assertTrue(np.all(z_parameterchanges[0].new_value == [21., 21.]))
+        self.assertEqual(x_parameterchanges[0].dataset_id, None)
+        self.assertEqual(x_parameterchanges[0].connector_id, None)
+        self.assertEqual(z_parameterchanges[0].dataset_id, None)
+        self.assertEqual(z_parameterchanges[0].connector_id, None)
+
+        self.assertEqual(x_parameterchanges[1].variable_type, 'array')
+        self.assertTrue(np.all(x_parameterchanges[1].old_value == [21.]))
+        self.assertTrue(np.all(x_parameterchanges[1].new_value == [1.]))
+        self.assertEqual(z_parameterchanges[1].variable_type, 'array')
+        self.assertTrue(np.all(z_parameterchanges[1].old_value == [21., 21.]))
+        self.assertTrue(np.all(z_parameterchanges[1].new_value == [4., 5.]))
+        self.assertEqual(x_parameterchanges[1].dataset_id, 'dataset_sellar')
+        self.assertEqual(x_parameterchanges[1].connector_id, 'MVP0_datasets_connector')
+        self.assertEqual(z_parameterchanges[1].dataset_id, 'dataset_sellar')
+        self.assertEqual(z_parameterchanges[1].connector_id, 'MVP0_datasets_connector')

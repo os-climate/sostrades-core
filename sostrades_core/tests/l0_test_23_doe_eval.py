@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/04-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/04-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,28 +15,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
+import unittest
 from logging import Handler
-from time import time
 
+import pandas as pd
+from numpy import array
 from pandas._testing import assert_frame_equal
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import (
+    DoeSampleGenerator,
+)
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
 """
-
-import unittest
-from numpy import array
-import pandas as pd
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
-import os
-from os.path import dirname, join
-
 
 class UnitTestHandler(Handler):
     """
@@ -186,7 +181,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
@@ -264,7 +259,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ root',
-                       f'\t|_ Eval',
+                       '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
@@ -364,7 +359,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
@@ -594,8 +589,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator',
-                       f'\t|_ Eval',
+                       '\t|_ SampleGenerator',
+                       '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
@@ -709,7 +704,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
@@ -830,7 +825,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ Eval',
+                       '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
@@ -1072,7 +1067,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             exec_eng.execute()
 
-        error_message = f"Variable root.Eval.samples_df : The variable wrong_values is not in the subprocess eval input values: It cannot be a column of the samples_df "
+        error_message = "Variable root.Eval.samples_df : The variable wrong_values is not in the subprocess eval input values: It cannot be a column of the samples_df "
 
         self.assertEqual(str(cm.exception), error_message)
         samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
@@ -1086,7 +1081,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.execute()
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ root',
-                       f'\t|_ Eval',
+                       '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
@@ -1180,7 +1175,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {same_usecase_name}',
                        f'|_ {same_usecase_name}',
-                       f'\t|_ SampleGenerator',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
@@ -1232,7 +1227,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ Disc1',
                        ]
@@ -1319,7 +1314,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ Disc1',
                        ]
@@ -1372,9 +1367,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         i = 0
         for key in eval_disc_ind.keys():
-            self.assertTrue(0. <= eval_disc_samples[f'Disc1.a'][i] <= 1.)
+            self.assertTrue(0. <= eval_disc_samples['Disc1.a'][i] <= 1.)
             self.assertAlmostEqual(eval_disc_ind[key],
-                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples[f'Disc1.a'][i])
+                                   private_values[f'{ns}.Eval.Disc1.b'] * eval_disc_samples['Disc1.a'][i])
             i += 1
 
     def test_16_Eval_User_Defined_samples_custom_output_name(self):
@@ -1431,7 +1426,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {ns}',
                        '|_ root',
-                       f'\t|_ Eval',
+                       '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
                        '\t\t\t|_ Sellar_2',
@@ -1660,7 +1655,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {same_usecase_name}',
                        f'|_ {same_usecase_name}',
-                       f'\t|_ SampleGenerator',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ subprocess',
                        '\t\t\t|_ Sellar_Problem',
@@ -1712,7 +1707,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator',
+                       '\t|_ SampleGenerator',
                        '\t|_ Eval',
                        '\t\t|_ Disc1',
                        ]

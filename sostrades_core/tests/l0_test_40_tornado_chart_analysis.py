@@ -1,5 +1,6 @@
 '''
 Copyright 2024 Capgemini
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,10 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import unittest
+
 import pandas as pd
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+
 from sostrades_core.sos_processes.test.tests_driver_eval.mono.test_mono_driver_sample_generator_tornado_analysis.usecase_tornado_analysis import (
     Study,
+)
+from sostrades_core.tools.post_processing.post_processing_factory import (
+    PostProcessingFactory,
 )
 
 

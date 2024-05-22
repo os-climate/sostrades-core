@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,27 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from typing import Optional
 import logging
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator, \
     SampleTypeError
 from sostrades_core.tools.design_space import design_space as dspace_tool
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo import get_available_doe_algorithms
-from gemseo import get_algorithm_options_schema
-from gemseo import compute_doe
-from numpy import array, ndarray, delete, NaN
 
+from gemseo import get_available_doe_algorithms
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.utils.source_parsing import get_options_doc
+from collections import ChainMap
+from typing import Optional
 
 import pandas as pd
-from gemseo.utils.source_parsing import get_options_doc
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-from collections import ChainMap
 
 
 class DoeSampleTypeError(SampleTypeError):
@@ -593,7 +585,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             return algo_options_desc_in
         else:
             raise Exception(
-                f"A DoE algorithm which is not available in GEMSEO has been selected.")
+                "A DoE algorithm which is not available in GEMSEO has been selected.")
 
     def get_arguments(self, wrapper):
         # Dynamic input of default design space

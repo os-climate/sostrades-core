@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,19 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+
+import pandas as pd
+from gemseo.problems.sobieski.core import SobieskiProblem
+from numpy import array
+
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+
 '''
 Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
 '''
-
-from numpy import array
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-import pandas as pd
-
-
-#from sostrades_core.sos_wrapping.test_discs.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.core import SobieskiProblem
 
 class SobieskiMission(SoSWrapp):
     """ Sobieski range wrapper using the Breguet formula.

@@ -15,8 +15,8 @@ limitations under the License.
 '''
 import logging
 import random
-import string
 import re
+import string
 from typing import Any
 
 from arango import ArangoClient, CollectionListError
@@ -28,7 +28,10 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     DatasetNotFoundException,
     DatasetUnableToInitializeConnectorException,
 )
-from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
+from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
+    DatasetSerializerType,
+    DatasetsSerializerFactory,
+)
 
 
 class ArangoDatasetsConnector(AbstractDatasetsConnector):

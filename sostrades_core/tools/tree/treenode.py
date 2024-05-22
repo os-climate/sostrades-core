@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,19 +14,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import base64
+import inspect
+import os
+import re
+from json import dumps
+from os import listdir
+from os.path import dirname, isdir, isfile, join
+
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.tree.data_management_discipline import (
+    DataManagementDiscipline,
+)
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
-from json import dumps
-
-from sostrades_core.tools.tree.data_management_discipline import DataManagementDiscipline
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from os.path import dirname, isdir, isfile, join
-import inspect
-import os
-import base64
-import re
-from os import listdir
 
 
 class TreeNode:
@@ -188,7 +192,7 @@ class TreeNode:
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
-                if not namespaced_key in self.disciplines_by_variable.keys():
+                if namespaced_key not in self.disciplines_by_variable.keys():
                     self.disciplines_by_variable[namespaced_key] = []
                 self.disciplines_by_variable[namespaced_key].append(data_management_discipline.discipline_label)
                 if new_disc_data[ProxyDiscipline.NUMERICAL]:
@@ -222,7 +226,7 @@ class TreeNode:
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
-                if not namespaced_key in self.disciplines_by_variable.keys():
+                if namespaced_key not in self.disciplines_by_variable.keys():
                     self.disciplines_by_variable[namespaced_key] = []
                 self.disciplines_by_variable[namespaced_key].append(data_management_discipline.discipline_label)
                 if new_disc_data[ProxyDiscipline.NUMERICAL]:
@@ -363,7 +367,7 @@ class TreeNode:
                         markdown_data = f.read()
 
                     # Find file reference in markdown file
-                    place_holder = f'!\\[(.*)\\]\\((.*)\\)'
+                    place_holder = '!\\[(.*)\\]\\((.*)\\)'
                     matches = re.finditer(place_holder, markdown_data)
 
                     images_base_64 = {}

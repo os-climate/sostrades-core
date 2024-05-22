@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/09-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/06/09-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,30 +14,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-"""A PETSC KSP linear solvers library wrapper."""
 import logging
-import sys
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Union
 
 import petsc4py  # pylint: disable-msg=E0401
+from gemseo.algos.linear_solvers.ksp_lib import (
+    _convert_ndarray_to_mat_or_vec,  # pylint: disable-msg=E1102,E0611 # pylint: disable-msg=E0401
+)
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
-from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E1102,E0611 # pylint: disable-msg=E0401
-
-from numpy import arange
-from numpy import array
-from numpy import ndarray
 from numpy import isnan
-from scipy.sparse import csr_matrix
-from scipy.sparse import find
-from scipy.sparse.base import issparse
 
-# Must be done before from petsc4py import PETSc, this loads the options from
-# command args in the options database.
-petsc4py.init(sys.argv)  # NB: triggers PETSc warning on unused options e.g. with tests
+# Must be done before from petsc4py import PETSc
+petsc4py.init([])
 from petsc4py import PETSc  # pylint: disable-msg=E0401
+
+"""A PETSC KSP linear solvers library wrapper."""
 
 LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_lib")
 

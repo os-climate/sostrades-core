@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,25 +15,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import unittest
 from logging import Handler
-import ast
-from pandas._testing import assert_frame_equal
-from numpy import ndarray, allclose
+from os.path import dirname, join
 
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+import pandas as pd
+from numpy import allclose, array, ndarray
+from pandas._testing import assert_frame_equal
+
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
+    SampleGeneratorWrapper,
+)
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import (
+    DoeSampleGenerator,
+)
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
 """
-
-import unittest
-from numpy import array
-import pandas as pd
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-import os
-from os.path import dirname, join
 
 
 class UnitTestHandler(Handler):
@@ -235,7 +236,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator']
+                       '\t|_ SampleGenerator']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -258,8 +259,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # print(doe_disc_samples)
         # test output 'samples_df' sample dataframe
         self.eval_inputs = self.input_selection_x_z
-        selected_inputs = self.eval_inputs[self.eval_inputs['selected_input']
-                                           == True]['full_name']
+        selected_inputs = self.eval_inputs[self.eval_inputs['selected_input']]['full_name']
         selected_inputs = selected_inputs.tolist()
         target_samples = [[array([0.]), array([-10., 0.])],
                           [array([10.]), array([-10., 0.])],
@@ -335,7 +335,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # Check of the proper treeview
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator']
+                       '\t|_ SampleGenerator']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -401,8 +401,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             eval_inputs = exec_eng.dm.get_value(
                 'doe.SampleGenerator.eval_inputs')
-            self.assertEqual(doe_disc_samples.columns.to_list(),
-                             eval_inputs.loc[eval_inputs['selected_input'] == True]['full_name'].to_list())
+            self.assertEqual(doe_disc_samples.columns.to_list(), eval_inputs.loc[eval_inputs['selected_input']]['full_name'].to_list())
             # Check whether samples correspond to reference samples
             # Fix format dataframe from CSV file
             algo_reference_samples = reference_dataframe.loc[reference_dataframe['algo']
@@ -494,7 +493,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         # Check of the proper treeview
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ doe',
-                       f'\t|_ SampleGenerator']
+                       '\t|_ SampleGenerator']
         exp_tv_str = '\n'.join(exp_tv_list)
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
@@ -561,8 +560,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             # selection
             eval_inputs = exec_eng.dm.get_value(
                 'doe.SampleGenerator.eval_inputs')
-            self.assertEqual(doe_disc_samples.columns.to_list(),
-                             eval_inputs.loc[eval_inputs['selected_input'] == True]['full_name'].to_list())
+            self.assertEqual(doe_disc_samples.columns.to_list(), eval_inputs.loc[eval_inputs['selected_input']]['full_name'].to_list())
             # Check whether samples correspond to reference samples
             # Fix format dataframe from CSV file
             algo_reference_samples = reference_dataframe.loc[reference_dataframe['algo']
@@ -610,7 +608,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ cp',
-                       f'\t|_ SampleGenerator']
+                       '\t|_ SampleGenerator']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 
@@ -663,8 +661,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             [7.0, [10, 10]]]
 
         variable_list = ['x', 'z']
-        target_samples_df = pd.DataFrame(
-            targeted_samples, columns=variable_list)
+        target_samples_df = pd.DataFrame(targeted_samples, columns=variable_list)
 
     def _test_5_cartesian_product_step_by_step_execution(self):
         """
@@ -693,7 +690,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ cp',
-                       f'\t|_ SampleGenerator']
+                       '\t|_ SampleGenerator']
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
 

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/27-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/03/27-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
-from os.path import join
 from os import getenv
+from os.path import join
+from pathlib import Path
+from shutil import rmtree
+from tempfile import gettempdir
+from time import sleep
 
 import numpy as np
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from tempfile import gettempdir
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
+'''
+mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
+'''
 
 class TestMDALoop(unittest.TestCase):
     """
@@ -594,7 +594,7 @@ class TestMDALoop(unittest.TestCase):
 
         option = exec_eng.root_process.get_sosdisc_inputs(
             "group_mda_disciplines")
-        assert option == True
+        assert option
 
     def test_07_check_no_self_coupled_soscoupling(self):
 
@@ -1405,7 +1405,9 @@ class TestMDALoop(unittest.TestCase):
             0]
 
         # Testing the post-processing module through filters
-        from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+        from sostrades_core.tools.post_processing.post_processing_factory import (
+            PostProcessingFactory,
+        )
         ppf = PostProcessingFactory()
 
         disc = exec_eng.dm.get_disciplines_with_name(

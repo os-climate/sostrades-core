@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16-2024/05/17 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,8 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from .base_controller import BaseController
 from numpy import zeros
+
+from .base_controller import BaseController
+
 
 class DesignVariable(BaseController):
     """
@@ -100,22 +103,12 @@ class DesignVariable(BaseController):
         if self.get_value() < lbnd-1e-1:
             valid=False
             msg='WARNING: '+self.get_id()+' value=%24.16e'%self.get_value()+' is lower than lower boundary '+str(lbnd)+'.'
-#             print msg
-#             print 'Force value to lower bound'
-#            self.set_value(lbnd)
         if self.get_value() > ubnd+1e-1:
             valid=False
             msg='WARNING: '+self.get_id()+' value=%24.16e'%self.get_value()+' is greater than upper boundary '+str(ubnd)+'.'
-#             print msg
-#             print 'Force value to upper bound'
-#             self.set_value(ubnd)
         if not valid:
             if raise_error:
-                print(msg)
-                raise Exception(msg)
-            else:
-                pass
-                #print msg
+                raise Exception(msg)  # pylint: disable=possibly-used-before-assignment
 
     def handle_dv_changes(self):
         gradient=zeros(self.get_ndv())

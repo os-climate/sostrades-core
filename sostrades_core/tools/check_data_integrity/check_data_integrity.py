@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/21-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/02/21-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from numpy import can_cast
-from sostrades_core.tools.controllers.simpy_formula import SympyFormula
 from copy import deepcopy
+
+from numpy import can_cast
+
+from sostrades_core.tools.controllers.simpy_formula import SympyFormula
 
 STANDARD_LIST_TYPES = ['list', 'array']
 TEMPORARY_LIST_TYPES = ['float_list', 'string_list', 'int_list']
@@ -109,7 +111,7 @@ class CheckDataIntegrity():
         # check if data is and input and is not optional
         if self.variable_io_type == self.IO_TYPE_IN:
             if self.variable_value is None and not self.variable_optional:
-                check_integrity_msg = f'Value is not set!'
+                check_integrity_msg = 'Value is not set!'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
             elif self.variable_value is not None:
                 # Do not check type of the value if the value is a formula
@@ -297,7 +299,7 @@ class CheckDataIntegrity():
                     check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
                     self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
             else:
-                check_integrity_msg = f'Range values for dataframe descriptor type different than [float,int or string] is not handled in data integrity checks for now'
+                check_integrity_msg = 'Range values for dataframe descriptor type different than [float,int or string] is not handled in data integrity checks for now'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
 
     def __check_subtype_descriptor(self, var_data_dict):
@@ -322,7 +324,7 @@ class CheckDataIntegrity():
             check_integrity_msg = 'Subtype descriptor must be a dictionnary'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
         elif len(subtype.keys()) != 1:
-            check_integrity_msg = f'Subtype descriptor should have a unique key'
+            check_integrity_msg = 'Subtype descriptor should have a unique key'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
         elif isinstance(subtype[type_to_check], dict):
             new_type_to_check = list(subtype[type_to_check].keys())[0]
@@ -358,7 +360,7 @@ class CheckDataIntegrity():
             for column in variable_formula.columns:
                 # if string that should be a formula but error on the typo of formula cannot be raise as error
                 # because maybe the string is not a formula but only a string
-                if type(variable_formula[column][0]) == type('str') and variable_formula[column][0].startswith(
+                if isinstance(variable_formula[column][0], str) and variable_formula[column][0].startswith(
                         'formula:'):
                     formula = variable_formula[column].values[0].split(':')[
                         1]
@@ -366,7 +368,7 @@ class CheckDataIntegrity():
 
         elif var_data_dict[self.TYPE] == 'dict':
             for key, value in variable_formula.items():
-                if type(value) == type('str') and value.startswith('formula:'):
+                if isinstance(value, str) and value.startswith('formula:'):
                     formula = variable_formula[key].split(':')[
                         1]
                     self.__check_formula(formula)
@@ -382,7 +384,7 @@ class CheckDataIntegrity():
                         1]
                     self.__check_formula(formula)
             else:
-                formula_error_msg = f'Variable is referenced as formula, but no formula is given'
+                formula_error_msg = 'Variable is referenced as formula, but no formula is given'
                 self.__add_msg_to_check_integrity_msg_list(
                     formula_error_msg)
 

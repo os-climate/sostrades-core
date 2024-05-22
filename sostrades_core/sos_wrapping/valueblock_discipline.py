@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/27-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/27-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@ limitations under the License.
 '''
 
 from copy import copy
+
 import pandas as pd
+
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
 
 

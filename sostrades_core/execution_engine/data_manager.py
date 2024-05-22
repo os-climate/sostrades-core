@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
 import logging
-from copy import copy
-from typing import Any
-from uuid import uuid4
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from datetime import datetime
 from hashlib import sha256
-from pandas import concat
+from typing import Any, Union
+from uuid import uuid4
 
 from gemseo.caches.simple_cache import SimpleCache
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from pandas import concat
 
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
@@ -54,12 +54,24 @@ DATAFRAME_DESCRIPTOR = ProxyDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
 
+@dataclass()
+class ParameterChange:
+    """
+    Dataclass used to log parameter changes when configuring the data in a study.
+    """
+    parameter_id: str
+    variable_type: str
+    old_value: Any
+    new_value: Any
+    dataset_id: Union[str, None]
+    connector_id: Union[str, None]
+    date: datetime
 
 class DataManager:
     """
     Specification: DataManager class collects inputs/outputs and disciplines
     """
-    VALUE = 'value'
+    VALUE = VALUE
     DISC_REF = 'reference'
     STATUS = 'status'
 
@@ -220,7 +232,7 @@ class DataManager:
                 self.data_dict[self.get_data_id(var_f_name)][attr] = val
         else:
             msg = f"Try to update metadata of variable {var_f_name} that does"
-            msg += f" not exists as I/O of any discipline"
+            msg += " not exists as I/O of any discipline"
             raise KeyError(msg)
 
     def get_io_data_of_disciplines(self, disciplines):
@@ -342,20 +354,25 @@ class DataManager:
         '''
         keys_to_map = self.data_id_map.keys() if full_ns_keys else self.data_id_map.values()
         for key, value in values_dict.items():
-            if not key in keys_to_map:
+            if key not in keys_to_map:
                 raise ValueError(f'{key} does not exist in data manager')
             k = self.get_data_id(key) if full_ns_keys else key
             # if self.data_dict[k][ProxyDiscipline.VISIBILITY] == INTERNAL_VISIBILITY:
             #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
 
-    def fill_data_dict_from_dict(self, values_dict: dict[str:Any], already_set_data: set[str], in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None:
+    def fill_data_dict_from_dict(self, values_dict: dict[str:Any],
+                                 already_set_data: set[str], parameter_changes: list[ParameterChange],
+                                 in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None:
         '''
         Set values in data_dict from dict with namespaced keys
         
         :param values_dict: Dictionnary {name : values}
         :type values_dict: dict[str:Any]
         
+        :param parameter_changes: list of effective parameter changes filled in place
+        :type parameter_changes: list[ParameterChange]
+
         :param already_set_data: set of data already set
         :type already_set_data: set[str]
         
@@ -373,28 +390,29 @@ class DataManager:
         convert_values_dict = self.convert_data_dict_with_ids(values_dict)
 
         # convert data_dict with uuids
-        for key, value in self.data_dict.items():
+        for key, dm_data in self.data_dict.items():
             if key in convert_values_dict:
                 # Only inject key which are set as input
                 # Discipline configuration only take care of input variables
-                # Variables are only set once
-                is_in_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
-                if in_vars and is_in_var and not key in already_set_data:
-                    value["value"] = convert_values_dict[key]["value"]
+                # Variables are only set f
+                is_in_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
+                if in_vars and is_in_var and key not in already_set_data:
+                    new_value = convert_values_dict[key][VALUE]
+                    self.apply_parameter_change(key, new_value, parameter_changes)
                     already_set_data.add(key)
-
-                    
                 # check if the key is an output variable
-                is_output_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
+                is_output_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
                 # check if this is a strongly coupled input necessary to
                 # initialize a MDA
-                is_init_coupling_var = value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and value[ProxyDiscipline.COUPLING]
-                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
-                    value["value"] = convert_values_dict[key]["value"]
+                is_init_coupling_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and dm_data[ProxyDiscipline.COUPLING]
+                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
+                    new_value = convert_values_dict[key][VALUE]
+                    self.apply_parameter_change(key, new_value, parameter_changes)
                     already_set_data.add(key)
 
-    def fill_data_dict_from_datasets(
-        self, datasets_mapping: DatasetsMapping, already_set_data: set[str], in_vars:bool, init_coupling_vars:bool, out_vars:bool
+    def fill_data_dict_from_datasets(self, datasets_mapping: DatasetsMapping,
+                                     already_set_data: set[str], parameter_changes: list[ParameterChange],
+                                     in_vars:bool, init_coupling_vars:bool, out_vars:bool
     ) -> None:
         '''
         Set values in data_dict from datasets
@@ -404,7 +422,10 @@ class DataManager:
         
         :param already_set_data: set of data already set
         :type already_set_data: set[str]
-        
+
+        :param parameter_changes: list of effective parameter changes filled in place
+        :type parameter_changes: list[ParameterChange]
+
         :param in_vars: set in vars
         :type in_vars: bool
         
@@ -427,7 +448,7 @@ class DataManager:
             is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[ProxyDiscipline.COUPLING]
             # get all input values not already set
             is_in_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
-            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
+            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                 data_ns = data_value[NS_REFERENCE].value
                 data_name = data_value[VAR_NAME]
                 data_type = data_value[TYPE]
@@ -445,14 +466,45 @@ class DataManager:
                 # get data values into the dataset into the right format
                 updated_data = self.dataset_manager.fetch_data_from_datasets(
                     datasets_info=datasets_info, data_dict=data_dict[TYPE])
-
                 # update data values in dm
-                for data_name, value in updated_data.items():
+                for data_name, new_data in updated_data.items():
                     key = data_dict[KEY][data_name]
-                    self.data_dict[key][VALUE] = value
+                    new_value = new_data[DatasetsManager.VALUE]
+                    connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
+                    dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_id
+                    self.apply_parameter_change(key, new_value, parameter_changes, connector_id, dataset_id)
                     already_set_data.add(key)
             else:
                 self.logger.warning(f"the namespace {namespace} is not referenced in the datasets mapping of the study")
+
+    def apply_parameter_change(self, key: str, new_value: Any,
+                               parameter_changes: list[ParameterChange],
+                               connector_id: (str, None) = None,
+                               dataset_id: (str, None) = None,
+                               update_parameter_changes: bool = True) -> None:
+        """
+        Applies and logs an input value change on variable with uuid key. It appends to parameter_changes a
+        ParameterChange object with deepcopies of the old and new values and the date, if and only if the old and new
+        values are different. Updates the data manager value in place.
+        :param key: uuid of the variable
+        :param new_value: value to update in the dm
+        :param parameter_changes: ongoing list of parameter changes
+        :param connector_id: dataset connector id if updating from dataset or None otherwise
+        :param dataset_id: dataset id if updating from dataset or None otherwise
+        :return: None, inplace update of the data manager value for variable
+        """
+        dm_data = self.data_dict[key]
+        if update_parameter_changes:
+            old_value = dm_data[VALUE]
+            if not dict_are_equal({VALUE: old_value}, {VALUE: new_value}):
+                parameter_changes.append(ParameterChange(parameter_id=self.get_var_full_name(key),
+                                                         variable_type=dm_data[TYPE],
+                                                         old_value=deepcopy(old_value),     # FIXME: deepcopies avoidable ?
+                                                         new_value=deepcopy(new_value),     # FIXME: deepcopies avoidable ?
+                                                         connector_id=connector_id,
+                                                         dataset_id=dataset_id,
+                                                         date=datetime.now()))
+        dm_data[VALUE] = new_value
 
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys
@@ -646,7 +698,7 @@ class DataManager:
                         if self.data_dict[var_id][VALUE] is not None:
                             disc_dict[var_name][VALUE] = self.data_dict[var_id][VALUE]
                         self.data_dict[var_id] = disc_dict[var_name]
-                if not disc_id in self.data_dict[var_id][DISCIPLINES_DEPENDENCIES]:
+                if disc_id not in self.data_dict[var_id][DISCIPLINES_DEPENDENCIES]:
                     self.data_dict[var_id][DISCIPLINES_DEPENDENCIES].append(
                         disc_id)
                     self.no_change = False
@@ -934,3 +986,4 @@ class DataManager:
                 if compare_data(data_name):
                     self.logger.debug(
                         f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")
+

@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/04/13-2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,16 +14,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import unittest
+from os.path import dirname
+
 import numpy as np
 import pandas as pd
-from os.path import join, dirname
-from pandas import DataFrame, read_csv
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
 from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
+
+from sostrades_core.execution_engine.func_manager.func_manager_disc import (
+    FunctionManagerDisc,
+)
+from sostrades_core.tests.core.abstract_jacobian_unit_test import (
+    AbstractJacobianUnittest,
+)
 
 AGGR_TYPE = FunctionManagerDisc.AGGR_TYPE
 AGGR_TYPE_SUM = FunctionManager.AGGR_TYPE_SUM
@@ -35,7 +40,6 @@ class TestDesignVar(AbstractJacobianUnittest):
     """
     DesignVar test class
     """
-    AbstractJacobianUnittest.DUMP_JACOBIAN = False
 
     def analytic_grad_entry(self):
         return [self.test_derivative
@@ -98,7 +102,7 @@ class TestDesignVar(AbstractJacobianUnittest):
         values_dict[f'{self.ns}.{self.sc_name}.design_space'] = self.dspace
         values_dict[f'{self.ns}.{self.sc_name}.formulation'] = 'DisciplinaryOpt'
         values_dict[f'{self.ns}.{self.sc_name}.objective_name'] = 'obj'
-        values_dict[f'{self.ns}.{self.sc_name}.ineq_constraints'] = [f'c_1', f'c_2']
+        values_dict[f'{self.ns}.{self.sc_name}.ineq_constraints'] = ['c_1', 'c_2']
         values_dict[f'{self.ns}.{self.sc_name}.algo_options'] = {"ftol_rel": 1e-10,
                                                                  "ineq_tolerance": 2e-3,
                                                                  "normalize_design_space": False}

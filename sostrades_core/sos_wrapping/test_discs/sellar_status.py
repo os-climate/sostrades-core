@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +15,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+from cmath import exp, sqrt
+
+from numpy import NaN, array, atleast_2d
+
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+
 '''
 Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
 '''
-from copy import copy
-from cmath import exp, sqrt
-from numpy import array, atleast_2d, NaN, complex128, ones, zeros
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-
 
 class SellarProblem(SoSWrapp):
     """ Sellar Optimization Problem functions

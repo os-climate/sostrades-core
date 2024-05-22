@@ -14,14 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import logging
+
 import pandas as pd
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
+
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
+    SampleGeneratorWrapper,
+)
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import (
     AbstractSampleGenerator,
     SampleTypeError,
 )
-
-import logging
 
 LOGGER = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/09-2024/03/20 Copyright 2023 Capgemini
+Modifications on 2023/03/09-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,26 +14,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from copy import deepcopy
+from importlib import import_module
+from logging import DEBUG, INFO
+from os import remove
+from os.path import exists, isdir, join
+from time import time
+from typing import Optional, Union
+
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.post_processing.post_processing_factory import (
+    PostProcessingFactory,
+)
+from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump, DirectLoadDump
+from sostrades_core.tools.tree.serializer import DataSerializer
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that manage a whole study process (load, execute, save, dump..)
 """
-from typing import Union, Optional
-from time import time
-from importlib import import_module
-from os.path import join, isdir, exists
-from logging import INFO, DEBUG
-from os import remove
 
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-# from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-from sostrades_core.tools.tree.serializer import DataSerializer
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump, AbstractLoadDump
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from copy import deepcopy
 from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
@@ -191,7 +193,7 @@ class BaseStudyManager():
             self.execution_engine.display_treeview_nodes()
 
         # load json mapping data file
-        #TODO: to be changed in next version 
+        # TODO: to be changed in next version
         if from_json_file_path is not None:
             json_file_path = from_json_file_path
         else:
@@ -202,8 +204,8 @@ class BaseStudyManager():
         datasets_mapping_dict = DatasetsMapping.from_json_file(file_path=json_file_path)
 
         # load study by retieving data from datasets, set them into the dm and configure study
-        self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
-        
+        parameter_changes = self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
+
         # keep old next steps after loading data
         self.specific_check_inputs()
         if display_treeview:
@@ -213,6 +215,7 @@ class BaseStudyManager():
         study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
+        return parameter_changes
 
     def load_data(self, from_path=None, from_input_dict=None, display_treeview=True):
         """ Method that load data into the execution engine
@@ -257,11 +260,13 @@ class BaseStudyManager():
         # Initialize execution engine with data
         # import ipdb
         # ipdb.set_trace()
-        self.execution_engine.load_study_from_input_dict(input_dict_to_load)
-        
+        parameter_changes = self.execution_engine.load_study_from_input_dict(input_dict_to_load)
+
         # Load datasets data
         if datasets_mapping is not None:
-            self.execution_engine.load_study_from_dataset(datasets_mapping=datasets_mapping)
+            datasets_parameter_changes = self.execution_engine.load_study_from_dataset(
+                datasets_mapping=datasets_mapping)
+            parameter_changes.extend(datasets_parameter_changes)
         self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
@@ -270,6 +275,7 @@ class BaseStudyManager():
         study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
         message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
         logger.info(message)
+        return parameter_changes
 
     def specific_check_inputs(self):
         """ Method to overload to have a specific check on input datas
@@ -437,10 +443,10 @@ class BaseStudyManager():
 
         else:
             print(f'Study {study_display_name} is configured not to run.')
-            print(f'Skipping execute.')
+            print('Skipping execute.')
             logger.info(
                 f'Study {study_display_name} is configured not to run.')
-            logger.info(f'Skipping execute.')
+            logger.info('Skipping execute.')
 
         # Method after execute and before dump
         try:
@@ -518,14 +524,14 @@ class BaseStudyManager():
             self.execution_engine.get_anonimated_data_dict())
 
         logger.info(
-            f'------ Check post-processing integrity ------')
+            '------ Check post-processing integrity ------')
         ppf = PostProcessingFactory()
         ppf.get_all_post_processings(
             execution_engine=self.execution_engine, filters_only=False,
             for_test=True)
 
         logger.info(
-            f'------ Check data manager integrity after post-processing calls ------')
+            '------ Check data manager integrity after post-processing calls ------')
 
         # Save data manager after post-processing
         dm_dict_after = deepcopy(
@@ -583,8 +589,9 @@ class BaseStudyManager():
             loaded_dict = serializer.get_dict_from_study(
                 study_folder_path, self.__rw_strategy)
 
-            input_dict = {key: value[ProxyDiscipline.VALUE]
-                          for key, value in loaded_dict.items()}
+            input_dict = {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
+        else:
+            raise Exception(f"study_folder_path is None, can't get data from file")
 
         result.append(input_dict)
 
@@ -686,7 +693,7 @@ class BaseStudyManager():
 
         if not isinstance(rw_strategy, AbstractLoadDump):
             raise TypeError(
-                f'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
 
         if study_folder_path is not None:
             serializer = DataSerializer()
@@ -710,7 +717,7 @@ class BaseStudyManager():
 
         if not isinstance(rw_strategy, AbstractLoadDump):
             raise TypeError(
-                f'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
 
         if isdir(study_folder_path):
             serializer = DataSerializer()
@@ -737,7 +744,7 @@ class BaseStudyManager():
 
         if not isinstance(rw_strategy, AbstractLoadDump):
             raise TypeError(
-                f'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
 
         result = []
 

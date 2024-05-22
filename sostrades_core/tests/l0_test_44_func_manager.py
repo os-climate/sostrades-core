@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-import unittest
-import numpy as np
-from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from numpy import arange
-import pandas as pd
 import logging
+import unittest
 
-from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import Study
+import numpy as np
+import pandas as pd
+from numpy import arange
+
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
+from sostrades_core.execution_engine.func_manager.func_manager_disc import (
+    FunctionManagerDisc,
+)
+from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import (
+    Study,
+)
 
 
 class TestFuncManager(unittest.TestCase):
@@ -520,6 +522,7 @@ class TestFuncManager(unittest.TestCase):
                             INEQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
         func_df['weight'] = [1., 1., 1., 1, 1, 0.8, 0.2]
         func_df['aggr'] = ['sum', 'sum', 'sum', 'sum', 'sum', 'smax', 'sum']
+        func_df['parent'] = ['ineqcst', 'ineqcst', 'ineqcst', 'eqcst', 'eqcst', 'obj', 'obj']
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 

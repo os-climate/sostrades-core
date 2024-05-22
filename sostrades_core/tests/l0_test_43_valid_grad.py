@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,15 +17,18 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding: iso-8859-1 -*-
 
 import unittest
-
-from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
-from sostrades_core.tools.grad_solvers.validgrad.BFGSFDHessian import BFGSFDHessian
-from sostrades_core.tools.grad_solvers.validgrad.FDGradient import FDGradient
-from sostrades_core.tools.grad_solvers.validgrad.FDSecondOrderCentered import FDSecondOrderCentered
-from math import sin, cos
 from cmath import cos as ccos
 from cmath import sin as csin
+from math import cos, sin
+
 import numpy as np
+
+from sostrades_core.tools.grad_solvers.validgrad.BFGSFDHessian import BFGSFDHessian
+from sostrades_core.tools.grad_solvers.validgrad.FDGradient import FDGradient
+from sostrades_core.tools.grad_solvers.validgrad.FDSecondOrderCentered import (
+    FDSecondOrderCentered,
+)
+from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
 
 
 class TestValidGrad(unittest.TestCase):

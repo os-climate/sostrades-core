@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/27-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/03/27-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from numpy import complex128, float32, float64, int32, int64, ndarray, number
+from pandas.core.frame import DataFrame
+
 '''
 Exp_min function minimize an array with a min_value with a smooth decreasing exponential 
 The gradient of this function can also be used
 '''
-
-from numpy import int32, int64, float32, float64, complex128, ndarray, number
-from pandas.core.frame import DataFrame
 
 DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
 

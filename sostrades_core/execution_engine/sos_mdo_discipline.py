@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/07-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/07-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,18 +16,23 @@ limitations under the License.
 '''
 
 import collections
-from gemseo.core.discipline import MDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+
 import logging
+
 # debug mode
 from copy import deepcopy
-from pandas import DataFrame
-from numpy import ndarray, floating
-from scipy.sparse import lil_matrix
+
+from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from sostrades_core.execution_engine.sos_discipline_data import SoSDisciplineData
+
+from numpy import floating, ndarray
+from pandas import DataFrame
+from scipy.sparse import lil_matrix
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8

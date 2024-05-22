@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,10 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import unittest
-from sostrades_core.tools.sumdfdict.toolboxsum import toolboxsum
 
 import pandas as pd
 from pandas.testing import assert_frame_equal
+
+from sostrades_core.tools.sumdfdict.toolboxsum import toolboxsum
 
 
 class TestSumDF(unittest.TestCase):

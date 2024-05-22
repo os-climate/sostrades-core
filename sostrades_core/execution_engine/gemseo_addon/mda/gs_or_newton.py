@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/04-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/04-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@ limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 
-import logging
-
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
 """
+
+import logging
 
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
 from gemseo.core.discipline import MDODiscipline

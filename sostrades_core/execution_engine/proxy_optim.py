@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,15 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from typing import List
-from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
-from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
 from copy import deepcopy
 from multiprocessing import cpu_count
+
 from numpy import array, ndarray, delete, inf
 
 from gemseo.algos.design_space import DesignSpace
@@ -31,13 +25,21 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+
+from typing import List
+
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
-from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
+from sostrades_core.execution_engine.func_manager.func_manager_disc import (
+    FunctionManagerDisc,
+)
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
-    TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.tools.design_space import design_space as dspace_tool
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+    InstanciatedSeries,
+    TwoAxesInstanciatedChart,
+)
 
 
 class ProxyOptim(ProxyDriverEvaluator):
@@ -537,8 +539,10 @@ class ProxyOptim(ProxyDriverEvaluator):
 
                 iterations = list(range(len(history)))
                 min_value, max_value = history.min(), history.max()
-                if max_value > max_y: max_y = max_value
-                if min_value < min_y: min_y = min_value
+                if max_value > max_y:
+                    max_y = max_value
+                if min_value < min_y:
+                    min_y = min_value
                 for series in to_series(varname=variable_name, x=iterations, y=history):
                     all_series.append(series)
 
@@ -679,7 +683,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         eq_full_names = self._update_names(eq_names, self.IO_TYPE_OUT)
         for eq in eq_full_names:
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
-                self, eq, MDOFunction.ConstraintType.EQ, eq, value=None,
+                eq, MDOFunction.ConstraintType.EQ, eq, value=None,
                 positive=False)
 
     def _set_flush_submdas_to_true(self):

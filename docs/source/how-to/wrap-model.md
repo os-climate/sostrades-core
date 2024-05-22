@@ -239,9 +239,9 @@ class GradientSellar(AbstractJacobianUnittest):
         # get the discipline where you want to check the gradients
         disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
 
-        # activate this option if you want to write the reference jacobian matrix in a file.
-        # this is useful to avoid the (costly) computation of the reference jacobian for nexts calls to check_jacobians
-        AbstractJacobianUnittest.DUMP_JACOBIAN = True
+        # Check the jacobian using as reference the pre-computed jacobian. Note that, to force the re-computation
+        # and storage of the reference jacobian (upon model change), the environment variable DUMP_JACOBIAN_UNIT_TEST
+        # needs to be set to "true".
         self.check_jacobian(location=dirname(__file__),
                             filename=f'jacobian_sellar_1.pkl',
                             discipline=disc,
@@ -260,7 +260,7 @@ During the call to `check_jacobian`, the analytic jacobian (exact) will be compa
 
 This reference jacobian computation can be costly according to the number of design variables and outputs provided to the `check_jacobian` method.
 During the gradient validation, you may want to avoid the full computation of the reference jacobian when the `run` method content is unchanged (no change in the functions evaluations).
-To this purpose, it is possible to set a flag `AbstractJacobianUnittest.DUMP_JACOBIAN` to `True` so that the result is persisted in a pickle file described by `location` and `filename` arguments.
+To this purpose, it is necessary to set the environment variable `DUMP_JACOBIAN_UNIT_TEST` to `true` so that the result is persisted in a pickle file described by `location` and `filename` arguments.
 
-Once the reference is generated once, you can set the `AbstractJacobianUnittest.DUMP_JACOBIAN` to `False` so that the reference jacobian will not be computed twice : it will be loaded from the provided pickle file.
+Once the reference is generated once, you can delete the environment variable or set it to `false` so that the reference jacobian will not be computed twice : it will be loaded from the provided pickle file.
 

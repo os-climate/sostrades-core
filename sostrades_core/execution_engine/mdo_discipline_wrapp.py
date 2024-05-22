@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ limitations under the License.
 '''
 import logging
 from typing import Union
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
-from gemseo.mda.mda_chain import MDAChain
+
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
 
 '''

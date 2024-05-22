@@ -18,8 +18,15 @@ import logging
 import os
 from typing import Any
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException, DatasetNotFoundException
-from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    AbstractDatasetsConnector,
+    DatasetGenericException,
+    DatasetNotFoundException,
+)
+from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
+    DatasetSerializerType,
+    DatasetsSerializerFactory,
+)
 
 
 class JSONDatasetsConnector(AbstractDatasetsConnector):
@@ -27,7 +34,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
     Specific dataset connector for dataset in json format
     """
 
-    def __init__(self, file_path: str, serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):
+    def __init__(self, file_path: str, create_if_not_exists: bool=False, serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):
         """
         Constructor for JSON data connector
 
@@ -39,6 +46,11 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         """
         super().__init__()
         self.__file_path = file_path
+        # create file if not exist
+        if create_if_not_exists and not os.path.exists(file_path):
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump({}, f)
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug("Initializing JSON connector")
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)

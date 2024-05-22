@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/02-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/03/02-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,26 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.tools.filter.filter import filter_variables_to_convert
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-
+from itertools import repeat
 from multiprocessing import cpu_count
 
-from pandas import DataFrame
-from numpy import ndarray, floating
-from itertools import repeat
+from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+
+from gemseo import create_mda
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 from gemseo.core.chain import MDOChain
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
-from gemseo import create_mda
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from numpy import floating, ndarray
+from pandas import DataFrame
 
-import logging
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 N_CPUS = cpu_count()
 
@@ -214,10 +209,10 @@ class SoSMDAChain(MDAChain):
             key in self.local_data]  # TODO: replace local_data[key] per key should work
         if len(strong_couplings) < len(self.strong_couplings):
             self.logger.info(
-                f'Execute a pre-run for the coupling ' + self.name)
+                'Execute a pre-run for the coupling ' + self.name)
             self.recreate_order_for_first_execution()
             self.logger.info(
-                f'End of pre-run execution for the coupling ' + self.name)
+                'End of pre-run execution for the coupling ' + self.name)
 
     def recreate_order_for_first_execution(self):
         '''

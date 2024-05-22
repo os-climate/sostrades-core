@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/25-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/25-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-import unittest
 import hashlib
-from time import sleep
-from shutil import rmtree
-from os import makedirs
+import unittest
 from copy import copy
-from os.path import join, dirname
+from os import makedirs
+from os.path import dirname, join
 from pathlib import Path
 from pickle import dump as pkl_dump
+from shutil import rmtree
+from time import sleep
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tests.l0_test_06_dict_pickle_import_export_dm import init_dict
 from sostrades_core.tools.rw.load_dump_dm_data import CryptedLoadDump, DirectLoadDump
+from sostrades_core.tools.tree.serializer import DataSerializer
 
 
 def init_execution_engine_disc1(name, encryption_dir=None):

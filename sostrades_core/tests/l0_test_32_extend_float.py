@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,18 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-
 import unittest
-from numpy import int32 as np_int32, float64 as np_float64, int64 as np_int64, array
+
+
+from numpy import array
+from numpy import float64 as np_float64
+from numpy import int32 as np_int32
+from numpy import int64 as np_int64
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, \
-    convert_array_into_new_type
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
+    convert_array_into_new_type,
+    convert_new_type_into_array,
+
 
 
 class TestExtendFloat(unittest.TestCase):

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/04-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/04-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,16 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
-from copy import deepcopy
 import logging
-
-# from sostrades_core.execution_engine.gemseo_addon.mda.gs_purenewton_mda import GSPureNewtonMDA
 
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
 """
 
+from copy import deepcopy
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
 from gemseo import create_mda
 

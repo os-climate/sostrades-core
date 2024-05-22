@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,16 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+from cmath import exp, sqrt
+
+from numpy import NaN, array, atleast_2d
+
+from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 '''
 Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
 '''
-from cmath import exp, sqrt
-from numpy import array, atleast_2d, NaN
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class SellarProblem(SoSWrapp):
@@ -345,8 +347,8 @@ class Sellar3(SoSWrapp):
         '''Override the _check_min_max_gradients method from <gemseo.core.discipline> with a raise for test purposes
         THIS METHOD MUST BE UPDATED IF THE ORIGINAL METHOD CHANGES
         '''
-        from numpy import min as np_min
         from numpy import max as np_max
+        from numpy import min as np_min
 
         for out in jac:
             for inp in self.jac[out]:

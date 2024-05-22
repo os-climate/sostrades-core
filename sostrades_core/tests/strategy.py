@@ -13,6 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import glob
+import os
+import sys
+import tempfile
+from typing import Union
+
+import pytest
+
 """
 TEST STRATEGY MODULE
 
@@ -30,8 +38,7 @@ How to use ?
 - run 'python strategy.py uc' for testing usecases
 
 """
-import sys, os, glob, pytest, tempfile
-from typing import Union
+
 # Create a temporary file
 
 
@@ -50,7 +57,7 @@ def run_tests_l0_l1_l2(main_folder, file_pattern):
         return 0
     try:
         # Use subprocess to run the pytest command on the specified file
-        exitcode = pytest.main(['-W', 'ignore', '--durations=5', '--durations-min=2.0'] + test_files)
+        exitcode = pytest.main(['-W', 'ignore', '-v', '--durations=5', '--durations-min=2.0'] + test_files)
     except Exception as e:
         # Handle any errors or exceptions here
         print(f"Error while running pytest on {test_files}: {e}")

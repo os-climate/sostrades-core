@@ -17,8 +17,13 @@ import json
 import logging
 import os
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetsConnectorFactory, DatasetConnectorType
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    AbstractDatasetsConnector,
+)
+from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+    DatasetConnectorType,
+    DatasetsConnectorFactory,
+)
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
@@ -75,4 +80,10 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
             cls.register_connector(connector_identifier=connector_id, connector_type=connector_type, **connector_data[cls.CONNECTOR_ARGS_STR])
 
 # Initialize some sample connectors
-DatasetsConnectorManager.instanciate_connectors_from_json_file(os.path.join(os.path.dirname(__file__), "sample_connectors.json"))
+default_sample_connector_file_path = os.path.join(os.path.dirname(__file__), "sample_connectors.json")
+sample_connector_file_path = os.environ.get('SOS_TRADES_DATASET_CONNECTOR_CONFIGURATION', default_sample_connector_file_path)
+if os.path.exists(sample_connector_file_path):
+    DatasetsConnectorManager.instanciate_connectors_from_json_file(sample_connector_file_path)
+else:
+    logging.getLogger(__name__).warning("Dataset connector sample connector file environment variable not set, using default file.")
+    DatasetsConnectorManager.instanciate_connectors_from_json_file(default_sample_connector_file_path)

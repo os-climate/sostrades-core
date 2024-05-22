@@ -1,13 +1,28 @@
-from os.path import join, exists, dirname
+'''
+Copyright 2022 Airbus SAS
+Modifications on {} Copyright 2024 Capgemini
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+'''
+import importlib
+import json
+import platform
+import subprocess
 from os import makedirs
+from os.path import dirname, exists, join
+
 import numpy as np
 import pandas as pd
-import json
-import subprocess
-import black
-import platform
-import itertools
-import importlib
 
 """
     Script to generate a usecase.py with associated input data from a dm.pkl file
@@ -432,7 +447,8 @@ if '__main__' == __name__:
             str_eval = ', converters={'
             for col in col_to_eval:
                 try:  # test if the eval (str -> list) is achievable
-                    assert type(eval(str(df[col].values[0]))) == list
+                    assert isinstance(eval(str(df[col].values[0])), list)
+
                     str_eval = str_eval + f"'{col}': eval, "
                     i_eval += 1
                 except:

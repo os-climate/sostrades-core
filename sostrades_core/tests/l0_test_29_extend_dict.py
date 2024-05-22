@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,21 +14,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 
-import unittest
 import pprint
+import unittest
+
 from numpy import array
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
 
 from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
+
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, \
-    convert_array_into_new_type
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
+    convert_array_into_new_type,
+    convert_new_type_into_array,
+)
 
 
 class TestExtendDict(unittest.TestCase):

@@ -14,10 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from typing import Any
-import pandas as pd
-import numpy as np
 
-from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer import AbstractDatasetsSerializer
+import numpy as np
+import pandas as pd
+
+from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer import (
+    AbstractDatasetsSerializer,
+)
 
 
 class JSONDatasetsSerializer(AbstractDatasetsSerializer):

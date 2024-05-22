@@ -16,6 +16,7 @@ limitations under the License.
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
 
+
 class Study(StudyManager):
 
     def __init__(self, execution_engine=None):

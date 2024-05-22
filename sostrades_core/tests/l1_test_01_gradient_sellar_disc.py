@@ -13,21 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import pandas as pd
-import numpy as np
 from os.path import dirname
-from itertools import product
+
+import numpy as np
+import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
-from sostrades_core.execution_engine.design_var.design_var_disc import DesignVarDiscipline
+from sostrades_core.tests.core.abstract_jacobian_unit_test import (
+    AbstractJacobianUnittest,
+)
 
 
 class GradientSellar(AbstractJacobianUnittest):
     """
     Sellar gradients test class
     """
-    # AbstractJacobianUnittest.DUMP_JACOBIAN = True
     np.random.seed(42)
 
     def analytic_grad_entry(self):
@@ -65,9 +65,8 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.update_from_dm()
         self.ee.prepare_execution()
         disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
         self.check_jacobian(location=dirname(__file__),
-                            filename=f'jacobian_sellar_1.pkl',
+                            filename='jacobian_sellar_1.pkl',
                             discipline=disc,
                             step=1e-16,
                             derr_approx='complex_step',
@@ -96,9 +95,8 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.update_from_dm()
         self.ee.prepare_execution()
         disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
         self.check_jacobian(location=dirname(__file__),
-                            filename=f'jacobian_sellar_2.pkl',
+                            filename='jacobian_sellar_2.pkl',
                             discipline=disc,
                             step=1e-16,
                             derr_approx='complex_step',
@@ -130,9 +128,8 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.update_from_dm()
         self.ee.prepare_execution()
         disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        #AbstractJacobianUnittest.DUMP_JACOBIAN = True
         self.check_jacobian(location=dirname(__file__),
-                            filename=f'jacobian_sellar_problem.pkl',
+                            filename='jacobian_sellar_problem.pkl',
                             discipline=disc,
                             step=1e-16,
                             derr_approx='complex_step',

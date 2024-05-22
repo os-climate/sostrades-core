@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/05-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/05-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,32 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import copy
-import logging
+import unittest
+from importlib import import_module
 from logging import Handler
-from time import time
+from os.path import dirname, join
 
+import pandas as pd
+from numpy import array
 from pandas._testing import assert_frame_equal
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import (
+    ProcessBuilderParameterType,
+)
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
 """
-
-import unittest
-from numpy import array, std, NaN
-import pandas as pd
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-
-import os
-from os.path import dirname, join
-import math
-
-from importlib import import_module
-
 
 class UnitTestHandler(Handler):
     """
@@ -87,8 +78,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in multi instance mode with eval
         It uses the test_disc1_disc3_list nested process 
         """
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -173,8 +162,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in mono instance mode with doe algo product generator + eval
         It uses the test_disc1_disc3_list nested process 
         """
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -258,7 +245,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in mono instance mode with doe algo product generator + eval
         It uses the test_disc1_disc3_list nested process 
         """
-        from os.path import join, dirname
 
         ref_dir = join(dirname(__file__), 'data')
 
@@ -345,8 +331,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in multi instance mode with eval 
         It uses the sellar_coupling nested process
         """
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -448,8 +432,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in multi instance mode with generator + eval
         It uses the sellar_coupling nested process
         """
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -588,8 +570,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         This test checks the usecase import capability in mono instance mode with generator  + eval
         It uses the sellar_coupling nested process
         """
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
         # TODO: ask Carlos
@@ -732,8 +712,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         """
         This test checks the usecase import capability in multi instance mode.
         """
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -838,8 +816,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         It uses the test_disc1_disc3_list nested process 
         """
         # Old test that could be depreciated: already covered by test 1
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -928,8 +904,6 @@ class TestSoSimportUsecase(unittest.TestCase):
         It uses the test_disc1_disc3_list nested process 
         """
         # Old test that could be depreciated: already covered by test 2
-        from os.path import join, dirname
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 

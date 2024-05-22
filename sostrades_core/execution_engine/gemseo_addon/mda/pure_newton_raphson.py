@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 
 import logging
-import numpy as np
 from copy import copy
+
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
 
 """

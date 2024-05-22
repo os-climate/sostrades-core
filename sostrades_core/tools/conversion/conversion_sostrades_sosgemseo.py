@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/21-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/02/21-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@ from copy import deepcopy
 from functools import reduce
 
 import numpy as np
-from numpy import int32 as np_int32, float64 as np_float64, complex128 as np_complex128, int64 as np_int64, delete
-from numpy import ndarray, append, arange, array
+from numpy import append, arange, array, delete, ndarray
+from numpy import complex128 as np_complex128
+from numpy import float64 as np_float64
+from numpy import int32 as np_int32
+from numpy import int64 as np_int64
 from pandas import DataFrame
 from itertools import chain
 
