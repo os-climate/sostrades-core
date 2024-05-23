@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/25-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/25-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
-from time import sleep, time
+from os import getenv, remove
+from os.path import dirname, join
 from pathlib import Path
-import platform
+from tempfile import gettempdir
+from time import sleep
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-# from sostrades_core.sos_processes.test.test_configure_process.usecase import Study as study_core
-# from sostrades_core.sos_processes.test.test_configure_process.usecase_import_study import Study as study_core_import_study
-from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import Study as study_sellar_opt
-
-from tempfile import gettempdir
-from copy import copy, deepcopy
-from os.path import join, dirname
-from os import remove, getenv
+from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import (
+    Study as study_sellar_opt,
+)
 
 
 class TestStructuringInputs(unittest.TestCase):

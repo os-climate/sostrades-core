@@ -81,7 +81,7 @@ def check_eval_io(given_list, default_list, is_eval_input):
     error_msg = []
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
     for given_io in given_list:
-        if given_io not in default_list and not MULTIPLIER_PARTICULE in given_io:
+        if given_io not in default_list and MULTIPLIER_PARTICULE not in given_io:
             if is_eval_input:
                 error_msg.append(f'The input {given_io} in eval_inputs is not among possible values. Check if it is an ' \
                             f'input of the subprocess with the correct full name (without study name at the ' \

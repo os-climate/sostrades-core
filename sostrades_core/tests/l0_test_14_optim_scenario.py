@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/01/24-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/01/24-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,26 +14,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import Study
-from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-unit test for optimization scenario
-"""
-
 import os
 import unittest
 from copy import deepcopy
 
 import pandas as pd
+from gemseo.core.mdo_scenario import MDOScenario
 from numpy import array, set_printoptions
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from gemseo.core.mdo_scenario import MDOScenario
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import Study as study_sellar_opt_discopt
+from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import (
+    Study as study_sellar_opt_discopt,
+)
+from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import (
+    Study,
+)
+from sostrades_core.tools.post_processing.post_processing_factory import (
+    PostProcessingFactory,
+)
+
+"""
+mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
+unit test for optimization scenario
+"""
 
 
 class TestSoSOptimScenario(unittest.TestCase):
@@ -79,7 +83,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'MDF'
         disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
-            f'c_1', f'c_2']
+            'c_1', 'c_2']
 
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-10,
                                                                     "ineq_tolerance": 2e-3,
@@ -138,7 +142,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'MDF'
         disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
-            f'c_1', f'c_2']
+            'c_1', 'c_2']
 
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-5,
                                                                     "ineq_tolerance": 1e-5,
@@ -201,7 +205,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'IDF'
         disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
-            f'c_1', f'c_2']
+            'c_1', 'c_2']
 
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
                                                                     "ineq_tolerance": 1e-6,
@@ -833,7 +837,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'MDF'
         disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
-            f'c_1', f'c_2']
+            'c_1', 'c_2']
 
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-10,
                                                                     "ineq_tolerance": 2e-3,

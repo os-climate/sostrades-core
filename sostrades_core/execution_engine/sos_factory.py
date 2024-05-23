@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/07-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/07-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,22 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-from sostrades_core.execution_engine.proxy_optim import ProxyOptim
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import inspect
 import os
 from importlib import import_module
 
 from pandas.core.common import flatten
 
-from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
-from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
+from sostrades_core.execution_engine.proxy_discipline_builder import (
+    ProxyDisciplineBuilder,
+)
+from sostrades_core.execution_engine.proxy_optim import ProxyOptim
+from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
 from sostrades_core.sos_wrapping.selector_discipline import SelectorDiscipline
 

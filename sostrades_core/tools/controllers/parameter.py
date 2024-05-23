@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,9 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from re import compile
+
 from .base_controller import BaseController
+
 # from MDOTools.Controllers.Formula.Formula import Formula
 from .simpy_formula import SympyFormula as Formula
+
+
 class Parameter(BaseController):
     """
     PParameter Class

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/20-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/06/20-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.script_test_all_usecases import processed_test_one_usecase
-from os.path import abspath, basename, dirname, relpath, splitext, join, exists
-from os import sep
+from os.path import abspath, basename, dirname, exists, join, splitext
+
 import numpy as np
+
+from sostrades_core.sos_processes.script_test_all_usecases import (
+    processed_test_one_usecase,
+)
+from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
 
 class StudyManager(BaseStudyManager):

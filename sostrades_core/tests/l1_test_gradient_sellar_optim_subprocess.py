@@ -14,17 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from os.path import join, dirname
-from copy import deepcopy
-import numpy as np
 import logging
+from copy import deepcopy
+from os.path import dirname
+
+import numpy as np
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
-from sostrades_core.sos_processes.test.test_sellar_sub_opt_w_design_var.usecase import Study
-from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var_sub.usecase import Study as study_sellar_sub
-from sostrades_core.sos_processes.test.test_sellar_coupling_for_design_var.usecase import Study as study_sellar_sub_wodvar
-
+from sostrades_core.sos_processes.test.test_sellar_coupling_for_design_var.usecase import (
+    Study as study_sellar_sub_wodvar,
+)
+from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var_sub.usecase import (
+    Study as study_sellar_sub,
+)
+from sostrades_core.sos_processes.test.test_sellar_sub_opt_w_design_var.usecase import (
+    Study,
+)
+from sostrades_core.tests.core.abstract_jacobian_unit_test import (
+    AbstractJacobianUnittest,
+)
 from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
 
 
@@ -80,7 +88,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
         # check derivative of objective lagrangian wrt x_in and z_in
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_01.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_01.pkl'
         inputs = ['Test.Sellar.SellarOptimScenario.x_in', 'Test.Sellar.SellarOptimScenario.z_in']
         outputs = ['Test.Sellar.SellarOptimScenario.objective_lagrangian']
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
@@ -128,7 +136,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         ee.display_treeview_nodes()
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_02.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_02.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
 
@@ -174,7 +182,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         ee.display_treeview_nodes()
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_03.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_03.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
 
@@ -222,7 +230,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         ee.display_treeview_nodes()
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_04.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_04.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
 
@@ -271,7 +279,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         ee.display_treeview_nodes()
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_05.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_05.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
 
@@ -317,7 +325,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         ee.display_treeview_nodes()
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_06.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_06.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
         local_data_after_execute = coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data
@@ -365,7 +373,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         ee.display_treeview_nodes()
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_07.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_07.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
         local_data = self.execute_sellar()
@@ -412,7 +420,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         ee.display_treeview_nodes()
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_08.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_08.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
         local_data_after_execute = coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data
@@ -527,7 +535,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         ee.display_treeview_nodes()
         coupling_disc = ee.root_process.proxy_disciplines[0]
 
-        pkl_name = f'jacobian_obj_vs_design_var_sellar_test_11.pkl'
+        pkl_name = 'jacobian_obj_vs_design_var_sellar_test_11.pkl'
         inputs = ['Test.SellarCoupling.x', 'Test.SellarCoupling.z']
         outputs = ['Test.SellarCoupling.obj', 'Test.SellarCoupling.c_1', 'Test.SellarCoupling.c_2']
 
@@ -564,7 +572,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
             ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.execute(full_values_dict)
 
         objective_lagr = ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.get_outputs_by_name(
-            f'Test.objective_lagrangian')
+            'Test.objective_lagrangian')
         return objective_lagr
 
     def dfx_sellar(self, x, *args):
@@ -579,8 +587,8 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         if not args:
             # if no given exec engine and data, initialize new one and set data for x_in and z_in
             ee, full_values_dict = self.create_ee_init_data()
-            full_values_dict[f'Test.x_in'] = x[0:4]
-            full_values_dict[f'Test.z_in'] = x[4:]
+            full_values_dict['Test.x_in'] = x[0:4]
+            full_values_dict['Test.z_in'] = x[4:]
 
             ee.load_study_from_input_dict(full_values_dict)
             # prepare execution (for linearize step)
@@ -589,8 +597,8 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         else:
             ee = args[0]
             full_values_dict = args[1]
-            full_values_dict[f'Test.x_in'] = x[0:4]
-            full_values_dict[f'Test.z_in'] = x[4:]
+            full_values_dict['Test.x_in'] = x[0:4]
+            full_values_dict['Test.z_in'] = x[4:]
             # make sure we use the same exec engine at each step
             assert self.ee_to_test is ee
 

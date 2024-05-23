@@ -15,8 +15,9 @@ limitations under the License.
 '''
 import logging
 from typing import Any, List
-from sostrades_core.datasets.dataset_info import DatasetInfo
+
 from sostrades_core.datasets.dataset import Dataset
+from sostrades_core.datasets.dataset_info import DatasetInfo
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
     DatasetsConnectorManager,
 )

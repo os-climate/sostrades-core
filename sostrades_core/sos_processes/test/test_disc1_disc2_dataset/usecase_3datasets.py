@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
+import time
+
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
-import time
 
 
 class Study(StudyManager):

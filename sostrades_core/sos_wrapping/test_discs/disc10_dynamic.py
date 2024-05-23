@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16-2024/05/17 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-import pandas as pd
-import numpy as np
 
 
 class Disc10(SoSWrapp):
@@ -84,6 +83,8 @@ class Disc10(SoSWrapp):
             b = input_dict['b']
             power = input_dict['power']
             y = a * x**power + b
+        else:
+            raise Exception(f"Unhandled model type {Model_Type}")
         dict_values = {}
         dict_values['y'] = y
         # put new field value in data_out

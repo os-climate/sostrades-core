@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16-2024/05/17 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,12 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 import numpy as np
 from scipy.sparse import diags
-# post processing
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
+
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+
+# post processing
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+    InstanciatedSeries,
+    TwoAxesInstanciatedChart,
+)
 
 
 class Disc6(SoSWrapp):
@@ -73,6 +79,7 @@ class Disc6(SoSWrapp):
     def get_post_processing_list(self, filters=None):
 
         instanciated_charts = []
+        charts_list = []
 
         # Overload default value with chart filter
         if filters is not None:

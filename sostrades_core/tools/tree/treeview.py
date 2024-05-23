@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,14 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.tools.tree.data_management_discipline import DataManagementDiscipline
-from sostrades_core.execution_engine import ns_manager
+from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.tree.data_management_discipline import (
+    DataManagementDiscipline,
+)
+from sostrades_core.tools.tree.treenode import TreeNode
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
-from sostrades_core.tools.tree.treenode import TreeNode
-from sostrades_core.execution_engine.ns_manager import NamespaceManager, NS_SEP
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 IO_TYPE = ProxyDiscipline.IO_TYPE
 TYPE_IN = ProxyDiscipline.IO_TYPE_IN
@@ -190,7 +193,7 @@ class TreeView:
             if key not in treenode.disciplines_by_variable.keys():
                 # create data management discipline DATA
                 data_manamement_data_key = 'Data'
-                if not data_manamement_data_key in treenode.data_management_disciplines:
+                if data_manamement_data_key not in treenode.data_management_disciplines:
                     data_management_discipline = DataManagementDiscipline()
                     data_management_discipline.namespace = treenode.full_namespace
                     data_management_discipline.model_name_full_path = "Data"

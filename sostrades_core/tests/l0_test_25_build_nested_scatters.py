@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/03-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/03-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
+
 import pandas as pd
+
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
 
@@ -64,7 +63,7 @@ class TestBuildScatter(unittest.TestCase):
             self.exec_eng0.configure()
             dict_values[f'{self.study_name}.{driver_name}.display_options'] = ['group_scenarios_under_disciplines']
             self.exec_eng0.load_study_from_input_dict(dict_values)
-        error_message = f'The display options parameter for the driver creation should be a dict'
+        error_message = 'The display options parameter for the driver creation should be a dict'
         self.assertEqual(str(cm.exception), error_message)
 
         with self.assertRaises(Exception) as cm:
@@ -78,7 +77,7 @@ class TestBuildScatter(unittest.TestCase):
             self.exec_eng00.configure()
             dict_values[f'{self.study_name}.{driver_name}.display_options'] = {'wrong_option': True}
             self.exec_eng00.load_study_from_input_dict(dict_values)
-        error_message = f"Display options should be in the possible list : ['hide_under_coupling', 'hide_coupling_in_driver', 'group_scenarios_under_disciplines']"
+        error_message = "Display options should be in the possible list : ['hide_under_coupling', 'hide_coupling_in_driver', 'group_scenarios_under_disciplines']"
         self.assertEqual(str(cm.exception), error_message)
 
         self.factory = self.exec_eng.factory
@@ -122,12 +121,12 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ scatter1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t\t|_ scatter2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2', 
+                       '\t\t|_ scatter1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ scatter2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2', 
                        f'\t|_ {driver_name}_gather',]
 
         exp_tv_str = '\n'.join(exp_tv_list)
@@ -137,14 +136,14 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ Disc1',
-                       f'\t\t\t|_ scatter1',
-                       f'\t\t\t|_ scatter2',
-                       f'\t\t|_ Disc2',
-                       f'\t\t\t|_ scatter1',
-                       f'\t\t\t|_ scatter2',
-                       f'\t\t|_ scatter1',
-                       f'\t\t|_ scatter2',
+                       '\t\t|_ Disc1',
+                       '\t\t\t|_ scatter1',
+                       '\t\t\t|_ scatter2',
+                       '\t\t|_ Disc2',
+                       '\t\t\t|_ scatter1',
+                       '\t\t\t|_ scatter2',
+                       '\t\t|_ scatter1',
+                       '\t\t|_ scatter2',
                        ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
@@ -212,12 +211,12 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ scatter1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t\t|_ scatter2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
+                       '\t\t|_ scatter1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ scatter2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
                        f'\t|_ {driver_name}_gather' ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
@@ -227,14 +226,14 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ Disc1',
-                       f'\t\t\t|_ scatter1',
-                       f'\t\t\t|_ scatter2',
-                       f'\t\t|_ Disc2',
-                       f'\t\t\t|_ scatter1',
-                       f'\t\t\t|_ scatter2',
-                       f'\t\t|_ scatter1',
-                       f'\t\t|_ scatter2',
+                       '\t\t|_ Disc1',
+                       '\t\t\t|_ scatter1',
+                       '\t\t\t|_ scatter2',
+                       '\t\t|_ Disc2',
+                       '\t\t\t|_ scatter1',
+                       '\t\t\t|_ scatter2',
+                       '\t\t|_ scatter1',
+                       '\t\t|_ scatter2',
                        ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
@@ -316,12 +315,12 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ scatter1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t\t|_ scatter2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
+                       '\t\t|_ scatter1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ scatter2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
                        f'\t|_ {driver_name}_gather',
                        ]
 
@@ -332,12 +331,12 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ scatter1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t\t|_ scatter2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2', ]
+                       '\t\t|_ scatter1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ scatter2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2', ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -428,12 +427,12 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ scatter2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t\t|_ scatter1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
+                       '\t\t|_ scatter2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ scatter1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
                        f'\t|_ {driver_name}_gather',
                        ]
 
@@ -444,12 +443,12 @@ class TestBuildScatter(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ scatter2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t\t|_ scatter1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2', ]
+                       '\t\t|_ scatter2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ scatter1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2', ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()

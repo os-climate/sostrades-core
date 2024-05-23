@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 02/01/2024 Copyright 2024 Capgemini
+Modifications on 02/01/2024-2024/05/16 Copyright 2024 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-unit test for chart template
-'''
 import unittest
 from os.path import dirname, join
 
 import sostrades_core
 
+'''
+mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
+unit test for chart template
+'''
 
 class TestChartTemplate(unittest.TestCase):
     """
@@ -49,7 +49,9 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_02_create_chart_template(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesChartTemplate
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesChartTemplate,
+        )
 
         dict_obj = {}
         dict_obj['chart_name'] = 'test'
@@ -75,11 +77,13 @@ class TestChartTemplate(unittest.TestCase):
         chart_template.from_dict(dict_obj)
 
         self.assertDictEqual(dict_obj, chart_template.to_dict(
-        ), f'Data structure is not same anymore between reference and model')
+        ), 'Data structure is not same anymore between reference and model')
 
     def test_03_create_chart_template_with_series(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesChartTemplate
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesChartTemplate,
+        )
 
         dict_obj = {}
         dict_obj['chart_name'] = 'test'
@@ -119,12 +123,15 @@ class TestChartTemplate(unittest.TestCase):
         chart_template.from_dict(dict_obj)
 
         self.assertDictEqual(dict_obj, chart_template.to_dict(
-        ), f'Data structure is not same anymore between reference and model')
+        ), 'Data structure is not same anymore between reference and model')
 
     def test_04_create_2D_axes_chart(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
         import numpy as np
+
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_bar = [index for index in range(20)]
         y_bar = np.random.randint(100, size=20).tolist()
@@ -142,7 +149,9 @@ class TestChartTemplate(unittest.TestCase):
         serie_scatter = InstanciatedSeries(
             x_scatter, y_scatter, 'scatter serie', InstanciatedSeries.SCATTER_DISPLAY, marker_symbol='cross')
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesInstanciatedChart,
+        )
 
         max_y = max([max(y_bar), max(y_scatter)])
         min_y = min([min(y_bar), min(y_scatter)])
@@ -157,7 +166,9 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_05_create_2D_axes_cumulative_bar_chart(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_bar_1 = [index for index in range(20)]
         y_bar_1 = [index for index in range(20)]
@@ -175,7 +186,9 @@ class TestChartTemplate(unittest.TestCase):
         serie_bar_3 = InstanciatedSeries(
             x_bar_3, y_bar_3, 'bar serie 3', InstanciatedSeries.BAR_DISPLAY)
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesInstanciatedChart,
+        )
 
         max_y = max(y_bar_1) + max(y_bar_2) + max(y_bar_3)
         min_y = 0
@@ -190,7 +203,9 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_06_create_2D_axes_cumulative_surface_chart(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_serie_1 = [index for index in range(20)]
         y_serie_1 = [index for index in range(20)]
@@ -208,7 +223,9 @@ class TestChartTemplate(unittest.TestCase):
         serie_serie_3 = InstanciatedSeries(
             x_serie_3, y_serie_3, 'serie 3', InstanciatedSeries.LINES_DISPLAY)
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesInstanciatedChart,
+        )
 
         max_y = max(y_serie_1) + max(y_serie_2) + max(y_serie_3)
         min_y = 0
@@ -223,8 +240,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_07_create_2D_axes_cumulative_bar_with_scatter_chart(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
         import numpy as np
+
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_bar_1 = [index for index in range(20)]
         y_bar_1 = [index for index in range(20)]
@@ -242,7 +262,9 @@ class TestChartTemplate(unittest.TestCase):
         serie_bar_3 = InstanciatedSeries(
             x_bar_3, y_bar_3, 'bar serie 3', InstanciatedSeries.BAR_DISPLAY)
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesInstanciatedChart,
+        )
 
         max_y = max(y_bar_1) + max(y_line_2) + max(y_bar_3)
         min_y = 0
@@ -257,8 +279,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_08_create_2D_axes_chart_with_annotations(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
         import numpy as np
+
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_bar = [index for index in range(20)]
         y_bar = np.random.randint(100, size=20).tolist()
@@ -271,7 +296,10 @@ class TestChartTemplate(unittest.TestCase):
         serie_line = InstanciatedSeries(
             x_line, y_line, 'line serie', InstanciatedSeries.LINES_DISPLAY)
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart, TwoAxesChartTemplate
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesChartTemplate,
+            TwoAxesInstanciatedChart,
+        )
 
         max_y = max([max(y_bar), max(y_line)])
         min_y = min([min(y_bar), min(y_line)])
@@ -292,8 +320,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_09_create_pie_chart(self):
 
-        from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import InstanciatedPieChart
         import numpy as np
+
+        from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import (
+            InstanciatedPieChart,
+        )
 
         x_scatter = [f'value {index}' for index in range(5)]
         y_scatter = np.random.randint(50, size=5).tolist()
@@ -304,8 +335,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_10_create_table(self):
 
-        from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
         import numpy as np
+
+        from sostrades_core.tools.post_processing.tables.instanciated_table import (
+            InstanciatedTable,
+        )
 
         headers = ['Q1', 'Q2', 'Q3', 'Q4']
         values_by_row = []
@@ -318,7 +352,9 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_11_create_2D_axes_horizontal_bar_chart(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_bar_1 = [index for index in range(20)]
         y_bar_1 = [index for index in range(20)]
@@ -331,7 +367,9 @@ class TestChartTemplate(unittest.TestCase):
         serie_bar_2 = InstanciatedSeries(
             x_bar_2, y_bar_2, 'bar serie 2', InstanciatedSeries.BAR_DISPLAY)
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesInstanciatedChart,
+        )
 
         chart = TwoAxesInstanciatedChart('index', 'quantity', [-20, 20], [
                                          0, 20], 'Horizontal bar chart', bar_orientation='h')
@@ -342,8 +380,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_12_create_pie_chart_with_annotations(self):
 
-        from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import InstanciatedPieChart
         import numpy as np
+
+        from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import (
+            InstanciatedPieChart,
+        )
 
         x_scatter = [f'value {index}' for index in range(5)]
         y_scatter = np.random.randint(50, size=5).tolist()
@@ -362,8 +403,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_13_create_table_with_annotations(self):
 
-        from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
         import numpy as np
+
+        from sostrades_core.tools.post_processing.tables.instanciated_table import (
+            InstanciatedTable,
+        )
 
         headers = ['Q1', 'Q2', 'Q3', 'Q4']
         values_by_row = []
@@ -384,8 +428,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_14_create_2D_axes_chart_with_secondary_ordinate(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
         import numpy as np
+
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_primary = [index for index in range(20)]
         y_primary = np.random.randint(100, size=20).tolist()
@@ -399,7 +446,9 @@ class TestChartTemplate(unittest.TestCase):
             x_secondary, y_secondary, 'scatter serie secondary axe', InstanciatedSeries.LINES_DISPLAY,
             y_axis=InstanciatedSeries.Y_AXIS_SECONDARY)
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesInstanciatedChart,
+        )
 
         chart = TwoAxesInstanciatedChart('index', 'quantity primary', [0, 20], [
                                          min(y_primary), max(y_primary)], 'Random quantity chart',
@@ -412,8 +461,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_15_create_2D_axes_chart_with_secondary_ordinate_mixing_series_type(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
         import numpy as np
+
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_primary = [index for index in range(20)]
         y_primary = np.random.randint(100, size=20).tolist()
@@ -426,7 +478,9 @@ class TestChartTemplate(unittest.TestCase):
         serie_secondary = InstanciatedSeries(
             x_secondary, y_secondary, 'scatter serie secondary axe', InstanciatedSeries.LINES_DISPLAY, y_axis=InstanciatedSeries.Y_AXIS_SECONDARY)
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            TwoAxesInstanciatedChart,
+        )
 
         chart = TwoAxesInstanciatedChart('index', 'quantity primary', [0, 20], [
                                          min(y_primary), max(y_primary)], 'Random quantity chart',
@@ -439,8 +493,11 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_16_check_nan_values(self):
 
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries
         import numpy as np
+
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
 
         x_bar = [1.0, 'test', 40, np.nan, None, np.Infinity]
         y_bar = np.random.randint(100, size=5).tolist()
@@ -458,15 +515,17 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_17_create_pareto_front_optimal_chart(self):
 
-        from sostrades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart \
-            import InstantiatedParetoFrontOptimalChart
-        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart \
-            import InstanciatedSeries
+        from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+            InstanciatedSeries,
+        )
+        from sostrades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart import (
+            InstantiatedParetoFrontOptimalChart,
+        )
 
         chart_name = 'Test Pareto front optimal'
         new_pareto_chart = InstantiatedParetoFrontOptimalChart(
-            abscissa_axis_name=f'abscissa (unit)',
-            primary_ordinate_axis_name=f'ordinate (unit)',
+            abscissa_axis_name='abscissa (unit)',
+            primary_ordinate_axis_name='ordinate (unit)',
             abscissa_axis_range=[-1.0, 3.0],
             primary_ordinate_axis_range=[-1.0, 40.0],
             chart_name=chart_name)
@@ -496,8 +555,10 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_18_create_spider_chart(self):
 
-        from sostrades_core.tools.post_processing.spider_charts.instantiated_spider_chart \
-            import InstantiatedSpiderChart, SpiderChartTrace
+        from sostrades_core.tools.post_processing.spider_charts.instantiated_spider_chart import (
+            InstantiatedSpiderChart,
+            SpiderChartTrace,
+        )
         chart_name = 'Test Spider Chart'
         new_spider_chart = InstantiatedSpiderChart(chart_name)
         # Add traces
@@ -524,8 +585,10 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_19_create_parallel_coordinates_chart(self):
 
-        from sostrades_core.tools.post_processing.parallel_coordinates_charts.instantiated_parallel_coordinates_chart \
-            import InstantiatedParallelCoordinatesChart, ParallelCoordinatesTrace
+        from sostrades_core.tools.post_processing.parallel_coordinates_charts.instantiated_parallel_coordinates_chart import (
+            InstantiatedParallelCoordinatesChart,
+            ParallelCoordinatesTrace,
+        )
 
         chart_name = 'Test Parallel Coordinates chart'
         parallel_coordinates_chart = InstantiatedParallelCoordinatesChart(
@@ -554,10 +617,12 @@ class TestChartTemplate(unittest.TestCase):
 
     def test_20_create_plotly_native_chart(self):
 
-        from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart \
-            import InstantiatedPlotlyNativeChart
-        import plotly.graph_objects as go
         import numpy as np
+        import plotly.graph_objects as go
+
+        from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
+            InstantiatedPlotlyNativeChart,
+        )
 
         fig = go.Figure()
 

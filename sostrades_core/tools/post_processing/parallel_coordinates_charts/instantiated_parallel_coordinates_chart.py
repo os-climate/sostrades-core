@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,14 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import plotly.graph_objects as go
+
+from sostrades_core.tools.post_processing.post_processing_plotly_tooling import (
+    AbstractPostProcessingPlotlyTooling,
+)
+from sostrades_core.tools.post_processing.post_processing_tools import (
+    escape_str_with_comma,
+)
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a parallel coordinates chart display as post post processing
 """
-import plotly.graph_objects as go
-from sostrades_core.tools.post_processing.post_processing_tools import escape_str_with_comma
-from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
 
 
 class ParallelCoordinatesTrace:
@@ -49,7 +55,7 @@ class ParallelCoordinatesTrace:
             raise TypeError(message)
 
         if not (trace_type == self.TRACE_NUMBER or trace_type == self.TRACE_TEXT):
-            message = f'"trace_type" argument is intended to be "number" or "text"'
+            message = '"trace_type" argument is intended to be "number" or "text"'
             raise TypeError(message)
 
         self.trace_values = trace_values
@@ -87,7 +93,7 @@ class InstantiatedParallelCoordinatesChart(AbstractPostProcessingPlotlyTooling):
         # Check if trace with text already in list
         if trace.trace_type == ParallelCoordinatesTrace.TRACE_TEXT:
             if len(list(filter(lambda tr: tr.trace_type == ParallelCoordinatesTrace.TRACE_TEXT, self.__traces))) > 0:
-                message = f'You have already set a trace with trace_type text, only one is allowed for the chart'
+                message = 'You have already set a trace with trace_type text, only one is allowed for the chart'
                 raise TypeError(message)
 
         self.__traces.append(trace)

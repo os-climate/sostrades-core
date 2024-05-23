@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/02/13 Copyright 2024 Capgemini
+Modifications on 2024/02/13-2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,14 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+# pylint: disable=unsubscriptable-object
+import numpy as np
+
+from sostrades_core.tools.base_functions.exp_min import (
+    compute_dfunc_with_exp_min,
+    compute_func_with_exp_min,
+)
+
 """
 Common file to have methods of func manager (mainly smooth max and it derivative) in other repositories
 """
 
-# pylint: disable=unsubscriptable-object
-import numpy as np
-from sostrades_core.tools.base_functions.exp_min import compute_dfunc_with_exp_min, compute_func_with_exp_min
-import warnings
 
 def smooth_maximum(cst, alpha=3):
     """

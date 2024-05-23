@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/04/10 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,28 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
 import logging
 from copy import copy, deepcopy
-from typing import Any
-from uuid import uuid4
+from dataclasses import dataclass
+from datetime import datetime
 from hashlib import sha256
-from pandas import concat
+from typing import Any, Union
+from uuid import uuid4
 
 from gemseo.caches.simple_cache import SimpleCache
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from pandas import concat
 
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
-
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
-from typing import Any, Union
-from dataclasses import dataclass
-from datetime import datetime
 
 TYPE = ProxyDiscipline.TYPE
 VALUE = ProxyDiscipline.VALUE
@@ -237,7 +232,7 @@ class DataManager:
                 self.data_dict[self.get_data_id(var_f_name)][attr] = val
         else:
             msg = f"Try to update metadata of variable {var_f_name} that does"
-            msg += f" not exists as I/O of any discipline"
+            msg += " not exists as I/O of any discipline"
             raise KeyError(msg)
 
     def get_io_data_of_disciplines(self, disciplines):
@@ -359,7 +354,7 @@ class DataManager:
         '''
         keys_to_map = self.data_id_map.keys() if full_ns_keys else self.data_id_map.values()
         for key, value in values_dict.items():
-            if not key in keys_to_map:
+            if key not in keys_to_map:
                 raise ValueError(f'{key} does not exist in data manager')
             k = self.get_data_id(key) if full_ns_keys else key
             # if self.data_dict[k][ProxyDiscipline.VISIBILITY] == INTERNAL_VISIBILITY:
@@ -401,7 +396,7 @@ class DataManager:
                 # Discipline configuration only take care of input variables
                 # Variables are only set f
                 is_in_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
-                if in_vars and is_in_var and not key in already_set_data:
+                if in_vars and is_in_var and key not in already_set_data:
                     new_value = convert_values_dict[key][VALUE]
                     self.apply_parameter_change(key, new_value, parameter_changes)
                     already_set_data.add(key)
@@ -410,7 +405,7 @@ class DataManager:
                 # check if this is a strongly coupled input necessary to
                 # initialize a MDA
                 is_init_coupling_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and dm_data[ProxyDiscipline.COUPLING]
-                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
+                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                     new_value = convert_values_dict[key][VALUE]
                     self.apply_parameter_change(key, new_value, parameter_changes)
                     already_set_data.add(key)
@@ -453,7 +448,7 @@ class DataManager:
             is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[ProxyDiscipline.COUPLING]
             # get all input values not already set
             is_in_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
-            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
+            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                 data_ns = data_value[NS_REFERENCE].value
                 data_name = data_value[VAR_NAME]
                 data_type = data_value[TYPE]
@@ -703,7 +698,7 @@ class DataManager:
                         if self.data_dict[var_id][VALUE] is not None:
                             disc_dict[var_name][VALUE] = self.data_dict[var_id][VALUE]
                         self.data_dict[var_id] = disc_dict[var_name]
-                if not disc_id in self.data_dict[var_id][DISCIPLINES_DEPENDENCIES]:
+                if disc_id not in self.data_dict[var_id][DISCIPLINES_DEPENDENCIES]:
                     self.data_dict[var_id][DISCIPLINES_DEPENDENCIES].append(
                         disc_id)
                     self.no_change = False

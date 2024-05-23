@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/10-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/10-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,29 +14,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
-import pandas as pd
 from copy import deepcopy
+from multiprocessing import cpu_count
 from os import makedirs
-from os.path import join, dirname, basename, realpath
+from os.path import basename, dirname, join, realpath
 from pathlib import Path
 from shutil import rmtree, unpack_archive
-from time import sleep
 from sys import platform
-from multiprocessing import cpu_count
+from tempfile import gettempdir
+from time import sleep
 
+import pandas as pd
 from numpy import array
 from pandas import DataFrame, read_csv
 from pandas.testing import assert_frame_equal
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.tree.serializer import DataSerializer, CSV_SEP, FILE_URL, generate_unique_data_csv
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from tempfile import gettempdir
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+from sostrades_core.tools.tree.serializer import (
+    CSV_SEP,
+    FILE_URL,
+    DataSerializer,
+    generate_unique_data_csv,
+)
 
 N_CPUS = cpu_count()
 
@@ -189,7 +191,7 @@ class TestSerializeDF(unittest.TestCase):
         var = 'df'
         var_file = join(test_extract_DF, var + '.csv')
         assert FILE_URL + basename(var_file) == df.loc[var]['value']
-        assert None == df.loc[var]['unit']
+        assert df.loc[var]['unit'] is None
         # assert 'dataframe' == df.loc['df']['type']
         var_file_data = read_csv(var_file, delimiter=CSV_SEP, header=0)
         assert_frame_equal(var_file_data, DataFrame(df_array, columns=df_col))

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-from logging import getLogger, INFO
-from os.path import join, dirname
+import logging
+import unittest
+from logging import INFO, getLogger
+from os.path import dirname, join
 from pathlib import Path
 from shutil import rmtree
 from time import sleep
-import unittest
-import logging
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+
+'''
+mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
+'''
 
 LOC_DIRNAME = dirname(__file__)
 

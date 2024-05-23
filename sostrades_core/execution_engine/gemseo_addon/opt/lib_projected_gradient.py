@@ -13,20 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import logging
+from builtins import super, zip
+
+from future import standard_library
+from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_result import OptimizationResult
+from numpy import float64, isfinite, real
 from scipy.optimize import fmin_tnc
+
 """
 Projected Gradient library
 """
-
-
-from builtins import super, zip
-import logging
-
-from future import standard_library
-from numpy import isfinite, real, float64
-
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
 standard_library.install_aliases()
 

@@ -1,6 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
-Modifications on 2024/01/11-2024/01/11 Copyright 2023 Capgemini
+Copyright 2024 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -14,11 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 '''
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Generate a doe scenario
-"""
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
