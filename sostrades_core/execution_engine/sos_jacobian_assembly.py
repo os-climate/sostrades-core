@@ -67,7 +67,72 @@ class SoSJacobianAssembly(JacobianAssembly):
         self.coupled_system.release_memory()
 
     @profile
-    def _dres_dvar_sparse(self, residuals, variables, n_residuals, n_variables):
+    def _dres_dvar_sparse_4_csr_new(self, residuals, variables, n_residuals, n_variables):
+        raise NotImplementedError()
+
+    @profile
+    def _dres_dvar_sparse_3_dok_orig(self, residuals, variables, n_residuals, n_variables):
+        """Form the matrix of partial derivatives of residuals.
+
+        Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
+        fill the sparse Jacobian:
+        |           |
+        |  dRi/dvj  |
+        |           |
+
+        Args:
+            residuals: The residuals.
+            variables: The differentiation variables.
+            n_residuals: The number of residuals.
+            n_variables: The number of variables.
+
+        Returns:
+            The derivatives of the residuals wrt the variables.
+        """
+        dres_dvar = dok_matrix((n_residuals, n_variables))
+
+        out_i = 0
+        # Row blocks
+        for residual in residuals:
+            residual_size = self.sizes[residual]
+            # Find the associated discipline
+            discipline = self.disciplines[residual]
+            residual_jac = discipline.jac[residual]
+            # Column blocks
+            out_j = 0
+            for variable in variables:
+                variable_size = self.sizes[variable]
+                if residual == variable:
+                    # residual Yi-Yi: put -I in the Jacobian
+                    ones_mat = (ones(variable_size), 0)
+                    shape = (variable_size, variable_size)
+                    diag_mat = -dia_matrix(ones_mat, shape=shape)
+
+                    if self.coupling_structure.is_self_coupled(discipline):
+                        jac = residual_jac.get(variable, None)
+                        if jac is not None:
+                            diag_mat += jac
+                    dres_dvar[
+                    out_i: out_i + variable_size, out_j: out_j + variable_size
+                    ] = diag_mat
+
+                else:
+                    # block Jacobian
+                    jac = residual_jac.get(variable, None)
+                    if jac is not None:
+                        n_i, n_j = jac.shape
+                        assert n_i == residual_size
+                        assert n_j == variable_size
+                        # Fill the sparse Jacobian block
+                        dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
+                # Shift the column by block width
+                out_j += variable_size
+            # Shift the row by block height
+            out_i += residual_size
+        return dres_dvar.real
+
+    @profile
+    def _dres_dvar_sparse_2_dok_sostrades(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
         fill the sparse Jacobian:
@@ -131,7 +196,7 @@ class SoSJacobianAssembly(JacobianAssembly):
 
     # SoSTrades modif
     @profile
-    def _dres_dvar_sparse_lil(self, residuals, variables, n_residuals, n_variables):
+    def _dres_dvar_sparse_1_lil_for_petsc(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
         fill the sparse Jacobian:
@@ -213,13 +278,14 @@ class SoSJacobianAssembly(JacobianAssembly):
         """
         if matrix_type == JacobianAssembly.SPARSE:
             if getenv("USE_PETSC", "").lower() in ("true", "1"):
-                sparse_dres_dvar = self._dres_dvar_sparse_lil(
+                sparse_dres_dvar = self._dres_dvar_sparse_1_lil_for_petsc(
                     residuals, variables, n_residuals, n_variables
                 )
             else:
-                sparse_dres_dvar = self._dres_dvar_sparse(
+                sparse_dres_dvar = self._dres_dvar_sparse_2_dok_sostrades(
                     residuals, variables, n_residuals, n_variables
                 )
+                # FIXME: needa try other methods
             if transpose:
                 return sparse_dres_dvar.T
             return sparse_dres_dvar
