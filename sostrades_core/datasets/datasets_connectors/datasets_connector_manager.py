@@ -17,10 +17,17 @@ import json
 import logging
 import os
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException
 from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetsConnectorFactory, DatasetConnectorType
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
+class DatasetConnectorNotFoundException(DatasetGenericException):
+    """
+    Exception when a dataset connector is not found
+    """
+    def __init__(self, connector_name:str):
+        self.connector_name = connector_name
+        super().__init__(f"Dataset connector '{connector_name}' not found")
 
 class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     """
@@ -42,7 +49,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         """
         cls.__logger.debug(f"Getting connector {connector_identifier}")
         if connector_identifier not in cls.__registered_connectors:
-            raise ValueError(f"Connector {connector_identifier} not found.")
+            raise DatasetConnectorNotFoundException(connector_identifier)
         return cls.__registered_connectors[connector_identifier]
 
     @classmethod
