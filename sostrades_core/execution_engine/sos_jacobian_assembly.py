@@ -66,6 +66,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         gc.collect()
         self.coupled_system.release_memory()
 
+    @profile
     def _dres_dvar_sparse(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
         Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
@@ -186,6 +187,7 @@ class SoSJacobianAssembly(JacobianAssembly):
             out_i += residual_size
         return dres_dvar.real
 
+    @profile
     def dres_dvar(
         self,
         residuals,
