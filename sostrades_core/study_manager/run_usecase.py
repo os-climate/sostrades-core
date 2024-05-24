@@ -65,7 +65,7 @@ def run_usecase(usecase_file:str, dataset_mapping_json_file:Optional[str]):
     uc_cls = StudyManager(file_path=usecase_file)
 
     if dataset_mapping is not None:
-        uc_cls.load_study(dataset_mapping_json_file)
+        uc_cls.update_data_from_dataset_mapping(dataset_mapping_json_file)
     else:
         uc_cls.load_data()
 

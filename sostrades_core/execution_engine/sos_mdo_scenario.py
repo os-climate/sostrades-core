@@ -94,6 +94,8 @@ class SoSMDOScenario(MDOScenario):
         self.update_design_space_out()
         if not self.eval_mode:
             self.update_post_processing_df()
+        
+
 
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
@@ -242,6 +244,9 @@ class SoSMDOScenario(MDOScenario):
 
             for func in self.functions_before_run:
                 func(x_opt)
+
+
+        
 
     def evaluate_functions(self,
                            problem,

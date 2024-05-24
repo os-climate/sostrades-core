@@ -24,7 +24,8 @@ import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dat
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
-from sostrades_core.datasets.dataset_mapping import DatasetsMapping
+from sostrades_core.datasets.dataset_mapping import DatasetsMappingException, DatasetsMapping
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import DatasetGenericException
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
@@ -51,7 +52,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.c"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), None)
 
-        study.load_study(os.path.join(process_path, "usecase_dataset.json"))
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_dataset.json")))
 
         self.assertEqual(dm.get_value("usecase_dataset.a"), 1)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), 4)
@@ -107,7 +108,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.c"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), None)
 
-        study.load_study(os.path.join(process_path, "usecase_2datasets.json"))
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_2datasets.json")))
 
         self.assertEqual(dm.get_value("usecase_dataset.a"), 10)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1VirtualNode.x"), 20)
@@ -146,7 +147,7 @@ class TestDatasets(unittest.TestCase):
 
         dm = study.execution_engine.dm
 
-        study.load_study(os.path.join(process_path, "usecase_dataset.json"))
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_dataset.json")))
 
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
@@ -166,7 +167,7 @@ class TestDatasets(unittest.TestCase):
 
         dm = study.execution_engine.dm
 
-        study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json"))
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
 
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.x"), [1.0])
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_1"), [2.0])
@@ -182,7 +183,7 @@ class TestDatasets(unittest.TestCase):
         uc = uc_dataset_dict.Study()
 
         param_changes = study.load_data(from_input_dict=uc.setup_usecase())
-        param_changes.extend(study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
+        param_changes.extend(study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_dataset_sellar_coupling.json"))))
         x_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.x']
         z_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.z']
 
@@ -207,3 +208,104 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(x_parameterchanges[1].connector_id, 'MVP0_datasets_connector')
         self.assertEqual(z_parameterchanges[1].dataset_id, 'dataset_sellar')
         self.assertEqual(z_parameterchanges[1].connector_id, 'MVP0_datasets_connector')
+
+    def test_07_datasets_local_connector_with_all_non_nested_types(self):
+        """
+        Check correctness of loaded values after loading a handcrafted local directories' dataset,  testing usage of
+        LocalDatasetsConnector and FileSystemDatasetsSerializer.
+        """
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+
+        dm = study.execution_engine.dm
+
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset.json")))
+
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+
+    def test_08_json_to_local_connector_conversion_and_loading(self):
+        """
+        Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
+        thus testing ability of LocalConnector to both write and load values.
+        """
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
+        connector_args = {
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
+            "create_if_not_exists": True
+        }
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    **connector_args)
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+
+        dm = study.execution_engine.dm
+        connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test')
+        connector_json = DatasetsConnectorManager.get_connector('MVP0_datasets_connector')
+
+        dataset_vars = ["a",
+                        "x",
+                        "b",
+                        "name",
+                        "x_dict",
+                        "y_array",
+                        "z_list",
+                        "b_bool",
+                        "d"]
+
+        data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
+
+        try:
+            connector_to.copy_dataset_from(connector_from=connector_json,
+                                           dataset_identifier="dataset_all_types",
+                                           data_types_dict=data_types_dict,
+                                           create_if_not_exists=True)
+
+            study.update_data_from_dataset_mapping(
+                DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset_copy_test.json")))
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
+            self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
+            self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+            connector_to.clear(remove_root_directory=True)
+        except Exception as cm:
+            connector_to.clear(remove_root_directory=True)
+            raise cm
+
+    def test_09_dataset_error(self):
+        """
+        Some example to check datasets error
+        """
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+
+        # check mapping file error
+        mapping_error_json_file_path = os.path.join(test_data_folder, "test_92_example_mapping_error_format.json")
+        with self.assertRaises(DatasetsMappingException):
+            DatasetsMapping.from_json_file(mapping_error_json_file_path)
+
+        # check dataset reading error
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        mapping = DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset_error.json"))
+        with self.assertRaises(DatasetGenericException):
+            study.update_data_from_dataset_mapping(mapping)
+        

@@ -16,6 +16,8 @@ limitations under the License.
 import logging
 from enum import Enum
 
+
+
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetUnableToInitializeConnectorException,
@@ -25,6 +27,9 @@ from sostrades_core.datasets.datasets_connectors.arango_datasets_connector impor
 )
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
     JSONDatasetsConnector,
+)
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector import (
+    LocalFileSystemDatasetsConnector,
 )
 from sostrades_core.datasets.datasets_connectors.sospickle_datasets_connector import (
     SoSPickleDatasetsConnector,
@@ -38,6 +43,7 @@ class DatasetConnectorType(Enum):
     """
 
     JSON = JSONDatasetsConnector
+    Local = LocalFileSystemDatasetsConnector
     Arango = ArangoDatasetsConnector
     SoSpickle = SoSPickleDatasetsConnector
 
