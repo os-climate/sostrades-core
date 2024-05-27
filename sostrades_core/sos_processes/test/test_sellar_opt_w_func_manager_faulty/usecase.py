@@ -70,7 +70,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.x'] = array([1.])
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.z'] = array([1., 1.])
         disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.{self.coupling_name}.local_dv'] = 10.
-        disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.inner_mda_name'] = 'PureNewtonRaphson'
+        disc_dict[f'{ns}.{self.optim_name}.{self.subcoupling_name}.inner_mda_name'] = 'MDANewtonRaphson'
         disc_dict[f'{ns}.{self.optim_name}.max_iter'] = 2
 
         func_df = pd.DataFrame(

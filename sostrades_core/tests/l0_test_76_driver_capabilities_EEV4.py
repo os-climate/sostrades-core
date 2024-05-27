@@ -32,6 +32,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 unit test for doe scenario
 """
 
+
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest
@@ -171,7 +172,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
-            'n_samples': n_samples}
+            'n_samples': n_samples,
+            'seed': 1,
+        }
         disc_dict[f'{self.ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
@@ -1853,7 +1856,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # check that the namespace treeview is proper
         exp_ns_tv = 'Nodes representation for Treeview usecase1_cp_multi_with_ref\n' \
-                    '|_ usecase1_cp_multi_with_ref\n'  \
+                    '|_ usecase1_cp_multi_with_ref\n' \
                     '\t|_ SampleGenerator\n' \
                     '\t|_ Eval\n' \
                     '\t\t|_ ReferenceScenario\n' \

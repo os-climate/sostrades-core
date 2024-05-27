@@ -33,6 +33,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
 """
 
+
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest
@@ -337,7 +338,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
-            'n_samples': n_samples}
+            'n_samples': n_samples,
+            'seed': 1,
+        }
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
 
         # Eval inputs
@@ -505,8 +508,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         self.assertEqual(exec_eng.dm.get_value(
             'doe.SampleGenerator.algo_options')['n_samples'], n_samples)
-        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_x_eval.columns],
-                           dspace_x_eval.reset_index(drop=True), check_dtype=False)
+        assert_frame_equal(
+            exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_x_eval.columns],
+            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after algo name change
         algo_name = "fullfact"
@@ -523,8 +527,9 @@ class TestSoSDOEScenario(unittest.TestCase):
             if option != 'n_samples':
                 self.assertEqual(exec_eng.dm.get_value('doe.SampleGenerator.algo_options')[option],
                                  default_algo_options_fullfact[option])
-        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_x_eval.columns],
-                           dspace_x_eval.reset_index(drop=True), check_dtype=False)
+        assert_frame_equal(
+            exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_x_eval.columns],
+            dspace_x_eval.reset_index(drop=True), check_dtype=False)
 
         # trigger a reconfiguration after eval_inputs and gather_outputs changes
         disc_dict = {f'{self.ns}.Eval.gather_outputs': self.output_selection_obj_y1_y2,
@@ -559,8 +564,9 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.assertDictEqual(exec_eng.dm.get_value('doe.SampleGenerator.algo_options'),
                              algo_full_options)
-        assert_frame_equal(exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_eval.columns],
-                           dspace_eval.reset_index(drop=True), check_dtype=False)
+        assert_frame_equal(
+            exec_eng.dm.get_value('doe.SampleGenerator.design_space').reset_index(drop=True)[dspace_eval.columns],
+            dspace_eval.reset_index(drop=True), check_dtype=False)
 
     def test_5_Eval_User_defined_samples_reconfiguration(self):
         """ different configurations of user-defined samples are tested here
@@ -1050,7 +1056,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # samples_dict = {'x': x_values, 'z': z_values,'wrong_values':wrong_values}
         samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
                         ProxySampleGenerator.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
-                                                               'scenario_5'],
+                                                             'scenario_5'],
                         'z': z_values, 'x': x_values,
                         'wrong_values': wrong_values}
         samples_df = pd.DataFrame(samples_dict)
@@ -1072,7 +1078,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(str(cm.exception), error_message)
         samples_dict = {ProxySampleGenerator.SELECTED_SCENARIO: [True] * 5,
                         ProxySampleGenerator.SCENARIO_NAME: ['scenario_1', 'scenario_2', 'scenario_3', 'scenario_4',
-                                                               'scenario_5'],
+                                                             'scenario_5'],
                         'z': z_values, 'x': x_values}
         samples_df = pd.DataFrame(samples_dict)
         disc_dict[f'{ns}.Eval.samples_df'] = samples_df
@@ -1273,7 +1279,6 @@ class TestSoSDOEScenario(unittest.TestCase):
             'Disc1.indicator_dict')
 
         self.assertEqual(len(eval_disc_ind), 11)
-
 
     def test_15_DoE_OT_FACTORIAL_Eval(self):
         """
@@ -1508,7 +1513,9 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
-            'n_samples': n_samples}
+            'n_samples': n_samples,
+            'seed': 1,
+        }
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x
 
         # Eval inputs
@@ -1531,11 +1538,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         # self.assertEqual(samples_df['x'].values.tolist(), [None])
 
         exec_eng.execute()
-        ref_doe_x_unit = [.9538816734003358, .61862602113776724, .1720324493442158, .0417022004702574, .8396767474230671,
-                          .7345560727043048, .33023325726318404, .4146755890817113, .2000114374817345, .5092338594768798]
+        ref_doe_x_unit = [.9538816734003358, .61862602113776724, .1720324493442158, .0417022004702574,
+                          .8396767474230671,
+                          .7345560727043048, .33023325726318404, .4146755890817113, .2000114374817345,
+                          .5092338594768798]
 
-        ref_doe_x_1 = array(ref_doe_x_unit)*(ub1 - lb1) + lb1
-        ref_doe_x_2 = array(ref_doe_x_unit)*(ub2 - lb2) + lb2
+        ref_doe_x_1 = array(ref_doe_x_unit) * (ub1 - lb1) + lb1
+        ref_doe_x_2 = array(ref_doe_x_unit) * (ub2 - lb2) + lb2
 
         samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df').copy()
         for ref, truth in zip(ref_doe_x_1.tolist(), samples_df['x'].values.tolist()):
@@ -1757,4 +1766,3 @@ if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
     cls.test_14_doe_eval_of_single_sub_discipline()
-

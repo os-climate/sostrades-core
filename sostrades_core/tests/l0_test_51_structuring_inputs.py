@@ -394,10 +394,8 @@ class TestStructuringInputs(unittest.TestCase):
 
         coupling_inputs = {'inner_mda_name': {'type': 'string', 'default': 'MDAJacobi',
                                               'possible_values': ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
-                                                                  'PureNewtonRaphson',
-                                                                  'MDAQuasiNewton', 'MDAGSNewton', 'GSPureNewtonMDA',
-                                                                  'GSorNewtonMDA', 'MDASequential',
-                                                                  'GSPureNewtonorGSMDA']},
+                                                                  'MDAQuasiNewton', 'MDAGSNewton',
+                                                                  'GSorNewtonMDA', 'MDASequential']},
                            'max_mda_iter': {'type': 'int', 'default': 30, 'possible_values': None},
                            'n_processes': {'type': 'int', 'default': 1, 'possible_values': None},
                            'chain_linearize': {'type': 'bool', 'default': False, 'possible_values': [True, False]},

@@ -92,7 +92,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_01.pkl'
         inputs = ['Test.Sellar.SellarOptimScenario.x_in', 'Test.Sellar.SellarOptimScenario.z_in']
         outputs = ['Test.Sellar.SellarOptimScenario.objective_lagrangian']
-
+        self.override_dump_jacobian = True
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-4, derr_approx='finite_differences', threshold=1e-15,
@@ -141,7 +141,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_02.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-
+        self.override_dump_jacobian = True
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-14, derr_approx='complex_step', threshold=1e-10,
@@ -187,7 +187,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_03.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-
+        self.override_dump_jacobian = True
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-14, derr_approx='complex_step', threshold=1e-10,
@@ -235,7 +235,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_04.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-
+        self.override_dump_jacobian = True
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-25, derr_approx='complex_step', threshold=1e-10,
@@ -284,7 +284,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_05.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-
+        self.override_dump_jacobian = True
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-14, derr_approx='complex_step', threshold=1e-10,
@@ -330,7 +330,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_06.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-
+        self.override_dump_jacobian = True
         local_data_after_execute = coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -379,7 +379,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_07.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-
+        self.override_dump_jacobian = True
         local_data = self.execute_sellar()
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -427,7 +427,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_08.pkl'
         inputs = ['Test.x_in', 'Test.z_in']
         outputs = ['Test.objective_lagrangian']
-
+        self.override_dump_jacobian = True
         local_data_after_execute = coupling_disc.mdo_discipline_wrapp.mdo_discipline.local_data
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
@@ -542,7 +542,7 @@ class SellarOptimSubprocessJacobianDiscTest(AbstractJacobianUnittest):
         pkl_name = 'jacobian_obj_vs_design_var_sellar_test_11.pkl'
         inputs = ['Test.SellarCoupling.x', 'Test.SellarCoupling.z']
         outputs = ['Test.SellarCoupling.obj', 'Test.SellarCoupling.c_1', 'Test.SellarCoupling.c_2']
-
+        self.override_dump_jacobian = True
         self.check_jacobian(location=dirname(__file__), filename=pkl_name,
                             discipline=coupling_disc.mdo_discipline_wrapp.mdo_discipline,
                             step=1.0e-14, derr_approx='complex_step', threshold=1e-10,
