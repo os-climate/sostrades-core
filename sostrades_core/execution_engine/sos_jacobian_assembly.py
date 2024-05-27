@@ -41,7 +41,7 @@ from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution i
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array
 
 # TODO: for m4
-USE_M4_CSR = True
+USE_M4_CSR = False
 from typing import NamedTuple
 from collections.abc import Iterable
 from collections.abc import Iterator
