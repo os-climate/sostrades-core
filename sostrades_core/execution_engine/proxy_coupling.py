@@ -113,10 +113,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # NUMERICAL PARAMETERS
         'inner_mda_name': {ProxyDiscipline.TYPE: 'string',
                            ProxyDiscipline.POSSIBLE_VALUES: ['MDAJacobi', 'MDAGaussSeidel', 'MDANewtonRaphson',
-                                                             'PureNewtonRaphson', 'MDAQuasiNewton', 'MDAGSNewton',
-                                                             'GSPureNewtonMDA',
-                                                             # 'GSorNewtonMDA', # TODO: functionality needs EEv4 update
-                                                             'MDASequential', 'GSPureNewtonorGSMDA'],
+                                                             'MDAQuasiNewton', 'MDAGSNewton',
+                                                             # 'GSorNewtonMDA'# TODO: functionality needs EEv4 update
+                                                             # 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSPureNewtonorGSMDA' PureNewtonRaphson needs update with new gemseo convergence
+                                                             'MDASequential'],
                            ProxyDiscipline.DEFAULT: 'MDAJacobi', ProxyDiscipline.NUMERICAL: True,
                            ProxyDiscipline.STRUCTURING: True},
 
@@ -673,13 +673,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if num_data['inner_mda_name'] == 'MDAJacobi':
             num_data['acceleration'] = copy(
                 self.get_sosdisc_inputs('acceleration'))
-        if num_data['inner_mda_name'] in ['MDAGSNewton', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
+        if num_data['inner_mda_name'] in ['MDAGSNewton', 'GSorNewtonMDA']:
+            # , 'GSPureNewtonMDA', 'GSPureNewtonorGSMDA'
             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
                 'max_mda_iter_gs'))
             num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs(
                 'tolerance_gs'))
-        if num_data['inner_mda_name'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'MDAGSNewton',
-                                          'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
+        if num_data['inner_mda_name'] in ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']:
+            # 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSPureNewtonorGSMDA'
             num_data['relax_factor'] = copy(
                 self.get_sosdisc_inputs('relax_factor'))
 

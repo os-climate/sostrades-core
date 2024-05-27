@@ -17,9 +17,11 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 
 import logging
+import numpy as np
 from copy import copy
 
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
+    convert_new_type_into_array
 
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially
@@ -128,10 +130,10 @@ class PureNewtonRaphson(MDARoot):
         self.reset_disciplines_statuses()
 
         # build current_couplings: concatenated strong couplings, converted into arrays
-        current_couplings, old_x_array = self._current_strong_couplings(return_converted_dict=True, update_dm=True)
+        current_couplings, old_x_array = self._current_strong_couplings(return_converted_dict=True)
         # self.execute_all_disciplines(self.local_data)
 
-        while not self._termination(current_iter):
+        while True:
 
             # Set coupling variables as differentiated variables for gradient
             # computation
@@ -139,13 +141,13 @@ class PureNewtonRaphson(MDARoot):
                 self.strong_couplings, self.strong_couplings, self.strong_couplings)
 
             # Compute all discipline gradients df(x)/dx with x
-            self.assembly.linearize_all_disciplines(self.local_data, force_no_exec=True)
+            self.linearize_all_disciplines(self.local_data, execute=False)
 
             # compute coupling_variables(x+k) for the residuals
             self.execute_all_disciplines(self.local_data)
 
             # build new_couplings after execution: concatenated strong couplings, converted into arrays
-            new_couplings = self._current_strong_couplings(update_dm=True)
+            new_couplings = self._current_strong_couplings()
 
             # res = coupling_variables(x+k) - coupling_variables(x)
             res = new_couplings - current_couplings
@@ -156,9 +158,9 @@ class PureNewtonRaphson(MDARoot):
                 new_couplings,
                 current_iter,
                 first=True,
-                log_normed_residual=self.log_convergence, )
+                log_normed_residual=self.log_convergence)
 
-            if self._termination(current_iter):
+            if self._stop_criterion_is_reached:
                 print(current_iter, self.normed_residual, self.tolerance)
                 break
             # compute newton step with res and gradients computed with x=
@@ -184,3 +186,21 @@ class PureNewtonRaphson(MDARoot):
             # store current_couplings for residual computation of next iteration
             current_couplings = np.hstack(list(old_x_array.values()))
             current_iter += 1
+
+    def _current_strong_couplings(self, return_converted_dict=False):  # type: (...) -> ndarray
+        """Return the current values of the strong coupling variables."""
+        if len(self.strong_couplings) == 0:
+            return np.array([])
+        strong_couplings_array = {}
+        # build a dictionary of strong_couplings values
+        for input_key in self.strong_couplings:
+            strong_couplings_array[input_key], new_dm = convert_new_type_into_array(input_key,
+                                                                                    self.local_data[input_key],
+                                                                                    self.disciplines[0].reduced_dm)
+        # concatenate strong_couplings values
+        concat_strong_couplings = np.hstack(list(strong_couplings_array.values()))
+
+        if return_converted_dict:
+            return concat_strong_couplings, strong_couplings_array
+        else:
+            return concat_strong_couplings
