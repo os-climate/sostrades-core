@@ -282,7 +282,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                     residuals, variables, n_residuals, n_variables
                 )
             else:
-                sparse_dres_dvar = self._dres_dvar_sparse_2_dok_sostrades(
+                sparse_dres_dvar = self._dres_dvar_sparse_3_dok_orig(
                     residuals, variables, n_residuals, n_variables
                 )
                 # FIXME: needa try other methods
