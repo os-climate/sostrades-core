@@ -1,0 +1,7 @@
+{
+    "process_module_path": "sostrades_core.sos_processes.test.test_disc1_all_types",
+    "namespace_datasets_mapping": {
+        "v0|<study_ph>|*": ["MVP0_local_datasets_connector_copy_test|dataset_all_types|*"],
+        "v0|<study_ph>.Disc1|*": ["MVP0_local_datasets_connector_copy_test|dataset_all_types|*"]
+    }
+}
