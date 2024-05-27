@@ -80,7 +80,7 @@ class SoSMDODiscipline(MDODiscipline):
         # self.disciplines = [] # TODO: remove and leave in driver
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
-        self.check_linearize_data_changes = False
+        # self.check_linearize_data_changes = False
         self.input_full_name_map = None
         self.output_full_name_map = None
         self.logger = logger
@@ -117,8 +117,8 @@ class SoSMDODiscipline(MDODiscipline):
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
             self._check_nan_in_data(self._local_data)
 
-        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['linearize_data_change']:
-            self.check_linearize_data_changes = True
+        # if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['linearize_data_change']:
+        #     self.check_linearize_data_changes = True
 
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(
@@ -347,8 +347,8 @@ class SoSMDODiscipline(MDODiscipline):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-        if self.check_linearize_data_changes:
-            disc_data_before_linearize = self.local_data
+        # if self.check_linearize_data_changes:
+        #     disc_data_before_linearize = self.local_data
 
         if self.jac is None:
             self._init_jacobian(inputs, outputs, init_type=self.InitJacobianType.SPARSE)
@@ -357,12 +357,12 @@ class SoSMDODiscipline(MDODiscipline):
                 inputs, outputs, init_type=self.InitJacobianType.SPARSE, fill_missing_keys=True)
 
         self.compute_sos_jacobian()
-        if self.check_linearize_data_changes:
-            disc_data_after_linearize = self.local_data
-
-            self.check_discipline_data_integrity(disc_data_before_linearize,
-                                                 disc_data_after_linearize,
-                                                 'Discipline data integrity through compute_sos_jacobian')
+        # if self.check_linearize_data_changes:
+        #     disc_data_after_linearize = self.local_data
+        #
+        #     self.check_discipline_data_integrity(disc_data_before_linearize,
+        #                                          disc_data_after_linearize,
+        #                                          'Discipline data integrity through compute_sos_jacobian')
         # TODO REACTIVATE Check min_max_gradients
         # if self.check_min_max_gradients:
         #     self._check_min_max_gradients(self.jac)

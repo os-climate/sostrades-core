@@ -220,8 +220,7 @@ class ProxyDiscipline:
 
     DEBUG_MODE = SoSMDODiscipline.DEBUG_MODE
     LINEARIZATION_MODE = SoSMDODiscipline.LINEARIZATION_MODE
-    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
-                            "linearize_data_change", "min_max_couplings", "all"]
+    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change", "min_max_couplings", "all"]
 
     # -- status section
 

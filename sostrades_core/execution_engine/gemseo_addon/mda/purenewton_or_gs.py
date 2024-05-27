@@ -28,6 +28,7 @@ from gemseo import create_mda
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.sequential_mda import MDASequential
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.purenewton_or_gs")
 
@@ -41,12 +42,13 @@ class GSPureNewtonorGSMDA(MDASequential):
             self,
             disciplines,  # type: Sequence[MDODiscipline]
             name=None,  # type: Optional[str]
-            grammar_type=MDODiscipline.GrammarType.JSON,  # type: str
+            grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
             tolerance=1e-6,  # type: float
             max_mda_iter=10,  # type: int
             relax_factor=0.99,  # type: float
             linear_solver="DEFAULT",  # type: str
             tolerance_gs=10.0,
+            max_mda_iter_gs=10,
             linear_solver_tolerance=1e-12,  # type: float
             warm_start=False,  # type: bool
             use_lu_fact=False,  # type: bool
@@ -92,7 +94,7 @@ class GSPureNewtonorGSMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter,
+        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs, tolerance=tolerance_gs,
                                    name=None, grammar_type=grammar_type)
         mda_gs.tolerance = tolerance
 
@@ -102,6 +104,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
             tolerance_gs=tolerance_gs,
+            max_mda_iter_gs=max_mda_iter_gs,
             use_lu_fact=use_lu_fact, tolerance=tolerance,
             relax_factor=relax_factor,
             **newton_mda_options

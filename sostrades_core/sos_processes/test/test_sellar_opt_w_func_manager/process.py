@@ -1,6 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,8 +20,8 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Generate an optimization scenario
 """
 
-class ProcessBuilder(BaseProcessBuilder):
 
+class ProcessBuilder(BaseProcessBuilder):
     # ontology information
     _ontology_data = {
         'label': 'Core Test Sellar Opt with Func Manager',
@@ -30,20 +29,21 @@ class ProcessBuilder(BaseProcessBuilder):
         'category': '',
         'version': '',
     }
+
     def get_builders(self):
         '''
         default initialisation test
         '''
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
-    
+
         mod_func = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
-    
+
         mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
                      'Sellar_2': disc_dir + 'Sellar2',
                      'Sellar_1': disc_dir + 'Sellar1',
                      'FunctionManager': mod_func}
-    
+
         ns_dict = {'ns_functions': self.ee.study_name + '.SellarOptimScenario',
                    'ns_optim': self.ee.study_name + '.SellarOptimScenario',
                    'ns_OptimSellar': self.ee.study_name + '.SellarOptimScenario'}
@@ -56,5 +56,5 @@ class ProcessBuilder(BaseProcessBuilder):
 
         opt_builder = self.ee.factory.create_optim_builder(
             'SellarOptimScenario', [coupling_builder])
-    
+
         return opt_builder

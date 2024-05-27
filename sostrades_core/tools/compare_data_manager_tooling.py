@@ -1,5 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
+Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -52,12 +52,13 @@ def compare_dict(d1, d2, tree, error, df_equals=False):
             # if type is dict
             elif isinstance(d1.get(key), dict):
                 dict_equal = compare_dict(d1.get(key), d2.get(key),
-                             '.'.join([tree, str(key)]), error)
+                                          '.'.join([tree, str(key)]), error)
                 if dict_equal is False:
                     return False
             # if type is dataframe
             elif isinstance(d1.get(key), DataFrame):
-                dataframe_equal = compare_dataframes(d1.get(key), d2.get(key), '.'.join([tree, str(key)]), error, df_equals)
+                dataframe_equal = compare_dataframes(d1.get(key), d2.get(key), '.'.join([tree, str(key)]), error,
+                                                     df_equals)
                 if dataframe_equal is False:
                     return False
             # if type is tuple
@@ -86,10 +87,10 @@ def compare_dict(d1, d2, tree, error, df_equals=False):
                 error.update(
                     {
                         tree: f'\nProblem parsing a dictionnary:\n Dict structure differ on {key}:\n Trying to compare {type(d1.get(key))} with {type(d2.get(key))}'})
-    
+
     # check keys equality
     if len(set(d2.keys()).difference(set(d1.keys()))) != 0:
-        if error is None: 
+        if error is None:
             return False
         else:
             error.update(
@@ -168,7 +169,6 @@ def parse_tuple_to_compare(tuple1, tuple2, tree, error):
                 {tree: f'\nProblem parsing a tuple:\n tuple structure differ in {tree}'})
 
 
-
 def compare_dataframes(df1, df2, tree, error, df_equals):
     """
     Compare two dataframes and raise an exception if not equal
@@ -183,7 +183,8 @@ def compare_dataframes(df1, df2, tree, error, df_equals):
     else:
         try:
             # check if array in dataframe
-            list_col_containing_arrays = [col for col in df1.columns if any(isinstance(x, (ndarray, list)) for x in df1[col])]
+            list_col_containing_arrays = [col for col in df1.columns if
+                                          any(isinstance(x, (ndarray, list)) for x in df1[col])]
             if list_col_containing_arrays == []:
                 assert_frame_equal(df1, df2, rtol=1e-3)
             else:
@@ -193,7 +194,7 @@ def compare_dataframes(df1, df2, tree, error, df_equals):
                 df1_wo_array_columns = df1.drop(list_col_containing_arrays, axis=1)
                 df2_wo_array_columns = df2.drop(list_col_containing_arrays, axis=1)
                 assert_frame_equal(df1_wo_array_columns, df2_wo_array_columns, rtol=1e-3)
-                        
+
         except Exception as e:
             if error is None:
                 return False

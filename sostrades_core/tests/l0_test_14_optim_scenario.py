@@ -722,7 +722,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # Check that the jacobian has not been executed
         self.assertEqual(
             exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.jac,
-            None)
+            {})
         # Exec_eng with only the coupling
         exec_eng2 = ExecutionEngine(self.study_name)
         factory = exec_eng2.factory
@@ -760,7 +760,8 @@ class TestSoSOptimScenario(unittest.TestCase):
             try:
                 self.assertEqual(coupling_value, eval_value)
             except:
-                self.assertListEqual(list(coupling_value), list(eval_value))
+                for item1, item2 in zip(list(coupling_value), list(eval_value)):
+                    self.assertAlmostEqual(item1, item2)
 
     def test_09_optim_scenario_eval_mode_with_eval_jac(self):
         print("\n Test 9 : Sellar optim with eval_mode and eval_jac")

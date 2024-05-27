@@ -27,6 +27,7 @@ from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDA
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.sequential_mda import MDAGSNewton
 from gemseo.mda.sequential_mda import MDASequential
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 
@@ -37,9 +38,9 @@ class GSorNewtonMDA(MDASequential):
     """
 
     def __init__(self, disciplines, name=None,
-                 grammar_type=MDODiscipline.GrammarType.JSON,
+                 grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,
                  tolerance=1e-6, max_mda_iter=10, relax_factor=0.99,
-                 linear_solver="lgmres", tolerance_gs=10.0,
+                 linear_solver="lgmres", tolerance_gs=10.0, max_mda_iter_gs=10,
                  linear_solver_tolerance=1e-12,  # type: str
                  linear_solver_options=None, warm_start=False,
                  use_lu_fact=False, **newton_mda_options):
@@ -80,7 +81,7 @@ class GSorNewtonMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter,
+        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs,
                                    name=None, grammar_type=grammar_type)
         mda_gs.tolerance = tolerance
 

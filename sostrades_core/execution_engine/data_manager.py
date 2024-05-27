@@ -168,12 +168,12 @@ class DataManager:
             in_names = list(cached_inputs.keys())
             cached_outputs = serialized_cache[1]['outputs']
             out_names = list(cached_outputs.keys())
-            empty_cache.cache_outputs(cached_inputs, in_names,
-                                      cached_outputs, out_names)
+            empty_cache.cache_outputs(cached_inputs,
+                                      cached_outputs)
             #
             if 'jacobian' in serialized_cache[1]:
                 cached_jac = serialized_cache[1]['jacobian']
-                empty_cache.cache_jacobian(cached_inputs, in_names, cached_jac)
+                empty_cache.cache_jacobian(cached_inputs, cached_jac)
         else:
             self.logger.error(
                 f'Only simple cache dump/load is handled for now but discipline {empty_cache.name} has a cache as {empty_cache.__class__}')

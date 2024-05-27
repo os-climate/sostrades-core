@@ -28,6 +28,7 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.root import MDARoot
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 
@@ -43,7 +44,7 @@ class PureNewtonRaphson(MDARoot):
             max_mda_iter=10,  # type: int
             relax_factor=0.99,  # type: float
             name=None,  # type: Optional[str]
-            grammar_type=MDODiscipline.GrammarType.JSON,  # type: str
+            grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
             linear_solver="DEFAULT",  # type: str
             tolerance=1e-6,  # type: float
             linear_solver_tolerance=1e-12,  # type: float

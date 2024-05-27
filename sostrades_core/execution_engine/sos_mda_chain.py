@@ -61,8 +61,7 @@ class SoSMDAChain(MDAChain):
     CACHE_FILE_PATH = 'cache_file_path'
     DEBUG_MODE = "debug_mode"
     OPTIONAL = "optional"
-    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change",
-                            "linearize_data_change", "min_max_couplings", "all"]
+    AVAILABLE_DEBUG_MODE = ["", "nan", "input_change", "min_max_couplings", "all"]
     RESIDUALS_HISTORY = "residuals_history"
     NUM_DESC_IN = {
         SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',
@@ -184,7 +183,7 @@ class SoSMDAChain(MDAChain):
         self.residuals_history = DataFrame(
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
 
-        del self.local_data['MDA residuals norm']
+        del self.local_data[self.RESIDUALS_NORM]
         # TODO: use a method to get the full name
         out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
         self.store_local_data(**out)
@@ -207,7 +206,7 @@ class SoSMDAChain(MDAChain):
         strong_couplings = [
             key for key in self.strong_couplings if
             key in self.local_data]  # TODO: replace local_data[key] per key should work
-        if len(strong_couplings) < len(self.strong_couplings):
+        if len(strong_couplings) < len(self.strong_couplings) and len(self.disciplines) > 1:
             self.logger.info(
                 'Execute a pre-run for the coupling ' + self.name)
             self.recreate_order_for_first_execution()

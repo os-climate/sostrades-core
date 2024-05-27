@@ -15,9 +15,10 @@ limitations under the License.
 '''
 import logging
 from builtins import super, zip
-
+from dataclasses import dataclass
 from future import standard_library
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 from numpy import float64, isfinite, real
 from scipy.optimize import fmin_tnc
@@ -28,8 +29,14 @@ Projected Gradient library
 
 standard_library.install_aliases()
 
-
 LOGGER = logging.getLogger("gemseo.addons.opt.lib_projected_gradient")
+
+
+@dataclass
+class ProjectedGradientAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the ProjectedGradient library."""
+
+    library_name: str = "ProjectedGradient"
 
 
 class ProjectedGradientOpt(OptimizationLibrary):
@@ -44,6 +51,7 @@ class ProjectedGradientOpt(OptimizationLibrary):
                    OptimizationLibrary.F_TOL_REL: "ftol_rel",
                    OptimizationLibrary.MAX_FUN_EVAL: "maxfun"
                    }
+    LIBRARY_NAME = "ProjectedGradient"
 
     def __init__(self):
         '''
@@ -59,20 +67,19 @@ class ProjectedGradientOpt(OptimizationLibrary):
         '''
         super(ProjectedGradientOpt, self).__init__()
         doc = 'https://docs.scipy.org/doc/scipy/reference/'
-        self.lib_dict = {
-            'ProjectedGradient':
-            {self.INTERNAL_NAME: "ProjectedGradient",
-             self.REQUIRE_GRAD: True,
-             self.POSITIVE_CONSTRAINTS: False,
-             self.HANDLE_EQ_CONS: False,
-             self.HANDLE_INEQ_CONS: False,
-             self.DESCRIPTION: 'Projected conjugated Gradient algorithm implementation',
-             self.WEBSITE: doc + 'generated/scipy.optimize.fmin_tnc.html',
-             },
+        self.descriptions = {
+            "ProjectedGradient": ProjectedGradientAlgorithmDescription(
+                algorithm_name="ProjectedGradient",
+                description="Projected conjugated Gradient algorithm implementation",
+                require_gradient=True,
+                positive_constraints=False,
+                handle_equality_constraints=False,
+                handle_inequality_constraints=False,
+                internal_algorithm_name="ProjectedGradient",
+                website=f"{doc}generated/scipy.optimize.fmin_tnc.html",
+            )}
 
-        }
-
-    def _get_options(self, 
+    def _get_options(self,
                      maxfun=999,
                      ftol=1e-10,  # pylint: disable=W0221
                      **kwargs):
@@ -95,11 +102,11 @@ class ProjectedGradientOpt(OptimizationLibrary):
         """
         popts = self._process_options(maxfun=kwargs['max_iter'],
                                       ftol=ftol,
-                                      ** kwargs)
+                                      **kwargs)
         return popts
 
     def _process_options(
-        self, **options  # type:Any
+            self, **options  # type:Any
     ):  # type: (...) -> Dict[str, Any]
         options = OptimizationLibrary._process_options(self, **options)
         self.OPTIONS_MAP[self.MAX_ITER] = options['maxfun']

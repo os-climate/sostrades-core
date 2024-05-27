@@ -208,51 +208,106 @@ class ExecutionEngine:
         self.root_process._set_dm_cache_map()
 
     def anonymize_caches_in_cache_map(self):
-        '''
-        Anonymize each cache of the cache map by anonymizing each variable key inside the cache
-        The returned cache is a dict already serialized and anonymized
-        None values are not serialized 
-        '''
-        anonymized_cache_map = {}
-        if self.dm.cache_map != {}:
-            for key, cache in self.dm.cache_map.items():
-                serialized_new_cache = [cache_entry for cache_entry in cache]
-                anonymized_cache = {}
-                for index, index_dict in serialized_new_cache.items():
-                    anonymized_cache[index] = {
-                        data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in
-                                     values_dict.items()}
-                        for data_types, values_dict in index_dict.items() if
-                        values_dict is not None and data_types in ['inputs', 'outputs']}
-                    if index_dict['jacobian'] is not None:
-                        anonymized_cache[index]['jacobian'] = {self.anonymize_key(key_out): {self.anonymize_key(
-                            key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
-                                                               index_dict['jacobian'].items()}
+        """
+        Anonymize each cache in the cache map by converting each variable key inside the cache
+        to its anonymized form. The returned cache map is a dictionary with the same structure,
+        but with anonymized keys.
 
+        Returns:
+        - dict: A dictionary with the same structure as cache_map, but with anonymized keys.
+        """
+
+        def anonymize_dict(dict_to_anonymize):
+            """
+            Convert each key in the dictionary to its anonymized form.
+
+            Parameters:
+            - dict_to_anonymize (dict): A dictionary with original keys.
+
+            Returns:
+            - dict: A dictionary with anonymized keys.
+            """
+            return {self.anonymize_key(key): value for key, value in dict_to_anonymize.items()}
+
+        def anonymize_dict_of_dict(dict_to_anonymize):
+            """
+            Convert each key in a dictionary of dictionary to its anonymized form.
+
+            Parameters:
+            - dict_to_anonymize (dict): A dictionary with original keys.
+
+            Returns:
+            - dict: A dictionary with anonymized keys.
+            """
+            return {self.anonymize_key(key): anonymize_dict(value) for key, value in dict_to_anonymize.items()}
+
+        # Initialize an empty dictionary to store the anonymized cache map
+        anonymized_cache_map = {}
+
+        # If the cache map is not empty, process each entry
+        if self.dm.cache_map:
+            for key, serialized_new_cache in self.dm.cache_map.items():
+                anonymized_cache = {}
+                for index, cache in enumerate(serialized_new_cache, start=1):
+                    # Anonymize the keys for inputs, outputs, and jacobian of each cache
+                    anonymized_cache[index] = {
+                        'inputs': anonymize_dict(cache.inputs),
+                        'outputs': anonymize_dict(cache.outputs),
+                        'jacobian': anonymize_dict_of_dict(cache.jacobian)
+                    }
+                # Add the anonymized cache to the result dictionary
                 anonymized_cache_map[key] = anonymized_cache
 
         return anonymized_cache_map
 
     def unanonymize_caches_in_cache_map(self, cache_map):
-        '''
-        Unanonymize each cache of the cache map by anonymizing each variable key inside the cache
-        The returned cache is a dict already serialized and anonymized
-        None values are not serialized 
-        '''
+        """
+        Unanonymize each cache in the cache map by converting each key inside the cache
+        to its original form. The returned cache map is a dictionary with the same structure,
+        but with unanonymized keys.
+
+        Parameters:
+        - cache_map (dict): A dictionary where each value is a list of cache objects.
+
+        Returns:
+        - dict: A dictionary with the same structure as cache_map, but with unanonymized keys.
+        """
+
+        def un_anonymize_dict(dict_to_anonymize):
+            """
+            Convert each key in the dictionary to its original form.
+
+            Parameters:
+            - dict_to_anonymize (dict): A dictionary with anonymized keys.
+
+            Returns:
+            - dict: A dictionary with the original keys.
+            """
+            return {self.__unanonimize_key(key): value for key, value in dict_to_anonymize.items()}
+
+        def un_anonymize_dict_of_dict(dict_to_anonymize):
+            """
+            Convert each key in the dictionary to its original form.
+
+            Parameters:
+            - dict_to_anonymize (dict): A dictionary with anonymized keys.
+
+            Returns:
+            - dict: A dictionary with the original keys.
+            """
+            return {self.__unanonimize_key(key): un_anonymize_dict(value) for key, value in dict_to_anonymize.items()}
+
+        # Initialize an empty dictionary to store the unanonymized cache map
         unanonymized_cache_map = {}
-        if cache_map != {}:
-            for key, serialized_cache in cache_map.items():
-                unanonymized_cache = {}
-                for index, index_dict in serialized_cache.items():
-                    unanonymized_cache[index] = {
-                        data_types: {self.__unanonimize_key(key): value for key, value in values_dict.items()}
-                        for data_types, values_dict in index_dict.items() if data_types in ['inputs', 'outputs']}
-                    if 'jacobian' in index_dict:
-                        unanonymized_cache[index]['jacobian'] = {
-                            self.__unanonimize_key(key_out): {self.__unanonimize_key(
-                                key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
-                            index_dict['jacobian'].items()}
-                unanonymized_cache_map[key] = unanonymized_cache
+        cache_unanonymize_func = {'inputs': un_anonymize_dict, 'outputs': un_anonymize_dict,
+                                  'jacobian': un_anonymize_dict_of_dict}
+        # If the cache map is not empty, process each entry
+        if cache_map:
+            # Unanonymize the keys for inputs, outputs, and jacobian of each cache
+            unanonymized_cache_map = {
+                key: {index: {cache_type: cache_func(cache[cache_type]) for cache_type, cache_func in
+                              cache_unanonymize_func.items()} for index, cache in serialized_cache.items()} for
+                key, serialized_cache in cache_map.items()}
 
         return unanonymized_cache_map
 
@@ -592,15 +647,16 @@ class ExecutionEngine:
         if mode is None:
             disc.nan_check = True
             disc.check_if_input_change_after_run = True
-            disc.check_linearize_data_changes = True
+            # disc.check_linearize_data_changes = True
             # disc.check_min_max_gradients = True
             disc.check_min_max_couplings = True
         elif mode == "nan":
             disc.nan_check = True
         elif mode == "input_change":
             disc.check_if_input_change_after_run = True
-        elif mode == "linearize_data_change":
-            disc.check_linearize_data_changes = True
+        ###we deactivate these debug mode for gemseo convergence to start, need to overload some methods if needed
+        # elif mode == "linearize_data_change":
+        #     disc.check_linearize_data_changes = True
         # elif mode == "min_max_grad":
         #     disc.check_min_max_gradients = True
         elif mode == "min_max_couplings":
@@ -611,8 +667,7 @@ class ExecutionEngine:
             self.check_data_integrity = True
 
         else:
-            avail_debug = ["nan", "input_change",
-                           "linearize_data_change", "min_max_couplings", 'data_check_integrity']
+            avail_debug = ["nan", "input_change", "min_max_couplings", 'data_check_integrity']
             raise ValueError("Debug mode %s is not among %s" % (mode, str(avail_debug)))
         # set debug modes of subdisciplines
         for disc in disc.proxy_disciplines:

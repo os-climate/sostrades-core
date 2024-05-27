@@ -28,10 +28,12 @@ from numpy import array
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+from gemseo.mda.mda import MDA
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
+
 
 class TestMDALoop(unittest.TestCase):
     """
@@ -340,12 +342,12 @@ class TestMDALoop(unittest.TestCase):
             exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
         self.assertEqual(residual_history_3, residual_history_output_3)
 
-        self.assertEqual(residual_history_3[-1], residual_history_2)
+        self.assertEqual(residual_history_3, residual_history_2)
 
         BaseStudyManager.static_dump_data(
             dump_dir, exec_eng3, DirectLoadDump())
 
-        exec_eng4 = ExecutionEngine(self.name)[-1]
+        exec_eng4 = ExecutionEngine(self.name)
 
         exec_eng4.ns_manager.add_ns('ns_protected', self.name)
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
@@ -793,6 +795,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.tolerance'] = 1.e-15
         values_dict['EE.n_processes'] = 4
         values_dict['EE.max_mda_iter'] = 50
+        values_dict['EE.max_mda_iter_gs'] = 31
         values_dict['EE.tolerance_gs'] = 1.0
         values_dict['EE.inner_mda_name'] = 'MDAGSNewton'
         values_dict['EE.linear_solver_MDA_options'] = {
@@ -821,6 +824,8 @@ class TestMDALoop(unittest.TestCase):
                          inner_mda_name.tolerance)
         self.assertEqual(values_dict['EE.max_mda_iter'],
                          inner_mda_name.max_mda_iter)
+        self.assertEqual(values_dict['EE.max_mda_iter_gs'],
+                         inner_mda_name.mda_sequence[0].max_mda_iter)
         self.assertEqual(values_dict['EE.tolerance_gs'],
                          inner_mda_name.mda_sequence[0].tolerance)
         self.assertEqual(values_dict['EE.tolerance'],
@@ -1260,6 +1265,8 @@ class TestMDALoop(unittest.TestCase):
 
         proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
         disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
+        # MDA residuals norm is now in local_data of the mda but not retrieved by the proxy (already last value of residuals_history) so we deete it from gemseo local_data before check length
+        disc_out_names.remove(MDA.RESIDUALS_NORM)
         self.assertEqual(len(proxy_out_names), len(disc_out_names))
         self.assertListEqual(proxy_out_names, disc_out_names)
 
@@ -1338,6 +1345,8 @@ class TestMDALoop(unittest.TestCase):
 
         proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
         disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
+        # MDA residuals norm is now in local_data of the mda but not retrieved by the proxy (already last value of residuals_history) so we deete it from gemseo local_data before check length
+        disc_out_names.remove(MDA.RESIDUALS_NORM)
         self.assertEqual(len(proxy_out_names), len(disc_out_names))
         self.assertListEqual(proxy_out_names, disc_out_names)
 

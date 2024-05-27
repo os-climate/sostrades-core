@@ -158,6 +158,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.acceleration': init_dict('string'),
                     ns_2 + '.inner_mda_name': init_dict('string'),
                     ns_2 + '.max_mda_iter': init_dict('int'),
+                    ns_2 + '.max_mda_iter_gs': init_dict('int'),
                     ns_2 + '.epsilon0': init_dict('float'),
                     ns_2 + '.residuals_history': init_dict('dataframe'),
                     ns_2 + '.n_subcouplings_parallel': init_dict('int'),

@@ -27,6 +27,7 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.sequential_mda import MDASequential
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_purenewton_mda")
 
@@ -40,12 +41,13 @@ class GSPureNewtonMDA(MDASequential):
             self,
             disciplines,  # type: Sequence[MDODiscipline]
             name=None,  # type: Optional[str]
-            grammar_type=MDODiscipline.GrammarType.JSON,  # type: str
+            grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
             tolerance=1e-6,  # type: float
             max_mda_iter=10,  # type: int
             relax_factor=0.99,  # type: float
             linear_solver="DEFAULT",  # type: str
             tolerance_gs=10.0,
+            max_mda_iter_gs=10,
             linear_solver_tolerance=1e-12,  # type: float
             warm_start=False,  # type: bool
             use_lu_fact=False,  # type: bool
@@ -65,7 +67,7 @@ class GSPureNewtonMDA(MDASequential):
                 expressed in terms of normed residuals.
             **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter,
+        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs,
                                    name=None, grammar_type=grammar_type, tolerance=tolerance_gs)
 
         mda_newton = PureNewtonRaphson(

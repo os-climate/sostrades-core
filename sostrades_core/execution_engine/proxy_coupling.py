@@ -143,7 +143,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'n_subcouplings_parallel': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 1,
                                     ProxyDiscipline.NUMERICAL: True,
                                     ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
-        # 'max_mda_iter_gs': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 5, ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True},
+        'max_mda_iter_gs': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 30, ProxyDiscipline.NUMERICAL: True,
+                            ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         'tolerance_gs': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.DEFAULT: 10.0, ProxyDiscipline.NUMERICAL: True,
                          ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         'relax_factor': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.RANGE: [0.0, 1.0],
@@ -198,8 +199,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     DESC_OUT = {
         RESIDUALS_HISTORY: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'dataframe',
                             ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True},
-        MDA_RESIDUALS_NORM: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'array',
-                             ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True}
+        # MDA_RESIDUALS_NORM: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'array',
+        #                      ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True}
     }
 
     eps0 = 1.0e-6
@@ -362,9 +363,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 if self.get_sosdisc_inputs('inner_mda_name') == 'GSorNewtonMDA':
                     self.update_default_value(
                         'max_mda_iter_gs', self.IO_TYPE_IN, 200)
-                else:
-                    self.update_default_value(
-                        'max_mda_iter_gs', self.IO_TYPE_IN, 5)
+                # else:
+                #     self.update_default_value(
+                #         'max_mda_iter_gs', self.IO_TYPE_IN, 30)
 
     def configure_io(self):
         '''
@@ -673,8 +674,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             num_data['acceleration'] = copy(
                 self.get_sosdisc_inputs('acceleration'))
         if num_data['inner_mda_name'] in ['MDAGSNewton', 'GSPureNewtonMDA', 'GSorNewtonMDA', 'GSPureNewtonorGSMDA']:
-            #             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
-            #                 'max_mda_iter_gs'))
+            num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
+                'max_mda_iter_gs'))
             num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs(
                 'tolerance_gs'))
         if num_data['inner_mda_name'] in ['MDANewtonRaphson', 'PureNewtonRaphson', 'GSPureNewtonMDA', 'MDAGSNewton',

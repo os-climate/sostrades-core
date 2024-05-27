@@ -423,7 +423,8 @@ class FunctionManagerDisc(SoSWrapp):
                                      np.array(get_dsmooth_dvariable(
                                          self.func_manager.functions[variable_name][self.VALUE]))
                     else:
-                        raise Exception(f"Unknown aggr type {self.func_manager.functions[variable_name][self.AGGR_TYPE]}")
+                        raise Exception(
+                            f"Unknown aggr type {self.func_manager.functions[variable_name][self.AGGR_TYPE]}")
 
                     self.set_partial_derivative(
                         'objective_lagrangian', variable_name, 100.0 * np.atleast_2d(grad_value))
@@ -1258,7 +1259,7 @@ class FunctionManagerDisc(SoSWrapp):
                                    self.WEIGHT: 1.0, self.AGGR_TYPE: 'sum',
                                    'value': [value]}
                     parameters_df = pd.concat([parameters_df,
-                        pd.DataFrame(dict_parent, index=[parent])], axis=0)
+                                               pd.DataFrame(dict_parent, index=[parent])], axis=0)
 
         for row in parameters_df.iterrows():
             vis = False
@@ -1485,6 +1486,8 @@ class FunctionManagerDisc(SoSWrapp):
         """Log some warnings if value is not between 0 and 1"""
         if isinstance(fvalue_df, np.ndarray):
             if fvalue_df.max() > 1:
-                self.logger.warning(f"{ftype} {fname} maximum is above 1 ({fvalue_df.max()}). All its values should be between 0 and 1")
+                self.logger.warning(
+                    f"{ftype} {fname} maximum is above 1 ({fvalue_df.max()}). All its values should be between 0 and 1")
             if fvalue_df.min() < 0:
-                self.logger.warning(f"{ftype} {fname} minimum is lower than 1 ({fvalue_df.min()}). All its values should be between 0 and 1")
+                self.logger.warning(
+                    f"{ftype} {fname} minimum is lower than 1 ({fvalue_df.min()}). All its values should be between 0 and 1")

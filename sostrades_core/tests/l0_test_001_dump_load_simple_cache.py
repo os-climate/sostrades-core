@@ -170,7 +170,9 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc_id, disc_cache in initial_cache_map.items():
             self.assertTrue(disc_id in anonymized_cache_map)
-            disc_cache_data = disc_cache[1]
+            disc_cache_entry = list(disc_cache.keys())[0]
+            disc_cache_data = {'inputs': disc_cache_entry.inputs,
+                               'outputs': disc_cache_entry.outputs}
             for var_type in ['inputs', 'outputs']:
                 for input_var, input_value in disc_cache_data[var_type].items():
                     input_var_anonymized = input_var.replace(
@@ -190,9 +192,12 @@ class TestLoadSimpleCache(unittest.TestCase):
         unanonymized_cache_map = study_dump.execution_engine.unanonymize_caches_in_cache_map(
             anonymized_cache_map)
         for disc_id, disc_cache in initial_cache_map.items():
+            disc_cache_entry = list(disc_cache.keys())[0]
+            disc_cache_data = {'inputs': disc_cache_entry.inputs,
+                               'outputs': disc_cache_entry.outputs}
+
             for var_type in ['inputs', 'outputs']:
-                self.assertDictEqual(disc_cache[
-                                         1][var_type], unanonymized_cache_map[disc_id][1][var_type])
+                self.assertDictEqual(disc_cache_data[var_type], unanonymized_cache_map[disc_id][1][var_type])
         self.dir_to_del.append(self.dump_dir)
 
     def test_04_dump_and_load_simple_cache_on_process(self):
@@ -250,22 +255,15 @@ class TestLoadSimpleCache(unittest.TestCase):
             disc_cache_dump = cache_map_from_pkl[disc_cache_id]
             disc_cache_load = study_load.ee.dm.cache_map[disc_cache_id]
 
-            self.assertListEqual(disc_cache_dump.inputs_names,
-                                 disc_cache_load.inputs_names)
-            self.assertListEqual(disc_cache_dump.outputs_names,
-                                 disc_cache_load.outputs_names)
-            cache_dump_outputs = disc_cache_dump.get_last_cached_outputs()
-            cache_load_outputs = disc_cache_load.get_last_cached_outputs()
+            self.assertListEqual(disc_cache_dump.input_names,
+                                 disc_cache_load.input_names)
+            self.assertListEqual(disc_cache_dump.output_names,
+                                 disc_cache_load.output_names)
+            cache_dump_outputs = disc_cache_dump.last_entry.outputs
+            cache_load_outputs = disc_cache_load.last_entry.outputs
             self.assertDictEqual(
                 {key: value for key, value in cache_dump_outputs.items() if not key.endswith('residuals_history')},
                 {key: value for key, value in cache_load_outputs.items() if not key.endswith('residuals_history')})
-            cache_dump_get_outputs = list(disc_cache_dump.get_outputs(
-                disc_cache_load.get_last_cached_inputs(), disc_cache_dump.inputs_names))[0]
-            cache_load_get_outputs = list(disc_cache_load.get_outputs(
-                disc_cache_load.get_last_cached_inputs(), disc_cache_load.inputs_names))[0]
-            self.assertDictEqual(
-                {key: value for key, value in cache_dump_get_outputs.items() if not key.endswith('residuals_history')},
-                {key: value for key, value in cache_load_get_outputs.items() if not key.endswith('residuals_history')})
 
         self.dir_to_del.append(self.dump_dir)
 
@@ -391,8 +389,8 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         # check cache are filled with last cached inputs and outputs
         for cache in study_1.ee.dm.cache_map.values():
-            self.assertNotEqual(cache.get_last_cached_inputs(), None)
-            self.assertNotEqual(cache.get_last_cached_outputs(), None)
+            self.assertNotEqual(cache.last_entry.inputs, None)
+            self.assertNotEqual(cache.last_entry.outputs, None)
 
         # run study_1 with converged MDA
         study_1.run(dump_study=True)
