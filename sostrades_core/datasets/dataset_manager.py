@@ -18,6 +18,7 @@ from typing import Any, List
 
 from sostrades_core.datasets.dataset import Dataset
 from sostrades_core.datasets.dataset_info import DatasetInfo
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import DatasetGenericException, DatasetNotFoundException
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
     DatasetsConnectorManager,
 )
@@ -52,15 +53,18 @@ class DatasetsManager:
         data_retrieved = {}
 
         for dataset_info in datasets_info:
-            # Get the dataset, creates it if not exists
-            dataset = self.get_dataset(dataset_info=dataset_info)
+            try:
+                # Get the dataset, creates it if not exists
+                dataset = self.get_dataset(dataset_info=dataset_info)
 
-            # Retrieve values
-            dataset_values = dataset.get_values(data_dict=data_dict)
-            # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
-            dataset_data = {key: {self.VALUE: value,
-                                  self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
-            data_retrieved.update(dataset_data)
+                # Retrieve values
+                dataset_values = dataset.get_values(data_dict=data_dict)
+                # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
+                dataset_data = {key: {self.VALUE: value,
+                                    self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
+                data_retrieved.update(dataset_data)
+            except DatasetGenericException as exception:
+                raise DatasetGenericException(f'Error fetching dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return data_retrieved
 
     def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
