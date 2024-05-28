@@ -63,8 +63,9 @@ class ParameterChange:
     variable_type: str
     old_value: Any
     new_value: Any
-    dataset_id: Union[str, None]
     connector_id: Union[str, None]
+    dataset_id: Union[str, None]
+    dataset_parameter_id: Union[str, None]
     date: datetime
 
 class DataManager:
@@ -472,15 +473,22 @@ class DataManager:
                     new_value = new_data[DatasetsManager.VALUE]
                     connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
                     dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_id
-                    self.apply_parameter_change(key, new_value, parameter_changes, connector_id, dataset_id)
+                    # dataset_parameter_id = new_data[DatasetsManager.DATASET_INFO].dataset_parameter_id
+                    self.apply_parameter_change(key, new_value, parameter_changes,
+                                                connector_id=connector_id,
+                                                dataset_id=dataset_id,
+                                                dataset_parameter_id=None)
                     already_set_data.add(key)
             else:
                 self.logger.warning(f"the namespace {namespace} is not referenced in the datasets mapping of the study")
 
-    def apply_parameter_change(self, key: str, new_value: Any,
+    def apply_parameter_change(self,
+                               key: str,
+                               new_value: Any,
                                parameter_changes: list[ParameterChange],
                                connector_id: (str, None) = None,
                                dataset_id: (str, None) = None,
+                               dataset_parameter_id: (str, None) = None,
                                update_parameter_changes: bool = True) -> None:
         """
         Applies and logs an input value change on variable with uuid key. It appends to parameter_changes a
@@ -491,6 +499,7 @@ class DataManager:
         :param parameter_changes: ongoing list of parameter changes
         :param connector_id: dataset connector id if updating from dataset or None otherwise
         :param dataset_id: dataset id if updating from dataset or None otherwise
+        :param dataset_parameter_id: id of the parameter in the dataset if updating from dataset or None otherwise  # todo: WIP!
         :return: None, inplace update of the data manager value for variable
         """
         dm_data = self.data_dict[key]
@@ -503,6 +512,7 @@ class DataManager:
                                                          new_value=deepcopy(new_value),     # FIXME: deepcopies avoidable ?
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
+                                                         dataset_parameter_id=dataset_parameter_id,
                                                          date=datetime.now()))
         dm_data[VALUE] = new_value
 

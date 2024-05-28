@@ -25,7 +25,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Opt with Func Manager',
+        'label': 'Core Test Sellar Opt with Func Manager Faulty',
         'description': '',
         'category': '',
         'version': '',
