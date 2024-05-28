@@ -89,7 +89,7 @@
   "default_numerical_parameters": {
     "linearization_mode": "auto",
     "debug_mode": "",
-    "cache_type": "None",
+    "cache_type": "",
     "cache_file_path": "",
     "inner_mda_name": "MDAJacobi",
     "max_mda_iter": 30,
