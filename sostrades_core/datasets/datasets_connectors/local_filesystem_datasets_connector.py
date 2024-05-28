@@ -19,7 +19,7 @@ import os
 from shutil import rmtree
 from typing import Any
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetDeserializeException, DatasetGenericException, DatasetNotFoundException
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetDeserializeException, DatasetGenericException, DatasetNotFoundException, DatasetUnableToInitializeConnectorException
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
 
 
@@ -60,6 +60,9 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type dataset_identifier: str
         :return: dictionary of descriptor keys and values
         """
+        if not os.path.exists(self.__root_directory_path):
+            raise DatasetGenericException(f"Datasets database folder not found at {self.__root_directory_path}.")
+        
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
         if not os.path.exists(dataset_descriptor_path):

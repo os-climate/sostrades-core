@@ -309,3 +309,28 @@ class TestDatasets(unittest.TestCase):
         with self.assertRaises(DatasetGenericException):
             study.update_data_from_dataset_mapping(mapping)
         
+    def test_10_repository_dataset_connector(self):
+        """
+        Some example to check repository datasets connector
+        """
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+
+        mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
+        
+
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        dm = study.execution_engine.dm
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
+
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+        
