@@ -1,4 +1,7 @@
 from __future__ import annotations # TODO: for m4
+
+import logging
+
 '''
 Copyright 2022 Airbus SAS
 Modifications on 2023/03/27-2024/05/16 Copyright 2023 Capgemini
@@ -91,7 +94,7 @@ else:
 
 array_classes = (ndarray, *sparse_classes)
 
-
+LOGGER = logging.getLogger(__name__)
 
 # END TODO: for m4
 
@@ -138,6 +141,7 @@ class SoSJacobianAssembly(JacobianAssembly):
             self.coupling_structure.disciplines, n_processes=self.n_processes, use_threading=True)
 
     def _dres_dvar_sparse_4_csr_new(self, residuals, variables, n_residuals, n_variables):
+        LOGGER.warning("USING_M4_CSR_MATRIX")
         # Fill in with zero blocks of appropriate dimension if necessary
         variable_sizes = [self.sizes[variable_name] for variable_name in variables]
         function_sizes = [self.sizes[function_name] for function_name in residuals]
@@ -251,6 +255,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         :param n_residuals: number of residuals
         :param n_variables: number of variables
         """
+        LOGGER.warning("USING_M2_DOK_MATRIX_SOS")
         # SoSTrades modif
         dres_dvar = dok_matrix((n_residuals, n_variables))
         # end of SoSTrades modif
@@ -314,6 +319,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         :param n_residuals: number of residuals
         :param n_variables: number of variables
         """
+        LOGGER.warning("USING_M1_LIL_MATRIX")
         dres_dvar = lil_matrix((n_residuals, n_variables))
         # end of SoSTrades modif
 
