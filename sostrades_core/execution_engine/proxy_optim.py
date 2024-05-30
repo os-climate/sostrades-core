@@ -178,7 +178,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                             'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
                             'xtol_abs': 1e-9, 'max_ls_step_size': 0.,
                             'max_ls_step_nb': 20, 'max_fun_eval': 999999, 'max_time': 0,
-                            'pg_tol': 1e-5, 'disp': 0, 'maxCGit': -1, 'eta': -1.,
+                            'pg_tol': 1e-5, 'disp': False, 'maxCGit': -1, 'eta': -1.,
                             'factr': 1e7, 'maxcor': 20, 'normalize_design_space': True,
                             'eq_tolerance': 1e-2, 'ineq_tolerance': 1e-4,
                             'stepmx': 0., 'minfev': 0., 'sigma': 10.0, 'bounds': [0.0, 10.0], 'population_size': 20}
@@ -187,7 +187,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                                     'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
                                     'xtol_abs': 1e-9, 'max_ls_step_size': 0.,
                                     'max_ls_step_nb': 20, 'max_fun_eval': 999999, 'max_time': 0,
-                                    'pg_tol': 1e-5, 'disp': 0, 'maxCGit': -1, 'eta': -1.,
+                                    'pg_tol': 1e-5, 'disp': False, 'maxCGit': -1, 'eta': -1.,
                                     'factr': 1e7, 'maxcor': 20, 'normalize_design_space': True,
                                     'eq_tolerance': 1e-2, 'ineq_tolerance': 1e-4,
                                     'stepmx': 0., 'minfev': 0., 'linesearch': 'lnsrlb', 'lnsrlb_xtol': 0.1,

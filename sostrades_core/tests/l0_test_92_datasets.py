@@ -20,7 +20,8 @@ import unittest
 import numpy as np
 import pandas as pd
 
-import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
+import \
+    sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
@@ -64,7 +65,7 @@ class TestDatasets(unittest.TestCase):
         # check numerical parameters
         self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
         self.assertEqual(dm.get_value("usecase_dataset.debug_mode"), "")
-        self.assertEqual(dm.get_value("usecase_dataset.cache_type"), "None")
+        self.assertEqual(dm.get_value("usecase_dataset.cache_type"), "")
         self.assertEqual(dm.get_value("usecase_dataset.cache_file_path"), "")
         self.assertEqual(dm.get_value("usecase_dataset.inner_mda_name"), "MDAJacobi")
         self.assertEqual(dm.get_value("usecase_dataset.max_mda_iter"), 30)
@@ -123,17 +124,21 @@ class TestDatasets(unittest.TestCase):
         json_file_path = os.path.join(test_data_folder, "test_92_example_mapping.json")
 
         dataset_mapping = DatasetsMapping.from_json_file(file_path=json_file_path)
-        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"].connector_id, "<1connector_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"].connector_id,
+                         "<1connector_id>")
         self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"].dataset_id, "<1dataset_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"].connector_id, "<2connector_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"].connector_id,
+                         "<2connector_id>")
         self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"].dataset_id, "<2dataset_id>")
 
         self.assertEqual(
-            dataset_mapping.namespace_datasets_mapping["namespace1"], [dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"]]
+            dataset_mapping.namespace_datasets_mapping["namespace1"],
+            [dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"]]
         )
         self.assertEqual(
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
-            set([dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"], dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"]]),
+            set([dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"],
+                 dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"]]),
         )
 
     def test_04_datasets_types(self):
@@ -172,7 +177,6 @@ class TestDatasets(unittest.TestCase):
         self.assertTrue((dm.get_value(f"{study_name}.SellarCoupling.z") == [4.0, 5.0]).all())
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)
 
-
     def test_06_parameter_change_returned_in_load_data_using_both_dict_and_datasets(self):
         usecase_file_path = uc_dataset_dict.__file__
         process_path = os.path.dirname(usecase_file_path)
@@ -181,8 +185,10 @@ class TestDatasets(unittest.TestCase):
 
         param_changes = study.load_data(from_input_dict=uc.setup_usecase())
         param_changes.extend(study.load_study(os.path.join(process_path, "usecase_dataset_sellar_coupling.json")))
-        x_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.x']
-        z_parameterchanges = [_pc for _pc in param_changes if _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.z']
+        x_parameterchanges = [_pc for _pc in param_changes if
+                              _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.x']
+        z_parameterchanges = [_pc for _pc in param_changes if
+                              _pc.parameter_id == 'usecase_dataset_and_dict_sellar_coupling.SellarCoupling.z']
 
         self.assertEqual(x_parameterchanges[0].variable_type, 'array')
         self.assertEqual(x_parameterchanges[0].old_value, None)

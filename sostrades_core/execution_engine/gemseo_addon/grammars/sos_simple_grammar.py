@@ -73,5 +73,5 @@ class SoSSimpleGrammar(SimplerGrammar):
         self.to_namespaced = {}
         self.from_namespaced = {}
         self._defaults = {}
-        self._required_names = RequiredNames(self)
+        self._required_names = set()
         self._clear()

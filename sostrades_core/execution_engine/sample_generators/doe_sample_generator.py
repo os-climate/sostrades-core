@@ -246,8 +246,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         gemseo_options = self._generate_gemseo_options(
             algo_options, design_space)
 
-        normalized_samples = self._generate_normalized_samples_from_doe_factory(
-            sampling_algo_name, **gemseo_options)  # call to gemseo
+        normalized_samples = self._generate_normalized_samples_from_doe_factory(design_space,
+                                                                                sampling_algo_name,
+                                                                                **gemseo_options)  # call to gemseo
         return normalized_samples
 
     def _generate_gemseo_options(self, algo_options, design_space):
@@ -281,7 +282,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         # TODO : logging from module ?
 
         # The following 3 lines come from compute_doe in doe_lib.py of gemseo
-        gemseo_options[self.DIMENSION] = design_space.dimension
+        # gemseo_options[self.DIMENSION] = design_space.dimension
         # Remark: those two following lines _VARIABLES_NAMES and _VARIABLES_SIZES are only used in gemseo
         # lib_scalable.py for DiagonalDOE algorithm and associated reverse
         # algo option.
@@ -290,7 +291,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         return gemseo_options
 
-    def _generate_normalized_samples_from_doe_factory(self, sampling_algo_name, **gemseo_options):
+    def _generate_normalized_samples_from_doe_factory(self, design_space, sampling_algo_name, **gemseo_options):
         """
         Generating samples for the Doe using the _generate_samples method of the Doe Factory
 
@@ -307,7 +308,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         """
         #         doe_factory = DOEFactory()
         algo = self.doe_factory.create(sampling_algo_name)
-        normalized_samples = algo._generate_samples(**gemseo_options)
+        normalized_samples = algo._generate_samples(design_space, **gemseo_options)
         return normalized_samples
 
     def _unnormalize_samples_from_design_space(self, normalized_samples, design_space):

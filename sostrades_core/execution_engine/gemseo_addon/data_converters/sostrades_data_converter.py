@@ -73,8 +73,8 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
             self.reduced_dm[name].update(new_reduced_dm)
             return val_converted
 
-    @staticmethod
-    def get_value_size(name: str, value) -> int:
+    @classmethod
+    def get_value_size(cls, name: str, value) -> int:
         """Return the size of a data value.
 
         The size is typically what is returned by ``ndarray.size`` or ``len(list)``.
@@ -87,7 +87,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
         Returns:
             The size.
         """
-        if isinstance(value, self._NUMERIC_TYPES):
+        if isinstance(value, cls._NUMERIC_TYPES):
             return 1
         else:
             return compute_len(value)
