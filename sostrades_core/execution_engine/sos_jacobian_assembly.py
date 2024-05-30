@@ -61,7 +61,7 @@ from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution i
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array
 
 # TODO: for m4
-USE_M4_CSR = True
+USE_M4_CSR = False
 from typing import NamedTuple
 from collections.abc import Iterable
 from collections.abc import Iterator
@@ -391,10 +391,10 @@ class SoSJacobianAssembly(JacobianAssembly):
                 sparse_dres_dvar = self._dres_dvar_sparse_4_csr_new(
                     residuals, variables, n_residuals, n_variables
                 )
-            # elif getenv("USE_PETSC", "").lower() in ("true", "1"):
-            #     sparse_dres_dvar = self._dres_dvar_sparse_lil(
-            #         residuals, variables, n_residuals, n_variables
-            #     )
+            elif getenv("USE_PETSC", "").lower() in ("true", "1"):
+                sparse_dres_dvar = self._dres_dvar_sparse_lil(
+                    residuals, variables, n_residuals, n_variables
+                )
             else:
                 sparse_dres_dvar = self._dres_dvar_sparse(
                     residuals, variables, n_residuals, n_variables
