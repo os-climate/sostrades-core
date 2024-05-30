@@ -19,6 +19,7 @@ import logging
 from typing import ClassVar
 
 from gemseo.core.grammars.simpler_grammar import SimplerGrammar
+from gemseo.core.grammars.required_names import RequiredNames
 
 """Most basic grammar implementation."""
 
@@ -72,4 +73,5 @@ class SoSSimpleGrammar(SimplerGrammar):
         self.to_namespaced = {}
         self.from_namespaced = {}
         self._defaults = {}
+        self._required_names = RequiredNames(self)
         self._clear()
