@@ -16,6 +16,7 @@ limitations under the License.
 '''
 import logging
 from copy import deepcopy
+from memory_profiler import profile
 
 import numpy as np
 import pandas as pd
@@ -75,7 +76,11 @@ class SoSMDOScenario(MDOScenario):
         self.reduced_dm = reduced_dm
         self.activated_variables = self.formulation.design_space.variables_names
         self.is_sos_coupling=False
-
+        
+        # desactivate designspace outputs for post processings 
+        self.desactivate_optim_out_storage = False
+        self.clear_database_after_run = False
+    
     def _run(self):
         '''
 
@@ -91,12 +96,22 @@ class SoSMDOScenario(MDOScenario):
                    for discipline in self.disciplines]
         for data in outputs:
             self.local_data.update(data)
-        self.update_design_space_out()
-        if not self.eval_mode:
-            self.update_post_processing_df()
+
+        # save or not the output of design space for post processings
+        if not self.desactivate_optim_out_storage:
+            self.update_design_space_out()
+            if not self.eval_mode:
+                self.update_post_processing_df()
+
+        # clear or not problem database
+        if self.clear_database_after_run:
+            formulation = self.formulation
+            problem = formulation.opt_problem
+            problem.database.clear()
+
         
 
-
+   
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
         dataset = self.export_to_dataset()
@@ -169,6 +184,8 @@ class SoSMDOScenario(MDOScenario):
         MDOScenario._run(self)
 
         self.execute_at_xopt()
+
+
 
     def run_eval_mode(self):
         '''
