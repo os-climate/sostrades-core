@@ -391,10 +391,10 @@ class SoSJacobianAssembly(JacobianAssembly):
                 sparse_dres_dvar = self._dres_dvar_sparse_4_csr_new(
                     residuals, variables, n_residuals, n_variables
                 )
-            elif getenv("USE_PETSC", "").lower() in ("true", "1"):
-                sparse_dres_dvar = self._dres_dvar_sparse_lil(
-                    residuals, variables, n_residuals, n_variables
-                )
+            # elif getenv("USE_PETSC", "").lower() in ("true", "1"):
+            #     sparse_dres_dvar = self._dres_dvar_sparse_lil(
+            #         residuals, variables, n_residuals, n_variables
+            #     )
             else:
                 sparse_dres_dvar = self._dres_dvar_sparse(
                     residuals, variables, n_residuals, n_variables
