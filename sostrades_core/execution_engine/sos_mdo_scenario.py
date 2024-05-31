@@ -16,8 +16,6 @@ limitations under the License.
 '''
 import logging
 from copy import deepcopy
-from memory_profiler import profile
-
 import numpy as np
 import pandas as pd
 from gemseo.core.mdo_scenario import MDOScenario

@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from memory_profiler import profile
 from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import List
