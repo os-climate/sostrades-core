@@ -250,7 +250,7 @@ class MDODisciplineWrapp(object):
             # retrieve the option to desactivate the storage of the design space outputs for post processings
             mdo_discipline.desactivate_optim_out_storage = proxy.get_sosdisc_inputs([proxy.DESACTIVATE_OPTIM_OUT_STORAGE])
             # retrieve the option to clear the problem database after the run
-            mdo_discipline.clear_database_after_run = proxy.get_sosdisc_inputs([proxy.DESACTIVATE_OPTIM_OUT_STORAGE])
+            mdo_discipline.clear_database_after_run = proxy.get_sosdisc_inputs([proxy.CLEAR_DB_AFTER_RUN])
 
             self.mdo_discipline = mdo_discipline
 
