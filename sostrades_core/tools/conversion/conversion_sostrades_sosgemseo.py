@@ -582,6 +582,7 @@ def convert_new_type_into_array(
         and stores metadata into DM for after reconversion
     '''
     var_dict_converted = deepcopy(var_dict)
+    prev_metadata = None
     for key, var in var_dict_converted.items():
         if not isinstance(dm_reduced_to_type_and_metadata, dict):
             var_type = dm_reduced_to_type_and_metadata.get_data(

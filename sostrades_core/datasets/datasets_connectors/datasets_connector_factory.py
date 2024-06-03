@@ -16,6 +16,8 @@ limitations under the License.
 import logging
 from enum import Enum
 
+
+
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetUnableToInitializeConnectorException,
@@ -26,6 +28,10 @@ from sostrades_core.datasets.datasets_connectors.arango_datasets_connector impor
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
     JSONDatasetsConnector,
 )
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector import (
+    LocalFileSystemDatasetsConnector,
+)
+from sostrades_core.datasets.datasets_connectors.local_repository_datasets_connector import LocalRepositoryDatasetsConnector
 from sostrades_core.datasets.datasets_connectors.sospickle_datasets_connector import (
     SoSPickleDatasetsConnector,
 )
@@ -38,8 +44,10 @@ class DatasetConnectorType(Enum):
     """
 
     JSON = JSONDatasetsConnector
+    Local = LocalFileSystemDatasetsConnector
     Arango = ArangoDatasetsConnector
     SoSpickle = SoSPickleDatasetsConnector
+    Local_repository = LocalRepositoryDatasetsConnector
 
     @classmethod
     def get_enum_value(cls, value_str):
@@ -47,7 +55,7 @@ class DatasetConnectorType(Enum):
             # Iterate through the enum members and find the one with a matching value
             return next(member for member in cls if member.name == value_str)
         except StopIteration:
-            raise ValueError(f"No matching enum value found for '{value_str}'")
+            raise DatasetUnableToInitializeConnectorException(f"No matching enum value found for '{value_str}'")
 
 
 class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
@@ -62,7 +70,7 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
     ) -> AbstractDatasetsConnector:
         """
         Instanciate a connector of type connector_type with provided arguments
-        Raises ValueError if type is invalid
+        Raises DatasetUnableToInitializeConnectorException if type is invalid
 
         :param connector_type: connector type to instanciate
         :type connector_type: DatasetConnectorType
@@ -71,7 +79,7 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
         if not isinstance(connector_type, DatasetConnectorType) or not issubclass(
             connector_type.value, AbstractDatasetsConnector
         ):
-            raise ValueError(f"Unexpected connector type {connector_type}")
+            raise DatasetUnableToInitializeConnectorException(f"Unexpected connector type {connector_type}")
         try:
             return connector_type.value(**connector_instanciation_fields)
         except TypeError as exc:

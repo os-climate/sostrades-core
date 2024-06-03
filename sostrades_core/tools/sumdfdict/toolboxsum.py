@@ -39,6 +39,9 @@ class toolboxsum(object):
         Method to compute sum of dict of dataframes
         not_sum : column name to not sum
         """
+        # initializations
+        list_df_wo_columns = None
+        restored_df = None
         # infer not summable columns in dataframe
         not_summable = list_df[0].convert_dtypes().select_dtypes(
             exclude=[np.number, 'datetime']).columns.to_list()

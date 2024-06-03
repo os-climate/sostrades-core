@@ -48,7 +48,7 @@ class Disc9out(SoSWrapp):
 
     def run(self):
         inputs = self.get_sosdisc_inputs()
-
+        z = None
         if inputs['string'] == 'x is > 0' and inputs['string_dict_of_dict']['dict2']['key1'] == 'positive':
 
             z = inputs['dict_mix_types']['AC2']['list'][0]

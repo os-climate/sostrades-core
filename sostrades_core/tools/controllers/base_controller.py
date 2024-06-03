@@ -56,6 +56,7 @@ class BaseController(Controller):
 
     # --Setters
     def set_value(self, value, flag_updates=True):
+        val = None
         if value is not None:
             if self.complex_mode:
                 val = np.complex128(value)

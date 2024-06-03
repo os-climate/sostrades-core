@@ -731,6 +731,10 @@ class UncertaintyQuantification(SoSWrapp):
 
         instanciated_charts = []
         graphs_list = []
+        input_distribution_parameters_df = None
+        input_parameters_distrib_df = None
+        confidence_interval = None
+        output_distrib_df = None
 
         if filters is not None:
             for chart_filter in filters:
@@ -751,6 +755,7 @@ class UncertaintyQuantification(SoSWrapp):
             input_distribution_parameters_df = deepcopy(
                 self.get_sosdisc_inputs(['input_distribution_parameters_df'])
             )
+
         if 'confidence_interval' in self.get_sosdisc_inputs():
             confidence_interval = (
 
