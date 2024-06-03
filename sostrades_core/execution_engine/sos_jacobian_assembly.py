@@ -60,43 +60,6 @@ from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array
 
-# TODO: for m4
-USE_M4_CSR = False
-from typing import NamedTuple
-from collections.abc import Iterable
-from collections.abc import Iterator
-from scipy.sparse import csr_matrix, bmat, eye
-from numpy import fill_diagonal, ndarray
-
-from importlib.metadata import version
-from typing import Final
-from typing import Union
-
-from numpy import ndarray
-from packaging.version import Version
-from packaging.version import parse as parse_version
-from scipy.sparse import coo_matrix
-
-SCIPY_VERSION: Final[Version] = parse_version(version("scipy"))
-
-if parse_version("1.11") > SCIPY_VERSION:
-    from scipy.sparse import spmatrix
-
-    sparse_classes = (spmatrix,)
-    SparseArrayType = spmatrix
-
-else:
-    from scipy.sparse import sparray  # pylint: disable=E0611
-    from scipy.sparse import spmatrix
-
-    sparse_classes = (spmatrix, sparray)
-    SparseArrayType = Union[coo_matrix, spmatrix, sparray]
-
-array_classes = (ndarray, *sparse_classes)
-
-LOGGER = logging.getLogger(__name__)
-
-# END TODO: for m4
 
 def none_factory():
     """Returns None...
@@ -104,33 +67,14 @@ def none_factory():
     To be used for defaultdict
     """
 
-
 def default_dict_factory():
     """Instantiates a defaultdict(None) object."""
     return defaultdict(none_factory)
 
+
 class SoSJacobianAssembly(JacobianAssembly):
     """Assembly of Jacobians Typically, assemble disciplines's Jacobians into a system
     Jacobian."""
-
-    class JacobianPosition(NamedTuple):  # TODO: for m4 (whole subclass)
-        """The position of the discipline's Jacobians within the assembled Jacobian."""
-
-        row_slice: slice
-        """The row slice indicating where to position the disciplinary Jacobian within
-        the assembled Jacobian when defined as an array."""
-
-        column_slice: slice
-        """The column slice indicating where to position the disciplinary Jacobian
-        within the assembled Jacobian when defined as an array."""
-
-        row_index: int
-        """The row index of the disciplinary Jacobian within the assembled Jacobian when
-        defined blockwise."""
-
-        column_index: int
-        """The column index of the disciplinary Jacobian within the assembled Jacobian
-        when defined blockwise."""
 
     def __init__(self, coupling_structure, n_processes=1):
         self.n_processes = n_processes
@@ -139,108 +83,6 @@ class SoSJacobianAssembly(JacobianAssembly):
 
         self.parallel_linearize = SoSDiscParallelLinearization(
             self.coupling_structure.disciplines, n_processes=self.n_processes, use_threading=True)
-
-    def _dres_dvar_sparse_4_csr_new(self, residuals, variables, n_residuals, n_variables):
-        LOGGER.warning("USING_M4_CSR_MATRIX")
-        # Fill in with zero blocks of appropriate dimension if necessary
-        variable_sizes = [self.sizes[variable_name] for variable_name in variables]
-        function_sizes = [self.sizes[function_name] for function_name in residuals]
-
-        # Initialize the block Jacobian with the appropriate structure
-        total_jacobian: list[list[Union[None, csr_matrix]]] = [
-            [None for _ in variables] for _ in residuals
-        ]
-        variable_sizes_0 = variable_sizes[0]
-        for i, function_size in enumerate(function_sizes):
-            total_jacobian[i][0] = csr_matrix((function_size, variable_sizes_0))
-
-        function_sizes_0 = function_sizes[0]
-        total_jacobian_0 = total_jacobian[0]
-        for j, variable_size in enumerate(variable_sizes):
-            total_jacobian_0[j] = csr_matrix((function_sizes_0, variable_size))
-
-        # Perform the assembly
-        jacobian_generator = self._get_jacobian_generator(
-            residuals, variables, is_residual=True # TODO: discuss
-        )
-
-        for jacobian, position in jacobian_generator:
-            # if isinstance(jacobian, JacobianOperator):
-            #     jacobian = jacobian.get_matrix_representation()
-
-            total_jacobian[position.row_index][position.column_index] = csr_matrix(
-                jacobian.real
-            )
-
-        return bmat(total_jacobian, format="csr")
-
-    # TODO: for m4
-    def _get_jacobian_generator(
-        self,
-        functions: Iterable[str],
-        variables: Iterable[str],
-        is_residual: bool = False,
-    ) -> Iterator[
-        tuple
-    ]:
-        """Iterate over Jacobian matrices.
-
-        Provide a generator to iterate over the Jacobians associated with each provided
-        pair (function, variable). The generator yields the Jacobian along with its
-        relative position in the to be assembled Jacobian.
-
-        Args:
-            functions: The functions to differentiate.
-            variables: The differentiation variables.
-            is_residual: Whether the functions are residuals.
-
-        Yields:
-            A tuple of the form (Jacobian, Position).
-        """
-        row = 0
-        # Iterate over outputs
-        for row_index, function in enumerate(functions):
-            column = 0
-            function_jacobian = self.disciplines[function].jac[function]
-            # Iterate over inputs
-            for column_index, variable in enumerate(variables):
-                jacobian = function_jacobian.get(variable, None)
-                variable_size = self.sizes[variable]
-
-                # If residual of the form Yi-Yi, then add -I to the Jacobian
-                if is_residual and function == variable:
-                    if jacobian is not None:
-                        # Make a copy to avoid in-place modifications
-                        jacobian_copy = jacobian.copy()
-
-                        if isinstance(jacobian_copy, ndarray):
-                            fill_diagonal(jacobian_copy, jacobian.diagonal() - 1)
-
-                        elif isinstance(jacobian_copy, sparse_classes):
-                            jacobian_copy.setdiag(jacobian.diagonal() - 1)
-
-                        # elif isinstance(jacobian_copy, JacobianOperator):
-                        #     jacobian_copy = jacobian_copy.shift_identity()
-
-                        jacobian = jacobian_copy
-
-                    else:
-                        jacobian = -eye(variable_size, dtype=int)
-
-                # Yield only if Jacobian exists
-                if jacobian is not None:
-                    yield (
-                        jacobian.real,
-                        self.JacobianPosition(
-                            row_slice=slice(row, row + jacobian.shape[0]),
-                            column_slice=slice(column, column + jacobian.shape[1]),
-                            row_index=row_index,
-                            column_index=column_index,
-                        ),
-                    )
-
-                column += variable_size
-            row += self.sizes[function]
 
     def _dres_dvar_sparse(self, residuals, variables, n_residuals, n_variables):
         """Forms the matrix of partial derivatives of residuals
@@ -255,7 +97,6 @@ class SoSJacobianAssembly(JacobianAssembly):
         :param n_residuals: number of residuals
         :param n_variables: number of variables
         """
-        LOGGER.warning("USING_M2_DOK_MATRIX_SOS")
         # SoSTrades modif
         dres_dvar = dok_matrix((n_residuals, n_variables))
         # end of SoSTrades modif
@@ -305,64 +146,6 @@ class SoSJacobianAssembly(JacobianAssembly):
             out_i += residual_size
         return dres_dvar.tocsr()
 
-    # SoSTrades modif
-    def _dres_dvar_sparse_lil(self, residuals, variables, n_residuals, n_variables):
-        """Forms the matrix of partial derivatives of residuals
-        Given disciplinary Jacobians dYi(Y0...Yn)/dvj,
-        fill the sparse Jacobian:
-        |           |
-        |  dRi/dvj  |
-        |           |
-
-        :param residuals: the residuals (R)
-        :param variables: the differentiation variables
-        :param n_residuals: number of residuals
-        :param n_variables: number of variables
-        """
-        LOGGER.warning("USING_M1_LIL_MATRIX")
-        dres_dvar = lil_matrix((n_residuals, n_variables))
-        # end of SoSTrades modif
-
-        out_i = 0
-        # Row blocks
-        for residual in residuals:
-            residual_size = self.sizes[residual]
-            # Find the associated discipline
-            discipline = self.disciplines[residual]
-            residual_jac = discipline.jac[residual]
-            # Column blocks
-            out_j = 0
-            for variable in variables:
-                variable_size = self.sizes[variable]
-                if residual == variable:
-                    # residual Yi-Yi: put -I in the Jacobian
-                    ones_mat = (ones(variable_size), 0)
-                    shape = (variable_size, variable_size)
-                    diag_mat = -dia_matrix(ones_mat, shape=shape)
-
-                    if self.coupling_structure.is_self_coupled(discipline):
-                        jac = residual_jac.get(variable, None)
-                        if jac is not None:
-                            diag_mat += jac
-                    dres_dvar[
-                    out_i: out_i + variable_size, out_j: out_j + variable_size
-                    ] = diag_mat
-
-                else:
-                    # block Jacobian
-                    jac = residual_jac.get(variable, None)
-                    if jac is not None:
-                        n_i, n_j = jac.shape
-                        assert n_i == residual_size
-                        assert n_j == variable_size
-                        # Fill the sparse Jacobian block
-                        dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
-                # Shift the column by block width
-                out_j += variable_size
-            # Shift the row by block height
-            out_i += residual_size
-        return dres_dvar.real
-
     def dres_dvar(
         self,
         residuals,
@@ -387,18 +170,9 @@ class SoSJacobianAssembly(JacobianAssembly):
         :param transpose: if True, transpose the matrix
         """
         if matrix_type == JacobianAssembly.SPARSE:
-            if USE_M4_CSR:
-                sparse_dres_dvar = self._dres_dvar_sparse_4_csr_new(
-                    residuals, variables, n_residuals, n_variables
-                )
-            # elif getenv("USE_PETSC", "").lower() in ("true", "1"):
-            #     sparse_dres_dvar = self._dres_dvar_sparse_lil(
-            #         residuals, variables, n_residuals, n_variables
-            #     )
-            else:
-                sparse_dres_dvar = self._dres_dvar_sparse(
-                    residuals, variables, n_residuals, n_variables
-                )
+            sparse_dres_dvar = self._dres_dvar_sparse(
+                residuals, variables, n_residuals, n_variables
+            )
             if transpose:
                 return sparse_dres_dvar.T
             return sparse_dres_dvar
