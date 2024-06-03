@@ -86,7 +86,7 @@ if parse_version("1.11") > SCIPY_VERSION:
     SparseArrayType = spmatrix
 
 else:
-    from scipy.sparse import sparray  # pylint: disable=import-error
+    from scipy.sparse import sparray  # pylint: disable=E0611
     from scipy.sparse import spmatrix
 
     sparse_classes = (spmatrix, sparray)
