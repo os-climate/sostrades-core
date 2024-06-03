@@ -49,6 +49,7 @@ class GSPureNewtonMDA(MDASequential):
             tolerance_gs=10.0,
             max_mda_iter_gs=10,
             linear_solver_tolerance=1e-12,  # type: float
+            scaling_method=MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
             warm_start=False,  # type: bool
             use_lu_fact=False,  # type: bool
             coupling_structure=None,  # type: Optional[MDOCouplingStructure]
@@ -68,7 +69,8 @@ class GSPureNewtonMDA(MDASequential):
             **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
         """
         mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs,
-                                   name=None, grammar_type=grammar_type, tolerance=tolerance_gs)
+                                   name=None, grammar_type=grammar_type, tolerance=tolerance_gs,
+                                   scaling_method=scaling_method)
 
         mda_newton = PureNewtonRaphson(
             disciplines,
@@ -83,6 +85,7 @@ class GSPureNewtonMDA(MDASequential):
             log_convergence=log_convergence,
             linear_solver_options=linear_solver_options,
             linear_solver_tolerance=linear_solver_tolerance,
+            scaling_method=scaling_method,
             **newton_mda_options
         )
 
@@ -95,6 +98,7 @@ class GSPureNewtonMDA(MDASequential):
             max_mda_iter=max_mda_iter,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
+            scaling_method=scaling_method,
             warm_start=warm_start,
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,

@@ -41,7 +41,8 @@ class GSorNewtonMDA(MDASequential):
                  grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,
                  tolerance=1e-6, max_mda_iter=10, relax_factor=0.99,
                  linear_solver="lgmres", tolerance_gs=10.0, max_mda_iter_gs=10,
-                 linear_solver_tolerance=1e-12,  # type: str
+                 linear_solver_tolerance=1e-12,
+                 scaling_method=MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
                  linear_solver_options=None, warm_start=False,
                  use_lu_fact=False, **newton_mda_options):
         """
@@ -82,13 +83,14 @@ class GSorNewtonMDA(MDASequential):
         :type newton_mda_options: dict
         """
         mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs,
-                                   name=None, grammar_type=grammar_type)
+                                   name=None, grammar_type=grammar_type, scaling_method=scaling_method)
         mda_gs.tolerance = tolerance
 
         mda_newton = MDAGSNewton(disciplines, max_mda_iter=max_mda_iter,
                                  name=None, grammar_type=grammar_type,
                                  linear_solver=linear_solver,
                                  linear_solver_options=linear_solver_options,
+                                 scaling_method=scaling_method,
                                  tolerance_gs=tolerance_gs,
                                  use_lu_fact=use_lu_fact, tolerance=tolerance,
                                  relax_factor=relax_factor,
@@ -102,6 +104,7 @@ class GSorNewtonMDA(MDASequential):
                              tolerance=tolerance,
                              linear_solver_options=linear_solver_options,
                              linear_solver_tolerance=linear_solver_tolerance,
+                             scaling_method=scaling_method,
                              warm_start=warm_start)
 
     def _run(self):

@@ -42,7 +42,8 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             max_mda_iter=10,  # type: int
             grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
             tolerance=1e-6,  # type: float
-            linear_solver_tolerance=1e-12,  # type: float
+            linear_solver_tolerance=1e-12,
+            scaling_method=MDAGaussSeidel.ResidualScaling.N_COUPLING_VARIABLES,  # type: float
             warm_start=False,  # type: bool
             use_lu_fact=False,  # type: bool
             over_relax_factor=1.0,  # type: float
@@ -68,6 +69,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
+            scaling_method=scaling_method,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
             over_relax_factor=over_relax_factor,

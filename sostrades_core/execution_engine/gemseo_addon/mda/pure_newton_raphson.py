@@ -50,6 +50,7 @@ class PureNewtonRaphson(MDARoot):
             linear_solver="DEFAULT",  # type: str
             tolerance=1e-6,  # type: float
             linear_solver_tolerance=1e-12,  # type: float
+            scaling_method=MDARoot.ResidualScaling.N_COUPLING_VARIABLES,
             warm_start=False,  # type: bool
             use_lu_fact=False,  # type: bool
             coupling_structure=None,  # type: Optional[MDOCouplingStructure]
@@ -71,6 +72,7 @@ class PureNewtonRaphson(MDARoot):
             grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
+            scaling_method=scaling_method,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
             linear_solver=linear_solver,

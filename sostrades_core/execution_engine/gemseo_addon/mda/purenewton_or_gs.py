@@ -50,6 +50,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             tolerance_gs=10.0,
             max_mda_iter_gs=10,
             linear_solver_tolerance=1e-12,  # type: float
+            scaling_method=MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
             warm_start=False,  # type: bool
             use_lu_fact=False,  # type: bool
             coupling_structure=None,  # type: Optional[MDOCouplingStructure]
@@ -103,6 +104,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             name=None, grammar_type=grammar_type,
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
+            scaling_method=scaling_method,
             tolerance_gs=tolerance_gs,
             max_mda_iter_gs=max_mda_iter_gs,
             use_lu_fact=use_lu_fact, tolerance=tolerance,
@@ -127,6 +129,7 @@ class GSPureNewtonorGSMDA(MDASequential):
                              tolerance=tolerance,
                              linear_solver_options=linear_solver_options,
                              linear_solver_tolerance=linear_solver_tolerance,
+                             scaling_method=scaling_method,
                              warm_start=warm_start)
 
     def _run(self):

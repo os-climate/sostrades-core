@@ -93,7 +93,7 @@ class SoSMDAChain(MDAChain):
                  grammar_type=MDAChain.GrammarType.JSON,  # type: str
                  coupling_structure=None,
                  sub_coupling_structures=None,
-                 log_convergence=False,  # type: bool
+                 log_convergence=True,  # type: bool
                  linear_solver="DEFAULT",  # type: str
                  linear_solver_options=None,  # type: Mapping[str,Any]
                  mdachain_parallelize_tasks=False,
@@ -138,6 +138,7 @@ class SoSMDAChain(MDAChain):
                          chain_linearize=chain_linearize,
                          tolerance=tolerance,
                          linear_solver_tolerance=linear_solver_tolerance,
+                         scaling_method=self.ResidualScaling.N_COUPLING_VARIABLES,
                          use_lu_fact=use_lu_fact,
                          grammar_type=grammar_type,
                          coupling_structure=coupling_structure,
@@ -153,6 +154,7 @@ class SoSMDAChain(MDAChain):
         # pass the reduced_dm to the data_converter
         self.input_grammar.data_converter.reduced_dm = self.reduced_dm
         self.output_grammar.data_converter.reduced_dm = self.reduced_dm
+
 
     def _run(self):
         '''
@@ -500,10 +502,12 @@ class SoSMDAChain(MDAChain):
                         sub_mda_disciplines,
                         max_mda_iter=self.max_mda_iter,
                         tolerance=self.tolerance,
+                        scaling_method=self.scaling,
                         grammar_type=self.grammar_type,
                         use_lu_fact=self.use_lu_fact,
                         linear_solver=self.linear_solver,
                         linear_solver_options=self.linear_solver_options,
+                        log_convergence=True,
                         coupling_structure=next(
                             self.__sub_coupling_structures_iterator),
                         **inner_mda_options
