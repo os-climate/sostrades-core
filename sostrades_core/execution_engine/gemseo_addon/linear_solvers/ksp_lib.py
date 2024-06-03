@@ -349,7 +349,7 @@ class PetscKSPAlgos(LinearSolverLib):
         petsc4py.PetscMallocGetCurrentUsage()
         petsc4py.PETSc.garbage_cleanup()
         LOGGER.warning("PETSC garbage cleanup done !")
-        petsc4py.PETSc.PETSCMallocDMallocDump()
+        petsc4py.PETSc.PETSCMallocDump()
         petsc4py.PetscMallocGetCurrentUsage()
         return sol, info, ksp
 
