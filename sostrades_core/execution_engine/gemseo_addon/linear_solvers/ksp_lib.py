@@ -345,12 +345,10 @@ class PetscKSPAlgos(LinearSolverLib):
             LOGGER.warning(
                 f' The convergence_history of length {len(ksp.getConvergenceHistory())} is {ksp.getConvergenceHistory()}')
         LOGGER.warning("before PETSC garbage cleanup.")
-        petsc4py.PETSc.PETSCMallocDump()
-        petsc4py.PetscMallocGetCurrentUsage()
+        petsc4py.PETSc.garbage_view()
         petsc4py.PETSc.garbage_cleanup()
         LOGGER.warning("PETSC garbage cleanup done !")
-        petsc4py.PETSc.PETSCMallocDump()
-        petsc4py.PetscMallocGetCurrentUsage()
+        petsc4py.PETSc.garbage_view()
         return sol, info, ksp
 
 
