@@ -589,7 +589,7 @@ class BaseStudyManager():
 
             input_dict = {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
         else:
-            raise Exception(f"study_folder_path is None, can't get data from file")
+            raise Exception("study_folder_path is None, can't get data from file")
 
         result.append(input_dict)
 
