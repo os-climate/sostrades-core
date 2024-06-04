@@ -29,6 +29,7 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):
     """
     DATASETS_DB_NAME = 'datasets_database'
     DATASETS_FOLDER_NAME = 'datasets'
+    MAPPINGS_FOLDER_NAME = 'mappings'
     
     def __init__(self, module_name:str):
         """
@@ -43,10 +44,30 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):
             # import the module
             module = importlib.import_module(module_name)
         except Exception as exception:
-            raise DatasetGenericException(f"Unable to import the module {module_name}: {exception}")
+            raise DatasetGenericException(f"Unable to import the module {module_name}: {exception}") from exception
         # find the module path
         root_path = dirname(module.__file__)
         # add the datasets default database to the path
         dataset_database_path = join(root_path, self.DATASETS_DB_NAME, self.DATASETS_FOLDER_NAME)
-        super().__init__(dataset_database_path, False)
+        super().__init__(root_directory_path=dataset_database_path, create_if_not_exists=False)
      
+    
+    @staticmethod
+    def get_datasets_database_mappings_folder_path(module_name, file_name):
+        """
+            Method to find the datasets_database/mappings folder path for the given repository module name 
+            ('sostrades_core' for example of the sostrades-core module name)
+        """
+        try:
+            # import the module
+            module = importlib.import_module(module_name)
+        except Exception as exception:
+            raise DatasetGenericException(f"Unable to import the module {module_name}: {exception}") from exception
+        # find the module path
+        root_path = dirname(module.__file__)
+        # add the datasets default database to the path
+        mapping_database_path = join(root_path, 
+                                     LocalRepositoryDatasetsConnector.DATASETS_DB_NAME, 
+                                     LocalRepositoryDatasetsConnector.MAPPINGS_FOLDER_NAME,
+                                     file_name)
+        return mapping_database_path
