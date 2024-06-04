@@ -744,6 +744,83 @@ class TestSoSOptimScenario(unittest.TestCase):
                 self.assertEqual(coupling_value, eval_value)
             except:
                 self.assertListEqual(list(coupling_value), list(eval_value))
+    
+    def test_08b_optim_scenario_eval_mode_no_post_proc(self):
+        print("\n Test 8b : Sellar optim with eval_mode with no output design space post proc")
+        set_printoptions(precision=20)
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        repo_discopt = 'sostrades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_opt_discopt'
+        builder = factory.get_builder_from_process(repo=repo_discopt,
+                                                   mod_id=proc_name_discopt)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        # -- set up design space
+        dspace_dict = {'variable': ['x', 'z'],
+                       'value': [[2.], [2., 2.]],
+                       'lower_bnd': [[0.], [-10., 0.]],
+                       'upper_bnd': [[10.], [10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True]]}
+        dspace = pd.DataFrame(dspace_dict)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        
+        #desactivate the optim post processings
+        disc_dict[f'{self.ns}.SellarOptimScenario.desactivate_optim_out_storage'] = True
+
+        # Optim inputs
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 200
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
+            'c_1', 'c_2']
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.eval_mode'] = True
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+            2., 2.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.tolerance'] = 1e-16
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.prepare_execution()
+
+        self.assertFalse(exec_eng.dm.get_data(
+            f'{self.ns}.SellarOptimScenario.algo_options', 'editable'))
+        self.assertFalse(exec_eng.dm.get_data(
+            f'{self.ns}.SellarOptimScenario.algo', 'editable'))
+
+        exec_eng.execute()
+
+        # check that the post processings can be executed
+        from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+        ppf = PostProcessingFactory()
+        for disc in exec_eng.root_process.proxy_disciplines:
+            filters = ppf.get_post_processing_filters_by_discipline(
+                disc)
+            graph_list = ppf.get_post_processing_by_discipline(
+                disc, filters, as_json=False)
+            
+        assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
+            
+        
 
     def test_09_optim_scenario_eval_mode_with_eval_jac(self):
         print("\n Test 9 : Sellar optim with eval_mode and eval_jac")
@@ -1154,7 +1231,88 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert x_first_execution == x_nominal_execution
         assert_array_equal(z_first_execution, z_nominal_execution)
 
+    def test_16b_test_post_run(self):
+        print("\n Test 16b : Sellar optim check post run if no post processing optim outputs")
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
 
+        repo_discopt = 'sostrades_core.sos_processes.test'
+        proc_name_discopt = 'test_sellar_opt_discopt'
+        builder = factory.get_builder_from_process(repo=repo_discopt,
+                                                   mod_id=proc_name_discopt)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        # -- set up design space
+        dspace_dict = {'variable': ['x', 'z'],
+                       'value': [[1.], [5., 2., 3.]],
+                       'lower_bnd': [[0.], [-10., 0., 0.]],
+                       'upper_bnd': [[10.], [10., 10., 10.]],
+                       'enable_variable': [True, True],
+                       'activated_elem': [[True], [True, True, False]]}
+        dspace = pd.DataFrame(dspace_dict)
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+
+        #desactivate the optim post processings
+        disc_dict[f'{self.ns}.SellarOptimScenario.desactivate_optim_out_storage'] = True
+
+
+        # Optim inputs
+        disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 10
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "L-BFGS-B"
+        disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
+        disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
+        disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = []
+
+        disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
+                                                                    "ineq_tolerance": 1e-6,
+                                                                    "normalize_design_space": True}
+        disc_dict[f'{self.ns}.SellarOptimScenario.execute_at_xopt'] = False
+        exec_eng.dm.set_values_from_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.
+        values_dict = {}
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.x'] = array([1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_1'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.y_2'] = array([
+                                                                           1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.z'] = array([
+            1., 1.])
+        values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
+                       '|_ optim',
+                       f'\t|_ {self.sc_name}',
+                       f'\t\t|_ {self.c_name}',
+                       '\t\t\t|_ Sellar_Problem',
+                       '\t\t\t|_ Sellar_2',
+                       '\t\t\t|_ Sellar_1', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes()
+        exec_eng.prepare_execution()
+        # execute without post run
+        res = exec_eng.execute()
+
+        assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
+
+         # check that the post processings can be executed
+        from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+        ppf = PostProcessingFactory()
+        for disc in exec_eng.root_process.proxy_disciplines:
+            filters = ppf.get_post_processing_filters_by_discipline(
+                disc)
+            graph_list = ppf.get_post_processing_by_discipline(
+                disc, filters, as_json=False)
+            
 
     def _test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
         print("\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")
@@ -1501,3 +1659,6 @@ class TestSoSOptimScenario(unittest.TestCase):
 
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()
+    cls.setUp()
+    cls.test_16b_test_post_run()
+
