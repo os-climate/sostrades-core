@@ -9,7 +9,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `black (22.3.0) <https://github.com/psf/black>`_
     MIT
 
-`chaospy (4.3.7) <https://chaospy.readthedocs.io/en/master/>`_
+`chaospy (4.3.15) <https://chaospy.readthedocs.io/en/master/>`_
     MIT license
 
 `cma (2.7.0) <https://github.com/CMA-ES/pycma>`_
@@ -27,7 +27,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `matplotlib (3.4.3) <https://matplotlib.org>`_
     PSF
 
-`numpy (1.24.3) <https://numpy.org>`_
+`numpy (1.24.4) <https://numpy.org>`_
     BSD License
 
 `openturns (1.18) <http://www.openturns.org>`_
