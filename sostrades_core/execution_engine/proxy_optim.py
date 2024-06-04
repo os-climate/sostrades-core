@@ -174,7 +174,6 @@ class ProxyOptim(ProxyDriverEvaluator):
     EXECUTE_AT_XOPT = 'execute_at_xopt'
 
     DESACTIVATE_OPTIM_OUT_STORAGE = 'desactivate_optim_out_storage'
-    CLEAR_DB_AFTER_RUN = 'clear_db_after_run'
 
     default_algo_options = {'max_iter': 999, 'ftol_rel': 1e-9,
                             'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
@@ -273,8 +272,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                                   'structuring': True},
                EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
                                 'structuring': True},
-                DESACTIVATE_OPTIM_OUT_STORAGE:  {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
-                CLEAR_DB_AFTER_RUN:{'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]}
+                DESACTIVATE_OPTIM_OUT_STORAGE:  {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]}
                }
 
     DESC_OUT = {'design_space_out': {'type': 'dataframe'},

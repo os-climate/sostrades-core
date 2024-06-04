@@ -77,7 +77,6 @@ class SoSMDOScenario(MDOScenario):
         
         # desactivate designspace outputs for post processings 
         self.desactivate_optim_out_storage = False
-        self.clear_database_after_run = False
     
     def _run(self):
         '''
@@ -100,12 +99,6 @@ class SoSMDOScenario(MDOScenario):
             self.update_design_space_out()
             if not self.eval_mode:
                 self.update_post_processing_df()
-
-        # clear or not problem database
-        if self.clear_database_after_run:
-            formulation = self.formulation
-            problem = formulation.opt_problem
-            problem.database.clear()
 
         
 
