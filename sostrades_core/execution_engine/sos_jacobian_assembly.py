@@ -1,7 +1,3 @@
-from __future__ import annotations # TODO: for m4
-
-import logging
-
 '''
 Copyright 2022 Airbus SAS
 Modifications on 2023/03/27-2024/05/16 Copyright 2023 Capgemini
@@ -18,6 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations # TODO: for m4
+
+import logging
 
 from collections import defaultdict
 from copy import deepcopy
