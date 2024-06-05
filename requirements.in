@@ -3,7 +3,7 @@
 
 # External libraries
 pycryptodome==3.19.1
-black==24.4.2
+black==24.3.0
 chaospy==4.3.15
 cma==2.7.0
 cvxpy==1.1.18
