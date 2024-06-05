@@ -205,7 +205,7 @@ class ExecutionEngine:
         anonymized_cache_map = {}
         if self.dm.cache_map != {}:
             for key, cache in self.dm.cache_map.items():
-                if cache is not None:
+                if cache is not None and cache.get_length() > 0:
                     serialized_new_cache = cache.get_all_data()
                     anonymized_cache = {}
                     for index, index_dict in serialized_new_cache.items():
