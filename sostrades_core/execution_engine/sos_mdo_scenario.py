@@ -16,11 +16,10 @@ limitations under the License.
 '''
 import logging
 from copy import deepcopy
-
 import numpy as np
 import pandas as pd
 from gemseo.core.mdo_scenario import MDOScenario
-
+from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 
 class SoSMDOScenario(MDOScenario):
     """
@@ -75,7 +74,10 @@ class SoSMDOScenario(MDOScenario):
         self.reduced_dm = reduced_dm
         self.activated_variables = self.formulation.design_space.variables_names
         self.is_sos_coupling=False
-
+        
+        # desactivate designspace outputs for post processings 
+        self.desactivate_optim_out_storage = False
+    
     def _run(self):
         '''
 
@@ -91,12 +93,14 @@ class SoSMDOScenario(MDOScenario):
                    for discipline in self.disciplines]
         for data in outputs:
             self.local_data.update(data)
-        self.update_design_space_out()
-        if not self.eval_mode:
-            self.update_post_processing_df()
-        
 
+        # save or not the output of design space for post processings
+        if not self.desactivate_optim_out_storage:
+            self.update_design_space_out()
+            if not self.eval_mode:
+                self.update_post_processing_df()
 
+   
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
         dataset = self.export_to_dataset()
@@ -159,7 +163,11 @@ class SoSMDOScenario(MDOScenario):
         self.optimization_result = lib.execute(problem, algo_name=algo_name,
                                                max_iter=max_iter,
                                                **options)
+        self.clear_jacobian()
         return self.optimization_result
+
+    def clear_jacobian(self):
+        return SoSMDODiscipline.clear_jacobian(self)  # should rather be double inheritance
 
     def run_scenario(self):
         '''
@@ -244,9 +252,6 @@ class SoSMDOScenario(MDOScenario):
 
             for func in self.functions_before_run:
                 func(x_opt)
-
-
-        
 
     def evaluate_functions(self,
                            problem,
