@@ -305,14 +305,6 @@ class SoSMDODiscipline(MDODiscipline):
         for y_key, x_key_dict in self.sos_wrapp.jac_dict.items():
             for x_key, value in x_key_dict.items():
                 self.set_partial_derivative(y_key, x_key, value)
-        self.sos_wrapp.jac_dict = {}
-
-    def clear_jacobian(self):
-        self.jac = None
-        if hasattr(self, 'disciplines'):
-            if self.disciplines is not None:
-                for discipline in self.disciplines:
-                    discipline.clear_jacobian()
 
     def set_partial_derivative(self, y_key, x_key, value):
         '''

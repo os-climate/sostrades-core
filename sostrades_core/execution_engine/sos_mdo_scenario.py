@@ -19,7 +19,7 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 from gemseo.core.mdo_scenario import MDOScenario
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+
 
 class SoSMDOScenario(MDOScenario):
     """
@@ -100,6 +100,8 @@ class SoSMDOScenario(MDOScenario):
             if not self.eval_mode:
                 self.update_post_processing_df()
 
+        
+
    
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
@@ -163,11 +165,7 @@ class SoSMDOScenario(MDOScenario):
         self.optimization_result = lib.execute(problem, algo_name=algo_name,
                                                max_iter=max_iter,
                                                **options)
-        self.clear_jacobian()
         return self.optimization_result
-
-    def clear_jacobian(self):
-        return SoSMDODiscipline.clear_jacobian(self)  # should rather be double inheritance
 
     def run_scenario(self):
         '''
@@ -177,6 +175,8 @@ class SoSMDOScenario(MDOScenario):
         MDOScenario._run(self)
 
         self.execute_at_xopt()
+
+
 
     def run_eval_mode(self):
         '''
@@ -252,6 +252,9 @@ class SoSMDOScenario(MDOScenario):
 
             for func in self.functions_before_run:
                 func(x_opt)
+
+
+        
 
     def evaluate_functions(self,
                            problem,

@@ -126,9 +126,6 @@ class SoSMDAChain(MDAChain):
                          **sub_mda_options
                          )
 
-    def clear_jacobian(self):
-        return SoSMDODiscipline.clear_jacobian(self)  # should rather be double inheritance
-
     def _run(self):
         '''
         Call the _run method of MDAChain in case of SoSCoupling.
