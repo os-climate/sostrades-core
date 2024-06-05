@@ -3,10 +3,10 @@ External Dependencies
 
 sostrades-core depends on software with compatible licenses that are listed below.
 
-`pycryptodome (3.19.0) <https://www.pycryptodome.org>`_
+`pycryptodome (3.19.1) <https://www.pycryptodome.org>`_
     BSD, Public Domain
 
-`black (22.3.0) <https://github.com/psf/black>`_
+`black (22.12.0) <https://github.com/psf/black>`_
     MIT
 
 `chaospy (4.3.15) <https://chaospy.readthedocs.io/en/master/>`_
