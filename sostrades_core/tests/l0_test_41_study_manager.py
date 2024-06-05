@@ -170,4 +170,4 @@ class TestStudyManager(unittest.TestCase):
             var_id_bis = study_bis.execution_engine.dm.get_data_id(
                 key.replace(self.__study_name, study_bis_name))
             self.assertEqual(study.execution_engine.dm.data_dict[var_id][DataManager.VALUE],
-                             study_bis.execution_engine.dm.data_dict[var_id_bis][DataManager.VALUE])
+                             study_bis.execution_engine.dm.data_dict[var_id_bis][DataManager.VALUE], f"error for parameter {key}")

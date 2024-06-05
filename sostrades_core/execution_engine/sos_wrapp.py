@@ -21,6 +21,7 @@ from numpy import array, complex128, ndarray, zeros
 
 from sostrades_core.execution_engine.design_var.design_var import DesignVar
 from sostrades_core.tools.base_functions.compute_len import compute_len
+from scipy.sparse import lil_matrix
 
 # decorator for delegating a method to the ProxyDiscipline object during configuration
 
@@ -528,16 +529,25 @@ class SoSWrapp(object):
         if y_key_full not in self.jac_dict.keys():
             self.jac_dict[y_key_full] = {}
         if x_key_full not in self.jac_dict[y_key_full]:
-            self.jac_dict[y_key_full][x_key_full] = zeros(
+            # set to lil_matrix instead of zeros to save memory
+            self.jac_dict[y_key_full][x_key_full] = lil_matrix(
                 self.get_jac_matrix_shape(y_key, x_key))
         # Check if value is or has complex
         if type(value[0]) in [complex, complex128]:
-            self.jac_dict[y_key_full][x_key_full] = array(
-                self.jac_dict[y_key_full][x_key_full], dtype=complex)
+            # Create a new lil_matrix with the same shape but with complex dtype
+            complex_matrix = lil_matrix(self.jac_dict[y_key_full][x_key_full].shape, dtype=complex)
+            
+            # Copy the data from the original matrix to the new complex matrix
+            complex_matrix[:, :] = self.jac_dict[y_key_full][x_key_full][:, :]
+            self.jac_dict[y_key_full][x_key_full] = complex_matrix
         elif type(value[0]) in [array, ndarray]:
             if value.dtype in [complex, complex128]:
-                self.jac_dict[y_key_full][x_key_full] = array(
-                    self.jac_dict[y_key_full][x_key_full], dtype=complex)
+                # Create a new lil_matrix with the same shape but with complex dtype
+                complex_matrix = lil_matrix(self.jac_dict[y_key_full][x_key_full].shape, dtype=complex)
+                
+                # Copy the data from the original matrix to the new complex matrix
+                complex_matrix[:, :] = self.jac_dict[y_key_full][x_key_full][:, :]
+                self.jac_dict[y_key_full][x_key_full] = complex_matrix
 
         if index_y_column is not None and index_x_column is not None:
             self.jac_dict[y_key_full][x_key_full][index_y_column * lines_nb_y:(index_y_column + 1) * lines_nb_y,

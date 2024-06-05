@@ -344,7 +344,7 @@ class PetscKSPAlgos(LinearSolverLib):
                 f'The PETSc linear solver has not converged with error {KSP_CONVERGED_REASON[convergence_info]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
             LOGGER.warning(
                 f' The convergence_history of length {len(ksp.getConvergenceHistory())} is {ksp.getConvergenceHistory()}')
-
+        petsc4py.PETSc.garbage_cleanup()
         return sol, info, ksp
 
 

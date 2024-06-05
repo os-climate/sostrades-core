@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import List
@@ -171,6 +172,8 @@ class ProxyOptim(ProxyDriverEvaluator):
     EVAL_MODE = 'eval_mode'
     EXECUTE_AT_XOPT = 'execute_at_xopt'
 
+    DESACTIVATE_OPTIM_OUT_STORAGE = 'desactivate_optim_out_storage'
+
     default_algo_options = {'max_iter': 999, 'ftol_rel': 1e-9,
                             'ftol_abs': 1e-9, 'xtol_rel': 1e-9,
                             'xtol_abs': 1e-9, 'max_ls_step_size': 0.,
@@ -268,6 +271,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                                   'structuring': True},
                EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
                                 'structuring': True},
+                DESACTIVATE_OPTIM_OUT_STORAGE:  {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]}
                }
 
     DESC_OUT = {'design_space_out': {'type': 'dataframe'},
@@ -306,6 +310,8 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         self.check_integrity_msg_list = []
         self.opt_data_integrity = True
+
+
 
     def setup_sos_disciplines(self):
         """
@@ -402,6 +408,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
 
+       
+
     def set_formulation_for_func_manager(self, sub_mdo_disciplines):
         """
 
@@ -455,102 +463,109 @@ class ProxyOptim(ProxyDriverEvaluator):
         design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df)
         return design_space
 
+    
     def get_chart_filter_list(self):
         chart_filters = []
 
         chart_list = ['Fitness function',
                       'Design variables']
 
-        post_processing_mdo_data = self.get_sosdisc_outputs("post_processing_mdo_data")
+        desactivate_post_processing_mdo_data = self.get_sosdisc_inputs(self.DESACTIVATE_OPTIM_OUT_STORAGE)
+        if not desactivate_post_processing_mdo_data:
+            post_processing_mdo_data = self.get_sosdisc_outputs("post_processing_mdo_data")
 
-        if len(post_processing_mdo_data["constraints"]) > 0:
-            chart_list.append("Constraints variables")
+            if len(post_processing_mdo_data["constraints"]) > 0:
+                chart_list.append("Constraints variables")
 
-        chart_filters.append(ChartFilter(
-            'Charts', chart_list, chart_list, 'charts'))
+            chart_filters.append(ChartFilter(
+                'Charts', chart_list, chart_list, 'charts'))
 
         return chart_filters
-
+    
     def get_post_processing_list(self, chart_filters=None):
 
         instanciated_charts = []
-        # Overload default value with chart filter
-        # Overload default value with chart filter
-        chart_list = []
-        select_all = False
-        if chart_filters is not None:
-            for chart_filter in chart_filters:
-                if chart_filter.filter_key == 'charts':
-                    chart_list = chart_filter.selected_values
-        else:
-            select_all = True
 
-        post_processing_mdo_data = self.get_sosdisc_outputs("post_processing_mdo_data")
+        desactivate_post_processing_mdo_data = self.get_sosdisc_inputs(self.DESACTIVATE_OPTIM_OUT_STORAGE)
+        if not desactivate_post_processing_mdo_data:
 
-        def to_series(varname: str, x: List, y: ndarray) -> List[InstanciatedSeries]:
-            dim = y.shape[1]
-            series = []
-            for d in range(dim):
-                series_name = varname if dim == 1 else f"{varname}[{d}]"
-                new_series = InstanciatedSeries(
-                    x, list(y[:, d]),
-                    series_name, 'lines', True)
-                series.append(new_series)
-            return series
+            # Overload default value with chart filter
+            # Overload default value with chart filter
+            chart_list = []
+            select_all = False
+            if chart_filters is not None:
+                for chart_filter in chart_filters:
+                    if chart_filter.filter_key == 'charts':
+                        chart_list = chart_filter.selected_values
+            else:
+                select_all = True
 
-        if select_all or "Fitness function" in chart_list:
-            fitness_func_through_iterations = post_processing_mdo_data["objective"]
-            iterations = list(range(len(fitness_func_through_iterations)))
+            post_processing_mdo_data = self.get_sosdisc_outputs("post_processing_mdo_data")
 
-            chart_name = 'Objective function optimization'
-
-            new_chart = TwoAxesInstanciatedChart('Iterations', 'Fitness function',
-                                                 chart_name=chart_name)
-
-            for series in to_series(
-                    varname="Fitness function", x=iterations, y=fitness_func_through_iterations):
-                new_chart.series.append(series)
-
-            instanciated_charts.append(new_chart)
-
-        if select_all or 'Design variables' in chart_list:
-            for variable_name, history_values_variable in post_processing_mdo_data['variables'].items():
-                dim_var = history_values_variable.shape[1]
-                shortened_var_name = '.'.join(variable_name.split('.')[2:])
-                chart_name = f"Design var '{shortened_var_name}' evolution"
-                iterations = list(range(history_values_variable.shape[0]))
-                new_chart = TwoAxesInstanciatedChart('Iterations', "Value", chart_name=chart_name)
-                for i in range(dim_var):
+            def to_series(varname: str, x: List, y: ndarray) -> List[InstanciatedSeries]:
+                dim = y.shape[1]
+                series = []
+                for d in range(dim):
+                    series_name = varname if dim == 1 else f"{varname}[{d}]"
                     new_series = InstanciatedSeries(
-                        iterations, list(history_values_variable[:, i]),
-                        f"{shortened_var_name}[{i}]", 'lines', True)
-                    new_chart.add_series(new_series)
+                        x, list(y[:, d]),
+                        series_name, 'lines', True)
+                    series.append(new_series)
+                return series
+
+            if select_all or "Fitness function" in chart_list:
+                fitness_func_through_iterations = post_processing_mdo_data["objective"]
+                iterations = list(range(len(fitness_func_through_iterations)))
+
+                chart_name = 'Objective function optimization'
+
+                new_chart = TwoAxesInstanciatedChart('Iterations', 'Fitness function',
+                                                    chart_name=chart_name)
+
+                for series in to_series(
+                        varname="Fitness function", x=iterations, y=fitness_func_through_iterations):
+                    new_chart.series.append(series)
+
                 instanciated_charts.append(new_chart)
 
-        if len(post_processing_mdo_data["constraints"]) > 0 and (select_all or 'Constraints variables' in chart_list):
-            dict_variables_history = post_processing_mdo_data["constraints"]
-            min_y, max_y = inf, - inf
-            all_series = []
-            for variable_name, history in dict_variables_history.items():
+            if select_all or 'Design variables' in chart_list:
+                for variable_name, history_values_variable in post_processing_mdo_data['variables'].items():
+                    dim_var = history_values_variable.shape[1]
+                    shortened_var_name = '.'.join(variable_name.split('.')[2:])
+                    chart_name = f"Design var '{shortened_var_name}' evolution"
+                    iterations = list(range(history_values_variable.shape[0]))
+                    new_chart = TwoAxesInstanciatedChart('Iterations', "Value", chart_name=chart_name)
+                    for i in range(dim_var):
+                        new_series = InstanciatedSeries(
+                            iterations, list(history_values_variable[:, i]),
+                            f"{shortened_var_name}[{i}]", 'lines', True)
+                        new_chart.add_series(new_series)
+                    instanciated_charts.append(new_chart)
 
-                iterations = list(range(len(history)))
-                min_value, max_value = history.min(), history.max()
-                if max_value > max_y:
-                    max_y = max_value
-                if min_value < min_y:
-                    min_y = min_value
-                for series in to_series(varname=variable_name, x=iterations, y=history):
-                    all_series.append(series)
+            if len(post_processing_mdo_data["constraints"]) > 0 and (select_all or 'Constraints variables' in chart_list):
+                dict_variables_history = post_processing_mdo_data["constraints"]
+                min_y, max_y = inf, - inf
+                all_series = []
+                for variable_name, history in dict_variables_history.items():
 
-            chart_name = 'Constraints variables evolution'
-            new_chart = TwoAxesInstanciatedChart('Iterations', 'Constraints variables',
-                                                 [min(iterations), max(iterations)], [
-                                                     min_y - (max_y - min_y) * 0.1
-                                                     , max_y + (max_y - min_y) * 0.1],
-                                                 chart_name)
-            for series in all_series:
-                new_chart.series.append(series)
-            instanciated_charts.append(new_chart)
+                    iterations = list(range(len(history)))
+                    min_value, max_value = history.min(), history.max()
+                    if max_value > max_y:
+                        max_y = max_value
+                    if min_value < min_y:
+                        min_y = min_value
+                    for series in to_series(varname=variable_name, x=iterations, y=history):
+                        all_series.append(series)
+
+                chart_name = 'Constraints variables evolution'
+                new_chart = TwoAxesInstanciatedChart('Iterations', 'Constraints variables',
+                                                    [min(iterations), max(iterations)], [
+                                                        min_y - (max_y - min_y) * 0.1
+                                                        , max_y + (max_y - min_y) * 0.1],
+                                                    chart_name)
+                for series in all_series:
+                    new_chart.series.append(series)
+                instanciated_charts.append(new_chart)
 
         return instanciated_charts
 
