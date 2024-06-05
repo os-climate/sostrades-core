@@ -247,6 +247,8 @@ class MDODisciplineWrapp(object):
             mdo_discipline.eval_jac = proxy.eval_jac
             mdo_discipline.dict_desactivated_elem = proxy.dict_desactivated_elem
             mdo_discipline.input_design_space = proxy.get_sosdisc_inputs('design_space')
+            # retrieve the option to desactivate the storage of the design space outputs for post processings
+            mdo_discipline.desactivate_optim_out_storage = proxy.get_sosdisc_inputs([proxy.DESACTIVATE_OPTIM_OUT_STORAGE])
 
             self.mdo_discipline = mdo_discipline
 

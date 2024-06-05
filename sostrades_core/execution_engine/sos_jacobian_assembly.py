@@ -14,37 +14,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
 from collections import defaultdict
+from numpy import empty, ones, zeros
+from scipy.sparse import dia_matrix
+from scipy.sparse import dok_matrix
+from scipy.sparse import lil_matrix
+from os import getenv
 from copy import deepcopy
 from multiprocessing import Pool
-from os import getenv
 
-from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from numpy import empty, ones, zeros
-from scipy.sparse import dia_matrix, dok_matrix, lil_matrix
+from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
-from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import (
-    SoSDiscParallelLinearization,
-)
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
-    convert_new_type_into_array,
-)
+from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelLinearization
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array
+
 
 """
 Coupled derivatives calculations
 ********************************
 """
 
-
 def none_factory():
     """Returns None...
 
     To be used for defaultdict
     """
-
 
 def default_dict_factory():
     """Instantiates a defaultdict(None) object."""
