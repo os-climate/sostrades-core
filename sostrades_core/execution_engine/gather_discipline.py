@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/21-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/02/21-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,14 +16,23 @@ limitations under the License.
 '''
 
 import logging
-import pandas as pd
 from copy import copy
-from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_output_values
-from sostrades_core.tools.gather.gather_tool import gather_selected_outputs, get_eval_output
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, \
-    TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+
+import pandas as pd
+
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.eval_possible_values.eval_possible_values import (
+    find_possible_output_values,
+)
+from sostrades_core.tools.gather.gather_tool import (
+    gather_selected_outputs,
+    get_eval_output,
+)
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+    InstanciatedSeries,
+    TwoAxesInstanciatedChart,
+)
 
 
 class GatherDiscipline(SoSWrapp):

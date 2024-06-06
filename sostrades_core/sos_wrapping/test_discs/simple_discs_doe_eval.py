@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from numpy import std
 from gemseo.api import get_available_doe_algorithms
-from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from collections import ChainMap
+from numpy import std
+
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import (
+    DoeSampleGenerator,
+)
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+
 
 class SimpleDisc1(SoSWrapp):
     """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
@@ -80,7 +81,7 @@ class SimpleDisc1(SoSWrapp):
             algo_options, algo_options_descr_dict = DoeSampleGenerator(logger=self.logger.getChild("DoeSampleGenerator")).get_options_and_default_values(algo_name)
         else:
             raise Exception(
-                f"A DoE algorithm which is not available in GEMSEO has been selected.")
+                "A DoE algorithm which is not available in GEMSEO has been selected.")
 
         # Update algo options with user parameters (n_samples in this case)
         added_algo_options = self.get_sosdisc_inputs('added_algo_options')

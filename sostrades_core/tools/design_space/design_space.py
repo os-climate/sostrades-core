@@ -13,9 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from gemseo.algos.design_space import DesignSpace
-from numpy import array, ndarray, delete, nonzero, logical_not
 from itertools import combinations
+
+from gemseo.algos.design_space import DesignSpace
+from numpy import array, delete, logical_not, ndarray, nonzero
 
 DESIGN_SPACE = "design_space"
 VARIABLES = "variable"
@@ -61,7 +62,7 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
         if enable_var:
             dict_desactivated_elem[dv] = {}
 
-            if type(val) != list and type(val) != ndarray:
+            if not isinstance(val, (list, ndarray)):
                 size = 1
                 var_type = ['float']
                 l_b = array([lb])

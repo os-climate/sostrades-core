@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,23 +14,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
 from os.path import join
+from pathlib import Path
+from shutil import rmtree
+from tempfile import gettempdir
+from time import sleep
+
 import pandas as pd
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from tempfile import gettempdir
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_sample_generator_simple.usecase_without_ref import (
+    Study,
+)
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_sample_generator_simple.usecase_without_ref import \
-    Study
+from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 
 class TestMultiScenario(unittest.TestCase):
@@ -280,7 +279,8 @@ class TestMultiScenario(unittest.TestCase):
     def test_03_multiscenario_with_sample_generator_cp_sellar_study(self):
         # # simple 2-disc process NOT USING nested scatters
 
-        from os.path import join, dirname
+        from os.path import dirname, join
+
         from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
@@ -400,8 +400,9 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_05_multi_scenario_from_process_with_basic_config_from_usecase_and_with_ref(self):
         # FIXME: there seems to be a problem with reference instance + flatten_subprocess
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_sample_generator_simple.usecase_without_ref import \
-            Study
+        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_sample_generator_simple.usecase_without_ref import (
+            Study,
+        )
 
         repo_name = self.repo + ".tests_driver_eval.multi"
         proc_name = 'test_multi_driver_sample_generator_simple'

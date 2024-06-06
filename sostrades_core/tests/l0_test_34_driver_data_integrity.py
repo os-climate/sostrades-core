@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import unittest
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
-import pandas as pd
 from logging import Handler
+from pathlib import Path
+from shutil import rmtree
+from tempfile import gettempdir
+from time import sleep
+
+import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from tempfile import gettempdir
 
 
 class UnitTestHandler(Handler):

@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,9 +16,11 @@ limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding: iso-8859-1 -*-
 
-from .FDScheme import FDScheme
-from numpy import zeros, shape, array
 from copy import deepcopy
+
+from numpy import array, shape, zeros
+
+from .FDScheme import FDScheme
 
 
 class FDSecondOrderCentered(FDScheme):
@@ -63,7 +66,7 @@ class FDSecondOrderCentered(FDScheme):
         """
         Compute gradient using 2nd order finite differences
         """
-        if type(y_array) == type(zeros(1)):
+        if isinstance(y_array, type(zeros(1))):
             n = len(shape(y_array))
             p = self.get_grad_dim()
             if n < 3:
@@ -88,7 +91,7 @@ class FDSecondOrderCentered(FDScheme):
         """
         Compute the Hessian matrix of a scalar function from given function gradients by finite differences
         """
-        if type(dy_array) == type(zeros(1)):
+        if isinstance(dy_array, type(zeros(1))):
             n = len(shape(dy_array))
             if n == 2:
                 nb_samples = dy_array.shape[1]

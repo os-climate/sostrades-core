@@ -15,22 +15,23 @@ limitations under the License.
 '''
 
 import logging
+
 import numpy as np
 import pandas as pd
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 from sostrades_core.execution_engine.sample_generators.tornado_chart_analysis_sample_generator import (
     TornadoChartAnalysisSampleGenerator,
 )
-from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
     InstanciatedSeries,
     TwoAxesInstanciatedChart,
 )
-from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
 
 
 class TornadoChartAnalysis(SoSWrapp):
@@ -276,13 +277,13 @@ class TornadoChartAnalysis(SoSWrapp):
         """
         # check sub type:
         reference_value_dict = reference_value_dict_dict.values().first()
-        if isinstance(reference_value_dict.values().first(), float) or isinstance(
-                reference_value_dict.values().first(), int
-        ):
+        if isinstance(reference_value_dict.values().first(), float) or isinstance(reference_value_dict.values().first(), int):
             output_variations = {
                 key: self._compute_dict_of_outputs(reference_value_dict_dict[key], output_dict_dict[key])
                 for key in output_dict_dict.keys()
             }
+        else:
+            raise Exception(f"Unhandled type {type(reference_value_dict.values().first())}")
 
         return output_variations
 

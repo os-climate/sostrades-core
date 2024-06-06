@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@ limitations under the License.
 '''
 # -*- coding: utf-8 -*-
 
-import os
 import json
+import os
 from importlib import import_module
-
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 DASHBOARD_MODULE = "dashboard"
 DASHBOARD = "dashboard_template.json"

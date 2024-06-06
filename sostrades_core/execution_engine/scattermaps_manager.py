@@ -14,9 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
 from sostrades_core.execution_engine.scatter_map import ScatterMap
 
 
@@ -128,7 +125,7 @@ class ScatterMapsManager:
         Check type and length of map parameters and put lists in input_name, input_type, output_name, output_type 
         '''
         # check type
-        if type(map[self.SCATTER_VAR_NAME]) != str:
+        if not isinstance(map[self.SCATTER_VAR_NAME], str):
             raise ScatterMapsManagerException(
                 f'{self.SCATTER_VAR_NAME}: {map[self.SCATTER_VAR_NAME]} must be of type string in map: {map}')
 
@@ -137,7 +134,7 @@ class ScatterMapsManager:
         if self.SCATTER_COLUMN_NAME in map:
             parameters_list.append(map[self.SCATTER_COLUMN_NAME])
 
-        if not all(type(element) == type(parameters_list[0]) for element in parameters_list):
+        if not all(isinstance(element, type(parameters_list[0])) for element in parameters_list):
             raise ScatterMapsManagerException(
                 f'{str(parameters_list).strip("[]")} must have same type (list or string) in map: {map}')
 

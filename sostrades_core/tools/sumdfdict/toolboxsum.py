@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-import numpy as np
-import pandas as pd
 from copy import deepcopy
 
+import numpy as np
+import pandas as pd
 from _functools import reduce
 
 
@@ -38,6 +39,9 @@ class toolboxsum(object):
         Method to compute sum of dict of dataframes
         not_sum : column name to not sum
         """
+        # initializations
+        list_df_wo_columns = None
+        restored_df = None
         # infer not summable columns in dataframe
         not_summable = list_df[0].convert_dtypes().select_dtypes(
             exclude=[np.number, 'datetime']).columns.to_list()

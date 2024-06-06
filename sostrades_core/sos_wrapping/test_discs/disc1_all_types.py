@@ -19,6 +19,7 @@ import pandas as pd
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
+
 class Disc1(SoSWrapp):
     # ontology information
     _ontology_data = {

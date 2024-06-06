@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/31-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/31-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ limitations under the License.
 '''
 # coding: utf-8
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open('README.md') as f:
     readme = f.read()

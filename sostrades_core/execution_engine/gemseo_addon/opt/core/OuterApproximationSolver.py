@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,21 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-
-from gemseo.algos.driver_lib import DriverLib
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
-
 import logging
-from numpy import array, append, int32, atleast_2d, concatenate
 from copy import deepcopy
+
 import cvxpy as cp
-from pandas.core.frame import DataFrame
-import pandas as pd
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from numpy import append, array, atleast_2d, int32
 
 # TODO list : 
 # * avoid re-building the NLP

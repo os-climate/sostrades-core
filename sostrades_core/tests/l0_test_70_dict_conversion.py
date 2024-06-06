@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,24 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import pprint
+import unittest
+from os.path import join
+from tempfile import gettempdir
+
 from numpy.testing import assert_array_equal
 from pandas._testing import assert_frame_equal
 
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-import unittest
-import pprint
-import numpy as np
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
-from os.path import join
-
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, convert_array_into_new_type
-from copy import deepcopy
-from tempfile import gettempdir
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
+    convert_array_into_new_type,
+    convert_new_type_into_array,
+)
 
 
 class TestExtendString(unittest.TestCase):

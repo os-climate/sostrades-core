@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,21 +14,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import importlib
+import inspect
+from os.path import dirname, isfile, join
+
+from sostrades_core.execution_engine.data_manager import DataManager
+from sostrades_core.execution_engine.proxy_discipline_gather import (
+    ProxyDisciplineGather,
+)
+from sostrades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart import (
+    InstantiatedParetoFrontOptimalChart,
+)
+from sostrades_core.tools.post_processing.post_processing_bundle import (
+    PostProcessingBundle,
+)
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Factory for post processing (2 axes chart, pie chart, table)
 """
-import inspect
-import importlib
-from os.path import join, dirname, isfile
-
-from sostrades_core.execution_engine.proxy_discipline_gather import ProxyDisciplineGather
-from sostrades_core.execution_engine.data_manager import DataManager
-from sostrades_core.tools.post_processing.pareto_front_optimal_charts.instanciated_pareto_front_optimal_chart import \
-    InstantiatedParetoFrontOptimalChart
-from sostrades_core.tools.post_processing.post_processing_bundle import PostProcessingBundle
-
 
 class PostProcessingFactory:
     """ Class that centralized extraction of post processsing information from discipline

@@ -13,15 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import unittest
 import numpy as np
 import pandas as pd
-from os.path import join, dirname
-from pandas import DataFrame, read_csv
 
+from sostrades_core.execution_engine.design_var.design_var_disc import (
+    DesignVarDiscipline,
+)
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
-from sostrades_core.execution_engine.design_var.design_var_disc import DesignVarDiscipline
+from sostrades_core.tests.core.abstract_jacobian_unit_test import (
+    AbstractJacobianUnittest,
+)
 
 
 class TestDesignVar(AbstractJacobianUnittest):

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/03-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/03-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,12 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
+
 import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
@@ -65,9 +61,9 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.display_treeview_nodes()
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ Disc1',
-                       f'\t|_ Disc2',
-                       f'\t|_ new_display', ]
+                       '\t|_ Disc1',
+                       '\t|_ Disc2',
+                       '\t|_ new_display', ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -79,8 +75,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ Disc1',
-                       f'\t|_ Disc2', ]
+                       '\t|_ Disc1',
+                       '\t|_ Disc2', ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(
@@ -108,8 +104,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.display_treeview_nodes(display_variables=True)
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ New_ns_disc',
-                       f'\t|_ Disc2']
+                       '\t|_ New_ns_disc',
+                       '\t|_ Disc2']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -119,8 +115,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.dm.treeview = None
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ New_ns_disc_new',
-                       f'\t|_ Disc2']
+                       '\t|_ New_ns_disc_new',
+                       '\t|_ Disc2']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -130,8 +126,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         self.exec_eng.dm.treeview = None
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ New_ns_disc_new',
-                       f'\t|_ New_ns_disc2']
+                       '\t|_ New_ns_disc_new',
+                       '\t|_ New_ns_disc2']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -150,8 +146,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ Disc1',
-                       f'\t|_ Disc2']
+                       '\t|_ Disc1',
+                       '\t|_ Disc2']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(
@@ -189,10 +185,10 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ multi_scenarios',
-                       f'\t\t|_ subprocess',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2']
+                       '\t|_ multi_scenarios',
+                       '\t\t|_ subprocess',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(
@@ -200,9 +196,9 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ multi_scenarios',
-                       f'\t\t|_ Disc1',
-                       f'\t\t|_ Disc2']
+                       '\t|_ multi_scenarios',
+                       '\t\t|_ Disc1',
+                       '\t\t|_ Disc2']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -241,14 +237,14 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ multi_scenarios',
-                       f'\t\t|_ scenario_1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t\t|_ scenario_2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t|_ multi_scenarios_gather',]
+                       '\t|_ multi_scenarios',
+                       '\t\t|_ scenario_1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ scenario_2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t|_ multi_scenarios_gather',]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(
@@ -256,13 +252,13 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ scenario_1',
-                       f'\t\t|_ Disc1',
-                       f'\t\t|_ Disc2',
-                       f'\t|_ scenario_2',
-                       f'\t\t|_ Disc1',
-                       f'\t\t|_ Disc2',
-                       f'\t|_ Disc1']
+                       '\t|_ scenario_1',
+                       '\t\t|_ Disc1',
+                       '\t\t|_ Disc2',
+                       '\t|_ scenario_2',
+                       '\t\t|_ Disc1',
+                       '\t\t|_ Disc2',
+                       '\t|_ Disc1']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
@@ -305,12 +301,12 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
                        f'\t|_ {driver_name}',
-                       f'\t\t|_ scenario_1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
-                       f'\t\t|_ scenario_2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2',
+                       '\t\t|_ scenario_1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
+                       '\t\t|_ scenario_2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2',
                        f'\t|_ {driver_name}_gather',]
 
         exp_tv_str = '\n'.join(exp_tv_list)
@@ -319,8 +315,8 @@ class TestConfigDependencyDiscs(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ Disc1',
-                       f'\t|_ Disc2', ]
+                       '\t|_ Disc1',
+                       '\t|_ Disc2', ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()

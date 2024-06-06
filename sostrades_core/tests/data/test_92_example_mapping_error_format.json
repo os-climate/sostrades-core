@@ -1,0 +1,8 @@
+{
+    "process_module_path": "mock.process.path",
+    "namespace_datasets_mapping": {
+        "v0|namespace1|*" : ["<1dataset_id>|*"],
+        "v0|namespace2|*" : ["<1connector_id>|<1dataset_id>|*",
+                             "<2connector_id>|<2dataset_id>|*"]
+    }
+}

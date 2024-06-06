@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/30-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/06/30-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import warnings
-
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-"""
-
 import unittest
-from time import sleep
-from shutil import rmtree
+import warnings
 from pathlib import Path
+from shutil import rmtree
+from time import sleep
+
+from numpy import ComplexWarning
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 #IMPORT USECASES
-from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import Study as Study_disc1_all_types
-from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as Study_sellar_coupling
-from sostrades_core.sos_processes.test.test_sellar_coupling_new_types._usecase import Study as Study_sellar_coupling_new_types
-from numpy import ComplexWarning
+from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import (
+    Study as Study_disc1_all_types,
+)
+from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
+    Study as Study_sellar_coupling,
+)
+from sostrades_core.sos_processes.test.test_sellar_coupling_new_types._usecase import (
+    Study as Study_sellar_coupling_new_types,
+)
+
 
 class TestAnalyticGradients(unittest.TestCase):
     """

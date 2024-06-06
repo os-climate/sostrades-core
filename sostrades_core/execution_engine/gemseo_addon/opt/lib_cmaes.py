@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,21 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+
+import logging
+from builtins import super
+
+import cma
+from future import standard_library
+from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from numpy import real
+
 """
 scipy.optimize optimization library wrapper
 """
-
-
-from builtins import super, zip
-import logging
-
-from future import standard_library
-from numpy import isfinite, real
-
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
-
-import cma
-
 standard_library.install_aliases()
 
 

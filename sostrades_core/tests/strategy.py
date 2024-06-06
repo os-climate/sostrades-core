@@ -13,6 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import glob
+import os
+import sys
+import tempfile
+from typing import Union
+
+import pytest
+
 """
 TEST STRATEGY MODULE
 
@@ -30,8 +38,7 @@ How to use ?
 - run 'python strategy.py uc' for testing usecases
 
 """
-import sys, os, glob, pytest, tempfile
-from typing import Union
+
 # Create a temporary file
 
 

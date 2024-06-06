@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/01/11-2024/01/11 Copyright 2023 Capgemini
+Modifications on 2024/01/11-2024/05/16 Copyright 2023 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -15,9 +15,9 @@ limitations under the License.
 
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-from sostrades_core.study_manager.study_manager import StudyManager
 import pandas as pd
+
+from sostrades_core.study_manager.study_manager import StudyManager
 
 
 class Study(StudyManager):

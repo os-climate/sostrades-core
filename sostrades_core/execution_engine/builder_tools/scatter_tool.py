@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/07/17-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/07/17-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ limitations under the License.
 import pandas as pd
 
 from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
-from collections import defaultdict
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -397,9 +396,9 @@ class ScatterTool(SosTool):
         # sort sub_names to filter new names and disciplines to remove
 
         new_sub_names = [
-            name for name in sub_names if not name in self.__scattered_disciplines]
+            name for name in sub_names if name not in self.__scattered_disciplines]
         disc_name_to_remove = [
-            name for name in self.__scattered_disciplines if not name in sub_names]
+            name for name in self.__scattered_disciplines if name not in sub_names]
         self.remove_scattered_disciplines(disc_name_to_remove)
 
         if len(disc_name_to_remove) != 0 or len(new_sub_names) != 0:

@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,20 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import unittest
+from os.path import dirname, exists, join
+from pathlib import Path
+from shutil import rmtree
+from time import sleep
+
 from gemseo.caches.simple_cache import SimpleCache
 
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-import unittest
-from shutil import rmtree
-from os.path import join, dirname, exists
-from pathlib import Path
-from time import sleep
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import (
+    Study as study_disc1_disc2,
+)
+
 #from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var.usecase import Study as study_sellar_opt
-from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_mda
-from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import Study as study_disc1_disc2
+from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
+    Study as study_sellar_mda,
+)
+from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
 
 class TestLoadSimpleCache(unittest.TestCase):

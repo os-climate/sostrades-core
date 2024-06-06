@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,14 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from os.path import basename, splitext
+
+import yaml
+
+from sostrades_core.tools.yaml import Rx
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
-
-from os.path import basename, splitext
-import yaml
-from sostrades_core.tools.yaml import Rx
-
 
 class YamlModelcheckerException(Exception):
     pass

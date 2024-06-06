@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,20 +15,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
-from copy import deepcopy
 import logging
-import numpy as np
 from copy import copy
-from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import SoSDiscParallelExecution
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type
+
+import numpy as np
+from gemseo.core.discipline import MDODiscipline
+from gemseo.mda.newton import MDARoot
+
+from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution import (
+    SoSDiscParallelExecution,
+)
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
+    convert_array_into_new_type,
+)
 
 """
 A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
 """
-
-from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.newton import MDARoot
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 

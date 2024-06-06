@@ -13,19 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-from sostrades_core.execution_engine.sample_generators.tornado_chart_analysis_sample_generator import TornadoChartAnalysisSampleGenerator
-from sostrades_core.execution_engine.sample_generators.simple_sample_generator import SimpleSampleGenerator
-from sostrades_core.execution_engine.sample_generators.grid_search_sample_generator import GridSearchSampleGenerator
-from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import \
-    CartesianProductSampleGenerator
-from sostrades_core.tools.design_space import design_space as dspace_tool
 import pandas as pd
+
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
+    SampleGeneratorWrapper,
+)
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import (
+    CartesianProductSampleGenerator,
+)
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import (
+    DoeSampleGenerator,
+)
+from sostrades_core.execution_engine.sample_generators.grid_search_sample_generator import (
+    GridSearchSampleGenerator,
+)
+from sostrades_core.execution_engine.sample_generators.simple_sample_generator import (
+    SimpleSampleGenerator,
+)
+from sostrades_core.execution_engine.sample_generators.tornado_chart_analysis_sample_generator import (
+    TornadoChartAnalysisSampleGenerator,
+)
+from sostrades_core.tools.design_space import design_space as dspace_tool
 
 
 class ProxySampleGeneratorException(Exception):

@@ -73,7 +73,9 @@ if "__main__" == __name__:
     variations_output_df = dm.get_value(f"{ns}.tornado_chart_analysis.y_array_dict_variations")
     print(variations_output_df)
 
-    from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+    from sostrades_core.tools.post_processing.post_processing_factory import (
+        PostProcessingFactory,
+    )
 
     post_processing_factory = PostProcessingFactory()
     for disc in uc_cls.execution_engine.root_process.proxy_disciplines:

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import math
 from copy import deepcopy
+
+import pandas as pd
 import plotly.graph_objects as go
+
+from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
+    InstantiatedPlotlyNativeChart,
+)
 from sostrades_core.tools.post_processing.post_processing_tools import (
     align_two_y_axes,
     format_currency_legend,
 )
-from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
-    InstantiatedPlotlyNativeChart,
-)
-import pandas as pd
-import numpy as np
-import math
 
 
 class CommonCharts(InstantiatedPlotlyNativeChart):

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/03-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/03-2024/05/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
-import pandas as pd
 from logging import Handler
+from tempfile import gettempdir
+
+import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.sos_processes.test.test_architecture_standard.usecase_simple_architecture import Study
-from tempfile import gettempdir
+from sostrades_core.sos_processes.test.test_architecture_standard.usecase_simple_architecture import (
+    Study,
+)
+from sostrades_core.tools.archi_node.archi_node import ArchiNode
 
 
 class UnitTestHandler(Handler):
@@ -697,7 +698,7 @@ class TestArchiBuilder(unittest.TestCase):
 
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ Business',
+                       '\t|_ Business',
                        '\t\t|_ Remy',
                        '\t\t\t|_ CAPEX',
                        '\t\t\t|_ OPEX',
@@ -825,11 +826,11 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
                        f'|_ {self.namespace}',
                        f'\t|_ {vb_builder_name}',
-                       f'\t\t|_ Opex',
-                       f'\t\t\t|_ Delivery',
-                       f'\t\t\t|_ Manhour',
-                       f'\t\t\t|_ Cooking',
-                       f'\t\t\t|_ Energy']
+                       '\t\t|_ Opex',
+                       '\t\t\t|_ Delivery',
+                       '\t\t\t|_ Manhour',
+                       '\t\t\t|_ Cooking',
+                       '\t\t\t|_ Energy']
         # exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
         #                f'|_ {self.namespace}',
         #                f'\t|_ {vb_builder_name}',
@@ -840,6 +841,39 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
+    def test_12_build_architecture_with_archi_node(self):
+
+        vb_builder_name = 'ArchiBuilder'
+
+        architecture_nodes = ArchiNode(name="Opex", type="SumValueBlockDiscipline", action="standard", activation=False, children=[
+                ArchiNode(name="Delivery", type="SumValueBlockDiscipline", action="standard", activation=False),
+                ArchiNode(name="Manhour", type="SumValueBlockDiscipline", action="standard", activation=False),
+                ArchiNode(name="Cooking", type="SumValueBlockDiscipline", action="standard", activation=False),
+                ArchiNode(name="Energy", type="SumValueBlockDiscipline", action="standard", activation=False),
+            ])
+
+        architecture_df = architecture_nodes.to_dataframe(skip_self=False)
+
+        builder = self.factory.create_architecture_builder(
+            vb_builder_name, architecture_df)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            builder)
+
+        self.exec_eng.ns_manager.add_ns_def({'ns_public': self.study_name})
+
+        self.exec_eng.load_study_from_input_dict({})
+        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
+                       f'|_ {self.namespace}',
+                       f'\t|_ {vb_builder_name}',
+                       '\t\t|_ Opex',
+                       '\t\t\t|_ Delivery',
+                       '\t\t\t|_ Manhour',
+                       '\t\t\t|_ Cooking',
+                       '\t\t\t|_ Energy']
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
 if '__main__' == __name__:
     cls = TestArchiBuilder()

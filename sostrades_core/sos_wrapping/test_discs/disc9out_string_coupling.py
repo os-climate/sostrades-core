@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from numpy import array
 
 
 class Disc9out(SoSWrapp):
@@ -48,7 +48,7 @@ class Disc9out(SoSWrapp):
 
     def run(self):
         inputs = self.get_sosdisc_inputs()
-
+        z = None
         if inputs['string'] == 'x is > 0' and inputs['string_dict_of_dict']['dict2']['key1'] == 'positive':
 
             z = inputs['dict_mix_types']['AC2']['list'][0]

@@ -15,9 +15,8 @@ limitations under the License.
 '''
 import logging
 import os
-from typing import Any, Tuple
-
 import pickle
+from typing import Any, Tuple
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,

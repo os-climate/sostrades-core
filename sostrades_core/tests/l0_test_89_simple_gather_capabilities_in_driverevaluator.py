@@ -13,23 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
-from time import sleep
-from shutil import rmtree
-from pathlib import Path
-from os.path import join
-import pandas as pd
-import numpy as np
 from logging import Handler
+from pathlib import Path
+from shutil import rmtree
+from tempfile import gettempdir
+from time import sleep
+
+import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from tempfile import gettempdir
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-
 
 # FIXME: tests are not active because WIP on gather capabilities
 

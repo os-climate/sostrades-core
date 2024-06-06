@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,15 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from copy import deepcopy
+from itertools import product
+
+from pandas.core.common import flatten
+
+from sostrades_core.tools.scenario.scenario_manager import ScenarioManager
+
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
-
-from sostrades_core.tools.scenario.scenario_manager import ScenarioManager
-from copy import deepcopy
-from itertools import product
-from pandas.core.common import flatten
-
 
 class ScenarioGenerator:
     """
@@ -71,7 +73,7 @@ class ScenarioGenerator:
         return self.scenarios_dict
 
     def generate_combinations(self, input_value):
-        if input_value == None:
+        if input_value is None:
             return []
         if isinstance(input_value, (float, int, str)):
             return [input_value]

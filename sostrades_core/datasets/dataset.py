@@ -17,7 +17,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from sostrades_core.datasets.dataset_info import DatasetInfo
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    AbstractDatasetsConnector,
+)
 
 
 @dataclass()

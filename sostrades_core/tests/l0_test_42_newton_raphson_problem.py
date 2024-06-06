@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,9 +16,13 @@ limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding: iso-8859-1 -*-
 import unittest
-from numpy import zeros, array
 from os import remove
-from sostrades_core.tools.grad_solvers.solvers.newton_raphson_problem import NewtonRaphsonProblem
+
+from numpy import array, zeros
+
+from sostrades_core.tools.grad_solvers.solvers.newton_raphson_problem import (
+    NewtonRaphsonProblem,
+)
 
 
 class TestNewtonRaphsonProblem(unittest.TestCase):

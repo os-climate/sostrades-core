@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import ast
+import os
+import pathlib
+import sys
+
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-import os
-import sys
-import ast
-import pathlib
 
 """
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8

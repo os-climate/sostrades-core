@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,12 +16,16 @@ limitations under the License.
 '''
 
 import re
+
 import numpy as np
 from matplotlib import pyplot as plt
 
-from sostrades_core.tools.cst_manager.constraint_object import ConstraintObject
-from sostrades_core.tools.base_functions.exp_min import compute_func_with_exp_min, compute_dfunc_with_exp_min
 from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
+from sostrades_core.tools.base_functions.exp_min import (
+    compute_dfunc_with_exp_min,
+    compute_func_with_exp_min,
+)
+from sostrades_core.tools.cst_manager.constraint_object import ConstraintObject
 
 # pylint: disable=no-value-for-parameter
 
@@ -305,7 +310,7 @@ def eq_constraint_demonstrator():
     axs[1].axvline(min_valid_x, linestyle=':', color='black')
     axs[1].axvline(max_valid_x, linestyle=':', color='black')
     axs[1].legend()
-    axs[2].plot(x, cst, '.', label=f'cst')
+    axs[2].plot(x, cst, '.', label='cst')
     axs[2].plot(x,(-constraint) ** 2, label='quad', linestyle='dotted', color='red', alpha=0.5)
     axs[2].plot(x, eps * (np.exp(np.abs(constraint)) -1.), label='lin', linestyle='dotted', color='green', alpha=0.5)
     axs[2].axvline(min_valid_x, linestyle=':', color='black')
@@ -346,7 +351,7 @@ def ineq_constraint_demonstrator():
     axs[1].axvline(min_valid_x, linestyle=':', color='black')
     axs[1].axvline(max_valid_x, linestyle=':', color='black')
     axs[1].legend()
-    axs[2].plot(x, cst, '.', label=f'cst')
+    axs[2].plot(x, cst, '.', label='cst')
     axs[2].plot(x,(-constraint) ** 2, label='quad', linestyle='dotted', color='red', alpha=0.5)
     axs[2].plot(x, eps * (np.exp(np.abs(constraint)) -1.), label='lin', linestyle='dotted', color='green', alpha=0.5)
     axs[2].axvline(min_valid_x, linestyle=':', color='black')

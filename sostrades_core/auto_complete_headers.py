@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.tools.check_headers import HeaderTools
 import json
+
+from sostrades_core.tools.check_headers import HeaderTools
 
 #read local headers_ignore_config.json specific to each repository
 

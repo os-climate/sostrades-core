@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,20 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from pickle import UnpicklingError
+from pickle import dumps as pkl_dumps
+from pickle import loads as pkl_loads
+
+import pandas as pd
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.PublicKey import RSA
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad, unpad
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 load/dump - read/write feature to manage load and dump of exported study data
 '''
-from pickle import UnpicklingError, dumps as pkl_dumps, loads as pkl_loads
-from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad, unpad
-from Crypto.Cipher import AES
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.Protocol.KDF import PBKDF2
-import pandas as pd
-
 
 class LoadDumpException(Exception):
     def __init__(self, encryption_mode, action):

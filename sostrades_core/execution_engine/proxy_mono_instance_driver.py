@@ -199,7 +199,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
                 variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
                 if len(variables_column) == 0:
-                    warning_msg = f'There should be at least one trade variable column in samples_df'
+                    warning_msg = 'There should be at least one trade variable column in samples_df'
                     self.check_integrity_msg_list.append(warning_msg)
                     # save inetrgity message on samples_df
                     self.driver_data_integrity = False

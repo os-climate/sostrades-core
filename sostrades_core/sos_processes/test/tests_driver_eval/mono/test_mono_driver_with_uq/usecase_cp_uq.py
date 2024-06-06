@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/10-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/10-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from sostrades_core.study_manager.study_manager import StudyManager
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+from sostrades_core.tools.post_processing.post_processing_factory import (
+    PostProcessingFactory,
+)
 
 
 class Study(StudyManager):
@@ -59,11 +61,11 @@ class Study(StudyManager):
         x_list = np.linspace(0, 10, 10).tolist()
         eval_inputs = pd.DataFrame({'selected_input': [True, False, True, False],
                                     'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
-                                                  f'x', f'subprocess.Disc2.power']})
+                                                  'x', 'subprocess.Disc2.power']})
 
         eval_inputs_cp = pd.DataFrame({'selected_input': [True, False, True, False],
                                        'full_name': [f'subprocess.{disc1_name}.a', f'subprocess.{disc1_name}.b',
-                                                     f'x', f'subprocess.Disc2.power'],
+                                                     'x', 'subprocess.Disc2.power'],
                                        'list_of_values': [a_list, [], x_list, []]
                                        })
         disc_dict[f'{self.study_name}.Eval.with_sample_generator'] = True

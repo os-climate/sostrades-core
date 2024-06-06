@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/27-2024/02/20 Copyright 2023 Capgemini
+Modifications on 2023/03/27-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,11 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-"""
-Coupled derivatives calculations
-********************************
-"""
-
 from collections import defaultdict
 from numpy import empty, ones, zeros
 from scipy.sparse import dia_matrix
@@ -27,7 +22,6 @@ from scipy.sparse import lil_matrix
 from os import getenv
 from copy import deepcopy
 from multiprocessing import Pool
-import platform
 
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
@@ -37,12 +31,16 @@ from sostrades_core.execution_engine.parallel_execution.sos_parallel_execution i
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array
 
 
+"""
+Coupled derivatives calculations
+********************************
+"""
+
 def none_factory():
     """Returns None...
 
     To be used for defaultdict
     """
-
 
 def default_dict_factory():
     """Instantiates a defaultdict(None) object."""

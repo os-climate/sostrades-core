@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/08 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,13 +16,10 @@ limitations under the License.
 '''
 import logging
 
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
+import pandas as pd
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.design_space import design_space as dspace_tool
-import pandas as pd
 
 
 class SampleGeneratorWrapper(SoSWrapp):
@@ -69,7 +66,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         if isinstance(samples_df, pd.DataFrame):
             pass
         else:
-            raise Exception( f"Sampling has not been made")
+            raise Exception( "Sampling has not been made")
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def sample(self):

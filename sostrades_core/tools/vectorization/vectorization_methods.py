@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/02/28 Copyright 2024 Capgemini
+Modifications on 2024/02/28-2024/05/16 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-Created on 27 july 2022
-
-@author: NG9430A
-'''
+from copy import deepcopy
 from logging import Logger
 
-import pandas as pd
 import numpy as np
-from copy import deepcopy
+import pandas as pd
 
-# from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 BREAKDOWN_COLUMN = 'PATH'
@@ -259,7 +253,7 @@ def compute_sum_df(
         for df in df_dict.values()
         if not df.empty
     ]
-    not_summable = [l for sublist in not_summable_nested_list for l in sublist]
+    not_summable = [sublist_element for sublist in not_summable_nested_list for sublist_element in sublist]
     if len(not_summable):
         if columns_not_to_sum is None:
             columns_not_to_sum = not_summable

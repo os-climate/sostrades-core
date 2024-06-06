@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/04/10 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,28 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
 import logging
 from copy import copy, deepcopy
-from typing import Any
-from uuid import uuid4
+from dataclasses import dataclass
+from datetime import datetime
 from hashlib import sha256
-from pandas import concat
+from typing import Any, Union
+from uuid import uuid4
 
 from gemseo.caches.simple_cache import SimpleCache
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from pandas import concat
 
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
-
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
-from typing import Any, Union
-from dataclasses import dataclass
-from datetime import datetime
 
 TYPE = ProxyDiscipline.TYPE
 VALUE = ProxyDiscipline.VALUE
@@ -68,8 +63,9 @@ class ParameterChange:
     variable_type: str
     old_value: Any
     new_value: Any
-    dataset_id: Union[str, None]
     connector_id: Union[str, None]
+    dataset_id: Union[str, None]
+    dataset_parameter_id: Union[str, None]
     date: datetime
 
 class DataManager:
@@ -237,7 +233,7 @@ class DataManager:
                 self.data_dict[self.get_data_id(var_f_name)][attr] = val
         else:
             msg = f"Try to update metadata of variable {var_f_name} that does"
-            msg += f" not exists as I/O of any discipline"
+            msg += " not exists as I/O of any discipline"
             raise KeyError(msg)
 
     def get_io_data_of_disciplines(self, disciplines):
@@ -359,7 +355,7 @@ class DataManager:
         '''
         keys_to_map = self.data_id_map.keys() if full_ns_keys else self.data_id_map.values()
         for key, value in values_dict.items():
-            if not key in keys_to_map:
+            if key not in keys_to_map:
                 raise ValueError(f'{key} does not exist in data manager')
             k = self.get_data_id(key) if full_ns_keys else key
             # if self.data_dict[k][ProxyDiscipline.VISIBILITY] == INTERNAL_VISIBILITY:
@@ -401,7 +397,7 @@ class DataManager:
                 # Discipline configuration only take care of input variables
                 # Variables are only set f
                 is_in_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
-                if in_vars and is_in_var and not key in already_set_data:
+                if in_vars and is_in_var and key not in already_set_data:
                     new_value = convert_values_dict[key][VALUE]
                     self.apply_parameter_change(key, new_value, parameter_changes)
                     already_set_data.add(key)
@@ -410,7 +406,7 @@ class DataManager:
                 # check if this is a strongly coupled input necessary to
                 # initialize a MDA
                 is_init_coupling_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and dm_data[ProxyDiscipline.COUPLING]
-                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
+                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                     new_value = convert_values_dict[key][VALUE]
                     self.apply_parameter_change(key, new_value, parameter_changes)
                     already_set_data.add(key)
@@ -453,7 +449,7 @@ class DataManager:
             is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[ProxyDiscipline.COUPLING]
             # get all input values not already set
             is_in_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
-            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and not key in already_set_data:
+            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                 data_ns = data_value[NS_REFERENCE].value
                 data_name = data_value[VAR_NAME]
                 data_type = data_value[TYPE]
@@ -477,15 +473,22 @@ class DataManager:
                     new_value = new_data[DatasetsManager.VALUE]
                     connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
                     dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_id
-                    self.apply_parameter_change(key, new_value, parameter_changes, connector_id, dataset_id)
+                    # dataset_parameter_id = new_data[DatasetsManager.DATASET_INFO].dataset_parameter_id
+                    self.apply_parameter_change(key, new_value, parameter_changes,
+                                                connector_id=connector_id,
+                                                dataset_id=dataset_id,
+                                                dataset_parameter_id=None)
                     already_set_data.add(key)
             else:
                 self.logger.warning(f"the namespace {namespace} is not referenced in the datasets mapping of the study")
 
-    def apply_parameter_change(self, key: str, new_value: Any,
+    def apply_parameter_change(self,
+                               key: str,
+                               new_value: Any,
                                parameter_changes: list[ParameterChange],
                                connector_id: (str, None) = None,
                                dataset_id: (str, None) = None,
+                               dataset_parameter_id: (str, None) = None,
                                update_parameter_changes: bool = True) -> None:
         """
         Applies and logs an input value change on variable with uuid key. It appends to parameter_changes a
@@ -496,6 +499,7 @@ class DataManager:
         :param parameter_changes: ongoing list of parameter changes
         :param connector_id: dataset connector id if updating from dataset or None otherwise
         :param dataset_id: dataset id if updating from dataset or None otherwise
+        :param dataset_parameter_id: id of the parameter in the dataset if updating from dataset or None otherwise  # todo: WIP!
         :return: None, inplace update of the data manager value for variable
         """
         dm_data = self.data_dict[key]
@@ -508,6 +512,7 @@ class DataManager:
                                                          new_value=deepcopy(new_value),     # FIXME: deepcopies avoidable ?
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
+                                                         dataset_parameter_id=dataset_parameter_id,
                                                          date=datetime.now()))
         dm_data[VALUE] = new_value
 
@@ -703,7 +708,7 @@ class DataManager:
                         if self.data_dict[var_id][VALUE] is not None:
                             disc_dict[var_name][VALUE] = self.data_dict[var_id][VALUE]
                         self.data_dict[var_id] = disc_dict[var_name]
-                if not disc_id in self.data_dict[var_id][DISCIPLINES_DEPENDENCIES]:
+                if disc_id not in self.data_dict[var_id][DISCIPLINES_DEPENDENCIES]:
                     self.data_dict[var_id][DISCIPLINES_DEPENDENCIES].append(
                         disc_id)
                     self.no_change = False

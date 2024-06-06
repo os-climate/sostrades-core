@@ -10,6 +10,7 @@ chain_linearize,Chain Linearize Option,,"Linearize the chain of execution, if Tr
 checkjac_n_processes,checkjac_n_processes,[-],,,
 data_details_df,Data Details,,,,
 debug_mode,Debug Mode,,Expert Debug Mode Option to test your process,,
+desactivate_optim_out_storage,Desactivate optim output storage,,"Descativate the design space and optim specific outputs for post processings to gain memory.",,
 df_in,df_in,kg,,,
 df_out,df_out,kg,,,
 dict_df_out,dict_df_out,kg,,,

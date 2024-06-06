@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/03-2023/11/08 Copyright 2023 Capgemini
+Modifications on 2023/03/03-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,26 +14,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-
-import logging
 import copy
-import pandas as pd
+import logging
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
-from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
-from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import MDODisciplineDriverWrapp
-from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
-from sostrades_core.tools.gather.gather_tool import get_eval_output
-from sostrades_core.tools.proc_builder.process_builder_parameter_type import ProcessBuilderParameterType
-from sostrades_core.tools.builder_info.builder_info_functions import get_ns_list_in_builder_list
-from sostrades_core.tools.eval_possible_values.eval_possible_values import find_possible_values
+from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
+    DriverEvaluatorWrapper,
+)
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
+from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import (
+    MDODisciplineDriverWrapp,
+)
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.execution_engine.proxy_discipline_builder import (
+    ProxyDisciplineBuilder,
+)
+from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
+from sostrades_core.tools.builder_info.builder_info_functions import (
+    get_ns_list_in_builder_list,
+)
+from sostrades_core.tools.eval_possible_values.eval_possible_values import (
+    find_possible_values,
+)
+from sostrades_core.tools.gather.gather_tool import get_eval_output
+from sostrades_core.tools.proc_builder.process_builder_parameter_type import (
+    ProcessBuilderParameterType,
+)
 
 
 class ProxyDriverEvaluatorException(Exception):
@@ -457,13 +463,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         # Check if no scenario are selected
         if samples_df.empty:
-            warning_msg = f'Your samples_df is empty, the driver cannot be configured'
+            warning_msg = 'Your samples_df is empty, the driver cannot be configured'
             self.check_integrity_msg_list.append(warning_msg)
             scatter_list_validity = False
         else:
             selected_scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]][self.SCENARIO_NAME].values.tolist()
             if len(selected_scenario_names) == 0:
-                warning_msg = f'You need to select at least one scenario to execute your driver'
+                warning_msg = 'You need to select at least one scenario to execute your driver'
                 self.check_integrity_msg_list.append(warning_msg)
                 scatter_list_validity = False
 
@@ -493,7 +499,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             samples_df_descriptor = copy.deepcopy(self.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR])
             # samples_df_descriptor = self.ee.dm.get_data(samples_df_full_name, self.DATAFRAME_DESCRIPTOR)
             for col in variables_column:
-                if not col in self.eval_in_possible_values:
+                if col not in self.eval_in_possible_values:
                     warning_msg = f'The variable {col} is not in the subprocess eval input values: It cannot be a column of the {self.SAMPLES_DF} '
                     self.check_integrity_msg_list.append(warning_msg)
                 else:

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/07-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/07-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,19 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from typing import Union
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
-from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import InstanciatedPieChart
-from sostrades_core.tools.post_processing.tables.instanciated_table import InstanciatedTable
+from importlib import import_module
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Post processing manager allowing to coeespond namespace with post processing to execute
 """
-
-from importlib import import_module
-
 
 class PostProcessingManager:
     """ Class the store couples namespace <=> list of post processing.
@@ -77,7 +70,7 @@ class PostProcessingManager:
         try:
             filter_function = getattr(import_module(module_name),PostProcessingManager.FILTER_FUNCTION_NAME)
         except (ModuleNotFoundError, AttributeError, TypeError) as ex:
-            self.__logger.exception(f'The following error occurs when trying to load post processing filter function for module f{module_name}.')
+            self.__logger.exception(f'The following error occurs when trying to load post processing filter function for module f{module_name}.', exc_info=ex)
         try:
             return filter_function, getattr(import_module(module_name), PostProcessingManager.POST_PROCESSING_FUNCTION_NAME)
         except (ModuleNotFoundError, AttributeError, TypeError) as ex:

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/23-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/06/23-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from io import BytesIO, StringIO
+from os import makedirs, remove
+from os.path import basename, dirname, join
+from pathlib import Path
+from shutil import make_archive, rmtree
+from tempfile import gettempdir
+from time import sleep
+
+from numpy import ndarray
+from pandas import DataFrame, concat, read_pickle
+
+from sostrades_core.execution_engine.ns_manager import NS_SEP
+from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Data manager pickle (de)serializer
 '''
-from os.path import join, dirname, basename
-from pathlib import Path
-from os import makedirs, remove
-from time import sleep
-from tempfile import gettempdir
-from io import BytesIO, StringIO
-from shutil import rmtree, make_archive
-import warnings
-
-from pandas import DataFrame, read_pickle, concat
-from numpy import ndarray
-
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from sostrades_core.execution_engine.ns_manager import NS_SEP
 
 CSV_SEP = ','
 FILE_URL = 'file:///'

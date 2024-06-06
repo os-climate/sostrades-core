@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2024/04/10 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-from typing import Any, Callable, Union, Optional
 # Execution engine SoSTrades code
 import logging
-import json 
+from typing import Any, Callable, Optional, Union
 
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.execution_engine.data_manager import DataManager
-from sostrades_core.execution_engine.sos_factory import SosFactory
+from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
+from sostrades_core.execution_engine.data_manager import DataManager, ParameterChange
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
+from sostrades_core.execution_engine.post_processing_manager import (
+    PostProcessingManager,
+)
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
-from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-from sostrades_core.execution_engine.data_manager import ParameterChange
+from sostrades_core.execution_engine.sos_factory import SosFactory
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
@@ -208,20 +205,21 @@ class ExecutionEngine:
         anonymized_cache_map = {}
         if self.dm.cache_map != {}:
             for key, cache in self.dm.cache_map.items():
-                serialized_new_cache = cache.get_all_data()
-                anonymized_cache = {}
-                for index, index_dict in serialized_new_cache.items():
-                    anonymized_cache[index] = {
-                        data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in
-                                     values_dict.items()}
-                        for data_types, values_dict in index_dict.items() if
-                        values_dict is not None and data_types in ['inputs', 'outputs']}
-                    if index_dict['jacobian'] is not None:
-                        anonymized_cache[index]['jacobian'] = {self.anonymize_key(key_out): {self.anonymize_key(
-                            key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
-                                                               index_dict['jacobian'].items()}
+                if cache is not None and cache.get_length() > 0:
+                    serialized_new_cache = cache.get_all_data()
+                    anonymized_cache = {}
+                    for index, index_dict in serialized_new_cache.items():
+                        anonymized_cache[index] = {
+                            data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in
+                                         values_dict.items()}
+                            for data_types, values_dict in index_dict.items() if
+                            values_dict is not None and data_types in ['inputs', 'outputs']}
+                        if index_dict['jacobian'] is not None:
+                            anonymized_cache[index]['jacobian'] = {self.anonymize_key(key_out): {self.anonymize_key(
+                                key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
+                                                                   index_dict['jacobian'].items()}
 
-                anonymized_cache_map[key] = anonymized_cache
+                    anonymized_cache_map[key] = anonymized_cache
 
         return anonymized_cache_map
 
@@ -520,14 +518,17 @@ class ExecutionEngine:
             self.__yield_method()
 
         #         self.__configure_execution()
-
         # -- Init execute, to fully initialize models in discipline
-        if len(checked_keys):
+        if len(parameter_changes) > 0:
             self.update_from_dm()
-            self.dm.create_reduced_dm()
             if update_status_configure:
                 self.update_status_configure()
-        elif self.dm.reduced_dm is None:
+        else:
+            if self.dm.treeview is not None:
+                self.root_process.status = self.dm.treeview.root.status
+
+        # Reduced dm recreation might be necessary without value change (i.e. a type changed during config.)
+        if checked_keys or self.dm.reduced_dm is None:
             self.dm.create_reduced_dm()
 
         self.dm.treeview = None

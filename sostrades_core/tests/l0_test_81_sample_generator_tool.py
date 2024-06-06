@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,35 +15,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
+import unittest
 from logging import Handler
-from time import time
+from os.path import dirname, join
 
+import pandas as pd
+from numpy import array
+from pandas.testing import assert_frame_equal
 
-import copy
-from gemseo.algos.doe.doe_factory import DOEFactory
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
+    SampleGeneratorWrapper,
+)
+from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import (
+    CartesianProductSampleGenerator,
+)
+from sostrades_core.execution_engine.sample_generators.doe_sample_generator import (
+    DoeSampleGenerator,
+)
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
 """
-
-import unittest
-from numpy import array, std
-import pandas as pd
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-import os
-from os.path import dirname, join
-
-from sostrades_core.execution_engine.sample_generators.doe_sample_generator import DoeSampleGenerator
-from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_generator import CartesianProductSampleGenerator
-
-from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
-
-
-from pandas.testing import assert_frame_equal
-import re
-from os.path import join, dirname, exists
-
 
 class UnitTestHandler(Handler):
     """

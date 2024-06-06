@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from __future__ import annotations
+
 import abc
 import logging
 from typing import Any
@@ -134,6 +135,14 @@ class DatasetNotFoundException(DatasetGenericException):
     def __init__(self, dataset_name:str):
         self.dataset_name = dataset_name
         super().__init__(f"Dataset '{dataset_name}' not found")
+
+class DatasetDeserializeException(DatasetGenericException):
+    """
+    Exception when a dataset deserializing
+    """
+    def __init__(self, dataset_name:str, error_message:str):
+        self.dataset_name = dataset_name
+        super().__init__(f"Error reading dataset '{dataset_name}': \n{error_message}")
 
 class DatasetUnableToInitializeConnectorException(DatasetGenericException):
     """

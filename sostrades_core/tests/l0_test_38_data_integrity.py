@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 import unittest
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class TestDataIntegrity(unittest.TestCase):
@@ -111,7 +108,7 @@ class TestDataIntegrity(unittest.TestCase):
         for data_id, var_data_dict in self.exec_eng.dm.data_dict.items():
             full_name = self.exec_eng.dm.get_var_full_name(data_id)
             if full_name in correct_input_dict.keys():
-                integrity_msg = f""
+                integrity_msg = ""
                 print(var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG])
                 self.assertEqual(
                     var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG], integrity_msg)
@@ -335,7 +332,7 @@ class TestDataIntegrity(unittest.TestCase):
         full_name_dict_in = f'{self.exec_eng.study_name}.Disc1.df_in'
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, ProxyDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg_dict_in = f"Dataframe value has a column key4 but the dataframe descriptor has not, df_descriptor keys : dict_keys(['variable', 'c2', 'c3', 'str_df'])"
+        correct_integrity_msg_dict_in = "Dataframe value has a column key4 but the dataframe descriptor has not, df_descriptor keys : dict_keys(['variable', 'c2', 'c3', 'str_df'])"
         self.assertEqual(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 

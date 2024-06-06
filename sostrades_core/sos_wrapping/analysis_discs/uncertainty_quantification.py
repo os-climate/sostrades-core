@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/05/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,10 +33,6 @@ from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plot
 from sostrades_core.tools.post_processing.post_processing_tools import (
     format_currency_legend,
 )
-
-"""
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-"""
 
 
 class UncertaintyQuantification(SoSWrapp):
@@ -734,6 +730,11 @@ class UncertaintyQuantification(SoSWrapp):
         """For the outputs, making a bar graph with gradients values"""
 
         instanciated_charts = []
+        graphs_list = []
+        input_distribution_parameters_df = None
+        input_parameters_distrib_df = None
+        confidence_interval = None
+        output_distrib_df = None
 
         if filters is not None:
             for chart_filter in filters:
@@ -754,6 +755,7 @@ class UncertaintyQuantification(SoSWrapp):
             input_distribution_parameters_df = deepcopy(
                 self.get_sosdisc_inputs(['input_distribution_parameters_df'])
             )
+
         if 'confidence_interval' in self.get_sosdisc_inputs():
             confidence_interval = (
 
@@ -820,7 +822,7 @@ class UncertaintyQuantification(SoSWrapp):
         distribution_type = distrib_param.loc[distrib_param['parameter'] == data_name][
             'distribution'
         ].values[0]
-        data_list = [x for x in data if np.isnan(x) == False]
+        data_list = [x for x in data if not np.isnan(x)]
         bins = np.histogram_bin_edges(data_list, bins=100)
         hist = np.histogram(data_list, bins=bins)[0]
         norm_hist = hist / np.cumsum(hist)[-1]
@@ -957,7 +959,7 @@ class UncertaintyQuantification(SoSWrapp):
         hist_y.add_trace(go.Histogram(x=list(data), nbinsx=100, histnorm='probability'))
 
         # statistics on data list
-        data_list = [x for x in data if np.isnan(x) == False]
+        data_list = [x for x in data if not np.isnan(x)]
         bins = np.histogram_bin_edges(data_list, bins=100)
         hist = np.histogram(data_list, bins=bins)[0]
         norm_hist = hist / np.cumsum(hist)[-1]
