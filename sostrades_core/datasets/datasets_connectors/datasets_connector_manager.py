@@ -18,9 +18,16 @@ import logging
 import os
 import re
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetGenericException
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetsConnectorFactory, DatasetConnectorType
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    AbstractDatasetsConnector,
+    DatasetGenericException,
+)
+from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+    DatasetConnectorType,
+    DatasetsConnectorFactory,
+)
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
+
 
 class DatasetConnectorNotFoundException(DatasetGenericException):
     """

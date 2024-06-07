@@ -14,16 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from typing import Any, Callable
-import pandas as pd
-import numpy as np
-from os.path import join
 import pickle as pkl
+from os.path import join
+from typing import Any, Callable
 
+import numpy as np
+import pandas as pd
 
-from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import JSONDatasetsSerializer
-from sostrades_core.tools.tree.serializer import CSV_SEP
+from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
+    JSONDatasetsSerializer,
+)
 from sostrades_core.tools.tree.deserialization import isevaluatable
+from sostrades_core.tools.tree.serializer import CSV_SEP
 
 
 # Utility functions that mimic exactly the fashion in which api loads and saves dataframes from/to .csv
