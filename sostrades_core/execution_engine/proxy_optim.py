@@ -28,9 +28,8 @@ from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from numpy import inf, ndarray
 
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
-from sostrades_core.execution_engine.optim_manager_disc import OptimManagerDisc
-
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.optim_manager_disc import OptimManagerDisc
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.tools.design_space import design_space as dspace_tool
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter

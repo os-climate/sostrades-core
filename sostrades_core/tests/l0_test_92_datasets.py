@@ -24,8 +24,13 @@ import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dat
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
-from sostrades_core.datasets.dataset_mapping import DatasetsMappingException, DatasetsMapping
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import DatasetGenericException
+from sostrades_core.datasets.dataset_mapping import (
+    DatasetsMapping,
+    DatasetsMappingException,
+)
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    DatasetGenericException,
+)
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
@@ -237,10 +242,12 @@ class TestDatasets(unittest.TestCase):
         Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
         thus testing ability of LocalConnector to both write and load values.
         """
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+            DatasetConnectorType,
+        )
         from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
             DatasetsConnectorManager,
         )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
         connector_args = {
             "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
             "create_if_not_exists": True
