@@ -243,7 +243,7 @@ class HeaderTools:
 
     def parse_and_replace_modified_cartouche(self,file_path, new_cartouche):
         # Read the content of the file
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
 
         # Search for the cartouche at the start of the content
