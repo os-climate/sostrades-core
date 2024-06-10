@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/30-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/06/30-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ limitations under the License.
 import unittest
 import warnings
 from pathlib import Path
-from shutil import rmtree
-from time import sleep
 
 from numpy import ComplexWarning
 
@@ -34,6 +32,7 @@ from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
 from sostrades_core.sos_processes.test.test_sellar_coupling_new_types._usecase import (
     Study as Study_sellar_coupling_new_types,
 )
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestAnalyticGradients(unittest.TestCase):
@@ -50,10 +49,8 @@ class TestAnalyticGradients(unittest.TestCase):
 
     def tearDown(self):
         for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
             if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+                rmtree_safe(dir_to_del)
 
     def test_01_linearize_on_simple_disc(self):
 

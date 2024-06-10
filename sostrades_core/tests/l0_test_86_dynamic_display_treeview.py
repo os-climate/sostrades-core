@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/03-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/10/03-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -356,13 +356,13 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         # expected treeview is Disc2display inside each scenario
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
                        f'|_ {self.study_name}',
-                       f'\t|_ multi_scenarios',
-                       f'\t\t|_ scenario_1',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2display',
-                       f'\t\t|_ scenario_2',
-                       f'\t\t\t|_ Disc1',
-                       f'\t\t\t|_ Disc2display',
+                       '\t|_ multi_scenarios',
+                       '\t\t|_ scenario_1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2display',
+                       '\t\t|_ scenario_2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2display',
                        ]
 
         exp_tv_str = '\n'.join(exp_tv_list)

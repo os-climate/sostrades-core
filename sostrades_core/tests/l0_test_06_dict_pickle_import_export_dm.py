@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/10-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/10/10-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from multiprocessing import cpu_count
 from os import makedirs
 from os.path import basename, dirname, join, realpath
 from pathlib import Path
-from shutil import rmtree, unpack_archive
+from shutil import unpack_archive
 from sys import platform
 from tempfile import gettempdir
 from time import sleep
@@ -32,6 +32,7 @@ from pandas.testing import assert_frame_equal
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.tools.tree.serializer import (
     CSV_SEP,
@@ -98,9 +99,7 @@ class TestSerializeDF(unittest.TestCase):
 
     def tearDown(self):
         for dir_to_del in self.dir_to_del:
-            rmtree(dir_to_del)
-            sleep(0.5)
-        sleep(0.5)
+            rmtree_safe(dir_to_del)
 
     def set_TestDiscAllTypes_ee(self, st_name, proc_n,
                                 ns_dict=None, db_dir=None, rw_obj=None):

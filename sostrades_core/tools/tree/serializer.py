@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/23-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/06/23-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ from io import BytesIO, StringIO
 from os import makedirs, remove
 from os.path import basename, dirname, join
 from pathlib import Path
-from shutil import make_archive, rmtree
+from shutil import make_archive
 from tempfile import gettempdir
 from time import sleep
 
@@ -26,6 +26,7 @@ from numpy import ndarray
 from pandas import DataFrame, concat, read_pickle
 
 from sostrades_core.execution_engine.ns_manager import NS_SEP
+from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 '''
@@ -222,8 +223,7 @@ class DataSerializer:
                                       'zip',
                                       dirname(export_dir),
                                       basename(export_dir))
-        sleep(0.1)
-        rmtree(export_dir)
+        rmtree_safe(export_dir)
         return export_dir_zip
 
     def load_from_pickle(self,

@@ -16,7 +16,6 @@ limitations under the License.
 import json
 import logging
 import os
-from shutil import rmtree
 from typing import Any
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
@@ -29,6 +28,7 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
     DatasetSerializerType,
     DatasetsSerializerFactory,
 )
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
@@ -220,7 +220,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         if remove_root_directory:
-            rmtree(self.__root_directory_path)
+            rmtree_safe(self.__root_directory_path)
         else:
             map(self.clear_dataset, self.get_datasets_available())
 
@@ -231,4 +231,4 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type dataset_id: str
         :return: None
         """
-        rmtree(os.path.join(self.__root_directory_path, dataset_id))
+        rmtree_safe(os.path.join(self.__root_directory_path, dataset_id))

@@ -15,14 +15,13 @@ limitations under the License.
 '''
 import unittest
 from pathlib import Path
-from shutil import rmtree
 from tempfile import gettempdir
-from time import sleep
 
 import pandas as pd
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestMultiScenario(unittest.TestCase):
@@ -135,10 +134,8 @@ class TestMultiScenario(unittest.TestCase):
 
     def tearDown(self):
         for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
             if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+                rmtree_safe(dir_to_del)
 
     def _test_01_standalone_simple_sample_generator(self):
         """

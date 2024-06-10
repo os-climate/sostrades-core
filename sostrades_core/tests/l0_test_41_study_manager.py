@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/10 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ limitations under the License.
 import unittest
 from os.path import dirname, join
 from pathlib import Path
-from shutil import rmtree
 from tempfile import gettempdir
-from time import sleep
 
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tests.data import __file__ as data_folder
+from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import CryptedLoadDump
 
 
@@ -56,8 +55,7 @@ class TestStudyManager(unittest.TestCase):
     def tearDown(self):
 
         if Path(self.__dump_dir).is_dir():
-            rmtree(self.__dump_dir)
-        sleep(0.5)
+            rmtree_safe(self.__dump_dir)
 
     def test_01_Create_Study(self):
         """ Check only basique execution engine setp from study manager
