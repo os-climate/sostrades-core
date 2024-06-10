@@ -51,10 +51,8 @@ deprecation==2.1.0
     # via python-keycloak
 dill==0.3.8
     # via openturns
-dnspython==2.2.1
-    # via
-    #   -r ./sostrades-webapi/requirements.in
-    #   eventlet
+dnspython==2.6.1
+    # via eventlet
 ecos==2.0.13
     # via cvxpy
 et-xmlfile==1.1.0
@@ -129,7 +127,6 @@ isodate==0.6.1
 itsdangerous==2.0.1
     # via
     #   -r ./sostrades-ontology/requirements.in
-    #   -r ./sostrades-webapi/requirements.in
     #   flask
 jinja2==3.0.1
     # via
