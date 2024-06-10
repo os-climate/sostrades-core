@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,16 +19,11 @@ import unittest
 from logging import INFO, getLogger
 from os.path import dirname, join
 from pathlib import Path
-from shutil import rmtree
-from time import sleep
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
 
 LOC_DIRNAME = dirname(__file__)
 
@@ -158,8 +153,7 @@ class TestExecutionEngine(unittest.TestCase):
 
         # Persist data using the current persistance strategy
         if Path(root_dir).is_dir():
-            rmtree(root_dir)
-            sleep(0.5)
+            rmtree_safe(root_dir)
 
         dump_dir = join(root_dir, exec_engine.study_name)
 
@@ -184,7 +178,7 @@ class TestExecutionEngine(unittest.TestCase):
 
         self.assertEqual(read_value, a_value,
                          f'read_value should be {a_value} not {read_value}')
-        rmtree(root_dir)
+        rmtree_safe(root_dir)
 
     def test_04_execution_engine_with_serialisation_and_defaults(self):
         root_dir = join(
@@ -215,8 +209,7 @@ class TestExecutionEngine(unittest.TestCase):
 
         # Persist data using the current persistance strategy
         if Path(root_dir).is_dir():
-            rmtree(root_dir)
-            sleep(0.5)
+            rmtree_safe(root_dir)
 
         dump_dir = join(root_dir, exec_engine.study_name)
 
@@ -241,7 +234,7 @@ class TestExecutionEngine(unittest.TestCase):
 
         self.assertEqual(read_value, a_value,
                          f'read_value should be {a_value} not {read_value}')
-        rmtree(root_dir)
+        rmtree_safe(root_dir)
 
     def test_05_exec_engine_logging(self):
         _ee = ExecutionEngine(self.name)

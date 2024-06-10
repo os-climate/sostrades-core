@@ -506,7 +506,7 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
                 max_iter_mdo_var_names = study_2.ee.dm.get_all_namespaces_from_var_name("max_iter")
                 study_2.ee.dm.set_values_from_dict({max_mdo_iter_var: 1 for max_mdo_iter_var in max_iter_mdo_var_names})
             max_iter_mda_vars_name = study_2.ee.dm.get_all_namespaces_from_var_name("max_mda_iter")
-            study_2.ee.dm.set_values_from_dict({mda_max_iter_var: 1 for mda_max_iter_var in max_iter_mda_vars_name})
+            study_2.ee.dm.set_values_from_dict({mda_max_iter_var: 2 for mda_max_iter_var in max_iter_mda_vars_name})
             post_processing_passed, error_msg_post_processing = test_post_processing_study(
                 study=study_2, force_run=force_run)
             test_passed = post_processing_passed
