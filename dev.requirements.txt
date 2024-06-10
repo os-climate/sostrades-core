@@ -124,8 +124,11 @@ isodate==0.6.1
     # via
     #   python3-saml
     #   rdflib
-itsdangerous==2.2.0
-    # via flask
+itsdangerous==2.0.1
+    # via
+    #   -r ./sostrades-ontology/requirements.in
+    #   -r ./sostrades-webapi/requirements.in
+    #   flask
 jinja2==3.0.1
     # via
     #   -r ./gemseo/requirements.txt
