@@ -132,6 +132,7 @@ itsdangerous==2.0.1
 jinja2==3.0.1
     # via
     #   -r ./gemseo/requirements.txt
+    #   -r ./sostrades-ontology/requirements.in
     #   -r ./sostrades-webapi/requirements.in
     #   flask
 joblib==1.4.2
