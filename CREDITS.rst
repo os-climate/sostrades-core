@@ -18,8 +18,8 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `cvxpy (1.1.18) <https://github.com/cvxpy/cvxpy>`_
     Apache License, Version 2.0
 
-`python-dotenv (0.12.0) <https://github.com/theskumar/python-dotenv>`_
-    BSD-3-Clause
+`gitpython (3.1.43) <https://github.com/gitpython-developers/GitPython>`_
+    BSD
 
 `python-arango (7.9.1) <https://github.com/arangodb/python-arango>`_
     MIT
@@ -47,9 +47,6 @@ sostrades-core depends on software with compatible licenses that are listed belo
 
 `PyYAML (6.0.1) <https://pyyaml.org/>`_
     MIT
-
-`requests (2.31.0) <https://requests.readthedocs.io>`_
-    Apache 2.0
 
 `scipy (1.10.1) <https://scipy.org/>`_
     BSD License
