@@ -36,14 +36,12 @@ class Disc1(SoSWrapp):
     # TODO: subtype descriptors !?
     DESC_IN = {
 
-        'X_dict_df': {'type': 'dict', 'default': {pd.DataFrame()}},
-        'X_dict_dict': {'type': 'dict', 'default': {{}}},
-        'X_dict_dict_df': {'type': 'dict', 'default': {{pd.DataFrame()}}},
-        'X_dict_dict_float': {'type': 'dict', 'default': {{}}},
+        'X_dict_df': {'type': 'dict'},
+        'X_dict_dict_df': {'type': 'dict'},
+        'X_dict_dict_float': {'type': 'dict'},
     }
     DESC_OUT = {
         'Y_dict_df': {'type': 'dict'},
-        'Y_dict_dict': {'type': 'dict'},
         'Y_dict_dict_df': {'type': 'dict'},
         'Y_dict_dict_float': {'type': 'dict'},
     }

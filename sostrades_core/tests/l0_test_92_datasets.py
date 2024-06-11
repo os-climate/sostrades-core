@@ -23,6 +23,7 @@ import pandas as pd
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
+import sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
 from sostrades_core.datasets.dataset_mapping import (
     DatasetsMapping,
@@ -32,6 +33,7 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     DatasetGenericException,
 )
 from sostrades_core.study_manager.study_manager import StudyManager
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 
 class TestDatasets(unittest.TestCase):
@@ -163,7 +165,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
-    
+
     def test_05_nested_process_level0(self):
         usecase_file_path = sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling.__file__
         process_path = os.path.dirname(usecase_file_path)
@@ -340,4 +342,34 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
-        
+
+
+    def test_11_datasets_local_connector_nested_types(self):
+        """
+        Check correctness of loaded values after loading a handcrafted local directories' dataset, testing usage of
+        LocalDatasetsConnector and FileSystemDatasetsSerializer pickle-based loading for the following nested types:
+            - dict[str: DataFrame]
+            - dict[str: dict[str: DataFrame]]
+            - dict[str: dict[str: float]]
+        """
+        df1 = pd.DataFrame({'years': [2020, 2021, 2022],
+                            'type': ['alpha', 'beta', 'gamma']})
+        df2 = pd.DataFrame({'years': [2020, 2021, 2022],
+                            'price': [20.33, 60.55, 72.67]})
+        dict_df = {'df1': df1.copy(), 'df2': df2.copy()}
+        dict_dict_df = {'dict': {'df1': df1.copy(), 'df2': df2.copy()}}
+        dict_dict_float = {'dict': {'f1': 0.033, 'f2': 333.66}}
+        ref_dict = {'X_dict_df': dict_df,
+                    'X_dict_dict_df': dict_dict_df,
+                    'X_dict_dict_float': dict_dict_float}
+
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        dm = study.execution_engine.dm
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset.json")))
+        dm_dict = {'X_dict_df': dm.get_value("usecase_local_dataset.Disc1.X_dict_df"),
+                   'X_dict_dict_df': dm.get_value("usecase_local_dataset.Disc1.X_dict_dict_df"),
+                   'X_dict_dict_float': dm.get_value("usecase_local_dataset.Disc1.X_dict_dict_float")}
+
+        self.assertTrue(dict_are_equal(ref_dict, dm_dict))

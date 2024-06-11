@@ -61,8 +61,9 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     EXTENSION_SEP = '.'
     TYPES_IN_FILESYSTEM = {TYPE_DATAFRAME, TYPE_ARRAY}
 
-    TYPE_OBJECT = 'object'   # marks the pickled data
-
+    # for the pickled data
+    TYPE_OBJECT = 'object'
+    TYPE_OBJECT_IDENTIFIER = TYPE_IN_FILESYSTEM_PARTICLE.join(("", TYPE_OBJECT, ""))
 
     def __init__(self):
         super().__init__()
@@ -96,7 +97,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             data_type = data_types_dict[data_name]
             # TODO[discuss]: when the data is in the pickle pre-fill with @object@ and will be overwritten by connector
             if filesystem_type == self.TYPE_OBJECT:
-                return filesystem_type
+                return self.TYPE_OBJECT_IDENTIFIER
 
             # insane if there is an @...@ descriptor that is unknown or mismatching
             elif filesystem_type is not None and filesystem_type != data_type:
