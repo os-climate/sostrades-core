@@ -148,7 +148,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
 
         # update with pickled data what the serializer pre-filled with @object@. KeyError if mismatch
         filtered_data.update({key: pickled_data[key] for key in filtered_data if
-                              filtered_data[key] == self.__datasets_serializer.TYPE_OBJECT})
+                              isinstance(filtered_data[key], str) and filtered_data[key] == self.__datasets_serializer.TYPE_OBJECT})
         self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_data
 
@@ -224,7 +224,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
 
         # update with pickled data what the serializer pre-filled with @object@. KeyErrror if mismatch
         dataset_data.update({key: pickled_data[key] for key in dataset_data
-                             if dataset_data[key] == self.__datasets_serializer.TYPE_OBJECT})
+                             if isinstance(dataset_data[key], str) and dataset_data[key] == self.__datasets_serializer.TYPE_OBJECT})
         return dataset_data
 
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
