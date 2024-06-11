@@ -45,6 +45,23 @@ class TestDatasets(unittest.TestCase):
         # Set logging level to debug for datasets
         logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
 
+        # nested types reference values to be completed with more nested types
+        df1 = pd.DataFrame({'years': [2020, 2021, 2022],
+                            'type': ['alpha', 'beta', 'gamma']})
+        df2 = pd.DataFrame({'years': [2020, 2021, 2022],
+                            'price': [20.33, 60.55, 72.67]})
+        dict_df = {'df1': df1.copy(), 'df2': df2.copy()}
+        dict_dict_df = {'dict': {'df1': df1.copy(), 'df2': df2.copy()}}
+        dict_dict_float = {'dict': {'f1': 0.033, 'f2': 333.66}}
+        array_string = np.array(['s1', 's2'])
+        array_df = np.array([df1.copy(), df2.copy()])
+        self.nested_types_reference_dict = {'X_dict_df': dict_df,
+                                            'X_dict_dict_df': dict_dict_df,
+                                            'X_dict_dict_float': dict_dict_float,
+                                            'X_array_string': array_string,
+                                            'X_array_df': array_df}
+
+
     def test_01_usecase1(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
@@ -351,25 +368,59 @@ class TestDatasets(unittest.TestCase):
             - dict[str: DataFrame]
             - dict[str: dict[str: DataFrame]]
             - dict[str: dict[str: float]]
+            - array[str]
+            - array[DataFrame]
         """
-        df1 = pd.DataFrame({'years': [2020, 2021, 2022],
-                            'type': ['alpha', 'beta', 'gamma']})
-        df2 = pd.DataFrame({'years': [2020, 2021, 2022],
-                            'price': [20.33, 60.55, 72.67]})
-        dict_df = {'df1': df1.copy(), 'df2': df2.copy()}
-        dict_dict_df = {'dict': {'df1': df1.copy(), 'df2': df2.copy()}}
-        dict_dict_float = {'dict': {'f1': 0.033, 'f2': 333.66}}
-        ref_dict = {'X_dict_df': dict_df,
-                    'X_dict_dict_df': dict_dict_df,
-                    'X_dict_dict_float': dict_dict_float}
 
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
         dm = study.execution_engine.dm
         study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset.json")))
-        dm_dict = {'X_dict_df': dm.get_value("usecase_local_dataset.Disc1.X_dict_df"),
-                   'X_dict_dict_df': dm.get_value("usecase_local_dataset.Disc1.X_dict_dict_df"),
-                   'X_dict_dict_float': dm.get_value("usecase_local_dataset.Disc1.X_dict_dict_float")}
+        dm_dict = {var: dm.get_value(f"usecase_local_dataset.Disc1.{var}") for var in self.nested_types_reference_dict}
+        self.assertTrue(dict_are_equal(self.nested_types_reference_dict, dm_dict))
 
-        self.assertTrue(dict_are_equal(ref_dict, dm_dict))
+    def test_12_local_to_local_connector_conversion_and_loading_for_nested_types(self):
+        """
+        Use a local connector to copy values from a valid local connector then load them in the study and check
+        correctness, thus testing ability of LocalConnector to both write and load values in the scope of the nested
+        types listed in test_11 above.
+        """
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+            DatasetConnectorType,
+        )
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+        connector_args = {
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
+            "create_if_not_exists": True
+        }
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    **connector_args)
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+
+        dm = study.execution_engine.dm
+        connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test')
+        connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
+
+        data_types_dict = {_k: dm.get_data(f"usecase_local_dataset.Disc1.{_k}", "type") for _k in self.nested_types_reference_dict}
+
+        try:
+            connector_to.copy_dataset_from(connector_from=connector_local,
+                                           dataset_identifier="dataset_nested_types",
+                                           data_types_dict=data_types_dict,
+                                           create_if_not_exists=True)
+
+            study.update_data_from_dataset_mapping(
+                DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset_copy_test.json")))
+            dm_dict = {var: dm.get_value(f"usecase_local_dataset.Disc1.{var}") for var in self.nested_types_reference_dict}
+
+            self.assertTrue(dict_are_equal(self.nested_types_reference_dict, dm_dict))
+            connector_to.clear(remove_root_directory=True)
+        except Exception as cm:
+            connector_to.clear(remove_root_directory=True)
+            raise cm

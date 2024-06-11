@@ -20,6 +20,7 @@ from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
+from os import remove
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
@@ -36,16 +37,6 @@ def _save_dataframe(file_path: str, df: pd.DataFrame) -> None:
 def _load_dataframe(file_path: str) -> pd.DataFrame:
     df_value = pd.read_csv(file_path, na_filter=False)
     return df_value.applymap(isevaluatable)
-
-
-# def _save_pkl(file_path: str, obj: Any) -> None:
-#     with open(file_path, 'wb') as w:
-#         pkl.dump(obj, w)
-
-
-# def _load_pkl(file_path: str) -> Any:
-#     with open(file_path, 'rb') as r:
-#         return pkl.load(r)
 
 
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
@@ -191,8 +182,9 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             try:
                 serialization_function(data_path, data_value, *args, **kwargs)
                 return descriptor_value
-            except TypeError as exception:
-                self.__logger.debug(f"{descriptor_value} will be stored in pickle")
+            except Exception as exception:  # at least TypeError, ValueError for arrays
+                self.__logger.debug(f"{descriptor_value} will be stored in pickle after {exception}")
+                remove(data_path)
                 return data_value
 
     def _deserialize_dataframe(self, data_value: str) -> pd.DataFrame:
@@ -202,9 +194,6 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     def _deserialize_array(self, data_value: str) -> np.ndarray:
         # NB: to be improved with astype(subtype) along subtype management
         return self.__deserialize_from_filesystem(np.loadtxt, data_value)
-
-    # def _deserialize_object(self, data_value: str) -> Any:
-    #     return self.__deserialize_from_filesystem(_load_pkl, data_value)
 
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
         # TODO: TEST whether api serialization methods suffice for dataframe nested types
@@ -220,19 +209,3 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             self.CSV_EXTENSION))
         # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, descriptor_value)
-
-    # def _serialize_array(self, data_value: np.ndarray, data_name: str) -> str:
-    #     # TODO: [discuss] using pickle storage for anything that has dtype object
-    #     if data_value.dtype == np.dtype('O'):
-    #         return self._serialize_object(data_value, data_name)
-    #     descriptor_value = self.EXTENSION_SEP.join((
-    #         self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name)),
-    #         self.CSV_EXTENSION))
-    #     # NB: converting ints to floats etc. to be improved along subtype management
-    #     return self.__serialize_into_filesystem(np.savetxt, data_value, descriptor_value)
-
-    # def _serialize_object(self, data_value: Any, data_name: str) -> str:
-    #     descriptor_value = self.EXTENSION_SEP.join((
-    #         self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_OBJECT, data_name)),
-    #         self.PKL_EXTENSION))
-    #     return self.__serialize_into_filesystem(_save_pkl, data_value, descriptor_value)

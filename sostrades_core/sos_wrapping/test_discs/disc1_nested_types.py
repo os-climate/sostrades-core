@@ -38,17 +38,11 @@ class Disc1(SoSWrapp):
 
         'X_dict_df': {'type': 'dict'},
         'X_dict_dict_df': {'type': 'dict'},
-        'X_dict_dict_float': {'type': 'dict'},
-    }
-    DESC_OUT = {
-        'Y_dict_df': {'type': 'dict'},
-        'Y_dict_dict_df': {'type': 'dict'},
-        'Y_dict_dict_float': {'type': 'dict'},
+        'X_dict_dict_float': {'type': 'dict'},  # NB: this is perfectly jsonifiable no need to pkl
+        'X_array_string': {'type': 'array'},
+        'X_array_df': {'type': 'array'},
     }
 
     def run(self):
-        # mock discipline input = output
-        out_values = dict()
-        for k in self.DESC_OUT:
-            out_values[k] = self.get_sosdisc_inputs(k.replace("Y_", "X_"))
-        self.store_sos_outputs_values(out_values)
+        pass
+
