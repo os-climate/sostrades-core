@@ -20,6 +20,7 @@ from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
+from os import remove
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
@@ -38,16 +39,6 @@ def _load_dataframe(file_path: str) -> pd.DataFrame:
     return df_value.applymap(isevaluatable)
 
 
-def _save_pkl(file_path: str, obj: Any) -> None:
-    with open(file_path, 'wb') as w:
-        pkl.dump(obj, w)
-
-
-def _load_pkl(file_path: str) -> Any:
-    with open(file_path, 'rb') as r:
-        return pkl.load(r)
-
-
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     """
     Specific dataset serializer for dataset
@@ -56,11 +47,14 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     TYPE_IN_FILESYSTEM_PARTICLE = '@'
     TYPE_DATAFRAME = 'dataframe'
     TYPE_ARRAY = 'array'
-    TYPE_OBJECT = 'object'
     CSV_EXTENSION = 'csv'
     PKL_EXTENSION = 'pkl'
     EXTENSION_SEP = '.'
     TYPES_IN_FILESYSTEM = {TYPE_DATAFRAME, TYPE_ARRAY}
+
+    # for the pickled data
+    TYPE_OBJECT = 'object'
+    TYPE_OBJECT_IDENTIFIER = TYPE_IN_FILESYSTEM_PARTICLE.join(("", TYPE_OBJECT, ""))
 
     def __init__(self):
         super().__init__()
@@ -92,13 +86,9 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         if data_name in data_types_dict:
             # unknown data type is handled in mother class method
             data_type = data_types_dict[data_name]
-
-            # shortcut and load from pickle if an @object@ is encountered, in which case no need to check data type
-            # this if clause is to be deleted when the subtype management based on descriptors is implemented(
+            # TODO[discuss]: when the data is in the pickle pre-fill with @object@ and will be overwritten by connector
             if filesystem_type == self.TYPE_OBJECT:
-                self.__logger.debug(f"Loading {data_name} with filesystem descriptor {data_value} into the type "
-                                    f"{data_type} required by the process.")
-                return self._deserialize_object(data_value)
+                return self.TYPE_OBJECT_IDENTIFIER
 
             # insane if there is an @...@ descriptor that is unknown or mismatching
             elif filesystem_type is not None and filesystem_type != data_type:
@@ -132,7 +122,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             _tmp = data_value.split(self.TYPE_IN_FILESYSTEM_PARTICLE)
             if len(_tmp) >= 3:
                 _fs_type = _tmp[1]
-                if _fs_type in self.TYPES_IN_FILESYSTEM:
+                if _fs_type in self.TYPES_IN_FILESYSTEM or _fs_type == self.TYPE_OBJECT:
                     return _fs_type
 
     def __get_data_path(self, data_value: str) -> str:
@@ -189,8 +179,13 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             # TODO: may need updating when datasets down to parameter level as assuming that the filename is linked to data name.
             _fname = self.__get_data_path(descriptor_value)
             data_path = join(self.__current_dataset_directory, _fname)
-            serialization_function(data_path, data_value, *args, **kwargs)
-            return descriptor_value
+            try:
+                serialization_function(data_path, data_value, *args, **kwargs)
+                return descriptor_value
+            except Exception as exception:  # at least TypeError, ValueError for arrays
+                self.__logger.debug(f"{descriptor_value} will be stored in pickle after {exception}")
+                remove(data_path)
+                return data_value
 
     def _deserialize_dataframe(self, data_value: str) -> pd.DataFrame:
         # NB: dataframe csv deserialization as in webapi
@@ -199,9 +194,6 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     def _deserialize_array(self, data_value: str) -> np.ndarray:
         # NB: to be improved with astype(subtype) along subtype management
         return self.__deserialize_from_filesystem(np.loadtxt, data_value)
-
-    def _deserialize_object(self, data_value: str) -> Any:
-        return self.__deserialize_from_filesystem(_load_pkl, data_value)
 
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
         # TODO: TEST whether api serialization methods suffice for dataframe nested types
@@ -212,17 +204,8 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         return self.__serialize_into_filesystem(_save_dataframe, data_value, descriptor_value)
 
     def _serialize_array(self, data_value: np.ndarray, data_name: str) -> str:
-        # TODO: [discuss] using pickle storage for anything that has dtype object
-        if data_value.dtype == np.dtype('O'):
-            return self._serialize_object(data_value, data_name)
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name)),
             self.CSV_EXTENSION))
         # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, descriptor_value)
-
-    def _serialize_object(self, data_value: Any, data_name: str) -> str:
-        descriptor_value = self.EXTENSION_SEP.join((
-            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_OBJECT, data_name)),
-            self.PKL_EXTENSION))
-        return self.__serialize_into_filesystem(_save_pkl, data_value, descriptor_value)

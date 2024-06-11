@@ -27,6 +27,7 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
     DatasetSerializerType,
     DatasetsSerializerFactory,
 )
+from sostrades_core.tools.folder_operations import makedirs_safe
 
 
 class JSONDatasetsConnector(AbstractDatasetsConnector):
@@ -48,7 +49,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         self.__file_path = file_path
         # create file if not exist
         if create_if_not_exists and not os.path.exists(file_path):
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            makedirs_safe(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump({}, f)
         self.__logger = logging.getLogger(__name__)
