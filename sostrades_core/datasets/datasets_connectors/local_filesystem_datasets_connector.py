@@ -28,7 +28,7 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
     DatasetSerializerType,
     DatasetsSerializerFactory,
 )
-from sostrades_core.tools.folder_operations import rmtree_safe
+from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 
 
 class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
@@ -55,7 +55,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__root_directory_path = os.path.abspath(root_directory_path)
         self._create_if_not_exists = create_if_not_exists
         if self._create_if_not_exists and not os.path.isdir(self.__root_directory_path):
-            os.makedirs(self.__root_directory_path, exist_ok=True)
+            makedirs_safe(self.__root_directory_path, exist_ok=True)
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug(f"Initializing local connector on {root_directory_path}")
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
@@ -201,7 +201,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         if not os.path.exists(dataset_descriptor_path):
             # Handle dataset creation
             if create_if_not_exists:
-                os.makedirs(dataset_directory, exist_ok=True)
+                makedirs_safe(dataset_directory, exist_ok=True)
                 with open(dataset_descriptor_path, "w", encoding="utf-8") as f:
                     json.dump({}, f)
             else:

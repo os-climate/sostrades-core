@@ -21,11 +21,11 @@ import time
 def rmtree_safe(path: str, retry: int = 100):
     """
     Remove a directory tree, but wait until it is really gone.
-    Useful to fix some issues with shutil.rmtree.
+    Useful to fix some issues with shutil.rmtree with network drives.
     
     Parameters:
     path (str): The directory tree to remove.
-    retry (int): The maximum number of loop iterations to check if the directory is removed. Default is 20.
+    retry (int): The maximum number of loop iterations to check if the directory is removed. Default is 100.
     """
     shutil.rmtree(path)
 
@@ -36,3 +36,23 @@ def rmtree_safe(path: str, retry: int = 100):
 
     if os.path.exists(path):
         raise Exception(f"Failed to remove the directory {path} after {retry} retries.")
+
+
+def makedirs_safe(name: str, mode: int = 511, exist_ok: bool = False, retry: int = 100):
+    """
+    Makes a directory, but wait until it is really created.
+    Useful to fix some issues with os.makedirs with network drives.
+    
+    Parameters:
+    name (str): The directory tree to create.
+    retry (int): The maximum number of loop iterations to check if the directory is created. Default is 100.
+    """
+    os.makedirs(name=name, mode=mode, exist_ok=exist_ok)
+    
+    attempts = 0
+    while not os.path.exists(name) and attempts < retry:
+        time.sleep(0.05)
+        attempts += 1
+
+    if not os.path.exists(name):
+        raise Exception(f"Failed to create the directory {name} after {retry} retries.")

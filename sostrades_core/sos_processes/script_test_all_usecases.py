@@ -19,7 +19,7 @@ import traceback
 from copy import deepcopy
 from importlib import import_module
 from multiprocessing import Process, Queue
-from os import environ, listdir, makedirs
+from os import environ, listdir
 from os.path import dirname, isdir, join
 from queue import Empty
 from tempfile import gettempdir
@@ -32,6 +32,7 @@ from gemseo.utils.compare_data_manager_tooling import (
 
 from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.folder_operations import makedirs_safe
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,
 )
@@ -187,7 +188,7 @@ Union[dict, None]]:
         base_dir = environ['SOS_TRADES_REFERENCES_SPECIFIC_FOLDER']
 
     if not isdir(base_dir):
-        makedirs(base_dir, exist_ok=True)
+        makedirs_safe(base_dir, exist_ok=True)
 
     logging.info(f'Reference location for use case {usecase} is {base_dir}')
 

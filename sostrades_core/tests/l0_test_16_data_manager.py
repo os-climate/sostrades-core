@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/25-2024/06/10 Copyright 2023 Capgemini
+Modifications on 2023/04/25-2024/06/11 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,16 +17,14 @@ limitations under the License.
 import hashlib
 import unittest
 from copy import copy
-from os import makedirs
 from os.path import dirname, join
 from pathlib import Path
 from pickle import dump as pkl_dump
-from time import sleep
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tests.l0_test_06_dict_pickle_import_export_dm import init_dict
-from sostrades_core.tools.folder_operations import rmtree_safe
+from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import CryptedLoadDump, DirectLoadDump
 from sostrades_core.tools.tree.serializer import DataSerializer
 
@@ -118,11 +116,10 @@ class TestDataManagerGenerator(unittest.TestCase):
             dm_data_dict_2[k_2] = v
         if Path(disc_dir_to_load_2).is_dir():
             rmtree_safe(disc_dir_to_load_2)
-        makedirs(disc_dir_to_load_2)
-        sleep(0.1)
+        makedirs_safe(disc_dir_to_load_2)
+        
         pkl_dump(dm_data_dict_2, open(join(disc_dir_to_load_2,
                                            DataSerializer.pkl_filename), 'wb'))
-        sleep(0.1)
 
         serializer = DataSerializer()
         get_dm_data_dict_2 = serializer.get_dict_from_study(
