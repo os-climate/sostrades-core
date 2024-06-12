@@ -98,7 +98,7 @@ class SoSMDAChain(MDAChain):
                  linear_solver_options=None,  # type: Mapping[str,Any]
                  mdachain_parallelize_tasks=False,
                  mdachain_parallel_options=None,
-                 initialize_defaults=False,
+                 initialize_defaults=True,
                  **inner_mda_options,
                  ):
         """
@@ -165,7 +165,7 @@ class SoSMDAChain(MDAChain):
         self.linear_solver_options = self.linear_solver_options_MDA
         self.linear_solver_tolerance = self.linear_solver_tolerance_MDA
 
-        self.pre_run_mda()
+        # self.pre_run_mda()
 
         if len(self.sub_mda_list) > 0:
             self.logger.info(f'{self.name} MDA history')

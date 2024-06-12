@@ -69,7 +69,7 @@ class TestMDAPrerun(unittest.TestCase):
 
         with self.assertRaises(Exception) as cm:
             exec_eng.execute()
-        error_message = 'The MDA cannot be pre-runned, some input values are missing to run the MDA'
+        error_message = 'Cannot compute the inputs EE.h, EE.x, for the following disciplines EE.Disc6, EE.Disc7'
         self.assertTrue(str(cm.exception).startswith(error_message))
 
     def test_02_mda_init_h(self):
@@ -214,9 +214,7 @@ class TestMDAPrerun(unittest.TestCase):
 
         with self.assertRaises(Exception) as cm:
             exec_eng.execute()
-        error_message = "The MDA cannot be pre-runned, some input values are missing to run the MDA " + \
-                        "\nEE.SellarCoupling.Sellar_2 : ['EE.SellarCoupling.y_1']" + \
-                        "\nEE.SellarCoupling.Sellar_1 : ['EE.SellarCoupling.y_2']"
+        error_message = "Cannot compute the inputs EE.SellarCoupling.y_1, EE.SellarCoupling.y_2, for the following disciplines EE.SellarCoupling."
         self.assertTrue(str(cm.exception).startswith(error_message))
 
         disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])

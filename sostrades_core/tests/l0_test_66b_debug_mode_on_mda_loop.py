@@ -125,7 +125,7 @@ class TestMDALoop(unittest.TestCase):
             exec_eng.execute()
             exec_ok = True
         except ValueError as ve:
-            self.assertIn("Mismatch in .EE.SellarCoupling.y_1.value: 1.0 and 1.5 don't match", ve.args[0])
+            self.assertIn("Mismatch in .EE.SellarCoupling.y_1.value: 2.8 and 3.3 don't match", ve.args[0])
         except:
             raise Exception('Execution failed, and not for the good reason')
         if exec_ok:

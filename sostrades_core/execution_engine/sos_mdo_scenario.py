@@ -76,6 +76,9 @@ class SoSMDOScenario(MDOScenario):
         self.activated_variables = self.formulation.design_space.variable_names
         self.is_sos_coupling = False
 
+    def _update_input_grammar(self) -> None:
+        pass
+
     def _run(self):
         '''
 

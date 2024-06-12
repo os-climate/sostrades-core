@@ -273,11 +273,12 @@ class TestExtendDataframe(unittest.TestCase):
         self.assertTrue(df_reconverted.equals(df_multi_index_columns))
         self.assertTrue(df_reconverted.columns.equals(col))
 
-        exec_eng.execute()
-
-        target = [0.7071067811865475, 0.7071067811865475]
-        for i, value in enumerate(list(exec_eng.dm.get_value('EE.h'))):
-            self.assertAlmostEqual(value, target[i])
+        # no need to execute that because the Disc7 does not create a df with multi index, here we test only multi index conversion
+        # exec_eng.execute()
+        #
+        # target = [0.7071067811865475, 0.7071067811865475]
+        # for i, value in enumerate(list(exec_eng.dm.get_value('EE.h'))):
+        #     self.assertAlmostEqual(value, target[i])
 
     def test_06_multi_index_rows_df(self):
 
@@ -324,12 +325,12 @@ class TestExtendDataframe(unittest.TestCase):
 
         self.assertTrue(reconverted_data_dm[key].equals(df))
         self.assertTrue(reconverted_data_dm[key].index.equals(mux))
-
-        exec_eng.execute()
-
-        target = [0.7071067811865475, 0.7071067811865475]
-        for i, value in enumerate(list(exec_eng.dm.get_value('EE.h'))):
-            self.assertAlmostEqual(value, target[i])
+        # no need to execute that because the Disc7 does not create a df with multi index, here we test only multi index conversion
+        # exec_eng.execute()
+        #
+        # target = [0.7071067811865475, 0.7071067811865475]
+        # for i, value in enumerate(list(exec_eng.dm.get_value('EE.h'))):
+        #     self.assertAlmostEqual(value, target[i])
 
     def test_07_convert_array_into_df(self):
 

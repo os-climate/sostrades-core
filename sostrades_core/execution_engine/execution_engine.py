@@ -713,9 +713,10 @@ class ExecutionEngine:
         ex_proc = self.root_process
         input_data = self.dm.get_data_dict_values()
         self.logger.info("Executing.")
+        input_data_wo_none = {key: value for key, value in input_data.items() if value is not None}
         try:
             ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
-                input_data=input_data)
+                input_data=input_data_wo_none)
         except:
             ex_proc.set_status_from_mdo_discipline()
             raise
