@@ -155,7 +155,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.cache_file_path': init_dict('string'),
                     ns_2 + '.debug_mode': init_dict('string'),
                     ns_2 + '.warm_start': init_dict('string'),
-                    ns_2 + '.acceleration': init_dict('string'),
+                    ns_2 + '.acceleration_method': init_dict('string'),
                     ns_2 + '.inner_mda_name': init_dict('string'),
                     ns_2 + '.max_mda_iter': init_dict('int'),
                     ns_2 + '.max_mda_iter_gs': init_dict('int'),
@@ -165,7 +165,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.group_mda_disciplines': init_dict('bool'),
                     ns_2 + '.propagate_cache_to_children': init_dict('bool'),
                     ns_2 + '.tolerance_gs': init_dict('float'),
-                    ns_2 + '.relax_factor': init_dict('float'), }
+                    ns_2 + '.over_relaxation_factor': init_dict('float'), }
 
         val_dict = {'default': None, 'type': 'string', 'unit': None,
                     'possible_values': None, 'range': None, 'user_level': 1,

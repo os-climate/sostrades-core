@@ -21,7 +21,7 @@ from sostrades_core.execution_engine.sample_generators.abstract_sample_generator
 from sostrades_core.tools.design_space import design_space as dspace_tool
 
 from gemseo import get_available_doe_algorithms
-from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.utils.source_parsing import get_options_doc
 from collections import ChainMap
 from typing import Optional
@@ -91,7 +91,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         - creates the DOEFactory from GEMSEO
         '''
         # DOEFactory is instantiated once here
-        self.doe_factory = DOEFactory()
+        self.doe_factory = DOELibraryFactory()
         # all the DOE algorithms in GEMSEO that are available in current environment
         all_names = self.doe_factory.algorithms
         # filter with the unsupported GEMSEO algorithms.
@@ -208,7 +208,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             msg += "is <%s> " % str(type(samples_df))
             raise SampleTypeError()
 
-    def _generate_samples(self, sampling_algo_name, algo_options, design_space):
+    def generate_samples(self, sampling_algo_name, algo_options, design_space):
         '''
         Method that generate samples
 
@@ -308,7 +308,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         """
         #         doe_factory = DOEFactory()
         algo = self.doe_factory.create(sampling_algo_name)
-        normalized_samples = algo._generate_samples(design_space, **gemseo_options)
+        normalized_samples = algo._generate_unit_samples(design_space, **gemseo_options)
         return normalized_samples
 
     def _unnormalize_samples_from_design_space(self, normalized_samples, design_space):

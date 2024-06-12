@@ -19,7 +19,7 @@ import unittest
 from logging import Handler
 from os.path import dirname, join
 
-from gemseo.algos.doe.doe_factory import DOEFactory
+# from gemseo.algos.doe.factory import DOELibraryFactory
 
 import pandas as pd
 from numpy import array

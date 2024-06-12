@@ -19,7 +19,7 @@ from copy import deepcopy
 
 import numpy as np
 import pandas as pd
-from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 class SoSMDOScenario(MDOScenario):
@@ -106,8 +106,8 @@ class SoSMDOScenario(MDOScenario):
         # dataframe = dataframe.rename(columns=rename_func)
 
         constraints_names = [constraint.name for constraint in
-                             self.formulation.opt_problem.constraints]
-        objective_name = self.formulation.opt_problem.objective.name
+                             self.formulation.optimization_problem.constraints]
+        objective_name = self.formulation.optimization_problem.objective.name
 
         def correct_var_name(varname: str) -> str:
             """removes study name from variable name"""
@@ -137,7 +137,7 @@ class SoSMDOScenario(MDOScenario):
         '''
         Run the chosen algorithm with algo options and max_iter
         '''
-        problem = self.formulation.opt_problem
+        problem = self.formulation.optimization_problem
         # Clears the database when multiple runs are performed (bi level)
         if self.clear_history_before_run:
             problem.database.clear()
@@ -174,7 +174,7 @@ class SoSMDOScenario(MDOScenario):
         Run evaluate functions with the initial x
         '''
 
-        self.formulation.opt_problem.evaluate_functions(
+        self.formulation.optimization_problem.evaluate_functions(
             eval_jac=self.eval_jac, normalize=False)
 
         # self.store_local_data(**local_data)
@@ -187,7 +187,7 @@ class SoSMDOScenario(MDOScenario):
         preprocess functions to store functions list 
         """
 
-        problem = self.formulation.opt_problem
+        problem = self.formulation.optimization_problem
         normalize = self.algo_options['normalize_design_space']
 
         # preprocess functions
@@ -202,19 +202,19 @@ class SoSMDOScenario(MDOScenario):
         Set design space values to complex if the differentiation method is complex_step
         '''
 
-        if self.formulation.opt_problem.differentiation_method == self.COMPLEX_STEP:
+        if self.formulation.optimization_problem.differentiation_method == self.COMPLEX_STEP:
             dspace = deepcopy(self.opt_problem.design_space)
             curr_x = dspace._current_x
             for var in curr_x:
                 curr_x[var] = curr_x[var].astype('complex128')
-            self.formulation.opt_problem.design_space = dspace
+            self.formulation.optimization_problem.design_space = dspace
 
     def _post_run(self):
         """
         Post-processes the scenario.
         """
         formulation = self.formulation
-        problem = formulation.opt_problem
+        problem = formulation.optimization_problem
         design_space = problem.design_space
         normalize = self.algo_options[
             'normalize_design_space']

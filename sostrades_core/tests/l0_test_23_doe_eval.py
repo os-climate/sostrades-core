@@ -959,7 +959,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         wrong_input_selection_x = pd.DataFrame(wrong_input_selection_x)
 
         wrong_output_selection_obj = {'selected_output': [False, False, True, False, False],
-                                      'full_name': ['z', 'c_2', 'acceleration', 'y_1', 'y_2']}
+                                      'full_name': ['z', 'c_2', 'acceleration_method', 'y_1', 'y_2']}
         wrong_output_selection_obj = pd.DataFrame(wrong_output_selection_obj)
 
         exec_eng = ExecutionEngine(self.study_name)
@@ -996,7 +996,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
 
         msg_log_error_output_z = "The output z in gather_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
-        msg_log_error_acceleration = "The output acceleration in gather_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
+        msg_log_error_acceleration = "The output acceleration_method in gather_outputs is not among possible values. Check if it is an output of the subprocess with the correct full name (without study name at the beginning). Dynamic inputs might  not be created. should be in ['c_1', 'c_2', 'obj', 'y_1', 'y_2']"
 
         self.assertTrue(msg_log_error_output_z in my_handler.msg_list)
         self.assertTrue(msg_log_error_acceleration in my_handler.msg_list)

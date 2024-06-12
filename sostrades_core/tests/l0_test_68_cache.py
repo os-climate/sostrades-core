@@ -909,7 +909,7 @@ class TestCache(unittest.TestCase):
     #
     #     # run evaluate_function
     #     print("\n ***** Evaluate functions\n")
-    #     scenario.formulation.opt_problem.evaluate_functions()
+    #     scenario.formulation.optimization_problem.evaluate_functions()
     #
     #     for disc in scenario.formulation.disciplines:
     #         print("\n \t " + str(disc.name))

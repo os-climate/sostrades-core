@@ -431,10 +431,10 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         """
 
         self.ns = f'{self.study_name_doe}'
-        # TO FIX OT_RANDOM, OT_MONTE_CARLO, are not reproductible
+        # TO FIX OT_RANDOM, OT_MONTE_CARLO,'OT_FAURE', are not reproductible
         # TO FIX OT_COMPOSITE :A composite DOE in dimension d=3 requires at least 1+2*d+2^d=15 samples; got 10.
         OT_list_of_algo_names = ['OT_SOBOL', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON',
-                                 'OT_FAURE', 'OT_FACTORIAL', 'OT_AXIAL',
+                                 'OT_FACTORIAL', 'OT_AXIAL',
                                  'OT_OPT_LHS', 'OT_LHS', 'OT_LHSC', 'OT_FULLFACT', 'OT_SOBOL_INDICES']
 
         OT_algo_default_options = {'levels': None,

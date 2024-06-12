@@ -21,7 +21,7 @@ from builtins import super
 
 import cma
 from future import standard_library
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from numpy import real
 
 """

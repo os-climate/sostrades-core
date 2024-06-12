@@ -17,7 +17,7 @@ limitations under the License.
 from itertools import repeat
 from multiprocessing import cpu_count
 from typing import Any
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 
 from gemseo import create_mda
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
@@ -36,7 +36,7 @@ N_CPUS = cpu_count()
 def get_available_linear_solvers():
     '''Get available linear solvers list
     '''
-    lsf = LinearSolversFactory()
+    lsf = LinearSolverLibraryFactory()
     algos = lsf.algorithms
     del lsf
 

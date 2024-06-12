@@ -17,7 +17,7 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 
 import pandas as pd
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine

@@ -20,10 +20,10 @@ from multiprocessing import cpu_count
 from numpy import array, ndarray, delete, inf
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.scenario import Scenario
+from gemseo.scenarios.scenario import Scenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 
 from typing import List
@@ -564,11 +564,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         '''
         diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
         if diff_method == self.COMPLEX_STEP:
-            dspace = deepcopy(self.mdo_discipline_wrapp.mdo_discipline.formulation.opt_problem.design_space)
+            dspace = deepcopy(self.mdo_discipline_wrapp.mdo_discipline.formulation.optimization_problem.design_space)
             curr_x = dspace._current_x
             for var in curr_x:
                 curr_x[var] = curr_x[var].astype('complex128')
-            self.mdo_discipline_wrapp.mdo_discipline.formulation.opt_problem.design_space = dspace
+            self.mdo_discipline_wrapp.mdo_discipline.formulation.optimization_problem.design_space = dspace
 
     def get_algo_options(self, algo_name):
         """
@@ -579,9 +579,9 @@ class ProxyOptim(ProxyDriverEvaluator):
         # TODO : add warning and log algo options
 
         default_dict = {}
-        driver_lib = OptimizersFactory().create(algo_name)
+        driver_lib = OptimizationLibraryFactory().create(algo_name)
         driver_lib.init_options_grammar(algo_name)
-        schema_dict = driver_lib.opt_grammar.schema
+        schema_dict = driver_lib.option_grammar.schema
         properties = schema_dict.get('properties')
         algo_options_keys = list(properties.keys())
 
@@ -621,12 +621,12 @@ class ProxyOptim(ProxyDriverEvaluator):
         #                      self.POSSIBLE_VALUES, self.eval_out_possible_values)
 
         # fill the possible values of algos
-        _algo_factory = OptimizersFactory()
+        _algo_factory = OptimizationLibraryFactory()
         avail_algos = _algo_factory.algorithms
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.ALGO}', self.POSSIBLE_VALUES, avail_algos)
 
         # fill the possible values of formulations
-        _form_factory = MDOFormulationsFactory()
+        _form_factory = MDOFormulationFactory()
         avail_formulations = _form_factory.formulations
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}', self.POSSIBLE_VALUES, avail_formulations)
 
@@ -665,8 +665,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         options.update(user_options)
         parallel = options.pop("parallel")
         # update problem options
-        self.mdo_discipline_wrapp.mdo_discipline.formulation.opt_problem.parallel_differentiation = parallel
-        self.mdo_discipline_wrapp.mdo_discipline.formulation.opt_problem.parallel_differentiation_options = options
+        self.mdo_discipline_wrapp.mdo_discipline.formulation.optimization_problem.parallel_differentiation = parallel
+        self.mdo_discipline_wrapp.mdo_discipline.formulation.optimization_problem.parallel_differentiation_options = options
 
     def set_constraints(self):
         # -- inequality constraints

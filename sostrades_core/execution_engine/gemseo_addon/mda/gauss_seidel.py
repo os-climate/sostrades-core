@@ -36,21 +36,21 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
     """
 
     def __init__(
-            self,
-            disciplines,  # type: Sequence[MDODiscipline]
-            name=None,  # type: Optional[str]
-            max_mda_iter=10,  # type: int
-            grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
-            tolerance=1e-6,  # type: float
-            linear_solver_tolerance=1e-12,
-            scaling_method=MDAGaussSeidel.ResidualScaling.N_COUPLING_VARIABLES,  # type: float
-            warm_start=False,  # type: bool
-            use_lu_fact=False,  # type: bool
-            over_relax_factor=1.0,  # type: float
-            coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-            log_convergence=False,  # type: bool
-            linear_solver="DEFAULT",  # type: str
-            linear_solver_options=None,  # type: Mapping[str,Any]
+        self,
+        disciplines,  # type: Sequence[MDODiscipline]
+        name=None,  # type: Optional[str]
+        max_mda_iter=10,  # type: int
+        grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,
+        scaling_method=MDAGaussSeidel.ResidualScaling.N_COUPLING_VARIABLES,  # type: float
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        over_relaxation_factor=1.0,  # type: float
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        log_convergence=False,  # type: bool
+        linear_solver="DEFAULT",  # type: str
+        linear_solver_options=None,  # type: Mapping[str,Any]
     ):  # type: (...) -> None
         """
         Args:
@@ -72,7 +72,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             scaling_method=scaling_method,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
-            over_relax_factor=over_relax_factor,
+            over_relaxation_factor=over_relaxation_factor,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
             linear_solver=linear_solver,
@@ -87,7 +87,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         # sostrades modif to support array.size for normalization
         current_couplings = array([0.0])
 
-        relax = self.over_relax_factor
+        relax = self.over_relaxation_factor
         use_relax = relax != 1.0
 
         # store initial residual

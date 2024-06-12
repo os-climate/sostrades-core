@@ -23,9 +23,10 @@ from os import getenv
 from typing import List
 
 import numpy as np
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.mda.sequential_mda import MDASequential
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from numpy import ndarray
 from pandas import DataFrame, concat
 
@@ -53,7 +54,7 @@ N_CPUS = cpu_count()
 def get_available_linear_solvers():
     '''Get available linear solvers list
     '''
-    lsf = LinearSolversFactory()
+    lsf = LinearSolverLibraryFactory()
     algos = lsf.algorithms
     del lsf
 
@@ -86,8 +87,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'icon': 'fas fa-cogs fa-fw',
         'version': '',
     }
-    SECANT_ACCELERATION = "secant"
-    M2D_ACCELERATION = "m2d"
     RESIDUALS_HISTORY = "residuals_history"
     MDA_RESIDUALS_NORM = 'MDA residuals norm'
     # AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
@@ -135,10 +134,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'warm_start': {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
                        ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,
                        ProxyDiscipline.STRUCTURING: True},
-        'acceleration': {ProxyDiscipline.TYPE: 'string',
-                         ProxyDiscipline.POSSIBLE_VALUES: [M2D_ACCELERATION, SECANT_ACCELERATION, 'none'],
-                         ProxyDiscipline.DEFAULT: M2D_ACCELERATION, ProxyDiscipline.NUMERICAL: True,
-                         ProxyDiscipline.STRUCTURING: True},
+        'acceleration_method': {ProxyDiscipline.TYPE: 'string',
+                                ProxyDiscipline.POSSIBLE_VALUES: list(AccelerationMethod),
+                                ProxyDiscipline.DEFAULT: AccelerationMethod.ALTERNATE_2_DELTA,
+                                ProxyDiscipline.NUMERICAL: True,
+                                ProxyDiscipline.STRUCTURING: True},
         # parallel sub couplings execution
         'n_subcouplings_parallel': {ProxyDiscipline.TYPE: 'int', ProxyDiscipline.DEFAULT: 1,
                                     ProxyDiscipline.NUMERICAL: True,
@@ -147,9 +147,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                             ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
         'tolerance_gs': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.DEFAULT: 10.0, ProxyDiscipline.NUMERICAL: True,
                          ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
-        'relax_factor': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.RANGE: [0.0, 1.0],
-                         ProxyDiscipline.DEFAULT: 0.99,
-                         ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
+        'over_relaxation_factor': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.RANGE: [0.0, 1.0],
+                                   ProxyDiscipline.DEFAULT: 0.99,
+                                   ProxyDiscipline.NUMERICAL: True, ProxyDiscipline.STRUCTURING: True,
+                                   ProxyDiscipline.UNIT: '-'},
         # NUMERICAL PARAMETERS OUT OF INIT
         'epsilon0': {ProxyDiscipline.TYPE: 'float', ProxyDiscipline.DEFAULT: 1.0e-6, ProxyDiscipline.NUMERICAL: True,
                      ProxyDiscipline.STRUCTURING: True, ProxyDiscipline.UNIT: '-'},
@@ -671,8 +672,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             needed_numerical_param, in_dict=True)
 
         if num_data['inner_mda_name'] == 'MDAJacobi':
-            num_data['acceleration'] = copy(
-                self.get_sosdisc_inputs('acceleration'))
+            num_data['acceleration_method'] = copy(
+                self.get_sosdisc_inputs('acceleration_method'))
         if num_data['inner_mda_name'] in ['MDAGSNewton', 'GSorNewtonMDA']:
             # , 'GSPureNewtonMDA', 'GSPureNewtonorGSMDA'
             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs(
@@ -681,8 +682,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 'tolerance_gs'))
         if num_data['inner_mda_name'] in ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']:
             # 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSPureNewtonorGSMDA'
-            num_data['relax_factor'] = copy(
-                self.get_sosdisc_inputs('relax_factor'))
+            num_data['over_relaxation_factor'] = copy(
+                self.get_sosdisc_inputs('over_relaxation_factor'))
 
         # linear solver options MDA
         num_data['linear_solver'] = copy(self.get_sosdisc_inputs(

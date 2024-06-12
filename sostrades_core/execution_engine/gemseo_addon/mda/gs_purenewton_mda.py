@@ -38,24 +38,24 @@ class GSPureNewtonMDA(MDASequential):
     """
 
     def __init__(
-            self,
-            disciplines,  # type: Sequence[MDODiscipline]
-            name=None,  # type: Optional[str]
-            grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
-            tolerance=1e-6,  # type: float
-            max_mda_iter=10,  # type: int
-            relax_factor=0.99,  # type: float
-            linear_solver="DEFAULT",  # type: str
-            tolerance_gs=10.0,
-            max_mda_iter_gs=10,
-            linear_solver_tolerance=1e-12,  # type: float
-            scaling_method=MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
-            warm_start=False,  # type: bool
-            use_lu_fact=False,  # type: bool
-            coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-            linear_solver_options=None,  # type: Mapping[str,Any]
-            log_convergence=False,  # type: bool
-            **newton_mda_options  # type: float,  # type: Mapping[str,Any]
+        self,
+        disciplines,  # type: Sequence[MDODiscipline]
+        name=None,  # type: Optional[str]
+        grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
+        tolerance=1e-6,  # type: float
+        max_mda_iter=10,  # type: int
+        over_relaxation_factor=0.99,  # type: float
+        linear_solver="DEFAULT",  # type: str
+        tolerance_gs=10.0,
+        max_mda_iter_gs=10,
+        linear_solver_tolerance=1e-12,  # type: float
+        scaling_method=MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        linear_solver_options=None,  # type: Mapping[str,Any]
+        log_convergence=False,  # type: bool
+        **newton_mda_options  # type: float,  # type: Mapping[str,Any]
     ):
         """
         Args:
@@ -75,7 +75,7 @@ class GSPureNewtonMDA(MDASequential):
         mda_newton = PureNewtonRaphson(
             disciplines,
             max_mda_iter,
-            relax_factor,
+            over_relaxation_factor,
             tolerance=tolerance,
             name=None,
             grammar_type=grammar_type,  # SoSTrades fix

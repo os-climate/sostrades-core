@@ -31,4 +31,4 @@ nr_solver_conf = {}
 nr_solver_conf['eps'] = 10**-5
 nr_solver_conf['stop_residual'] = 10**-7
 nr_solver_conf['max_ite'] = 20
-nr_solver_conf['relax_factor'] = 0.95
+nr_solver_conf['over_relaxation_factor'] = 0.95

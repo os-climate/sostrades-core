@@ -28,7 +28,7 @@ from numpy import array
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from gemseo.mda.mda import MDA
+from gemseo.mda.base_mda import BaseMDA
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -1269,7 +1269,7 @@ class TestMDALoop(unittest.TestCase):
         proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
         disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
         # MDA residuals norm is now in local_data of the mda but not retrieved by the proxy (already last value of residuals_history) so we deete it from gemseo local_data before check length
-        disc_out_names.remove(MDA.RESIDUALS_NORM)
+        disc_out_names.remove(BaseMDA.RESIDUALS_NORM)
         self.assertEqual(len(proxy_out_names), len(disc_out_names))
         self.assertListEqual(proxy_out_names, disc_out_names)
 

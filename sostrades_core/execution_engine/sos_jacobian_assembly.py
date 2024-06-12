@@ -21,8 +21,8 @@ from multiprocessing import Pool
 from os import getenv
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
-from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
+from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from numpy import empty, ones, zeros
 from scipy.sparse import dia_matrix, dok_matrix, lil_matrix
 
@@ -511,7 +511,7 @@ class SoSJacobianAssembly(JacobianAssembly):
             in_data, self.coupling_structure.disciplines[0].reduced_dm)
         res = self.residuals(in_data, couplings)
         # solve the linear system
-        factory = LinearSolversFactory()
+        factory = LinearSolverLibraryFactory()
         linear_problem = LinearProblem(dres_dy, -relax_factor * res)
         factory.execute(linear_problem, linear_solver, **linear_solver_options)
         newton_step = linear_problem.solution
@@ -562,7 +562,7 @@ class SoSJacobianAssembly(JacobianAssembly):
         )
 
         # solve the linear system
-        factory = LinearSolversFactory()
+        factory = LinearSolverLibraryFactory()
         linear_problem = LinearProblem(dres_dy, res)
         factory.execute(linear_problem, linear_solver, **linear_solver_options)
         newton_step = linear_problem.solution

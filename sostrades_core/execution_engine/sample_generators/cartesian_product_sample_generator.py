@@ -67,7 +67,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             msg += "is <%s> " % str(type(samples_df))
             raise SampleTypeError()
 
-    def _generate_samples(self, dict_of_list_values):
+    def generate_samples(self, dict_of_list_values):
         '''
         Method that generate samples based as a cartesian product of list of values for selected variables.
         Selected variables are provided in the keys of "dict_of_list_values".

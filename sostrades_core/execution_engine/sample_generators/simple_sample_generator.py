@@ -47,7 +47,7 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
         super().__init__(self.GENERATOR_NAME, logger=logger)
         self.samples_df_f_name = None
 
-    def _generate_samples(self, samples_df, var_names):
+    def generate_samples(self, samples_df, var_names):
         '''
         Method that only modifies the columns of samples_df based on var_names, removing the necessary columns and adding
         empty columns as to have var_names as trade variables.

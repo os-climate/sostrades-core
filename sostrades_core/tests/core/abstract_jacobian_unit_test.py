@@ -91,7 +91,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         """
         self.__override_dump_jacobian = bool(do_override)
 
-    @abstractmethod
+
     def analytic_grad_entry(self):
         """ Method to overload with jacobian test in order to be dump with the automated script
         """

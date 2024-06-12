@@ -30,7 +30,7 @@ import unittest
 from copy import deepcopy
 
 import pandas as pd
-from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo_scenario import MDOScenario
 from numpy import array, set_printoptions
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
@@ -1135,8 +1135,8 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # get sosoptimscenario discipline
         disc = exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        disc.formulation.opt_problem.nonproc_constraints = []
-        disc.formulation.opt_problem.nonproc_objective = None
+        disc.formulation.optimization_problem.nonproc_constraints = []
+        disc.formulation.optimization_problem.nonproc_objective = None
 
         # execute postrun to trigger exception
         disc._post_run()
@@ -1234,7 +1234,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         opt_disc = exec_eng.dm.get_disciplines_with_name(
             "optim." + self.sc_name)[0].mdo_discipline_wrapp.mdo_discipline
 
-        assert opt_disc.formulation.opt_problem.fd_step == fd_step
+        assert opt_disc.formulation.optimization_problem.fd_step == fd_step
 
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
@@ -1314,8 +1314,8 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # get sosoptimscenario discipline
         disc = exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-        disc.formulation.opt_problem.nonproc_constraints = []
-        disc.formulation.opt_problem.nonproc_objective = None
+        disc.formulation.optimization_problem.nonproc_constraints = []
+        disc.formulation.optimization_problem.nonproc_objective = None
 
         # execute postrun to trigger exception
         disc._post_run()

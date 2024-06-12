@@ -39,7 +39,7 @@ class GSorNewtonMDA(MDASequential):
 
     def __init__(self, disciplines, name=None,
                  grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,
-                 tolerance=1e-6, max_mda_iter=10, relax_factor=0.99,
+                 tolerance=1e-6, max_mda_iter=10, over_relaxation_factor=0.99,
                  linear_solver="lgmres", tolerance_gs=10.0, max_mda_iter_gs=10,
                  linear_solver_tolerance=1e-12,
                  scaling_method=MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
@@ -93,7 +93,7 @@ class GSorNewtonMDA(MDASequential):
                                  scaling_method=scaling_method,
                                  tolerance_gs=tolerance_gs,
                                  use_lu_fact=use_lu_fact, tolerance=tolerance,
-                                 relax_factor=relax_factor,
+                                 over_relaxation_factor=over_relaxation_factor,
                                  **newton_mda_options)
 
         sequence = [mda_gs, mda_newton]

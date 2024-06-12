@@ -18,7 +18,7 @@ import logging
 from builtins import super, zip
 
 from future import standard_library
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from numpy import isfinite
 
 from sostrades_core.execution_engine.gemseo_addon.opt.core.OuterApproximationSolver import (

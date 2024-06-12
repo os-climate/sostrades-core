@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from future import standard_library
 from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.optimization_result import OptimizationResult
 from numpy import float64, isfinite, real
 from scipy.optimize import fmin_tnc
 

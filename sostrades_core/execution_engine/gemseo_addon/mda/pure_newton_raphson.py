@@ -41,22 +41,22 @@ class PureNewtonRaphson(MDARoot):
     """
 
     def __init__(
-            self,
-            disciplines,  # type: Sequence[MDODiscipline]
-            max_mda_iter=10,  # type: int
-            relax_factor=0.99,  # type: float
-            name=None,  # type: Optional[str]
-            grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
-            linear_solver="DEFAULT",  # type: str
-            tolerance=1e-6,  # type: float
-            linear_solver_tolerance=1e-12,  # type: float
-            scaling_method=MDARoot.ResidualScaling.N_COUPLING_VARIABLES,
-            warm_start=False,  # type: bool
-            use_lu_fact=False,  # type: bool
-            coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-            log_convergence=False,  # type:bool
-            linear_solver_options=None,  # type: Mapping[str,Any]
-            n_processes=1
+        self,
+        disciplines,  # type: Sequence[MDODiscipline]
+        max_mda_iter=10,  # type: int
+        over_relaxation_factor=0.99,  # type: float
+        name=None,  # type: Optional[str]
+        grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
+        linear_solver="DEFAULT",  # type: str
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
+        scaling_method=MDARoot.ResidualScaling.N_COUPLING_VARIABLES,
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        log_convergence=False,  # type:bool
+        linear_solver_options=None,  # type: Mapping[str,Any]
+        n_processes=1
     ):
         """
         Args:
@@ -80,7 +80,7 @@ class PureNewtonRaphson(MDARoot):
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
         )
-        self.relax_factor = self.__check_relax_factor(relax_factor)
+        self.over_relaxation_factor = self.__check_relax_factor(over_relaxation_factor)
         self.linear_solver = linear_solver
 
         # break the object link before update the dict object
@@ -170,7 +170,7 @@ class PureNewtonRaphson(MDARoot):
             newton_step_dict = self.assembly.compute_newton_step_pure(
                 res,
                 self.strong_couplings,
-                self.relax_factor,
+                self.over_relaxation_factor,
                 self.linear_solver,
                 matrix_type=self.matrix_type,
                 **self.linear_solver_options)

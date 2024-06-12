@@ -105,7 +105,7 @@ class UsecaseCreator:
             'chain_linearize',
             'use_lu_fact',
             'warm_start',
-            'acceleration',
+            'acceleration_method',
             'linear_solver_MDA',
             'linear_solver_MDO',
             'reset_history_each_run',

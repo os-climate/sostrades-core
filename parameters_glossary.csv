@@ -1,6 +1,6 @@
 id,label,unit,definition,definitionSource,ACLTag
 algo,Optimization Algorithm,,Optimization algorithm from GEMSEO library among the available list,,
-acceleration,MDA Acceleration Method,,Acceleration method for MDA algorithms,,
+acceleration_method,MDA Acceleration Method,,Acceleration method for MDA algorithms,,
 algo_options,Algorithm options,,Options for the chosen optimization algorithm ,,
 builder_mode,Builder Model,-,,,
 approximate_jacobian,approximate_jacobian,[-],,,
@@ -65,7 +65,7 @@ parallel_options,Parallel Options,,Parallel options of the optimization problem 
 power,Power,,,,
 Product_list,List of Products,,List of Products,,
 propagate_cache_to_children,Propagate Cache,,Propagate Cache to children disciplines,,
-relax_factor,Relaxation Factor,,,,
+over_relaxation_factor,Relaxation Factor,,,,
 repo_of_sub_processes,Repository of subprocesses,,Folder root of the sub processes to be nested inside the DoE. If 'None' then it uses the sos_processes python for doe creation.,,
 resource_list,Resource List,,"coal, gas, oil, uranium",,
 sale_price_dict,Sale price per program,,Sale price of an aircraft per program,,CC - Costs

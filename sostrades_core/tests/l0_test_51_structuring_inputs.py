@@ -402,11 +402,11 @@ class TestStructuringInputs(unittest.TestCase):
                            'tolerance': {'type': 'float', 'default': 1e-06, 'possible_values': None},
                            'use_lu_fact': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
                            'warm_start': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
-                           'acceleration': {'type': 'string', 'default': 'm2d',
-                                            'possible_values': ['m2d', 'secant', 'none']},
+                           'acceleration_method': {'type': 'string', 'default': 'Alternate2Delta',
+                                                   'possible_values': ['Alternate2Delta', 'secant', 'none']},
                            'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
                            'tolerance_gs': {'type': 'float', 'default': 10.0, 'possible_values': None},
-                           'relax_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
+                           'over_relaxation_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
                            'epsilon0': {'type': 'float', 'default': 1e-06, 'possible_values': None},
                            'linear_solver_MDO': {'type': 'string'},
                            'linear_solver_MDO_preconditioner': {'type': 'string'},
@@ -482,7 +482,7 @@ class TestStructuringInputs(unittest.TestCase):
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.inner_mda_name'] = 'GSorNewtonMDA'
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.max_mda_iter'] = 20
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.tolerance'] = 1e-3
-        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.relax_factor'] = 0.85
+        dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.over_relaxation_factor'] = 0.85
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.epsilon0'] = 1e-4
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.use_lu_fact'] = True
         dict_values[0]['MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDO'] = 'BICG'
@@ -536,7 +536,7 @@ class TestStructuringInputs(unittest.TestCase):
 
         self.assertEqual(
             coupling_sellar.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].mda_sequence[1].mda_sequence[
-                1].relax_factor, 0.85)
+                1].over_relaxation_factor, 0.85)
 
         self.exec_eng.execute()
 
