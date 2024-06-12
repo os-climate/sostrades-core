@@ -85,26 +85,10 @@ class SoSDisciplineData(
             self.__check_keys(*data)
             self.__data = data
 
-        self.__input_to_namespaced = (
-            input_to_namespaced if input_to_namespaced is not None else {}
-        )
-        self.__output_to_namespaced = (
-            output_to_namespaced if output_to_namespaced is not None else {}
-        )
 
     def __getitem__(self, key: str) -> Any:
         if key in self.__data:
             return self.__data[key]
-
-        if self.__input_to_namespaced:
-            key_with_ns = self.__input_to_namespaced.get(key)
-            if key_with_ns is not None:
-                return self[key_with_ns]
-
-        if self.__output_to_namespaced:
-            key_with_ns = self.__output_to_namespaced.get(key)
-            if key_with_ns is not None:
-                return self[key_with_ns]
 
         raise KeyError(key)
 
@@ -138,8 +122,6 @@ class SoSDisciplineData(
         copy_ = SoSDisciplineData({})
         data = copy(self.__data)
         copy_.__data = data
-        copy_.input_to_namespaced = copy(self.__input_to_namespaced)
-        copy_.output_to_namespaced = copy(self.__output_to_namespaced)
         return copy_
 
     def __deepcopy__(self, memo: Mapping | None = None):
@@ -152,8 +134,6 @@ class SoSDisciplineData(
                 data[k] = deepcopy(v)
 
         copy_.__data = data
-        copy_.input_to_namespaced = deepcopy(self.__input_to_namespaced)
-        copy_.output_to_namespaced = deepcopy(self.__output_to_namespaced)
         return copy_
 
     def clear(self) -> None:  # noqa: D102

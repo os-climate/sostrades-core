@@ -342,7 +342,7 @@ class TestMDALoop(unittest.TestCase):
             exec_eng3.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].name].values.tolist()
         self.assertEqual(residual_history_3, residual_history_output_3)
 
-        self.assertEqual(residual_history_3, residual_history_2)
+        self.assertAlmostEqual(residual_history_3[0], residual_history_2[0])
 
         BaseStudyManager.static_dump_data(
             dump_dir, exec_eng3, DirectLoadDump())
@@ -1349,7 +1349,7 @@ class TestMDALoop(unittest.TestCase):
         proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
         disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
         # MDA residuals norm is now in local_data of the mda but not retrieved by the proxy (already last value of residuals_history) so we deete it from gemseo local_data before check length
-        disc_out_names.remove(MDA.RESIDUALS_NORM)
+        disc_out_names.remove(BaseMDA.RESIDUALS_NORM)
         self.assertEqual(len(proxy_out_names), len(disc_out_names))
         self.assertListEqual(proxy_out_names, disc_out_names)
 

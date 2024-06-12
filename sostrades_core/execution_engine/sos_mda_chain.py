@@ -305,46 +305,6 @@ class SoSMDAChain(MDAChain):
         else:
             return ready_disciplines
 
-    def get_input_data_for_gems(self):
-        '''
-        Get input_data for linearize ProxyDiscipline
-        '''
-        input_data = {}
-        input_data_names = self.input_grammar.names
-        if len(input_data_names) > 0:
-
-            for data_name in input_data_names:
-                input_data[data_name] = self.ee.dm.get_value(data_name)
-
-        return input_data
-
-    # -- Protected methods
-
-    # def linearize(self, input_data=None, force_all=False, execute=True):
-    #     '''
-    #     Overload the linearize of soscoupling to use the one of sosdiscipline and not the one of MDAChain
-    #     '''
-    #     # LOGGER.info(
-    #     # f'Computing the gradient for the MDA : {self.get_disc_full_name()}')
-    #     self.logger.info(
-    #         f'Computing the gradient for the MDA : {self.name}')
-    #
-    #     return self._old_discipline_linearize(input_data=input_data,
-    #                                           force_all=force_all,
-    #                                           execute=execute)
-
-    # def _old_discipline_linearize(self, input_data=None, force_all=False, execute=True,
-    #                               exec_before_linearize=True):
-    #     """ Temporary call to sostrades linearize that was previously in SoSDiscipline
-    #     TODO: see with IRT how we can handle it
-    #     """
-    #     # set GEM's default_inputs for gradient computation purposes
-    #     # to be deleted during GEMS update
-    #
-    #     result = SoSMDODiscipline.linearize(
-    #         self, input_data, force_all, execute)
-    #
-    #     return result
 
     def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
                        step=1e-7, threshold=1e-8, linearization_mode='auto',

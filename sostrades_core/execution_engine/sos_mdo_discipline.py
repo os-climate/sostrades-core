@@ -165,6 +165,7 @@ class SoSMDODiscipline(MDODiscipline):
                 and set these output variables to differentiate
                 with :meth:`.add_differentiated_outputs`.
         """
+        # filtered_inputs and outputs option not in GEMSEO
         if compute_all_jacobians:
             return self.get_input_data_names(filtered_inputs=True), self.get_output_data_names(filtered_outputs=True)
 
@@ -454,19 +455,19 @@ class SoSMDODiscipline(MDODiscipline):
         else:
             return filter_variables_to_convert(self.reduced_dm, self.output_grammar.names)
 
-    def get_attributes_to_serialize(self):  # pylint: disable=R0201
-        """
-        Define the names of the attributes to be serialized.
-
-        overload of gemseo's method.
-
-        Return:
-            List[string] the names of the attributes to be serialized.
-        """
-        # pylint warning ==> method could be a function but when overridden,
-        # it is a function==> self is required
-
-        return super().get_attributes_to_serialize() + [self._NEW_ATTR_TO_SERIALIZE]
+    # def get_attributes_to_serialize(self):  # pylint: disable=R0201
+    #     """
+    #     Define the names of the attributes to be serialized.
+    #
+    #     overload of gemseo's method.
+    #
+    #     Return:
+    #         List[string] the names of the attributes to be serialized.
+    #     """
+    #     # pylint warning ==> method could be a function but when overridden,
+    #     # it is a function==> self is required
+    #
+    #     return super().get_attributes_to_serialize() + [self._NEW_ATTR_TO_SERIALIZE]
 
     def _get_columns_indices(self, inputs, outputs, input_column, output_column):
         """
@@ -505,15 +506,6 @@ class SoSMDODiscipline(MDODiscipline):
 
         return indices
 
-    # TODO DO NOT WORK ANYMORE
-    # @MDODiscipline._local_data.setter
-    # def _local_data(
-    #         self, data  # type: MutableMapping[str, Any]
-    # ):  # type: (...) -> None
-    #     super(SoSMDODiscipline, type(self)).local_data.fset(self, data)
-    #     self.sos_wrapp.local_data = data
-    #     self.sos_wrapp.input_data_names = self.get_input_data_names()
-    #     self.sos_wrapp.output_data_names = self.get_output_data_names()
 
     def __set_local_data(self, data):
         self._local_data = SoSDisciplineData(

@@ -18,9 +18,10 @@ limitations under the License.
 
 import logging
 from builtins import super
-
+from dataclasses import dataclass
 import cma
 from future import standard_library
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from numpy import real
 
@@ -32,6 +33,12 @@ standard_library.install_aliases()
 
 LOGGER = logging.getLogger("gemseo.addons.opt.lib_cmaes")
 
+
+@dataclass
+class CMAESAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the CMAES library."""
+
+    library_name: str = "CMAES"
 
 class CMAESOpt(OptimizationLibrary):
     """Scipy optimization library interface.
@@ -45,6 +52,7 @@ class CMAESOpt(OptimizationLibrary):
                    OptimizationLibrary.F_TOL_REL: "ftol_rel",
                    OptimizationLibrary.MAX_FUN_EVAL: "maxfun"
                    }
+    LIBRARY_NAME = "CMAES"
 
     def __init__(self):
         '''
@@ -58,22 +66,20 @@ class CMAESOpt(OptimizationLibrary):
         - does it handle inequality constraints
 
         '''
+
         super(CMAESOpt, self).__init__()
         doc = 'https://docs.scipy.org/doc/scipy/reference/'
-        self.lib_dict = {
-            'CMAES':
-            {self.INTERNAL_NAME: "CMAES",
-             self.REQUIRE_GRAD: False,
-             self.POSITIVE_CONSTRAINTS: True,
-             self.HANDLE_EQ_CONS: False,
-             self.HANDLE_INEQ_CONS: False,
-             self.DESCRIPTION: 'Sequential Least-Squares Quadratic '
-             'Programming (SLSQP) implemented in '
-             'the SciPy library',
-             self.WEBSITE: doc + 'optimize.minimize-slsqp.html',
-             },
-
-        }
+        self.descriptions = {
+            "CMAES": CMAESAlgorithmDescription(
+                algorithm_name="CMAES",
+                description="Sequential Least-Squares Quadratic ",
+                require_gradient=False,
+                positive_constraints=False,
+                handle_equality_constraints=False,
+                handle_inequality_constraints=False,
+                internal_algorithm_name="CMAES",
+                website=f"{doc}optimize.minimize-slsqp.html",
+            )}
 
     def _get_options(self, max_iter=999, ftol_rel=1e-10,  # pylint: disable=W0221
                      max_fun_eval=999, sigma=0.1, normalize_design_space=False, population_size=20,

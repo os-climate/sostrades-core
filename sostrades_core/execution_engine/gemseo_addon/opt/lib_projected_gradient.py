@@ -121,7 +121,7 @@ class ProjectedGradientOpt(OptimizationLibrary):
         """
         normalize_ds = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the normalized bounds:
-        x_0, l_b, u_b = self.get_x0_and_bounds_vects(normalize_ds)
+        x_0, l_b, u_b = self.get_x0_and_bounds(normalize_ds)
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]

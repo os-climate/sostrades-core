@@ -16,8 +16,10 @@ limitations under the License.
 '''
 import logging
 from builtins import super, zip
+from dataclasses import dataclass
 
 from future import standard_library
+from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.optimization_library import OptimizationLibrary
 from numpy import isfinite
 
@@ -35,6 +37,13 @@ standard_library.install_aliases()
 LOGGER = logging.getLogger("gemseo.addons.opt.lib_oa")
 
 
+@dataclass
+class OuterApproximationAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the OuterApproximation library."""
+
+    library_name: str = "OuterApproximation"
+
+
 class OuterApproximationOpt(OptimizationLibrary):
     """Outer Approximation optimization library interface.
 
@@ -47,7 +56,7 @@ class OuterApproximationOpt(OptimizationLibrary):
                    OptimizationLibrary.F_TOL_REL: "ftol_rel",
                    OptimizationLibrary.MAX_FUN_EVAL: "maxfun"
                    }
-
+    LIBRARY_NAME = "OuterApproximation"
     def __init__(self):
         '''
         Constructor
@@ -60,20 +69,22 @@ class OuterApproximationOpt(OptimizationLibrary):
         - does it handle inequality constraints
 
         '''
+
         super(OuterApproximationOpt, self).__init__()
-        self.lib_dict = {
-            'OuterApproximation':
-            {self.INTERNAL_NAME: "OuterApproximation",
-             self.REQUIRE_GRAD: True,
-             self.POSITIVE_CONSTRAINTS: False,
-             self.HANDLE_EQ_CONS: False,
-             self.HANDLE_INEQ_CONS: True,
-             self.DESCRIPTION: 'Outer Approximation algorithm implementation',
-             },
+        doc = 'https://docs.scipy.org/doc/scipy/reference/'
+        self.descriptions = {
+            "ProjectedGradient": OuterApproximationAlgorithmDescription(
+                algorithm_name="OuterApproximation",
+                description="Outer Approximation algorithm implementation",
+                require_gradient=True,
+                positive_constraints=False,
+                handle_equality_constraints=False,
+                handle_inequality_constraints=True,
+                internal_algorithm_name="OuterApproximation",
+                website=f"{doc}",
+            )}
 
-        }
-
-    def _get_options(self, 
+    def _get_options(self,
                      max_iter=999, 
                      ftol_rel=1e-10,  # pylint: disable=W0221
                      normalize_design_space=False,

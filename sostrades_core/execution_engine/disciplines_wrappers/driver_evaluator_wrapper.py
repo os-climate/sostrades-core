@@ -82,7 +82,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
         self.input_data_for_disc = [{}] * self.n_subprocs
         # TODO: deepcopy option? [discuss]
         for i_subprocess in self.subprocesses_to_eval or range(self.n_subprocs):
-            self.input_data_for_disc[i_subprocess] = self.get_input_data_for_gems(
+            self.input_data_for_disc[i_subprocess] = self.get_input_data_for_gemseo(
                 self.attributes['sub_mdo_disciplines'][i_subprocess])
 
     def _get_input_data(self, var_delta_dict, i_subprocess=0):
@@ -118,7 +118,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
                             if key in eval_out_data_names}
         return output_data_dict
 
-    def get_input_data_for_gems(self, disc):
+    def get_input_data_for_gemseo(self, disc):
         """
         Get reference inputs for a subprocess by querying for the data names in its input grammar.
 

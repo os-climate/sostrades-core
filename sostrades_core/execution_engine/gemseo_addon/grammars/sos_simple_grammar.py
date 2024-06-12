@@ -36,25 +36,6 @@ class SoSSimpleGrammar(SimplerGrammar):
     """
     DATA_CONVERTER_CLASS: ClassVar[str] = "SoSTradesDataConverter"
 
-    # def load_data(
-    #         self,
-    #         data,  # type: Mapping[str,Any]
-    #         raise_exception=True,  # type: bool
-    # ):  # type: (...) -> Mapping[str,Any]
-    #     #         self.check(data, raise_exception)
-    #     return data
-    #
-    # def set_item_value(self, item_name, item_value):
-    #     """
-    #     Sets the value of an item
-    #
-    #     :param item_name: the item name to be modified
-    #     :param item_value: value of the item
-    #     """
-    #     if not self.is_data_name_existing(item_name):
-    #         raise ValueError("Item " + str(item_name) + " not in grammar " +
-    #                          self.name)
-    #     self._update_field(item_name, item_value['type'])
     def validate(self, data,
                  raise_exception=True):
         pass
