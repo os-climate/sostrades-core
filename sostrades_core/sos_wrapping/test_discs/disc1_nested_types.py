@@ -18,6 +18,14 @@ import pandas as pd
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
+VARIABLES = "variable"
+VALUES = "value"
+UPPER_BOUND = "upper_bnd"
+LOWER_BOUND = "lower_bnd"
+TYPE = "type"
+ENABLE_VARIABLE_BOOL = "enable_variable"
+LIST_ACTIVATED_ELEM = "activated_elem"
+
 class Disc1(SoSWrapp):
     # ontology information
     _ontology_data = {
@@ -41,6 +49,18 @@ class Disc1(SoSWrapp):
         'X_dict_dict_float': {'type': 'dict'},  # NB: this is perfectly jsonifiable no need to pkl
         'X_array_string': {'type': 'array'},
         'X_array_df': {'type': 'array'},
+        'X_dspace_lists': {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, True),
+                                                                         VALUES: ('multiple', None, True),
+                                                                         LOWER_BOUND: ('multiple', None, True),
+                                                                         UPPER_BOUND: ('multiple', None, True),
+                                                                         ENABLE_VARIABLE_BOOL: ('bool', None, True),
+                                                                         LIST_ACTIVATED_ELEM: ('list', None, True), }},
+        'X_dspace_array': {'type': 'dataframe', 'dataframe_descriptor': {VARIABLES: ('string', None, True),
+                                                                         VALUES: ('multiple', None, True),
+                                                                         LOWER_BOUND: ('multiple', None, True),
+                                                                         UPPER_BOUND: ('multiple', None, True),
+                                                                         ENABLE_VARIABLE_BOOL: ('bool', None, True),
+                                                                         LIST_ACTIVATED_ELEM: ('list', None, True), }},
     }
 
     def run(self):
