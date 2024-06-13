@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import importlib
-import json
-import logging
 from os.path import dirname, join
-from shutil import rmtree
-from typing import Any
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import DatasetGenericException
-from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector import LocalFileSystemDatasetsConnector
+
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    DatasetGenericException,
+)
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector import (
+    LocalFileSystemDatasetsConnector,
+)
 
 
 class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):

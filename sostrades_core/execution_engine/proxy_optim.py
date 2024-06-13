@@ -28,10 +28,8 @@ from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from numpy import inf, ndarray
 
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
-from sostrades_core.execution_engine.func_manager.func_manager_disc import (
-    FunctionManagerDisc,
-)
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.optim_manager_disc import OptimManagerDisc
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.tools.design_space import design_space as dspace_tool
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -426,8 +424,8 @@ class ProxyOptim(ProxyDriverEvaluator):
             coupling = sub_mdo_disciplines[0]
             # gather all disciplines under the coupling that are FunctionManagerDisc disicpline
             func_manager_list = [disc.sos_wrapp for disc in coupling.sos_disciplines if
-                                 isinstance(disc.sos_wrapp, FunctionManagerDisc)]
-            # Normally only one FunctionManagerDisc should be under the optim
+                                 isinstance(disc.sos_wrapp, OptimManagerDisc)]
+            # Normally only one OptimManagerDisc should be under the optim
             # if multiple do nothing
             if len(func_manager_list) == 1:
                 func_manager = func_manager_list[0]

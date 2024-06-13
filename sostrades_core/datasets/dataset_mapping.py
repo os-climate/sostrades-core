@@ -21,6 +21,7 @@ from dataclasses import dataclass
 
 from sostrades_core.datasets.dataset_info import DatasetInfo
 
+
 class DatasetsMappingException(Exception):
     """
     Generic exception for dataset mapping

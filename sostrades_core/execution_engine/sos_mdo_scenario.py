@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/06/07 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@ limitations under the License.
 '''
 import logging
 from copy import deepcopy
+
 import numpy as np
 import pandas as pd
 from gemseo.core.mdo_scenario import MDOScenario
+
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+
 
 class SoSMDOScenario(MDOScenario):
     """

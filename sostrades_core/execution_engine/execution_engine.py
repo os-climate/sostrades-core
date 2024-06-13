@@ -205,20 +205,21 @@ class ExecutionEngine:
         anonymized_cache_map = {}
         if self.dm.cache_map != {}:
             for key, cache in self.dm.cache_map.items():
-                serialized_new_cache = cache.get_all_data()
-                anonymized_cache = {}
-                for index, index_dict in serialized_new_cache.items():
-                    anonymized_cache[index] = {
-                        data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in
-                                     values_dict.items()}
-                        for data_types, values_dict in index_dict.items() if
-                        values_dict is not None and data_types in ['inputs', 'outputs']}
-                    if index_dict['jacobian'] is not None:
-                        anonymized_cache[index]['jacobian'] = {self.anonymize_key(key_out): {self.anonymize_key(
-                            key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
-                                                               index_dict['jacobian'].items()}
+                if cache is not None and cache.get_length() > 0:
+                    serialized_new_cache = cache.get_all_data()
+                    anonymized_cache = {}
+                    for index, index_dict in serialized_new_cache.items():
+                        anonymized_cache[index] = {
+                            data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in
+                                         values_dict.items()}
+                            for data_types, values_dict in index_dict.items() if
+                            values_dict is not None and data_types in ['inputs', 'outputs']}
+                        if index_dict['jacobian'] is not None:
+                            anonymized_cache[index]['jacobian'] = {self.anonymize_key(key_out): {self.anonymize_key(
+                                key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
+                                                                   index_dict['jacobian'].items()}
 
-                anonymized_cache_map[key] = anonymized_cache
+                    anonymized_cache_map[key] = anonymized_cache
 
         return anonymized_cache_map
 
