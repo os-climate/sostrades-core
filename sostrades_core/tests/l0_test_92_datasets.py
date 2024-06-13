@@ -55,11 +55,30 @@ class TestDatasets(unittest.TestCase):
         dict_dict_float = {'dict': {'f1': 0.033, 'f2': 333.66}}
         array_string = np.array(['s1', 's2'])
         array_df = np.array([df1.copy(), df2.copy()])
+        dspace_dict_lists = {'variable': ['x', 'z', 'y_1', 'y_2'],
+                             'value': [[1.], [5., 2.], [1.], [1.]],
+                             'lower_bnd': [[0.], [-10., 0.], [-100.], [-100.]],
+                             'upper_bnd': [[10.], [10., 10.], [100.], [100.]],
+                             'enable_variable': [True, True, True, True],
+                             'activated_elem': [[True], [True, True], [True], [True]]}
+        dspace_dict_array = {'variable': ['x', 'z', 'y_1', 'y_2'],
+                             'value': [np.array([1.]), np.array([5., 2.]), np.array([1.]), np.array([1.])],
+                             'lower_bnd': [np.array([0.]), np.array([-10., 0.]), np.array([-100.]), np.array([-100.])],
+                             'upper_bnd': [np.array([10.]), np.array([10., 10.]), np.array([100.]), np.array([100.])],
+                             'enable_variable': [True, True, True, True],
+                             'activated_elem': [[True], [True, True], [True], [True]]}
+
+        dspace_lists = pd.DataFrame(dspace_dict_lists)
+        dspace_array = pd.DataFrame(dspace_dict_array)
+
         self.nested_types_reference_dict = {'X_dict_df': dict_df,
                                             'X_dict_dict_df': dict_dict_df,
                                             'X_dict_dict_float': dict_dict_float,
                                             'X_array_string': array_string,
-                                            'X_array_df': array_df}
+                                            'X_array_df': array_df,
+                                            'X_dspace_lists': dspace_lists,
+                                            'X_dspace_array': dspace_array,
+                                            }
 
 
     def test_01_usecase1(self):
@@ -367,9 +386,11 @@ class TestDatasets(unittest.TestCase):
         LocalDatasetsConnector and FileSystemDatasetsSerializer pickle-based loading for the following nested types:
             - dict[str: DataFrame]
             - dict[str: dict[str: DataFrame]]
-            - dict[str: dict[str: float]]
+            - dict[str: dict[str: float]]  (THIS IS JSONIFIABLE)
             - array[str]
             - array[DataFrame]
+            - design space with lists (DataFrame with string, list, and bool columns)
+            - design space with arrays (DataFrame with string, array, list and bool columns)
         """
 
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
@@ -382,9 +403,13 @@ class TestDatasets(unittest.TestCase):
 
     def test_12_local_to_local_connector_conversion_and_loading_for_nested_types(self):
         """
-        Use a local connector to copy values from a valid local connector then load them in the study and check
+        Use a local connector to copy values from a validated local connector then load them in the study and check
         correctness, thus testing ability of LocalConnector to both write and load values in the scope of the nested
-        types listed in test_11 above.
+        types listed in test_11 above, some of which need to be stored in a separate pickle (1 pickle per dataset).
+
+        Note the following differences between connector dump to pickle and the hand-crafted dataset used for test_11:
+        - since dict[str: dict[str: float]] is jsonifiable it will be saved in the descriptor.json, and not pickled
+        - since dataframe dumping is based on GUI method, it can dump design-space-like dataframes to csv, not pickled
         """
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
