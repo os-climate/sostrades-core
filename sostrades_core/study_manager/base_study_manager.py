@@ -209,6 +209,21 @@ class BaseStudyManager():
             logger.info(message)
             return parameter_changes
 
+    def export_data_from_dataset_mapping(self, from_datasets_mapping):
+        """
+        Method that export data within datasets
+
+        :params from_datasets_mapping:dataset mapping
+        :type: DatasetMapping
+
+        """
+        if from_datasets_mapping is not None:
+            
+            # export study by saving data intg datasets, get them from the dm
+            parameter_changes = self.execution_engine.dm.export_data_in_datasets(from_datasets_mapping)
+
+            return parameter_changes
+        
     def load_data(self, from_path=None,
                   from_input_dict=None,
                   display_treeview=True,

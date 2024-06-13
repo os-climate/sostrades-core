@@ -81,6 +81,58 @@ class DatasetsManager:
         if dataset_info not in self.datasets:
             self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
         return self.datasets[dataset_info]
+    
+    def write_data_in_dataset(self, dataset_info: DatasetInfo,
+                                 data_dict: dict[str:str],
+                                 data_type_dict: dict[str:str]) -> dict[str:dict[str:Any]]:
+        """
+        get data from data_dict and fill dataset
+
+        :param dataset_info: dataset associated to namespaces
+        :type dataset_info: DatasetInfo
+
+        :param data_dict: dict of data to be written in datasets with their types
+        :type data_dict: dict[name str: value]
+
+        :param data_type_dict: dict of data to be written in datasets with their types
+        :type data_type_dict: dict[name str: type str]
+
+        :return: data_dict of data names plus a DATASET_INFO field with DatasetInfo object
+        """
+        self.__logger.debug(f"exporting data {data_dict.keys()} into dataset {dataset_info}")
+        data_retrieved = {}
+
+        
+        try:
+            # Get the dataset, creates it if not exists
+            dataset = self.get_dataset(dataset_info=dataset_info)
+
+            # Retrieve values
+            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info.dataset_id, 
+                                                                values_to_write=data_dict,
+                                                                data_types_dict=data_type_dict,
+                                                                create_if_not_exists=True,
+                                                                override=True)
+            # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
+            # dataset_data = {key: {self.VALUE: value,
+            #                     self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
+            # data_retrieved.update(dataset_data)
+        except DatasetGenericException as exception:
+            raise DatasetGenericException(f'Error exporting dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
+        return data_retrieved
+
+    def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
+        """
+        Gets a dataset, creates it if it does not exist
+
+        :param dataset_info: Dataset info
+        :type dataset_info: DatasetInfo
+
+        :return: Dataset
+        """
+        if dataset_info not in self.datasets:
+            self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
+        return self.datasets[dataset_info]
 
     def __create_dataset(self, dataset_info: DatasetInfo) -> Dataset:
         """
