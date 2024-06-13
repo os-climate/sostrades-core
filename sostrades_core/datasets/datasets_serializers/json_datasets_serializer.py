@@ -87,7 +87,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
         converted_data = ""
         try:
             if data_type in ['string', 'int', 'float', 'bool', 'list', 'dict']:
-                converted_data = data_value
+                converted_data = self._serialize_jsonifiable(data_value, data_name)
             elif data_type == 'dataframe':
                 # convert dataframe into dict with orient='list' to have {column:values}
                 converted_data = self._serialize_dataframe(data_value, data_name)
@@ -112,3 +112,6 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
     def _serialize_array(self, data_value, data_name):
         return data_value.tolist()
+
+    def _serialize_jsonifiable(self, data_value, data_name):
+        return data_value

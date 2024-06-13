@@ -379,7 +379,6 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
 
-
     def test_11_datasets_local_connector_nested_types(self):
         """
         Check correctness of loaded values after loading a handcrafted local directories' dataset, testing usage of
