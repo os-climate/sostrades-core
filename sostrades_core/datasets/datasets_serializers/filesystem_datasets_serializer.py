@@ -264,7 +264,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, data_name, descriptor_value)
 
-    def _serialize_jsonifiable(self, data_value: Any, data_name: str) -> None:
+    def _serialize_jsonifiable(self, data_value: Any, data_name: str) -> Any:
         try:
             _ = json.dumps(data_value)
             self.__clean_from_pickle_data(data_name)
