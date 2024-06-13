@@ -19,6 +19,8 @@ scipy==1.10.1
 six==1.16.0
 sympy==1.4
 tqdm==4.61.0
+python-arango==7.5.8
+xlwings == 0.27.15
 
 # Development requirements
 pytest==7.4.3
