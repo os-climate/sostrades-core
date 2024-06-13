@@ -70,7 +70,10 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         """
         self.__current_dataset_directory = dataset_directory
 
-    def load_pickle_data(self):
+    def load_pickle_data(self) -> None:
+        """
+        Load and buffer the non-serializable types data stored in the pickle file.
+        """
         pkl_data = {}
         if self.__current_dataset_directory is None:
             self.__logger.error(f"Error while trying to load pickled data because dataset directory is undefined")
@@ -87,9 +90,15 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         self.__pickle_data = pkl_data
 
     def clear_pickle_data(self):
+        """
+        Clear buffered data from pickle load.
+        """
         self.__pickle_data = {}
 
-    def dump_pickle_data(self):
+    def dump_pickle_data(self) -> None:
+        """
+        Write the buffered non-serializable data into the dataset pickle file and clear the buffer.
+        """
         if self.__pickle_data:
             if self.__current_dataset_directory is None:
                 self.__logger.error(f"Error while trying to dump pickled data because dataset directory is undefined")
@@ -100,6 +109,10 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         self.clear_pickle_data()
 
     def __clean_from_pickle_data(self, data_name: str) -> None:
+        """
+        Utility method used to clear an entry from the buffered pickle data, in order to make sure that regularly
+        serialized data are not repeated in the pickle too.
+        """
         # TODO: [discuss] is this necessary ?
         if data_name in self.__pickle_data:
             del self.__pickle_data[data_name]
@@ -251,7 +264,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, data_name, descriptor_value)
 
-    def _serialize_jsonifiable(self, data_value, data_name):
+    def _serialize_jsonifiable(self, data_value: Any, data_name: str) -> None:
         try:
             _ = json.dumps(data_value)
             self.__clean_from_pickle_data(data_name)
@@ -260,7 +273,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             self.__logger.debug(f"{data_name} to be stored in pickle because non-jsonifiable")
             return self.__serialize_object(data_value, data_name)
 
-    def __serialize_object(self, data_value, data_name):
+    def __serialize_object(self, data_value: Any, data_name: str) -> str:
         descriptor_value = self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_OBJECT, data_name))
         self.__pickle_data[data_name] = data_value
         return descriptor_value

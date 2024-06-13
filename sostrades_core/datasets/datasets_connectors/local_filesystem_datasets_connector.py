@@ -144,7 +144,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Getting all datasets for connector {self}")
         return next(os.walk(self.__root_directory_path))[1]
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
@@ -166,6 +166,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                    for key, value in values_to_write.items()})
         self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier,
                                                   descriptor_data=dataset_descriptor)
+        return values_to_write
 
     def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
@@ -216,7 +217,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
+        return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
     def clear(self, remove_root_directory:bool=False) -> None:
         """
