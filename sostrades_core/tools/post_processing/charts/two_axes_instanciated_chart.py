@@ -246,6 +246,9 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
         layout.update({'autosize': False})
         layout.update({'legend': self.get_default_legend_layout()})
         layout.update({'font': self.get_default_font_layout()})
+        
+        if self.show_legend is not None:
+            layout.update({'showlegend': self.show_legend})
 
         if len(chart_annotations) > 0:
             layout.update({'annotations': chart_annotations})
