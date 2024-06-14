@@ -810,7 +810,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         exec_eng.execute()
 
         # check that the post processings can be executed
-        from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+        from sostrades_core.tools.post_processing.post_processing_factory import (
+            PostProcessingFactory,
+        )
         ppf = PostProcessingFactory()
         for disc in exec_eng.root_process.proxy_disciplines:
             filters = ppf.get_post_processing_filters_by_discipline(
@@ -1305,7 +1307,9 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
 
          # check that the post processings can be executed
-        from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+        from sostrades_core.tools.post_processing.post_processing_factory import (
+            PostProcessingFactory,
+        )
         ppf = PostProcessingFactory()
         for disc in exec_eng.root_process.proxy_disciplines:
             filters = ppf.get_post_processing_filters_by_discipline(

@@ -168,7 +168,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         )
         return result_data
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
 
@@ -188,6 +188,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         # Write items
         dataset_collection.insert_many(data_for_arango, overwrite=True)
+        return values_to_write
 
     def get_values_all(self, dataset_identifier: str, data_types_dict:dict[str:str]) -> dict[str:Any]:
         """
@@ -222,7 +223,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         data_types_dict:dict[str:str],
         create_if_not_exists: bool = True,
         override: bool = False,
-    ) -> None:
+    ) -> dict[str: Any]:
         """
         Write a dataset from Arango
         :param dataset_identifier: dataset identifier for connector
@@ -260,4 +261,4 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             if not self.db.has_collection(name=mapping[dataset_identifier]):
                 self.db.create_collection(name=mapping[dataset_identifier])
 
-        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
+        return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)

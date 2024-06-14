@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/10-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/10/10-2024/06/11 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@ limitations under the License.
 import unittest
 from copy import deepcopy
 from multiprocessing import cpu_count
-from os import makedirs
 from os.path import basename, dirname, join, realpath
 from pathlib import Path
-from shutil import rmtree, unpack_archive
+from shutil import unpack_archive
 from sys import platform
 from tempfile import gettempdir
 from time import sleep
@@ -32,6 +31,7 @@ from pandas.testing import assert_frame_equal
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.tools.tree.serializer import (
     CSV_SEP,
@@ -98,9 +98,7 @@ class TestSerializeDF(unittest.TestCase):
 
     def tearDown(self):
         for dir_to_del in self.dir_to_del:
-            rmtree(dir_to_del)
-            sleep(0.5)
-        sleep(0.5)
+            rmtree_safe(dir_to_del)
 
     def set_TestDiscAllTypes_ee(self, st_name, proc_n,
                                 ns_dict=None, db_dir=None, rw_obj=None):
@@ -154,8 +152,7 @@ class TestSerializeDF(unittest.TestCase):
                        'df': {'type': 'dataframe', 'unit': None, 'value': DataFrame(df_array, columns=df_col)}}
         test_extract_DF = join(self.out_dir, 'test_extract_DF')
         if not Path(test_extract_DF).is_dir():
-            makedirs(test_extract_DF)
-            sleep(0.1)
+            makedirs_safe(test_extract_DF)
 
         ds = DataSerializer()
         df = ds.export_data_dict_to_csv(origin_dict, test_extract_DF)
@@ -211,7 +208,7 @@ class TestSerializeDF(unittest.TestCase):
             self.out_dir, DirectLoadDump(), exec_eng.get_anonimated_data_dict())
         test_dir = join(self.out_dir, test_name)
         if not Path(test_dir).is_dir():
-            makedirs(test_dir)
+            makedirs_safe(test_dir)
         cr_char = '\n' if platform == 'linux' else '\r\n'
         # z scalar
         param = 'z'
@@ -254,7 +251,7 @@ class TestSerializeDF(unittest.TestCase):
         test_name = 'test_unique_data_csv_generator'
         test_dir = join(self.out_dir, test_name)
         if not Path(test_dir).is_dir():
-            makedirs(test_dir)
+            makedirs_safe(test_dir)
         # dict_of_df_in dict of dataframe
         generate_unique_data_csv(self.dict_of_df_in_data,
                                  join(test_dir, 'dict_of_df_in.csv'))

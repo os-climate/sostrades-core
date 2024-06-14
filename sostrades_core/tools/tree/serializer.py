@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/23-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/06/23-2024/06/11 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from io import BytesIO, StringIO
-from os import makedirs, remove
+from os import remove
 from os.path import basename, dirname, join
 from pathlib import Path
-from shutil import make_archive, rmtree
+from shutil import make_archive
 from tempfile import gettempdir
-from time import sleep
 
 from numpy import ndarray
 from pandas import DataFrame, concat, read_pickle
 
 from sostrades_core.execution_engine.ns_manager import NS_SEP
+from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 '''
@@ -111,7 +111,7 @@ class DataSerializer:
                 except OSError as e:
                     print("Error DM_db should not be a file and could not be deleted: %s : %s" % (db_dir, e.strerror))
             # we set the option exists_ok=True so that if the folder already exists it doen't raise an error
-            makedirs(db_dir, exist_ok=True)
+            makedirs_safe(db_dir, exist_ok=True)
         
 
     def is_structured_data_type(self, data):
@@ -128,8 +128,7 @@ class DataSerializer:
 #         '''
 #         dm_dir = join(self.dm_db_root_dir, self.study_filename)
 #         if not Path(dm_dir).is_dir():
-#             makedirs(dm_dir)
-#             sleep(0.1)
+#             makedirs_safe(dm_dir)
 #         converted_dict = anonymize_dict(data_dict,
 #                                         anonymize_fct=anonymize_function)
 #         # export full DM data_dict to unique pickle file
@@ -210,8 +209,8 @@ class DataSerializer:
     def export_data_dict_and_zip(self, origin_dict, export_dir=None):
         ''' export values and units of the whole DM data_dict to csv file and zip '''
         if not Path(export_dir).is_dir():
-            makedirs(export_dir)
-            sleep(0.1)
+            makedirs_safe(export_dir)
+            
         data_df = self.export_data_dict_to_csv(origin_dict,
                                                export_dir=export_dir)
         self.dm_val_file = join(export_dir, self.val_filename)
@@ -222,8 +221,7 @@ class DataSerializer:
                                       'zip',
                                       dirname(export_dir),
                                       basename(export_dir))
-        sleep(0.1)
-        rmtree(export_dir)
+        rmtree_safe(export_dir)
         return export_dir_zip
 
     def load_from_pickle(self,
@@ -309,8 +307,7 @@ class DataSerializer:
         '''
 
         if not Path(study_to_load).is_dir():
-            makedirs(study_to_load, exist_ok=True)
-            sleep(0.1)
+            makedirs_safe(study_to_load, exist_ok=True)
 
         # export full data_dict to unique pickle file
         self.dm_pkl_file = join(study_to_load, self.pkl_filename)
@@ -326,8 +323,7 @@ class DataSerializer:
         '''
 
         if not Path(study_to_load).is_dir():
-            makedirs(study_to_load, exist_ok=True)
-            sleep(0.1)
+            makedirs_safe(study_to_load, exist_ok=True)
 
         # export full cache_map to unique pickle file
         self.cache_file = join(study_to_load, self.cache_filename)

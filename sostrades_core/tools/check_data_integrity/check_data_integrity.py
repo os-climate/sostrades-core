@@ -291,13 +291,19 @@ class CheckDataIntegrity():
             if not all(isinstance(item, self.VAR_TYPE_MAP[column_type]) for item in values_in_column):
                 check_integrity_msg = f'Dataframe values in column {key} are not as type {column_type} requested in the dataframe descriptor'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
-        if column_range is not None and len(column_range) == 2:
-            if column_type == 'string':
+        if column_range is not None:
+            if not isinstance(column_range, list):
+                check_integrity_msg = f"Dataframe descriptor incorrect completion of range for column '{key}'. Should be a list."
+                self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
+            elif column_type == 'string':
                 if not all(item in column_range for item in values_in_column):
                     check_integrity_msg = f'Dataframe values in column {key} are not in the possible list {column_range} requested in the dataframe descriptor'
                     self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
             elif column_type in ['float', 'int']:
-                if not all(item <= column_range[1] for item in values_in_column) and all(
+                if len(column_range) != 2:
+                    check_integrity_msg = f"Dataframe descriptor incorrect completion of range for column '{key}' of type 'float' or 'int'. Should be list of len 2."
+                    self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
+                elif not all(item <= column_range[1] for item in values_in_column) and all(
                         column_range[0] <= item for item in values_in_column):
                     check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
                     self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)

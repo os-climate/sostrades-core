@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@ limitations under the License.
 import unittest
 from os.path import join
 from pathlib import Path
-from shutil import rmtree
 from tempfile import gettempdir
-from time import sleep
 
 import pandas as pd
 from numpy import array
@@ -29,6 +27,7 @@ from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver
     Study,
 )
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 
@@ -140,10 +139,8 @@ class TestMultiScenario(unittest.TestCase):
     def tearDown(self):
 
         for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
             if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+                rmtree_safe(dir_to_del)
 
     def test_01_multiscenario_with_sample_generator_cp(self):
         """
@@ -330,8 +327,7 @@ class TestMultiScenario(unittest.TestCase):
         study_load.load_data(from_path=dump_dir)
         # print(study_load.ee.dm.get_data_dict_values())
         study_load.run()
-        from shutil import rmtree
-        rmtree(dump_dir)
+        rmtree_safe(dump_dir)
 
     def test_04_multi_scenario_from_process_with_basic_config_from_usecase(self):
         repo_name = self.repo + ".tests_driver_eval.multi"

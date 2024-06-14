@@ -27,6 +27,7 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
     DatasetSerializerType,
     DatasetsSerializerFactory,
 )
+from sostrades_core.tools.folder_operations import makedirs_safe
 
 
 class JSONDatasetsConnector(AbstractDatasetsConnector):
@@ -48,7 +49,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         self.__file_path = file_path
         # create file if not exist
         if create_if_not_exists and not os.path.exists(file_path):
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            makedirs_safe(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump({}, f)
         self.__logger = logging.getLogger(__name__)
@@ -119,7 +120,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
         return list(self.__json_data.keys())
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
@@ -144,6 +145,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
                                                     for key, value in values_to_write.items()})
 
         self.__save_json_data()
+        return values_to_write
     
     def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
@@ -168,7 +170,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         return dataset_data
         
 
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str: Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -194,5 +196,5 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
         
-        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
+        return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
             

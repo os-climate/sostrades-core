@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/06/07 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ limitations under the License.
 import logging
 from functools import wraps
 
-from numpy import array, complex128, ndarray, zeros
+from numpy import array, complex128, ndarray
+from scipy.sparse import lil_matrix
 
 from sostrades_core.execution_engine.design_var.design_var import DesignVar
 from sostrades_core.tools.base_functions.compute_len import compute_len
-from scipy.sparse import lil_matrix
 
 # decorator for delegating a method to the ProxyDiscipline object during configuration
 

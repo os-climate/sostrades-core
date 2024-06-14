@@ -13,14 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import json
+import json, pickle
 import logging
 import os
-from shutil import rmtree
 from typing import Any
 
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import AbstractDatasetsConnector, DatasetDeserializeException, DatasetGenericException, DatasetNotFoundException, DatasetUnableToInitializeConnectorException
-from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import DatasetSerializerType, DatasetsSerializerFactory
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    AbstractDatasetsConnector,
+    DatasetDeserializeException,
+    DatasetGenericException,
+    DatasetNotFoundException,
+)
+from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
+    DatasetSerializerType,
+    DatasetsSerializerFactory,
+)
+from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 
 
 class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
@@ -33,7 +41,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                  create_if_not_exists: bool = False,
                  serializer_type: DatasetSerializerType = DatasetSerializerType.FileSystem):
         """
-        Constructor for JSON data connector
+        Constructor for Local Filesystem data connector
 
         
         :param root_directory_path: root directory path for this dataset connector using filesystem
@@ -47,12 +55,12 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__root_directory_path = os.path.abspath(root_directory_path)
         self._create_if_not_exists = create_if_not_exists
         if self._create_if_not_exists and not os.path.isdir(self.__root_directory_path):
-            os.makedirs(self.__root_directory_path, exist_ok=True)
+            makedirs_safe(self.__root_directory_path, exist_ok=True)
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug(f"Initializing local connector on {root_directory_path}")
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
 
-    def __load_dataset_descriptor(self, dataset_identifier: str) -> dict[str: Any]:
+    def __load_dataset_descriptor_and_pickle(self, dataset_identifier: str) -> dict[str: Any]:
         """
         Method to load dataset descriptor from JSON file containing the basic types variables as well as the dataset
         descriptor values type "@dataframe@d.csv" for the types stored in filesystem.
@@ -65,6 +73,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
+
         if not os.path.exists(dataset_descriptor_path):
             raise DatasetNotFoundException(dataset_identifier)
         descriptor_data = None
@@ -74,10 +83,13 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         except TypeError as exception:
             raise DatasetDeserializeException(dataset_identifier, f'type error exception in dataset descriptor, {str(exception)}')
         except json.JSONDecodeError as exception:
-            raise DatasetDeserializeException(dataset_identifier, f'dataset descriptor has not a valid json format, {str(exception.msg)}')
+            raise DatasetDeserializeException(dataset_identifier, f'dataset descriptor does not have a valid json format, {str(exception.msg)}')
+
+        self.__datasets_serializer.load_pickle_data()
+
         return descriptor_data
 
-    def __save_dataset_descriptor(self, dataset_identifier: str, descriptor_data: dict[str: Any]) -> None:
+    def __save_dataset_descriptor_and_pickle(self, dataset_identifier: str, descriptor_data: dict[str: Any]) -> None:
         """
         Method to save dataset descriptor into JSON file containing the basic types variables as well as the dataset
         descriptor values type "@dataframe@d.csv" for the types stored in filesystem.
@@ -87,6 +99,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :param descriptor_data: data as it will be saved into te descriptor
         :type descriptor_data: dict
         """
+        # TODO: exception mgmt?
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
         if not os.path.exists(dataset_descriptor_path):
@@ -94,6 +107,10 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                                                    f"{dataset_descriptor_path}")
         with open(dataset_descriptor_path, "w", encoding="utf-8") as file:
             json.dump(obj=descriptor_data, fp=file, indent=4)
+        self.__datasets_serializer.dump_pickle_data()
+
+    def __clear_pickle_data(self):
+        self.__datasets_serializer.clear_pickle_data()
 
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
@@ -106,15 +123,16 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type data_to_get: dict[str:str]
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
-
-        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
         self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
-
+        # Load the descriptor, the serializer loads the pickle if it exists
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         # Filter data
-        filtered_data = {key:self.__datasets_serializer.convert_from_dataset_data(key,
-                                                                                  dataset_descriptor[key],
-                                                                                  data_to_get)
-                        for key in dataset_descriptor if key in data_to_get}
+        filtered_data = {key: self.__datasets_serializer.convert_from_dataset_data(key,
+                                                                                   dataset_descriptor[key],
+                                                                                   data_to_get)
+                         for key in dataset_descriptor if key in data_to_get}
+        # Clear pickle buffer from serializer
+        self.__clear_pickle_data()
         self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_data
 
@@ -126,7 +144,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Getting all datasets for connector {self}")
         return next(os.walk(self.__root_directory_path))[1]
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
@@ -138,18 +156,17 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
-        # read the already existing values
-        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
         self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
-
-        # Write data
+        # read the already existing values
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
+        # Write data, serializer buffers the data to pickle and already pickled
         dataset_descriptor.update({key: self.__datasets_serializer.convert_to_dataset_data(key,
                                                                                            value,
                                                                                            data_types_dict)
                                    for key, value in values_to_write.items()})
-
-        self.__save_dataset_descriptor(dataset_identifier=dataset_identifier,
-                                       descriptor_data=dataset_descriptor)
+        self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier,
+                                                  descriptor_data=dataset_descriptor)
+        return values_to_write
 
     def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
@@ -161,14 +178,13 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
-        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
         self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
-
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         dataset_data = {key: self.__datasets_serializer.convert_from_dataset_data(key,
                                                                                  value,
                                                                                  data_types_dict)
                         for key, value in dataset_descriptor.items()}
-
+        self.__clear_pickle_data()
         return dataset_data
 
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
@@ -189,11 +205,10 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
-
         if not os.path.exists(dataset_descriptor_path):
             # Handle dataset creation
             if create_if_not_exists:
-                os.makedirs(dataset_directory, exist_ok=True)
+                makedirs_safe(dataset_directory, exist_ok=True)
                 with open(dataset_descriptor_path, "w", encoding="utf-8") as f:
                     json.dump({}, f)
             else:
@@ -202,7 +217,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
+        return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
     def clear(self, remove_root_directory:bool=False) -> None:
         """
@@ -212,7 +227,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         if remove_root_directory:
-            rmtree(self.__root_directory_path)
+            rmtree_safe(self.__root_directory_path)
         else:
             map(self.clear_dataset, self.get_datasets_available())
 
@@ -223,4 +238,4 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type dataset_id: str
         :return: None
         """
-        rmtree(os.path.join(self.__root_directory_path, dataset_id))
+        rmtree_safe(os.path.join(self.__root_directory_path, dataset_id))

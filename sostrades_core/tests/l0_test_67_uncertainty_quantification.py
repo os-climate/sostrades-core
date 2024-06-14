@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ limitations under the License.
 import unittest
 from os.path import dirname, join
 from pathlib import Path
-from shutil import rmtree
 
 import numpy as np
 import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestUncertaintyQuantification(unittest.TestCase):
@@ -47,7 +47,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
     def tearDown(self):
         for dir in self.dir_to_del:
             if Path(dir).is_dir():
-                rmtree(dir)
+                rmtree_safe(dir)
 
     def test_01_uncertainty_quantification(self):
 

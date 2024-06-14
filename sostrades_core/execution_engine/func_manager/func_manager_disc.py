@@ -27,7 +27,7 @@ from numpy import asarray, float64, ndarray
 from plotly import graph_objects as go
 
 from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.execution_engine.optim_manager_disc import OptimManagerDisc
 from sostrades_core.tools.base_functions.exp_min import (
     compute_dfunc_with_exp_min,
     compute_func_with_exp_min,
@@ -44,7 +44,7 @@ from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plot
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-class FunctionManagerDisc(SoSWrapp):
+class FunctionManagerDisc(OptimManagerDisc):
     """
     Constraints aggregation discipline
     """
