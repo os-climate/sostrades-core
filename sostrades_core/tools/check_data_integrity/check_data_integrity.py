@@ -137,8 +137,9 @@ class CheckDataIntegrity():
                             self.__check_variable_range(var_data_dict)
                         if self.variable_possible_values is not None:
                             self.__check_possible_values()
-
-        return '\n'.join(self.check_integrity_msg_list)
+        out = '\n\t'.join(self.check_integrity_msg_list)
+        out = '\n\t' + out if len(out) else out
+        return out
 
     def __check_variable_range(self, var_data_dict):
         '''
@@ -254,14 +255,17 @@ class CheckDataIntegrity():
                             check_integrity_msg_df_descriptor)
 
             if df_descriptor_well_defined:
+                for column in dataframe_descriptor.keys():
+                    if column not in self.variable_value.columns:
+                        check_integrity_msg_df_descriptor = f"Missing column '{column}'"
+                        self.__add_msg_to_check_integrity_msg_list(check_integrity_msg_df_descriptor)
                 for key in self.variable_value.columns:
                     if dynamic_dataframe_column and key not in dataframe_descriptor:
                         # The key is not in the dataframe descriptor but the datafrmae has dynamic columns that cannot be described in the df_descriptor depending on the use
                         pass
                     elif key not in dataframe_descriptor and not dynamic_dataframe_column:
                         check_integrity_msg_df_descriptor = f'Dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
-                        self.__add_msg_to_check_integrity_msg_list(
-                            check_integrity_msg_df_descriptor)
+                        self.__add_msg_to_check_integrity_msg_list(check_integrity_msg_df_descriptor)
                     elif key == "Unnamed: 0":
                         pass
                     else:
@@ -293,7 +297,6 @@ class CheckDataIntegrity():
                     check_integrity_msg = f'Dataframe values in column {key} are not in the possible list {column_range} requested in the dataframe descriptor'
                     self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
             elif column_type in ['float', 'int']:
-
                 if not all(item <= column_range[1] for item in values_in_column) and all(
                         column_range[0] <= item for item in values_in_column):
                     check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
