@@ -37,7 +37,7 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a data from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -47,6 +47,7 @@ class AbstractDatasetsConnector(abc.ABC):
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         """
+        return values_to_write
 
     @abc.abstractmethod
     def get_values_all(self, dataset_identifier: str, data_types_dict:dict[str:str]) -> dict[str:Any]:
@@ -65,7 +66,7 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -78,8 +79,9 @@ class AbstractDatasetsConnector(abc.ABC):
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
+        :return: values_to_write: dict[str: Any]
         """
-    
+        return values_to_write
     
     def copy_dataset_from(self, connector_from:AbstractDatasetsConnector, dataset_identifier: str, data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False):
         """

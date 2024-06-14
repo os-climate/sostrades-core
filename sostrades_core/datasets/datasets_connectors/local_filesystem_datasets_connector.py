@@ -36,7 +36,6 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
     Specific dataset connector for dataset in local filesystem
     """
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
-    NON_SERIALIZABLE_PKL = 'non_serializable.pkl'
 
     def __init__(self, root_directory_path: str,
                  create_if_not_exists: bool = False,
@@ -74,7 +73,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
-        non_serializable_pkl_path = os.path.join(dataset_directory, self.NON_SERIALIZABLE_PKL)
+
         if not os.path.exists(dataset_descriptor_path):
             raise DatasetNotFoundException(dataset_identifier)
         descriptor_data = None
@@ -86,22 +85,11 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         except json.JSONDecodeError as exception:
             raise DatasetDeserializeException(dataset_identifier, f'dataset descriptor does not have a valid json format, {str(exception.msg)}')
 
-        if os.path.exists(non_serializable_pkl_path):
-            pkl_data = None
-            try:
-                with open(non_serializable_pkl_path, 'rb') as pkl_file:
-                    pkl_data = pickle.load(pkl_file)
-            except TypeError as exception:
-                raise DatasetDeserializeException(dataset_identifier,
-                                                  f'type error exception in dataset pickle file for non-serializable data, {str(exception)}')
-            except pickle.UnpicklingError as exception:
-                raise DatasetDeserializeException(dataset_identifier,
-                                                  f'dataset pickle file for non-serializable data does not have a valid pickle format, {str(exception)}')
-        else:
-            pkl_data = {}
-        return descriptor_data, pkl_data
+        self.__datasets_serializer.load_pickle_data()
 
-    def __save_dataset_descriptor_and_pickle(self, dataset_identifier: str, descriptor_data: dict[str: Any], data_to_pickle: dict[str: Any]) -> None:
+        return descriptor_data
+
+    def __save_dataset_descriptor_and_pickle(self, dataset_identifier: str, descriptor_data: dict[str: Any]) -> None:
         """
         Method to save dataset descriptor into JSON file containing the basic types variables as well as the dataset
         descriptor values type "@dataframe@d.csv" for the types stored in filesystem.
@@ -119,11 +107,10 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                                                    f"{dataset_descriptor_path}")
         with open(dataset_descriptor_path, "w", encoding="utf-8") as file:
             json.dump(obj=descriptor_data, fp=file, indent=4)
+        self.__datasets_serializer.dump_pickle_data()
 
-        if data_to_pickle:
-            non_serializable_pkl_path = os.path.join(dataset_directory, self.NON_SERIALIZABLE_PKL)
-            with open(non_serializable_pkl_path, 'wb') as pkl_file:
-                pickle.dump(data_to_pickle, pkl_file)
+    def __clear_pickle_data(self):
+        self.__datasets_serializer.clear_pickle_data()
 
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
@@ -136,19 +123,16 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type data_to_get: dict[str:str]
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
-
-        dataset_descriptor, pickled_data = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
-
+        # Load the descriptor, the serializer loads the pickle if it exists
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         # Filter data
         filtered_data = {key: self.__datasets_serializer.convert_from_dataset_data(key,
                                                                                    dataset_descriptor[key],
                                                                                    data_to_get)
-                        for key in dataset_descriptor if key in data_to_get}
-
-        # update with pickled data what the serializer pre-filled with @object@. KeyError if mismatch
-        filtered_data.update({key: pickled_data[key] for key in filtered_data if
-                              isinstance(filtered_data[key], str) and filtered_data[key] == self.__datasets_serializer.TYPE_OBJECT_IDENTIFIER})
+                         for key in dataset_descriptor if key in data_to_get}
+        # Clear pickle buffer from serializer
+        self.__clear_pickle_data()
         self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_data
 
@@ -160,7 +144,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Getting all datasets for connector {self}")
         return next(os.walk(self.__root_directory_path))[1]
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
@@ -172,37 +156,17 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
-        # read the already existing values
-        dataset_descriptor, pickled_data = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
-
-        # Write data
+        # read the already existing values
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
+        # Write data, serializer buffers the data to pickle and already pickled
         dataset_descriptor.update({key: self.__datasets_serializer.convert_to_dataset_data(key,
                                                                                            value,
                                                                                            data_types_dict)
                                    for key, value in values_to_write.items()})
-
-        # dataset descriptor contains potentially non-jsonifiable values
-        dataset_descriptor, pickled_data = self.__update_pickle_data(dataset_descriptor, pickled_data, dataset_identifier)
-
         self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier,
-                                                  descriptor_data=dataset_descriptor,
-                                                  data_to_pickle=pickled_data)
-
-    def __update_pickle_data(self, dataset_descriptor, pickled_data, dataset_id):
-        # the dataset_descriptor contains the ground truth of what needs to be saved but might not be jsonifiable
-        for key, value in dataset_descriptor.items():
-            datum_dict = {key: value}
-            try:
-                _ = json.dumps(datum_dict)  # TODO: might be optimized by saving all the json strings
-                # if no error then datum needs to be deleted from the pickled data to avoid spurious overwrite
-                if key in pickled_data:
-                    del pickled_data[key]
-            except TypeError:  # non-jsonifiable
-                self.__logger.debug(f"For {dataset_id}, parameter {key} is stored in pickle")
-                pickled_data.update(datum_dict)
-                dataset_descriptor[key] = self.__datasets_serializer.TYPE_OBJECT_IDENTIFIER
-        return dataset_descriptor, pickled_data
+                                                  descriptor_data=dataset_descriptor)
+        return values_to_write
 
     def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
@@ -214,17 +178,13 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
-        dataset_descriptor, pickled_data = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
-
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         dataset_data = {key: self.__datasets_serializer.convert_from_dataset_data(key,
                                                                                  value,
                                                                                  data_types_dict)
                         for key, value in dataset_descriptor.items()}
-
-        # update with pickled data what the serializer pre-filled with @object@. KeyErrror if mismatch
-        dataset_data.update({key: pickled_data[key] for key in dataset_data
-                             if isinstance(dataset_data[key], str) and dataset_data[key] == self.__datasets_serializer.TYPE_OBJECT_IDENTIFIER})
+        self.__clear_pickle_data()
         return dataset_data
 
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
@@ -245,7 +205,6 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
-
         if not os.path.exists(dataset_descriptor_path):
             # Handle dataset creation
             if create_if_not_exists:
@@ -258,7 +217,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
+        return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
     def clear(self, remove_root_directory:bool=False) -> None:
         """

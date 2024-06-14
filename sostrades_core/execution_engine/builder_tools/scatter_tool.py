@@ -278,6 +278,11 @@ class ScatterTool(SosTool):
 
             old_builder_name = builder.sos_name
             disc_name = self.get_subdisc_name(name, old_builder_name)
+            # if builder has a display name, update it
+            if builder in self.ee.ns_manager.display_ns_dict:
+                old_display_value = self.ee.ns_manager.display_ns_dict[builder]
+                new_display_value = self.get_subdisc_name_display(name, old_display_value)
+                self.ee.ns_manager.display_ns_dict[builder] = new_display_value
 
             builder.set_disc_name(disc_name)
 
@@ -287,6 +292,10 @@ class ScatterTool(SosTool):
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
             self.set_father_discipline()
             disc = builder.build()
+
+            if builder in self.ee.ns_manager.display_ns_dict:
+                # restore old display value of builder
+                self.ee.ns_manager.display_ns_dict[builder] = old_display_value
 
             self.apply_display_options(disc, name, old_builder_name)
 
@@ -314,6 +323,30 @@ class ScatterTool(SosTool):
         disc_name = f'{namespace_name}.{name}.{old_builder_name}'
 
         return disc_name
+
+    def get_subdisc_name_display(self, name, old_builder_name):
+        '''
+        Calculates the full display name of the discipline.
+
+        Args:
+            name: name of the scenario
+            old_builder_name: old name of the builder
+
+        Returns:
+            disc_name : full_name of the discipline to build
+
+        '''
+        # get the full_name of the driver and of the father_executor
+        driver_full_name = self.driver.get_disc_full_name()
+        father_executor_name = self.driver.father_executor.get_disc_full_name()
+        # delete the name of the father_executor because the disc will be built at father_executor node
+        namespace_name = driver_full_name.replace(f'{father_executor_name}.', '', 1)
+        # Construct the parts of the full discipline name
+        old_builder_parts = old_builder_name.split('.')
+        parts = [father_executor_name] + [namespace_name] + [name] + old_builder_parts[1:]
+        disc_name = '.'.join(parts)
+        return disc_name
+
 
     def apply_display_options(self, disc, name, old_builder_name):
         '''
