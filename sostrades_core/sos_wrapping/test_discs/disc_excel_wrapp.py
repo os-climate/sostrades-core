@@ -15,9 +15,10 @@ limitations under the License.
 '''
 
 import pandas as pd
-import xlwings as xw
+
+from pycel import ExcelCompiler
 import numpy as np
-from os.path import dirname,join
+from os.path import dirname, join
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -55,31 +56,20 @@ class DiscExcelWrapp(SoSWrapp):
 
     def run(self):
 
-        df= self.get_sosdisc_inputs('df')
+        df = self.get_sosdisc_inputs('df')
 
-        # Initialize the wrapper
-        filename = join(dirname(__file__),self.FILENAME)
-        self.init_excel(filename)
+        self.filename = join(dirname(__file__), self.FILENAME)
 
         # Write DataFrame to Excel
-        self.write_dataframe(df, self.SHEETNAME, start_row=14, start_col=3, end_row=28, end_col=4)
+        self.write_dataframe(df, self.SHEETNAME, start_row=13, start_col=2)
 
         # Get results of formulas
-        days_total_list = self.get_formula_results(self.SHEETNAME, start_row=14, start_col=5, end_row=28, end_col=5)
+        result_df = self.evaluate_column_in_excel(self.SHEETNAME, start_row=13, start_col=4, end_row=28,
+                                                  col_name='days total')
 
-        result_df=pd.DataFrame({'days total':days_total_list})
-        # Save and close the workbook
-        self.close_excel()
+        self.store_sos_outputs_values({'df_out': result_df})
 
-        self.store_sos_outputs_values({'df_out':result_df})
-
-    def init_excel(self, filename):
-        self.filename = filename
-        self.app = xw.App(visible=False)  # Run Excel in the background
-        self.wb = self.app.books.open(filename)
-
-
-    def write_dataframe(self, df, sheet_name, start_row=0, start_col=0,end_row=None,end_col=None):
+    def write_dataframe(self, df, sheet_name, start_row=0, start_col=0):
         """
         Write a pandas DataFrame to an Excel sheet.
 
@@ -88,16 +78,12 @@ class DiscExcelWrapp(SoSWrapp):
         :param start_row: Starting row in the sheet (0-indexed).
         :param start_col: Starting column in the sheet (0-indexed).
         """
-        sheet = self.wb.sheets[sheet_name]
-        if end_row is not None and end_col is not None:
-            sheet.range((start_row , start_col ), (end_row , end_col)).value = df.values
-        else:
-            sheet.range((start_row , start_col )).value = df.values
 
+        with pd.ExcelWriter(self.filename, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+            df.to_excel(writer, sheet_name=sheet_name, startrow=start_row, startcol=start_col, index=False,
+                        header=False)
 
-
-
-    def get_formula_results(self, sheet_name, start_row=0, start_col=0, end_row=None, end_col=None):
+    def evaluate_column_in_excel(self, sheet_name, start_row=0, start_col=0, end_row=None, col_name='result'):
         """
         Get the results of formulas from an Excel sheet.
 
@@ -108,20 +94,23 @@ class DiscExcelWrapp(SoSWrapp):
         :param end_col: Ending column in the sheet (0-indexed).
         :return: DataFrame with the results of the formulas.
         """
-        sheet = self.wb.sheets[sheet_name]
-        if end_row is not None and end_col is not None:
-            data = sheet.range((start_row , start_col ), (end_row , end_col)).value
-        else:
-            data = sheet.range((start_row , start_col )).expand().value
-        return data
 
+        # Use Pycel to evaluate formulas
+        comp = ExcelCompiler(filename=self.filename)
 
-    def close_excel(self):
-        """
-        Save the workbook and close the Excel application.
-        """
-        self.wb.close()
-        self.app.quit()
+        # Create a DataFrame to hold the data
+        data = []
+        for row in range(start_row, end_row):
+            cell = f'{chr(65 + start_col)}{row + 1}'
+            value = comp.evaluate(f'{sheet_name}!{cell}')
+            data.append(value)
+
+        # df = pd.read_excel(self.filename, sheet_name=sheet_name, header=None)
+        # df_results = df.iloc[start_row:end_row, start_col:start_col + 1]
+
+        # df_results.columns = [col_name]
+        df = pd.DataFrame({col_name: data})
+        return df
 
     def get_chart_filter_list(self):
 
