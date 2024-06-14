@@ -116,19 +116,6 @@ class DatasetsManager:
             raise DatasetGenericException(f'Error exporting dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return dataset_values
 
-    def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
-        """
-        Gets a dataset, creates it if it does not exist
-
-        :param dataset_info: Dataset info
-        :type dataset_info: DatasetInfo
-
-        :return: Dataset
-        """
-        if dataset_info not in self.datasets:
-            self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
-        return self.datasets[dataset_info]
-
     def __create_dataset(self, dataset_info: DatasetInfo) -> Dataset:
         """
         Private method
