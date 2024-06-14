@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/11 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ import os
 import re
 
 import matplotlib.pylab as plt
+
+from sostrades_core.tools.folder_operations import makedirs_safe
 
 
 class Diagram(object):
@@ -51,7 +53,7 @@ class Diagram(object):
             self.__save_dir = os.path.join(base_save_dir, sub_save_dir)
 
         if not os.path.isdir(self.__save_dir):
-            os.makedirs(self.__save_dir)
+            makedirs_safe(self.__save_dir)
 
     def add_curve(self, y_axis):
         '''

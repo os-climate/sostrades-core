@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/31-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/31-2024/06/11 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ import csv
 import os
 
 import numpy as np
+
+from sostrades_core.tools.folder_operations import makedirs_safe
 
 from .diagram import Diagram
 
@@ -52,7 +54,7 @@ class LoggerData(object):
 #         if os.path.isdir(full_save_dir):
 #             shutil.rmtree(full_save_dir)
         if not os.path.isdir(full_save_dir):
-            os.makedirs(full_save_dir)
+            makedirs_safe(full_save_dir)
 
     #-- Setters
     def set_complex_mode(self, complex_mode):

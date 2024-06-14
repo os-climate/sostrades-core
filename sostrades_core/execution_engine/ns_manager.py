@@ -181,10 +181,11 @@ class NamespaceManager:
     def associate_display_values_to_new_local_namespaces(self, disc_builder):
         if disc_builder in self.display_ns_dict:
             display_value = self.display_ns_dict[disc_builder]
-            for disc in disc_builder.discipline_dict.values():
-                if disc in self.local_ns_dict:
-                    self.local_ns_dict[disc].set_display_value(
-                        display_value)
+            # update local ns dict with display value
+            disc = disc_builder.disc
+            if disc in self.local_ns_dict:
+                self.local_ns_dict[disc].set_display_value(
+                    display_value)
 
     def get_all_namespace_with_name(self, name):
         '''
