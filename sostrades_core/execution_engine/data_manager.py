@@ -554,11 +554,14 @@ class DataManager:
             duplicates = []
             # agregate all data from all namespaces that should be exported in the dataset
             for namespace in namespace_list:
-                all_data.update(namespaced_data_dict[namespace])
+                all_data[KEY].update(namespaced_data_dict[namespace][KEY])
+                all_data[TYPE].update(namespaced_data_dict[namespace][TYPE])
+                all_data[VALUE].update(namespaced_data_dict[namespace][VALUE])
                 duplicates.extend([data_name for data_name in all_data_names if data_name in namespaced_data_dict[namespace][KEY].keys()])
                 all_data_names.extend(namespaced_data_dict[namespace][KEY].keys())
             if len(duplicates) > 0:
-                self.logger.warning(f"Warning while Datasets export: Some data {str(duplicates)} are in different namespaces and saved in the same dataset")
+                self.logger.warning(f"Warning while Datasets export: Some data {str(duplicates)} are in different namespaces and saved in the same dataset. \
+                                    Verify if values are equivalent between namespaces.")
            
             
             # retrieve the list of dataset associated to the namespace from the mapping
