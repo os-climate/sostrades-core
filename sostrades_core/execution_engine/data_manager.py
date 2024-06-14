@@ -556,8 +556,9 @@ class DataManager:
             for namespace in namespace_list:
                 all_data.update(namespaced_data_dict[namespace])
                 duplicates.extend([data_name for data_name in all_data_names if data_name in namespaced_data_dict[namespace][KEY].keys()])
+                all_data_names.extend(namespaced_data_dict[namespace][KEY].keys())
             if len(duplicates) > 0:
-                self.logger.warning(f"Some data {str(duplicates)} are in different namespaces and saved in the same dataset")
+                self.logger.warning(f"Warning while Datasets export: Some data {str(duplicates)} are in different namespaces and saved in the same dataset")
            
             
             # retrieve the list of dataset associated to the namespace from the mapping
