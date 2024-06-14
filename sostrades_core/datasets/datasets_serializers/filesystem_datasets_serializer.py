@@ -250,7 +250,6 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         return self.__deserialize_from_filesystem(np.loadtxt, data_value)
 
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
-        # TODO: TEST whether api serialization methods suffice for dataframe nested types
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name)),
             self.CSV_EXTENSION))
