@@ -217,12 +217,10 @@ class BaseStudyManager():
         :type: DatasetMapping
 
         """
-        if from_datasets_mapping is not None:
-            
-            # export study by saving data intg datasets, get them from the dm
-            parameter_changes = self.execution_engine.dm.export_data_in_datasets(from_datasets_mapping)
+        # export study by saving data intg datasets, get them from the dm
+        parameter_changes = self.execution_engine.dm.export_data_in_datasets(from_datasets_mapping)
 
-            return parameter_changes
+        return parameter_changes
         
     def load_data(self, from_path=None,
                   from_input_dict=None,

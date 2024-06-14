@@ -572,8 +572,8 @@ class DataManager:
                     data_dict=all_data[VALUE], 
                     data_type_dict=all_data[TYPE]
                     )
-                # # update data values in dm
-                for data_name in all_data[KEY].keys():
+                # save which data have been exported
+                for data_name in updated_data.keys():
                     key = all_data[KEY][data_name]
                     type = all_data[TYPE][data_name]
                     connector_id =datasets_mapping.datasets_infos[dataset].connector_id

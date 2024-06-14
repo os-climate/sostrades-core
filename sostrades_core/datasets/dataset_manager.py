@@ -84,7 +84,7 @@ class DatasetsManager:
     
     def write_data_in_dataset(self, dataset_info: DatasetInfo,
                                  data_dict: dict[str:str],
-                                 data_type_dict: dict[str:str]) -> dict[str:dict[str:Any]]:
+                                 data_type_dict: dict[str:str]) -> dict:
         """
         get data from data_dict and fill dataset
 
@@ -100,7 +100,6 @@ class DatasetsManager:
         :return: data_dict of data names plus a DATASET_INFO field with DatasetInfo object
         """
         self.__logger.debug(f"exporting data {data_dict.keys()} into dataset {dataset_info}")
-        data_retrieved = {}
 
         
         try:
@@ -113,13 +112,9 @@ class DatasetsManager:
                                                                 data_types_dict=data_type_dict,
                                                                 create_if_not_exists=True,
                                                                 override=True)
-            # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
-            # dataset_data = {key: {self.VALUE: value,
-            #                     self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
-            # data_retrieved.update(dataset_data)
         except DatasetGenericException as exception:
             raise DatasetGenericException(f'Error exporting dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
-        return data_retrieved
+        return dataset_values
 
     def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
         """
