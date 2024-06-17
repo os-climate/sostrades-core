@@ -247,7 +247,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     def _deserialize_array(self, data_value: str) -> np.ndarray:
         # NB: to be improved with astype(subtype) along subtype management
-        return self.__deserialize_from_filesystem(np.loadtxt, data_value)
+        return self.__deserialize_from_filesystem(np.loadtxt, data_value, ndmin=1)
 
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
