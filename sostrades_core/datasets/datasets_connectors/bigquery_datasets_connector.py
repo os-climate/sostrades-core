@@ -99,10 +99,11 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                     self.__logger.info(f"Value of {data}:{result_data[data]} retrieved in dataset {dataset_identifier} for connector {self}")
                     
                 except Exception as error:
-                    self.__logger.error(f"Value of {data} error in dataset {dataset_identifier} for connector {self}:{error}")
+                    self.__logger.debug(f"Value of {data} error in dataset {dataset_identifier} for connector {self}:{error}")
 
-        self.__logger.debug(f"Values obtained {list(result_data.keys())} for dataset {dataset_identifier} for connector {self}"
-        )
+        if (len(result_data.keys())>0):
+            self.__logger.info(f"Values obtained {list(result_data.keys())} for dataset {dataset_identifier} for connector {self}")
+
         return result_data
 
     def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
