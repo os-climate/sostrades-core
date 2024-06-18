@@ -20,6 +20,8 @@ six==1.16.0
 sympy==1.4
 tqdm==4.61.0
 pycel == 1.0b30
+google-cloud-bigquery==3.24.0
+pyarrow==16.1.0
 
 # Development requirements
 pytest==7.4.3

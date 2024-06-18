@@ -23,6 +23,7 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
 from sostrades_core.datasets.datasets_connectors.arango_datasets_connector import (
     ArangoDatasetsConnector,
 )
+from sostrades_core.datasets.datasets_connectors.bigquery_datasets_connector import BigqueryDatasetsConnector
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
     JSONDatasetsConnector,
 )
@@ -48,6 +49,7 @@ class DatasetConnectorType(Enum):
     Arango = ArangoDatasetsConnector
     SoSpickle = SoSPickleDatasetsConnector
     Local_repository = LocalRepositoryDatasetsConnector
+    Bigquery = BigqueryDatasetsConnector
 
     @classmethod
     def get_enum_value(cls, value_str):
