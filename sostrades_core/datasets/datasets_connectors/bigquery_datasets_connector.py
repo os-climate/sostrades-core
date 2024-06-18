@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from http.client import NOT_FOUND
 import logging
 from typing import Any
 import pandas as pd
@@ -81,8 +80,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         try:
             dataset = self.client.get_dataset(dataset_id)  # Make an API request.
             print("Dataset {} exists".format(dataset_id))
-        except NOT_FOUND:
-            raise DatasetNotFoundException(dataset_name=dataset_identifier) from NOT_FOUND
+        except:
+            raise DatasetNotFoundException(dataset_name=dataset_identifier)
 
         # Read dataset dataframe
         result_data = {}
@@ -154,8 +153,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         try:
             dataset = self.client.get_dataset(dataset_id)  # Make an API request.
             print("Dataset {} exists".format(dataset_id))
-        except NOT_FOUND:
-            raise DatasetNotFoundException(dataset_name=dataset_identifier) from NOT_FOUND
+        except:
+            raise DatasetNotFoundException(dataset_name=dataset_identifier)
 
         # Read dataset dataframe
         result_data = {}
