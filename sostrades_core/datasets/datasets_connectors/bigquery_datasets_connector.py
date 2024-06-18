@@ -92,15 +92,17 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 # check table exists
                 try:
                     self.client.get_table(table_id)
+                    self.__logger.error(f"found table of {table_id}")
                     QUERY = (
                     f'SELECT * FROM `{table_id}`')
                     query_job = self.client.query(QUERY)  # API request
                     res = query_job.result().to_dataframe()
+                    self.__logger.error(f"found result {res} for table of {table_id}")
                     result_data[data] = res
                     
                     
                 except Exception as error:
-                    self.__logger.error(f"Value of {data} error in dataset {dataset_identifier}:{error}")
+                    self.__logger.debug(f"Value of {data} error in dataset {dataset_identifier}:{error}")
 
        
         return result_data
