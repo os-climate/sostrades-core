@@ -95,7 +95,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                     QUERY = (
                     f'SELECT * FROM `{table_id}`')
                     query_job = self.client.query(QUERY)  # API request
-                    result_data[data] = query_job.result().to_dataframe()
+                    res = query_job.result().to_dataframe()
+                    result_data[data] = res
                     self.__logger.info(f"Value of {data}:{result_data[data]} retrieved in dataset {dataset_identifier} for connector {self}")
                     
                 except Exception as error:
