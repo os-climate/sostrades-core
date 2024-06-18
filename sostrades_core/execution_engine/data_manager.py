@@ -467,6 +467,7 @@ class DataManager:
                 # get data values into the dataset into the right format
                 updated_data = self.dataset_manager.fetch_data_from_datasets(
                     datasets_info=datasets_info, data_dict=data_dict[TYPE])
+                self.logger.warning(f"Retrieved the namespace {namespace} with values: {list(updated_data.keys())}")
                 # update data values in dm
                 for data_name, new_data in updated_data.items():
                     key = data_dict[KEY][data_name]
