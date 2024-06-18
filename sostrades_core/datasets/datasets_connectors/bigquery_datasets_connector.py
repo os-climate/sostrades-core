@@ -19,7 +19,6 @@ import logging
 from typing import Any
 import pandas as pd
 from google.cloud import bigquery
-from google.cloud.bigquery_storage import BigQueryReadClient, types
 
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
