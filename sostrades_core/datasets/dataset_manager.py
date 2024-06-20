@@ -66,7 +66,7 @@ class DatasetsManager:
                                     self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
                 data_retrieved.update(dataset_data)
             except DatasetGenericException as exception:
-               self.__logger.error(f'Error fetching dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
+               raise DatasetGenericException(f'Error fetching dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return data_retrieved
 
     def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
