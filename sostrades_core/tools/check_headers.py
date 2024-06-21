@@ -20,7 +20,6 @@ import time
 from datetime import datetime, timezone
 from enum import Enum
 from time import mktime
-from typing import Optional
 
 import git
 
@@ -151,7 +150,7 @@ class HeaderTools:
             return HeaderError(file_path, FileChange.ADDED, "No header", CARTOUCHE_CAP)
 
 
-    def check_header_for_modified_file(self,file_path) -> Optional[HeaderError]:
+    def check_header_for_modified_file(self,file_path) -> HeaderError:
         """
         Check if the header inside the file is matching the modified file header requirement if not return an HeaderError
 
@@ -159,13 +158,8 @@ class HeaderTools:
         :type file_path: str
         """
 
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
-        except FileNotFoundError:
-            if self.verbose:
-                print(f"File {file_path} has been deleted, skipping.")
-            return
+        with open(file_path, "r", encoding="utf-8") as file:
+            content = file.read()
 
         cartouche_match = re.search(
             pattern=cartouche_pattern, string=content, flags=re.DOTALL
