@@ -417,10 +417,10 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test_nested/",
             "create_if_not_exists": True
         }
-        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test_nested",
                                                     connector_type=DatasetConnectorType.get_enum_value("Local"),
                                                     **connector_args)
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
@@ -428,7 +428,7 @@ class TestDatasets(unittest.TestCase):
         study = StudyManager(file_path=usecase_file_path)
 
         dm = study.execution_engine.dm
-        connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test')
+        connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test_nested')
         connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
 
         data_types_dict = {_k: dm.get_data(f"usecase_local_dataset.Disc1.{_k}", "type") for _k in self.nested_types_reference_dict}
