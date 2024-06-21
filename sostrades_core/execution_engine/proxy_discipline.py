@@ -146,6 +146,7 @@ class ProxyDiscipline:
     UNIT = SoSWrapp.UNIT
     DESCRIPTION = SoSWrapp.DESCRIPTION
     NUMERICAL = SoSWrapp.NUMERICAL
+    SUBTYPE: SoSWrapp.SUBTYPE
     META_INPUT = 'meta_input'
     OPTIONAL = 'optional'
     ORIGIN = 'model_origin'
@@ -220,6 +221,8 @@ class ProxyDiscipline:
 
     DEBUG_MODE = SoSMDODiscipline.DEBUG_MODE
     LINEARIZATION_MODE = SoSMDODiscipline.LINEARIZATION_MODE
+    RESIDUAL_VARIABLES = SoSMDODiscipline.RESIDUAL_VARIABLES
+    RUN_SOLVE_RESIDUALS = SoSMDODiscipline.RUN_SOLVE_RESIDUALS
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change", "min_max_couplings", "all"]
 
     # -- status section
@@ -246,6 +249,9 @@ class ProxyDiscipline:
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                      NUMERICAL: True, STRUCTURING: True},
+        RESIDUAL_VARIABLES: {TYPE: 'dict', DEFAULT: {}, SUBTYPE: {'dict': 'string'}},
+        RUN_SOLVE_RESIDUALS: {TYPE: 'bool', DEFAULT: False}
+
     }
 
     # -- grammars
@@ -523,6 +529,20 @@ class ProxyDiscipline:
         self._reset_debug_mode = False
         self._reset_linearization_mode = False
 
+        self.set_residuals_variables()
+
+    def set_residuals_variables(self):
+        '''
+
+        Set the residuals variables to the MDO Discipline
+        residual_variables and run_solve_residuals boolean
+
+        '''
+
+        self.mdo_discipline_wrapp.mdo_discipline.residual_variables = self.get_sosdisc_inputs(
+            self.RESIDUAL_VARIABLES).copy()
+        self.mdo_discipline_wrapp.mdo_discipline.run_solves_residuals = self.get_sosdisc_inputs(
+            self.RUN_SOLVE_RESIDUALS)
     def add_status_observers_to_gemseo_disc(self):
         '''
         Add all observers that have been addes when gemseo discipline was not instanciated
