@@ -22,8 +22,8 @@ import pandas as pd
 from numpy import arange
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.execution_engine.func_manager.func_manager_disc import (
+from sostrades_optimization_plugin.models.func_manager.func_manager import FunctionManager
+from sostrades_optimization_plugin.models.func_manager.func_manager_disc import (
     FunctionManagerDisc,
 )
 from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import (
@@ -163,7 +163,7 @@ class TestFuncManager(unittest.TestCase):
                    'ns_functions_2': self.name + '.' + 'FunctionManager2'}
         ee.ns_manager.add_ns_def(ns_dict)
 
-        mod_list = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_list = 'sostrades_optimization_plugin.models.func_manager.func_manager_disc.FunctionManagerDisc'
         fm_builder = ee.factory.get_builder_from_module(
             'FunctionManager', mod_list)
         ee.factory.set_builders_to_coupling_builder(fm_builder)
@@ -250,7 +250,7 @@ class TestFuncManager(unittest.TestCase):
                    'ns_optim': self.name + '.' + func_mng_name}
         ee.ns_manager.add_ns_def(ns_dict)
 
-        mod_list = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_list = 'sostrades_optimization_plugin.models.func_manager.func_manager_disc.FunctionManagerDisc'
         fm_builder = ee.factory.get_builder_from_module(
             'FunctionManager', mod_list)
         ee.factory.set_builders_to_coupling_builder(fm_builder)
@@ -343,7 +343,7 @@ class TestFuncManager(unittest.TestCase):
                    'ns_optim': self.name + '.' + func_mng_name}
         ee.ns_manager.add_ns_def(ns_dict)
 
-        mod_list = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_list = 'sostrades_optimization_plugin.models.func_manager.func_manager_disc.FunctionManagerDisc'
         fm_builder = ee.factory.get_builder_from_module(
             'FunctionManager', mod_list)
         ee.factory.set_builders_to_coupling_builder(fm_builder)
@@ -428,7 +428,7 @@ class TestFuncManager(unittest.TestCase):
                    'ns_optim': self.name + '.' + func_mng_name}
         ee.ns_manager.add_ns_def(ns_dict)
 
-        mod_list = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_list = 'sostrades_optimization_plugin.models.func_manager.func_manager_disc.FunctionManagerDisc'
         fm_builder = ee.factory.get_builder_from_module(
             'FunctionManager', mod_list)
         ee.factory.set_builders_to_coupling_builder(fm_builder)
@@ -489,7 +489,7 @@ class TestFuncManager(unittest.TestCase):
                    'ns_optim': self.name + '.' + func_mng_name}
         ee.ns_manager.add_ns_def(ns_dict)
 
-        mod_list = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_list = 'sostrades_optimization_plugin.models.func_manager.func_manager_disc.FunctionManagerDisc'
         fm_builder = ee.factory.get_builder_from_module(
             'FunctionManager', mod_list)
         ee.factory.set_builders_to_coupling_builder(fm_builder)
@@ -581,7 +581,7 @@ class TestFuncManager(unittest.TestCase):
                    'ns_optim': self.name + '.' + func_mng_name}
         ee.ns_manager.add_ns_def(ns_dict)
 
-        mod_list = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_list = 'sostrades_optimization_plugin.models.func_manager.func_manager_disc.FunctionManagerDisc'
         fm_builder = ee.factory.get_builder_from_module(
             'FunctionManager', mod_list)
         ee.factory.set_builders_to_coupling_builder(fm_builder)

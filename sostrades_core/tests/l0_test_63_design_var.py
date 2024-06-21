@@ -16,7 +16,7 @@ limitations under the License.
 import numpy as np
 import pandas as pd
 
-from sostrades_core.execution_engine.design_var.design_var_disc import (
+from sostrades_optimization_plugin.models.design_var.design_var_disc import (
     DesignVarDiscipline,
 )
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
@@ -66,7 +66,7 @@ class TestDesignVar(AbstractJacobianUnittest):
 
         self.ee = ExecutionEngine(self.study_name)
         factory = self.ee.factory
-        design_var_path = 'sostrades_core.execution_engine.design_var.design_var_disc.DesignVarDiscipline'
+        design_var_path = 'sostrades_optimization_plugin.models.design_var.design_var_disc.DesignVarDiscipline'
         design_var_builder = factory.get_builder_from_module('DesignVar', design_var_path)
         self.ee.ns_manager.add_ns_def({'ns_public': self.ns,
                                        'ns_optim': self.ns})

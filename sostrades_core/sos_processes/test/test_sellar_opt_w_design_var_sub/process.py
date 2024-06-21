@@ -38,8 +38,8 @@ class ProcessBuilder(BaseProcessBuilder):
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar_for_design_var.'
 
-        mod_func = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
-        mod_dv = 'sostrades_core.execution_engine.design_var.design_var_disc.DesignVarDiscipline'
+        mod_func = 'sostrades_optimization_plugin.models.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_dv = 'sostrades_optimization_plugin.models.design_var.design_var_disc.DesignVarDiscipline'
 
         mods_dict = {'DesignVar': mod_dv,
                      'Sellar_Problem': disc_dir + 'SellarProblem',

@@ -37,7 +37,7 @@ class ProcessBuilder(BaseProcessBuilder):
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
     
-        mod_func = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
+        mod_func = 'sostrades_optimization_plugin.models.func_manager.func_manager_disc.FunctionManagerDisc'
     
         mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
                      'Sellar_2': disc_dir + 'Sellar2',
