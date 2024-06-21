@@ -195,6 +195,8 @@ class TestFuncManager(unittest.TestCase):
                                'eqcst1', 'eqcst2', 'obj1', 'obj2']
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
                             INEQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
+        func_df['aggr'] = "sum"
+        func_df['parent'] = 'obj'
         func_df['weight'] = [1., 1., 1., 1, 1, 0.8, 0.2]
         func_df['namespace'] = ['ns_functions'] * 6 + ['ns_functions_2']
         values_dict = {}
@@ -282,6 +284,10 @@ class TestFuncManager(unittest.TestCase):
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
                             INEQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
         func_df['weight'] = [1., 1., 1., 1, 1, 0.8, 0.2]
+        func_df['aggr'] = "sum"
+        func_df['parent'] = 'obj'
+        func_df['namespace'] = ''
+
 
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
@@ -370,6 +376,10 @@ class TestFuncManager(unittest.TestCase):
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT,
                             INEQ_CONSTRAINT, INEQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
         func_df['weight'] = [-0.5, -1., -1., -1., 0.8, 0.2]
+
+        func_df['aggr'] = "sum"
+        func_df['parent'] = 'obj'
+        func_df['namespace'] = ''
 
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
@@ -522,6 +532,8 @@ class TestFuncManager(unittest.TestCase):
                             INEQ_CONSTRAINT, EQ_CONSTRAINT, EQ_CONSTRAINT, OBJECTIVE, OBJECTIVE]
         func_df['weight'] = [1., 1., 1., 1, 1, 0.8, 0.2]
         func_df['aggr'] = ['sum', 'sum', 'sum', 'sum', 'sum', 'smax', 'sum']
+        func_df['aggr'] = "sum"
+        func_df['namespace'] = ''
         func_df['parent'] = ['ineqcst', 'ineqcst', 'ineqcst', 'eqcst', 'eqcst', 'obj', 'obj']
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
@@ -616,6 +628,8 @@ class TestFuncManager(unittest.TestCase):
                             OBJECTIVE, OBJECTIVE]
         func_df['weight'] = [0.5, -1., -0.2, 0.2, 1.2, -1.0, 0.01, 0.8, 0.2]
         func_df['aggr'] = ['sum', 'sum', 'sum', 'sum', 'delta', 'lin_to_quad', 'lin_to_quad', 'smax', 'sum']
+        func_df['parent'] = 'parent'
+        func_df['namespace'] = ''
         values_dict = {}
         values_dict[prefix + FunctionManagerDisc.FUNC_DF] = func_df
 
