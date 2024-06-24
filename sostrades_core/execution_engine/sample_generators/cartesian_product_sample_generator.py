@@ -106,7 +106,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         """
         if eval_inputs_cp is None or eval_inputs_cp.empty:
             return {}
-        logic_1 = eval_inputs_cp[wrapper.SELECTED_INPUT] == True
+        logic_1 = eval_inputs_cp[wrapper.SELECTED_INPUT]
         logic_2 = eval_inputs_cp[wrapper.LIST_OF_VALUES].isin([[]])
         logic_3 = eval_inputs_cp[wrapper.FULL_NAME] is None
         logic_4 = eval_inputs_cp[wrapper.FULL_NAME] == ''
