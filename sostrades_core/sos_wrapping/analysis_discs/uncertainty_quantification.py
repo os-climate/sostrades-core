@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -179,16 +179,12 @@ class UncertaintyQuantification(SoSWrapp):
 
                 if (eval_inputs is not None) & (gather_outputs is not None):
 
-                    selected_inputs = eval_inputs[
-                        eval_inputs['selected_input'] == True
-                        ]['full_name']
+                    selected_inputs = eval_inputs.loc[eval_inputs['selected_input']]['full_name']
 
                     in_param = selected_inputs.tolist()
                     # in_param.sort()
 
-                    selected_outputs = gather_outputs[
-                        gather_outputs['selected_output'] == True
-                        ]['full_name']
+                    selected_outputs = gather_outputs.loc[gather_outputs['selected_output']]['full_name']
 
                     out_param = selected_outputs.tolist()
                     out_param.sort()
@@ -380,8 +376,7 @@ class UncertaintyQuantification(SoSWrapp):
         eval_io = self.get_sosdisc_inputs(eval_io_name)
         if eval_io is not None:
             eval_io_full_name = self.get_input_var_full_name(eval_io_name)
-            parameter_list = eval_io[eval_io[f'selected_{io_type}put'] == True
-                                     ]['full_name'].tolist()
+            parameter_list = eval_io.loc[eval_io[f'selected_{io_type}put']]['full_name'].tolist()
             check_integrity_msg_list = []
             for param in parameter_list:
                 param_full_ns_list = self.dm.get_all_namespaces_from_var_name(param)
@@ -687,9 +682,7 @@ class UncertaintyQuantification(SoSWrapp):
         """check consistency between inputs from eval_inputs and samples_inputs_df"""
         inputs_dict = self.get_sosdisc_inputs()
         eval_inputs = inputs_dict[self.EVAL_INPUTS]
-        selected_inputs = eval_inputs[eval_inputs['selected_input'] == True][
-            'full_name'
-        ]
+        selected_inputs = eval_inputs.loc[eval_inputs['selected_input']]['full_name']
         selected_inputs = selected_inputs.tolist()
         inputs_from_samples = inputs_dict['samples_inputs_df']
         input_from_samples = list(inputs_from_samples.columns)[1:]

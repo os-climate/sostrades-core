@@ -16,19 +16,16 @@ limitations under the License.
 
 import logging
 from typing import Any
-import pandas as pd
-from google.cloud import bigquery
 
+from google.cloud import bigquery
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
-    DatasetGenericException,
     DatasetNotFoundException,
     DatasetUnableToInitializeConnectorException,
 )
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
     DatasetSerializerType,
-    DatasetsSerializerFactory,
 )
 
 

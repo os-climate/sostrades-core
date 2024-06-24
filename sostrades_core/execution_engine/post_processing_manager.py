@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/07-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/07-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,11 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import logging
 from importlib import import_module
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 """
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Post processing manager allowing to coeespond namespace with post processing to execute
 """
 
@@ -31,7 +36,7 @@ class PostProcessingManager:
     FILTER_FUNCTION_NAME = 'post_processing_filters'
     POST_PROCESSING_FUNCTION_NAME = 'post_processings'
 
-    def __init__(self, execution_engine: "ExecutionEngine"):
+    def __init__(self, execution_engine: ExecutionEngine):
         """ Constructor
 
             :params: execution_engine, instance of execution engine that host the current PostProcessingManager instance
@@ -240,7 +245,7 @@ class PostProcessing:
         self.__logger = logger
         self.post_processing_error = ''
 
-    def resolve_filters(self, execution_engine: "ExecutionEngine", namespace: str):  # -> list[ChartFilter]:
+    def resolve_filters(self, execution_engine: ExecutionEngine, namespace: str):  # -> list[ChartFilter]:
         """ Method that execute filters stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
@@ -267,7 +272,7 @@ class PostProcessing:
 
         return filters
 
-    def resolve_post_processings(self, execution_engine: "ExecutionEngine", namespace: str,
+    def resolve_post_processings(self, execution_engine: ExecutionEngine, namespace: str,
                                  filters):  # list[ChartFilter])
         # -> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
         """ Method that execute stored function and return the results
