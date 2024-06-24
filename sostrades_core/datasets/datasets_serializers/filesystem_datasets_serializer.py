@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import json
 import logging
+import os
 import pickle
 from os.path import join
 from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
-import json
-import os
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
@@ -76,7 +76,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         """
         pkl_data = {}
         if self.__current_dataset_directory is None:
-            self.__logger.error(f"Error while trying to load pickled data because dataset directory is undefined")
+            self.__logger.error("Error while trying to load pickled data because dataset directory is undefined")
         else:
             non_serializable_pkl_path = os.path.join(self.__current_dataset_directory, self.NON_SERIALIZABLE_PKL)
             if os.path.exists(non_serializable_pkl_path):
@@ -101,7 +101,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         """
         if self.__pickle_data:
             if self.__current_dataset_directory is None:
-                self.__logger.error(f"Error while trying to dump pickled data because dataset directory is undefined")
+                self.__logger.error("Error while trying to dump pickled data because dataset directory is undefined")
             else:
                 non_serializable_pkl_path = os.path.join(self.__current_dataset_directory, self.NON_SERIALIZABLE_PKL)
                 with open(non_serializable_pkl_path, 'wb') as pkl_file:
