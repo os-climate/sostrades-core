@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -467,7 +467,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
             eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
             if eval_inputs is not None:
-                selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
+                selected_inputs = eval_inputs.loc[eval_inputs['selected_input']]['full_name'].tolist()
 
                 if set(selected_inputs) != set(self.selected_inputs):
                     self.selected_inputs = selected_inputs
@@ -593,7 +593,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         algo_options = wrapper.get_sosdisc_inputs(wrapper.ALGO_OPTIONS)
         dspace_df = wrapper.get_sosdisc_inputs(wrapper.DESIGN_SPACE)
         eval_inputs = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
-        selected_inputs = eval_inputs[eval_inputs[wrapper.SELECTED_INPUT] == True][wrapper.FULL_NAME].tolist()
+        selected_inputs = eval_inputs.loc[eval_inputs[wrapper.SELECTED_INPUT]][wrapper.FULL_NAME].tolist()
         design_space = self.create_design_space(selected_inputs, dspace_df)
         doe_kwargs = {'sampling_algo_name': algo_name,
                       'algo_options': algo_options,
