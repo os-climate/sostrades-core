@@ -211,7 +211,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         reference_scenario[SampleGeneratorWrapper.SCENARIO_NAME] = 'reference_scenario'
 
         # keep only selected scenario
-        samples_df = samples_df[samples_df[SampleGeneratorWrapper.SELECTED_SCENARIO]== True]
+        samples_df = samples_df.loc[samples_df[SampleGeneratorWrapper.SELECTED_SCENARIO]]
         samples_df = samples_df.drop(SampleGeneratorWrapper.SELECTED_SCENARIO, axis='columns')
 
         #rename the columns with full names

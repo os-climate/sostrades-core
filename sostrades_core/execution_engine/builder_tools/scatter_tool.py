@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/07/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/07/17-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -122,8 +122,7 @@ class ScatterTool(SosTool):
                 samples_df = pd.concat([samples_df, pd.DataFrame([ref_series])], ignore_index=True)
 
             self.set_scatter_list(
-                samples_df[samples_df[self.driver.SELECTED_SCENARIO] == True][
-                    self.driver.SCENARIO_NAME].values.tolist())
+                samples_df.loc[samples_df[self.driver.SELECTED_SCENARIO]][self.driver.SCENARIO_NAME].values.tolist())
 
         display_options = self.driver.get_sosdisc_inputs('display_options')
         # if display options are set in the process, it wins we cannot modify display options again
