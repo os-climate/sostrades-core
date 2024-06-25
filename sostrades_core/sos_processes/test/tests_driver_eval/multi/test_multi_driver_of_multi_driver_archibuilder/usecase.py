@@ -55,12 +55,15 @@ class Study(StudyManager):
 
         activation_df_production_local = pd.DataFrame({'Production': ['Abroad','Local'],
                                                        'Road': [False, True],
+                                                       'Local': [False, True],
                                                        'Plane': [False, False]})
         activation_df_production_abroad = pd.DataFrame({'Production': ['Abroad','Local'],
                                                          'Road': [True, False],
+                                                        'Local': [True, False],
                                                          'Plane': [True, False]})
         activation_df_production_road = pd.DataFrame({'Production': ['Abroad','Local'],
                                                       'Road': [True, True],
+                                                      'Local': [True, True],
                                                       'Plane': [False, False]})
         
         # setup the business architectures

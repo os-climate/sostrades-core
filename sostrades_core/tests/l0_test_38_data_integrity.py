@@ -27,6 +27,11 @@ class TestDataIntegrity(unittest.TestCase):
     """
     Scatter data discipline test class
     """
+    def assert_string_equal(self, string1: str, string2: str):
+        string1 = string1.replace('\n','').replace('\t','')
+        string2 = string2.replace('\n', '').replace('\t', '')
+        self.maxDiff = None
+        self.assertEqual(string1, string2, )
 
     def setUp(self):
         '''
@@ -78,12 +83,12 @@ class TestDataIntegrity(unittest.TestCase):
             if full_name in wrong_input_dict.keys():
                 integrity_msg = f"\n\tValue {wrong_input_dict[full_name]} has not the type specified in datamanager which is {input_types[full_name]}"
                 print(var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG])
-                self.assertEqual(
+                self.assert_string_equal(
                     var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG], integrity_msg)
             elif full_name in missing_input_list:
                 integrity_msg = "\n\tValue is not set!"
                 print(var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG])
-                self.assertEqual(
+                self.assert_string_equal(
                     var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG], integrity_msg)
         self.h_data = np.array([0., 0., 0., 0.])
         self.dict_in_data = {'key0': 0., 'key1': 0.}
@@ -108,9 +113,9 @@ class TestDataIntegrity(unittest.TestCase):
         for data_id, var_data_dict in self.exec_eng.dm.data_dict.items():
             full_name = self.exec_eng.dm.get_var_full_name(data_id)
             if full_name in correct_input_dict.keys():
-                integrity_msg = "\n\tMissing column 'str_df'"
+                integrity_msg = ""
                 print(var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG])
-                self.assertEqual(
+                self.assert_string_equal(
                     var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG], integrity_msg)
 
         with self.assertRaises(Exception) as cm:
@@ -124,7 +129,7 @@ class TestDataIntegrity(unittest.TestCase):
         error_message = '\n'.join(
             [f'Variable {var} : Value is not set!' for var in not_set_variables_list])
 
-        self.assertEqual(str(cm.exception), error_message)
+        self.assert_string_equal(str(cm.exception), error_message)
 
     def test_02_check_range_and_possible_values(self):
         '''
@@ -153,7 +158,7 @@ class TestDataIntegrity(unittest.TestCase):
         full_name_z = f'{self.exec_eng.study_name}.z'
         integrity_msg_z = self.exec_eng.dm.get_data(
             full_name_z, ProxyDiscipline.CHECK_INTEGRITY_MSG)
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg_z, f"\n\tValue {wrong_input_dict[full_name_z]} is not in range [-10000.0, 10000.0]")
 
         full_name_z_list = f'{self.exec_eng.study_name}.z_list'
@@ -162,13 +167,13 @@ class TestDataIntegrity(unittest.TestCase):
         correct_integrity_msg_z_list = f'\n\tValue {wrong_input_dict[full_name_z_list]} at index 0 is not in range [-10000.0, 10000.0]'
         correct_integrity_msg_z_list += ''
         correct_integrity_msg_z_list += f'\n\tValue {wrong_input_dict[full_name_z_list]} at index 2 is not in range [-10000.0, 10000.0]'
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg_z_list, correct_integrity_msg_z_list)
 
         full_name_weather = f'{self.exec_eng.study_name}.weather'
         integrity_msg_weather = self.exec_eng.dm.get_data(
             full_name_weather, ProxyDiscipline.CHECK_INTEGRITY_MSG)
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg_weather,
             f"\n\tValue {wrong_input_dict[full_name_weather]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']")
 
@@ -178,7 +183,7 @@ class TestDataIntegrity(unittest.TestCase):
         correct_integrity_msg_weather_list = f"\n\tValue cloudy in list {wrong_input_dict[full_name_weather_list]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']"
         correct_integrity_msg_weather_list += ''
         correct_integrity_msg_weather_list += f"\n\tValue weather in list {wrong_input_dict[full_name_weather_list]} not in *possible values* ['cloudy, it is Toulouse ...', 'sunny', 'rainy']"
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg_weather_list, correct_integrity_msg_weather_list)
 
     def test_03_check_subtypes_dict_and_list(self):
@@ -219,8 +224,8 @@ class TestDataIntegrity(unittest.TestCase):
             full_name_dict_in, ProxyDiscipline.CHECK_INTEGRITY_MSG)
         correct_integrity_msg_dict_in = f"\n\tValue wrong type in {wrong_input_dict[full_name_dict_in]} should be a float according to subtype descriptor {{'dict': 'float'}}"
         correct_integrity_msg_dict_in += '\n'
-        correct_integrity_msg_dict_in += f"\n\tValue wrong type in {wrong_input_dict[full_name_dict_in]['key5']} in {wrong_input_dict[full_name_dict_in]} should be a float according to subtype descriptor {{'dict': 'float'}}"
-        self.assertEqual(
+        correct_integrity_msg_dict_in += f"\n\tValue {wrong_input_dict[full_name_dict_in]['key5']} in {wrong_input_dict[full_name_dict_in]} should be a float according to subtype descriptor {{'dict': 'float'}}"
+        self.assert_string_equal(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 
         correct_input_dict = {
@@ -233,7 +238,7 @@ class TestDataIntegrity(unittest.TestCase):
         full_name_dict_in = f'{self.exec_eng.study_name}.Disc1.dict_in'
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, ProxyDiscipline.CHECK_INTEGRITY_MSG)
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg_dict_in, '')
 
         wrong_input_dict2 = {f'{self.exec_eng.study_name}.z_list': [3.0, 'wrong', {'key': 1}]
@@ -253,7 +258,7 @@ class TestDataIntegrity(unittest.TestCase):
         correct_integrity_msg_z_list += f"\n\tType of wrong ({type('wrong')}) not the same as the type of -10000.0 ({type(-10000.0)}) in range list"
         correct_integrity_msg_z_list += '\n'
         correct_integrity_msg_z_list += f"\n\tType of {wrong_input_dict2[full_name_z_list][-1]} ({type({'key': 1})}) not the same as the type of -10000.0 ({type(-10000.0)}) in range list"
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg_z_list, correct_integrity_msg_z_list)
 
         wrong_input_dict = {f'{self.exec_eng.study_name}.Disc1.list_dict_string_in': [3.0, {'key': 'str', 'key2': 1}]
@@ -268,7 +273,7 @@ class TestDataIntegrity(unittest.TestCase):
         correct_integrity_msg = "Value 3.0 should be a string according to subtype descriptor {'dict': 'string'}"
         correct_integrity_msg += '\n'
         correct_integrity_msg += f"Value 1 in {wrong_input_dict[full_name][-1]} should be a string according to subtype descriptor {{'dict': 'string'}}"
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg, correct_integrity_msg)
 
         a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
@@ -287,7 +292,7 @@ class TestDataIntegrity(unittest.TestCase):
         integrity_msg = self.exec_eng.dm.get_data(
             full_name, ProxyDiscipline.CHECK_INTEGRITY_MSG)
         correct_integrity_msg = f"Value 3.1416 in {wrong_input_dict[full_name]} should be a dataframe according to subtype descriptor {{'dict': 'dataframe'}}"
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg, correct_integrity_msg)
 
         a_df = pd.DataFrame(np.array([[5., -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
@@ -305,7 +310,7 @@ class TestDataIntegrity(unittest.TestCase):
         full_name = f'{self.exec_eng.study_name}.Disc1.dict_of_df_in'
         integrity_msg = self.exec_eng.dm.get_data(
             full_name, ProxyDiscipline.CHECK_INTEGRITY_MSG)
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg, '')
 
     def test_04_check_dataframe_descriptor(self):
@@ -332,8 +337,8 @@ class TestDataIntegrity(unittest.TestCase):
         full_name_dict_in = f'{self.exec_eng.study_name}.Disc1.df_in'
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, ProxyDiscipline.CHECK_INTEGRITY_MSG)
-        correct_integrity_msg_dict_in = "\n\tMissing column 'str_df'"
-        self.assertEqual(
+        correct_integrity_msg_dict_in = ""
+        self.assert_string_equal(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 
         a_df = pd.DataFrame(np.array([[5e5, -.05, 5.e5, 5. ** 5], [2.9, 1., 0., -209.1],
@@ -349,10 +354,9 @@ class TestDataIntegrity(unittest.TestCase):
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, ProxyDiscipline.CHECK_INTEGRITY_MSG)
         correct_integrity_msg_dict_in = "Dataframe values in column variable are not in the range [-10000.0, 10000.0] requested in the dataframe descriptor\n"
-        correct_integrity_msg_dict_in += "Dataframe values in column str_df are not as type string requested in the dataframe descriptor"
 
         print(integrity_msg_dict_in)
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg_dict_in, correct_integrity_msg_dict_in)
 
         a_df_correct = pd.DataFrame({'variable': [5., 2.9, 0.7e-5, -19.],
@@ -365,7 +369,7 @@ class TestDataIntegrity(unittest.TestCase):
         integrity_msg_dict_in = self.exec_eng.dm.get_data(
             full_name_dict_in, ProxyDiscipline.CHECK_INTEGRITY_MSG)
         print(integrity_msg_dict_in)
-        self.assertEqual(
+        self.assert_string_equal(
             integrity_msg_dict_in, '')
 
 

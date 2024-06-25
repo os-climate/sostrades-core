@@ -47,9 +47,7 @@ class Disc1(SoSWrapp):
         'x_dict': {'type': 'dict', 'default': {}},
         'di_dict': {'type': 'dict', 'default': {}, 'namespace': 'ns_test'},
         'dd_df': {'type': 'dataframe', 'default': pd.DataFrame(), 'namespace': 'ns_test',
-                  'dataframe_descriptor': {'string_val': ('string', None, True),
-                                           'values1': ('float', None, True),
-                                           'values2': ('float', None, True)},
+                  'dynamic_dataframe_columns': True,
                   'dataframe_edition_locked': False}
     }
     DESC_OUT = {

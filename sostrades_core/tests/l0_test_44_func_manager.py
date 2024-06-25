@@ -693,6 +693,8 @@ class TestFuncManager(unittest.TestCase):
     def test_12_test_number_iteration_output_optim_df(self):
         self.name = 'Test12'
         self.ee = ExecutionEngine(self.name)
+        ns_dict = {'ns_functions': self.name + '.' + 'FunctionManager2'}
+        self.ee.ns_manager.add_ns_def(ns_dict)
 
         builder = self.ee.factory.get_builder_from_process('sostrades_core.sos_processes.test',
                                                            'test_sellar_opt_w_func_manager'
