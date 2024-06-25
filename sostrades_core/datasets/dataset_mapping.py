@@ -235,42 +235,45 @@ class DatasetsMapping:
         
 
         for dataset, namespaces_mapping_dict  in self.parameters_mapping.items():
-            all_data_in_dataset = {DatasetsMapping.VALUE:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.KEY:{}}
-            for namespace, parameters_mapping_dict in namespaces_mapping_dict.items():
+            try:
+                all_data_in_dataset = {DatasetsMapping.VALUE:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.KEY:{}}
+                for namespace, parameters_mapping_dict in namespaces_mapping_dict.items():
 
-                study_namespace = namespace.replace(self.STUDY_PLACEHOLDER, study_name)
-                corresponding_namespaces = []
-                if namespace == DatasetInfo.WILDCARD:
-                    corresponding_namespaces.extend(namespaces_dict.keys())
-                elif study_namespace in namespaces_dict.keys():
-                    corresponding_namespaces.append(study_namespace)
+                    study_namespace = namespace.replace(self.STUDY_PLACEHOLDER, study_name)
+                    corresponding_namespaces = []
+                    if namespace == DatasetInfo.WILDCARD:
+                        corresponding_namespaces.extend(namespaces_dict.keys())
+                    elif study_namespace in namespaces_dict.keys():
+                        corresponding_namespaces.append(study_namespace)
 
-                if len(corresponding_namespaces) > 0:
-                    for data, dataset_data in parameters_mapping_dict.items():
+                    if len(corresponding_namespaces) > 0:
+                        for data, dataset_data in parameters_mapping_dict.items():
 
-                        # if the name of the dataset parameter already exists, it will overwrite the already set data
-                        #so a warning will be logged
-                        if dataset_data in all_data_in_dataset[DatasetsMapping.KEY].keys():
-                            duplicates.append(dataset_data)
+                            # if the name of the dataset parameter already exists, it will overwrite the already set data
+                            #so a warning will be logged
+                            if dataset_data in all_data_in_dataset[DatasetsMapping.KEY].keys():
+                                duplicates.append(dataset_data)
 
-                        if dataset_data == DatasetInfo.WILDCARD:
-                            # search for all the data in the namespaces
-                            for ns in corresponding_namespaces:
-                                all_data_in_dataset[DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
-                                all_data_in_dataset[DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
-                                all_data_in_dataset[DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
-                        else:
-                            # search for the data in the namespaces
-                            corresponding_data = {ns:[value for key, value in namespaces_dict[ns][DatasetsMapping.VALUE].items() if key == data] for ns in corresponding_namespaces}
-                            if len(corresponding_data.keys()) > 0:
-                                last_ns = list(corresponding_data.keys())[-1]
-                                last_value = corresponding_data[last_ns][-1]
-                                all_data_in_dataset[DatasetsMapping.VALUE].update({dataset_data:last_value})
-                                all_data_in_dataset[DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
-                                all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
-                                
+                            if dataset_data == DatasetInfo.WILDCARD:
+                                # search for all the data in the namespaces
+                                for ns in corresponding_namespaces:
+                                    all_data_in_dataset[DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
+                                    all_data_in_dataset[DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
+                                    all_data_in_dataset[DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
+                            else:
+                                # search for the data in the namespaces
+                                corresponding_data = {ns:[value for key, value in namespaces_dict[ns][DatasetsMapping.VALUE].items() if key == data] for ns in corresponding_namespaces}
+                                if len(corresponding_data.keys()) > 0:
+                                    last_ns = list(corresponding_data.keys())[-1]
+                                    if len(corresponding_data[last_ns]) > 0:
+                                        last_value = corresponding_data[last_ns][-1]
+                                        all_data_in_dataset[DatasetsMapping.VALUE].update({dataset_data:last_value})
+                                        all_data_in_dataset[DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
+                                        all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
+            except Exception as error:
+                raise DatasetsMappingException(f'Error retrieving data from dataset {dataset}]: \n{str(error)}')                       
 
-                
+                    
             datasets_mapping[dataset] = all_data_in_dataset  
 
         return datasets_mapping, duplicates
