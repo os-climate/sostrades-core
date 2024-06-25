@@ -26,6 +26,7 @@ from gemseo.caches.simple_cache import SimpleCache
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from pandas import concat
 
+from sostrades_core.datasets.dataset_info import DatasetInfo
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
@@ -461,6 +462,7 @@ class DataManager:
 
         # iterate on each namespace to retrieve data in this namespace
         for namespace, data_dict in namespaced_data_dict.items():
+
             datasets_info = datasets_mapping.get_datasets_info_from_namespace(namespace, self.name)
             # retrieve the list of dataset associated to the namespace from the mapping
             if len(datasets_info) > 0:
@@ -539,49 +541,34 @@ class DataManager:
             data_value = data_value[VALUE]
 
             # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
-            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY:{}, TYPE:{}, VALUE:{}})
-            namespaced_data_dict[data_ns][KEY][data_name] = key
-            namespaced_data_dict[data_ns][TYPE][data_name] = data_type
-            namespaced_data_dict[data_ns][VALUE][data_name] = data_value
+            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.VALUE:{}})
+            namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
+            namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
+            namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value
 
         # iterate on each datasets to export data in each dataset
-        dataset_mapping = datasets_mapping.get_datasets_namespace_mapping_for_study(self.name)
-        for dataset, namespaces in dataset_mapping.items():
+        dataset_parameters_mapping, duplicates = datasets_mapping.get_datasets_namespace_mapping_for_study(self.name, namespaces_dict=namespaced_data_dict)
+        if len(duplicates) > 0:
+            self.logger.warning(f"The datasets data {duplicates} have multiple data source parameters.")
+        for dataset, mapping_dict in dataset_parameters_mapping.items():
 
-            all_data = {KEY:{}, TYPE:{}, VALUE:{}}
-            # retrieve all namespace using the same dataset
-            namespace_list = [ns for ns in namespaces if ns in namespaced_data_dict]
-            all_data_names = [] #find occurences to write a warning if data_name is in 2 namespaces
-            duplicates = []
-            # agregate all data from all namespaces that should be exported in the dataset
-            for namespace in namespace_list:
-                all_data[KEY].update(namespaced_data_dict[namespace][KEY])
-                all_data[TYPE].update(namespaced_data_dict[namespace][TYPE])
-                all_data[VALUE].update(namespaced_data_dict[namespace][VALUE])
-                duplicates.extend([data_name for data_name in all_data_names if data_name in namespaced_data_dict[namespace][KEY].keys()])
-                all_data_names.extend(namespaced_data_dict[namespace][KEY].keys())
-            if len(duplicates) > 0:
-                self.logger.warning(f"Warning while Datasets export: Some data {str(duplicates)} are in different namespaces and saved in the same dataset. \
-                                    Verify if values are equivalent between namespaces.")
-           
-            
             # retrieve the list of dataset associated to the namespace from the mapping
-            if len(all_data[KEY].keys()) > 0:
+            if len(mapping_dict[DatasetsMapping.VALUE].keys()) > 0:
                 # write data values into the dataset into the right format
                 updated_data = self.dataset_manager.write_data_in_dataset(
-                    dataset_info=datasets_mapping.datasets_infos[dataset], 
-                    data_dict=all_data[VALUE], 
-                    data_type_dict=all_data[TYPE]
-                    )
+                    dataset_info=datasets_mapping.datasets_infos[dataset],
+                    data_dict=mapping_dict[DatasetsMapping.VALUE], 
+                    data_type_dict=mapping_dict[DatasetsMapping.TYPE]
+                )
                 # save which data have been exported
-                for data_name in updated_data.keys():
-                    key = all_data[KEY][data_name]
-                    type = all_data[TYPE][data_name]
+                for data_dataset_name in updated_data.keys():
+                    key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
+                    type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
                     connector_id =datasets_mapping.datasets_infos[dataset].connector_id
                     dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
                     exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                          variable_type=type,
-                                                         old_value=deepcopy(all_data[VALUE][data_name]),
+                                                         old_value=deepcopy(mapping_dict[DatasetsMapping.VALUE][data_dataset_name]),
                                                          new_value=None,
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,

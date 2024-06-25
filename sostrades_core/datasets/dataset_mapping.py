@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
+from typing import Any
 
 from sostrades_core.datasets.dataset_info import DatasetInfo
 
@@ -50,14 +51,21 @@ class DatasetsMapping:
     MAPPING_KEY_FIELDS = [MAP_VERSION, NAMESPACE_VALUE, PARAMETER_NAME]
     MAPPING_ITEM_FIELDS = [CONNECTOR_ID_KEY, DATASET_ID_KEY, PARAMETER_NAME]
 
+    KEY = 'key'
+    VALUE = 'value'
+    TYPE = 'type'
+    MAPPING = 'mapping'
+    NS = 'ns'
+    NAME = 'name'
+
     # Process module name
     process_module_path:str
-    # Dataset info [connector_id|dataset_id|* : DatasetInfo]
+    # Dataset info [connector_id|dataset_id| : DatasetInfo]
     datasets_infos: dict[str:DatasetInfo]
-    # Namespace mapping [namespace_name : List[DatasetInfo]]
-    namespace_datasets_mapping: dict[str : list[DatasetInfo]]
-    # Dataset namespace mapping [connector_id|dataset_id|* : namespace_name]
-    datasets_namespace_mapping: dict[str: list[str]]
+    # Namespace mapping [namespace_name : List[connector_id|dataset_id|]]
+    namespace_datasets_mapping: dict[str : list[str]]
+    # Dataset namespace mapping [connector_id|dataset_id| : [namespace: dict[parameter:parameter_dataset]]]
+    parameters_mapping: dict[str: dict[str:dict[str:str]]]
 
     @staticmethod
     def deserialize(input_dict: dict) -> DatasetsMapping:
@@ -69,6 +77,9 @@ class DatasetsMapping:
             "namespace_datasets_mapping": {
                 "v0|namespace1|*" : ["connector1|dataset1|*"],
                 "v0|namespace2|*" : ["connector1|dataset1|*", "connector1|dataset2|*"]
+                "v0|namespace3|parameter1" : ["connector1|dataset1|*", "connector1|dataset2|*"]
+                "v0|namespace3|parameter2" : ["connector1|dataset1|parameter_name2", "connector1|dataset2|*"]
+                "v0|namespace4|*" : ["connector1|dataset1|parameter_name3", "connector1|dataset2|*"]
             },
             "sub_process_datasets_mapping":{
                 "v0|namespace3|*": path to other mapping json file
@@ -79,7 +90,7 @@ class DatasetsMapping:
         """
         datasets_infos = {}
         namespace_datasets_mapping = {}
-        datasets_namespace_mapping = {}
+        parameters_mapping = {}
 
         try:
             # parse sub process datasets info
@@ -95,6 +106,8 @@ class DatasetsMapping:
                         datasets_infos.update(sub_mapping.datasets_infos)
                         sub_namespace_datasets_mapping = sub_mapping.get_namespace_datasets_mapping_for_parent(namespace)
                         namespace_datasets_mapping.update(sub_namespace_datasets_mapping)
+                        sub_parameters_mapping = sub_mapping.get_parameters_datasets_mapping_for_parent(namespace)
+                        parameters_mapping.update(sub_parameters_mapping)
                     else:
                         raise DatasetsMappingException(f"The dataset mapping file {sub_process_mapping_path} does not exists")
 
@@ -103,20 +116,37 @@ class DatasetsMapping:
                 input_dict_dataset_mapping = input_dict[DatasetsMapping.NAMESPACE_KEY]
                 for mapping_key, datasets in input_dict_dataset_mapping.items():
                     mapping_key_fields = DatasetsMapping.extract_mapping_key_fields(mapping_key)
-                    # TODO: version, parameter not handled
+                    # TODO: version not handled
                     namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
+                    parameter = mapping_key_fields[DatasetsMapping.PARAMETER_NAME]
                     namespace_datasets_mapping[namespace] = []
-                    
+
                     for dataset in datasets:
                         dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
                         connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
                         dataset_id = dataset_fields[DatasetsMapping.DATASET_ID_KEY]
-                        # TODO: parameter not handled
-                        if dataset not in datasets_infos:
-                            datasets_infos.update({dataset: DatasetInfo(connector_id, dataset_id)})
-                        namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
-                        datasets_namespace_mapping[dataset] =  datasets_namespace_mapping.get(dataset, [])
-                        datasets_namespace_mapping[dataset].append(namespace)
+                        parameter_id = dataset_fields[DatasetsMapping.PARAMETER_NAME]
+                        
+                        # build just the id with connector and dataset
+                        dataset_info_id = DatasetsMapping.MAPPING_SEP.join([connector_id, dataset_id])
+
+
+                        if dataset_info_id not in datasets_infos:
+                            datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id)
+
+                        namespace_datasets_mapping[namespace].append(dataset_info_id)
+                        
+                        # update dataset, namespace, parameter associations
+                        parameters_mapping[dataset_info_id] = parameters_mapping.get(dataset_info_id, {})
+                        parameters_mapping[dataset_info_id][namespace] = parameters_mapping[dataset_info_id].get(namespace, {})
+                        parameter_to_found = parameter_id
+                        parameter_from = parameter
+                        if parameter_id == DatasetInfo.WILDCARD:
+                            parameter_to_found  = parameter
+                        if parameter == DatasetInfo.WILDCARD:
+                            parameter_from = parameter_id
+                        parameters_mapping[dataset_info_id][namespace][parameter_from] = parameter_to_found
+
                         
         except Exception as exception:
             raise DatasetsMappingException(f'Error reading the dataset mapping file: \n{str(exception)}')
@@ -124,9 +154,10 @@ class DatasetsMapping:
             process_module_path=input_dict[DatasetsMapping.PROCESS_MODULE_PATH_KEY],
             datasets_infos=datasets_infos,
             namespace_datasets_mapping=namespace_datasets_mapping,
-            datasets_namespace_mapping=datasets_namespace_mapping
+            parameters_mapping=parameters_mapping
         )
 
+    
     @classmethod
     def extract_mapping_key_fields(cls, mapping_key):
         return cls.__extract_mapping_fields(mapping_key, cls.MAPPING_KEY_FIELDS, "mapping key")
@@ -154,9 +185,7 @@ class DatasetsMapping:
             raise ValueError(f"Wrong format for {mapping_key_or_value}, "
                              f"the expected {error_mode} format "
                              f"is {cls.MAPPING_SEP.join(format_fields)}")
-        elif fields[-1] != '*':
-            # TODO: remove when down to parameter level
-            raise NotImplementedError("Parameter-wise referral is not yet implemented.")
+
         else:
             return dict(zip(format_fields, fields))
 
@@ -171,7 +200,8 @@ class DatasetsMapping:
             json_data = json.load(file)
         return DatasetsMapping.deserialize(json_data)
 
-    def get_datasets_info_from_namespace(self, namespace:str, study_name:str) -> list[DatasetInfo]:
+    
+    def get_datasets_info_from_namespace(self, namespace:str, study_name:str) -> dict[DatasetInfo:dict[str:str]]:
         """
         Gets the datasets info for a namespace
 
@@ -180,29 +210,73 @@ class DatasetsMapping:
         :param study_name: Name of the study
         :type study_name: str
         """
-        datasets_mapping = []
+        datasets_mapping = {}
         anonimized_ns = namespace.replace(study_name, self.STUDY_PLACEHOLDER)
         if anonimized_ns in self.namespace_datasets_mapping.keys():
-            datasets_mapping = self.namespace_datasets_mapping[anonimized_ns]
+            dataset_ids = self.namespace_datasets_mapping[anonimized_ns]
+            for dataset_id in dataset_ids:
+                datasets_mapping[self.datasets_infos[dataset_id]] = self.parameters_mapping[dataset_id].get(anonimized_ns, {})
+        if DatasetInfo.WILDCARD in self.namespace_datasets_mapping.keys():
+            dataset_ids = self.namespace_datasets_mapping[DatasetInfo.WILDCARD]
+            for dataset_id in dataset_ids:
+                datasets_mapping[self.datasets_infos[dataset_id]] = self.parameters_mapping[dataset_id].get(DatasetInfo.WILDCARD,{})
 
         return datasets_mapping
     
-    def get_datasets_namespace_mapping_for_study(self, study_name:str)-> dict[str:list[str]]:
+    def get_datasets_namespace_mapping_for_study(self, study_name:str, namespaces_dict:dict[str:dict])-> tuple[dict, list[str]]:
         """
         Get the datasets_namespace_mapping and replace the study_placeholder with the study_name
         :param study_name: name of the study
         :type study_name: str
-        :return: datasets_namespace_mapping with updated namespaces
+        :return: datasets_parameters_mapping with all data to write in the datasets and mapping info
         """
         datasets_mapping = {}
-        for dataset, namespaces  in self.datasets_namespace_mapping.items():
-            datasets_mapping[dataset] = []
-            for namespace in namespaces:
-                datasets_mapping[dataset].append(namespace.replace(self.STUDY_PLACEHOLDER, study_name))
+        duplicates = []
+        
 
-        return datasets_mapping
-    
-    def get_namespace_datasets_mapping_for_parent(self, parent_namespace:str) -> dict[str : list[DatasetInfo]]:
+        for dataset, namespaces_mapping_dict  in self.parameters_mapping.items():
+            all_data_in_dataset = {DatasetsMapping.VALUE:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.KEY:{}}
+            for namespace, parameters_mapping_dict in namespaces_mapping_dict.items():
+
+                study_namespace = namespace.replace(self.STUDY_PLACEHOLDER, study_name)
+                corresponding_namespaces = []
+                if namespace == DatasetInfo.WILDCARD:
+                    corresponding_namespaces.extend(namespaces_dict.keys())
+                elif study_namespace in namespaces_dict.keys():
+                    corresponding_namespaces.append(study_namespace)
+
+                if len(corresponding_namespaces) > 0:
+                    for data, dataset_data in parameters_mapping_dict.items():
+
+                        # if the name of the dataset parameter already exists, it will overwrite the already set data
+                        #so a warning will be logged
+                        if dataset_data in all_data_in_dataset[DatasetsMapping.KEY].keys():
+                            duplicates.append(dataset_data)
+
+                        if dataset_data == DatasetInfo.WILDCARD:
+                            # search for all the data in the namespaces
+                            for ns in corresponding_namespaces:
+                                all_data_in_dataset[DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
+                                all_data_in_dataset[DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
+                                all_data_in_dataset[DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
+                        else:
+                            # search for the data in the namespaces
+                            corresponding_data = {ns:[value for key, value in namespaces_dict[ns][DatasetsMapping.VALUE].items() if key == data] for ns in corresponding_namespaces}
+                            if len(corresponding_data.keys()) > 0:
+                                last_ns = list(corresponding_data.keys())[-1]
+                                last_value = corresponding_data[last_ns][-1]
+                                all_data_in_dataset[DatasetsMapping.VALUE].update({dataset_data:last_value})
+                                all_data_in_dataset[DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
+                                all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
+                                
+
+                
+            datasets_mapping[dataset] = all_data_in_dataset  
+
+        return datasets_mapping, duplicates
+
+
+    def get_namespace_datasets_mapping_for_parent(self, parent_namespace:str) -> dict[str : list[str]]:
         """
         Get the namespace_datasets_mapping and replace the study_placeholder with the parent_namespace
         :param parent_namespace: parent namespace that will replace the <study_ph> in the child namespaces
@@ -215,3 +289,18 @@ class DatasetsMapping:
             datasets_mapping[new_namespace] = datasets
 
         return datasets_mapping
+    
+    def get_parameters_datasets_mapping_for_parent(self, parent_namespace:str) -> dict[str: dict[str:dict[str:str]]]:
+        """
+        Get the parameters_mapping and replace the study_placeholder with the parent_namespace
+        :param parent_namespace: parent namespace that will replace the <study_ph> in the child namespaces
+        :type parent_namespace: str
+        :return: parameters_mapping with updated namespaces
+        """
+        parameters_mapping = {}
+        for dataset_id, namespace_mapping in self.parameters_mapping.items():
+            parameters_mapping[dataset_id] = {ns.replace(self.STUDY_PLACEHOLDER, parent_namespace):namespace_mapping[ns] for ns in namespace_mapping.keys()}
+
+        return parameters_mapping
+    
+   

@@ -169,17 +169,17 @@ class TestDatasets(unittest.TestCase):
         json_file_path = os.path.join(test_data_folder, "test_92_example_mapping.json")
 
         dataset_mapping = DatasetsMapping.from_json_file(file_path=json_file_path)
-        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"].connector_id, "<1connector_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"].dataset_id, "<1dataset_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"].connector_id, "<2connector_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"].dataset_id, "<2dataset_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>"].connector_id, "<1connector_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>"].dataset_id, "<1dataset_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>"].connector_id, "<2connector_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>"].dataset_id, "<2dataset_id>")
 
         self.assertEqual(
-            dataset_mapping.namespace_datasets_mapping["namespace1"], [dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"]]
+            dataset_mapping.namespace_datasets_mapping["namespace1"], ["<1connector_id>|<1dataset_id>"]
         )
         self.assertEqual(
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
-            set([dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>|*"], dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>|*"]]),
+            set(["<1connector_id>|<1dataset_id>", "<2connector_id>|<2dataset_id>"]),
         )
     
 
@@ -417,7 +417,7 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test2/",
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
@@ -520,3 +520,103 @@ class TestDatasets(unittest.TestCase):
         except Exception as cm:
             connector_export.clear(remove_root_directory=True)
             raise 
+
+    def test_14_test_import_parameter_level(self):
+
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+        # this 
+        mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_parameters_level_repository.json")
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        dm = study.execution_engine.dm
+        # assert data are empty
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), None)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), None)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), None)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {})
+        self.assertEqual(len(dm.get_value("usecase_dataset.Disc1.d")), 0)
+        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "auto")
+
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
+
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 2)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), None)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {})
+        self.assertEqual(len(dm.get_value("usecase_dataset.Disc1.d")), 2)
+
+        #check numerical parameters
+        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "auto")
+
+    def test_15_test_export_parameter_level(self):
+        """
+        Some example to check repository datasets connector export
+        """
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+            DatasetConnectorType,
+        )
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+
+       
+        #create usecase with data
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+        mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
+
+        # export study in another folder to compare the datasets
+        # create connector test for export
+        connector_args = {
+            "root_directory_path": "./sostrades_core/tests/data/local_test_export_param/",
+            "create_if_not_exists": True
+        }
+
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_export_test_param",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    **connector_args)
+        export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_param_level.json")
+        try:
+            study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
+            
+
+            
+
+            dm = study.execution_engine.dm
+            connector_export = DatasetsConnectorManager.get_connector('MVP0_local_export_test_param')
+            
+            dataset_vars = ["a",
+                            "x",
+                            "b",
+                            "name",
+                            "x_dict",
+                            "y_array",
+                            "z_list",
+                            "b_bool",
+                            "d"]
+
+            data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
+
+        
+            values = connector_export.get_values_all(dataset_identifier="dataset_all_types",
+                                           data_types_dict=data_types_dict)
+
+            self.assertEqual(values["x"], 4.0)
+            self.assertEqual(values["b"], 1)
+            self.assertTrue((values["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+            connector_export.clear(remove_root_directory=True)
+        except Exception as cm:
+            connector_export.clear(remove_root_directory=True)
+            raise 
+
+
+if __name__=="__main__":
+    cls = TestDatasets()
+    cls.setUp()
+    cls.test_13_export_with_repository_dataset_connector()
