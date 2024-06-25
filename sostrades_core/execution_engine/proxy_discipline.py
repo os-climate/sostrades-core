@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 '''
 import logging
 import os
+from copy import deepcopy
 from os.path import dirname, join
 from typing import List, Union
 
@@ -35,8 +36,7 @@ parent_dir = dirname(__file__)
 GEMSEO_ADDON_DIR = "gemseo_addon"
 os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 
-from copy import deepcopy
-
+# ruff: noqa: E402
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal

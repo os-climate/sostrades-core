@@ -19,12 +19,13 @@ import unittest
 
 import numpy as np
 import pandas as pd
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
-import sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
+import sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset
 from sostrades_core.datasets.dataset_mapping import (
     DatasetsMapping,
     DatasetsMappingException,
@@ -33,7 +34,6 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     DatasetGenericException,
 )
 from sostrades_core.study_manager.study_manager import StudyManager
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 
 class TestDatasets(unittest.TestCase):
@@ -417,10 +417,10 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test_nested/",
             "create_if_not_exists": True
         }
-        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test_nested",
                                                     connector_type=DatasetConnectorType.get_enum_value("Local"),
                                                     **connector_args)
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
@@ -428,7 +428,7 @@ class TestDatasets(unittest.TestCase):
         study = StudyManager(file_path=usecase_file_path)
 
         dm = study.execution_engine.dm
-        connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test')
+        connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test_nested')
         connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
 
         data_types_dict = {_k: dm.get_data(f"usecase_local_dataset.Disc1.{_k}", "type") for _k in self.nested_types_reference_dict}
@@ -448,3 +448,75 @@ class TestDatasets(unittest.TestCase):
         except Exception as cm:
             connector_to.clear(remove_root_directory=True)
             raise cm
+        
+
+
+    def test_13_export_with_repository_dataset_connector(self):
+        """
+        Some example to check repository datasets connector export
+        """
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+            DatasetConnectorType,
+        )
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+
+       
+        #create usecase with data
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+        mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
+
+        # export study in another folder to compare the datasets
+        # create connector test for export
+        connector_args = {
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_export_test/",
+            "create_if_not_exists": True
+        }
+
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_export_test",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    **connector_args)
+        export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_repository.json")
+        
+        study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
+        
+
+        
+
+        dm = study.execution_engine.dm
+        connector_export = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_export_test')
+        
+        dataset_vars = ["a",
+                        "x",
+                        "b",
+                        "name",
+                        "x_dict",
+                        "y_array",
+                        "z_list",
+                        "b_bool",
+                        "d"]
+
+        data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
+
+        try:
+            values = connector_export.get_values_all(dataset_identifier="dataset_disc1",
+                                           data_types_dict=data_types_dict)
+
+            self.assertEqual(values["a"], 1)
+            self.assertEqual(values["x"], 4.0)
+            self.assertEqual(values["b"], 2)
+            self.assertEqual(values["name"], "A1")
+            self.assertEqual(values["x_dict"], {"test1":1,"test2":2})
+            self.assertTrue(np.array_equal(values["y_array"], np.array([1.0,2.0,3.0])))
+            self.assertEqual(values["z_list"], [1.0,2.0,3.0])
+            self.assertEqual(values["b_bool"], False)
+            self.assertTrue((values["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+            connector_export.clear(remove_root_directory=True)
+        except Exception as cm:
+            connector_export.clear(remove_root_directory=True)
+            raise 

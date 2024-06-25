@@ -467,6 +467,7 @@ class DataManager:
                 # get data values into the dataset into the right format
                 updated_data = self.dataset_manager.fetch_data_from_datasets(
                     datasets_info=datasets_info, data_dict=data_dict[TYPE])
+                self.logger.warning(f"Retrieved the namespace {namespace} with values: {list(updated_data.keys())}")
                 # update data values in dm
                 for data_name, new_data in updated_data.items():
                     key = data_dict[KEY][data_name]
@@ -515,6 +516,81 @@ class DataManager:
                                                          dataset_parameter_id=dataset_parameter_id,
                                                          date=datetime.now()))
         dm_data[VALUE] = new_value
+    
+    def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> None:
+        '''
+        Set values in datasets from data_dict
+
+        :param: datasets_mapping, adatset list and mapping with study namespaces
+        :type: DatasetsMapping
+        
+        returns: list of exported data in witch datasets
+        '''
+        # do a map between namespace and data from data_dict not already fetched
+        # to have a list of data by namespace
+        exported_parameters = []
+        namespaced_data_dict = {}
+        KEY = 'key'
+        
+        for key, data_value in self.data_dict.items():
+            data_ns = data_value[NS_REFERENCE].value
+            data_name = data_value[VAR_NAME]
+            data_type = data_value[TYPE]
+            data_value = data_value[VALUE]
+
+            # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
+            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY:{}, TYPE:{}, VALUE:{}})
+            namespaced_data_dict[data_ns][KEY][data_name] = key
+            namespaced_data_dict[data_ns][TYPE][data_name] = data_type
+            namespaced_data_dict[data_ns][VALUE][data_name] = data_value
+
+        # iterate on each datasets to export data in each dataset
+        dataset_mapping = datasets_mapping.get_datasets_namespace_mapping_for_study(self.name)
+        for dataset, namespaces in dataset_mapping.items():
+
+            all_data = {KEY:{}, TYPE:{}, VALUE:{}}
+            # retrieve all namespace using the same dataset
+            namespace_list = [ns for ns in namespaces if ns in namespaced_data_dict]
+            all_data_names = [] #find occurences to write a warning if data_name is in 2 namespaces
+            duplicates = []
+            # agregate all data from all namespaces that should be exported in the dataset
+            for namespace in namespace_list:
+                all_data[KEY].update(namespaced_data_dict[namespace][KEY])
+                all_data[TYPE].update(namespaced_data_dict[namespace][TYPE])
+                all_data[VALUE].update(namespaced_data_dict[namespace][VALUE])
+                duplicates.extend([data_name for data_name in all_data_names if data_name in namespaced_data_dict[namespace][KEY].keys()])
+                all_data_names.extend(namespaced_data_dict[namespace][KEY].keys())
+            if len(duplicates) > 0:
+                self.logger.warning(f"Warning while Datasets export: Some data {str(duplicates)} are in different namespaces and saved in the same dataset. \
+                                    Verify if values are equivalent between namespaces.")
+           
+            
+            # retrieve the list of dataset associated to the namespace from the mapping
+            if len(all_data[KEY].keys()) > 0:
+                # write data values into the dataset into the right format
+                updated_data = self.dataset_manager.write_data_in_dataset(
+                    dataset_info=datasets_mapping.datasets_infos[dataset], 
+                    data_dict=all_data[VALUE], 
+                    data_type_dict=all_data[TYPE]
+                    )
+                # save which data have been exported
+                for data_name in updated_data.keys():
+                    key = all_data[KEY][data_name]
+                    type = all_data[TYPE][data_name]
+                    connector_id =datasets_mapping.datasets_infos[dataset].connector_id
+                    dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
+                    exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
+                                                         variable_type=type,
+                                                         old_value=deepcopy(all_data[VALUE][data_name]),
+                                                         new_value=None,
+                                                         connector_id=connector_id,
+                                                         dataset_id=dataset_id,
+                                                         dataset_parameter_id=key,
+                                                         date=datetime.now()))
+
+
+        return exported_parameters
+    
 
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys

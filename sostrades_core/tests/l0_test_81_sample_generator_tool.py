@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -121,8 +121,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
         self.eval_inputs = pd.DataFrame(input_selection_x_z)
         # from eval_inputs to selected_inputs and eval_in_list
-        self.selected_inputs = self.eval_inputs[self.eval_inputs['selected_input']
-                                                == True]['full_name']
+        self.selected_inputs = self.eval_inputs.loc[self.eval_inputs['selected_input']]['full_name']
         self.selected_inputs = self.selected_inputs.tolist()
         self.eval_in_list = [
             f'{self.study_name}.{element}' for element in self.selected_inputs]

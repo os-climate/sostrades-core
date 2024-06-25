@@ -308,7 +308,7 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
     def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
                  primary_ordinate_axis_range=[], chart_name='', stacked_bar=False, bar_orientation='v',
                  cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[],
-                 y_axis_log: bool = False, y_min_zero: bool = False):
+                 y_axis_log: bool = False, y_min_zero: bool = False, show_legend: bool = None):
         """
          Create a new chart definition
 
@@ -333,6 +333,8 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         :param secondary_ordinate_axis_range: array(2) with min and max value range for secondary ordinate axes
         :type secondary_ordinate_axis_range: list [min, max]
         :param y_axis_log: bool indicating wheter y axis is logarithmic or not
+        :param show_legend: bool indicating legend to be shown or not. If None, reverts to default behaviour. Defaults to None.
+        :type bool
         """
 
         super().__init__()
@@ -375,6 +377,9 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         self.y_primary_max = 0.
         if self.y_min_zero:
             self.primary_ordinate_axis_range = [0., 0.]
+            
+        # Show legend
+        self.show_legend = show_legend
 
     def add_series(self, series):
         """

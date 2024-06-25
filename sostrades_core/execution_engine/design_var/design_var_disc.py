@@ -342,15 +342,19 @@ class DesignVarDiscipline(SoSWrapp):
 
         design_space = self.get_sosdisc_inputs(self.DESIGN_SPACE)
         pts = self.get_sosdisc_inputs(parameter)
-        ctrl_pts = list(pts)
+        ctrl_pts_values = list(pts)
+        #activated_elems = design_space.loc[design_space['variable'] == parameter, self.LIST_ACTIVATED_ELEM].to_list()[0]
+        ctrl_pts_lower_bnd = list(design_space.loc[design_space['variable'] == parameter, self.LOWER_BOUND].to_list()[0])
+        ctrl_pts_upper_bnd = list(design_space.loc[design_space['variable'] == parameter, self.UPPER_BOUND].to_list()[0])
         starting_pts = list(
-            design_space[design_space['variable'] == parameter]['value'].values[0])
+            design_space[design_space['variable'] == parameter][self.VALUE].values[0])
         for i, activation in enumerate(design_space.loc[design_space['variable']
-                                                        == parameter, 'activated_elem'].to_list()[0]):
+                                                        == parameter, self.LIST_ACTIVATED_ELEM].to_list()[0]):
             if not activation and len(
-                    design_space.loc[design_space['variable'] == parameter, 'value'].to_list()[0]) > i:
-                ctrl_pts.insert(i, design_space.loc[design_space['variable']
-                                                    == parameter, 'value'].to_list()[0][i])
+                    design_space.loc[design_space['variable'] == parameter, self.VALUE].to_list()[0]) > i:
+                ctrl_pts_values.insert(i, design_space.loc[design_space['variable'] == parameter, self.VALUE].to_list()[0][i])
+                ctrl_pts_lower_bnd.insert(i, design_space.loc[design_space['variable'] == parameter, self.LOWER_BOUND].to_list()[0][i])
+                ctrl_pts_upper_bnd.insert(i, design_space.loc[design_space['variable'] == parameter, self.UPPER_BOUND].to_list()[0][i])
         eval_pts = None
 
         design_var_descriptor = self.get_sosdisc_inputs(self.DESIGN_VAR_DESCRIPTOR)
@@ -381,30 +385,50 @@ class DesignVarDiscipline(SoSWrapp):
         else:
             chart_name = f'B-Spline for {parameter}'
             fig = go.Figure()
-            if 'complex' in str(type(ctrl_pts[0])):
-                ctrl_pts = [np.real(value) for value in ctrl_pts]
+
+            if 'complex' in str(type(ctrl_pts_values[0])):
+                ctrl_pts_values = [np.real(value) for value in ctrl_pts_values]
+            if 'complex' in str(type(ctrl_pts_lower_bnd[0])):
+                ctrl_pts_lower_bnd = [np.real(value) for value in ctrl_pts_lower_bnd]
+            if 'complex' in str(type(ctrl_pts_upper_bnd[0])):
+                ctrl_pts_upper_bnd = [np.real(value) for value in ctrl_pts_upper_bnd]
             if 'complex' in str(type(eval_pts[0])):
                 eval_pts = [np.real(value) for value in eval_pts]
             if 'complex' in str(type(starting_pts[0])):
                 starting_pts = [np.real(value) for value in starting_pts]
             x_ctrl_pts = np.linspace(
-                index[0], index[-1], len(ctrl_pts))
-            marker_dict = dict(size=150 / len(ctrl_pts), line=dict(
-                width=150 / (3 * len(ctrl_pts)), color='DarkSlateGrey'))
+                index[0], index[-1], len(ctrl_pts_values))
+            marker_dict_values = dict(size=150 / len(ctrl_pts_values), line=dict(
+                width=150 / (3 * len(ctrl_pts_values)), color='DarkSlateGrey'))
+            marker_dict_low_bnd = dict(size=150 / len(ctrl_pts_lower_bnd), line=dict(
+                width=150 / (2 * len(ctrl_pts_lower_bnd)), color='darkturquoise'))
+            marker_dict_upper_bnd = dict(size=150 / len(ctrl_pts_upper_bnd), line=dict(
+                width=150 / (3 * len(ctrl_pts_upper_bnd)), color='salmon'))
             fig.add_trace(go.Scatter(x=list(x_ctrl_pts),
-                                     y=list(ctrl_pts), name='Poles',
+                                     y=list(ctrl_pts_lower_bnd), name='lower bounds',
                                      line=dict(color=color_list[0]),
                                      mode='markers',
-                                     marker=marker_dict))
+                                     marker=marker_dict_low_bnd))
+            fig.add_trace(go.Scatter(x=list(x_ctrl_pts),
+                                     y=list(ctrl_pts_upper_bnd), name='upper bounds',
+                                     line=dict(color=color_list[0]),
+                                     mode='markers',
+                                     marker=marker_dict_upper_bnd))
             fig.add_trace(go.Scatter(x=list(index), y=list(eval_pts), name='B-Spline',
                                      line=dict(color=color_list[0]), ))
+
+            fig.add_trace(go.Scatter(x=list(x_ctrl_pts),
+                                     y=list(ctrl_pts_values), name='Poles',
+                                     line=dict(color=color_list[0]),
+                                     mode='markers',
+                                     marker=marker_dict_values))
             if init_xvect:
-                marker_dict['opacity'] = 0.5
+                marker_dict_values['opacity'] = 0.5
                 fig.add_trace(go.Scatter(x=list(x_ctrl_pts),
                                          y=list(starting_pts), name='Initial Poles',
                                          mode='markers',
                                          line=dict(color=color_list[0]),
-                                         marker=marker_dict))
+                                         marker=marker_dict_values))
             fig.update_layout(title={'text': chart_name, 'x': 0.5, 'y': 1.0, 'xanchor': 'center', 'yanchor': 'top'},
                               xaxis_title=index_name, yaxis_title=f'value of {parameter}')
             new_chart = InstantiatedPlotlyNativeChart(
