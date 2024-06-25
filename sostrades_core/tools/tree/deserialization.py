@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/07 Copyright 2024 Capgemini.
+Modifications on 2024/05/07-2024/06/07 Copyright 2024 Capgemini.
 
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import ast
+
 import numpy as np
 
 

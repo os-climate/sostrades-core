@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/10 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ limitations under the License.
 import unittest
 from os.path import dirname, exists, join
 from pathlib import Path
-from shutil import rmtree
-from time import sleep
 
 from gemseo.caches.simple_cache import SimpleCache
 
@@ -31,6 +29,7 @@ from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
     Study as study_sellar_mda,
 )
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestLoadSimpleCache(unittest.TestCase):
@@ -52,8 +51,7 @@ class TestLoadSimpleCache(unittest.TestCase):
     def tearDown(self):
         for dir in self.dir_to_del:
             if Path(dir).is_dir():
-                rmtree(dir)
-                sleep(2)
+                rmtree_safe(dir)
 
     def test_01_dump_and_load_cache_None(self):
         '''

@@ -16,13 +16,12 @@ limitations under the License.
 import unittest
 from logging import Handler
 from pathlib import Path
-from shutil import rmtree
 from tempfile import gettempdir
-from time import sleep
 
 import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class UnitTestHandler(Handler):
@@ -71,10 +70,8 @@ class TestDriverDataIntegrity(unittest.TestCase):
     def tearDown(self):
 
         for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
             if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+                rmtree_safe(dir_to_del)
 
     def test_01_two_scenarios_with_same_name(self):
         proc_name = 'test_multi_driver_simple'

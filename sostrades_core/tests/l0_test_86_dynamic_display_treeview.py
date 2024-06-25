@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/03-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/10/03-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -317,6 +317,122 @@ class TestConfigDependencyDiscs(unittest.TestCase):
                        f'|_ {self.study_name}',
                        '\t|_ Disc1',
                        '\t|_ Disc2', ]
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+    def test_06_display_on_disipline_in_multi_instance(self):
+        """
+        Test to assert than the display of a builder in multi instance is updated
+        """
+        self.repo = 'sostrades_core.sos_processes.test'
+
+        # instantiate factory by getting builder from process
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
+        disc1_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc1', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        disc2_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+
+        self.exec_eng.ns_manager.add_ns(
+            'ns_ac', f'{self.exec_eng.study_name}')
+        # update display of Disc2 builder
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
+                 disc2_builder, f'{self.exec_eng.study_name}.Disc2display')
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios',
+                                                                             [disc1_builder, disc2_builder])
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios)
+        self.exec_eng.configure()
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
+
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        # expected treeview is Disc2display inside each scenario
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       '\t|_ multi_scenarios',
+                       '\t\t|_ scenario_1',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2display',
+                       '\t\t|_ scenario_2',
+                       '\t\t\t|_ Disc1',
+                       '\t\t\t|_ Disc2display',
+                       ]
+
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+    def test_07_display_on_disipline_in_multi_instance_2_levels(self):
+        """
+        Test to assert than the display of a builder in 2 levels multi instance is updated
+        """
+        self.repo = 'sostrades_core.sos_processes.test'
+
+        # instantiate factory by getting builder from process
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
+        disc1_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc1', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        disc2_builder = self.exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+
+        self.exec_eng.ns_manager.add_ns(
+            'ns_ac', f'{self.exec_eng.study_name}')
+        # update display of Disc2 builder
+        self.exec_eng.ns_manager.add_display_ns_to_builder(
+                 disc2_builder, f'{self.exec_eng.study_name}.Disc2display')
+        multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios',
+                                                                             [disc1_builder, disc2_builder])
+        multi_scenarios_bis = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios',
+                                                                             multi_scenarios)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(multi_scenarios_bis)
+        self.exec_eng.configure()
+        dict_values = {}
+        dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_1.multi_scenarios.samples_df'] = pd.DataFrame({'selected_scenario': [True,
+                                                                                                           True],
+                                                                                     'scenario_name': ['scenario_1',
+                                                                                                       'scenario_2']})
+        dict_values[f'{self.study_name}.multi_scenarios.scenario_2.multi_scenarios.samples_df'] = pd.DataFrame(
+            {'selected_scenario': [True,
+                                   True],
+             'scenario_name': ['scenario_1',
+                               'scenario_2']})
+
+        self.exec_eng.load_study_from_input_dict(dict_values)
+        # expected treeview is Disc2display inside each scenario
+        exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',
+                       f'|_ {self.study_name}',
+                       '\t|_ multi_scenarios',
+                       '\t\t|_ scenario_1',
+                       '\t\t\t|_ multi_scenarios',
+                       '\t\t\t\t|_ scenario_1',
+                       '\t\t\t\t\t|_ Disc1',
+                       '\t\t\t\t\t|_ Disc2display',
+                       '\t\t\t\t|_ scenario_2',
+                       '\t\t\t\t\t|_ Disc1',
+                       '\t\t\t\t\t|_ Disc2display',
+                       '\t\t|_ scenario_2',
+                       '\t\t\t|_ multi_scenarios',
+                       '\t\t\t\t|_ scenario_1',
+                       '\t\t\t\t\t|_ Disc1',
+                       '\t\t\t\t\t|_ Disc2display',
+                       '\t\t\t\t|_ scenario_2',
+                       '\t\t\t\t\t|_ Disc1',
+                       '\t\t\t\t\t|_ Disc2display',
+                       ]
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()

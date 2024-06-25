@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/12-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,12 +18,7 @@ limitations under the License.
 import unittest
 from os.path import join
 from pathlib import Path
-from shutil import rmtree
-
-# from sos_trades_core.execution_engine.sos_very_simple_multi_scenario import SoSVerySimpleMultiScenario
-# from sostrades_core.execution_engine.scatter_data import SoSScatterData
 from tempfile import gettempdir
-from time import sleep
 
 import pandas as pd
 
@@ -34,6 +29,7 @@ from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver
     Study as study_scatter,
 )
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 
@@ -58,10 +54,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
     def tearDown(self):
 
         for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
             if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+                rmtree_safe(dir_to_del)
 
     def get_simple_multiscenario_process_configured(self, exec_eng):
         # shared namespace

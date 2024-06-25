@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on {} Copyright 2024 Capgemini
+Modifications on 2024/06/11 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@ import importlib
 import json
 import platform
 import subprocess
-from os import makedirs
 from os.path import dirname, exists, join
 
 import numpy as np
 import pandas as pd
+
+from sostrades_core.tools.folder_operations import makedirs_safe
 
 """
     Script to generate a usecase.py with associated input data from a dm.pkl file
@@ -413,7 +414,7 @@ if '__main__' == __name__:
         if not already_exists:
             # verify that data folder exists
             if not exists(dirName):
-                makedirs(dirName)
+                makedirs_safe(dirName)
             if platform.system() == 'Windows' and len(filePath) > 257:
                 raise OSError(
                     f'Impossible to save {fileName}, path too long for windows'
