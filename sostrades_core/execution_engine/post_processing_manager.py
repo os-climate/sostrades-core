@@ -16,11 +16,12 @@ limitations under the License.
 '''
 from __future__ import annotations
 
-import logging
 from importlib import import_module
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import logging
+
     from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 """
