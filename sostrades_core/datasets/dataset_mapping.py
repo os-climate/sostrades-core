@@ -56,6 +56,8 @@ class DatasetsMapping:
     datasets_infos: dict[str:DatasetInfo]
     # Namespace mapping [namespace_name : List[DatasetInfo]]
     namespace_datasets_mapping: dict[str : list[DatasetInfo]]
+    # Dataset namespace mapping [connector_id|dataset_id|* : namespace_name]
+    datasets_namespace_mapping: dict[str: list[str]]
 
     @staticmethod
     def deserialize(input_dict: dict) -> DatasetsMapping:
@@ -77,6 +79,7 @@ class DatasetsMapping:
         """
         datasets_infos = {}
         namespace_datasets_mapping = {}
+        datasets_namespace_mapping = {}
 
         try:
             # parse sub process datasets info
@@ -103,6 +106,7 @@ class DatasetsMapping:
                     # TODO: version, parameter not handled
                     namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
                     namespace_datasets_mapping[namespace] = []
+                    
                     for dataset in datasets:
                         dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
                         connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
@@ -111,12 +115,16 @@ class DatasetsMapping:
                         if dataset not in datasets_infos:
                             datasets_infos.update({dataset: DatasetInfo(connector_id, dataset_id)})
                         namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
+                        datasets_namespace_mapping[dataset] =  datasets_namespace_mapping.get(dataset, [])
+                        datasets_namespace_mapping[dataset].append(namespace)
+                        
         except Exception as exception:
             raise DatasetsMappingException(f'Error reading the dataset mapping file: \n{str(exception)}')
         return DatasetsMapping(
             process_module_path=input_dict[DatasetsMapping.PROCESS_MODULE_PATH_KEY],
             datasets_infos=datasets_infos,
             namespace_datasets_mapping=namespace_datasets_mapping,
+            datasets_namespace_mapping=datasets_namespace_mapping
         )
 
     @classmethod
@@ -176,6 +184,21 @@ class DatasetsMapping:
         anonimized_ns = namespace.replace(study_name, self.STUDY_PLACEHOLDER)
         if anonimized_ns in self.namespace_datasets_mapping.keys():
             datasets_mapping = self.namespace_datasets_mapping[anonimized_ns]
+
+        return datasets_mapping
+    
+    def get_datasets_namespace_mapping_for_study(self, study_name:str)-> dict[str:list[str]]:
+        """
+        Get the datasets_namespace_mapping and replace the study_placeholder with the study_name
+        :param study_name: name of the study
+        :type study_name: str
+        :return: datasets_namespace_mapping with updated namespaces
+        """
+        datasets_mapping = {}
+        for dataset, namespaces  in self.datasets_namespace_mapping.items():
+            datasets_mapping[dataset] = []
+            for namespace in namespaces:
+                datasets_mapping[dataset].append(namespace.replace(self.STUDY_PLACEHOLDER, study_name))
 
         return datasets_mapping
     

@@ -32,9 +32,9 @@ def gather_selected_outputs(gather_outputs, gather_suffix):
     """
     final_out_names = {}
     if gather_outputs is not None:
-        selected_outputs = gather_outputs[gather_outputs['selected_output'] == True]['full_name'].tolist()
+        selected_outputs = gather_outputs.loc[gather_outputs['selected_output']]['full_name'].tolist()
         if 'output_name' in gather_outputs.columns:
-            eval_out_names = gather_outputs[gather_outputs['selected_output']== True]['output_name'].tolist()
+            eval_out_names = gather_outputs.loc[gather_outputs['selected_output']]['output_name'].tolist()
         else:
             eval_out_names = [None for _ in selected_outputs]
 

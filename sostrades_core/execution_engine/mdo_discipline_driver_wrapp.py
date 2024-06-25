@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,10 +18,6 @@ from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWr
 from sostrades_core.execution_engine.sos_mdo_discipline_driver import (
     SoSMDODisciplineDriver,
 )
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
 
 
 class MDODisciplineDriverWrappException(Exception):

@@ -53,7 +53,7 @@ dill==0.3.8
     # via openturns
 dnspython==2.6.1
     # via eventlet
-ecos==2.0.13
+ecos==2.0.14
     # via cvxpy
 et-xmlfile==1.1.0
     # via openpyxl
@@ -190,6 +190,7 @@ numpy==1.24.4
     #   matplotlib
     #   nlopt
     #   numpoly
+    #   numpy-financial
     #   osqp
     #   pandas
     #   pdfo
@@ -202,6 +203,8 @@ numpy==1.24.4
     #   scs
     #   seaborn
     #   table-logger
+numpy-financial==1.0.0
+    # via -r ./portfolio-management/requirements.in
 oauthlib==3.2.2
     # via
     #   kubernetes
@@ -359,7 +362,7 @@ pyyaml==6.0.1
     #   -r ./sostrades-core/requirements.in
     #   -r ./sostrades-webapi/requirements.in
     #   kubernetes
-qdldl==0.1.7.post2
+qdldl==0.1.7.post3
     # via osqp
 rdflib==5.0.0
     # via -r ./sostrades-ontology/requirements.in
@@ -400,7 +403,7 @@ scipy==1.10.1
     #   scikit-learn
     #   scs
     #   seaborn
-scs==3.2.4.post2
+scs==3.2.4.post3
     # via cvxpy
 seaborn==0.9.0
     # via -r ./witness-core/requirements.in
@@ -434,7 +437,7 @@ sympy==1.4
     #   -r ./sostrades-core/requirements.in
 table-logger @ git+https://github.com/AleksTk/table-logger.git@v0.3.7
     # via -r ./sostrades-ontology/requirements.in
-tenacity==8.3.0
+tenacity==8.4.1
     # via plotly
 textdistance==4.2.0
     # via -r ./sostrades-ontology/requirements.in
