@@ -53,14 +53,14 @@ class Study(StudyManager):
                                           'index': arange(0, 4, 1),
                                           'index_name': 'index',
                                           'namespace_in': 'ns_OptimSellar',
-                                          'namespace_out': 'ns_OptimSellar'
+                                          'namespace_out': 'ns_functions'
                                           },
                                  'z_in': {'out_name': 'z',
                                           'out_type': 'array',
                                           'index': [0, 1],
                                           'index_name': 'index',
                                           'namespace_in': 'ns_OptimSellar',
-                                          'namespace_out': 'ns_OptimSellar'
+                                          'namespace_out': 'ns_functions'
                                           }
                                  }
 
@@ -71,15 +71,17 @@ class Study(StudyManager):
 
 
         # Sellar and design var inputs
-        disc_dict[f'{ns}.Sellar.{self.optim_name}.x_in'] = array([1., 1., 1., 1.])
+        disc_dict[f'{ns}.Sellar.SellarOptimScenario.x_in'] = array([1., 1., 1., 1.])
         disc_dict[f'{ns}.Sellar.{self.optim_name}.y_1'] = 5.
         disc_dict[f'{ns}.Sellar.{self.optim_name}.y_2'] = 1.
-        disc_dict[f'{ns}.Sellar.{self.optim_name}.z_in'] = array([5., 2.])
+        disc_dict[f'{ns}.Sellar.SellarOptimScenario.z_in'] = array([5., 2.])
         disc_dict[f'{ns}.{self.coupling_name}.Sellar_Problem.local_dv'] = 10.
 
         func_df = pd.DataFrame(
             columns=['variable', 'ftype', 'weight', AGGR_TYPE])
         func_df['variable'] = ['c_1', 'c_2', 'obj']
+        func_df['parent'] = "parent"
+        func_df['namespace'] = "ns_functions"
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT, OBJECTIVE]
         func_df['weight'] = [200, 0.000001, 0.1]
         func_df[AGGR_TYPE] = [AGGR_TYPE_SUM, AGGR_TYPE_SUM, AGGR_TYPE_SUM]
@@ -92,11 +94,9 @@ class Study(StudyManager):
 
         disc_dict.update(values_dict)
 
-        return [disc_dict]
+        return disc_dict
 
 
 if '__main__' == __name__:
     uc_cls = Study()
-    uc_cls.load_data()
-    uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
-    uc_cls.run()
+    uc_cls.test()

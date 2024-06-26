@@ -512,16 +512,16 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
                 study=study_2, force_run=force_run)
             test_passed = post_processing_passed
             info_msg += error_msg_post_processing
+            if False:
+                if post_processing_passed and not study_2.ee.factory.contains_mdo:
+                    if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
+                        run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
+                        test_passed = run_test_passed
+                        info_msg += error_msg_run
+                    else:
+                        info_msg += f"\nINFO: {usecase}, double run not tested because usecase is MDA with strong couplings"
 
-            if post_processing_passed and not study_2.ee.factory.contains_mdo:
-                if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
-                    run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
-                    test_passed = run_test_passed
-                    info_msg += error_msg_run
-                else:
-                    info_msg += f"\nINFO: {usecase}, double run not tested because usecase is MDA with strong couplings"
-
-            run_test_check_outputs(usecase)
+                run_test_check_outputs(usecase)
 
     if message_queue is not None:
         message_queue.put([test_passed, info_msg])

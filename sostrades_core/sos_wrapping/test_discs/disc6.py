@@ -39,9 +39,7 @@ class Disc6(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {
         'df': {'type': 'dataframe', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected',
-               'dataframe_descriptor': {'years': ('float', [0., 3000.], True),
-                                        'year': ('float', [0., 3000.], True),
-                                        'c1': ('float', [-1e4, 1e4], True),
+               'dataframe_descriptor': {'c1': ('float', [-1e4, 1e4], True),
                                         'c2': ('float', None, True)}},
         'dict_df': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'},
                     'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
