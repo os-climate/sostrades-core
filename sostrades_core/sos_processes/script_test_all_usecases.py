@@ -261,7 +261,7 @@ def multiple_configure(usecase):
     logging.info("---- FIRST CONFIGURE ----")
     # First run : Load Data in a new BaseStudyManager and run study
     study_1 = BaseStudyManager(repository_name=uc.repository_name, process_name=uc.process_name,
-                               study_name=uc.study_name)
+                               study_name=uc.study_name, test_post_procs=uc.test_post_procs)
     study_1.load_data(from_path=dump_dir)
     study_1.execution_engine.configure()
     # Deepcopy dm
@@ -271,7 +271,7 @@ def multiple_configure(usecase):
     # Second run : Load Data in a new BaseStudyManager and run study
     logging.info("---- SECOND CONFIGURE ----")
     study_2 = BaseStudyManager(repository_name=uc.repository_name, process_name=uc.process_name,
-                               study_name=uc.study_name)
+                               study_name=uc.study_name, test_post_procs=uc.test_post_procs)
     study_2.load_data(from_path=dump_dir)
     study_2.execution_engine.configure()
     # Deepcopy dm
@@ -503,6 +503,9 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         test_passed = data_integrity_passed
 
         if data_integrity_passed:
+            if not study_2.test_post_procs:
+                info_msg += f"\nINFO: {usecase}, stopped test after data integrity"
+                return test_passed, info_msg
             if study_2.ee.factory.contains_mdo:
                 max_iter_mdo_var_names = study_2.ee.dm.get_all_namespaces_from_var_name("max_iter")
                 study_2.ee.dm.set_values_from_dict({max_mdo_iter_var: 1 for max_mdo_iter_var in max_iter_mdo_var_names})

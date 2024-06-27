@@ -55,7 +55,7 @@ class BaseStudyManager():
     """
 
     def __init__(self, repository_name, process_name, study_name, dump_directory: Optional[str] = None, run_usecase=True,
-                 yield_method=None, logger=None, execution_engine=None):
+                 yield_method=None, logger=None, execution_engine=None, test_post_procs: bool = True):
         """ Constructor
 
         :params: repository_name, package name that contain the target process to load
@@ -81,6 +81,7 @@ class BaseStudyManager():
         self.dumped_cache = False
         self.dump_cache_map = None
         self.check_outputs = False
+        self.test_post_procs = test_post_procs
 
     @property
     def run_usecase(self):
