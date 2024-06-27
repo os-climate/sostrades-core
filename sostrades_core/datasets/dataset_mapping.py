@@ -130,6 +130,8 @@ class DatasetsMapping:
                         # build just the id with connector and dataset
                         dataset_info_id = DatasetsMapping.MAPPING_SEP.join([connector_id, dataset_id])
 
+                        if dataset_id == DatasetInfo.WILDCARD:
+                            raise DatasetsMappingException("the dataset name '*' is not authorised in mapping of {dataset}")
 
                         if dataset_info_id not in datasets_infos:
                             datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id)

@@ -56,37 +56,29 @@ class DatasetsManager:
 
         for dataset_info, mapping_parameters in datasets_info.items():
             try:
-                if dataset_info.dataset_id == DatasetInfo.WILDCARD:
-                    connector = DatasetsConnectorManager.get_connector(dataset_info.connector_id)
-                    all_dataset_ids = connector.get_datasets_available()
-                    all_datasets = {}
-                    for dataset_id in all_dataset_ids:
-                        all_datasets.update({DatasetInfo(dataset_info.connector_id, dataset_id):mapping_parameters})
-                    data_retrieved.update(self.fetch_data_from_datasets(all_datasets, data_dict))
-                else:
-                    # Get the dataset, creates it if not exists
-                    dataset = self.get_dataset(dataset_info=dataset_info)
+                # Get the dataset, creates it if not exists
+                dataset = self.get_dataset(dataset_info=dataset_info)
 
-                    # get the list of parameters to get
-                    data_to_fetch = {}
-                    dataset_data_reverse_mapping = {}
-                    # we get the data_dataset_key for each param that is in data_dict 
-                    # it is done in a loop so that it respect the order of appearance
-                    #(ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
-                    for data_key, data_dataset_key in mapping_parameters.items():
-                        if data_dataset_key == DatasetInfo.WILDCARD:
-                            dataset_data_reverse_mapping.update({key: key for key in data_dict.keys()})
-                            data_to_fetch.update(data_dict)
-                        elif data_key in data_dict.keys():
-                            dataset_data_reverse_mapping.update({data_dataset_key: data_key})
-                            data_to_fetch.update({data_dataset_key: data_dict[data_key]})
-                    
-                    # Retrieve values
-                    dataset_values = dataset.get_values(data_dict=data_to_fetch)
-                    # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
-                    dataset_data = {dataset_data_reverse_mapping[key]: {self.VALUE: value,
-                                        self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
-                    data_retrieved.update(dataset_data)
+                # get the list of parameters to get
+                data_to_fetch = {}
+                dataset_data_reverse_mapping = {}
+                # we get the data_dataset_key for each param that is in data_dict 
+                # it is done in a loop so that it respect the order of appearance
+                #(ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
+                for data_key, data_dataset_key in mapping_parameters.items():
+                    if data_dataset_key == DatasetInfo.WILDCARD:
+                        dataset_data_reverse_mapping.update({key: key for key in data_dict.keys()})
+                        data_to_fetch.update(data_dict)
+                    elif data_key in data_dict.keys():
+                        dataset_data_reverse_mapping.update({data_dataset_key: data_key})
+                        data_to_fetch.update({data_dataset_key: data_dict[data_key]})
+                
+                # Retrieve values
+                dataset_values = dataset.get_values(data_dict=data_to_fetch)
+                # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
+                dataset_data = {dataset_data_reverse_mapping[key]: {self.VALUE: value,
+                                    self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
+                data_retrieved.update(dataset_data)
             except DatasetGenericException as exception:
                 raise DatasetGenericException(f'Error fetching dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return data_retrieved
