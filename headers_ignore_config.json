@@ -30,7 +30,8 @@
         "sostrades_core/tools/tree/deserialization.py",
         ".readthedocs.yaml",
         "docs/make.bat",
-        "docs/Makefile"
+        "docs/Makefile",
+        ".pre-commit-config.yaml"
     ],
     "airbus_rev_commit" : "11d7f9f"
 }
