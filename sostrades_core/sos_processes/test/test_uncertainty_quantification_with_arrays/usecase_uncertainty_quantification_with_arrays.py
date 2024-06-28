@@ -82,6 +82,7 @@ class Study(StudyManager):
             'upper_bnd': [105., 120., 120., np.array([x_range.max(), y_range.max(), z_range.max()])],
             'nb_points': [10, 10, 10, 10],
             'full_name': ['COC', 'RC', 'NRC', 'input_array'],
+            'variable': ['COC', 'RC', 'NRC', 'input_array'],
         })
 
         """

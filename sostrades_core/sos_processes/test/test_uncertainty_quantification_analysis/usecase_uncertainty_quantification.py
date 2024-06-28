@@ -51,6 +51,7 @@ class Study(StudyManager):
         self.output_selection = pd.DataFrame(output_selection)
 
         dspace = pd.DataFrame({
+            'variable': ['COC', 'RC', 'NRC'],
             'shortest_name': ['COC', 'RC', 'NRC'],
             'lower_bnd': [85., 80., 80.],
             'upper_bnd': [105., 120., 120.],

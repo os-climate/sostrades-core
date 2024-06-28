@@ -19,12 +19,13 @@ import unittest
 
 import numpy as np
 import pandas as pd
+from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
-import sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
+import sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset
 from sostrades_core.datasets.dataset_mapping import (
     DatasetsMapping,
     DatasetsMappingException,
@@ -33,7 +34,6 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     DatasetGenericException,
 )
 from sostrades_core.study_manager.study_manager import StudyManager
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 
 class TestDatasets(unittest.TestCase):
@@ -417,10 +417,10 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test2/",
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test_nested/",
             "create_if_not_exists": True
         }
-        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test_nested",
                                                     connector_type=DatasetConnectorType.get_enum_value("Local"),
                                                     **connector_args)
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
@@ -428,7 +428,7 @@ class TestDatasets(unittest.TestCase):
         study = StudyManager(file_path=usecase_file_path)
 
         dm = study.execution_engine.dm
-        connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test')
+        connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test_nested')
         connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
 
         data_types_dict = {_k: dm.get_data(f"usecase_local_dataset.Disc1.{_k}", "type") for _k in self.nested_types_reference_dict}
