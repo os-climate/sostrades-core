@@ -93,7 +93,7 @@ class ScatterTool(SosTool):
                         self.display_options[key] = display_options_dict[key]
 
     def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None):
-        '''    
+        '''
         Method that associate tool to the driver and add scatter map
         '''
         SosTool.associate_tool_to_driver(
@@ -198,9 +198,9 @@ class ScatterTool(SosTool):
                     scatter_list_name, self.driver.get_data_out()), 'value', self.__scatter_list)
 
     def build(self):
-        ''' 
-        Configuration of the SoSscatter : 
-        -First configure the scatter 
+        '''
+        Configuration of the SoSscatter :
+        -First configure the scatter
         -Get the list to scatter on and the associated namespace
         - Look if disciplines are already scatterred and compute the new list to scatter (only new ones)
         - Remove disciplines that are not in the scatter list
@@ -262,7 +262,7 @@ class ScatterTool(SosTool):
         Build child disciplines under the father executor of the driver (to get a flatten subprocess all the time)
         name (string) : new name in the scatter_list
         new_name_flag (bool) : True if name is a new_name in the build
-        ns_ids_list (list) : The list of ns_keys that already have been updated with the scatter_name and mus tbe associated to the builder 
+        ns_ids_list (list) : The list of ns_keys that already have been updated with the scatter_name and mus tbe associated to the builder
 
         1. Set builders as a list and loop over builders
         2. Set the new_name of the builder with the scatter name

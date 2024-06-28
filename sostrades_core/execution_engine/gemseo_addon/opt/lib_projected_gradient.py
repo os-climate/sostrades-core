@@ -72,7 +72,7 @@ class ProjectedGradientOpt(OptimizationLibrary):
 
         }
 
-    def _get_options(self, 
+    def _get_options(self,
                      maxfun=999,
                      ftol=1e-10,  # pylint: disable=W0221
                      **kwargs):

@@ -90,7 +90,7 @@ class ExecutionEngine:
     def factory(self) -> SosFactory:
         """ Read-only accessor to the factory object
 
-            :return: current used factory 
+            :return: current used factory
             :type: SosFactory
         """
         return self.__factory
@@ -99,7 +99,7 @@ class ExecutionEngine:
     def post_processing_manager(self) -> PostProcessingManager:
         """ Read-only accessor to the post_processing_manager object
 
-            :return: current used post_processing_manager 
+            :return: current used post_processing_manager
             :type: PostProcessingManager
         """
         return self.__post_processing_manager
@@ -200,7 +200,7 @@ class ExecutionEngine:
         '''
         Anonymize each cache of the cache map by anonymizing each variable key inside the cache
         The returned cache is a dict already serialized and anonymized
-        None values are not serialized 
+        None values are not serialized
         '''
         anonymized_cache_map = {}
         if self.dm.cache_map != {}:
@@ -227,7 +227,7 @@ class ExecutionEngine:
         '''
         Unanonymize each cache of the cache map by anonymizing each variable key inside the cache
         The returned cache is a dict already serialized and anonymized
-        None values are not serialized 
+        None values are not serialized
         '''
         unanonymized_cache_map = {}
         if cache_map != {}:
@@ -290,7 +290,7 @@ class ExecutionEngine:
 
     def display_treeview_nodes(self, display_variables=None, exec_display=False):
         '''
-        Display the treeview and create it if not 
+        Display the treeview and create it if not
         '''
         self.get_treeview(exec_display=exec_display)
         tv_to_display = self.dm.treeview.display_nodes(
@@ -399,7 +399,7 @@ class ExecutionEngine:
     def load_study_from_dataset(self, datasets_mapping: DatasetsMapping, update_status_configure:bool=True):
         '''
         Load a study from a datasets mapping dictionary : retreive dataset value and load study
-        
+
         :param datasets_mapping: Dataset mapping to use
         :type datasets_mapping: DatasetsMapping
         :param update_status_configure: whether to update the status for configure
@@ -555,7 +555,7 @@ class ExecutionEngine:
 
     def __check_data_integrity_msg(self, raise_exceptions: bool = True):
         '''
-        Check if one data integrity msg is not empty string to crash a value error 
+        Check if one data integrity msg is not empty string to crash a value error
         as the old check_inputs in the dm juste before the execution
         Add the name of the variable in the message
         '''

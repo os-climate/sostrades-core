@@ -1054,7 +1054,7 @@ class ProxyDiscipline:
 
     def __check_all_data_integrity(self):
         '''
-         generic data integrity_check where we call different generic function to check integrity 
+         generic data integrity_check where we call different generic function to check integrity
          + specific data integrity by discipline
         '''
         data_integrity = self.__generic_check_data_integrity()
@@ -1117,7 +1117,7 @@ class ProxyDiscipline:
 
     def update_reset_debug_mode(self):
         '''
-        Update the reset_debug_mode boolean if debug mode has changed + logger 
+        Update the reset_debug_mode boolean if debug mode has changed + logger
         '''
         # Debug mode logging and recursive setting (priority to the parent)
         debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
@@ -1832,7 +1832,7 @@ class ProxyDiscipline:
 
     def add_status_observer(self, observer):
         '''
-        Observer has to be set before execution (and prepare_execution) and the mdo_discipline does not exist. 
+        Observer has to be set before execution (and prepare_execution) and the mdo_discipline does not exist.
         We store observers in self.status_observers and add it to the mdodiscipline when it ies instanciated in prepare_execution
         '''
         if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
@@ -1845,7 +1845,7 @@ class ProxyDiscipline:
     def remove_status_observer(self, observer):
         '''
         Remove the observer from the status_observers list
-        And normally the mdodiscipline has already been instanciated and we can remove it. 
+        And normally the mdodiscipline has already been instanciated and we can remove it.
         If not the case the mdodiscipline does not exist such as the observer
         '''
         if observer in self.status_observers:
@@ -1989,7 +1989,7 @@ class ProxyDiscipline:
 
     def add_disc_list_to_config_dependency_disciplines(self, disc_list):
         '''
-        Add a list to children_list 
+        Add a list to children_list
         '''
         for disc in disc_list:
             self.add_disc_to_config_dependency_disciplines(disc)

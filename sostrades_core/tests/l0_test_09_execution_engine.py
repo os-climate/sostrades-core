@@ -42,39 +42,39 @@ class TestExecutionEngine(unittest.TestCase):
 
     def test_01_execution_engine_sosdiscipline(self):
         exec_eng = ExecutionEngine(self.name)
-    
+
         ns_dict = {'ns_ac': 'EETests'}
         exec_eng.ns_manager.add_ns_def(ns_dict)
-    
+
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc1.Disc1'
         disc1_builder = exec_eng.factory.get_builder_from_module(
             'Disc1', mod_list)
-    
+
         exec_eng.factory.set_builders_to_coupling_builder(
             disc1_builder)
-    
+
         exec_eng.configure()
-    
+
         values_dict = {}
         ns = 'EETests'
         values_dict[ns + '.x'] = 3.
         values_dict[ns + '.Disc1.a'] = 10.
         values_dict[ns + '.Disc1.b'] = 20.
         exec_eng.load_study_from_input_dict(values_dict)
-    
+
         exec_eng.execute()
         print('\ntest_01_execution_engine_sosdiscipline::root_process execution result:')
         res = exec_eng.dm.data_dict
-    
+
         res_reference = {
             ns + '.x': 3.0,
             ns + '.Disc1.a': 10.0,
             ns + '.Disc1.b': 20.0,
             ns + '.Disc1.indicator': 200.0,
             ns + '.y': 50.0}
-    
+
         exec_eng.display_treeview_nodes()
-    
+
         for key in res_reference:
             self.assertEqual(res[exec_eng.dm.data_id_map[key]]
                              ['value'], res_reference[key])
@@ -90,7 +90,7 @@ class TestExecutionEngine(unittest.TestCase):
         exec_eng.ns_manager.add_ns_def(ns_dict)
         exec_eng.select_root_process(self.repo, process)
         exec_eng.configure()
-    
+
         # modify DM ----
         values_dict = {}
         values_dict['EETests.Disc1.a'] = 10.
@@ -98,7 +98,7 @@ class TestExecutionEngine(unittest.TestCase):
         values_dict['EETests.Disc2.power'] = 2
         values_dict['EETests.Disc2.constant'] = -10.
         values_dict['EETests.x'] = 3.
-    
+
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.execute()
         print('\ntest_02_execution_engine_soscoupling::root_process execution result:')
@@ -113,7 +113,7 @@ class TestExecutionEngine(unittest.TestCase):
                             set(['EETests', 'EETests.Disc2',
                                  'EETests.Disc1']),
                             'bad list of keys stored in exec_engine.dm.disciplines_dict')
-    
+
         res_target = {
             'EETests.x': 3.0,
             'EETests.Disc1.a': 10.0,
@@ -123,7 +123,7 @@ class TestExecutionEngine(unittest.TestCase):
             'EETests.Disc1.indicator': 200.0,
             'EETests.y': 50.0,
             'EETests.z': 2490.0}
-    
+
         for key in res_target:
             self.assertEqual(res[exec_eng.dm.data_id_map[key]]
                              ['value'], res_target[key])
@@ -140,7 +140,7 @@ class TestExecutionEngine(unittest.TestCase):
 
         a_value = 12
         values = {
-            study_name + 
+            study_name +
             '.Disc1.a': a_value}
 
         exec_engine.dm.set_values_from_dict(values)

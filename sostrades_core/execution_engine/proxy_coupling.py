@@ -897,7 +897,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             dim = y.shape[1]
             series = []
             for d in range(dim):
-                series_name = varname if dim == 1 else f"{varname}\{d}"
+                series_name = varname if dim == 1 else rf"{varname}\{d}"
                 new_series = InstanciatedSeries(
                     x, list(y[:, d]),
                     series_name, 'lines', True)

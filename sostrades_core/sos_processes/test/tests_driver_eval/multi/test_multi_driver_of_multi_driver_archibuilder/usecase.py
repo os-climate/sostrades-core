@@ -65,7 +65,7 @@ class Study(StudyManager):
                                                       'Road': [True, True],
                                                       'Local': [True, True],
                                                       'Plane': [False, False]})
-        
+
         # setup the business architectures
         dict_values[f'{self.study_name}.outer_ms.sc1_business.inner_ms.sc1_local_prod.Business.activation_df'] = \
             activation_df_business_1

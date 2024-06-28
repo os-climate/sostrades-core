@@ -28,7 +28,7 @@ from sostrades_core.tools.folder_operations import makedirs_safe
 """
     Script to generate a usecase.py with associated input data from a dm.pkl file
 
-    Usage: 
+    Usage:
         1- import class UsecaseCreator
         2- instantiate UsecaseCreator class with pickle path and options
         3- call pickle_file_to_usecase() method to generate usecase.py and input data

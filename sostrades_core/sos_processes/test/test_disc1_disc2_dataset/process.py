@@ -30,10 +30,10 @@ class ProcessBuilder(BaseProcessBuilder):
         mods_dict = {
             'Disc1': 'sostrades_core.sos_wrapping.test_discs.disc1_disc2_dataset.Disc1',
             'Disc2': 'sostrades_core.sos_wrapping.test_discs.disc1_disc2_dataset.Disc2'}
-        
+
         builder_list = self.create_builder_list(mods_dict)
 
-        self.ee.ns_manager.add_ns_def(ns_info = {'ns_a': self.ee.study_name, 
+        self.ee.ns_manager.add_ns_def(ns_info = {'ns_a': self.ee.study_name,
                                                  'ns_xy_disc1': self.ee.study_name + '.Disc1VirtualNode',
                                                  'ns_xy_disc2': self.ee.study_name + '.Disc2VirtualNode'})
 

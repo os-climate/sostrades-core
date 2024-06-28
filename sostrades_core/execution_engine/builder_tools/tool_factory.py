@@ -63,7 +63,7 @@ class ToolFactory:
 
     def add_tool(self, tool):
         """
-        Add a tool to the list of factory tools 
+        Add a tool to the list of factory tools
         """
 
         self.__builder_tools.append(tool)

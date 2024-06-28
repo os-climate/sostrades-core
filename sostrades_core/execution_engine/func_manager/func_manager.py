@@ -293,7 +293,7 @@ class FunctionManager:
         return smooth_maximum(val, alpha=alpha)
 
     def get_mod_func_val(self, tag):
-        ''' 
+        '''
         get modified value
         '''
         return self.mod_functions[tag][self.VALUE]

@@ -19,7 +19,7 @@ from numpy import complex128, float32, float64, int32, int64, ndarray, number
 from pandas.core.frame import DataFrame
 
 '''
-Exp_min function minimize an array with a min_value with a smooth decreasing exponential 
+Exp_min function minimize an array with a min_value with a smooth decreasing exponential
 The gradient of this function can also be used
 '''
 

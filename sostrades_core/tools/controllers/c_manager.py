@@ -19,7 +19,7 @@ from copy import deepcopy
 class CManager:
     """
     Padge Controller Manager
-    Notation: 
+    Notation:
         id = identifiers
         pt = pointer
     """

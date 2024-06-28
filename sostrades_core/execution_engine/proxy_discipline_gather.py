@@ -73,7 +73,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
     def get_gather_variable(self):
         '''
-        Variables to gather are the variable in the DESC_OUT of the instantiator which are shared 
+        Variables to gather are the variable in the DESC_OUT of the instantiator which are shared
         We suppose that local variable must remain local and consequently are not gathered
         '''
         var_to_gather_dict = {}
@@ -130,7 +130,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
     def add_new_variables_in_inst_desc_in(self, new_variables, gather_ns_in):
         '''
-        Add a variable in the inst_desc_in with its full name and the gather_ns_in defined in the map 
+        Add a variable in the inst_desc_in with its full name and the gather_ns_in defined in the map
         '''
         for new_variable, value_dict in new_variables.items():
             full_key = self.ee.ns_manager.compose_ns(
@@ -172,7 +172,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
     def configure(self):
         '''
-        Configure the gather : 
+        Configure the gather :
         - build the inst_desc_in with gather variables (only shared variables) with the value of the scatter var_name
         - build the inst_desc_out (variable_dict)
         - configure the discipline with completed inst_desc_in and inst_desc_out
@@ -264,7 +264,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
     def clean_inst_desc_in_with_sub_names(self, sub_names):
         '''
-        Clean the inst_desc_in with names that doesn't exist in the scatter anymore, 
+        Clean the inst_desc_in with names that doesn't exist in the scatter anymore,
         Update the gather function of scatter variables
         '''
         disc_in = self.get_data_in()

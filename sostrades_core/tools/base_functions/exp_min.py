@@ -18,7 +18,7 @@ limitations under the License.
 import numpy as np
 
 '''
-Exp_min function minimize an array with a min_value with a smooth decreasing exponential 
+Exp_min function minimize an array with a min_value with a smooth decreasing exponential
 The gradient of this function can also be used
 '''
 

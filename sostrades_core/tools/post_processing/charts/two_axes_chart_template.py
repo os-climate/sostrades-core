@@ -21,11 +21,11 @@ from sostrades_core.tools.post_processing.post_processing_tools import convert_n
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Class that define a 2 dimensional chart template 
+Class that define a 2 dimensional chart template
 """
 
 class SeriesTemplateException(Exception):
-    """ Overload Exception basic type 
+    """ Overload Exception basic type
     """
 
 
@@ -290,7 +290,7 @@ class SeriesTemplate:
 
 
 class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a 2 dimensional chart template 
+    """ Class that define a 2 dimensional chart template
     """
 
     CHART_NAME = 'chart_name'
@@ -377,7 +377,7 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         self.y_primary_max = 0.
         if self.y_min_zero:
             self.primary_ordinate_axis_range = [0., 0.]
-            
+
         # Show legend
         self.show_legend = show_legend
 

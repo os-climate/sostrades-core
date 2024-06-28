@@ -61,9 +61,9 @@ class TestPrepareExecution(unittest.TestCase):
         values_dict[f'{namespace}.x'] = 3.
 
         ee.load_study_from_input_dict(values_dict)
-        
+
         ee.prepare_execution()
-        
+
         self.assertTrue(isinstance(ee.root_process.mdo_discipline_wrapp.mdo_discipline, MDAChain))
 
         for proxy_disc in ee.root_process.proxy_disciplines:

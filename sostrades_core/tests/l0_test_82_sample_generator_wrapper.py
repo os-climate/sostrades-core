@@ -175,22 +175,22 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
     These tests are oriented to testing sampling generation in "standalone": i.e. only the sample_generator_wrapper.
     Here there is no nested sub_process and so no evaluation of the sample on a sub_process
     1) In case of doe_algo method
-    These tests are oriented to testing sampling generation of only DoE sampling generation. Three families of DoE 
+    These tests are oriented to testing sampling generation of only DoE sampling generation. Three families of DoE
     Gemseo algorithms, classified accordingly by their default options, will be tested:
     - CustomDOE and DiagonalDOE: which shall not work and raise an exception.
-    - OT algo family: ['OT_SOBOL', 'OT_RANDOM', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'OT_FAURE', 
-                       'OT_MONTE_CARLO', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL', 'OT_OPT_LHS', 'OT_LHS', 
+    - OT algo family: ['OT_SOBOL', 'OT_RANDOM', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'OT_FAURE',
+                       'OT_MONTE_CARLO', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL', 'OT_OPT_LHS', 'OT_LHS',
                        'OT_LHSC', 'OT_FULLFACT', 'OT_SOBOL_INDICES']
     - pydoe family: ['fullfact', 'ff2n', 'pbdesign', 'bbdesign', 'ccdesign', 'lhs']
     2) In case of cartesian product method
-    
+
     """
 
     def test_1_doe_execution_fullfact(self):
         """
         This is a test of in which a fullfact sampling generation is compared with respect to a
         reference sampling for such DoE algo
-        Remark: 
+        Remark:
         This is a test converted from EEV3 in which a fullfact sampling generation is compared with respect to a
         reference sampling for such DoE algo. It was made through a DoeEval but now just through a DoE.
         """

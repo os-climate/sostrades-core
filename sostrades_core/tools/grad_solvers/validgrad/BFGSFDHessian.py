@@ -19,14 +19,14 @@ import numpy
 
 
 class BFGSFDHessian():
-    
+
     def __init__(self,scheme,df_pointer):
         self.__scheme=scheme
         self.__dfpointer=df_pointer
-        
+
     def get_scheme(self):
         return self.__scheme
-    
+
     def iterate_bfgs_mat(self,H,xk,xkp1,grad_k,grad_kp1):
         sk=numpy.atleast_2d(xkp1-xk).T#numpy.atleast_2d
         yk=numpy.atleast_2d(grad_kp1-grad_k).T
@@ -40,7 +40,7 @@ class BFGSFDHessian():
 #        if numpy.dot(numpy.dot(d2x.T,H),d2x)<0.:
 #            print "H is not positive definite !"
         return H
-    
+
     def hess_f(self,x):
         """
         Compute hessian BFGS approximation
@@ -64,7 +64,7 @@ class BFGSFDHessian():
         """
         self.__scheme.set_x(x)
         self.__scheme.generate_samples()
-        
+
         grad_k=self.__dfpointer(x)
         nb_f=numpy.shape(grad_k)[0]
         H_list=[]

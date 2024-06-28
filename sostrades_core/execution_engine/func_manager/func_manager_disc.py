@@ -958,7 +958,7 @@ class FunctionManagerDisc(OptimManagerDisc):
                                                   name='lagrangian objective'):
         """
         Function to create the post proc of aggregated objectives and constraints
-        A dropdown menu is used to select between: 
+        A dropdown menu is used to select between:
             -"Simple" : Simple scatter+line of lagrangian objective
             -Detailed Contribution" : scatter+line of aggregated (sum*100) lagrangian objective + summed area of individual contributions (*100)
         Inputs: main_parameters (lagrangian objective) name, list of sub-parameters (aggregated objectives, inequality constraints and
@@ -1047,12 +1047,12 @@ class FunctionManagerDisc(OptimManagerDisc):
                                         eq_constraints={}, name='aggregated'):
         """
         Function to create the post proc of aggregated objectives and constraints
-        A dropdown menu is used to select between: 
+        A dropdown menu is used to select between:
             -"All Aggregated" : Simple scatter+line of all the aggregated values
             -"Objective - Detailed" : scatter+line of aggregated (sum) objective + summed area of individual contributions
-            -"Ineq Constraint - Detailed" : scatter+line of aggregated (smax) inequality constraint + area of individual contributions 
-            -"Eq Constraint - Detailed": scatter+line of aggregated (smax) equality constraint + area of individual contributions 
-        Inputs: main_parameters (aggregated) names, list of objectives, inequality constraints and equality constraints names, 
+            -"Ineq Constraint - Detailed" : scatter+line of aggregated (smax) inequality constraint + area of individual contributions
+            -"Eq Constraint - Detailed": scatter+line of aggregated (smax) equality constraint + area of individual contributions
+        Inputs: main_parameters (aggregated) names, list of objectives, inequality constraints and equality constraints names,
         and name of the plot
         Ouput: instantiated plotly chart
         """
@@ -1355,7 +1355,7 @@ class FunctionManagerDisc(OptimManagerDisc):
     def get_chart_obj_constraints_iterations(self, func_df, optim_output, objectives, name):
         """
         Function to create a summary post proc of the optim problem
-        In black : the aggregated objective 
+        In black : the aggregated objective
         In colorscale from green to red : the sum of all the constraints (green == negative values)
         Additionnal information such as the name and value of the dominant constraint are shown in the hovertext
         Inputs: objective name, name of the plot and boolean for log scale

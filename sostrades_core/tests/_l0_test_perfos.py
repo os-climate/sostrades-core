@@ -60,10 +60,10 @@ class TestScatter(unittest.TestCase):
 
         profil = cProfile.Profile()
         profil.enable()
-        
+
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
-        
+
         profil.disable()
         result = StringIO()
 
@@ -75,7 +75,7 @@ class TestScatter(unittest.TestCase):
         result = 'ncalls' + result.split('ncalls')[-1]
         result = '\n'.join([','.join(line.rstrip().split(None, 5))
                             for line in result.split('\n')])
-        
+
 
         with open(join(dirname(__file__), 'test_disc1_perfos.csv'), 'w+') as f:
             # f = open(result.rsplit('.')[0] + '.csv', 'w')

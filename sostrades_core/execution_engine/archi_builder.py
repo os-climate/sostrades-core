@@ -352,9 +352,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
     def get_builder_from_factory(self, builder_name, builder_def):
         '''
-        Get a builder from the ee factory, two ways of working : 
+        Get a builder from the ee factory, two ways of working :
             - builder_def is a string : find the builder_def class in each folder of the folder_list
-            - builder_def is a tuple : find builder_def[1] class name in the folder given as first element of the tuple builder_def[0] 
+            - builder_def is a tuple : find builder_def[1] class name in the folder given as first element of the tuple builder_def[0]
         '''
         if isinstance(builder_def, tuple):
             disc_builder = self.ee.factory.get_builder_from_class_name(

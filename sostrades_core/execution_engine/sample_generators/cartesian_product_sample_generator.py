@@ -57,9 +57,9 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         '''
         Method that checks the sample output type
         Arguments:
-            samples_df (dataframe) : generated samples 
+            samples_df (dataframe) : generated samples
         Raises:
-            Exception if samples_df is not a dataframe                   
+            Exception if samples_df is not a dataframe
         '''
         if not(isinstance(samples_df, pd.DataFrame)):
             msg = "Expected sampling output type should be pandas.core.frame.DataFrame"
@@ -89,7 +89,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             return my_sample
         my_res = combvec(vect_list)
         samples_df = pd.DataFrame(my_res, columns=variable_list)
-        
+
         return samples_df
 
     @staticmethod

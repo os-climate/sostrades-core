@@ -32,11 +32,11 @@ class ScatterMap:
     def __init__(self, ee, name, s_map):
         '''
         Class to describe a scatter map and manage several instances of the same scatter map
-            :params: name 
+            :params: name
             :type: string
 
-            :params: s_map 
-            :type: dict 
+            :params: s_map
+            :type: dict
 
             if s_map is a scatter build map:
             :keys: input_name, input_type, input_ns, output_name, scatter_ns, gather_ns (optional,=input_ns by default), ns_to_update (optional)

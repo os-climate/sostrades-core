@@ -168,7 +168,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.check_integrity_msg_list = []
         self.sg_data_integrity = True
 
-        self.driver_is_multi_eval = None 
+        self.driver_is_multi_eval = None
         self.sampling_method = None
         self.sampling_generation_mode = None
 
@@ -360,7 +360,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                 if self.mdo_discipline_wrapp.wrapper.sample_generator.__class__ != sample_generator_cls:
                     self.mdo_discipline_wrapp.wrapper.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
                     self.configure_analysis_tool()
-    
+
     def configure_analysis_tool(self):
         if self.sampling_method == self.SENSITIVITY_ANALYSIS:
             # add the tornado chart analysis discipline and namespace
@@ -378,21 +378,21 @@ class ProxySampleGenerator(ProxyDiscipline):
             ns_analysis = self.ee.ns_manager.get_ns_from_id(ns_analysis_id)
             self.add_new_shared_ns(ns_analysis)
             self.analysis_disc = analysis_disc
-            
+
         else:
             # remove the tornado chart analysis discipline
             if self.analysis_disc is not None:
 
-                
+
                 self.father_executor.remove_discipline(self.analysis_disc)
                 self.ee.factory.remove_sos_discipline(self.analysis_disc)
-                
-                
+
+
                 ns = self.ee.ns_manager.shared_ns_dict[TornadoChartAnalysisSampleGenerator.NS_ANALYSIS]
                 self.ee.ns_manager.clean_namespace_from_discipline(ns, self.analysis_disc)
                 self.ee.ns_manager.clean_namespace_from_discipline(ns, self)
-                
-                
+
+
                 self.analysis_disc = None
 
     def configure_generation_mode(self, disc_in):
@@ -466,7 +466,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if eval_inputs is not None:
                 eval_inputs = eval_inputs.reindex(columns=eval_inputs_df_desc.keys(),
                                                   fill_value=[])  # hardcoded compliance with 'list_of_values' column default
-                
+
                 self.dm.set_data(eval_inputs_f_name,
                                  self.VALUE,
                                  eval_inputs,

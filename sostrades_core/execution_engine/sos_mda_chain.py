@@ -171,8 +171,8 @@ class SoSMDAChain(MDAChain):
 
     def pre_run_mda(self):
         '''
-        Pre run needed if one of the strong coupling variables is None in a MDA 
-        No need of prerun otherwise 
+        Pre run needed if one of the strong coupling variables is None in a MDA
+        No need of prerun otherwise
         '''
         strong_couplings = [
             key for key in self.strong_couplings if
@@ -186,11 +186,11 @@ class SoSMDAChain(MDAChain):
 
     def recreate_order_for_first_execution(self):
         '''
-        For each sub mda defined in the GEMS execution sequence, 
-        we run disciplines by disciplines when they are ready to fill all values not initialized in the DM 
-        until all disciplines have been run. 
+        For each sub mda defined in the GEMS execution sequence,
+        we run disciplines by disciplines when they are ready to fill all values not initialized in the DM
+        until all disciplines have been run.
         While loop cannot be an infinite loop because raise an exception
-        if no disciplines are ready while some disciplines are missing in the list 
+        if no disciplines are ready while some disciplines are missing in the list
         '''
         for parallel_tasks in self.coupling_structure.sequence:
             # to parallelize, check if 1 < len(parallel_tasks)
@@ -383,7 +383,7 @@ class SoSMDAChain(MDAChain):
                                        indices=indices)
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Overload of the GEMSEO function 
+        """Overload of the GEMSEO function
         """
         # set linear solver options for MDO
         self.linear_solver = self.linear_solver_MDO

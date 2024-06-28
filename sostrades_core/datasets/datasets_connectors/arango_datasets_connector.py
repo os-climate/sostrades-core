@@ -45,8 +45,8 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     DATASET_NAME_STR = "dataset_name"
     MAX_KEY_SIZE = 254
 
-    def __init__(self, host: str, db_name: str, username: str, password: str, 
-                 serializer_type:DatasetSerializerType=DatasetSerializerType.JSON, 
+    def __init__(self, host: str, db_name: str, username: str, password: str,
+                 serializer_type:DatasetSerializerType=DatasetSerializerType.JSON,
                  datasets_descriptor_collection_name:str="datasets"):
         """
         Constructor for Arango data connector
@@ -82,7 +82,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             if not self.db.has_collection(name=datasets_descriptor_collection_name):
                 raise Exception(f"Expected to find collection {datasets_descriptor_collection_name} describing datasets")
             self.datasets_descriptor_collection_name = datasets_descriptor_collection_name
-            
+
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=ArangoDatasetsConnector) from exc
 
@@ -158,9 +158,9 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         cursor = dataset_collection.get_many(data_to_get.keys())
 
         # Process the results
-        result_data = {doc[ArangoDatasetsConnector.KEY_STR]: 
-                        self.__datasets_serializer.convert_from_dataset_data(doc[ArangoDatasetsConnector.KEY_STR], 
-                                                        doc[ArangoDatasetsConnector.VALUE_STR], 
+        result_data = {doc[ArangoDatasetsConnector.KEY_STR]:
+                        self.__datasets_serializer.convert_from_dataset_data(doc[ArangoDatasetsConnector.KEY_STR],
+                                                        doc[ArangoDatasetsConnector.VALUE_STR],
                                                         data_to_get)
                         for doc in cursor}
         self.__logger.debug(
@@ -182,7 +182,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
         # prepare query to write
-        data_for_arango = [{ArangoDatasetsConnector.KEY_STR: tag, 
+        data_for_arango = [{ArangoDatasetsConnector.KEY_STR: tag,
                             ArangoDatasetsConnector.VALUE_STR: self.__datasets_serializer.convert_to_dataset_data(tag, value, data_types_dict)}
                             for tag, value in values_to_write.items()]
 
@@ -202,12 +202,12 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
 
         # Process all data
-        result_data = {doc[ArangoDatasetsConnector.KEY_STR]: self.__datasets_serializer.convert_from_dataset_data(doc[ArangoDatasetsConnector.KEY_STR], 
-                                                                                            doc[ArangoDatasetsConnector.VALUE_STR], 
-                                                                                            data_types_dict) 
+        result_data = {doc[ArangoDatasetsConnector.KEY_STR]: self.__datasets_serializer.convert_from_dataset_data(doc[ArangoDatasetsConnector.KEY_STR],
+                                                                                            doc[ArangoDatasetsConnector.VALUE_STR],
+                                                                                            data_types_dict)
                         for doc in dataset_collection}
         return result_data
-    
+
     def get_datasets_available(self) -> list[str]:
         """
         Get all available datasets for a specific API
@@ -247,7 +247,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             if create_if_not_exists:
                 # Generate a dataset uid
                 dataset_uid = self.__name_to_valid_arango_collection_name(dataset_identifier)
-                
+
                 # Create matching collection
                 collection = self.db.collection(name=self.datasets_descriptor_collection_name)
                 collection.insert({ArangoDatasetsConnector.KEY_STR: dataset_uid, ArangoDatasetsConnector.DATASET_NAME_STR: dataset_identifier}, overwrite=True)
