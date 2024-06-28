@@ -81,7 +81,7 @@ class DatasetsManager:
         if dataset_info not in self.datasets:
             self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
         return self.datasets[dataset_info]
-    
+
     def write_data_in_dataset(self, dataset_info: DatasetInfo,
                                  data_dict: dict[str:str],
                                  data_type_dict: dict[str:str]) -> dict:
@@ -101,13 +101,13 @@ class DatasetsManager:
         """
         self.__logger.debug(f"exporting data {data_dict.keys()} into dataset {dataset_info}")
 
-        
+
         try:
             # Get the dataset, creates it if not exists
             dataset = self.get_dataset(dataset_info=dataset_info)
 
             # Retrieve values
-            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info.dataset_id, 
+            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info.dataset_id,
                                                                 values_to_write=data_dict,
                                                                 data_types_dict=data_type_dict,
                                                                 create_if_not_exists=True,

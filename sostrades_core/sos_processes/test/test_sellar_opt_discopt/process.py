@@ -38,9 +38,9 @@ class ProcessBuilder(BaseProcessBuilder):
         # add coupling Sellar
         mda_builder = self.ee.factory.get_builder_from_process(
             'sostrades_core.sos_processes.test', 'test_sellar_coupling')
-        
+
         ns_dict={'ns_OptimSellar': self.ee.study_name + '.SellarOptimScenario.SellarCoupling'}
         self.ee.ns_manager.add_ns_def(ns_dict)
         opt_builder = self.ee.factory.create_optim_builder('SellarOptimScenario', [mda_builder])
-           
+
         return opt_builder

@@ -75,7 +75,7 @@ class TestCouplingVariables(unittest.TestCase):
 
         ee.configure()
         rp = ee.root_process
-        
+
         # gather couplings data
         df = rp.export_couplings()
         # compare df of couplings to ref
@@ -117,7 +117,7 @@ class TestCouplingVariables(unittest.TestCase):
 
         rp = ee.root_process
         ee.prepare_execution()
-        
+
         # gather couplings data
         rp.check_var_data_mismatch()
 

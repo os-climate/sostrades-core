@@ -265,8 +265,8 @@ class MDODisciplineWrapp(object):
                     {full_key: value['default']})
 
     def __update_gemseo_grammar(self, proxy, mdachain):
-        ''' 
-        update GEMSEO grammar with sostrades 
+        '''
+        update GEMSEO grammar with sostrades
         # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
         '''
         # - retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain

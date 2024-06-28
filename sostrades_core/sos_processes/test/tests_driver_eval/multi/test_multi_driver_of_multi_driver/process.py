@@ -32,9 +32,9 @@ class ProcessBuilder(BaseProcessBuilder):
         # get builder for disc1
         builder_disc1 = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                                  mod_id='test_disc1_scenario')
-        
+
         builder_list = self.ee.factory.create_multi_instance_driver('inner_ms', builder_disc1)
-        
+
         # get builder for disc3 and append to builder_list
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc3_scenario.Disc3'
         disc3_builder = self.ee.factory.get_builder_from_module(

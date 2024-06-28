@@ -169,8 +169,8 @@ class TreeView:
         if not self.no_data:
             temp_data = {k: v for k, v in val.items()}
 
-            
-            
+
+
 
             # retrieve model name full path for variable key
             model_name_full_path = val['model_origin']
@@ -188,7 +188,7 @@ class TreeView:
 
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False
-            
+
 
             if key not in treenode.disciplines_by_variable.keys():
                 # create data management discipline DATA

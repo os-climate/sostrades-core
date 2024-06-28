@@ -41,7 +41,7 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
         'version': '',
     }
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
-    
+
     def build_dynamic_io(self):
         """
         The sum is stored in the same name as the inputs found in the children_list

@@ -336,8 +336,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         self.set_variables_editability(scenario_names_, not_editable_dict)
 
     '''
-    All methods below are here for reference scenario and need to be cleaned 
-    
+    All methods below are here for reference scenario and need to be cleaned
+
     '''
 
     def manage_reference_scenario_features(self, trade_vars, scenario_names):

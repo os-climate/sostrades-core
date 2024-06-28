@@ -122,7 +122,7 @@ class ScatterMapsManager:
 
     def check_map_parameters(self, map):
         '''
-        Check type and length of map parameters and put lists in input_name, input_type, output_name, output_type 
+        Check type and length of map parameters and put lists in input_name, input_type, output_name, output_type
         '''
         # check type
         if not isinstance(map[self.SCATTER_VAR_NAME], str):

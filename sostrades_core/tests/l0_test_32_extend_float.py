@@ -71,7 +71,7 @@ class TestExtendFloat(unittest.TestCase):
 
         self.assertTrue(isinstance(
             self.ee.dm.get_value('study.Disc0.r'), float))
-        
+
         target = {'study.Disc0.r': array([r])}
         data_dm = {key: self.ee.dm.get_value(key) for key in target.keys()}
         converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
@@ -82,12 +82,12 @@ class TestExtendFloat(unittest.TestCase):
         self.assertTrue(dict_are_equal(data_dm, reconverted_data_dm))
 
         self.ee.execute()
-         
+
         keys_to_convert = ['study.Disc0.r', 'study.Disc1.b', 'study.Disc1.y', 'study.Disc1.x']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
         converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
         reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
- 
+
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(
@@ -100,12 +100,12 @@ class TestExtendFloat(unittest.TestCase):
         values_dict['study.Disc1.b'] = b
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
-         
+
         keys_to_convert = ['study.Disc0.r', 'study.Disc1.b', 'study.Disc1.y', 'study.Disc1.x']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
         converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
         reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
-         
+
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(
@@ -123,12 +123,12 @@ class TestExtendFloat(unittest.TestCase):
 
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
- 
+
         keys_to_convert = ['study.Disc0.r', 'study.Disc1.b', 'study.Disc1.y', 'study.Disc1.x']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
         converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
         reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
-         
+
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(
@@ -147,12 +147,12 @@ class TestExtendFloat(unittest.TestCase):
 
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
-         
+
         keys_to_convert = ['study.Disc0.r', 'study.Disc1.b', 'study.Disc1.y', 'study.Disc1.x']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
         converted_data_dm = convert_new_type_into_array(data_dm, self.ee.dm)
         reconverted_data_dm = convert_array_into_new_type(converted_data_dm, self.ee.dm)
-         
+
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(

@@ -27,7 +27,7 @@ class DataManagementDiscipline :
         self.model_name_full_path = ''
 
         # name of the discipline
-        self.discipline_label = '' 
+        self.discipline_label = ''
 
         # Namespace associated to the discipline
         self.namespace = ''

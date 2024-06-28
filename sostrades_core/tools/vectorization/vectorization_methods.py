@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/02/28-2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/02/28-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ def check_aircraft_breakdown_in_inputs(
         sos_discipline: SoSWrapp,
 ):
     aircraft_breakdown_list = flatten(nested_dict=aircraft_breakdown_tree)
-    for param_name, conf_dict in parameters_dict.items():
+    for param_name in parameters_dict.keys():
         parameter = inputs_dict.get(param_name, None)
         if parameter is not None:
             if BREAKDOWN_COLUMN in parameter:

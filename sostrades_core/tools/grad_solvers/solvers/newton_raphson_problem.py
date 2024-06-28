@@ -95,7 +95,7 @@ class NewtonRaphsonProblem():
     # -- Numerical parameters related methods
     def __init_numerical_parameters(self):
         """
-        Default values for the 
+        Default values for the
         """
         self.__relax_factor = 0.99
         self.__stop_residual = 1e-6

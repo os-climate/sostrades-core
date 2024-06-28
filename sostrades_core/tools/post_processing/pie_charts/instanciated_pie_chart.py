@@ -30,12 +30,12 @@ Class that define a pie chart display as post post processing
 """
 
 class InstanciatedPieChartException(Exception):
-    """ Overload Exception basic type 
+    """ Overload Exception basic type
     """
 
 
 class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a pie chart display as post post processing 
+    """ Class that define a pie chart display as post post processing
     """
 
     PIE_CHART_NAME = 'pie_chart_name'

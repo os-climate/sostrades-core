@@ -39,7 +39,7 @@ class ChartFilter:
         @param filter_values : list of filter items that can be used to filter post processing element
         @type list of string
 
-        @param selected_values : list of filter items currently selected for the given filter 
+        @param selected_values : list of filter items currently selected for the given filter
         (one or several depending of the 'multiple_selection argument)
         @type list of string
 

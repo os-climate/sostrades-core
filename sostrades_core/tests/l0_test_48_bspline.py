@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,7 +42,8 @@ class TestBSpline(unittest.TestCase):
         eval1, _ = bsp.eval_list_t(x)
 
         bsp_scipy = bspline_sp(bsp.knots, ctrl, 3)
-        result_scipy = []
-        for elem in x:
-            result_scipy.append(float(bsp_scipy(elem)))
+        result_scipy = [
+            float(bsp_scipy(elem))
+            for elem in x
+        ]
         np.testing.assert_almost_equal(eval1.tolist(), result_scipy)

@@ -114,7 +114,7 @@ if '__main__' == __name__:
     post_processing_factory = PostProcessingFactory()
     all_post_processings = post_processing_factory.get_all_post_processings(
         uc_cls.execution_engine, False, as_json=False, for_test=False)
-    for namespace, post_proc_list in all_post_processings.items():
+    for post_proc_list in all_post_processings.values():
         for chart in post_proc_list:
             for fig in chart.post_processings:
                 fig.to_plotly() #.show()

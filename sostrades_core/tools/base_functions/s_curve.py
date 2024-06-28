@@ -32,7 +32,7 @@ def s_curve(x, coeff=0.1, power=1, x0=0.0, y_min=0.0, y_max=1.0):
     x0 is the middle of the S-curve if power=1, if power != 1 y[x0] = (1/2)**power
 
     y_min is the Scurve minimum
-    y_max is the Scurve maximum 
+    y_max is the Scurve maximum
     '''
     y = (y_max - y_min) / (1.0 + np.exp(-coeff * (x - x0)))**power + y_min
 

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -80,15 +80,16 @@ class ConstraintManager:
         """
         Get the constraint with its name
         """
-        cst_obj_list = []
 
         name_list = name.split('@')
 
         pattern = '(?:@.+)*@'.join(name_list) + '(?:@.+)*'
 
-        for k in self.constraints:
-            if re.match(pattern, k):
-                cst_obj_list.append(self.constraints[k])
+        cst_obj_list = [
+            self.constraints[k]
+            for k in self.constraints
+            if re.match(pattern, k)
+        ]
 
         if cst_obj_list:
             # From the list of constraints extract and concatenate list of

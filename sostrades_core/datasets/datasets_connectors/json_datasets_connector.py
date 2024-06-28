@@ -39,7 +39,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         """
         Constructor for JSON data connector
 
-        
+
         :param file_path: file_path for this dataset connector
         :type file_path: str
         :param serializer_type: type of serializer to deserialize data from connector
@@ -146,7 +146,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
 
         self.__save_json_data()
         return values_to_write
-    
+
     def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to get all values from a dataset for a specific API
@@ -168,7 +168,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
                                                                                data_types_dict)
                         for key, value in self.__json_data[dataset_identifier].items()}
         return dataset_data
-        
+
 
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str: Any]:
         """
@@ -195,6 +195,5 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-        
+
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
-            

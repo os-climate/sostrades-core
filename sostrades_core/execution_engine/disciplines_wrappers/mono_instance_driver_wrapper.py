@@ -59,7 +59,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 scenario_name = samples[i][SampleGeneratorWrapper.SCENARIO_NAME]
                 self.logger.info(f'   {scenario_name} is running.')
                 x = {key:value for key,value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
-                
+
                 evaluation_output[scenario_name] = x, self.evaluation(
                     x, scenario_name, convert_to_array)
             return evaluation_output
@@ -101,7 +101,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 # parallel
                 #remove the scenario_name key of each sample
                 x = [{key:value for key,value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME} for i in range(len(samples))]
-                
+
                 parallel.execute(x[0:-1], exec_callback=store_callback)
                 # execute the reference scenario in a sequential way so that
                 # sostrades objects are updated
@@ -116,7 +116,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                     scenario_name = sample[SampleGeneratorWrapper.SCENARIO_NAME]
                     if scenario_name in evaluation_output.keys():
                         dict_to_return[scenario_name] = evaluation_output[scenario_name]
-                
+
                 return dict_to_return
 
             except:
@@ -198,10 +198,10 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         # We first begin by sample generation
         samples_df = self.get_sosdisc_inputs(SampleGeneratorWrapper.SAMPLES_DF)
-        
-        input_columns = [f"{self.attributes['driver_name']}.{col}" for col in samples_df.columns 
+
+        input_columns = [f"{self.attributes['driver_name']}.{col}" for col in samples_df.columns
                          if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
-        input_columns_short_name = [col for col in samples_df.columns 
+        input_columns_short_name = [col for col in samples_df.columns
                          if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
         # get reference scenario
         reference_values = self.get_sosdisc_inputs(input_columns, full_name_keys=True)
@@ -237,7 +237,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         # we loop through the samples evaluated to build dictionaries needed
         # for output generation
-       
+
         for (scenario_name, evaluated_samples) in evaluation_outputs.items():
 
             # generation of the dictionary of outputs
@@ -255,13 +255,11 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         for (scenario, scenario_sample) in dict_sample.items():
             samples_row = [scenario]
             out_samples_row = [scenario]
-            for generated_input in scenario_sample.values():
-                samples_row.append(generated_input)
-            for generated_output in dict_output[scenario].values():
-                out_samples_row.append(generated_output)
+            samples_row += list(scenario_sample.values())
+            out_samples_row += list(dict_output[scenario].values())
             samples_all_row.append(samples_row)
             out_samples_all_row.append(out_samples_row)
-        
+
         output_columns = ['scenario_name']
         output_columns.extend(self.attributes['selected_outputs'])
         samples_output_df = pd.DataFrame(out_samples_all_row, columns=output_columns)

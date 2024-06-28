@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +21,7 @@ Class that define styles than can be applied to a table row
 """
 
 class TableStylesException(Exception):
-    """ Overload Exception basic type 
+    """ Overload Exception basic type
     """
 
 

@@ -36,14 +36,14 @@ class ProcessBuilder(BaseProcessBuilder):
         '''
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
-    
+
         mod_func = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
-    
+
         mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
                      'Sellar_2': disc_dir + 'Sellar2',
                      'Sellar_1': disc_dir + 'Sellar1',
                      'FunctionManager': mod_func}
-    
+
         ns_dict = {'ns_functions': self.ee.study_name + '.SellarOptimScenario',
                    'ns_optim': self.ee.study_name + '.SellarOptimScenario',
                    'ns_OptimSellar': self.ee.study_name + '.SellarOptimScenario'}
@@ -56,5 +56,5 @@ class ProcessBuilder(BaseProcessBuilder):
 
         opt_builder = self.ee.factory.create_optim_builder(
             'SellarOptimScenario', [coupling_builder])
-    
+
         return opt_builder

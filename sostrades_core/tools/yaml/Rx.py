@@ -124,7 +124,7 @@ class Factory(object):
     def _default_prefixes(): pass
 
     def expand_uri(self, type_name):
-        if re.match('^\w+:', type_name):
+        if re.match(r'^\w+:', type_name):
             return type_name
 
         m = re.match('^/([-._a-z0-9]*)/([-._a-z0-9]+)$', type_name)

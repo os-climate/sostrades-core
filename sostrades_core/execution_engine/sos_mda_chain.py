@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/02-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/03/02-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -171,8 +171,8 @@ class SoSMDAChain(MDAChain):
 
     def pre_run_mda(self):
         '''
-        Pre run needed if one of the strong coupling variables is None in a MDA 
-        No need of prerun otherwise 
+        Pre run needed if one of the strong coupling variables is None in a MDA
+        No need of prerun otherwise
         '''
         strong_couplings = [
             key for key in self.strong_couplings if
@@ -186,11 +186,11 @@ class SoSMDAChain(MDAChain):
 
     def recreate_order_for_first_execution(self):
         '''
-        For each sub mda defined in the GEMS execution sequence, 
-        we run disciplines by disciplines when they are ready to fill all values not initialized in the DM 
-        until all disciplines have been run. 
+        For each sub mda defined in the GEMS execution sequence,
+        we run disciplines by disciplines when they are ready to fill all values not initialized in the DM
+        until all disciplines have been run.
         While loop cannot be an infinite loop because raise an exception
-        if no disciplines are ready while some disciplines are missing in the list 
+        if no disciplines are ready while some disciplines are missing in the list
         '''
         for parallel_tasks in self.coupling_structure.sequence:
             # to parallelize, check if 1 < len(parallel_tasks)
@@ -209,10 +209,12 @@ class SoSMDAChain(MDAChain):
                     # get the disciplines from self.disciplines
                     # order the MDA disciplines the same way as the
                     # original disciplines
-                    sub_mda_disciplines = []
-                    for disc in self.disciplines:
-                        if disc in coupled_disciplines:
-                            sub_mda_disciplines.append(disc)
+                    sub_mda_disciplines = [
+                        disc
+                        for disc in self.disciplines
+                        if disc in coupled_disciplines
+                    ]
+
                     # submda disciplines are not ordered in a correct exec
                     # sequence...
                     # Need to execute ready disciplines one by one until all
@@ -383,7 +385,7 @@ class SoSMDAChain(MDAChain):
                                        indices=indices)
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Overload of the GEMSEO function 
+        """Overload of the GEMSEO function
         """
         # set linear solver options for MDO
         self.linear_solver = self.linear_solver_MDO
@@ -449,10 +451,11 @@ class SoSMDAChain(MDAChain):
 
                     # order the MDA disciplines the same way as the
                     # original disciplines
-                    sub_mda_disciplines = []
-                    for disc in disciplines:
-                        if disc in coupled_disciplines:
-                            sub_mda_disciplines.append(disc)
+                    sub_mda_disciplines = [
+                        disc
+                        for disc in disciplines
+                        if disc in coupled_disciplines
+                    ]
 
                     # if activated, all coupled disciplines involved in the MDA
                     # are grouped into a MDOChain (self coupled discipline)

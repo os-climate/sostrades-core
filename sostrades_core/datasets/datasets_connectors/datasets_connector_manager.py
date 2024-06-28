@@ -47,7 +47,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     CONNECTOR_DEFAULT_REPOSITORY_RE = r'(?<=repos:)[\w-]+'
     __registered_connectors = {}
     __logger = logging.getLogger(__name__)
-    
+
     @classmethod
     def get_connector(cls, connector_identifier:str) -> AbstractDatasetsConnector:
         """
@@ -83,14 +83,14 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
             cls.__logger.debug(f'Existing connector \"{connector_identifier}\" is updated')
 
         connector = DatasetsConnectorFactory.get_connector(connector_type=connector_type, **connector_instanciation_fields)
-        cls.__registered_connectors[connector_identifier] = connector 
+        cls.__registered_connectors[connector_identifier] = connector
         return connector
-    
+
     @classmethod
     def instanciate_connectors_from_json_file(cls, file_path:str):
         with open(file=file_path, mode="r", encoding="utf-8") as file:
             json_data = json.load(file)
-        
+
         for connector_data in json_data:
             connector_id = connector_data[cls.CONNECTOR_IDENTIFIER_STR]
             connector_type = DatasetConnectorType.get_enum_value(connector_data[cls.CONNECTOR_TYPE_STR])

@@ -33,7 +33,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     """
     Specific dataset connector for dataset in google cloud bigquery db format
     """
-    
+
     def __init__(self, project_id: str,
                  serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):
         """
@@ -58,7 +58,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=BigqueryDatasetsConnector) from exc
 
-   
+
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
         """
         Method to retrieve data from dataset and fill a data_dict
@@ -70,7 +70,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         :type data_to_get: dict[str:str]
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
-        
+
         dataset_id = "{}.{}".format(self.client.project, dataset_identifier)
 
         # check dataset exists
@@ -96,12 +96,12 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                     res = query_job.result().to_dataframe()
                     self.__logger.error(f"found result {res} for table of {table_id}")
                     result_data[data] = res
-                    
-                    
+
+
                 except Exception as error:
                     self.__logger.debug(f"Value of {data} error in dataset {dataset_identifier}:{error}")
 
-       
+
         return result_data
 
     def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
@@ -166,12 +166,12 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 f'SELECT * FROM `{table_id}`')
                 query_job = self.client.query(QUERY)  # API request
                 result_data[data] = query_job.result().to_dataframe()
-        
+
         self.__logger.debug(
             f"Values obtained {list(result_data.keys())} for dataset {dataset_identifier} for connector {self}"
         )
         return result_data
-    
+
     def get_datasets_available(self) -> list[str]:
         """
         Get all available datasets for a specific API
@@ -221,7 +221,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 # Send the dataset to the API for creation, with an explicit timeout.
                 # Raises google.api_core.exceptions.Conflict if the Dataset already
                 # exists within the project.
-                dataset = self.client.create_dataset(dataset, timeout=30) 
+                dataset = self.client.create_dataset(dataset, timeout=30)
 
 
 

@@ -209,7 +209,7 @@ class UncertaintyQuantification(SoSWrapp):
                     #         # possible_distrib])
                     #         p=[0, 1, 0, 0],
                     #     )
-                    # 
+                    #
                     # # distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
                     distrib = ['PERT' for _ in selected_inputs.tolist()]
 

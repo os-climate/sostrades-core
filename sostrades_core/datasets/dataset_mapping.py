@@ -83,7 +83,7 @@ class DatasetsMapping:
 
         try:
             # parse sub process datasets info
-            # do it first so that info in this mapping will override the sub mappings 
+            # do it first so that info in this mapping will override the sub mappings
             if DatasetsMapping.SUB_PROCESS_MAPPING in input_dict.keys():
                 for mapping_key, sub_process_mapping_path in input_dict[DatasetsMapping.SUB_PROCESS_MAPPING].items():
                     mapping_key_fields = DatasetsMapping.extract_mapping_key_fields(mapping_key)
@@ -106,7 +106,7 @@ class DatasetsMapping:
                     # TODO: version, parameter not handled
                     namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
                     namespace_datasets_mapping[namespace] = []
-                    
+
                     for dataset in datasets:
                         dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
                         connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
@@ -117,7 +117,7 @@ class DatasetsMapping:
                         namespace_datasets_mapping[namespace].append(datasets_infos[dataset])
                         datasets_namespace_mapping[dataset] =  datasets_namespace_mapping.get(dataset, [])
                         datasets_namespace_mapping[dataset].append(namespace)
-                        
+
         except Exception as exception:
             raise DatasetsMappingException(f'Error reading the dataset mapping file: \n{str(exception)}')
         return DatasetsMapping(
@@ -186,7 +186,7 @@ class DatasetsMapping:
             datasets_mapping = self.namespace_datasets_mapping[anonimized_ns]
 
         return datasets_mapping
-    
+
     def get_datasets_namespace_mapping_for_study(self, study_name:str)-> dict[str:list[str]]:
         """
         Get the datasets_namespace_mapping and replace the study_placeholder with the study_name
@@ -201,7 +201,7 @@ class DatasetsMapping:
                 datasets_mapping[dataset].append(namespace.replace(self.STUDY_PLACEHOLDER, study_name))
 
         return datasets_mapping
-    
+
     def get_namespace_datasets_mapping_for_parent(self, parent_namespace:str) -> dict[str : list[DatasetInfo]]:
         """
         Get the namespace_datasets_mapping and replace the study_placeholder with the parent_namespace
