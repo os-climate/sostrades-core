@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/21-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/03/21-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -191,10 +191,11 @@ class NamespaceManager:
         '''
         Get all namespaces with same name
         '''
-        ns_list = []
-        for namespace in self.ns_list:
-            if namespace.name == name:
-                ns_list.append(namespace)
+        ns_list = [
+            namespace
+            for namespace in self.ns_list
+            if namespace.name == name
+        ]
 
         return ns_list
 
@@ -674,10 +675,11 @@ class NamespaceManager:
         '''
         full_ns_list = list(self.all_ns_dict.values())
         # determine post-processing namespaces with dependencies so that they can be cleaned
-        post_proc_ns_w_dependency = []
-        for ns in full_ns_list:
-            if ns.name in post_proc_ns_list and ns.check_namespace_is_used():
-                post_proc_ns_w_dependency.append(ns.name)
+        post_proc_ns_w_dependency = [
+            ns.name
+            for ns in full_ns_list
+            if ns.name in post_proc_ns_list and ns.check_namespace_is_used()
+        ]
         post_proc_ns_wo_dependency = [ns_name for ns_name in post_proc_ns_list if ns_name not in list(set(post_proc_ns_w_dependency))]
 
         # clean nampespaces except post-pro namespaces without dependencies

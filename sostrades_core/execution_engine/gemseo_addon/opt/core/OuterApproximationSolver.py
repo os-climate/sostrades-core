@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -353,10 +353,11 @@ class OuterApproximationSolver(object):
         full_pb = self.full_problem
 
         # original design space filtered without integer variables
-        cont_vars = []
-        for v in full_pb.design_space:
-            if full_pb.design_space.get_type(v) == DesignSpace.FLOAT.value: # pylint: disable=E0602
-                cont_vars.append(v)
+        cont_vars = [
+            v
+            for v in full_pb.design_space
+            if full_pb.design_space.get_type(v) == DesignSpace.FLOAT.value
+        ]
         dspace = full_pb.design_space.filter(cont_vars, copy=True)
 
         input_dim = sum(full_pb.design_space.variables_sizes.values()) # use dspace.dimension

@@ -123,8 +123,7 @@ def check_design_space_data_integrity(design_space, possible_variables_types):
                     f'should have coherent shapes for variable {wrong_dim_var}.')
 
         # check vars that need to be deactivated (the var is active but all activated_elem are False)
-        vars_to_deactivate = design_space[VARIABLES][
-            design_space.apply(_check_deactivation_for_one_variable, axis=1)].to_list()
+        vars_to_deactivate = design_space[VARIABLES][design_space.apply(_check_deactivation_for_one_variable, axis=1)].to_list()
         for var_to_deactivate in vars_to_deactivate:
             design_space_integrity_msg.append(
                 f'Please deactivate variable {var_to_deactivate} using {ENABLE_VARIABLE_BOOL} rather than '

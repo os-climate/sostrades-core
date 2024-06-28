@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/02-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/03/02-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -209,10 +209,12 @@ class SoSMDAChain(MDAChain):
                     # get the disciplines from self.disciplines
                     # order the MDA disciplines the same way as the
                     # original disciplines
-                    sub_mda_disciplines = []
-                    for disc in self.disciplines:
-                        if disc in coupled_disciplines:
-                            sub_mda_disciplines.append(disc)
+                    sub_mda_disciplines = [
+                        disc
+                        for disc in self.disciplines
+                        if disc in coupled_disciplines
+                    ]
+
                     # submda disciplines are not ordered in a correct exec
                     # sequence...
                     # Need to execute ready disciplines one by one until all
@@ -449,10 +451,11 @@ class SoSMDAChain(MDAChain):
 
                     # order the MDA disciplines the same way as the
                     # original disciplines
-                    sub_mda_disciplines = []
-                    for disc in disciplines:
-                        if disc in coupled_disciplines:
-                            sub_mda_disciplines.append(disc)
+                    sub_mda_disciplines = [
+                        disc
+                        for disc in disciplines
+                        if disc in coupled_disciplines
+                    ]
 
                     # if activated, all coupled disciplines involved in the MDA
                     # are grouped into a MDOChain (self coupled discipline)

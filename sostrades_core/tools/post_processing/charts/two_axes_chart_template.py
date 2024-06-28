@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ from sostrades_core.tools.post_processing.post_processing_plotly_tooling import 
 from sostrades_core.tools.post_processing.post_processing_tools import convert_nan
 
 """
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a 2 dimensional chart template
 """
 
@@ -482,9 +481,11 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
             {TwoAxesChartTemplate.CUMULATIVE_SURFACE: self.cumulative_surface})
 
         # Serialize series attribute
-        dict_child = []
-        for series in self.series:
-            dict_child.append(series.to_dict())
+        dict_child = [
+            series.to_dict()
+            for series in self.series
+        ]
+
         dict_obj.update({TwoAxesChartTemplate.SERIES: dict_child})
 
         return dict_obj

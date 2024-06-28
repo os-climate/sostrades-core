@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 02/01/2024-2024/05/16 Copyright 2024 Capgemini
+Modifications on 02/01/2024-2024/06/28 Copyright 2024 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -342,10 +342,10 @@ class TestChartTemplate(unittest.TestCase):
         )
 
         headers = ['Q1', 'Q2', 'Q3', 'Q4']
-        values_by_row = []
-
-        for row in range(len(headers)):
-            values_by_row.append(np.random.randint(1000, size=20).tolist())
+        values_by_row = [
+            np.random.randint(1000, size=20).tolist()
+            for row in range(len(headers))
+        ]
 
         table = InstanciatedTable('Table example', headers, values_by_row)
         table.to_plotly()
@@ -410,10 +410,10 @@ class TestChartTemplate(unittest.TestCase):
         )
 
         headers = ['Q1', 'Q2', 'Q3', 'Q4']
-        values_by_row = []
-
-        for row in range(len(headers)):
-            values_by_row.append(np.random.randint(1000, size=20).tolist())
+        values_by_row = [
+            np.random.randint(1000, size=20).tolist()
+            for row in range(len(headers))
+        ]
 
         table = InstanciatedTable('Table example', headers, values_by_row)
 

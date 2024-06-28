@@ -255,10 +255,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         for (scenario, scenario_sample) in dict_sample.items():
             samples_row = [scenario]
             out_samples_row = [scenario]
-            for generated_input in scenario_sample.values():
-                samples_row.append(generated_input)
-            for generated_output in dict_output[scenario].values():
-                out_samples_row.append(generated_output)
+            samples_row += list(scenario_sample.values())
+            out_samples_row += list(dict_output[scenario].values())
             samples_all_row.append(samples_row)
             out_samples_all_row.append(out_samples_row)
 

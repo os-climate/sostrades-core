@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -945,10 +945,11 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             for action in archi_df[self.ACTION]
             if action[0] in ['scatter', 'scatter_architecture']
         ]
-        scatter_of_scatter_columns = []
-        for action in archi_df[self.ACTION]:
-            if action[0] == 'scatter' and isinstance(action[2], tuple):
-                scatter_of_scatter_columns.append(action[2][1])
+        scatter_of_scatter_columns = [
+            action[2][1]
+            for action in archi_df[self.ACTION]
+            if action[0] == 'scatter' and isinstance(action[2], tuple)
+        ]
 
         for input_name in scatter_columns + scatter_of_scatter_columns:
             df_descriptor[input_name] = ('string', None, True)

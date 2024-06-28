@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/06/24 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -2003,10 +2003,11 @@ class ProxyDiscipline:
         Get sub disciplines list to configure according to their is_configured method (coupling, eval, etc.) from a
         discipline list
         '''
-        disc_to_configure = []
-        for disc in disc_list:
-            if disc.configurator is None and not disc.is_configured():
-                disc_to_configure.append(disc)
+        disc_to_configure = [
+            disc
+            for disc in disc_list
+            if disc.configurator is None and not disc.is_configured()
+        ]
         return disc_to_configure
 
     def get_disciplines_to_configure(self):

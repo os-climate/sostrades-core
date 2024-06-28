@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -279,11 +279,9 @@ class DataManager:
     def get_disciplines_with_name(self, disc_f_name):
         ''' Get discipline with disc_id from disciplines_dict
         '''
-        disc_list = []
         disc_id_list = self.get_discipline_ids_list(disc_f_name)
 
-        for disc_id in disc_id_list:
-            disc_list.append(self.disciplines_dict[disc_id][self.DISC_REF])
+        disc_list = [self.disciplines_dict[disc_id][self.DISC_REF] for disc_id in disc_id_list]
 
         return disc_list
 
@@ -291,31 +289,21 @@ class DataManager:
         '''
         Get all disciplines that starts with starting_name in the datamanager
         '''
-        disc_list = []
-        for disc_name in self.disciplines_id_map:
-            if disc_name.startswith(starting_name):
-                disc_list.append(disc_name)
+        disc_list = [disc_name for disc_name in self.disciplines_id_map if disc_name.startswith(starting_name)]
 
         return disc_list
 
     def get_all_namespaces_from_var_name(self, var_name):
         ''' Get all namespaces containing var_name in data_dict
         '''
-        namespace_list = []
-        for key in self.data_id_map.keys():
-            if key.endswith(f'.{var_name}'):
-                # if key == var_name:
-                namespace_list.append(key)
+        namespace_list = [key for key in self.data_id_map.keys() if key.endswith(f'.{var_name}')]
 
         return namespace_list
 
     def get_all_var_name_with_ns_key(self, var_name):
         ''' Get all namespaces containing var_name in data_dict plus their namespace key as a dict
         '''
-        namespace_list = []
-        for key in self.data_id_map.keys():
-            if key.endswith('.' + var_name):
-                namespace_list.append(key)
+        namespace_list = [key for key in self.data_id_map.keys() if key.endswith('.' + var_name)]
         if len(namespace_list) > 0:
             ns_dict_obj = self.get_data_dict_attr('ns_reference')
             return {ns: ns_dict_obj[ns].name for ns in namespace_list}
@@ -936,10 +924,10 @@ class DataManager:
         if clean_keys:
             self.clean_keys(disc_id)
         else:
-            keys_to_remove = []
-            for key in disc_ref.DEFAULT_NUMERICAL_PARAM:
-                keys_to_remove.append(
-                    disc_ref._convert_to_namespace_name(key, disc_ref.IO_TYPE_IN))
+            keys_to_remove = [
+                disc_ref._convert_to_namespace_name(key, disc_ref.IO_TYPE_IN)
+                for key in disc_ref.DEFAULT_NUMERICAL_PARAM
+            ]
             self.remove_keys(
                 disc_id, keys_to_remove, disc_ref.IO_TYPE_IN)
 

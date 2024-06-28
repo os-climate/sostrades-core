@@ -124,11 +124,10 @@ def _test_all_usecases(processes_repo: str, force_run=False):
     """
     usecases = get_all_usecases(processes_repo)
     message_queue = Queue()
-    process_list = []
-
-    for usecase in usecases:
-        process_list.append(
-            Process(target=processed_test_one_usecase, args=(usecase, message_queue, force_run,)))
+    process_list = [
+        Process(target=processed_test_one_usecase, args=(usecase, message_queue, force_run,))
+        for usecase in usecases
+    ]
 
     return manage_process_launch(process_list, message_queue)
 

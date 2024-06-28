@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/04-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/04/04-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1231,7 +1231,7 @@ class FunctionManagerDisc(OptimManagerDisc):
         # parents_list = list(set(np.asarray([parent.split(
         # '-') for parent in parameters_df[self.PARENT].to_list()]).flatten()))
 
-        for lvl, parent_level in level_list.items():
+        for parent_level in level_list.values():
             for parent in parent_level:
                 # if parent isn't in df
                 if parent not in parameters_df[self.VARIABLE]:
