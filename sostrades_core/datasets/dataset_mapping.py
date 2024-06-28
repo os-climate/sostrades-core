@@ -130,7 +130,7 @@ class DatasetsMapping:
 
                         # check that there is no "*" on dataset name, it is not allowed
                         if dataset_id == DatasetInfo.WILDCARD:
-                            raise DatasetsMappingException("the dataset name '*' is not authorised in mapping of {dataset}")
+                            raise DatasetsMappingException(f"Wrong format for '{dataset}', the dataset name '*' is not authorised")
 
                         if dataset_info_id not in datasets_infos:
                             datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id)
