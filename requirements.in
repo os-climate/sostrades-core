@@ -19,7 +19,7 @@ scipy==1.10.1
 six==1.16.0
 sympy==1.4
 tqdm==4.61.0
-pycel == 1.0b30
+pycel==1.0b30
 google-cloud-bigquery==3.24.0
 db-dtypes==1.2.0
 pyarrow==16.1.0
