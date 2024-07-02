@@ -7,7 +7,7 @@ chaospy==4.3.15
 cma==2.7.0
 cvxpy==1.1.18
 gitpython==3.1.43
-matplotlib==3.4.3
+matplotlib>=3.4.3
 numpy==1.24.4
 openturns==1.18
 pandas==2.2.2
