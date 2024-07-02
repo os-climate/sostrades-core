@@ -43,17 +43,12 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     DESCRIPTOR_TABLE_NAME = "descriptor_parameters"
     
 
-    NAME = "parameter_name"
     STRING_VALUE = "parameter_string_value"
     INT_VALUE = "parameter_int_value"
     FLOAT_VALUE = "parameter_float_value"
     BOOL_VALUE = "parameter_bool_value"
     LIST_VALUE = "parameter_list_value"
-    UNIT = "unit"
-    DESCRIPTION = "description"
     LAST_UPDATE = "last_update_date"
-    SOURCE = "source"
-    LINK = "link"
 
     def __init__(self, project_id: str,
                  serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):

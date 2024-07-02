@@ -26,10 +26,21 @@ class AbstractDatasetsConnector(abc.ABC):
     """
     __logger = logging.getLogger(__name__)
 
+
+    NAME = "parameter_name"
+    UNIT = "unit"
     DESCRIPTION = "description"
-    METADATA_DICT = {
-        DESCRIPTION:""
+    SOURCE = "source"
+    LINK = "link"
+    DEFAULT_METADATA_DICT = {
+        NAME: "",
+        UNIT: "",
+        DESCRIPTION: "",
+        SOURCE: "",
+        LINK: ""
     }
+    VALUE = "value"
+    VALUE_KEYS = {VALUE}
 
     @abc.abstractmethod
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
@@ -126,8 +137,38 @@ class AbstractDatasetsConnector(abc.ABC):
             self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, data_types_dict=data_types_dict, create_if_not_exists=create_if_not_exists, override=override)
 
     def __str__(self) -> str:
-        return f"{type(self).__name__}"     
+        return f"{type(self).__name__}"
 
+    # Metadata handling
+    def _default_metadata_dict(self):
+        return self.DEFAULT_METADATA_DICT.copy()
+
+    def _new_datum_from_value(self, value: Any):
+        return self._insert_value_into_datum(value, self._default_metadata_dict())
+
+    def _insert_value_into_datum(self, value: Any,
+                                 datum: dict[str:Any]) -> dict[str:Any]:
+        datum[self.VALUE] = value
+        return datum
+
+    def _update_data_with_values(self, data: dict[str:dict[str:Any]], values: dict[str:Any]) -> None:
+        for key, value in values.items():
+            if key in data:
+                data[key] = self._insert_value_into_datum(value, data[key])
+            else:
+                data[key] = self._new_datum_from_value(value)
+
+    def _extract_value_from_datum(self, datum: dict[str:Any]) -> Any:
+        return datum[self.VALUE]
+
+    def _extract_metadata_from_datum(self, datum_to_extract: dict[str:Any]) -> dict[str:str]:
+        return {_k: _v for _k, _v in datum_to_extract.items() if _k not in self.VALUE_KEYS}
+
+    def extract_values_from_data(self, data_to_extract: dict[str:dict[str:Any]]) -> dict[str:Any]:
+        return {key: self._extract_value_from_datum(_datum) for key, _datum in data_to_extract.items()}
+
+    def extract_metadata_from_data(self, data_to_extract: dict[str:dict[str:Any]]) -> dict[str:dict[str:str]]:
+        return {key: self._extract_metadata_from_datum(_datum) for key, _datum in data_to_extract.items()}
 
 class DatasetGenericException(Exception):
     """
