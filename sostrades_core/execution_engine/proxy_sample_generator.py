@@ -274,19 +274,19 @@ class ProxySampleGenerator(ProxyDiscipline):
                 # possible value checks (with current implementation should be OK by construction)
                 vars_not_possible = eval_inputs[self.FULL_NAME][
                     ~eval_inputs[self.FULL_NAME].apply(lambda _var: _var in self.eval_in_possible_types)].to_list()
-                for var_not_possible in vars_not_possible:
-                    eval_inputs_integrity_msg.append(
-                        f'Variable {var_not_possible} is not among the possible input values.'
-                    )
+                eval_inputs_integrity_msg += [
+                    f'Variable {var_not_possible} is not among the possible input values.'
+                    for var_not_possible in vars_not_possible
+                ]
                 # for cartesian product check that factors' values have the right type. NB: this also checks that
                 # list_of_values is a list (redundantly with dataframe descriptor) as to avoid spurious sampling
                 if not vars_not_possible and self.LIST_OF_VALUES in eval_inputs.columns:
                     wrong_type_vars = eval_inputs[self.FULL_NAME][
                         ~eval_inputs.apply(self._check_eval_inputs_types_for_one_variable, axis=1)].to_list()
-                    for wrong_type_var in wrong_type_vars:
-                        eval_inputs_integrity_msg.append(
-                            f'Column {self.LIST_OF_VALUES} should be a list of '
-                            f'{self.eval_in_possible_types[wrong_type_var]} for selected variable {wrong_type_var}.')
+                    eval_inputs_integrity_msg += [
+                        f'Column {self.LIST_OF_VALUES} should be a list of {self.eval_in_possible_types[wrong_type_var]} for selected variable {wrong_type_var}.'
+                        for wrong_type_var in wrong_type_vars
+                    ]
         if eval_inputs_integrity_msg:
             self.sg_data_integrity = False
             self.ee.dm.set_data(self.get_var_full_name(self.EVAL_INPUTS, disc_in),

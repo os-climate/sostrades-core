@@ -139,12 +139,16 @@ class SelectorDiscipline(ProxyCoupling):
     def create_namespaces_at_root(self, disc_path):
         namespace_list = []
         cls = self.ee.factory.get_disc_class_from_module(disc_path)
-        for inp in cls.DESC_IN.values():
-            if 'namespace' in inp:
-                namespace_list.append(inp['namespace'])
-        for out in cls.DESC_OUT.values():
-            if 'namespace' in out:
-                namespace_list.append(out['namespace'])
+        namespace_list += [
+            inp['namespace']
+            for inp in cls.DESC_IN.values()
+            if 'namespace' in inp
+        ]
+        namespace_list += [
+            out['namespace']
+            for out in cls.DESC_OUT.values()
+            if 'namespace' in out
+        ]
 
         self.ee.ns_manager.add_ns_def({namespace: self.ee.study_name for namespace in set(namespace_list)})
 
