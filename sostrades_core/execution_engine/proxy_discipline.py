@@ -199,7 +199,8 @@ class ProxyDiscipline:
     UNSUPPORTED_GEMSEO_TYPES = []
     for type in VAR_TYPE_MAP.keys():
         if type not in VAR_TYPE_GEMS and type not in NEW_VAR_TYPE:
-            UNSUPPORTED_GEMSEO_TYPES.append(type)
+            # Fixing PERF401 would require heavy refactoring
+            UNSUPPORTED_GEMSEO_TYPES.append(type) # noqa: PERF401
 
     # # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
     # # df_dict = dict , string_dict = dict, list_dict = dict
