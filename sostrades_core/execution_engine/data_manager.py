@@ -26,7 +26,6 @@ from gemseo.caches.simple_cache import SimpleCache
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 from pandas import concat
 
-from sostrades_core.datasets.dataset_info import DatasetInfo
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline

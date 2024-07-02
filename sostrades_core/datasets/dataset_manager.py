@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from typing import Any, List
+from typing import Any
 
 from sostrades_core.datasets.dataset import Dataset
 from sostrades_core.datasets.dataset_info import DatasetInfo
