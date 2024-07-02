@@ -60,7 +60,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `sympy (1.4) <https://sympy.org>`_
     BSD
 
-`tqdm (4.61.0) <https://tqdm.github.io>`_
+`tqdm (4.66.4) <https://tqdm.github.io>`_
     MPL-2.0 AND MIT
 
 `nose2 (0.9.1) <https://docs.nose2.io/>`_

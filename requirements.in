@@ -18,7 +18,7 @@ PyYAML==6.0.1
 scipy==1.10.1
 six==1.16.0
 sympy==1.4
-tqdm==4.61.0
+tqdm==4.66.4
 pycel==1.0b30
 google-cloud-bigquery==3.24.0
 db-dtypes==1.2.0
