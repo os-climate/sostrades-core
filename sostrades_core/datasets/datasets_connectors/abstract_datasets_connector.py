@@ -26,6 +26,11 @@ class AbstractDatasetsConnector(abc.ABC):
     """
     __logger = logging.getLogger(__name__)
 
+    DESCRIPTION = "description"
+    METADATA_DICT = {
+        DESCRIPTION:""
+    }
+
     @abc.abstractmethod
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """

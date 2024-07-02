@@ -104,7 +104,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
 
         # Filter data
         filtered_data = {key:self._datasets_serializer.convert_from_dataset_data(key,
-                                                                                 dataset_data[key],
+                                                                                 dataset_data[key]["value"],
                                                                                  data_to_get)
                         for key in dataset_data if key in data_to_get}
         self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
@@ -139,10 +139,11 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             raise DatasetNotFoundException(dataset_identifier)
 
         # Write data
-        self.__json_data[dataset_identifier].update({key:self._datasets_serializer.convert_to_dataset_data(key,
-                                                                                                           value,
-                                                                                                           data_types_dict)
-                                                    for key, value in values_to_write.items()})
+        
+        for key, value in values_to_write.items():
+            json_data_dict = self.METADATA_DICT.copy()
+            json_data_dict.update({"value":self._datasets_serializer.convert_to_dataset_data(key,value, data_types_dict)})
+            self.__json_data[dataset_identifier].update({key:json_data_dict})
 
         self.__save_json_data()
         return values_to_write
