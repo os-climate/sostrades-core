@@ -230,7 +230,7 @@ class DatasetsMapping:
 
         return datasets_mapping
     
-    def get_datasets_namespace_mapping_for_study(self, study_name:str, namespaces_dict:dict[str:dict])-> tuple[dict, list[str]]:
+    def get_datasets_namespace_mapping_for_study(self, study_name:str, namespaces_dict:dict[str:dict])-> tuple[dict, dict]:
         """
         Get the datasets_namespace_mapping and replace the study_placeholder with the study_name
         get the mapping of parameters for this namespace
@@ -241,7 +241,7 @@ class DatasetsMapping:
         :return: datasets_parameters_mapping with all data to write in the datasets and mapping info + duplicated data values
         """
         datasets_mapping = {}
-        duplicates = []
+        duplicates = {}
         
 
         for dataset, namespaces_mapping_dict  in self.parameters_mapping.items():
@@ -268,7 +268,7 @@ class DatasetsMapping:
                             # if the name of the dataset parameter already exists, it will overwrite the already set data
                             # so we retrun the list of duplicated data
                             if dataset_data in all_data_in_dataset[DatasetsMapping.KEY].keys():
-                                duplicates.append(dataset_data)
+                                duplicates[dataset_data] = namespace # the last namespace is the one that will hold the value
 
                             if dataset_data == DatasetInfo.WILDCARD:
                                 # if wildcard at parameter place: dataset_connector|dataset_name|*
@@ -276,7 +276,7 @@ class DatasetsMapping:
                                 for ns in corresponding_namespaces:
                                     for key in namespaces_dict[ns][DatasetsMapping.VALUE].keys():
                                         if key in all_data_in_dataset[DatasetsMapping.KEY].keys():
-                                            duplicates.append(key)
+                                            duplicates[dataset_data] = ns # the last namespace is the one that will hold the value
                                     all_data_in_dataset[DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
                                     all_data_in_dataset[DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
                                     all_data_in_dataset[DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
