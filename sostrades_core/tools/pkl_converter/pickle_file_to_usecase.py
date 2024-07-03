@@ -533,7 +533,7 @@ if '__main__' == __name__:
                             self.dm_dict_to_write[abstracted_key] = self.dm_data_dict[new_matches[0]]['value']
                         elif len(new_matches)==0:
                             if type(value)==pd.DataFrame:
-                                self.dm_dict_to_write[abstracted_key] = value.applymap(str)
+                                self.dm_dict_to_write[abstracted_key] = value.map(str)
                             elif type(value) in  [dict, list]:
                                 self.dm_dict_to_write[abstracted_key] = [str(val) for val in value]
                             else:

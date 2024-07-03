@@ -52,8 +52,8 @@ class Disc6(SoSWrapp):
     def run(self):
         df = self.get_sosdisc_inputs('df')
         dict_df = self.get_sosdisc_inputs('dict_df')
-        key1 = df['c1'][0]
-        key2 = df['c2'][0]
+        key1 = df['c1'].iloc[0]
+        key2 = df['c2'].iloc[0]
         h = array([0.5 * (key1 + 1. / (2 * key1)),
                    0.5 * (key2 + 1. / (2 * key2))])
         dict_values = {'h': h}
