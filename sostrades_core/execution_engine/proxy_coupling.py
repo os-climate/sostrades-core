@@ -378,6 +378,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if len(disc_to_configure) > 0:
             self.set_configure_status(False)
             for disc in disc_to_configure:
+                # possibly some one else like the driver has already configured the discipline
+                # not working for multiscenario of architecture builder ...
+                # if not disc.is_configured():
                 disc.configure()
         else:
             self.set_children_numerical_inputs()
