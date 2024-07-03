@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/06/11 Copyright 2024 Capgemini
+Modifications on 2024/06/11-2024/07/03 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -443,7 +443,7 @@ if '__main__' == __name__:
         This method checks if such a conversion is needed for a given df and
         returns a string with the complement for 'pd.read_csv({csv}, {complement})'
         """
-        col_to_eval = list(df.dtypes[(df.dtypes == object)].index) #list of col with object type
+        col_to_eval = list(df.dtypes[(df.dtypes is object)].index) #list of col with object type
         str_eval, i_eval = '', 0 # initialize return string and counter
         if col_to_eval:
             str_eval = ', converters={'

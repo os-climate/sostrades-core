@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/08/10-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/08/10-2024/07/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -68,17 +68,14 @@ class FunctionManager:
         self.eps2 = eps2
 
     def __to_array_type(self, value):
-        t_val = type(value)
         if isinstance(value, np.ndarray):
             mod_value = value
-        elif t_val == type(np.array([0.])):
-            mod_value = value
-        elif t_val == type([]):
+        elif isinstance(value, list):
             mod_value = np.array(value)
-        elif t_val == type(0.):
+        elif isinstance(value, float):
             mod_value = np.array(value)
         else:
-            raise ValueError('Unsupported type ' + str(t_val))
+            raise ValueError('Unsupported type ' + str(type(value)))
         return mod_value
 
     def add_function(self, tag, value=None, ftype=INEQ_CONSTRAINT, weight=1., aggr_type='sum'):
