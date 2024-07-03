@@ -18,7 +18,7 @@ from __future__ import annotations
 import abc
 import logging
 from typing import Any
-
+from dataclasses import dataclass
 
 class AbstractDatasetsConnector(abc.ABC):
     """
@@ -32,12 +32,15 @@ class AbstractDatasetsConnector(abc.ABC):
     DESCRIPTION = "description"
     SOURCE = "source"
     LINK = "link"
+    LAST_UPDATE = "last_update_date"
+
     DEFAULT_METADATA_DICT = {
         NAME: "",
         UNIT: "",
         DESCRIPTION: "",
         SOURCE: "",
-        LINK: ""
+        LINK: "",
+        LAST_UPDATE: ""
     }
     VALUE = "value"
     VALUE_KEYS = {VALUE}
@@ -140,23 +143,31 @@ class AbstractDatasetsConnector(abc.ABC):
         return f"{type(self).__name__}"
 
     # Metadata handling
-    def _default_metadata_dict(self):
-        return self.DEFAULT_METADATA_DICT.copy()
+    def _new_datum(self, old_datum):
+        if old_datum is None:
+            new_datum = self.DEFAULT_METADATA_DICT.copy()
+        else:
+            new_datum = old_datum.copy()  # TODO: is it necessary ?
+        return new_datum
 
-    def _new_datum_from_value(self, value: Any):
-        return self._insert_value_into_datum(value, self._default_metadata_dict())
+    def _insert_value_into_datum(self,
+                                 value: Any,
+                                 datum: dict[str:Any],
+                                 parameter_name: str,
+                                 parameter_type: str) -> dict[str:Any]:
+        new_datum = self._new_datum(datum)
+        new_datum[self.VALUE] = value
+        return new_datum
 
-    def _insert_value_into_datum(self, value: Any,
-                                 datum: dict[str:Any]) -> dict[str:Any]:
-        datum[self.VALUE] = value
-        return datum
-
-    def _update_data_with_values(self, data: dict[str:dict[str:Any]], values: dict[str:Any]) -> None:
+    def _update_data_with_values(self, data: dict[str:dict[str:Any]], values: dict[str:Any],
+                                 data_types: dict[str:str]) -> None:
         for key, value in values.items():
-            if key in data:
-                data[key] = self._insert_value_into_datum(value, data[key])
-            else:
-                data[key] = self._new_datum_from_value(value)
+            new_datum = self._insert_value_into_datum(value=value,
+                                                      datum=data.get(key, None),
+                                                      parameter_name=key,
+                                                      parameter_type=data_types[key])
+            if new_datum is not None:
+                data[key] = new_datum
 
     def _extract_value_from_datum(self, datum: dict[str:Any]) -> Any:
         return datum[self.VALUE]

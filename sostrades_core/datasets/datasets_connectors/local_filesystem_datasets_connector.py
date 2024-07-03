@@ -164,7 +164,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                                                                      value,
                                                                                      data_types_dict)
                              for key, value in values_to_write.items()}
-        self._update_data_with_values(dataset_descriptor, descriptor_values)
+        self._update_data_with_values(dataset_descriptor, descriptor_values, data_types_dict)
         self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier,
                                                   descriptor_data=dataset_descriptor)
         return values_to_write

@@ -49,7 +49,9 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     FLOAT_VALUE = "parameter_float_value"
     BOOL_VALUE = "parameter_bool_value"
     LIST_VALUE = "parameter_list_value"
-    LAST_UPDATE = "last_update_date"
+
+    VALUE_KEYS = AbstractDatasetsConnector.VALUE_KEYS.copy()
+    VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, LIST_VALUE})
 
     def __init__(self, project_id: str,
                  serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):
@@ -150,9 +152,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         dataset_id = "{}.{}".format(self.client.project, dataset_identifier)
 
-        # first serialize into descriptor avec complex type parameters:
-        json_descriptor, complex_parameters = self.__create_json_descriptor_and_parameters(values_to_write, data_types_dict)
-
         # write dataset descriptor table
         table_descriptor_id = "{}.{}".format(dataset_id, self.DESCRIPTOR_TABLE_NAME)
         table_descriptor_exists = True
@@ -162,24 +161,18 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             table_descriptor_exists = False
             self.__logger.debug(f"create table for descriptor:{table_descriptor_id}")
 
+        old_json_descriptor = {}
         if table_descriptor_exists:
             try:
                 # if the table exists, read it to write it again in full (best than request each param to see if it already exists)
                 old_json_descriptor = self.__read_descriptor_table(table_descriptor_id)
-                for data, metadata in old_json_descriptor.items():
-                    if data in json_descriptor.keys():
-                        # if the data was already in the dataset we don't overwrite the metadata
-                        json_descriptor[data][self.UNIT] = metadata.get(self.UNIT, "")
-                        json_descriptor[data][self.DESCRIPTION] = metadata.get(self.DESCRIPTION, "")
-                        json_descriptor[data][self.SOURCE] = metadata.get(self.SOURCE, "")
-                        json_descriptor[data][self.LINK] = metadata.get(self.LINK, "")
-                        json_descriptor[data][self.LAST_UPDATE] = metadata.get(self.LAST_UPDATE, "")
-                    else:
-                        # the data already in the dataset is written again in it to not loose any information
-                        json_descriptor[data] = metadata
             except Exception as ex:
                 raise DatasetGenericException(f"Error while reading the Descriptor table for dataset {dataset_id}: {ex}") from ex
-        
+
+        # serialize into descriptor with complex type parameters:
+        json_descriptor, complex_parameters = self.__update_json_descriptor_and_parameters(values_to_write,
+                                                                                           old_json_descriptor,
+                                                                                           data_types_dict)
         try:
             # create or overwrite the descriptor table
             table = bigquery.Table(table_descriptor_id)
@@ -280,49 +273,49 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
-    def __create_json_descriptor_and_parameters(self, values_to_write: dict[str:Any], data_types_dict: dict[str:str])->tuple[dict, dict]:
+    def _insert_value_into_datum(self,
+                                 value: Any,
+                                 datum: dict[str:Any],
+                                 parameter_name: str,
+                                 parameter_type: str) -> dict[str:Any]:
+        new_datum = self._new_datum(datum)
+        # if data is none or empty (dict with no elements ect) bigquery raise an error at the import
+        is_empty = value is None or (parameter_type in {"list", "array", "dict", "dataframe"} and len(value) == 0)
+        if not is_empty:
+            # simple parameters types have their value in the descriptor dict
+            if parameter_type in BigqueryDatasetsConnector.NO_TABLE_TYPES:
+                column_name = self.__get_col_name_from_type(parameter_type)
+                new_datum[column_name] = value
+                # there are some issues to export int64 or float 64 in json with big query so we need to convert it
+                if parameter_type == "int":
+                    new_datum[column_name] = int(datum[column_name])
+                elif parameter_type == "float":
+                    new_datum[column_name] = float(datum[column_name])
+                elif parameter_type == "list" or parameter_type == "array":
+                    new_datum[column_name] = self._serialize_sub_element_jsonifiable(datum[column_name])
+            elif parameter_type in BigqueryDatasetsConnector.SELF_TABLE_TYPES:
+                # the name of the value is a string value is the type of the data + the name of the table associated
+                new_datum[self.STRING_VALUE] = f"@{parameter_type}@{parameter_name}"
+            return new_datum
 
-        json_descriptor_parameters = {}
-        complex_type_parameters_values = {}
-        for parameter, parameter_value in values_to_write.items():
-            parameter_type = data_types_dict[parameter]
+    def __update_json_descriptor_and_parameters(self,
+                                                values_to_write: dict[str:Any],
+                                                old_json_descriptor: dict[str:dict[str:Any]],
+                                                data_types_dict: dict[str:str])->tuple[dict, dict]:
 
-            json_parameter = {
-                self.NAME:parameter,
-                self.UNIT:"",
-                self.DESCRIPTION:"",
-                self.SOURCE:"",
-                self.LINK:""
-            }
+        json_descriptor_parameters = old_json_descriptor or {}
+        json_values = {parameter: self.__datasets_serializer.convert_to_dataset_data(parameter, parameter_value,
+                                                                                     {parameter: data_types_dict[parameter]})
+                       for parameter, parameter_value in values_to_write.items()}
 
-            #convert value in jsonifiable value:
-            json_value = self.__datasets_serializer.convert_to_dataset_data(parameter, parameter_value, {parameter:parameter_type})
+        # update the descriptor
+        self._update_data_with_values(json_descriptor_parameters, json_values, data_types_dict)
 
-            # if data is none or empty (dict with no elements ect) bigquery raise an error at the import
-            is_empty = json_value is None or (json_value is not None and 
-                                              (parameter_type == "list" or parameter_type == "array" or parameter_type == "dict" or parameter_type == "dataframe") and
-                                                len(json_value) == 0)
-            if not is_empty:
-                # simple parameters types have their value in the descriptor dict
-                if parameter_type in BigqueryDatasetsConnector.NO_TABLE_TYPES:
-                    column_name = self.__get_col_name_from_type(parameter_type)
-                    json_parameter[column_name] = json_value
-                    # there are some issues to export int64 or float 64 in json with big query so we need to convert it
-                    if parameter_type == "int":
-                        json_parameter[column_name] = int(json_parameter[column_name])
-                    elif parameter_type == "float":
-                        json_parameter[column_name] = float(json_parameter[column_name])
-                    elif parameter_type == "list" or parameter_type == "array":
-                        json_parameter[column_name] = self._serialize_sub_element_jsonifiable(json_parameter[column_name])
-                elif parameter_type in BigqueryDatasetsConnector.SELF_TABLE_TYPES:
-                    # the name of the value is a string value is the type of the data + the name of the table associated
-                    json_parameter[self.STRING_VALUE] = f"@{parameter_type}@{parameter}"
-                    complex_type_parameters_values[parameter] = json_value
-                    
-                
-                # add the parameter row in json object
-                json_descriptor_parameters[parameter] = json_parameter
-        
+        # recover the complex types values  # TODO: discuss with MA if there is a better way
+        complex_type_parameters_values = {parameter: json_values[parameter] for parameter in json_values
+                                          if json_descriptor_parameters[parameter].get(self.STRING_VALUE, "") ==
+                                          f"@{data_types_dict[parameter]}@{parameter}"}
+
         return json_descriptor_parameters, complex_type_parameters_values
     
 

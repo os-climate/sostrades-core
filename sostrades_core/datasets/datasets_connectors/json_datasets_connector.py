@@ -142,7 +142,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
                                                                                  value,
                                                                                  data_types_dict)
                           for key, value in values_to_write.items()}
-        self._update_data_with_values(self.__json_data[dataset_identifier], dataset_values)
+        self._update_data_with_values(self.__json_data[dataset_identifier], dataset_values, data_types_dict)
         self.__save_json_data()
         return values_to_write
     
