@@ -199,7 +199,8 @@ class ProxyDiscipline:
     UNSUPPORTED_GEMSEO_TYPES = []
     for type in VAR_TYPE_MAP.keys():
         if type not in VAR_TYPE_GEMS and type not in NEW_VAR_TYPE:
-            UNSUPPORTED_GEMSEO_TYPES.append(type)
+            # Fixing PERF401 would require heavy refactoring
+            UNSUPPORTED_GEMSEO_TYPES.append(type) # noqa: PERF401
 
     # # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
     # # df_dict = dict , string_dict = dict, list_dict = dict
@@ -1030,6 +1031,7 @@ class ProxyDiscipline:
         '''
         Configure the ProxyDiscipline
         '''
+
         self.assign_proxy_to_wrapper()
         # check if all config_dependency_disciplines are configured. If not no
         # need to try configuring the discipline because all is not ready for
@@ -1342,95 +1344,97 @@ class ProxyDiscipline:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             data_dict (Dict[dict]): the data dict to prepare
         """
-
+        new_data_dict = {}
         for key, curr_data in data_dict.items():
-            data_keys = curr_data.keys()
-            curr_data[self.IO_TYPE] = io_type
-            curr_data[self.TYPE_METADATA] = None
+            # Kill the potential object link here , better way to do that ?
+            new_data = {key_data: value_data for key_data, value_data in curr_data.items()}
+            data_keys = new_data.keys()
+            new_data[self.IO_TYPE] = io_type
+            new_data[self.TYPE_METADATA] = None
             if isinstance(key, tuple):
-                curr_data[self.VAR_NAME] = key[0]
+                new_data[self.VAR_NAME] = key[0]
             else:
-                curr_data[self.VAR_NAME] = key
+                new_data[self.VAR_NAME] = key
             if self.USER_LEVEL not in data_keys:
-                curr_data[self.USER_LEVEL] = 1
+                new_data[self.USER_LEVEL] = 1
             if self.RANGE not in data_keys:
-                curr_data[self.RANGE] = None
+                new_data[self.RANGE] = None
             if self.UNIT not in data_keys:
-                curr_data[self.UNIT] = None
+                new_data[self.UNIT] = None
             if self.DESCRIPTION not in data_keys:
-                curr_data[self.DESCRIPTION] = None
+                new_data[self.DESCRIPTION] = None
             if self.POSSIBLE_VALUES not in data_keys:
-                curr_data[self.POSSIBLE_VALUES] = None
-            if curr_data['type'] in ['array', 'dict', 'dataframe']:
+                new_data[self.POSSIBLE_VALUES] = None
+            if new_data[self.TYPE] in ['array', 'dict', 'dataframe']:
                 if self.DATAFRAME_DESCRIPTOR not in data_keys:
-                    curr_data[self.DATAFRAME_DESCRIPTOR] = None
+                    new_data[self.DATAFRAME_DESCRIPTOR] = None
                 if self.DATAFRAME_EDITION_LOCKED not in data_keys:
-                    curr_data[self.DATAFRAME_EDITION_LOCKED] = True
+                    new_data[self.DATAFRAME_EDITION_LOCKED] = True
             # For dataframes but also dict of dataframes...
-            if curr_data['type'] in ['dict', 'dataframe']:
+            if new_data[self.TYPE] in ['dict', 'dataframe']:
                 if self.DF_EXCLUDED_COLUMNS not in data_keys:
-                    curr_data[self.DF_EXCLUDED_COLUMNS] = self.DEFAULT_EXCLUDED_COLUMNS
+                    new_data[self.DF_EXCLUDED_COLUMNS] = self.DEFAULT_EXCLUDED_COLUMNS
 
             if self.DISCIPLINES_FULL_PATH_LIST not in data_keys:
-                curr_data[self.DISCIPLINES_FULL_PATH_LIST] = []
+                new_data[self.DISCIPLINES_FULL_PATH_LIST] = []
             if self.VISIBILITY not in data_keys:
-                curr_data[self.VISIBILITY] = self.LOCAL_VISIBILITY
+                new_data[self.VISIBILITY] = self.LOCAL_VISIBILITY
             if self.DEFAULT not in data_keys:
-                if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
+                if new_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
                     raise Exception(
                         f'The variable {key} in discipline {self.sos_name} must have a default value because its visibility is Internal')
                 else:
-                    curr_data[self.DEFAULT] = None
+                    new_data[self.DEFAULT] = None
             else:
-                curr_data[self.VALUE] = curr_data[self.DEFAULT]
+                new_data[self.VALUE] = new_data[self.DEFAULT]
             # -- Initialize VALUE to None by default
             if self.VALUE not in data_keys:
-                curr_data[self.VALUE] = None
+                new_data[self.VALUE] = None
             if self.COUPLING not in data_keys:
-                curr_data[self.COUPLING] = False
+                new_data[self.COUPLING] = False
             if self.OPTIONAL not in data_keys:
-                curr_data[self.OPTIONAL] = False
+                new_data[self.OPTIONAL] = False
             if self.NUMERICAL not in data_keys:
-                curr_data[self.NUMERICAL] = False
+                new_data[self.NUMERICAL] = False
             if self.META_INPUT not in data_keys:
-                curr_data[self.META_INPUT] = False
+                new_data[self.META_INPUT] = False
 
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
-                if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
-                    curr_data[self.EDITABLE] = False
+                if new_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
+                    new_data[self.EDITABLE] = False
                 else:
-                    curr_data[self.EDITABLE] = (io_type == self.IO_TYPE_IN)
+                    new_data[self.EDITABLE] = (io_type == self.IO_TYPE_IN)
             # -- Add NS_REFERENCE
-            if curr_data[self.VISIBILITY] not in self.AVAILABLE_VISIBILITIES:
-                var_name = curr_data[self.VAR_NAME]
-                visibility = curr_data[self.VISIBILITY]
-                raise ValueError(self.sos_name + '.' + var_name + ': visibility ' + str(
+            if new_data[self.VISIBILITY] not in self.AVAILABLE_VISIBILITIES:
+                var_name = new_data[self.VAR_NAME]
+                visibility = new_data[self.VISIBILITY]
+                raise ValueError(self.sos_name + '.' + var_name + ': ' + self.VISIBILITY + str(
                     visibility) + ' not in allowed visibilities: ' + str(self.AVAILABLE_VISIBILITIES))
             if self.NAMESPACE in data_keys:
-                curr_data[self.NS_REFERENCE] = self.get_ns_reference(
-                    curr_data[self.VISIBILITY], curr_data[self.NAMESPACE])
+                new_data[self.NS_REFERENCE] = self.get_ns_reference(
+                    new_data[self.VISIBILITY], new_data[self.NAMESPACE])
             else:
-                curr_data[self.NS_REFERENCE] = self.get_ns_reference(
-                    curr_data[self.VISIBILITY])
+                new_data[self.NS_REFERENCE] = self.get_ns_reference(
+                    new_data[self.VISIBILITY])
 
             # store structuring variables in self._structuring_variables
-            if self.STRUCTURING in data_keys and curr_data[self.STRUCTURING] is True:
-                if curr_data[self.IO_TYPE] == self.IO_TYPE_IN:
+            if self.STRUCTURING in data_keys and new_data[self.STRUCTURING] is True:
+                if new_data[self.IO_TYPE] == self.IO_TYPE_IN:
                     self._structuring_variables[key] = None
-                del curr_data[self.STRUCTURING]
+                del new_data[self.STRUCTURING]
             if self.CHECK_INTEGRITY_MSG not in data_keys:
-                curr_data[self.CHECK_INTEGRITY_MSG] = ''
+                new_data[self.CHECK_INTEGRITY_MSG] = ''
 
             # initialize formula
             if self.FORMULA not in data_keys:
-                curr_data[self.FORMULA] = None
+                new_data[self.FORMULA] = None
             if self.IS_FORMULA not in data_keys:
-                curr_data[self.IS_FORMULA] = False
+                new_data[self.IS_FORMULA] = False
             if self.IS_EVAL not in data_keys:
-                curr_data[self.IS_EVAL] = False
-
-        return data_dict
+                new_data[self.IS_EVAL] = False
+            new_data_dict[key] = new_data
+        return new_data_dict
 
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """

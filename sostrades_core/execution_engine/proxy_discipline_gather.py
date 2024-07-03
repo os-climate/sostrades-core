@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/17-2024/07/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -233,19 +233,21 @@ class ProxyDisciplineGather(ProxyDiscipline):
         Update data_in and data_out with inst_desc_in and inst_desc_out which have been modified during a configure
         '''
 
-        modified_inputs = {}
-        modified_outputs = {}
-
         disc_in = self.get_data_in()
         disc_out = self.get_data_out()
 
-        for key, value in self.inst_desc_in.items():
-            if key in disc_in and disc_in[key][self.NAMESPACE] != value[self.NAMESPACE]:
-                modified_inputs[key] = value
 
-        for key, value in self.inst_desc_out.items():
-            if key in disc_out and disc_out[key][self.NAMESPACE] != value[self.NAMESPACE]:
-                modified_outputs[key] = value
+        modified_inputs = {
+            key:value
+            for key, value in self.inst_desc_in.items()
+            if key in disc_in and disc_in[key][self.NAMESPACE] != value[self.NAMESPACE]
+        }
+
+        modified_outputs = {
+            key:value
+            for key, value in self.inst_desc_out.items()
+            if key in disc_out and disc_out[key][self.NAMESPACE] != value[self.NAMESPACE]
+        }
 
         if len(modified_inputs) > 0:
             completed_modified_inputs = self._prepare_data_dict(
