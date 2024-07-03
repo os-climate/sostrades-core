@@ -24,7 +24,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `python-arango (7.9.1) <https://github.com/arangodb/python-arango>`_
     MIT
 
-`matplotlib (3.4.3) <https://matplotlib.org>`_
+`matplotlib (3.9.0) <https://matplotlib.org>`_
     PSF
 
 `numpy (1.24.4) <https://numpy.org>`_
