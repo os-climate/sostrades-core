@@ -378,7 +378,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if len(disc_to_configure) > 0:
             self.set_configure_status(False)
             for disc in disc_to_configure:
-                disc.configure()
+                # possibly some one else like the driver has already configured the discipline
+                if not disc.is_configured():
+                    disc.configure()
         else:
             self.set_children_numerical_inputs()
             # - all chidren are configured thus proxyCoupling can be configured
