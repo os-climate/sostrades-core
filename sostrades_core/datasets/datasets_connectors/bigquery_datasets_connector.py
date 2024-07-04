@@ -127,7 +127,10 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                         elif data_type == "dict" and json_descriptor[data][self.STRING_VALUE].startswith(f'@{data_type}@'):
                             table_id = "{}.{}".format(dataset_id, json_descriptor[data][self.STRING_VALUE].replace(f'@{data_type}@', ''))
                             parameters_data[data] =  self.__read_dict_table(table_id)
-                       
+                        elif json_descriptor[data][self.STRING_VALUE].startswith(f'@{data_type}@'):
+                            table_id = "{}.{}".format(dataset_id, json_descriptor[data][self.STRING_VALUE].replace(f'@{data_type}@', ''))
+                            table_data =  self.__read_dict_table(table_id)
+                            parameters_data[data] = self.__datasets_serializer.convert_from_dataset_data(data, table_data, {data: data_type})
                     except Exception as ex:
                         self.__logger.warning(f"Error while reading the parameter {data} table for dataset {dataset_id}: {ex}")
 
@@ -285,14 +288,13 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             # simple parameters types have their value in the descriptor dict
             if parameter_type in BigqueryDatasetsConnector.NO_TABLE_TYPES:
                 column_name = self.__get_col_name_from_type(parameter_type)
-                new_datum[column_name] = value
                 # there are some issues to export int64 or float 64 in json with big query so we need to convert it
                 if parameter_type == "int":
-                    new_datum[column_name] = int(datum[column_name])
+                    new_datum[column_name] = int(value)
                 elif parameter_type == "float":
-                    new_datum[column_name] = float(datum[column_name])
-                elif parameter_type == "list" or parameter_type == "array":
-                    new_datum[column_name] = self._serialize_sub_element_jsonifiable(datum[column_name])
+                    new_datum[column_name] = float(value)
+                else:
+                    new_datum[column_name] = value
             elif parameter_type in BigqueryDatasetsConnector.SELF_TABLE_TYPES:
                 # the name of the value is a string value is the type of the data + the name of the table associated
                 new_datum[self.STRING_VALUE] = f"@{parameter_type}@{parameter_name}"
@@ -367,22 +369,3 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         if len(result) == 1:
             result = result[0]
         return result
-    
-    def _serialize_sub_element_jsonifiable(self, data_value:list):
-        '''
-        convert sub element of a list into non numpy format
-        '''
-        json_value = []
-        for element in data_value:
-            if isinstance(element, (np.int_, np.intc, np.intp, np.int8,
-                                np.int16, np.int32, np.int64, np.uint8,
-                                np.uint16, np.uint32, np.uint64)):
-
-               json_value.append(int(element))
-
-            elif isinstance(element, (np.float_, np.float16, np.float32, np.float64)):
-                json_value.append(float(element))
-            else:
-                json_value.append(element)
-
-        return json_value
