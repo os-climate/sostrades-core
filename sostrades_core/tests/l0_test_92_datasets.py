@@ -615,61 +615,6 @@ class TestDatasets(unittest.TestCase):
             connector_export.clear(remove_root_directory=True)
             raise 
 
-    def test_xx_bq(self):
-        """
-        Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
-        thus testing ability of LocalConnector to both write and load values.
-        """
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\\Users\\cortegaa\\Desktop\\SoSTrades\\gcp-businessplanet-b0018b9d9a11.json"
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
-        connector_args = {
-            "project_id": "gcp-businessplanet"
-        }
-        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_bigquery_connector_copy_test",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Bigquery"),
-                                                    **connector_args)
-        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
-        process_path = os.path.dirname(usecase_file_path)
-        study = StudyManager(file_path=usecase_file_path)
-
-        dm = study.execution_engine.dm
-        connector_to = DatasetsConnectorManager.get_connector('MVP0_bigquery_connector_copy_test')
-        connector_json = DatasetsConnectorManager.get_connector('MVP0_datasets_connector')
-
-        dataset_vars = ["a",
-                        "x",
-                        "b",
-                        "name",
-                        "x_dict",
-                        "y_array",
-                        "z_list",
-                        "b_bool",
-                        "d"]
-
-        data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
-
-        connector_to.copy_dataset_from(connector_from=connector_json,
-                                       dataset_identifier="dataset_all_types",
-                                       data_types_dict=data_types_dict,
-                                       create_if_not_exists=True)
-
-        study.update_data_from_dataset_mapping(
-            DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_bigquery_dataset_copy_test.json")))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
-        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
-        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
-
 
 if __name__=="__main__":
     cls = TestDatasets()
