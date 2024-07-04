@@ -1,6 +1,6 @@
 # SoSTrades platform overview
 
-The SoSTrades platform is a cloud based collaborative generic simulation platform​.\
+The SoSTrades platform is a cloud based collaborative generic simulation platform.\
 You can access it by following this [link](https://validation.osc-tsa.com/) :
 
 [![homepage](../images/platform_logo.png)](https://validation.osc-tsa.com/ "Access open SoSTrades simulation platform")
@@ -33,4 +33,3 @@ This module allows to configure and execute generic processes and theirs associa
 **sostrades-core** is thus the entry point for developpers that want to build a new simulation process and use it through the GUI afterwards.
 
 > *Note: SoSTrades leverages the GEMSEO library's numerical features, including automatic coupling and many iterative solvers.* [For more about GEMESO](https://gemseo.readthedocs.io/en/stable/)
-
