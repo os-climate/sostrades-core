@@ -130,9 +130,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                             parameters_data[data] =  self.__read_dict_table(table_id)
                     except Exception as ex:
                         self.__logger.warning(f"Error while reading the parameter {data} table for dataset {dataset_id}: {ex}")
-            
-            
-        
+
         self.__logger.debug(
             f"Values obtained {list(parameters_data.keys())} for dataset {dataset_identifier} for connector {self}"
         )
@@ -199,7 +197,11 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 job_config.write_disposition="WRITE_TRUNCATE"
 
                 try:
-                    job = self.client.load_table_from_json([value], table, job_config = job_config)
+                    if data_types_dict[data] == "dataframe":
+                        job = self.client.load_table_from_dataframe(value, table, job_config = job_config)
+                    else:
+                        job = self.client.load_table_from_json([value], table, job_config = job_config)
+
                     res = job.result()
                     self.__logger.debug(f"created or updated table for data {data}:{res}")
                 except Exception as ex:
@@ -307,12 +309,16 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         json_descriptor_parameters = old_json_descriptor or {}
         json_values = {parameter: self.__datasets_serializer.convert_to_dataset_data(parameter, parameter_value,
                                                                                      {parameter: data_types_dict[parameter]})
-                       for parameter, parameter_value in values_to_write.items()}
+                       for parameter, parameter_value in values_to_write.items() if data_types_dict[parameter]!='dataframe'}
+
+        # FIXME: QUICKFIX OVERRIDE SERIALIZER
+        json_values.update({parameter: parameter_value
+                            for parameter, parameter_value in values_to_write.items() if data_types_dict[parameter]=='dataframe'})
 
         # update the descriptor
         self._update_data_with_values(json_descriptor_parameters, json_values, data_types_dict)
 
-        # recover the complex types values  # TODO: discuss with MA if there is a better way
+        # recover the complex types values
         complex_type_parameters_values = {parameter: json_values[parameter] for parameter in json_values
                                           if parameter in json_descriptor_parameters and
                                           json_descriptor_parameters[parameter].get(self.STRING_VALUE, "") ==
