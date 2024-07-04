@@ -38,8 +38,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     Specific dataset connector for dataset in google cloud bigquery db format
     """
     
-    SELF_TABLE_TYPES = ["dataframe", "dict"]
-    NO_TABLE_TYPES = ["string", "int", "float", "bool", "array", "list"]
+    SELF_TABLE_TYPES = ["dataframe", "dict", "array", "list"]
+    NO_TABLE_TYPES = ["string", "int", "float", "bool"]
 
     DESCRIPTOR_TABLE_NAME = "descriptor_parameters"
     
@@ -48,10 +48,9 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     INT_VALUE = "parameter_int_value"
     FLOAT_VALUE = "parameter_float_value"
     BOOL_VALUE = "parameter_bool_value"
-    LIST_VALUE = "parameter_list_value"
 
     VALUE_KEYS = AbstractDatasetsConnector.VALUE_KEYS.copy()
-    VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, LIST_VALUE})
+    VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE})
 
     def __init__(self, project_id: str,
                  serializer_type: DatasetSerializerType = DatasetSerializerType.BigQuery):
@@ -128,6 +127,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                         elif data_type == "dict" and json_descriptor[data][self.STRING_VALUE].startswith(f'@{data_type}@'):
                             table_id = "{}.{}".format(dataset_id, json_descriptor[data][self.STRING_VALUE].replace(f'@{data_type}@', ''))
                             parameters_data[data] =  self.__read_dict_table(table_id)
+                       
                     except Exception as ex:
                         self.__logger.warning(f"Error while reading the parameter {data} table for dataset {dataset_id}: {ex}")
 
@@ -330,8 +330,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             column_name = self.FLOAT_VALUE
         elif parameter_type == "bool":
             column_name = self.BOOL_VALUE
-        elif parameter_type == "list" or parameter_type == "array":
-            column_name = self.LIST_VALUE
         
         return column_name
     
