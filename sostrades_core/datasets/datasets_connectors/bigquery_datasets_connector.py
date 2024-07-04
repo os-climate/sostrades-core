@@ -54,7 +54,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, LIST_VALUE})
 
     def __init__(self, project_id: str,
-                 serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):
+                 serializer_type: DatasetSerializerType = DatasetSerializerType.BigQuery):
         """
         Constructor for Arango data connector
 
@@ -269,10 +269,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 # Send the dataset to the API for creation, with an explicit timeout.
                 # Raises google.api_core.exceptions.Conflict if the Dataset already
                 # exists within the project.
-                dataset = self.client.create_dataset(dataset, timeout=30) 
-
-
-
+                dataset = self.client.create_dataset(dataset, timeout=30)
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
     def _insert_value_into_datum(self,
@@ -309,12 +306,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         json_descriptor_parameters = old_json_descriptor or {}
         json_values = {parameter: self.__datasets_serializer.convert_to_dataset_data(parameter, parameter_value,
                                                                                      {parameter: data_types_dict[parameter]})
-                       for parameter, parameter_value in values_to_write.items() if data_types_dict[parameter]!='dataframe'}
-
-        # FIXME: QUICKFIX OVERRIDE SERIALIZER
-        json_values.update({parameter: parameter_value
-                            for parameter, parameter_value in values_to_write.items() if data_types_dict[parameter]=='dataframe'})
-
+                       for parameter, parameter_value in values_to_write.items()}
         # update the descriptor
         self._update_data_with_values(json_descriptor_parameters, json_values, data_types_dict)
 
