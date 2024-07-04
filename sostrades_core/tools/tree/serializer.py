@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/23-2024/06/11 Copyright 2023 Capgemini
+Modifications on 2023/06/23-2024/07/04 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 '''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Data manager pickle (de)serializer
 '''
 
@@ -398,7 +397,10 @@ class DataSerializer:
                     # iterate on keys of this dict and concatenate value
                     for k, a_df in param_data.items():
                         # append built dataframe to global one
-                        df_data = concat([df_data, a_df.assign(variable=k)],
+                        if df_data.empty:
+                            df_data = a_df.assign(variable=k).copy()
+                        else:
+                            df_data = concat([df_data, a_df.assign(variable=k)],
                                          sort=False)
                     df_data = df_data[df_col]
                 else:

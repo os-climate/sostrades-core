@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2024/06/24 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2024/07/04 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -527,7 +527,10 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                         final_dataframe[self.NB_POINTS] = final_dataframe[self.NB_POINTS].astype(int)
                     for element in from_eval_inputs:
                         default_df = default_design_space[default_design_space[self.VARIABLES] == element]
-                        final_dataframe = pd.concat([final_dataframe, default_df], ignore_index=True)
+                        if final_dataframe.empty:
+                            final_dataframe = default_df.copy()
+                        else:
+                            final_dataframe = pd.concat([final_dataframe, default_df], ignore_index=True)
                         if element in from_design_space:
                             to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
                                                                                  self.VARIABLES] == element]
