@@ -620,6 +620,7 @@ class TestDatasets(unittest.TestCase):
         Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
         thus testing ability of LocalConnector to both write and load values.
         """
+        # FIXME: utility test for revision branch with local config etc. to be updated upon merge
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\\Users\\cortegaa\\Desktop\\SoSTrades\\gcp-businessplanet-b0018b9d9a11.json"
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
