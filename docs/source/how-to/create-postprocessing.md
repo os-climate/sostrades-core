@@ -13,7 +13,7 @@ Here is how ChartFilter is defined :
 .. autoclass:: sostrades_core.tools.post_processing.charts.chart_filter::ChartFilter
 ```
 
-* name : string that contains filter name
+* name : string that contains filter name
 * filter_values : list of filter items that can be used to filter post processing element
 * selected_values : list of filter items currently selected for the given filter
 * filter_key : unique key used to identify the current filter

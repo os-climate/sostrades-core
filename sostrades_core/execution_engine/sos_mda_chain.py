@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/02-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/03/02-2024/07/04 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -575,13 +575,13 @@ class SoSMDAChain(MDAChain):
                     nan_found = True
             elif isinstance(data_value, ndarray):
                 # None value in list throw an exception when used with isnan
-                if sum(1 for _ in filter(None.__ne__, data_value)) != len(data_value):
+                if any(x is None for x in data_value):
                     nan_found = True
                 elif pd.isnull(list(data_value)).any():
                     nan_found = True
             elif isinstance(data_value, list):
                 # None value in list throw an exception when used with isnan
-                if sum(1 for _ in filter(None.__ne__, data_value)) != len(data_value):
+                if any(x is None for x in data_value):
                     nan_found = True
                 elif pd.isnull(data_value).any():
                     nan_found = True

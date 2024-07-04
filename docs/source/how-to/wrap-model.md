@@ -87,7 +87,7 @@ DESC_OUT = {
 * `subtype_descriptor` (or `dataframe_descriptor`) : if the variable is a dict/list (or dataframe), gives the types (or descriptor) of the sub-elements (or columns). See next sections
 * `default` : if the variable has a default value. The default must be the same type as the type
 * `unit` : (string) unity of the variable used for the ontology
-* `user_level` : (optional) to filter the display in the GUI  (1=Standard by default, 2=Advanced, 3=Expert)
+* `user_level` : (optional) to filter the display in the GUI (1=Standard by default, 2=Advanced, 3=Expert)
 * `visibility`  : `'Shared'` if you need to specify a namespace for the variable or `'Local'` if the variable by default needs to be stored in the same namespace as the wrapp. If not specified the visibility is considered as `'Local'`.
 * `namespace`  : must be identified by a string name, and its value must be defined within the process utilizing the wrapp. This feature allows for parameterizing the variable's location based on the specific process.
 * `user_level`  : Specify the display level in the GUI: 1 for Standard view, 2 for Advanced, and 3 for Expert. If a variable is assigned an expert user level, it will only be visible in the expert view. This feature is useful for concealing complex variables that may be challenging to define. By default the display levvel is 1. 
@@ -152,7 +152,7 @@ def run(self):
 ```
 
 * The function get_sosdisc_inputs(variable name) returns the value of the variable in the data manager. It can be used without arguments : return a dict with all keys and values of the DESC_IN
-* The core of the model can be written here or loaded from an external model 
+* The core of the model can be written here or loaded from an external model
 * Output values are stored in a dictionary {variable_name : value} with the value coming from the model
 * The dictionary is sent to the data manager with the function store_sos_output_values(dict_values)
 

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/07/04 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -260,14 +260,14 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             unavailable_vb = self.default_activation_df.loc[
                                 ~self.default_activation_df[colname], vb
                             ].values.tolist()
-                            if not (
-                                    activation_df.loc[
-                                        activation_df[vb].isin(unavailable_vb)
-                                    ][activation_df[colname]]
-                            ).empty:
+                            filtered_df = activation_df.loc[activation_df[vb].isin(unavailable_vb) & activation_df[colname]]
+                            if not filtered_df.empty:
                                 # if not available value blocks are activated,
                                 # set False in activation_df
-                                warning_msg = f'Invalid Value Block Activation Configuration: value block {colname} not available for {list(set(activation_df.loc[activation_df[vb].isin(unavailable_vb)][activation_df[colname]][vb].values.tolist()))}'
+                                values_list = filtered_df[vb].values.tolist()
+                                unique_values = list(set(values_list))
+
+                                warning_msg = f'Invalid Value Block Activation Configuration: value block {colname} not available for {unique_values}'
                                 self.check_integrity_msg_list.append(warning_msg)
 
                                 modified_activation_df.loc[
