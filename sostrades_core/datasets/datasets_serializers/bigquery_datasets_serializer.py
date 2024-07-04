@@ -17,7 +17,6 @@ import logging
 from typing import Any
 
 import numpy as np
-import pandas as pd
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
