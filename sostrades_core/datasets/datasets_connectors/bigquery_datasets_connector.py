@@ -279,6 +279,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                                  parameter_name: str,
                                  parameter_type: str) -> dict[str:Any]:
         new_datum = self._new_datum(datum)
+        new_datum[self.NAME] = parameter_name
         # if data is none or empty (dict with no elements ect) bigquery raise an error at the import
         is_empty = value is None or (parameter_type in {"list", "array", "dict", "dataframe"} and len(value) == 0)
         if not is_empty:
@@ -313,7 +314,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         # recover the complex types values  # TODO: discuss with MA if there is a better way
         complex_type_parameters_values = {parameter: json_values[parameter] for parameter in json_values
-                                          if json_descriptor_parameters[parameter].get(self.STRING_VALUE, "") ==
+                                          if parameter in json_descriptor_parameters and
+                                          json_descriptor_parameters[parameter].get(self.STRING_VALUE, "") ==
                                           f"@{data_types_dict[parameter]}@{parameter}"}
 
         return json_descriptor_parameters, complex_type_parameters_values
