@@ -15,7 +15,7 @@ limitations under the License.
 '''
 import logging
 from typing import Any
-
+from string import ascii_letters, digits
 import numpy as np
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
@@ -28,10 +28,38 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
     Specific dataset serializer for dataset in json format
     """
     VALUE = "value"
+    COL_NAME_ALLOWED_CHAR_0 = set(ascii_letters + '_')
+    COL_NAME_ALLOWED_CHAR_1 = set(digits)
+    REPLACEMENT_FORBIDDEN_CHAR = "_"
 
     def __init__(self):
         super().__init__()
         self.__logger = logging.getLogger(__name__)
+        self.__col_name_index = None
+
+    def set_col_name_index(self, col_name_index):
+        self.__col_name_index = col_name_index
+
+    def clear_col_name_index(self):
+        self.__col_name_index = None
+
+    @property
+    def col_name_index(self):
+        return self.__col_name_index
+
+    def __format_bigquery_col_name(self, col_name: str) -> (str, str):
+        """
+        Returns a column name that is compatible with bigquery as well as the old colum name to index or None if no change
+        :param col_name: original column name in the variable
+        :return: bigquery compatible col_name, old name to index or None
+        """
+        bq_col_name = ""
+        for i, _char in enumerate(col_name):
+            if _char in self.COL_NAME_ALLOWED_CHAR_0 or i > 0 and _char in self.COL_NAME_ALLOWED_CHAR_1:
+                bq_col_name += _char
+            else:
+                bq_col_name += self.REPLACEMENT_FORBIDDEN_CHAR
+        return bq_col_name
 
     def convert_from_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
         '''
@@ -92,10 +120,17 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
         return converted_data
 
     def _serialize_dataframe(self, data_value, data_name):
-        return data_value
+        _renamer = dict()
+        for old_col_name in data_value.columns:
+            new_col_name = self.__format_bigquery_col_name(old_col_name)
+            new_index = self.__col_name_index.get(data_name, dict())
+            new_index.update({new_col_name: old_col_name})
+            _renamer[old_col_name] = new_col_name
+            self.__col_name_index[data_name] = new_index
+        return data_value.rename(columns=_renamer, copy=True)
 
-    def _deserialize_dataframe(self, data_value):
-        return data_value
+    def _deserialize_dataframe(self, data_value, data_name):
+        return data_value.rename(columns=self.__col_name_index[data_name])
 
     def _serialize_list(self, data_value, data_name):
         return {self.VALUE: self._serialize_sub_element_jsonifiable(data_value)}

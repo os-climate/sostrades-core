@@ -41,7 +41,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     NO_TABLE_TYPES = ["string", "int", "float", "bool"]
 
     DESCRIPTOR_TABLE_NAME = "descriptor_parameters"
-    
+    COL_NAME_INDEX_TABLE_NAME = "__col_name_index_table__"
 
     STRING_VALUE = "parameter_string_value"
     INT_VALUE = "parameter_int_value"
@@ -75,7 +75,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=BigqueryDatasetsConnector) from exc
 
-   
+
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
         """
         Method to retrieve data from dataset and fill a data_dict
@@ -87,14 +87,12 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         :type data_to_get: dict[str:str]
         """
         dataset_id = "{}.{}".format(self.client.project, dataset_identifier)
-
         # check dataset exists
         try:
             dataset = self.client.get_dataset(dataset_id)  # Make an API request.
             print("Dataset {} exists".format(dataset_id))
         except:
             raise DatasetNotFoundException(dataset_name=dataset_identifier)
-
         # Read dataset descriptor
         parameters_data = {}
         table_descriptor_id = "{}.{}".format(dataset_id, self.DESCRIPTOR_TABLE_NAME)
@@ -102,7 +100,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
              table = self.client.get_table(table_descriptor_id)  # Make an API request.
         except:
             raise DatasetGenericException(f"Dataset {dataset_id}: {self.DESCRIPTOR_TABLE_NAME} table not found. Impossible to fetch parameter value.")
-        
         json_descriptor = {}
         try:
             json_descriptor = self.__read_descriptor_table(table_descriptor_id)
@@ -160,7 +157,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         except:
             table_descriptor_exists = False
             self.__logger.debug(f"create table for descriptor:{table_descriptor_id}")
-
         old_json_descriptor = {}
         if table_descriptor_exists:
             try:
@@ -169,10 +165,30 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             except Exception as ex:
                 raise DatasetGenericException(f"Error while reading the Descriptor table for dataset {dataset_id}: {ex}") from ex
 
+        # write dataset column name index table
+        table_index_id = "{}.{}".format(dataset_id, self.COL_NAME_INDEX_TABLE_NAME)
+        table_index_exists = True
+        try:
+             table = self.client.get_table(table_index_id)  # Make an API request.
+        except:
+            table_index_exists = False
+            self.__logger.debug(f"create table for descriptor:{table_index_id}")
+        old_index = {}
+        if table_index_exists:
+            try:
+                # if the table exists, read it to write it again in full (best than request each param to see if it already exists)
+                old_index = self.__read_descriptor_table(table_index_id)
+            except Exception as ex:
+                raise DatasetGenericException(f"Error while reading the {self.COL_NAME_INDEX_TABLE_NAME} for dataset {dataset_id}: {ex}") from ex
+
         # serialize into descriptor with complex type parameters:
+        self.__datasets_serializer.set_col_name_index(old_index)
         json_descriptor, complex_parameters = self.__update_json_descriptor_and_parameters(values_to_write,
                                                                                            old_json_descriptor,
                                                                                            data_types_dict)
+        new_index = self.__datasets_serializer.col_name_index
+        self.__datasets_serializer.clear_col_name_index()
+
         try:
             # create or overwrite the descriptor table
             table = bigquery.Table(table_descriptor_id)
@@ -208,6 +224,18 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                     self.__logger.debug(f"created or updated table for data {data}:{res}")
                 except Exception as ex:
                     raise DatasetGenericException(f"Error while writing the parameter data table {data}: {ex}") from ex
+
+        # then update the dataframe and dict col name index
+        try:
+            # create or overwrite the descriptor table
+            table = bigquery.Table(table_index_id)
+            job_config = bigquery.LoadJobConfig()
+            job_config.autodetect = True
+            job_config.write_disposition="WRITE_TRUNCATE"
+            job = self.client.load_table_from_json(list(new_index.values()), table, job_config = job_config)
+            res = job.result()
+        except Exception as ex:
+            raise DatasetGenericException(f"Error while writing the Descriptor table for dataset {dataset_id}: {ex}") from ex
 
         return values_to_write
 
