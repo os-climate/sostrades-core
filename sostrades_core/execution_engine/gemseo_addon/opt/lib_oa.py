@@ -73,8 +73,8 @@ class OuterApproximationOpt(OptimizationLibrary):
 
         }
 
-    def _get_options(self, 
-                     max_iter=999, 
+    def _get_options(self,
+                     max_iter=999,
                      ftol_rel=1e-10,  # pylint: disable=W0221
                      normalize_design_space=False,
                      **kwargs):
@@ -98,7 +98,7 @@ class OuterApproximationOpt(OptimizationLibrary):
         :param kwargs: other algorithms options
         :tupe kwargs: kwargs
         """
-        popts = self._process_options(max_iter=max_iter, 
+        popts = self._process_options(max_iter=max_iter,
                                       ftol_rel=ftol_rel,
                                       normalize_design_space=normalize_design_space,
                                       ** kwargs)
@@ -116,7 +116,7 @@ class OuterApproximationOpt(OptimizationLibrary):
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
         bounds = list(zip(l_b, u_b))
-        
+
         # execute the optimization
         solver = OuterApproximationSolver(self.problem)
         solver.set_options(**options)#**options

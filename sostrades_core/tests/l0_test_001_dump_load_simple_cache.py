@@ -137,7 +137,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
     def test_03_dump_simple_cache_check_anonymization(self):
         '''
-        Check anonymization before dumping the pickle file 
+        Check anonymization before dumping the pickle file
         And check unanonymization
         '''
         dump_dir = join(self.dump_dir, 'test_03')
@@ -310,7 +310,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
     def test_06_set_different_cache_type(self):
         '''
-        Test different cache type to verify reconfiguration rest_cache mode 
+        Test different cache type to verify reconfiguration rest_cache mode
         and to verify that pkl is deleted when cache is None
         '''
         dump_dir = join(self.dump_dir, 'test_06')
@@ -543,7 +543,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
     def test_10_set_different_cache_type_verify_after_run(self):
         '''
-        Test different cache type to verify reconfiguration rest_cache mode 
+        Test different cache type to verify reconfiguration rest_cache mode
         and to verify that pkl is deleted when cache is None
         '''
         dump_dir = join(self.dump_dir, 'test_06')

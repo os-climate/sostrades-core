@@ -108,7 +108,7 @@ class SobieskiStructure(SoSWrapp):
                 'y_14': array(y_14),
                 'g_1': array(g_1)
                 }
-                
+
         self.store_sos_outputs_values(out)
 
     def compute_sos_jacobian(self):
@@ -167,9 +167,9 @@ class SobieskiAerodynamics(SoSWrapp):
                 'y_24': array(y_24),
                 'g_2': array(g_2)
                 }
-                
+
         self.store_sos_outputs_values(out)
-        
+
     def compute_sos_jacobian(self):
         """
 
@@ -191,7 +191,7 @@ class SobieskiAerodynamics(SoSWrapp):
         sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
         sos_jac_dict = sos_jac_pd.to_dict()
         self.jac = sos_jac_dict
-        
+
 class SobieskiPropulsion(SoSWrapp):
     """ Sobieski propulsion propulsion wrapper.
     """
@@ -225,9 +225,9 @@ class SobieskiPropulsion(SoSWrapp):
                 'y_32': array(y_32),
                 'g_3': array(g_3)
                 }
-                
+
         self.store_sos_outputs_values(out)
-        
+
     def compute_sos_jacobian(self):
         """
 

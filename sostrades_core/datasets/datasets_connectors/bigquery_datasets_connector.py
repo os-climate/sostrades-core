@@ -36,12 +36,11 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     """
     Specific dataset connector for dataset in google cloud bigquery db format
     """
-    
     SELF_TABLE_TYPES = ["dataframe", "dict", "array", "list"]
     NO_TABLE_TYPES = ["string", "int", "float", "bool"]
 
     DESCRIPTOR_TABLE_NAME = "descriptor_parameters"
-    
+
 
     STRING_VALUE = "parameter_string_value"
     INT_VALUE = "parameter_int_value"
@@ -75,7 +74,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=BigqueryDatasetsConnector) from exc
 
-   
+
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
         """
         Method to retrieve data from dataset and fill a data_dict
@@ -86,6 +85,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
         """
+
         dataset_id = "{}.{}".format(self.client.project, dataset_identifier)
 
         # check dataset exists
@@ -102,14 +102,14 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
              table = self.client.get_table(table_descriptor_id)  # Make an API request.
         except:
             raise DatasetGenericException(f"Dataset {dataset_id}: {self.DESCRIPTOR_TABLE_NAME} table not found. Impossible to fetch parameter value.")
-        
+
         json_descriptor = {}
         try:
             json_descriptor = self.__read_descriptor_table(table_descriptor_id)
         except Exception as ex:
             raise DatasetGenericException(f"Error while reading the Descriptor table for dataset {dataset_id}: {ex}") from ex
-        
-        
+
+
         for data, data_type in data_to_get.items():
             if data in json_descriptor.keys():
                 if data_type in self.NO_TABLE_TYPES:
@@ -137,6 +137,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             f"Values obtained {list(parameters_data.keys())} for dataset {dataset_identifier} for connector {self}"
         )
         return parameters_data
+
 
     def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
@@ -186,7 +187,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         #then write the complex parameters tables
         for data, value in complex_parameters.items():
-            # check that the value we want to write in a table has data, 
+            # check that the value we want to write in a table has data,
             # if not bigquery api will raise an error
             if len(value) > 0:
                 # get table in dataset
@@ -213,15 +214,16 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
     def get_values_all(self, dataset_identifier: str, data_types_dict:dict[str:str]) -> dict[str:Any]:
         """
-        Get all values from a dataset 
+        Get all values from a dataset
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         """
-        
+
         return self.get_values(dataset_identifier, data_types_dict)
-    
+
+
     def get_datasets_available(self) -> list[str]:
         """
         Get all available datasets for a specific API
@@ -272,6 +274,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 # Raises google.api_core.exceptions.Conflict if the Dataset already
                 # exists within the project.
                 dataset = self.client.create_dataset(dataset, timeout=30)
+
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
     def _insert_value_into_datum(self,
@@ -318,7 +321,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                                           f"@{data_types_dict[parameter]}@{parameter}"}
 
         return json_descriptor_parameters, complex_type_parameters_values
-    
+
 
     def __get_col_name_from_type(self, parameter_type:str)->str:
         '''
@@ -331,9 +334,9 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             column_name = self.FLOAT_VALUE
         elif parameter_type == "bool":
             column_name = self.BOOL_VALUE
-        
+
         return column_name
-    
+
     def __read_descriptor_table(self, descriptor_table_id:str)-> dict:
         '''
         read the descriptor parameter table
@@ -344,7 +347,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         QUERY = (f'SELECT * FROM `{descriptor_table_id}` ')
         query_job = self.client.query(QUERY)  # API request
         return {row.parameter_name: {key:values for key, values in row.items()} for row in query_job.result()}
-    
+
     def __read_dataframe_table(self, table_id:str)-> pd.DataFrame:
         '''
         read a dataframe parameter table
@@ -354,7 +357,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         '''
         QUERY = (f'SELECT * FROM `{table_id}` ')
         return self.client.query(QUERY).result().to_dataframe()
-    
+
     def __read_dict_table(self, table_id:str)-> dict:
         '''
         read a dict parameter table

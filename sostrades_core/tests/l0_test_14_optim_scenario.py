@@ -61,7 +61,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.dspace = pd.DataFrame(dspace_dict)
         self.repo = 'sostrades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_discopt'
-        
+
 
     def _test_01_optim_scenario_check_treeview(self):
         print("\n Test 1 : check configure and treeview")
@@ -744,7 +744,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                 self.assertEqual(coupling_value, eval_value)
             except:
                 self.assertListEqual(list(coupling_value), list(eval_value))
-    
+
     def test_08b_optim_scenario_eval_mode_no_post_proc(self):
         print("\n Test 8b : Sellar optim with eval_mode with no output design space post proc")
         set_printoptions(precision=20)
@@ -771,7 +771,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # -- set up disciplines in Scenario
         disc_dict = {}
-        
+
         #desactivate the optim post processings
         disc_dict[f'{self.ns}.SellarOptimScenario.desactivate_optim_out_storage'] = True
 
@@ -819,10 +819,10 @@ class TestSoSOptimScenario(unittest.TestCase):
                 disc)
             graph_list = ppf.get_post_processing_by_discipline(
                 disc, filters, as_json=False)
-            
+
         assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
-            
-        
+
+
 
     def test_09_optim_scenario_eval_mode_with_eval_jac(self):
         print("\n Test 9 : Sellar optim with eval_mode and eval_jac")
@@ -1316,7 +1316,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                 disc)
             graph_list = ppf.get_post_processing_by_discipline(
                 disc, filters, as_json=False)
-            
+
 
     def _test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
         print("\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")

@@ -90,7 +90,7 @@ class DatasetsMapping:
 
         try:
             # parse sub process datasets info
-            # do it first so that info in this mapping will override the sub mappings 
+            # do it first so that info in this mapping will override the sub mappings
             if DatasetsMapping.SUB_PROCESS_MAPPING in input_dict.keys():
                 for mapping_key, sub_process_mapping_path in input_dict[DatasetsMapping.SUB_PROCESS_MAPPING].items():
                     mapping_key_fields = DatasetsMapping.extract_mapping_key_fields(mapping_key)
@@ -124,7 +124,7 @@ class DatasetsMapping:
                         connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
                         dataset_id = dataset_fields[DatasetsMapping.DATASET_ID_KEY]
                         parameter_id = dataset_fields[DatasetsMapping.PARAMETER_NAME]
-                        
+
                         # build just the id with connector and dataset
                         dataset_info_id = DatasetsMapping.MAPPING_SEP.join([connector_id, dataset_id])
 
@@ -136,7 +136,7 @@ class DatasetsMapping:
                             datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id)
 
                         namespace_datasets_mapping[namespace].append(dataset_info_id)
-                        
+
                         # update dataset, namespace, parameter associations
                         parameters_mapping[dataset_info_id] = parameters_mapping.get(dataset_info_id, {})
                         parameters_mapping[dataset_info_id][namespace] = parameters_mapping[dataset_info_id].get(namespace, {})
@@ -149,7 +149,8 @@ class DatasetsMapping:
                             parameter_from = parameter_id
                         parameters_mapping[dataset_info_id][namespace][parameter_from] = parameter_to_found
 
-                        
+
+
         except Exception as exception:
             raise DatasetsMappingException(f'Error reading the dataset mapping file: \n{str(exception)}')
         return DatasetsMapping(
@@ -159,7 +160,7 @@ class DatasetsMapping:
             parameters_mapping=parameters_mapping
         )
 
-    
+
     @classmethod
     def extract_mapping_key_fields(cls, mapping_key):
         return cls.__extract_mapping_fields(mapping_key, cls.MAPPING_KEY_FIELDS, "mapping key")
@@ -202,10 +203,10 @@ class DatasetsMapping:
             json_data = json.load(file)
         return DatasetsMapping.deserialize(json_data)
 
-    
+
     def get_datasets_info_from_namespace(self, namespace:str, study_name:str) -> dict[DatasetInfo:dict[str:str]]:
         """
-        Gets the datasets info for a namespace: replace the placeholder with study names 
+        Gets the datasets info for a namespace: replace the placeholder with study names
         + if wildcard in namespaces return all dataset id associated to this wildcard
 
         :param namespace: Name of the namespace
@@ -229,7 +230,8 @@ class DatasetsMapping:
                 datasets_mapping[self.datasets_infos[dataset_id]] = self.parameters_mapping[dataset_id].get(DatasetInfo.WILDCARD,{})
 
         return datasets_mapping
-    
+
+
     def get_datasets_namespace_mapping_for_study(self, study_name:str, namespaces_dict:dict[str:dict])-> tuple[dict, dict]:
         """
         Get the datasets_namespace_mapping and replace the study_placeholder with the study_name
@@ -242,7 +244,7 @@ class DatasetsMapping:
         """
         datasets_mapping = {}
         duplicates = {}
-        
+
 
         for dataset, namespaces_mapping_dict  in self.parameters_mapping.items():
             try:
@@ -292,10 +294,10 @@ class DatasetsMapping:
                                         all_data_in_dataset[DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
                                         all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
             except Exception as error:
-                raise DatasetsMappingException(f'Error retrieving data from dataset {dataset}]: \n{str(error)}')                       
+                raise DatasetsMappingException(f'Error retrieving data from dataset {dataset}]: \n{str(error)}')
 
-                    
-            datasets_mapping[dataset] = all_data_in_dataset  
+
+            datasets_mapping[dataset] = all_data_in_dataset
 
         return datasets_mapping, duplicates
 
@@ -313,7 +315,8 @@ class DatasetsMapping:
             datasets_mapping[new_namespace] = datasets
 
         return datasets_mapping
-    
+
+
     def get_parameters_datasets_mapping_for_parent(self, parent_namespace:str) -> dict[str: dict[str:dict[str:str]]]:
         """
         Get the parameters_mapping and replace the study_placeholder with the parent_namespace
@@ -326,5 +329,3 @@ class DatasetsMapping:
             parameters_mapping[dataset_id] = {ns.replace(self.STUDY_PLACEHOLDER, parent_namespace):namespace_mapping[ns] for ns in namespace_mapping.keys()}
 
         return parameters_mapping
-    
-   

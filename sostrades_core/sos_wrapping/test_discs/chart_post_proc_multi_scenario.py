@@ -24,7 +24,7 @@ from sostrades_core.tools.post_processing.tables.instanciated_table import (
 
 
 def post_processing_filters(execution_engine, namespace):
-    """ 
+    """
     post processing function designed to build filters
     """
     filters = []
@@ -36,7 +36,7 @@ def post_processing_filters(execution_engine, namespace):
 
 
 def post_processings(execution_engine, namespace, filters):
-    """ 
+    """
     post processing function designed to build graphs
     """
     instanciated_charts = []

@@ -99,11 +99,11 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
     def __has_dataset(self, dataset_id:str):
         """
         Method to check if the pickle file contains dataset
-        
+
         :param dataset_id: data to retrieve, list of names
         :type dataset_id: List[str]
         """
-        
+
         return dataset_id in self.get_datasets_available()
 
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
@@ -171,7 +171,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         if not self.__has_dataset(dataset_identifier):
             raise DatasetNotFoundException(dataset_identifier)
-        
+
         dataset_keys = []
         for key in self.__pickle_data:
             dataset_id, data_name = self.__get_dataset_id_and_data_name(key)
@@ -180,7 +180,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         dataset_data = {key.split(SoSPickleDatasetsConnector.SOS_NS_SEPARATOR)[-1]:self.__pickle_data[key][SoSPickleDatasetsConnector.VALUE_STR] for key in self.__pickle_data if key in dataset_keys}
         return dataset_data
-    
+
     def get_datasets_available(self) -> list[str]:
         """
         Get all available datasets for a specific API
@@ -190,7 +190,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         if self.__pickle_data is None:
             self.__load_pickle_data()
         return list(self.__get_dataset_id_and_data_name(key)[0] for key in self.__pickle_data)
-        
+
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str: Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
@@ -217,5 +217,5 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-        
+
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)

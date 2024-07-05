@@ -62,7 +62,7 @@ class DatasetsManager:
                 # get the list of parameters to get
                 data_to_fetch = {}
                 dataset_data_reverse_mapping = {}
-                # we get the data_dataset_key for each param that is in data_dict 
+                # we get the data_dataset_key for each param that is in data_dict
                 # it is done in a loop so that it respect the order of appearance
                 #(ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
                 for data_key, data_dataset_key in mapping_parameters.items():
@@ -72,7 +72,7 @@ class DatasetsManager:
                     elif data_key in data_dict.keys():
                         dataset_data_reverse_mapping.update({data_dataset_key: data_key})
                         data_to_fetch.update({data_dataset_key: data_dict[data_key]})
-                
+
                 # Retrieve values
                 dataset_values = dataset.get_values(data_dict=data_to_fetch)
                 # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
@@ -95,8 +95,8 @@ class DatasetsManager:
         if dataset_info not in self.datasets:
             self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
         return self.datasets[dataset_info]
-    
-    def write_data_in_dataset(self, dataset_info: dict[DatasetInfo:dict[str:str]],
+
+    def write_data_in_dataset(self, dataset_info: DatasetInfo,
                                  data_dict: dict[str:str],
                                  data_type_dict: dict[str:str]) -> dict:
         """
@@ -115,13 +115,13 @@ class DatasetsManager:
         """
         self.__logger.debug(f"exporting data {data_dict.keys()} into dataset {dataset_info}")
 
-        
+
         try:
             # Get the dataset, creates it if not exists
             dataset = self.get_dataset(dataset_info=dataset_info)
-            
+
             # Write values
-            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info.dataset_id, 
+            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info.dataset_id,
                                                                 values_to_write=data_dict,
                                                                 data_types_dict=data_type_dict,
                                                                 create_if_not_exists=True,

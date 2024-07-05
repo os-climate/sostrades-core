@@ -34,12 +34,12 @@ Class that define a table display as post post processing
 
 
 class InstanciatedTableException(Exception):
-    """ Overload Exception basic type 
+    """ Overload Exception basic type
     """
 
 
 class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a table display as post post processing 
+    """ Class that define a table display as post post processing
     """
 
     TABLE_NAME = 'table_name'

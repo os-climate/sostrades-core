@@ -181,7 +181,7 @@ class TestDatasets(unittest.TestCase):
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
             set(["<1connector_id>|<1dataset_id>", "<2connector_id>|<2dataset_id>"]),
         )
-    
+
 
     def test_04_datasets_types(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
@@ -353,7 +353,7 @@ class TestDatasets(unittest.TestCase):
         mapping = DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset_error.json"))
         with self.assertRaises(DatasetGenericException):
             study.update_data_from_dataset_mapping(mapping)
-        
+
     def test_10_repository_dataset_connector(self):
         """
         Some example to check repository datasets connector
@@ -361,7 +361,7 @@ class TestDatasets(unittest.TestCase):
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
 
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
-        
+
 
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
@@ -448,7 +448,7 @@ class TestDatasets(unittest.TestCase):
         except Exception as cm:
             connector_to.clear(remove_root_directory=True)
             raise cm
-        
+
 
 
     def test_13_export_with_repository_dataset_connector(self):
@@ -462,7 +462,7 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
 
-       
+
         #create usecase with data
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
@@ -482,15 +482,15 @@ class TestDatasets(unittest.TestCase):
                                                     connector_type=DatasetConnectorType.get_enum_value("Local"),
                                                     **connector_args)
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_repository.json")
-        
-        study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
-        
 
-        
+        study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
+
+
+
 
         dm = study.execution_engine.dm
         connector_export = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_export_test')
-        
+
         dataset_vars = ["a",
                         "x",
                         "b",
@@ -519,13 +519,13 @@ class TestDatasets(unittest.TestCase):
             connector_export.clear(remove_root_directory=True)
         except Exception as cm:
             connector_export.clear(remove_root_directory=True)
-            raise 
+            raise
 
     def test_14_test_import_parameter_level(self):
 
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
-        # this 
+        # this
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_parameters_level_repository.json")
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -562,7 +562,7 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
 
-       
+
         #create usecase with data
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
@@ -584,13 +584,13 @@ class TestDatasets(unittest.TestCase):
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_param_level.json")
         try:
             study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
-            
 
-            
+
+
 
             dm = study.execution_engine.dm
             connector_export = DatasetsConnectorManager.get_connector('MVP0_local_export_test_param')
-            
+
             dataset_vars = ["a",
                             "x",
                             "b",
@@ -603,7 +603,7 @@ class TestDatasets(unittest.TestCase):
 
             data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
 
-        
+
             values = connector_export.get_values_all(dataset_identifier="dataset_all_types",
                                            data_types_dict=data_types_dict)
 
@@ -613,7 +613,8 @@ class TestDatasets(unittest.TestCase):
             connector_export.clear(remove_root_directory=True)
         except Exception as cm:
             connector_export.clear(remove_root_directory=True)
-            raise 
+            raise
+
 
     def _test_xx_bq(self):
         """

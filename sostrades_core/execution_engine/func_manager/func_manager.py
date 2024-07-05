@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/08/10-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/08/10-2024/07/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -68,17 +68,14 @@ class FunctionManager:
         self.eps2 = eps2
 
     def __to_array_type(self, value):
-        t_val = type(value)
         if isinstance(value, np.ndarray):
             mod_value = value
-        elif t_val == type(np.array([0.])):
-            mod_value = value
-        elif t_val == type([]):
+        elif isinstance(value, list):
             mod_value = np.array(value)
-        elif t_val == type(0.):
+        elif isinstance(value, float):
             mod_value = np.array(value)
         else:
-            raise ValueError('Unsupported type ' + str(t_val))
+            raise ValueError('Unsupported type ' + str(type(value)))
         return mod_value
 
     def add_function(self, tag, value=None, ftype=INEQ_CONSTRAINT, weight=1., aggr_type='sum'):
@@ -171,9 +168,8 @@ class FunctionManager:
             self.aggregated_functions[self.OBJECTIVE] += obj_dict[self.VALUE]
 
         #-- Inequality constraint aggregation: takes the smooth maximum
-        ineq_cst_val = []
-        for ineq_dict in all_mod_ineq_cst:
-            ineq_cst_val.append(ineq_dict[self.VALUE])
+        ineq_cst_val = [ineq_dict[self.VALUE] for ineq_dict in all_mod_ineq_cst]
+
         ineq_cst_val = np.array(ineq_cst_val)
         if len(ineq_cst_val) > 0:
             if self.aggr_mod_ineq == 'smooth_max':
@@ -186,9 +182,8 @@ class FunctionManager:
             self.aggregated_functions[self.INEQ_CONSTRAINT] = 0.
 
         #-- Equality constraint aggregation: takes the smooth maximum
-        eq_cst_val = []
-        for eq_dict in all_mod_eq_cst:
-            eq_cst_val.append(eq_dict[self.VALUE])
+        eq_cst_val = [eq_dict[self.VALUE] for eq_dict in all_mod_eq_cst]
+
         eq_cst_val = np.array(eq_cst_val)
         if len(eq_cst_val) > 0:
             if self.aggr_mod_eq == 'smooth_max':
@@ -293,7 +288,7 @@ class FunctionManager:
         return smooth_maximum(val, alpha=alpha)
 
     def get_mod_func_val(self, tag):
-        ''' 
+        '''
         get modified value
         '''
         return self.mod_functions[tag][self.VALUE]

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/06/11 Copyright 2024 Capgemini
+Modifications on 2024/06/11-2024/07/03 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ from sostrades_core.tools.folder_operations import makedirs_safe
 """
     Script to generate a usecase.py with associated input data from a dm.pkl file
 
-    Usage: 
+    Usage:
         1- import class UsecaseCreator
         2- instantiate UsecaseCreator class with pickle path and options
         3- call pickle_file_to_usecase() method to generate usecase.py and input data
@@ -443,7 +443,7 @@ if '__main__' == __name__:
         This method checks if such a conversion is needed for a given df and
         returns a string with the complement for 'pd.read_csv({csv}, {complement})'
         """
-        col_to_eval = list(df.dtypes[(df.dtypes == object)].index) #list of col with object type
+        col_to_eval = list(df.dtypes[(df.dtypes is object)].index) #list of col with object type
         str_eval, i_eval = '', 0 # initialize return string and counter
         if col_to_eval:
             str_eval = ', converters={'
@@ -533,7 +533,7 @@ if '__main__' == __name__:
                             self.dm_dict_to_write[abstracted_key] = self.dm_data_dict[new_matches[0]]['value']
                         elif len(new_matches)==0:
                             if type(value)==pd.DataFrame:
-                                self.dm_dict_to_write[abstracted_key] = value.applymap(str)
+                                self.dm_dict_to_write[abstracted_key] = value.map(str)
                             elif type(value) in  [dict, list]:
                                 self.dm_dict_to_write[abstracted_key] = [str(val) for val in value]
                             else:

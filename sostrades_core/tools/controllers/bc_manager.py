@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -60,17 +60,19 @@ class BCManager(CManager):
             self.update_BCs()
 
     def __get_list_to_update(self):
-        list_to_update = []
-        for pt in self.get_list_pt():
-            if not pt.is_updated():
-                list_to_update.append(pt)
+        list_to_update = [
+            pt
+            for pt in self.get_list_pt()
+            if not pt.is_updated()
+        ]
         return list_to_update
 
     #-- Methods
     def get_all_values(self):
-        values = []
-        for pt in self.get_list_pt():
-            values.append(pt.get_value())
+        values = [
+            pt.get_value()
+            for pt in self.get_list_pt()
+        ]
         return values
 
     def get_print_header(self):
@@ -150,29 +152,38 @@ class BCManager(CManager):
     def get_dv_array(self, filter=None):
         dv_list = []
         if filter is None:
-            for pt in self.__DV_pt:
-                dv_list.append(pt.get_value())
+            dv_list = [
+                pt.get_value()
+                for pt in self.__DV_pt
+            ]
         else:
-            for pt in self.__DV_pt:
-                if pt.get_id() in filter:
-                    dv_list.append(pt.get_value())
+            dv_list = [
+                pt.get_value()
+                for pt in self.__DV_pt
+                if pt.get_id() in filter
+            ]
         return np.array(dv_list)
 
     def get_normalized_dv_array(self):
-        dv_list = []
-        for pt in self.__DV_pt:
-            dv_list.append(pt.get_normalized_value())
+        dv_list = [
+            pt.get_normalized_value()
+            for pt in self.__DV_pt
+        ]
         return np.array(dv_list)
 
     def get_bounds_array(self, filter=None):
         bounds_list = []
         if filter is None:
-            for pt in self.__DV_pt:
-                bounds_list.append(pt.get_bounds())
+            bounds_list = [
+                pt.get_bounds()
+                for pt in self.__DV_pt
+            ]
         else:
-            for pt in self.__DV_pt:
-                if pt.get_id() in filter:
-                    bounds_list.append(pt.get_bounds())
+            bounds_list = [
+                pt.get_bounds()
+                for pt in self.__DV_pt
+                if pt.get_id() in filter
+            ]
         return bounds_list
 #
 #     def get_variable_gradient(self):
@@ -256,10 +267,11 @@ class BCManager(CManager):
         """
         Returns the list of ids of variables in BC manager
         """
-        var_list = []
-        for controller in self.get_list_pt():
-            if controller.get_BCType() == 'Variable':
-                var_list.append(controller.get_id())
+        var_list = [
+            controller.get_id()
+            for controller in self.get_list_pt()
+            if controller.get_BCType() == 'Variable'
+        ]
         return var_list
 
     def export_to_file(self, filename):
@@ -495,9 +507,7 @@ class BCManager(CManager):
                 bounds = pointer.get_bounds()
             else:
                 bounds = None
-            influences_list = []
-            for pt in pointer.get_influences():
-                influences_list.append(pt)
+            influences_list = list(pointer.get_influences())
             for pt in influences_list:
                 pt.del_dependance(pointer)
 
@@ -527,9 +537,7 @@ class BCManager(CManager):
                 lbounds = pointer.get_bounds()
             else:
                 lbounds = bounds
-            influences_list = []
-            for pt in pointer.get_influences():
-                influences_list.append(pt)
+            influences_list = list(pointer.get_influences())
             for pt in influences_list:
                 pt.del_dependance(pointer)
 
@@ -560,9 +568,7 @@ class BCManager(CManager):
 
         BC_type = pointer.get_BCType()
         if BC_type != 'Parameter':
-            influences_list = []
-            for pt in pointer.get_influences():
-                influences_list.append(pt)
+            influences_list = list(pointer.get_influences())
             for pt in influences_list:
                 pt.del_dependance(pointer)
 

@@ -86,7 +86,7 @@ class Study(StudyManager):
 
         prefix = self.study_name + f'.{self.optim_name}.' + f'{self.subcoupling_name}.' + func_mng_name + '.'
         values_dict = {}
-        values_dict[prefix + 
+        values_dict[prefix +
                     FunctionManagerDisc.FUNC_DF] = func_df
 
         disc_dict.update(values_dict)

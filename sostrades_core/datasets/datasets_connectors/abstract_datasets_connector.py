@@ -101,7 +101,7 @@ class AbstractDatasetsConnector(abc.ABC):
         :return: values_to_write: dict[str: Any]
         """
         return values_to_write
-    
+
     def copy_dataset_from(self, connector_from:AbstractDatasetsConnector, dataset_identifier: str, data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False):
         """
         Copies a dataset from another AbstractDatasetsConnector
@@ -120,7 +120,7 @@ class AbstractDatasetsConnector(abc.ABC):
         dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier, data_types_dict=data_types_dict)
         self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, data_types_dict=data_types_dict, create_if_not_exists=create_if_not_exists, override=override)
 
-    
+
     def copy_all_datasets_from(self, connector_from:AbstractDatasetsConnector, data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False):
         """
         Copies all datasets from another AbstractDatasetsConnector

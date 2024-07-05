@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/2024 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ if '__main__' == __name__:
     post_processing_factory = PostProcessingFactory()
     all_post_processings = post_processing_factory.get_all_post_processings(
         uc_cls.execution_engine, False, as_json=False, for_test=False)
-    for namespace, post_proc_list in all_post_processings.items():
+    for post_proc_list in all_post_processings.values():
         for chart in post_proc_list:
             for fig in chart.post_processings:
                 fig.to_plotly()  # .show()

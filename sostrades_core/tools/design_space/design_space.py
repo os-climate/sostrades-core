@@ -103,10 +103,10 @@ def check_design_space_data_integrity(design_space, possible_variables_types):
             # possible value checks (with current implementation should be OK by construction)
             vars_not_possible = design_space[VARIABLES][
                 ~design_space[VARIABLES].apply(lambda _var: _var in possible_variables_types)].to_list()
-            for var_not_possible in vars_not_possible:
-                design_space_integrity_msg.append(
-                    f'Variable {var_not_possible} is not among the possible input values.'
-                )
+            design_space_integrity_msg += [
+                f'Variable {var_not_possible} is not among the possible input values.'
+                for var_not_possible in vars_not_possible
+            ]
 
         # check of dimensions coherences
         wrong_dim_vars = design_space[VARIABLES][
@@ -123,12 +123,11 @@ def check_design_space_data_integrity(design_space, possible_variables_types):
                     f'should have coherent shapes for variable {wrong_dim_var}.')
 
         # check vars that need to be deactivated (the var is active but all activated_elem are False)
-        vars_to_deactivate = design_space[VARIABLES][
-            design_space.apply(_check_deactivation_for_one_variable, axis=1)].to_list()
-        for var_to_deactivate in vars_to_deactivate:
-            design_space_integrity_msg.append(
-                f'Please deactivate variable {var_to_deactivate} using {ENABLE_VARIABLE_BOOL} rather than '
-                f'deactivating all its elements using {LIST_ACTIVATED_ELEM}.')
+        vars_to_deactivate = design_space[VARIABLES][design_space.apply(_check_deactivation_for_one_variable, axis=1)].to_list()
+        design_space_integrity_msg += [
+            f'Please deactivate variable {var_to_deactivate} using {ENABLE_VARIABLE_BOOL} rather than deactivating all its elements using {LIST_ACTIVATED_ELEM}.'
+            for var_to_deactivate in vars_to_deactivate
+        ]
 
     return design_space_integrity_msg
 

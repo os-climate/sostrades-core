@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -235,8 +235,7 @@ class MultipliersWrapper(SoSWrapp):
                     if not is_none:
                         poss_in_values_list = self.set_multipliers_values(
                             disc, full_id, data_in_key)
-                        for val in poss_in_values_list:
-                            poss_in_values_full.append(val)
+                        poss_in_values_full += list(poss_in_values_list)
         return poss_in_values_full, poss_out_values_full
 
     # def find_possible_values(self, disc, possible_in_values, possible_out_values):
