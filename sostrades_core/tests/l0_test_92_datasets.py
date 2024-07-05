@@ -674,7 +674,7 @@ class TestDatasets(unittest.TestCase):
         """
         """
         # FIXME: utility test for revision branch with local config etc. to be updated upon merge
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\\Users\\cortegaa\\Desktop\\SoSTrades\\gcp-businessplanet-b0018b9d9a11.json"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
         )
@@ -696,7 +696,13 @@ class TestDatasets(unittest.TestCase):
                                        dataset_identifier="dataset_df_bq",
                                        data_types_dict=data_types_dict,
                                        create_if_not_exists=True)
+        data_values = connector_to.get_values("dataset_df_bq", data_to_get=data_types_dict)
 
+        data_name = "WITNESS_gdp"
+        ref_df = pd.read_csv(os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                           "data", "local_datasets_db", "dataset_df_bq" ,data_name+".csv")))
+
+        self.assertTrue((ref_df == data_values[data_name]).all().all())
 
 if __name__=="__main__":
     cls = TestDatasets()
