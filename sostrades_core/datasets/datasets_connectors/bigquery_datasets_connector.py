@@ -38,15 +38,17 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     """
     SELF_TABLE_TYPES = ["dataframe", "dict", "array", "list"]
     NO_TABLE_TYPES = ["string", "int", "float", "bool"]
-    DESCRIPTOR_TABLE_NAME = "descriptor_parameters"
-    COL_NAME_INDEX_TABLE_NAME = "__col_name_index_table__"
-
-
+    DESCRIPTOR_TABLE_NAME = "descriptor_parameters"         # reserved table for dataset descriptor
+    COL_NAME_INDEX_TABLE_NAME = "__col_name_index_table__"  # reserved table for bigquery characters compatibility
+    # extra metadata for parameter name handling in bigquery
+    PARAMETER_NAME = "parameter_name"
+    DEFAULT_METADATA_DICT = AbstractDatasetsConnector.DEFAULT_METADATA_DICT.copy()
+    DEFAULT_METADATA_DICT.update({PARAMETER_NAME: ""})
+    # extra value columns for type handling in bigquery
     STRING_VALUE = "parameter_string_value"
     INT_VALUE = "parameter_int_value"
     FLOAT_VALUE = "parameter_float_value"
     BOOL_VALUE = "parameter_bool_value"
-
     VALUE_KEYS = AbstractDatasetsConnector.VALUE_KEYS.copy()
     VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE})
 

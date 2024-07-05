@@ -616,10 +616,9 @@ class TestDatasets(unittest.TestCase):
             raise
 
 
-    def _test_xx_bq(self):
+    def _test_16_bigquery_plain_types_export_import(self):
         """
         """
-        # FIXME: utility test for revision branch with local config etc. to be updated upon merge
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
@@ -670,7 +669,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
 
-    def _test_bq_df_cols(self):
+    def _test_17_bigquery_colum_name_characters_compatibility_on_dataframe_and_dict_tables(self):
         """
         """
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""

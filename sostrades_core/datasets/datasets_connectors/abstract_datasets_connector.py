@@ -27,7 +27,7 @@ class AbstractDatasetsConnector(abc.ABC):
     __logger = logging.getLogger(__name__)
 
 
-    NAME = "parameter_name"
+    NAME = "name"
     UNIT = "unit"
     DESCRIPTION = "description"
     SOURCE = "source"
