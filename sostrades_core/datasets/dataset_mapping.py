@@ -267,18 +267,13 @@ class DatasetsMapping:
                     if len(corresponding_namespaces) > 0:
                         for data, dataset_data in parameters_mapping_dict.items():
 
-                            # if the name of the dataset parameter already exists, it will overwrite the already set data
-                            # so we retrun the list of duplicated data
-                            if dataset_data in all_data_in_dataset[DatasetsMapping.KEY].keys():
-                                duplicates[dataset_data] = namespace # the last namespace is the one that will hold the value
-
                             if dataset_data == DatasetInfo.WILDCARD:
                                 # if wildcard at parameter place: dataset_connector|dataset_name|*
                                 # search for all the data in the namespaces
                                 for ns in corresponding_namespaces:
                                     for key in namespaces_dict[ns][DatasetsMapping.VALUE].keys():
                                         if key in all_data_in_dataset[DatasetsMapping.KEY].keys():
-                                            duplicates[dataset_data] = ns # the last namespace is the one that will hold the value
+                                            duplicates[key] = ns # the last namespace is the one that will hold the value
                                     all_data_in_dataset[DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
                                     all_data_in_dataset[DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
                                     all_data_in_dataset[DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
@@ -286,6 +281,10 @@ class DatasetsMapping:
                                 # search for the data name in the corresponding namespaces
                                 corresponding_data = {ns:[value for key, value in namespaces_dict[ns][DatasetsMapping.VALUE].items() if key == data] for ns in corresponding_namespaces}
                                 if len(corresponding_data.keys()) > 0:
+                                    # if the name of the dataset parameter already exists, it will overwrite the already set data
+                                    # so we retrun the list of duplicated data
+                                    if dataset_data in all_data_in_dataset[DatasetsMapping.KEY].keys():
+                                        duplicates[dataset_data] = namespace # the last namespace is the one that will hold the value
                                     # we get the last occurence or the data, the other are added in duplicates list
                                     last_ns = list(corresponding_data.keys())[-1]
                                     if len(corresponding_data[last_ns]) > 0:
