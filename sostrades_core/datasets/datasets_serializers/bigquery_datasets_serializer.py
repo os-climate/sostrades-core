@@ -172,10 +172,10 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
         return self.__rename_dict_keys(data_value, self.__col_name_index[data_name])
 
     def __rename_dict_keys(self, dict_to_rename_keys, key_name_map):
-        return {key_name_map[key]: #if key in key_name_map else key:
-                value for key, value in dict_to_rename_keys.items()}
+        return {(key_name_map[key] if key in key_name_map else key): value
+                for key, value in dict_to_rename_keys.items()}
 
-    def _serialize_sub_element_jsonifiable(self, data_value:list):
+    def _serialize_sub_element_jsonifiable(self, data_value: list):
         '''
         convert sub element of a list into non numpy format
         '''

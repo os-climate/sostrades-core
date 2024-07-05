@@ -328,7 +328,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         except:
             table_descriptor_exists = False
             self.__logger.debug(f"create table for descriptor:{table_descriptor_id}")
-        json_descriptor_read = {}
+        json_descriptor_read = dict()
         if table_descriptor_exists:
             try:
                 # if the table exists, read it to write it again in full (best than request each param to see if it already exists)
@@ -344,13 +344,14 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         except:
             table_index_exists = False
             self.__logger.debug(f"create table for descriptor:{table_index_id}")
-        index_read = {}
+        index_read = dict()
         if table_index_exists:
             try:
                 # if the table exists, read it to write it again in full (best than request each param to see if it already exists)
                 index_read = self.__read_dict_table(table_index_id)
             except Exception as ex:
-                raise DatasetGenericException(f"Error while reading the {self.COL_NAME_INDEX_TABLE_NAME} for dataset {dataset_id}: {ex}") from ex
+                self.__logger.debug(f"Error while reading the {self.COL_NAME_INDEX_TABLE_NAME} for dataset {dataset_id}:"
+                                    f" {ex}, assuming an empty index.")
                 # todo [discuss]: accepting empty index ?
         return json_descriptor_read, index_read, table_descriptor_id, table_index_id
 
