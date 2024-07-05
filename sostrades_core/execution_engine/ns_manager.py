@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/21-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/03/21-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -110,8 +110,8 @@ class NamespaceManager:
 
     # -- Data name space methods
     def add_ns_def(self, ns_info, database_infos=None, clean_existing=True):
-        ''' 
-        add multiple namespaces to the namespace_manager 
+        '''
+        add multiple namespaces to the namespace_manager
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
         ns_ids = []
@@ -191,10 +191,11 @@ class NamespaceManager:
         '''
         Get all namespaces with same name
         '''
-        ns_list = []
-        for namespace in self.ns_list:
-            if namespace.name == name:
-                ns_list.append(namespace)
+        ns_list = [
+            namespace
+            for namespace in self.ns_list
+            if namespace.name == name
+        ]
 
         return ns_list
 
@@ -213,7 +214,7 @@ class NamespaceManager:
                 f'The namespace {ns_name} is not defined in the namespace manager')
         else:
             return self.shared_ns_dict[ns_name]
-    
+
     def get_ns_from_id(self, ns_id):
         '''
         Get namespace object from namespace id
@@ -222,7 +223,7 @@ class NamespaceManager:
             return self.all_ns_dict[ns_id]
         else:
            raise Exception(
-                f'The namespace id {ns_id} is not defined in the namespace manager') 
+                f'The namespace id {ns_id} is not defined in the namespace manager')
     # -- Disciplinary name space management
 
     def reset_current_disc_ns(self):
@@ -270,7 +271,7 @@ class NamespaceManager:
 
     def update_others_ns_with_shared_ns(self, disc, ns_name):
         '''
-        Update ns in others_ns with ns in shared_ns_dict 
+        Update ns in others_ns with ns in shared_ns_dict
         '''
         self.get_disc_others_ns(disc).update(
             {ns_name: self.shared_ns_dict[ns_name]})
@@ -403,7 +404,7 @@ class NamespaceManager:
 
     def add_disc_ns_info(self, pt, disc_ns_info):
         '''
-        Add disc namespace informations to the full namespace dict 
+        Add disc namespace informations to the full namespace dict
         pt : disc which needs the ns_dict
         '''
         # If the ns_dict already exists we must update the ohters_ns with all namespace rules
@@ -427,7 +428,7 @@ class NamespaceManager:
 
     def get_disc_ns_info(self, disc):
         '''
-        get the disc_ns_info of a specified discipline disc 
+        get the disc_ns_info of a specified discipline disc
         The key is the signature of the instance
         '''
         return self.disc_ns_dict[disc]
@@ -674,10 +675,11 @@ class NamespaceManager:
         '''
         full_ns_list = list(self.all_ns_dict.values())
         # determine post-processing namespaces with dependencies so that they can be cleaned
-        post_proc_ns_w_dependency = []
-        for ns in full_ns_list:
-            if ns.name in post_proc_ns_list and ns.check_namespace_is_used():
-                post_proc_ns_w_dependency.append(ns.name)
+        post_proc_ns_w_dependency = [
+            ns.name
+            for ns in full_ns_list
+            if ns.name in post_proc_ns_list and ns.check_namespace_is_used()
+        ]
         post_proc_ns_wo_dependency = [ns_name for ns_name in post_proc_ns_list if ns_name not in list(set(post_proc_ns_w_dependency))]
 
         # clean nampespaces except post-pro namespaces without dependencies

@@ -54,11 +54,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN
             |_ INSTANCE_REFERENCE (structuring, dynamic : builder_mode == self.MULTI_INSTANCE)
-                |_ REFERENCE_MODE (structuring, dynamic :instance_referance == TRUE) 
+                |_ REFERENCE_MODE (structuring, dynamic :instance_referance == TRUE)
                 |_ REFERENCE_SCENARIO_NAME (structuring, dynamic :instance_referance == TRUE) #TODO
             |_ GATHER_OUTPUTS ( structuring, dynamic : builder_mode == self.MONO_INSTANCE)
             |_ SAMPLES_DF (dynamic: len(selected_inputs) > 0 and len(selected_outputs) > 0 )
-            |_ 'n_processes' (dynamic : builder_mode == self.MONO_INSTANCE)         
+            |_ 'n_processes' (dynamic : builder_mode == self.MONO_INSTANCE)
             |_ 'wait_time_between_fork' (dynamic : builder_mode == self.MONO_INSTANCE)
 
         |_ DESC_OUT
@@ -68,16 +68,16 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     2) Description of DESC parameters:
         |_ DESC_IN
-            |_ INSTANCE_REFERENCE 
-                |_ REFERENCE_MODE 
+            |_ INSTANCE_REFERENCE
+                |_ REFERENCE_MODE
                 |_ REFERENCE_SCENARIO_NAME  #TODO
             |_ EVAL_INPUTS  #NO NEED
             |_ GATHER_OUTPUTS #FOR GATHER MODE
             |_ GENERATED_SAMPLES #TO DELETE
             |_ SCENARIO_DF #TO DELETE
             |_ SAMPLES_DF
-            |_ 'n_processes' 
-            |_ 'wait_time_between_fork'            
+            |_ 'n_processes'
+            |_ 'wait_time_between_fork'
        |_ DESC_OUT
             |_ samples_inputs_df  #TO DELETE
             |_ <var observable name>_dict':     for each selected output observable doe result
@@ -103,7 +103,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     DRIVER_EVAL_MODE_MONO = 'mono'
     DRIVER_EVAL_MODE_MULTI = 'multi'
-    
+
 
     SAMPLES_DF = ProxySampleGenerator.SAMPLES_DF
     SAMPLES_DF_DESC = ProxySampleGenerator.SAMPLES_DF_DESC.copy()
@@ -268,8 +268,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def configure_sample_generator(self):
         '''
-        
-        Configure the sample generator associated to the driver. 
+
+        Configure the sample generator associated to the driver.
         The driver is not fully configured for eval inputs possible value and the sample generator send the info to the driver (via driver_config_status)
 
         '''
@@ -282,7 +282,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # set samples_df editable
         if not self.sample_generator_disc.is_configured():
             self.sample_generator_disc.configure()
-        
+
     def configure_samples_df(self):
         # set samples_df editable so that when it changes in samples generator, it is reinitiated at each configure
         if self.SAMPLES_DF in self.get_data_in():
@@ -292,7 +292,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                              self.EDITABLE,
                              True,
                              check_value=False)
-        
+
     def update_data_io_with_subprocess_io(self):
         """
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be

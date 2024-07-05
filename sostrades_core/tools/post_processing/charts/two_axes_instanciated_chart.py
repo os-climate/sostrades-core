@@ -26,12 +26,12 @@ from sostrades_core.tools.post_processing.post_processing_tools import (
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Class that define a 2 dimensional instantiated chart 
+Class that define a 2 dimensional instantiated chart
 """
 
 
 class InstanciatedSeriesException(Exception):
-    """ Overload Exception basic type 
+    """ Overload Exception basic type
     """
 
 
@@ -41,7 +41,7 @@ class InstanciatedSeries (SeriesTemplate):
 
 
 class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
-    """ Class that define a 2 dimensional chart template 
+    """ Class that define a 2 dimensional chart template
     """
 
     CUMULATIVE_TO_ZERO_Y = 'tozeroy'
@@ -246,7 +246,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
         layout.update({'autosize': False})
         layout.update({'legend': self.get_default_legend_layout()})
         layout.update({'font': self.get_default_font_layout()})
-        
+
         if self.show_legend is not None:
             layout.update({'showlegend': self.show_legend})
 

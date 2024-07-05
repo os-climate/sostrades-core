@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/21-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/02/21-2024/07/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -105,12 +105,12 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
             _key = _keys[-1]
             # dictionaries
 
-            if _type == dict:
+            if _type is dict:
                 to_update[_key] = {}
                 convert_array_into_dict_old_version(
                     arr_to_convert, new_data, val_datalist)
             # DataFrames
-            elif _type == DataFrame:
+            elif _type is DataFrame:
                 _df = convert_array_into_df(arr_to_convert, metadata)
                 to_update[_key] = _df
                 _size = metadata['__size__']
@@ -128,7 +128,7 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
                 _size = metadata['__size__']
                 _arr = arr_to_convert[:_size]
                 _arr = _arr.reshape(_shape)
-                if _type == list:
+                if _type is list:
                     _arr = _arr.tolist()
                 if 'known_values' in metadata:
                     # Means that we have a string somewhere in the list or
@@ -142,7 +142,7 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
 
                 to_update[_key] = _arr
 
-            elif _type == str:
+            elif _type is str:
                 to_convert = arr_to_convert[0]
                 arr_to_convert = delete(arr_to_convert, [0])
                 _val = next((strg for strg, int_to_convert in metadata['known_values'].items(
@@ -329,12 +329,12 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
         val_data = {}
         val_data['__key__'] = nested_keys
         val_data['__type__'] = _type
-        if _type == dict:
+        if _type is dict:
             # if value is a nested dict
             metadata.append(val_data)
             values_list, metadata = convert_dict_into_array_old_version(
                 val, values_list, metadata, val_data['__key__'], prev_metadata)
-        elif _type == DataFrame:
+        elif _type is DataFrame:
             # if value is a dataframe
             values_list, metadata = convert_df_into_array(
                 val, values_list, metadata, nested_keys)
@@ -342,7 +342,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
             # if value is a int or float
             values_list = append(values_list, [val])
             metadata.append(val_data)
-        elif _type == np_complex128:
+        elif _type is np_complex128:
             # for gradient analysis
             values_list = append(values_list, [val])
             val_data['__type__'] = np_float64
@@ -380,7 +380,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
                 val_data['__size__'] = val.size
                 values_list = append(values_list, val.flatten())
             metadata.append(val_data)
-        elif _type == str:
+        elif _type is str:
             # if value is a string look for is prev_metadata to find known
             # values
 
@@ -395,8 +395,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
 
             metadata.append(val_data)
         else:
-            raise Exception(
-                f'The type {_type} in the dict {var_dict} is not taken into account')
+            raise Exception(f'The type {_type} in the dict {var_dict} is not taken into account')
     return values_list, metadata
 
 

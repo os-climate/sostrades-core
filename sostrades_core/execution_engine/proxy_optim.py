@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -407,7 +407,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
 
-       
+
 
     def set_formulation_for_func_manager(self, sub_mdo_disciplines):
         """
@@ -462,7 +462,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df)
         return design_space
 
-    
+
     def get_chart_filter_list(self):
         chart_filters = []
 
@@ -480,7 +480,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                 'Charts', chart_list, chart_list, 'charts'))
 
         return chart_filters
-    
+
     def get_post_processing_list(self, chart_filters=None):
 
         instanciated_charts = []
@@ -553,8 +553,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                         max_y = max_value
                     if min_value < min_y:
                         min_y = min_value
-                    for series in to_series(varname=variable_name, x=iterations, y=history):
-                        all_series.append(series)
+                    all_series += list(to_series(varname=variable_name, x=iterations, y=history))
 
                 chart_name = 'Constraints variables evolution'
                 new_chart = TwoAxesInstanciatedChart('Iterations', 'Constraints variables',

@@ -66,7 +66,7 @@ class TestCache(unittest.TestCase):
         self.disc2_builder.cls.DESC_IN = self.desc_in2
 
         try:
-            remove('.\cache.h5')
+            remove(r'.\cache.h5')
         except OSError:
             pass
 

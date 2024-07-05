@@ -43,7 +43,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         """
         Constructor for Local Filesystem data connector
 
-        
+
         :param root_directory_path: root directory path for this dataset connector using filesystem
         :type root_directory_path: str
         :param create_if_not_exists: whether to create the root directory if it does not exist
@@ -70,7 +70,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         """
         if not os.path.exists(self.__root_directory_path):
             raise DatasetGenericException(f"Datasets database folder not found at {self.__root_directory_path}.")
-        
+
         dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
 

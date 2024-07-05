@@ -64,7 +64,7 @@ cartouche_modified_pattern = r"Modifications on (.+) Copyright 202(.) Capgemini"
 
 
 class FileChange(Enum):
-    """ 
+    """
     Enum class for the type of change detected used by HeaderError class
     """
     NOTSET = 0
@@ -73,8 +73,8 @@ class FileChange(Enum):
 
 
 class HeaderError:
-    """ 
-    Class that represents an header error for logging 
+    """
+    Class that represents an header error for logging
     """
     def __init__(
         self,
@@ -296,7 +296,7 @@ class HeaderTools:
         #Write the modified content back to the file
         with open(file, "w", encoding="utf-8") as file:
             file.write(new_content)
-        
+
 
     def get_first_commit_time(self, git_git, full_file_path: str) -> datetime:
         """
@@ -333,7 +333,7 @@ class HeaderTools:
     def write_headers_if_needed_in_repo(self,ignored_exts, ignored_files, sha, repo_dir):
 
         print("Start to analyse Headers for repository "+ os.path.abspath(os.path.dirname(repo_dir) + "..."))
-        
+
         # Initialize a Git Repo object
         git_repo = git.Repo(repo_dir)
         git_git = git.Git(repo_dir)

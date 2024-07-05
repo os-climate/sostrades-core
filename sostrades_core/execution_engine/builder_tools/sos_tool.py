@@ -80,9 +80,9 @@ class SosTool():
 
     @abc.abstractmethod
     def build(self):
-        ''' 
-        Configuration of the SoSscatter : 
-        -First configure the scatter 
+        '''
+        Configuration of the SoSscatter :
+        -First configure the scatter
         -Get the list to scatter on and the associated namespace
         - Look if disciplines are already scatterred and compute the new list to scatter (only new ones)
         - Remove disciplines that are not in the scatter list

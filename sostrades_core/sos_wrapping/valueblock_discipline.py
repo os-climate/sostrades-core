@@ -43,7 +43,7 @@ class ValueBlockDiscipline(GatherDiscipline):
     _maturity = 'Research'
 
     DESC_IN = {}
-    
+
     def build_dynamic_io(self):
         dynamic_inputs = {}
         dynamic_outputs = {}
@@ -88,9 +88,9 @@ class ValueBlockDiscipline(GatherDiscipline):
                 del dynamic_outputs[output_name][self.NS_REFERENCE]
                 del dynamic_outputs[output_name][self.NAMESPACE]
         return dynamic_inputs, dynamic_outputs
-    
+
     def run(self):
-        
+
         input_dict = self.get_sosdisc_inputs()
         output_dict = {}
         output_keys = self.get_sosdisc_outputs().keys()

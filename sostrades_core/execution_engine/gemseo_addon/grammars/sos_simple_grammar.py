@@ -40,7 +40,7 @@ class SoSSimpleGrammar(SimpleGrammar):
     ):  # type: (...) -> Mapping[str,Any]
 #         self.check(data, raise_exception)
         return data
-    
+
     def set_item_value(self, item_name, item_value):
         """
         Sets the value of an item

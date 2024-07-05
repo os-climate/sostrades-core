@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ from sostrades_core.tools.post_processing.post_processing_bundle import (
 )
 
 """
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Factory for post processing (2 axes chart, pie chart, table)
 """
 
@@ -330,8 +329,7 @@ class PostProcessingFactory:
                     process_mod = getattr(
                         importlib.import_module(chart_module), PostProcessingFactory.MODULE_CHART_FILTER_METHOD)
 
-                    for chart_name in process_mod(discipline):
-                        result.append(chart_name)
+                    result += list(process_mod(discipline))
 
             # Catch all the exception in case the module does not exist
             except Exception:
@@ -339,8 +337,7 @@ class PostProcessingFactory:
                     f'The following error occurs when trying to load post processing filters for {discipline.get_disc_full_name()} discipline. See exception details.')
         else:
             try:
-                for post_processing_filter in discipline.get_chart_filter_list():
-                    result.append(post_processing_filter)
+                result += list(discipline.get_chart_filter_list())
             except Exception as e:
                 discipline.logger.exception(
                     f'The following error occurs when trying to load post processing filters for {discipline.get_disc_full_name()} discipline. See exception details.')
@@ -411,8 +408,7 @@ class PostProcessingFactory:
 
                 if process_mod:
                     try:
-                        for chart in process_mod(discipline, filters):
-                            post_processing_results.append(chart)
+                        post_processing_results += list(process_mod(discipline, filters))
                     except Exception as e:
                         logger.exception(
                             f'The following error occurs when trying to load chart post processing for {discipline.get_disc_full_name()} discipline. See exception details')
@@ -431,8 +427,7 @@ class PostProcessingFactory:
 
                 if process_mod:
                     try:
-                        for table in process_mod(discipline, filters):
-                            post_processing_results.append(table)
+                        post_processing_results += list(process_mod(discipline, filters))
                     except Exception as e:
                         logger.exception(
                             f'The following error occurs when trying to load table post processing for  {discipline.get_disc_full_name()} discipline. See exception details')
@@ -442,8 +437,7 @@ class PostProcessingFactory:
         else:
 
             try:
-                for post_processing in discipline.get_post_processing_list(filters):
-                    post_processing_results.append(post_processing)
+                post_processing_results += list(discipline.get_post_processing_list(filters))
             except Exception as e:
                 logger.exception(
                     f'The following error occurs when trying to load post processing for {discipline.get_disc_full_name()} discipline. See exception details.')

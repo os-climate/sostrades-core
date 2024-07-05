@@ -61,7 +61,7 @@ class SoSProcessFactory:
         # repository list is the one that contain module path that contain the
         # 'BUILDERS_MODULE_NAME'
         self.__repository_list = []
-        
+
         # repository file for default process rights location by repository
         self.__process_default_right_files = {}
         self.__user_default_rights_dict = {}
@@ -74,7 +74,7 @@ class SoSProcessFactory:
             self.__add_python_path_processes()
 
         self._set_processes_dict()
-        
+
         # Set all the default rights in the dicts for each process
         self._set_processes_rights_from_file_dict()
 
@@ -97,19 +97,19 @@ class SoSProcessFactory:
         """
 
         return self.__processes_dict
-    
+
     def get_user_default_rights_dict(self):
         """
         Return the buit dictionary processes user default rights base on repository list
         """
         return self.__user_default_rights_dict
-    
+
     def get_group_default_rights_dict(self):
         """
         Return the buit dictionary processes group default rights base on repository list
         """
         return self.__group_default_rights_dict
-    
+
     #-- Protected methods
     def _set_processes_dict(self):
         ''' load processes list
@@ -127,27 +127,27 @@ class SoSProcessFactory:
             self.__repository_list.extend(
                 resolve_raw_repository_processes.keys())
             self.__processes_dict.update(resolve_raw_repository_processes)
-    
-    
+
+
     def _set_processes_rights_from_file_dict(self):
         '''
         Retreive the list of process modules
         store them in 2 dictionaries one for users and another for groups
-        '''                                     
+        '''
         for repo_path in self.__raw_repository_list:
             if repo_path in self.__process_default_right_files.keys():
                 yaml_data = self.__process_default_right_files[repo_path]
                 if yaml_data is not None:
-                    
+
                     resolve_raw_repository_processes = self.__get_repositories_by_process(
                         repo_path)
-                
+
                     for process in resolve_raw_repository_processes:
                         #fill the lists with the datas
                         if USER_MAIL in yaml_data.keys() and yaml_data[USER_MAIL] is not None:
                             self.__user_default_rights_dict[process] =  yaml_data[USER_MAIL]
                         if GROUP_NAME in yaml_data.keys() and yaml_data[GROUP_NAME] is not None:
-                            self.__group_default_rights_dict[process] =  yaml_data[GROUP_NAME]                  
+                            self.__group_default_rights_dict[process] =  yaml_data[GROUP_NAME]
 
     def __add_python_path_processes(self):
         """
@@ -156,7 +156,7 @@ class SoSProcessFactory:
 
         Find for each path the file containing default access rights file for this repository
         """
-        
+
         # check for PYTHONPATH environment variable
         python_path_libraries = environ.get('PYTHONPATH')
         self.logger.info('Adding PYTHONPATH processes')
@@ -173,7 +173,7 @@ class SoSProcessFactory:
 
                 if processes_modules is not None and len(processes_modules) > 0:
                     self.__raw_repository_list.extend(processes_modules)
-                    
+
                     # From python path, add the automatic default right file if exists
                     file_name = join(library, DEFAULT_RIGHTS_FILE_NAME)
                     if Path(file_name).exists():

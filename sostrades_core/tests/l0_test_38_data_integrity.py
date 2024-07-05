@@ -48,7 +48,7 @@ class TestDataIntegrity(unittest.TestCase):
 
     def test_01_simple_type_vs_value(self):
         '''
-        Check the value vs type integrity + if value is None integrity message variable by variable. 
+        Check the value vs type integrity + if value is None integrity message variable by variable.
         checked : string,float,array,list,dataframe,dict
         '''
         disc1_builder = self.exec_eng.factory.get_builder_from_module(
@@ -135,9 +135,9 @@ class TestDataIntegrity(unittest.TestCase):
         '''
         Check the value range and possible values for :
         1 float
-        2 string 
-        3 float_list 
-        4 string_list. 
+        2 string
+        3 float_list
+        4 string_list.
         '''
         disc1_builder = self.exec_eng.factory.get_builder_from_module(
             'Disc1', self.mod_path_all_types)

@@ -42,7 +42,7 @@ class ProcessBuilder(BaseProcessBuilder):
             'ns_ac', post_processing_filters, post_processings)
         self.ee.post_processing_manager.add_post_processing_module_to_namespace(
             'ns_ac', 'sostrades_core.sos_processes.test.test_disc1_disc2_coupling.post_processing_libraries')
-    
+
         return builder_list
 
 

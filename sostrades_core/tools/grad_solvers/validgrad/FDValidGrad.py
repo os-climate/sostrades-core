@@ -118,7 +118,7 @@ class FDValidGrad(object):
             split_out : option to check each output from a vectorial output
 
         Returns:
-            ok : the status 
+            ok : the status
             msg : message about the error
         """
         if len(df.shape) == 1 or not split_out:

@@ -118,7 +118,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
 
             # build new_couplings: concatenated strong couplings, converted into arrays
             new_couplings = self._current_strong_couplings()
-            
+
             self._compute_residual(
                 current_couplings,
                 new_couplings,
@@ -126,7 +126,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 first=current_iter == 0,
                 log_normed_residual=self.log_convergence,
             )
-            
+
             # store current residuals
             current_iter += 1
             current_couplings = new_couplings

@@ -37,7 +37,7 @@ def _save_dataframe(file_path: str, df: pd.DataFrame) -> None:
 
 def _load_dataframe(file_path: str) -> pd.DataFrame:
     df_value = pd.read_csv(file_path, na_filter=False)
-    return df_value.applymap(isevaluatable)
+    return df_value.map(isevaluatable)
 
 
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):

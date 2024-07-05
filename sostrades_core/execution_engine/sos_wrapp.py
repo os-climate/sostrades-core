@@ -536,7 +536,7 @@ class SoSWrapp(object):
         if type(value[0]) in [complex, complex128]:
             # Create a new lil_matrix with the same shape but with complex dtype
             complex_matrix = lil_matrix(self.jac_dict[y_key_full][x_key_full].shape, dtype=complex)
-            
+
             # Copy the data from the original matrix to the new complex matrix
             complex_matrix[:, :] = self.jac_dict[y_key_full][x_key_full][:, :]
             self.jac_dict[y_key_full][x_key_full] = complex_matrix
@@ -544,7 +544,7 @@ class SoSWrapp(object):
             if value.dtype in [complex, complex128]:
                 # Create a new lil_matrix with the same shape but with complex dtype
                 complex_matrix = lil_matrix(self.jac_dict[y_key_full][x_key_full].shape, dtype=complex)
-                
+
                 # Copy the data from the original matrix to the new complex matrix
                 complex_matrix[:, :] = self.jac_dict[y_key_full][x_key_full][:, :]
                 self.jac_dict[y_key_full][x_key_full] = complex_matrix

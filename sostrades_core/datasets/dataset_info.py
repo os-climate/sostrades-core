@@ -31,7 +31,7 @@ class DatasetInfo:
     connector_id: str
     # Dataset id for this connector
     dataset_id: str
-    
+
     @property
     def dataset_info_id(self)->str:
         return DatasetInfo.get_mapping_id(self.connector_id, self.dataset_id)

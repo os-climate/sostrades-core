@@ -45,7 +45,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
         :param data_types_dict: dict of data types {name: type}
         :type data_types_dict: dict[str:str]
         '''
-        # retreive the type of the data into the data_type_dict. 
+        # retreive the type of the data into the data_type_dict.
         # If the data type os not found, the data value is not converted
         data_type = None
         if data_name in data_types_dict.keys():
@@ -67,7 +67,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
             self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
 
         return converted_data
-    
+
     def convert_to_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
         '''
         Convert data_value into connector format
@@ -78,7 +78,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
         :param data_types_dict: dict of data types {name: type}
         :type data_types_dict: dict[str:str]
         '''
-        # retreive the type of the data into the data_type_dict. 
+        # retreive the type of the data into the data_type_dict.
         # If the data type os not found, the data value is not converted
         data_type = None
         if data_name in data_types_dict.keys():

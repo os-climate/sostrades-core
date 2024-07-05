@@ -130,11 +130,11 @@ class PureNewtonRaphson(MDARoot):
         # store initial residual
         current_iter = 1
         self.reset_disciplines_statuses()
-        
+
         # build current_couplings: concatenated strong couplings, converted into arrays
         current_couplings, old_x_array = self._current_strong_couplings(return_converted_dict=True, update_dm=True)
         #self.execute_all_disciplines(self.local_data)
-        
+
         while not self._termination(current_iter):
 
             # Set coupling variables as differentiated variables for gradient

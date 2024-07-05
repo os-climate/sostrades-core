@@ -86,7 +86,7 @@ class TestStudyManager(unittest.TestCase):
                 study.execution_engine.dm.data_dict[var_id][DataManager.VALUE], value)
 
     def test_03_Dump_And_Load_Into_Study_With_Same_Name(self):
-        """ Check that load and dump on file function are working when source 
+        """ Check that load and dump on file function are working when source
         and destination study have the same process and the same name
         """
         study = BaseStudyManager(
@@ -107,7 +107,7 @@ class TestStudyManager(unittest.TestCase):
                 study.execution_engine.dm.data_dict[var_id][DataManager.VALUE], study_bis.execution_engine.dm.data_dict[var_id_bis][DataManager.VALUE])
 
     def test_04_Dump_And_Load_Into_Study_With_Different_Name(self):
-        """ Check that load and dump on file function are working when source 
+        """ Check that load and dump on file function are working when source
         and destination study have the same process but not the same name
         (verify that pickle dump are correctly save without study information)
         """

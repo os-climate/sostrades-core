@@ -94,10 +94,10 @@ class CheckDataIntegrity():
     def check_variable_value(self, var_data_dict, new_check):
         '''
         Check the value of a data
-        1st : Check the type of the value vs the type specified in the dm 
-        2nd : Check if the value is in the range 
+        1st : Check the type of the value vs the type specified in the dm
+        2nd : Check if the value is in the range
         3rd : Check if the value is in possible values
-        4th : For dataframe, check if the value is OK with the df_descriptor 
+        4th : For dataframe, check if the value is OK with the df_descriptor
         5th : CHeck the subtype of the value if there is subtypes
         '''
         self.check_integrity_msg_list = []
@@ -183,7 +183,7 @@ class CheckDataIntegrity():
 
     def __check_range_type_vs_value_type(self, value, variable_range):
         '''
-        Check the type of the first value in the range vs the type of the value 
+        Check the type of the first value in the range vs the type of the value
         '''
 
         if not can_cast(type(value), type(variable_range[0])):
@@ -400,7 +400,7 @@ class CheckDataIntegrity():
 
     def __check_formula(self, formula):
         '''
-        Check a single formula 
+        Check a single formula
         '''
         err_msg = None
         try:
