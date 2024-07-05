@@ -673,7 +673,6 @@ class TestDatasets(unittest.TestCase):
     def _test_bq_df_cols(self):
         """
         """
-        # FIXME: utility test for revision branch with local config etc. to be updated upon merge
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
@@ -690,7 +689,8 @@ class TestDatasets(unittest.TestCase):
         connector_to = DatasetsConnectorManager.get_connector('MVP0_bigquery_connector_copy_test')
         connector_from = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
 
-        data_types_dict = {"WITNESS_gdp": "dataframe"}
+        data_types_dict = {"WITNESS_gdp": "dataframe",
+                           "dict_strange_keys": "dict"}
 
         connector_to.copy_dataset_from(connector_from=connector_from,
                                        dataset_identifier="dataset_df_bq",
@@ -701,8 +701,14 @@ class TestDatasets(unittest.TestCase):
         data_name = "WITNESS_gdp"
         ref_df = pd.read_csv(os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                            "data", "local_datasets_db", "dataset_df_bq" ,data_name+".csv")))
-
         self.assertTrue((ref_df == data_values[data_name]).all().all())
+
+        dict_strange_keys = data_values["dict_strange_keys"]
+        dict_strange_keys_ref = {
+            "key1 (?)": "whatever",
+            "key2 #^/": "whatever"
+        }
+        self.assertEqual(dict_strange_keys_ref, dict_strange_keys)
 
 if __name__=="__main__":
     cls = TestDatasets()
