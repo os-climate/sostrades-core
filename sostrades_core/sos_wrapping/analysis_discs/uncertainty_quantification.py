@@ -85,7 +85,7 @@ class UncertaintyQuantification(SoSWrapp):
             },
             SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
             SoSWrapp.NAMESPACE: 'ns_sample_generator',
-            SoSWrapp.STRUCTURING: True
+            SoSWrapp.STRUCTURING: True,
         },
         'confidence_interval': {
             SoSWrapp.TYPE: 'float',
@@ -161,19 +161,16 @@ class UncertaintyQuantification(SoSWrapp):
         'float_output_names': {
             SoSWrapp.TYPE: 'list',
             SoSWrapp.UNIT: None,
-        }
+        },
     }
 
     def setup_sos_disciplines(self):
         """setup sos disciplines"""
         data_in = self.get_data_in()
         if data_in != {}:
-
             dynamic_outputs = {}
             dynamic_inputs = {}
-            if (self.EVAL_INPUTS in data_in) & (
-                    self.GATHER_OUTPUTS in data_in
-            ):
+            if (self.EVAL_INPUTS in data_in) & (self.GATHER_OUTPUTS in data_in):
                 gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
                 eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
@@ -214,9 +211,7 @@ class UncertaintyQuantification(SoSWrapp):
                     distrib = ['PERT' for _ in selected_inputs.tolist()]
 
                     if ('design_space' in data_in) & (len(in_param) > 0):
-
                         if data_in['design_space']['value'] is not None:
-
                             lower_bnd = data_in['design_space']['value'][
                                 self.LOWER_BOUND
                             ]
@@ -258,14 +253,18 @@ class UncertaintyQuantification(SoSWrapp):
                                         ex,
                                     )
                                     [name, unit] = [input_param, '']
-                                input_serie = pd.Series({
-                                    SoSWrapp.TYPE: 'input',
-                                    'variable': input_param,
-                                    'name': name,
-                                    SoSWrapp.UNIT: unit,
-                                })
-                                data_details_default = pd.concat([data_details_default, pd.DataFrame([input_serie])],
-                                                                 ignore_index=True)
+                                input_serie = pd.Series(
+                                    {
+                                        SoSWrapp.TYPE: 'input',
+                                        'variable': input_param,
+                                        'name': name,
+                                        SoSWrapp.UNIT: unit,
+                                    }
+                                )
+                                data_details_default = pd.concat(
+                                    [data_details_default, pd.DataFrame([input_serie])],
+                                    ignore_index=True,
+                                )
                             for output_param in list(set(out_param)):
                                 try:
                                     [name, unit] = conversion_full_ontology[
@@ -278,14 +277,21 @@ class UncertaintyQuantification(SoSWrapp):
                                     )
                                     [name, unit] = [output_param, None]
 
-                                output_serie = pd.Series({
-                                    SoSWrapp.TYPE: 'output',
-                                    'variable': output_param,
-                                    'name': name,
-                                    SoSWrapp.UNIT: unit,
-                                })
-                                data_details_default = pd.concat([data_details_default, pd.DataFrame([output_serie])],
-                                                                 ignore_index=True)
+                                output_serie = pd.Series(
+                                    {
+                                        SoSWrapp.TYPE: 'output',
+                                        'variable': output_param,
+                                        'name': name,
+                                        SoSWrapp.UNIT: unit,
+                                    }
+                                )
+                                data_details_default = pd.concat(
+                                    [
+                                        data_details_default,
+                                        pd.DataFrame([output_serie]),
+                                    ],
+                                    ignore_index=True,
+                                )
 
                             dynamic_inputs['input_distribution_parameters_df'] = {
                                 SoSWrapp.TYPE: 'dataframe',
@@ -315,41 +321,54 @@ class UncertaintyQuantification(SoSWrapp):
                             }
 
                             if 'input_distribution_parameters_df' in data_in:
-                                data_in['input_distribution_parameters_df'][
-                                    'value'
-                                ] = self.get_sosdisc_inputs(
-                                    'input_distribution_parameters_df'
+                                data_in['input_distribution_parameters_df']['value'] = (
+                                    self.get_sosdisc_inputs(
+                                        'input_distribution_parameters_df'
+                                    )
                                 )
-                                data_in['data_details_df'][
-                                    'value'
-                                ] = self.get_sosdisc_inputs('data_details_df')
-                                design_space_value = self.get_sosdisc_inputs('design_space')
-                                input_distribution_parameters_df_value = self.get_sosdisc_inputs(
-                                    'input_distribution_parameters_df')
-                                if ((design_space_value['variable'].to_list() != in_param)
-                                        or (input_distribution_parameters_df_value['lower_parameter'].to_list()
-                                            != design_space_value['lower_bnd'].to_list())
-                                        or (
-                                                self.get_sosdisc_inputs(
-                                                    'input_distribution_parameters_df'
-                                                )['upper_parameter'].to_list()
-                                                != self.get_sosdisc_inputs('design_space')[
-                                                    'upper_bnd'
-                                                ].to_list()
-                                        )
+                                data_in['data_details_df']['value'] = (
+                                    self.get_sosdisc_inputs('data_details_df')
+                                )
+                                design_space_value = self.get_sosdisc_inputs(
+                                    'design_space'
+                                )
+                                input_distribution_parameters_df_value = (
+                                    self.get_sosdisc_inputs(
+                                        'input_distribution_parameters_df'
+                                    )
+                                )
+                                if (
+                                    (
+                                        design_space_value['variable'].to_list()
+                                        != in_param
+                                    )
+                                    or (
+                                        input_distribution_parameters_df_value[
+                                            'lower_parameter'
+                                        ].to_list()
+                                        != design_space_value['lower_bnd'].to_list()
+                                    )
+                                    or (
+                                        self.get_sosdisc_inputs(
+                                            'input_distribution_parameters_df'
+                                        )['upper_parameter'].to_list()
+                                        != self.get_sosdisc_inputs('design_space')[
+                                            'upper_bnd'
+                                        ].to_list()
+                                    )
                                 ):
                                     data_in['input_distribution_parameters_df'][
                                         'value'
                                     ] = input_distribution_default
-                                    data_in['data_details_df'][
-                                        'value'
-                                    ] = data_details_default
+                                    data_in['data_details_df']['value'] = (
+                                        data_details_default
+                                    )
                                 if self.get_sosdisc_inputs('data_details_df')[
                                     'variable'
                                 ].to_list() != (in_param + out_param):
-                                    data_in['data_details_df'][
-                                        'value'
-                                    ] = data_details_default
+                                    data_in['data_details_df']['value'] = (
+                                        data_details_default
+                                    )
 
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
@@ -383,13 +402,16 @@ class UncertaintyQuantification(SoSWrapp):
                 for param_full_ns in param_full_ns_list:
                     param_type = self.dm.get_data(param_full_ns, self.TYPE)
                     if param_type not in ['float', 'int']:
-                        check_integrity_msg = f'Parameter {param_full_ns} found in eval_{io_type} should be float or' \
-                                              f' int for uncertainty quantification'
+                        check_integrity_msg = (
+                            f'Parameter {param_full_ns} found in eval_{io_type} should be float or'
+                            f' int for uncertainty quantification'
+                        )
                         check_integrity_msg_list.append(check_integrity_msg)
 
             check_integrity_msg = '\n'.join(check_integrity_msg_list)
             self.dm.set_data(
-                eval_io_full_name, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
+                eval_io_full_name, self.CHECK_INTEGRITY_MSG, check_integrity_msg
+            )
 
     def prepare_samples(self):
         """
@@ -412,7 +434,9 @@ class UncertaintyQuantification(SoSWrapp):
             inputs_dict['input_distribution_parameters_df']
         )
 
-        self.all_samples_df = samples_inputs_df.merge(samples_outputs_df, on='scenario_name', how='left')
+        self.all_samples_df = samples_inputs_df.merge(
+            samples_outputs_df, on='scenario_name', how='left'
+        )
         self.breakdown_arrays_to_float()
 
         self.set_float_input_distribution_parameters_df_values()
@@ -432,39 +456,62 @@ class UncertaintyQuantification(SoSWrapp):
         self.float_input_distribution_parameters_df = pd.DataFrame()
 
         self.float_all_samples_df = pd.DataFrame()
-        self.float_all_samples_df['scenario_name'] = self.all_samples_df['scenario_name']
+        self.float_all_samples_df['scenario_name'] = self.all_samples_df[
+            'scenario_name'
+        ]
 
         self.pure_float_input_names = []
         self.dict_array_float_names = {}
 
         for input_name in self.input_parameters_names:
             distribution_parameters = self.input_distribution_parameters_df.loc[
-                self.input_distribution_parameters_df['parameter'] == input_name]
-            lower_bound, upper_bound, distribution = distribution_parameters[['lower_parameter',
-                                                                              'upper_parameter',
-                                                                              'distribution']].values[0]
-            if isinstance(lower_bound, (float, int)) and isinstance(upper_bound, (float, int)):
-                self.float_input_distribution_parameters_df = pd.concat([self.float_input_distribution_parameters_df,
-                                                                         distribution_parameters])
+                self.input_distribution_parameters_df['parameter'] == input_name
+            ]
+            lower_bound, upper_bound, distribution = distribution_parameters[
+                ['lower_parameter', 'upper_parameter', 'distribution']
+            ].values[0]
+            if isinstance(lower_bound, (float, int)) and isinstance(
+                upper_bound, (float, int)
+            ):
+                self.float_input_distribution_parameters_df = pd.concat(
+                    [
+                        self.float_input_distribution_parameters_df,
+                        distribution_parameters,
+                    ]
+                )
                 self.float_input_names.append(input_name)
                 self.pure_float_input_names.append(input_name)
                 self.float_all_samples_df[input_name] = self.all_samples_df[input_name]
-            elif isinstance(lower_bound, np.ndarray) and isinstance(upper_bound, np.ndarray):
+            elif isinstance(lower_bound, np.ndarray) and isinstance(
+                upper_bound, np.ndarray
+            ):
                 if lower_bound.ndim != 1 or upper_bound.ndim != 1:
                     raise ValueError("inputs of type array can only be one-dimensional")
                 if lower_bound.shape != upper_bound.shape:
-                    raise ValueError("'lower_parameter' and 'upper_parameter' must have the same shape in case they are"
-                                     " of type numpy.ndarray")
+                    raise ValueError(
+                        "'lower_parameter' and 'upper_parameter' must have the same shape in case they are"
+                        " of type numpy.ndarray"
+                    )
                 length = len(lower_bound)
-                floats_distributions_parameters = pd.DataFrame({
-                    'parameter': [f"{input_name}[{i}]" for i in range(length)],
-                    'lower_parameter': list(lower_bound),
-                    'upper_parameter': list(distribution_parameters['upper_parameter'].values[0]),
-                    'most_probable_value': list(distribution_parameters['most_probable_value'].values[0]),
-                    'distribution': [distribution] * length,
-                })
-                self.float_input_distribution_parameters_df = pd.concat([self.float_input_distribution_parameters_df,
-                                                                         floats_distributions_parameters])
+                floats_distributions_parameters = pd.DataFrame(
+                    {
+                        'parameter': [f"{input_name}[{i}]" for i in range(length)],
+                        'lower_parameter': list(lower_bound),
+                        'upper_parameter': list(
+                            distribution_parameters['upper_parameter'].values[0]
+                        ),
+                        'most_probable_value': list(
+                            distribution_parameters['most_probable_value'].values[0]
+                        ),
+                        'distribution': [distribution] * length,
+                    }
+                )
+                self.float_input_distribution_parameters_df = pd.concat(
+                    [
+                        self.float_input_distribution_parameters_df,
+                        floats_distributions_parameters,
+                    ]
+                )
 
                 input_values = np.stack(self.all_samples_df[input_name].values)
                 self.dict_array_float_names[input_name] = []
@@ -474,8 +521,10 @@ class UncertaintyQuantification(SoSWrapp):
                     self.dict_array_float_names[input_name].append(float_input_name)
                     self.float_input_names.append(float_input_name)
             else:
-                raise ValueError("'lower_parameter' and 'upper_parameter' must be of same type, available types are: "
-                                 "float, int, numpy.ndarray (one-dimensional)")
+                raise ValueError(
+                    "'lower_parameter' and 'upper_parameter' must be of same type, available types are: "
+                    "float, int, numpy.ndarray (one-dimensional)"
+                )
 
         # CONVERTS OUTPUTS
         self.float_output_names = []
@@ -486,7 +535,9 @@ class UncertaintyQuantification(SoSWrapp):
             elif isinstance(example_value, np.ndarray):
                 if example_value.ndim != 1:
                     raise ValueError("inputs of type array can only be one-dimensional")
-                float_output_names = [f"{output_name}[{i}]" for i in range(len(example_value))]
+                float_output_names = [
+                    f"{output_name}[{i}]" for i in range(len(example_value))
+                ]
                 self.dict_array_float_names[output_name] = float_output_names
                 self.float_output_names += self.dict_array_float_names[output_name]
                 values = np.stack(self.all_samples_df[output_name].values)
@@ -497,19 +548,28 @@ class UncertaintyQuantification(SoSWrapp):
         """Set the values taken by each float input in float_all_samples_df"""
         list_of_unique_values = []
         for float_input_name in self.float_input_names:
-            sorted_unique_values = sorted(list(self.float_all_samples_df[float_input_name].unique()))
+            sorted_unique_values = sorted(
+                list(self.float_all_samples_df[float_input_name].unique())
+            )
             list_of_unique_values.append(sorted_unique_values)
 
         self.float_input_distribution_parameters_df["values"] = list_of_unique_values
-        self.float_all_samples_df = self.float_all_samples_df.sort_values(by=self.float_input_names)
+        self.float_all_samples_df = self.float_all_samples_df.sort_values(
+            by=self.float_input_names
+        )
 
     def delete_reference_scenarios(self, samples_df):
         """
         Delete the reference scenario in a df for UQ
         """
-        reference_scenario_samples_list = [scen for scen in samples_df['scenario_name'].values if
-                                           'reference_scenario' in scen]
-        samples_df_wo_ref = samples_df.loc[~samples_df['scenario_name'].isin(reference_scenario_samples_list)]
+        reference_scenario_samples_list = [
+            scen
+            for scen in samples_df['scenario_name'].values
+            if 'reference_scenario' in scen
+        ]
+        samples_df_wo_ref = samples_df.loc[
+            ~samples_df['scenario_name'].isin(reference_scenario_samples_list)
+        ]
 
         return samples_df_wo_ref
 
@@ -548,10 +608,19 @@ class UncertaintyQuantification(SoSWrapp):
         self.float_input_parameters_samples_df = pd.DataFrame()
         distrib_list = []
         for input_name in self.float_input_names:
-            distribution, lower_parameter, upper_parameter, most_probable_value = \
+            distribution, lower_parameter, upper_parameter, most_probable_value = (
                 self.float_input_distribution_parameters_df.loc[
-                    self.float_input_distribution_parameters_df['parameter'] == input_name
-                    ][['distribution', 'lower_parameter', 'upper_parameter', 'most_probable_value']].values[0]
+                    self.float_input_distribution_parameters_df['parameter']
+                    == input_name
+                ][
+                    [
+                        'distribution',
+                        'lower_parameter',
+                        'upper_parameter',
+                        'most_probable_value',
+                    ]
+                ].values[0]
+            )
             distrib = None
             if distribution == 'Normal':
                 distrib = self.get_Normal_distrib(
@@ -560,10 +629,11 @@ class UncertaintyQuantification(SoSWrapp):
                     confidence_interval=self.confidence_interval,
                 )
             elif distribution == 'PERT':
-                distrib = self.get_PERT_distrib(lower_parameter,
-                                                upper_parameter,
-                                                most_probable_value,
-                                                )
+                distrib = self.get_PERT_distrib(
+                    lower_parameter,
+                    upper_parameter,
+                    most_probable_value,
+                )
             elif distribution == 'LogNormal':
                 distrib = self.get_LogNormal_distrib(
                     lower_parameter,
@@ -595,7 +665,9 @@ class UncertaintyQuantification(SoSWrapp):
         self.composed_distrib_sample = distribution.getSample(self.sample_size)
 
     @staticmethod
-    def get_Normal_distrib(lower_bnd: float, upper_bnd: float, confidence_interval=0.95):
+    def get_Normal_distrib(
+        lower_bnd: float, upper_bnd: float, confidence_interval=0.95
+    ):
         """Returns a Normal distribution"""
         norm_val = float(format(1 - confidence_interval, '.2f')) / 2
         ratio = norm.ppf(1 - norm_val) - norm.ppf(norm_val)
@@ -615,14 +687,18 @@ class UncertaintyQuantification(SoSWrapp):
         return distrib
 
     @staticmethod
-    def get_Triangular_distrib(lower_bnd: float, upper_bnd: float, most_probable_val: float):
+    def get_Triangular_distrib(
+        lower_bnd: float, upper_bnd: float, most_probable_val: float
+    ):
         """Returns a Triangular distribution"""
         distrib = ot.Triangular(int(lower_bnd), int(most_probable_val), int(upper_bnd))
 
         return distrib
 
     @staticmethod
-    def get_LogNormal_distrib(lower_bnd: float, upper_bnd: float, confidence_interval=0.95):
+    def get_LogNormal_distrib(
+        lower_bnd: float, upper_bnd: float, confidence_interval=0.95
+    ):
         """Returns a LogNormal distribution"""
         norm_val = float(format(1 - confidence_interval, '.2f')) / 2
         ratio = norm.ppf(1 - norm_val) - norm.ppf(norm_val)
@@ -644,8 +720,9 @@ class UncertaintyQuantification(SoSWrapp):
         input_parameters_single_values_tuple = tuple(
             [
                 self.float_input_distribution_parameters_df.loc[
-                    self.float_input_distribution_parameters_df['parameter'] == input_name
-                    ]['values'].values[0]
+                    self.float_input_distribution_parameters_df['parameter']
+                    == input_name
+                ]['values'].values[0]
                 for input_name in self.float_input_names
             ]
         )
@@ -660,10 +737,14 @@ class UncertaintyQuantification(SoSWrapp):
                 # adapt output format to be used by RegularGridInterpolator
                 output_values = np.reshape(y, input_dim_tuple)
                 f = RegularGridInterpolator(
-                    input_parameters_single_values_tuple, output_values, bounds_error=False
+                    input_parameters_single_values_tuple,
+                    output_values,
+                    bounds_error=False,
                 )
                 output_interpolated_values = f(self.composed_distrib_sample)
-                self.output_interpolated_values_df[f'{output_name}'] = output_interpolated_values
+                self.output_interpolated_values_df[f'{output_name}'] = (
+                    output_interpolated_values
+                )
             else:  # output is an array
                 output_interpolated_arrays = []
                 for float_var_name in self.dict_array_float_names[output_name]:
@@ -671,12 +752,18 @@ class UncertaintyQuantification(SoSWrapp):
                     # adapt output format to be used by RegularGridInterpolator
                     output_values = np.reshape(y, input_dim_tuple)
                     f = RegularGridInterpolator(
-                        input_parameters_single_values_tuple, output_values, bounds_error=False
+                        input_parameters_single_values_tuple,
+                        output_values,
+                        bounds_error=False,
                     )
                     output_interpolated_values = f(self.composed_distrib_sample)
                     output_interpolated_arrays.append(output_interpolated_values)
-                output_interpolated_arrays = list(np.stack(output_interpolated_arrays).T)
-                self.output_interpolated_values_df[f'{output_name}'] = output_interpolated_arrays
+                output_interpolated_arrays = list(
+                    np.stack(output_interpolated_arrays).T
+                )
+                self.output_interpolated_values_df[f'{output_name}'] = (
+                    output_interpolated_arrays
+                )
 
     def check_inputs_consistency(self):
         """check consistency between inputs from eval_inputs and samples_inputs_df"""
@@ -751,8 +838,7 @@ class UncertaintyQuantification(SoSWrapp):
 
         if 'confidence_interval' in self.get_sosdisc_inputs():
             confidence_interval = (
-
-                    deepcopy(self.get_sosdisc_inputs(['confidence_interval'])) / 100
+                deepcopy(self.get_sosdisc_inputs(['confidence_interval'])) / 100
             )
 
         input_parameters_names = self.get_sosdisc_outputs('input_parameters_names')
@@ -775,9 +861,14 @@ class UncertaintyQuantification(SoSWrapp):
                     instanciated_charts.append(new_chart)
                 else:
                     # input is of type array -> array uncertainty plot
-                    input_distrib = list(input_parameters_distrib_df[dict_array_float_names[input_name]].values)
-                    new_chart = self.array_uncertainty_plot(list_of_arrays=input_distrib,
-                                                            name=input_name)
+                    input_distrib = list(
+                        input_parameters_distrib_df[
+                            dict_array_float_names[input_name]
+                        ].values
+                    )
+                    new_chart = self.array_uncertainty_plot(
+                        list_of_arrays=input_distrib, name=input_name
+                    )
                     instanciated_charts.append(new_chart)
 
         for output_name in list(output_distrib_df.columns):
@@ -794,15 +885,15 @@ class UncertaintyQuantification(SoSWrapp):
             else:
                 # output type is array -> array_uncertainty plot
                 if output_distrib_name in graphs_list:
-                    new_chart = self.array_uncertainty_plot(list_of_arrays=output_distrib,
-                                                            name=output_name,
-                                                            is_output=True)
+                    new_chart = self.array_uncertainty_plot(
+                        list_of_arrays=output_distrib, name=output_name, is_output=True
+                    )
                     instanciated_charts.append(new_chart)
 
         return instanciated_charts
 
     def input_histogram_graph(
-            self, data, data_name, distrib_param, confidence_interval
+        self, data, data_name, distrib_param, confidence_interval
     ):
         """generates a histogram plot for input of type float"""
         name, unit = self.data_details.loc[self.data_details["variable"] == data_name][
@@ -831,7 +922,7 @@ class UncertaintyQuantification(SoSWrapp):
         else:
             y_left_boundary, y_right_boundary = distrib_param.loc[
                 distrib_param['parameter'] == data_name
-                ][['lower_parameter', 'upper_parameter']].values[0]
+            ][['lower_parameter', 'upper_parameter']].values[0]
 
         hist_y.update_layout(
             xaxis=dict(title=name, ticksuffix=unit), yaxis=dict(title='Probability')
@@ -1074,11 +1165,9 @@ class UncertaintyQuantification(SoSWrapp):
 
         return new_chart
 
-    def array_uncertainty_plot(self,
-                               list_of_arrays: list[np.ndarray],
-                               name: str,
-                               is_output: bool = False
-                               ):
+    def array_uncertainty_plot(
+        self, list_of_arrays: list[np.ndarray], name: str, is_output: bool = False
+    ):
         """
         Returns a chart for 1-dimensional array types inputs/outputs (time series typically), with
         - all the samples (all the time series)
@@ -1090,47 +1179,94 @@ class UncertaintyQuantification(SoSWrapp):
         mean_array = np.nanmean(list_of_arrays, axis=0)
 
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=arrays_x, y=list_of_arrays[0].tolist(),
-                                 line=dict(color='rgba(169,169,169,0.1)'),
-                                 name="samples"))
+        fig.add_trace(
+            go.Scatter(
+                x=arrays_x,
+                y=list_of_arrays[0].tolist(),
+                line=dict(color='rgba(169,169,169,0.1)'),
+                name="samples",
+            )
+        )
         for time_serie in list_of_arrays[1:]:
-            fig.add_trace(go.Scatter(x=arrays_x, y=time_serie.tolist(),
-                                     line=dict(color='rgba(169,169,169,0.1)'),
-                                     showlegend=False))
+            fig.add_trace(
+                go.Scatter(
+                    x=arrays_x,
+                    y=time_serie.tolist(),
+                    line=dict(color='rgba(169,169,169,0.1)'),
+                    showlegend=False,
+                )
+            )
 
-        fig.add_trace(go.Scatter(x=arrays_x, y=mean_array.tolist(), name='Mean', line=dict(color='black', dash='dash')))
+        fig.add_trace(
+            go.Scatter(
+                x=arrays_x,
+                y=mean_array.tolist(),
+                name='Mean',
+                line=dict(color='black', dash='dash'),
+            )
+        )
 
-        input_distribution_parameters_df = self.get_sosdisc_inputs("input_distribution_parameters_df")
-        distribution = input_distribution_parameters_df.loc[
-            input_distribution_parameters_df["parameter"] == name]['distribution'].values[0] if not is_output \
+        input_distribution_parameters_df = self.get_sosdisc_inputs(
+            "input_distribution_parameters_df"
+        )
+        distribution = (
+            input_distribution_parameters_df.loc[
+                input_distribution_parameters_df["parameter"] == name
+            ]['distribution'].values[0]
+            if not is_output
             else ''
+        )
         if distribution == 'PERT':
-            lower_parameter, upper_parameter = \
-                input_distribution_parameters_df.loc[input_distribution_parameters_df["parameter"] == name][
-                    ['lower_parameter', 'upper_parameter']].values[0]
-            fig.add_trace(go.Scatter(x=arrays_x, y=list(lower_parameter),
-                                     line=dict(color='green', dash='dash'),
-                                     name='lower parameter'))
-            fig.add_trace(go.Scatter(x=arrays_x, y=list(upper_parameter),
-                                     line=dict(color='blue', dash='dash'),
-                                     name='upper parameter'))
+            lower_parameter, upper_parameter = input_distribution_parameters_df.loc[
+                input_distribution_parameters_df["parameter"] == name
+            ][['lower_parameter', 'upper_parameter']].values[0]
+            fig.add_trace(
+                go.Scatter(
+                    x=arrays_x,
+                    y=list(lower_parameter),
+                    line=dict(color='green', dash='dash'),
+                    name='lower parameter',
+                )
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=arrays_x,
+                    y=list(upper_parameter),
+                    line=dict(color='blue', dash='dash'),
+                    name='upper parameter',
+                )
+            )
         elif is_output or distribution in ['Normal', 'LogNormal']:
-            confidence_interval = float(self.get_sosdisc_inputs('confidence_interval')) / 100
+            confidence_interval = (
+                float(self.get_sosdisc_inputs('confidence_interval')) / 100
+            )
             ql = float(format(1 - confidence_interval, '.2f')) / 2
             qu = 1 - ql
             quantile_lower = np.nanquantile(list_of_arrays, q=ql, axis=0)
             quantile_upper = np.nanquantile(list_of_arrays, q=qu, axis=0)
-            fig.add_trace(go.Scatter(x=arrays_x, y=quantile_lower.tolist(),
-                                     line=dict(color='green', dash='dash'),
-                                     name=f'quantile {int(100 * ql)}%'))
-            fig.add_trace(go.Scatter(x=arrays_x, y=quantile_upper.tolist(),
-                                     line=dict(color='blue', dash='dash'),
-                                     name=f'quantile {int(100 * qu)}%'))
+            fig.add_trace(
+                go.Scatter(
+                    x=arrays_x,
+                    y=quantile_lower.tolist(),
+                    line=dict(color='green', dash='dash'),
+                    name=f'quantile {int(100 * ql)}%',
+                )
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=arrays_x,
+                    y=quantile_upper.tolist(),
+                    line=dict(color='blue', dash='dash'),
+                    name=f'quantile {int(100 * qu)}%',
+                )
+            )
 
         fig.update_layout(title='Multiple Time Series')
 
         new_chart = InstantiatedPlotlyNativeChart(
-            fig=fig, chart_name=f'{name} - {distribution} Distribution', default_legend=False
+            fig=fig,
+            chart_name=f'{name} - {distribution} Distribution',
+            default_legend=False,
         )
 
         return new_chart
