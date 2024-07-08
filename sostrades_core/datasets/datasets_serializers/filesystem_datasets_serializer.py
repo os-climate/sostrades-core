@@ -241,7 +241,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
                     os.remove(data_path)
                 return self.__serialize_object(data_value, data_name)
 
-    def _deserialize_dataframe(self, data_value: str) -> pd.DataFrame:
+    def _deserialize_dataframe(self, data_value: str, data_name: str = None) -> pd.DataFrame:
         # NB: dataframe csv deserialization as in webapi
         return self.__deserialize_from_filesystem(_load_dataframe, data_value)
 

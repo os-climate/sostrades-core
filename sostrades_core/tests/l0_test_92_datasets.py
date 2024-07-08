@@ -616,12 +616,9 @@ class TestDatasets(unittest.TestCase):
             raise
 
 
-    def _test_xx_bq(self):
+    def _test_16_bigquery_plain_types_export_import(self):
         """
-        Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
-        thus testing ability of LocalConnector to both write and load values.
         """
-        # FIXME: utility test for revision branch with local config etc. to be updated upon merge
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
@@ -672,6 +669,45 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
 
+    def _test_17_bigquery_colum_name_characters_compatibility_on_dataframe_and_dict_tables(self):
+        """
+        """
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+            DatasetConnectorType,
+        )
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+        connector_args = {
+            "project_id": "gcp-businessplanet"
+        }
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_bigquery_connector_copy_test",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Bigquery"),
+                                                    **connector_args)
+        connector_to = DatasetsConnectorManager.get_connector('MVP0_bigquery_connector_copy_test')
+        connector_from = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
+
+        data_types_dict = {"WITNESS_gdp": "dataframe",
+                           "dict_strange_keys": "dict"}
+
+        connector_to.copy_dataset_from(connector_from=connector_from,
+                                       dataset_identifier="dataset_df_bq",
+                                       data_types_dict=data_types_dict,
+                                       create_if_not_exists=True)
+        data_values = connector_to.get_values("dataset_df_bq", data_to_get=data_types_dict)
+
+        data_name = "WITNESS_gdp"
+        ref_df = pd.read_csv(os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                           "data", "local_datasets_db", "dataset_df_bq" ,data_name+".csv")))
+        self.assertTrue((ref_df == data_values[data_name]).all().all())
+
+        dict_strange_keys = data_values["dict_strange_keys"]
+        dict_strange_keys_ref = {
+            "key1 (?)": "whatever",
+            "key2 #^/": "whatever"
+        }
+        self.assertEqual(dict_strange_keys_ref, dict_strange_keys)
 
 if __name__=="__main__":
     cls = TestDatasets()
