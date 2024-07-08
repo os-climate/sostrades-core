@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-import numpy as np
+from string import ascii_letters, digits
 from typing import Any
-from string import (
-    ascii_letters,
-    digits
-)
+
+import numpy as np
+
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
 )
