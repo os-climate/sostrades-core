@@ -127,14 +127,14 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         # Load the descriptor, the serializer loads the pickle if it exists
         dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         # Filter data
-        filtered_data = {key: self.__datasets_serializer.convert_from_dataset_data(key,
-                                                                                   dataset_descriptor[key],
-                                                                                   data_to_get)
-                         for key in dataset_descriptor if key in data_to_get}
+        filtered_values = {key: self.__datasets_serializer.convert_from_dataset_data(key,
+                                                                                     self._extract_value_from_datum(dataset_descriptor[key]),
+                                                                                     data_to_get)
+                           for key in dataset_descriptor if key in data_to_get}
         # Clear pickle buffer from serializer
         self.__clear_pickle_data()
-        self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
-        return filtered_data
+        self.__logger.debug(f"Values obtained {list(filtered_values.keys())} for dataset {dataset_identifier} for connector {self}")
+        return filtered_values
 
     def get_datasets_available(self) -> list[str]:
         """
@@ -160,10 +160,11 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         # read the already existing values
         dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         # Write data, serializer buffers the data to pickle and already pickled
-        dataset_descriptor.update({key: self.__datasets_serializer.convert_to_dataset_data(key,
-                                                                                           value,
-                                                                                           data_types_dict)
-                                   for key, value in values_to_write.items()})
+        descriptor_values = {key: self.__datasets_serializer.convert_to_dataset_data(key,
+                                                                                     value,
+                                                                                     data_types_dict)
+                             for key, value in values_to_write.items()}
+        self._update_data_with_values(dataset_descriptor, descriptor_values, data_types_dict)
         self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier,
                                                   descriptor_data=dataset_descriptor)
         return values_to_write
@@ -180,12 +181,12 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
         self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
         dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
-        dataset_data = {key: self.__datasets_serializer.convert_from_dataset_data(key,
-                                                                                 value,
+        dataset_values = {key: self.__datasets_serializer.convert_from_dataset_data(key,
+                                                                                 self._extract_value_from_datum(datum),
                                                                                  data_types_dict)
-                        for key, value in dataset_descriptor.items()}
+                        for key, datum in dataset_descriptor.items()}
         self.__clear_pickle_data()
-        return dataset_data
+        return dataset_values
 
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
         """

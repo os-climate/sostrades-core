@@ -76,6 +76,8 @@ class TestStatusDiscipline(unittest.TestCase):
         while(time.time() - t0 < 3):
             if self.process.status in self.dic_status.keys():
                 self.dic_status[self.process.status] = True
+                time.sleep(0.01)
                 # print(self.process.status)
         self.assertTrue(np.all(list(self.dic_status.values())),
                         'Missing status')
+
