@@ -27,7 +27,7 @@ class AbstractDatasetsConnector(abc.ABC):
     __logger = logging.getLogger(__name__)
 
 
-    NAME = "parameter_name"
+    NAME = "name"
     UNIT = "unit"
     DESCRIPTION = "description"
     SOURCE = "source"
@@ -147,7 +147,7 @@ class AbstractDatasetsConnector(abc.ABC):
         if old_datum is None:
             new_datum = self.DEFAULT_METADATA_DICT.copy()
         else:
-            new_datum = old_datum.copy()  # TODO: is it necessary ?
+            new_datum = {key: value for key, value in old_datum.items() if key not in self.VALUE_KEYS}
         return new_datum
 
     def _insert_value_into_datum(self,
@@ -155,8 +155,9 @@ class AbstractDatasetsConnector(abc.ABC):
                                  datum: dict[str:Any],
                                  parameter_name: str,
                                  parameter_type: str) -> dict[str:Any]:
-        new_datum = self._new_datum(datum)
-        new_datum[self.VALUE] = value
+        new_datum = {self.VALUE: value}
+        new_datum.update(self._new_datum(datum))
+        # TODO: keeping dataset metadata "as is", insert metadata handling here
         return new_datum
 
     def _update_data_with_values(self, data: dict[str:dict[str:Any]], values: dict[str:Any],
