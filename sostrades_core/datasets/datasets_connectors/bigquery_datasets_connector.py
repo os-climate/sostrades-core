@@ -248,7 +248,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 # if dataset doesn't exists, create the dataset
                 # Construct a full Dataset object to send to the API.
                 dataset = bigquery.Dataset(dataset_id)
-
                 # TODO: Specify the geographic location where the dataset should reside.
                 dataset.location = "europe-west1"
 
@@ -264,8 +263,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                                  datum: dict[str:Any],
                                  parameter_name: str,
                                  parameter_type: str) -> dict[str:Any]:
-        new_datum = self._new_datum(datum)
-        new_datum[self.NAME] = parameter_name
+        new_datum = {self.PARAMETER_NAME: parameter_name}
         # if data is none or empty (dict with no elements ect) bigquery raise an error at the import
         is_empty = value is None or (parameter_type in {"list", "array", "dict", "dataframe"} and len(value) == 0)
         if not is_empty:
@@ -282,6 +280,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             elif parameter_type in BigqueryDatasetsConnector.SELF_TABLE_TYPES:
                 # the name of the value is a string value is the type of the data + the name of the table associated
                 new_datum[self.STRING_VALUE] = f"@{parameter_type}@{parameter_name}"
+            new_datum.update(self._new_datum(datum))
+            # TODO: keeping dataset metadata "as is", insert metadata handling here
             return new_datum
 
     def __update_json_descriptor_and_parameters(self,
@@ -352,7 +352,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             except Exception as ex:
                 self.__logger.debug(f"Error while reading the {self.COL_NAME_INDEX_TABLE_NAME} for dataset {dataset_id}:"
                                     f" {ex}, assuming an empty index.")
-                # todo [discuss]: accepting empty index ?
         return json_descriptor_read, index_read, table_descriptor_id, table_index_id
 
     def __read_descriptor_or_index_table(self, table_id:str)-> dict:
