@@ -3,3 +3,24 @@ repos:
     rev: v0.5.0
     hooks:
       - id: ruff
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+        exclude: LICENSES/headers
+      - id: check-yaml
+        # !reference is specific to gitlab
+        # !! prefix is specific to mkdocs
+        exclude: \.gitlab-ci.yml|mkdocs.yml
+      - id: check-added-large-files
+      - id: check-json
+      - id: pretty-format-json
+        args: [
+          --autofix,
+          --no-sort-keys,
+        ]
+        exclude: \.ipynb
+      - id: check-toml
+      - id: destroyed-symlinks
+      - id: check-symlinks
