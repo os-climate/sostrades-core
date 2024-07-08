@@ -262,7 +262,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                                  datum: dict[str:Any],
                                  parameter_name: str,
                                  parameter_type: str) -> dict[str:Any]:
-        new_datum = {self.PARAMETER_NAME: parameter_name}
+        new_datum = self._new_datum(datum)
+        new_datum[self.NAME] = parameter_name
         # if data is none or empty (dict with no elements ect) bigquery raise an error at the import
         is_empty = value is None or (parameter_type in {"list", "array", "dict", "dataframe"} and len(value) == 0)
         if not is_empty:
@@ -279,7 +280,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             elif parameter_type in BigqueryDatasetsConnector.SELF_TABLE_TYPES:
                 # the name of the value is a string value is the type of the data + the name of the table associated
                 new_datum[self.STRING_VALUE] = f"@{parameter_type}@{parameter_name}"
-            new_datum.update(self._new_datum(datum))
             # TODO: keeping dataset metadata "as is", insert metadata handling here
             return new_datum
 
