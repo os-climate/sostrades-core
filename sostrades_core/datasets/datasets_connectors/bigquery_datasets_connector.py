@@ -262,8 +262,9 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                                  datum: dict[str:Any],
                                  parameter_name: str,
                                  parameter_type: str) -> dict[str:Any]:
+
         new_datum = self._new_datum(datum)
-        new_datum[self.NAME] = parameter_name
+        new_datum[self.PARAMETER_NAME] = parameter_name
         # if data is none or empty (dict with no elements ect) bigquery raise an error at the import
         is_empty = value is None or (parameter_type in {"list", "array", "dict", "dataframe"} and len(value) == 0)
         if not is_empty:
