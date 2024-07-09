@@ -15,29 +15,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+    from sostrades_core.execution_engine.sos_builder import SoSBuilder
+
 
 class BaseProcessBuilder:
-    '''
-    Generic class to inherit to build processes
-    '''
+    """Generic class to inherit to build processes."""
 
-    def __init__(self, ee):
-        '''
-        Constructor
-        link to execution engine
-        '''
+    def __init__(self, ee: ExecutionEngine) -> None:
         self.ee = ee
         self.logger = ee.logger.getChild(self.__class__.__name__)
 
-    def get_builders(self):
+    def get_builders(self) -> list:
         return []
 
-    def create_builder_list(self, mods_dict, ns_dict=None, associate_namespace=False):
-        '''
-        define a base namespace
-        instantiate builders iterating over a list of module paths
-        return the list of disciplines built
-        '''
+    def create_builder_list(
+        self, mods_dict: dict[str, str], ns_dict: dict[str, str] = None, associate_namespace: bool = False
+    ) -> list[SoSBuilder]:
+        """Define a base namespace and instantiate builders iterating over a list of module paths.
+
+        Args:
+            mods_dict: The dictionary containing the module path for each discipline.
+            ns_dict: The dictionary of namespaces.
+            associate_namespace: Whether to replace existing namescpaces.
+
+        Returns:
+            The list of discipline builders.
+        """
         if associate_namespace:
             clean_existing = False
         else:
@@ -49,8 +58,7 @@ class BaseProcessBuilder:
         builders = []
 
         for disc_name, mod_path in mods_dict.items():
-            a_b = self.ee.factory.get_builder_from_module(
-                disc_name, mod_path)
+            a_b = self.ee.factory.get_builder_from_module(disc_name, mod_path)
             if associate_namespace:
                 a_b.associate_namespaces(ns_ids)
             builders.append(a_b)
