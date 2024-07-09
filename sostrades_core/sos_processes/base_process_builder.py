@@ -42,7 +42,7 @@ class BaseProcessBuilder:
         Args:
             mods_dict: The dictionary containing the module path for each discipline.
             ns_dict: The dictionary of namespaces.
-            associate_namespace: Whether to replace existing namescpaces.
+            associate_namespace: Whether to replace existing namespaces.
 
         Returns:
             The list of discipline builders.
