@@ -3,7 +3,7 @@ External Dependencies
 
 sostrades-core depends on software with compatible licenses that are listed below.
 
-`pycryptodome (3.19.1) <https://www.pycryptodome.org>`_
+`pycryptodome (3.20.0) <https://www.pycryptodome.org>`_
     BSD, Public Domain
 
 `black (24.4.2) <https://github.com/psf/black>`_
@@ -15,13 +15,13 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `cma (2.7.0) <https://github.com/CMA-ES/pycma>`_
     BSD
 
-`cvxpy (1.1.18) <https://github.com/cvxpy/cvxpy>`_
+`cvxpy (1.5.2) <https://github.com/cvxpy/cvxpy>`_
     Apache License, Version 2.0
 
 `gitpython (3.1.43) <https://github.com/gitpython-developers/GitPython>`_
     BSD
 
-`python-arango (7.9.1) <https://github.com/arangodb/python-arango>`_
+`python-arango (8.0.0) <https://github.com/arangodb/python-arango>`_
     MIT
 
 `matplotlib (3.9.0) <https://matplotlib.org>`_
@@ -57,7 +57,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `SQLAlchemy (1.3.13) <https://www.sqlalchemy.org>`_
     MIT
 
-`sympy (1.4) <https://sympy.org>`_
+`sympy (1.9) <https://sympy.org>`_
     BSD
 
 `tqdm (4.66.4) <https://tqdm.github.io>`_
