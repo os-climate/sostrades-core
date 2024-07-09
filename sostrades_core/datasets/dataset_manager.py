@@ -97,8 +97,8 @@ class DatasetsManager:
         return self.datasets[dataset_info]
 
     def write_data_in_dataset(self, dataset_info: DatasetInfo,
-                                 data_dict: dict[str:str],
-                                 data_type_dict: dict[str:str]) -> dict:
+                                    data_dict: dict[str:str],
+                                    data_type_dict: dict[str:str]) -> dict:
         """
         get data from data_dict and fill dataset
 
