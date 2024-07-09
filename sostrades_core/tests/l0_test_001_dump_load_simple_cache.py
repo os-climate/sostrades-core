@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/10 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ limitations under the License.
 import unittest
 from os.path import dirname, exists, join
 from pathlib import Path
-from shutil import rmtree
-from time import sleep
 
 from gemseo.caches.simple_cache import SimpleCache
 
@@ -35,6 +33,7 @@ from gemseo.core.discipline import MDODiscipline
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_mda
 from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import \
     Study as study_disc1_disc2
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestLoadSimpleCache(unittest.TestCase):
@@ -56,8 +55,7 @@ class TestLoadSimpleCache(unittest.TestCase):
     def tearDown(self):
         for dir in self.dir_to_del:
             if Path(dir).is_dir():
-                rmtree(dir)
-                sleep(2)
+                rmtree_safe(dir)
 
     def test_01_dump_and_load_cache_None(self):
         '''
@@ -143,7 +141,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
     def test_03_dump_simple_cache_check_anonymization(self):
         '''
-        Check anonymization before dumping the pickle file 
+        Check anonymization before dumping the pickle file
         And check unanonymization
         '''
         dump_dir = join(self.dump_dir, 'test_03')
@@ -315,7 +313,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
     def test_06_set_different_cache_type(self):
         '''
-        Test different cache type to verify reconfiguration rest_cache mode 
+        Test different cache type to verify reconfiguration rest_cache mode
         and to verify that pkl is deleted when cache is None
         '''
         dump_dir = join(self.dump_dir, 'test_06')
@@ -550,7 +548,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
     def test_10_set_different_cache_type_verify_after_run(self):
         '''
-        Test different cache type to verify reconfiguration rest_cache mode 
+        Test different cache type to verify reconfiguration rest_cache mode
         and to verify that pkl is deleted when cache is None
         '''
         dump_dir = join(self.dump_dir, 'test_06')

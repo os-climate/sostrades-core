@@ -35,7 +35,7 @@ class TestUseCases(unittest.TestCase):
 
     def test_all_usecases(self):
         test_passed, output_error = _test_all_usecases(processes_repo=self.processes_repo)
-        
+
         if not test_passed:
             raise Exception(f'{output_error}')
 

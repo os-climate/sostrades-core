@@ -63,6 +63,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 time.sleep(0.1)
                 scenario_name = samples[i][SampleGeneratorWrapper.SCENARIO_NAME]
                 self.logger.info(f'   {scenario_name} is running.')
+
                 x = {key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
 
                 evaluation_output[scenario_name] = x, self.evaluation(
@@ -104,6 +105,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             try:
                 # execute all the scenarios (except the reference scenario)  in
                 # parallel
+
                 # remove the scenario_name key of each sample
                 x = [{key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
                      for i in range(len(samples))]
@@ -207,6 +209,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         samples_df = self.get_sosdisc_inputs(SampleGeneratorWrapper.SAMPLES_DF)
 
         input_columns = [f"{self.attributes['driver_name']}.{col}" for col in samples_df.columns
+
                          if
                          col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
         input_columns_short_name = [col for col in samples_df.columns
@@ -220,7 +223,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         reference_scenario[SampleGeneratorWrapper.SCENARIO_NAME] = 'reference_scenario'
 
         # keep only selected scenario
-        samples_df = samples_df[samples_df[SampleGeneratorWrapper.SELECTED_SCENARIO] == True]
+        samples_df = samples_df.loc[samples_df[SampleGeneratorWrapper.SELECTED_SCENARIO]]
         samples_df = samples_df.drop(SampleGeneratorWrapper.SELECTED_SCENARIO, axis='columns')
 
         # rename the columns with full names
@@ -264,10 +267,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         for (scenario, scenario_sample) in dict_sample.items():
             samples_row = [scenario]
             out_samples_row = [scenario]
-            for generated_input in scenario_sample.values():
-                samples_row.append(generated_input)
-            for generated_output in dict_output[scenario].values():
-                out_samples_row.append(generated_output)
+            samples_row += list(scenario_sample.values())
+            out_samples_row += list(dict_output[scenario].values())
             samples_all_row.append(samples_row)
             out_samples_all_row.append(out_samples_row)
 

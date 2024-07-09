@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/02-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/03/02-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@ limitations under the License.
 '''
 import unittest
 from pathlib import Path
-from shutil import rmtree
 from tempfile import gettempdir
-from time import sleep
 
 import numpy as np
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestMDAPrerun(unittest.TestCase):
@@ -38,10 +37,8 @@ class TestMDAPrerun(unittest.TestCase):
 
     def tearDown(self):
         for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
             if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+                rmtree_safe(dir_to_del)
 
     def test_01_mda_no_init_values(self):
         '''

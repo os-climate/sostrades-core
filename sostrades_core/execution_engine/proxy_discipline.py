@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 from typing import Union, List
 
 import os
+from copy import deepcopy
 from os.path import dirname, join
 from typing import List, Union
 
@@ -210,7 +211,8 @@ class ProxyDiscipline:
     UNSUPPORTED_GEMSEO_TYPES = []
     for type in VAR_TYPE_MAP.keys():
         if type not in VAR_TYPE_GEMS and type not in NEW_VAR_TYPE:
-            UNSUPPORTED_GEMSEO_TYPES.append(type)
+            # Fixing PERF401 would require heavy refactoring
+            UNSUPPORTED_GEMSEO_TYPES.append(type)  # noqa: PERF401
 
     # # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
     # # df_dict = dict , string_dict = dict, list_dict = dict
@@ -1064,6 +1066,7 @@ class ProxyDiscipline:
         '''
         Configure the ProxyDiscipline
         '''
+
         self.assign_proxy_to_wrapper()
         # check if all config_dependency_disciplines are configured. If not no
         # need to try configuring the discipline because all is not ready for
@@ -1088,7 +1091,7 @@ class ProxyDiscipline:
 
     def __check_all_data_integrity(self):
         '''
-         generic data integrity_check where we call different generic function to check integrity 
+         generic data integrity_check where we call different generic function to check integrity
          + specific data integrity by discipline
         '''
         data_integrity = self.__generic_check_data_integrity()
@@ -1151,7 +1154,7 @@ class ProxyDiscipline:
 
     def update_reset_debug_mode(self):
         '''
-        Update the reset_debug_mode boolean if debug mode has changed + logger 
+        Update the reset_debug_mode boolean if debug mode has changed + logger
         '''
         # Debug mode logging and recursive setting (priority to the parent)
         debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
@@ -1376,95 +1379,97 @@ class ProxyDiscipline:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             data_dict (Dict[dict]): the data dict to prepare
         """
-
+        new_data_dict = {}
         for key, curr_data in data_dict.items():
-            data_keys = curr_data.keys()
-            curr_data[self.IO_TYPE] = io_type
-            curr_data[self.TYPE_METADATA] = None
+            # Kill the potential object link here , better way to do that ?
+            new_data = {key_data: value_data for key_data, value_data in curr_data.items()}
+            data_keys = new_data.keys()
+            new_data[self.IO_TYPE] = io_type
+            new_data[self.TYPE_METADATA] = None
             if isinstance(key, tuple):
-                curr_data[self.VAR_NAME] = key[0]
+                new_data[self.VAR_NAME] = key[0]
             else:
-                curr_data[self.VAR_NAME] = key
+                new_data[self.VAR_NAME] = key
             if self.USER_LEVEL not in data_keys:
-                curr_data[self.USER_LEVEL] = 1
+                new_data[self.USER_LEVEL] = 1
             if self.RANGE not in data_keys:
-                curr_data[self.RANGE] = None
+                new_data[self.RANGE] = None
             if self.UNIT not in data_keys:
-                curr_data[self.UNIT] = None
+                new_data[self.UNIT] = None
             if self.DESCRIPTION not in data_keys:
-                curr_data[self.DESCRIPTION] = None
+                new_data[self.DESCRIPTION] = None
             if self.POSSIBLE_VALUES not in data_keys:
-                curr_data[self.POSSIBLE_VALUES] = None
-            if curr_data['type'] in ['array', 'dict', 'dataframe']:
+                new_data[self.POSSIBLE_VALUES] = None
+            if new_data[self.TYPE] in ['array', 'dict', 'dataframe']:
                 if self.DATAFRAME_DESCRIPTOR not in data_keys:
-                    curr_data[self.DATAFRAME_DESCRIPTOR] = None
+                    new_data[self.DATAFRAME_DESCRIPTOR] = None
                 if self.DATAFRAME_EDITION_LOCKED not in data_keys:
-                    curr_data[self.DATAFRAME_EDITION_LOCKED] = True
+                    new_data[self.DATAFRAME_EDITION_LOCKED] = True
             # For dataframes but also dict of dataframes...
-            if curr_data['type'] in ['dict', 'dataframe']:
+            if new_data[self.TYPE] in ['dict', 'dataframe']:
                 if self.DF_EXCLUDED_COLUMNS not in data_keys:
-                    curr_data[self.DF_EXCLUDED_COLUMNS] = self.DEFAULT_EXCLUDED_COLUMNS
+                    new_data[self.DF_EXCLUDED_COLUMNS] = self.DEFAULT_EXCLUDED_COLUMNS
 
             if self.DISCIPLINES_FULL_PATH_LIST not in data_keys:
-                curr_data[self.DISCIPLINES_FULL_PATH_LIST] = []
+                new_data[self.DISCIPLINES_FULL_PATH_LIST] = []
             if self.VISIBILITY not in data_keys:
-                curr_data[self.VISIBILITY] = self.LOCAL_VISIBILITY
+                new_data[self.VISIBILITY] = self.LOCAL_VISIBILITY
             if self.DEFAULT not in data_keys:
-                if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
+                if new_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
                     raise Exception(
                         f'The variable {key} in discipline {self.sos_name} must have a default value because its visibility is Internal')
                 else:
-                    curr_data[self.DEFAULT] = None
+                    new_data[self.DEFAULT] = None
             else:
-                curr_data[self.VALUE] = curr_data[self.DEFAULT]
+                new_data[self.VALUE] = new_data[self.DEFAULT]
             # -- Initialize VALUE to None by default
             if self.VALUE not in data_keys:
-                curr_data[self.VALUE] = None
+                new_data[self.VALUE] = None
             if self.COUPLING not in data_keys:
-                curr_data[self.COUPLING] = False
+                new_data[self.COUPLING] = False
             if self.OPTIONAL not in data_keys:
-                curr_data[self.OPTIONAL] = False
+                new_data[self.OPTIONAL] = False
             if self.NUMERICAL not in data_keys:
-                curr_data[self.NUMERICAL] = False
+                new_data[self.NUMERICAL] = False
             if self.META_INPUT not in data_keys:
-                curr_data[self.META_INPUT] = False
+                new_data[self.META_INPUT] = False
 
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
-                if curr_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
-                    curr_data[self.EDITABLE] = False
+                if new_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
+                    new_data[self.EDITABLE] = False
                 else:
-                    curr_data[self.EDITABLE] = (io_type == self.IO_TYPE_IN)
+                    new_data[self.EDITABLE] = (io_type == self.IO_TYPE_IN)
             # -- Add NS_REFERENCE
-            if curr_data[self.VISIBILITY] not in self.AVAILABLE_VISIBILITIES:
-                var_name = curr_data[self.VAR_NAME]
-                visibility = curr_data[self.VISIBILITY]
-                raise ValueError(self.sos_name + '.' + var_name + ': visibility ' + str(
+            if new_data[self.VISIBILITY] not in self.AVAILABLE_VISIBILITIES:
+                var_name = new_data[self.VAR_NAME]
+                visibility = new_data[self.VISIBILITY]
+                raise ValueError(self.sos_name + '.' + var_name + ': ' + self.VISIBILITY + str(
                     visibility) + ' not in allowed visibilities: ' + str(self.AVAILABLE_VISIBILITIES))
             if self.NAMESPACE in data_keys:
-                curr_data[self.NS_REFERENCE] = self.get_ns_reference(
-                    curr_data[self.VISIBILITY], curr_data[self.NAMESPACE])
+                new_data[self.NS_REFERENCE] = self.get_ns_reference(
+                    new_data[self.VISIBILITY], new_data[self.NAMESPACE])
             else:
-                curr_data[self.NS_REFERENCE] = self.get_ns_reference(
-                    curr_data[self.VISIBILITY])
+                new_data[self.NS_REFERENCE] = self.get_ns_reference(
+                    new_data[self.VISIBILITY])
 
             # store structuring variables in self._structuring_variables
-            if self.STRUCTURING in data_keys and curr_data[self.STRUCTURING] is True:
-                if curr_data[self.IO_TYPE] == self.IO_TYPE_IN:
+            if self.STRUCTURING in data_keys and new_data[self.STRUCTURING] is True:
+                if new_data[self.IO_TYPE] == self.IO_TYPE_IN:
                     self._structuring_variables[key] = None
-                del curr_data[self.STRUCTURING]
+                del new_data[self.STRUCTURING]
             if self.CHECK_INTEGRITY_MSG not in data_keys:
-                curr_data[self.CHECK_INTEGRITY_MSG] = ''
+                new_data[self.CHECK_INTEGRITY_MSG] = ''
 
             # initialize formula
             if self.FORMULA not in data_keys:
-                curr_data[self.FORMULA] = None
+                new_data[self.FORMULA] = None
             if self.IS_FORMULA not in data_keys:
-                curr_data[self.IS_FORMULA] = False
+                new_data[self.IS_FORMULA] = False
             if self.IS_EVAL not in data_keys:
-                curr_data[self.IS_EVAL] = False
-
-        return data_dict
+                new_data[self.IS_EVAL] = False
+            new_data_dict[key] = new_data
+        return new_data_dict
 
     def get_sosdisc_inputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
@@ -1866,7 +1871,7 @@ class ProxyDiscipline:
 
     def add_status_observer(self, observer):
         '''
-        Observer has to be set before execution (and prepare_execution) and the mdo_discipline does not exist. 
+        Observer has to be set before execution (and prepare_execution) and the mdo_discipline does not exist.
         We store observers in self.status_observers and add it to the mdodiscipline when it ies instanciated in prepare_execution
         '''
         if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
@@ -1879,7 +1884,7 @@ class ProxyDiscipline:
     def remove_status_observer(self, observer):
         '''
         Remove the observer from the status_observers list
-        And normally the mdodiscipline has already been instanciated and we can remove it. 
+        And normally the mdodiscipline has already been instanciated and we can remove it.
         If not the case the mdodiscipline does not exist such as the observer
         '''
         if observer in self.status_observers:
@@ -2023,7 +2028,7 @@ class ProxyDiscipline:
 
     def add_disc_list_to_config_dependency_disciplines(self, disc_list):
         '''
-        Add a list to children_list 
+        Add a list to children_list
         '''
         for disc in disc_list:
             self.add_disc_to_config_dependency_disciplines(disc)
@@ -2037,10 +2042,11 @@ class ProxyDiscipline:
         Get sub disciplines list to configure according to their is_configured method (coupling, eval, etc.) from a
         discipline list
         '''
-        disc_to_configure = []
-        for disc in disc_list:
-            if disc.configurator is None and not disc.is_configured():
-                disc_to_configure.append(disc)
+        disc_to_configure = [
+            disc
+            for disc in disc_list
+            if disc.configurator is None and not disc.is_configured()
+        ]
         return disc_to_configure
 
     def get_disciplines_to_configure(self):

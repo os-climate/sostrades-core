@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/17-2024/07/03 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
     def get_gather_variable(self):
         '''
-        Variables to gather are the variable in the DESC_OUT of the instantiator which are shared 
+        Variables to gather are the variable in the DESC_OUT of the instantiator which are shared
         We suppose that local variable must remain local and consequently are not gathered
         '''
         var_to_gather_dict = {}
@@ -130,7 +130,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
     def add_new_variables_in_inst_desc_in(self, new_variables, gather_ns_in):
         '''
-        Add a variable in the inst_desc_in with its full name and the gather_ns_in defined in the map 
+        Add a variable in the inst_desc_in with its full name and the gather_ns_in defined in the map
         '''
         for new_variable, value_dict in new_variables.items():
             full_key = self.ee.ns_manager.compose_ns(
@@ -172,7 +172,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
     def configure(self):
         '''
-        Configure the gather : 
+        Configure the gather :
         - build the inst_desc_in with gather variables (only shared variables) with the value of the scatter var_name
         - build the inst_desc_out (variable_dict)
         - configure the discipline with completed inst_desc_in and inst_desc_out
@@ -233,19 +233,21 @@ class ProxyDisciplineGather(ProxyDiscipline):
         Update data_in and data_out with inst_desc_in and inst_desc_out which have been modified during a configure
         '''
 
-        modified_inputs = {}
-        modified_outputs = {}
-
         disc_in = self.get_data_in()
         disc_out = self.get_data_out()
 
-        for key, value in self.inst_desc_in.items():
-            if key in disc_in and disc_in[key][self.NAMESPACE] != value[self.NAMESPACE]:
-                modified_inputs[key] = value
 
-        for key, value in self.inst_desc_out.items():
-            if key in disc_out and disc_out[key][self.NAMESPACE] != value[self.NAMESPACE]:
-                modified_outputs[key] = value
+        modified_inputs = {
+            key:value
+            for key, value in self.inst_desc_in.items()
+            if key in disc_in and disc_in[key][self.NAMESPACE] != value[self.NAMESPACE]
+        }
+
+        modified_outputs = {
+            key:value
+            for key, value in self.inst_desc_out.items()
+            if key in disc_out and disc_out[key][self.NAMESPACE] != value[self.NAMESPACE]
+        }
 
         if len(modified_inputs) > 0:
             completed_modified_inputs = self._prepare_data_dict(
@@ -264,7 +266,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
     def clean_inst_desc_in_with_sub_names(self, sub_names):
         '''
-        Clean the inst_desc_in with names that doesn't exist in the scatter anymore, 
+        Clean the inst_desc_in with names that doesn't exist in the scatter anymore,
         Update the gather function of scatter variables
         '''
         disc_in = self.get_data_in()

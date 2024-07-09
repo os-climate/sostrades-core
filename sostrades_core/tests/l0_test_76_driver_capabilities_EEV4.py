@@ -1826,7 +1826,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
     def test_13_sellar_coupling_multi_instances_flatten(self):
         """
-        This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val. 
+        This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val.
         """
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/06/10 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ limitations under the License.
 import unittest
 from os.path import dirname, join
 from pathlib import Path
-from shutil import rmtree
 
 import numpy as np
 import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestUncertaintyQuantification(unittest.TestCase):
@@ -47,7 +47,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
     def tearDown(self):
         for dir in self.dir_to_del:
             if Path(dir).is_dir():
-                rmtree(dir)
+                rmtree_safe(dir)
 
     def test_01_uncertainty_quantification(self):
 
@@ -87,12 +87,15 @@ class TestUncertaintyQuantification(unittest.TestCase):
             {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output2': out2, 'output3': out3})
 
         input_selection = {'selected_input': [True, True, True],
-                           'full_name': ['COC', 'RC', 'NRC']}
+                           'shortest_name': ['COC', 'RC', 'NRC'],
+                           'full_name': ['COC', 'RC', 'NRC'],}
 
         output_selection = {'selected_output': [True, True, True],
+                            'shortest_name': ['output1', 'output2', 'output3'],
                             'full_name': ['output1', 'output2', 'output3']}
 
         dspace = pd.DataFrame({
+            'variable': ['COC', 'RC', 'NRC'],
             'shortest_name': ['COC', 'RC', 'NRC'],
             'lower_bnd': [85., 80., 80.],
             'upper_bnd': [105., 120., 120.],
@@ -138,10 +141,11 @@ class TestUncertaintyQuantification(unittest.TestCase):
         disc1_name = 'Disc1'
         ns = f'{self.ee.study_name}'
         dspace_dict = {'variable': [f'subprocess.{disc1_name}.a', 'x'],
-
+                       'shortest_name': [f'subprocess.{disc1_name}.a', 'x'],
+                       'full_name': [f'subprocess.{disc1_name}.a', 'x'],
+                       'nb_points': [10, 10],
                        'lower_bnd': [0., 0.],
                        'upper_bnd': [10., 10.],
-
                        }
         dspace = pd.DataFrame(dspace_dict)
 
@@ -232,10 +236,12 @@ class TestUncertaintyQuantification(unittest.TestCase):
             {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output2': out2, 'output3': out3})
 
         input_selection = {'selected_input': [True, True, True, True],
-                           'full_name': ['COC', 'RC', 'NRC', 'input_array']}
+                           'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
+                           'full_name': ['COC', 'RC', 'NRC', 'input_array'],}
 
         output_selection = {'selected_output': [True, True, True],
-                            'full_name': ['output1', 'output2', 'output3']}
+                            'shortest_name': ['output1', 'output2', 'output3'],
+                            'full_name': ['output1', 'output2', 'output3'],}
 
         dspace = pd.DataFrame({
             'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
@@ -243,6 +249,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             'upper_bnd': [105., 120., 120., np.array([150., 80., 120.])],
             'nb_points': [10, 10, 10, 10],
             'full_name': ['COC', 'RC', 'NRC', 'input_array'],
+            'variable': ['COC', 'RC', 'NRC', 'input_array'],
         })
 
         private_values = {
@@ -328,10 +335,12 @@ class TestUncertaintyQuantification(unittest.TestCase):
             {'scenario_name': self.samples_dataframe['scenario_name'], 'output1': out1, 'output_array': out_array})
 
         input_selection = {'selected_input': [True, True, True, True],
-                           'full_name': ['COC', 'RC', 'NRC', 'input_array']}
+                           'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
+                           'full_name': ['COC', 'RC', 'NRC', 'input_array'],}
 
         output_selection = {'selected_output': [True, True],
-                            'full_name': ['output1', 'output_array']}
+                            'shortest_name': ['output1', 'output_array'],
+                            'full_name': ['output1', 'output_array'],}
 
         dspace = pd.DataFrame({
             'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
@@ -339,6 +348,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
             'upper_bnd': [105., 120., 120., np.array([150., 80., 120.])],
             'nb_points': [10, 10, 10, 10],
             'full_name': ['COC', 'RC', 'NRC', 'input_array'],
+            'variable': ['COC', 'RC', 'NRC', 'input_array'],
         })
 
         private_values = {

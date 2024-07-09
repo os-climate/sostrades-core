@@ -16,9 +16,11 @@ limitations under the License.
 import json
 import logging
 import os
+import re
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
+    DatasetGenericException,
 )
 from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
     DatasetConnectorType,
@@ -27,6 +29,14 @@ from sostrades_core.datasets.datasets_connectors.datasets_connector_factory impo
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
+class DatasetConnectorNotFoundException(DatasetGenericException):
+    """
+    Exception when a dataset connector is not found
+    """
+    def __init__(self, connector_name:str):
+        self.connector_name = connector_name
+        super().__init__(f"Dataset connector '{connector_name}' not found")
+
 class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     """
     Datasets connector manager
@@ -34,9 +44,10 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     CONNECTOR_TYPE_STR = "connector_type"
     CONNECTOR_IDENTIFIER_STR = "connector_id"
     CONNECTOR_ARGS_STR = "connector_args"
+    CONNECTOR_DEFAULT_REPOSITORY_RE = r'(?<=repos:)[\w-]+'
     __registered_connectors = {}
     __logger = logging.getLogger(__name__)
-    
+
     @classmethod
     def get_connector(cls, connector_identifier:str) -> AbstractDatasetsConnector:
         """
@@ -47,7 +58,13 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         """
         cls.__logger.debug(f"Getting connector {connector_identifier}")
         if connector_identifier not in cls.__registered_connectors:
-            raise ValueError(f"Connector {connector_identifier} not found.")
+            # check if the connector starts
+            match = re.search(DatasetsConnectorManager.CONNECTOR_DEFAULT_REPOSITORY_RE, connector_identifier)
+            if match:
+                module_name = match.group(0)
+                return DatasetsConnectorManager.register_connector(connector_identifier, DatasetConnectorType.Local_repository, module_name=module_name)
+            else:
+                raise DatasetConnectorNotFoundException(connector_identifier)
         return cls.__registered_connectors[connector_identifier]
 
     @classmethod
@@ -66,14 +83,14 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
             cls.__logger.debug(f'Existing connector \"{connector_identifier}\" is updated')
 
         connector = DatasetsConnectorFactory.get_connector(connector_type=connector_type, **connector_instanciation_fields)
-        cls.__registered_connectors[connector_identifier] = connector 
+        cls.__registered_connectors[connector_identifier] = connector
         return connector
-    
+
     @classmethod
     def instanciate_connectors_from_json_file(cls, file_path:str):
         with open(file=file_path, mode="r", encoding="utf-8") as file:
             json_data = json.load(file)
-        
+
         for connector_data in json_data:
             connector_id = connector_data[cls.CONNECTOR_IDENTIFIER_STR]
             connector_type = DatasetConnectorType.get_enum_value(connector_data[cls.CONNECTOR_TYPE_STR])

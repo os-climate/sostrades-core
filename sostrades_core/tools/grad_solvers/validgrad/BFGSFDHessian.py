@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,39 +15,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding: iso-8859-1 -*-
-import numpy
+import numpy as np
 
 
 class BFGSFDHessian():
-    
+
     def __init__(self,scheme,df_pointer):
         self.__scheme=scheme
         self.__dfpointer=df_pointer
-        
+
     def get_scheme(self):
         return self.__scheme
-    
+
     def iterate_bfgs_mat(self,H,xk,xkp1,grad_k,grad_kp1):
-        sk=numpy.atleast_2d(xkp1-xk).T#numpy.atleast_2d
-        yk=numpy.atleast_2d(grad_kp1-grad_k).T
+        sk=np.atleast_2d(xkp1-xk).T#numpy.atleast_2d
+        yk=np.atleast_2d(grad_kp1-grad_k).T
 #        print "sk"+str(sk)
 #        print "yk"+str(yk)
 #        print "numpy.dot(yk.T,sk)"+str(numpy.dot(yk.T,sk))
 #        print "numpy.dot(numpy.dot(sk.T,H),sk)"+str(numpy.dot(numpy.dot(sk.T,H),sk))
-        H+=numpy.dot(yk,yk.T)/numpy.dot(yk.T,sk)-numpy.dot(numpy.dot(H,sk),numpy.dot(sk.T,H))/numpy.dot(numpy.dot(sk.T,H),sk)
+        H+=np.dot(yk,yk.T)/np.dot(yk.T,sk)-np.dot(np.dot(H,sk),np.dot(sk.T,H))/np.dot(np.dot(sk.T,H),sk)
 #        print "BFGS approximation = \n"+str(H)
 #        d2x=numpy.atleast_2d(xkp1).T
 #        if numpy.dot(numpy.dot(d2x.T,H),d2x)<0.:
 #            print "H is not positive definite !"
         return H
-    
+
     def hess_f(self,x):
         """
         Compute hessian BFGS approximation
         """
         self.__scheme.set_x(x)
         self.__scheme.generate_samples()
-        H=numpy.eye(len(x))
+        H=np.eye(len(x))
         grad_k=self.__dfpointer(x)
         xk=x
         for x in self.__scheme.get_samples():
@@ -64,12 +64,13 @@ class BFGSFDHessian():
         """
         self.__scheme.set_x(x)
         self.__scheme.generate_samples()
-        
+
         grad_k=self.__dfpointer(x)
-        nb_f=numpy.shape(grad_k)[0]
-        H_list=[]
-        for i in range(nb_f):
-            H_list.append(numpy.eye(len(x)))
+        nb_f=np.shape(grad_k)[0]
+        H_list = [
+            np.eye(len(x))
+            for i in range(nb_f)
+        ]
         xk=x
         for x_up in self.__scheme.get_samples():
             grad_kp1=self.__dfpointer(x_up)

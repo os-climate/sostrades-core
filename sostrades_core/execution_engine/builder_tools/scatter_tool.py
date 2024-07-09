@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/07/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/07/17-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ class ScatterTool(SosTool):
                         self.display_options[key] = display_options_dict[key]
 
     def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None):
-        '''    
+        '''
         Method that associate tool to the driver and add scatter map
         '''
         SosTool.associate_tool_to_driver(
@@ -122,8 +122,7 @@ class ScatterTool(SosTool):
                 samples_df = pd.concat([samples_df, pd.DataFrame([ref_series])], ignore_index=True)
 
             self.set_scatter_list(
-                samples_df[samples_df[self.driver.SELECTED_SCENARIO] == True][
-                    self.driver.SCENARIO_NAME].values.tolist())
+                samples_df.loc[samples_df[self.driver.SELECTED_SCENARIO]][self.driver.SCENARIO_NAME].values.tolist())
 
         display_options = self.driver.get_sosdisc_inputs('display_options')
         # if display options are set in the process, it wins we cannot modify display options again
@@ -199,9 +198,9 @@ class ScatterTool(SosTool):
                     scatter_list_name, self.driver.get_data_out()), 'value', self.__scatter_list)
 
     def build(self):
-        ''' 
-        Configuration of the SoSscatter : 
-        -First configure the scatter 
+        '''
+        Configuration of the SoSscatter :
+        -First configure the scatter
         -Get the list to scatter on and the associated namespace
         - Look if disciplines are already scatterred and compute the new list to scatter (only new ones)
         - Remove disciplines that are not in the scatter list
@@ -263,7 +262,7 @@ class ScatterTool(SosTool):
         Build child disciplines under the father executor of the driver (to get a flatten subprocess all the time)
         name (string) : new name in the scatter_list
         new_name_flag (bool) : True if name is a new_name in the build
-        ns_ids_list (list) : The list of ns_keys that already have been updated with the scatter_name and mus tbe associated to the builder 
+        ns_ids_list (list) : The list of ns_keys that already have been updated with the scatter_name and mus tbe associated to the builder
 
         1. Set builders as a list and loop over builders
         2. Set the new_name of the builder with the scatter name
@@ -278,6 +277,11 @@ class ScatterTool(SosTool):
 
             old_builder_name = builder.sos_name
             disc_name = self.get_subdisc_name(name, old_builder_name)
+            # if builder has a display name, update it
+            if builder in self.ee.ns_manager.display_ns_dict:
+                old_display_value = self.ee.ns_manager.display_ns_dict[builder]
+                new_display_value = self.get_subdisc_name_display(name, old_display_value)
+                self.ee.ns_manager.display_ns_dict[builder] = new_display_value
 
             builder.set_disc_name(disc_name)
 
@@ -287,6 +291,10 @@ class ScatterTool(SosTool):
                 self.associate_namespaces_to_builder(builder, ns_ids_list)
             self.set_father_discipline()
             disc = builder.build()
+
+            if builder in self.ee.ns_manager.display_ns_dict:
+                # restore old display value of builder
+                self.ee.ns_manager.display_ns_dict[builder] = old_display_value
 
             self.apply_display_options(disc, name, old_builder_name)
 
@@ -314,6 +322,30 @@ class ScatterTool(SosTool):
         disc_name = f'{namespace_name}.{name}.{old_builder_name}'
 
         return disc_name
+
+    def get_subdisc_name_display(self, name, old_builder_name):
+        '''
+        Calculates the full display name of the discipline.
+
+        Args:
+            name: name of the scenario
+            old_builder_name: old name of the builder
+
+        Returns:
+            disc_name : full_name of the discipline to build
+
+        '''
+        # get the full_name of the driver and of the father_executor
+        driver_full_name = self.driver.get_disc_full_name()
+        father_executor_name = self.driver.father_executor.get_disc_full_name()
+        # delete the name of the father_executor because the disc will be built at father_executor node
+        namespace_name = driver_full_name.replace(f'{father_executor_name}.', '', 1)
+        # Construct the parts of the full discipline name
+        old_builder_parts = old_builder_name.split('.')
+        parts = [father_executor_name] + [namespace_name] + [name] + old_builder_parts[1:]
+        disc_name = '.'.join(parts)
+        return disc_name
+
 
     def apply_display_options(self, disc, name, old_builder_name):
         '''

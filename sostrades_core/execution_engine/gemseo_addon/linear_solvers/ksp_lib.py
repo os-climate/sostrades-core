@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/09-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/06/09-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@ limitations under the License.
 '''
 import logging
 
-import petsc4py  # pylint: disable-msg=E0401
+import petsc4py
 from gemseo.algos.linear_solvers.ksp_lib import (
-    _convert_ndarray_to_mat_or_vec,  # pylint: disable-msg=E1102,E0611 # pylint: disable-msg=E0401
+    _convert_ndarray_to_mat_or_vec,
 )
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 from numpy import isnan
 
 # Must be done before from petsc4py import PETSc
 petsc4py.init([])
-from petsc4py import PETSc  # pylint: disable-msg=E0401
+from petsc4py import PETSc  # noqa: E402
 
 """A PETSC KSP linear solvers library wrapper."""
 
@@ -344,7 +344,7 @@ class PetscKSPAlgos(LinearSolverLib):
                 f'The PETSc linear solver has not converged with error {KSP_CONVERGED_REASON[convergence_info]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
             LOGGER.warning(
                 f' The convergence_history of length {len(ksp.getConvergenceHistory())} is {ksp.getConvergenceHistory()}')
-
+        petsc4py.PETSc.garbage_cleanup()
         return sol, info, ksp
 
 

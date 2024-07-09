@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/06/10 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,11 +20,10 @@ import unittest
 from io import StringIO
 from os.path import dirname, join
 from pathlib import Path
-from shutil import rmtree
-from time import sleep
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.sos_processes.test.test_disc1.usecase import Study
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestScatter(unittest.TestCase):
@@ -40,12 +40,9 @@ class TestScatter(unittest.TestCase):
         self.study_name = f'{self.namespace}'
 
     def tearDown(self):
-
         for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
             if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+                rmtree_safe(dir_to_del)
 
     def test_01_perfos_test_disc1_process(self):
 
@@ -63,10 +60,10 @@ class TestScatter(unittest.TestCase):
 
         profil = cProfile.Profile()
         profil.enable()
-        
+
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
-        
+
         profil.disable()
         result = StringIO()
 
@@ -78,7 +75,7 @@ class TestScatter(unittest.TestCase):
         result = 'ncalls' + result.split('ncalls')[-1]
         result = '\n'.join([','.join(line.rstrip().split(None, 5))
                             for line in result.split('\n')])
-        
+
 
         with open(join(dirname(__file__), 'test_disc1_perfos.csv'), 'w+') as f:
             # f = open(result.rsplit('.')[0] + '.csv', 'w')

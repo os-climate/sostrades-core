@@ -16,13 +16,12 @@ limitations under the License.
 import unittest
 from logging import Handler
 from pathlib import Path
-from shutil import rmtree
 from tempfile import gettempdir
-from time import sleep
 
 import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class UnitTestHandler(Handler):
@@ -71,10 +70,8 @@ class TestDriverDataIntegrity(unittest.TestCase):
     def tearDown(self):
 
         for dir_to_del in self.dirs_to_del:
-            sleep(0.5)
             if Path(dir_to_del).is_dir():
-                rmtree(dir_to_del)
-        sleep(0.5)
+                rmtree_safe(dir_to_del)
 
     def test_01_two_scenarios_with_same_name(self):
         proc_name = 'test_multi_driver_simple'
@@ -126,7 +123,7 @@ class TestDriverDataIntegrity(unittest.TestCase):
         dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        samples_df.iloc[2].loc['scenario_name'] = 'scenario_1'
+        samples_df.loc[2, 'scenario_name'] = 'scenario_1'
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         exp_tv = 'Nodes representation for Treeview MyCase\n' \
@@ -226,7 +223,7 @@ class TestDriverDataIntegrity(unittest.TestCase):
         check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df',
                                                         'check_integrity_msg')
         integrity_error_message = 'Your samples_df is empty, the driver cannot be configured'
-  
+
         self.assertEqual(check_integrity_msg, integrity_error_message)
 
     def test_04_mono_integrity_samples_df_empty(self):
@@ -246,10 +243,10 @@ class TestDriverDataIntegrity(unittest.TestCase):
                                                         'check_integrity_msg')
         check_integrity_msg = check_integrity_msg.split('\n')[0]
         integrity_error_message = 'Your samples_df is empty, the driver cannot be configured'
-  
+
         self.assertEqual(check_integrity_msg, integrity_error_message)
 
-    
+
     def test_05_mono_integrity_samples_df_no_input(self):
         proc_name = 'test_mono_driver_simple'
         repo_name = self.repo + ".tests_driver_eval.mono"
@@ -268,9 +265,9 @@ class TestDriverDataIntegrity(unittest.TestCase):
         check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.Eval.samples_df',
                                                         'check_integrity_msg')
         integrity_error_message = 'There should be at least one trade variable column in samples_df'
-  
+
         self.assertTrue(check_integrity_msg, integrity_error_message)
-    
+
     def test_06_multi_integrity_samples_df_none_input(self):
         proc_name = 'test_multi_driver_simple'
         repo_name = self.repo + ".tests_driver_eval.multi"
@@ -282,16 +279,16 @@ class TestDriverDataIntegrity(unittest.TestCase):
         samples_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, None]],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
-        
+
         dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df',
                                                         'check_integrity_msg')
         integrity_error_message = "There is a None in the samples_df, check the columns ['Disc1.b'] "
-  
+
         self.assertEqual(check_integrity_msg, integrity_error_message)
-    
+
     def test_06_mono_integrity_samples_df_none_input(self):
         proc_name = 'test_mono_driver_simple'
         repo_name = self.repo + ".tests_driver_eval.mono"
@@ -303,14 +300,14 @@ class TestDriverDataIntegrity(unittest.TestCase):
         samples_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, None]],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
-        
+
         dict_values = {f'{self.study_name}.Eval.samples_df': samples_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.Eval.samples_df',
                                                         'check_integrity_msg')
         integrity_error_message = "There is a None in the samples_df, check the columns ['Disc1.b'] "
-  
+
         self.assertEqual(check_integrity_msg, integrity_error_message)
 
     def test_multi_07_integrity_samples_df_type_input(self):
@@ -324,16 +321,16 @@ class TestDriverDataIntegrity(unittest.TestCase):
         samples_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, 'a']],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
-        
+
         dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df',
                                                         'check_integrity_msg')
         integrity_error_message = 'Some value has wrong types in column Disc1.b, the subprocess variable is of type float and all variables in the column should be the same'
-  
+
         self.assertEqual(check_integrity_msg, integrity_error_message)
-    
+
     def test_07_mono_integrity_samples_df_type_input(self):
         proc_name = 'test_mono_driver_simple'
         repo_name = self.repo + ".tests_driver_eval.mono"
@@ -345,16 +342,16 @@ class TestDriverDataIntegrity(unittest.TestCase):
         samples_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, 'a']],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
-        
+
         dict_values = {f'{self.study_name}.Eval.samples_df': samples_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.Eval.samples_df',
                                                         'check_integrity_msg')
         integrity_error_message = 'Some value has wrong types in column Disc1.b, the subprocess variable is of type float and all variables in the column should be the same'
-  
+
         self.assertEqual(check_integrity_msg, integrity_error_message)
-    
+
     def test_08_mono_integrity_no_gather_output(self):
         proc_name = 'test_mono_driver_simple'
         repo_name = self.repo + ".tests_driver_eval.mono"
@@ -366,7 +363,7 @@ class TestDriverDataIntegrity(unittest.TestCase):
         samples_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, '2']],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
-        
+
         dict_values = {f'{self.study_name}.Eval.samples_df': samples_df}
         dict_values[f'{self.study_name}.Eval.gather_outputs'] = pd.DataFrame(
             [[False, 'Disc1.b', None]],
@@ -376,9 +373,9 @@ class TestDriverDataIntegrity(unittest.TestCase):
         check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.Eval.gather_outputs',
                                                         'check_integrity_msg')
         integrity_error_message = 'There should be at least one selected output'
-  
+
         self.assertEqual(check_integrity_msg, integrity_error_message)
-    
+
     def test_09_integrity_samples_df_unknown_input(self):
         proc_name = 'test_multi_driver_simple'
         repo_name = self.repo + ".tests_driver_eval.multi"
@@ -390,14 +387,14 @@ class TestDriverDataIntegrity(unittest.TestCase):
         samples_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, '2']],
             columns=['scenario_name', 'selected_scenario', 'Disc1.wrong_input'])
-        
+
         dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 
         check_integrity_msg = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.samples_df',
                                                         'check_integrity_msg')
         integrity_error_message = 'The variable Disc1.wrong_input is not in the subprocess eval input values: It cannot be a column of the samples_df '
-  
+
         self.assertEqual(check_integrity_msg, integrity_error_message)
 
     def test_10_input_not_editable(self):
@@ -411,7 +408,7 @@ class TestDriverDataIntegrity(unittest.TestCase):
         samples_df = pd.DataFrame(
             [['scenario_1', True, self.b1], ['scenario_2', True, '2']],
             columns=['scenario_name', 'selected_scenario', 'Disc1.b'])
-        
+
         dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
         self.exec_eng.load_study_from_input_dict(dict_values)
 

@@ -55,17 +55,17 @@ def run_usecase(usecase_file:str, dataset_mapping_json_file:Optional[str]):
     if dataset_mapping_json_file is not None:
         if not os.path.exists(dataset_mapping_json_file):
             raise FileNotFoundError(f"File {dataset_mapping_json_file} does not exist")
-        
+
         # Load process name
         dataset_mapping = DatasetsMapping.from_json_file(dataset_mapping_json_file)
         process_module_name = dataset_mapping.process_module_path
 
         test_module_importability(process_module_name + ".process")
-    
+
     uc_cls = StudyManager(file_path=usecase_file)
 
     if dataset_mapping is not None:
-        uc_cls.load_study(dataset_mapping_json_file)
+        uc_cls.update_data_from_dataset_mapping(dataset_mapping_json_file)
     else:
         uc_cls.load_data()
 

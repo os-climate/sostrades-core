@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -64,8 +64,9 @@ class ParameterChange:
     variable_type: str
     old_value: Any
     new_value: Any
-    dataset_id: Union[str, None]
     connector_id: Union[str, None]
+    dataset_id: Union[str, None]
+    dataset_parameter_id: Union[str, None]
     date: datetime
 
 
@@ -126,7 +127,7 @@ class DataManager:
 
     def fill_cache_map(self, disc_info_list, disc):
         '''
-        Fill the cache_map for the dump/load cache method 
+        Fill the cache_map for the dump/load cache method
         '''
         hashed_uid = self.generate_hashed_uid(disc_info_list)
         self.cache_map[hashed_uid] = disc.cache
@@ -207,12 +208,12 @@ class DataManager:
 
     def check_data_in_dm(self, var_f_name):
         '''
-        Check if the data is in the DM with its full name 
+        Check if the data is in the DM with its full name
 
-        :params: var_f_name, full variable name to check 
-        :type : string 
+        :params: var_f_name, full variable name to check
+        :type : string
 
-        :returns: boolean True or False 
+        :returns: boolean True or False
         '''
         data_in_dm = False
 
@@ -223,7 +224,7 @@ class DataManager:
         return data_in_dm
 
     def set_data(self, var_f_name, attr, val, check_value=True):
-        ''' Set attr value of var_f_name in data_dict 
+        ''' Set attr value of var_f_name in data_dict
         '''
         if self.get_data_id(var_f_name) in self.data_dict:
             if check_value:
@@ -265,12 +266,12 @@ class DataManager:
         return data
 
     def get_value(self, var_f_name):
-        ''' Get value of var_f_name from data_dict 
+        ''' Get value of var_f_name from data_dict
         '''
         return self.get_data(var_f_name, ProxyDiscipline.VALUE)
 
     def get_discipline(self, disc_id):
-        ''' Get discipline with disc_id from disciplines_dict 
+        ''' Get discipline with disc_id from disciplines_dict
         '''
         if disc_id in self.disciplines_dict:
             return self.disciplines_dict[disc_id][self.DISC_REF]
@@ -278,13 +279,11 @@ class DataManager:
             return None
 
     def get_disciplines_with_name(self, disc_f_name):
-        ''' Get discipline with disc_id from disciplines_dict 
+        ''' Get discipline with disc_id from disciplines_dict
         '''
-        disc_list = []
         disc_id_list = self.get_discipline_ids_list(disc_f_name)
 
-        for disc_id in disc_id_list:
-            disc_list.append(self.disciplines_dict[disc_id][self.DISC_REF])
+        disc_list = [self.disciplines_dict[disc_id][self.DISC_REF] for disc_id in disc_id_list]
 
         return disc_list
 
@@ -292,31 +291,21 @@ class DataManager:
         '''
         Get all disciplines that starts with starting_name in the datamanager
         '''
-        disc_list = []
-        for disc_name in self.disciplines_id_map:
-            if disc_name.startswith(starting_name):
-                disc_list.append(disc_name)
+        disc_list = [disc_name for disc_name in self.disciplines_id_map if disc_name.startswith(starting_name)]
 
         return disc_list
 
     def get_all_namespaces_from_var_name(self, var_name):
-        ''' Get all namespaces containing var_name in data_dict 
+        ''' Get all namespaces containing var_name in data_dict
         '''
-        namespace_list = []
-        for key in self.data_id_map.keys():
-            if key.endswith(f'.{var_name}'):
-                # if key == var_name:
-                namespace_list.append(key)
+        namespace_list = [key for key in self.data_id_map.keys() if key.endswith(f'.{var_name}')]
 
         return namespace_list
 
     def get_all_var_name_with_ns_key(self, var_name):
         ''' Get all namespaces containing var_name in data_dict plus their namespace key as a dict
         '''
-        namespace_list = []
-        for key in self.data_id_map.keys():
-            if key.endswith('.' + var_name):
-                namespace_list.append(key)
+        namespace_list = [key for key in self.data_id_map.keys() if key.endswith('.' + var_name)]
         if len(namespace_list) > 0:
             ns_dict_obj = self.get_data_dict_attr('ns_reference')
             return {ns: ns_dict_obj[ns].name for ns in namespace_list}
@@ -351,7 +340,7 @@ class DataManager:
             self.add_disc_id_to_disc_id_map(disc_f_name, disc_id)
 
     def set_values_from_dict(self, values_dict, full_ns_keys=True):
-        ''' Set values in data_dict from dict with namespaced keys 
+        ''' Set values in data_dict from dict with namespaced keys
             if full_ns_keys (not uuid), try to get its uuid correspondency through get_data_id function
         '''
         keys_to_map = self.data_id_map.keys() if full_ns_keys else self.data_id_map.values()
@@ -368,22 +357,22 @@ class DataManager:
                                  in_vars: bool, init_coupling_vars: bool, out_vars: bool) -> None:
         '''
         Set values in data_dict from dict with namespaced keys
-        
+
         :param values_dict: Dictionnary {name : values}
         :type values_dict: dict[str:Any]
-        
+
         :param parameter_changes: list of effective parameter changes filled in place
         :type parameter_changes: list[ParameterChange]
 
         :param already_set_data: set of data already set
         :type already_set_data: set[str]
-        
+
         :param in_vars: set in vars
         :type in_vars: bool
-        
+
         :param init_coupling_vars: init coupling vars
         :type init_coupling_vars: bool
-        
+
         :param out_vars: set out vars
         :type out_vars: bool
         '''
@@ -423,7 +412,7 @@ class DataManager:
 
         :param: datasets_mapping, adatset list and mapping with study namespaces
         :type: DatasetsMapping
-        
+
         :param already_set_data: set of data already set
         :type already_set_data: set[str]
 
@@ -432,10 +421,10 @@ class DataManager:
 
         :param in_vars: set in vars
         :type in_vars: bool
-        
+
         :param init_coupling_vars: init coupling vars
         :type init_coupling_vars: bool
-        
+
         :param out_vars: set out vars
         :type out_vars: bool
         '''
@@ -466,27 +455,36 @@ class DataManager:
 
         # iterate on each namespace to retrieve data in this namespace
         for namespace, data_dict in namespaced_data_dict.items():
+
             datasets_info = datasets_mapping.get_datasets_info_from_namespace(namespace, self.name)
             # retrieve the list of dataset associated to the namespace from the mapping
             if len(datasets_info) > 0:
                 # get data values into the dataset into the right format
                 updated_data = self.dataset_manager.fetch_data_from_datasets(
                     datasets_info=datasets_info, data_dict=data_dict[TYPE])
+                self.logger.warning(f"Retrieved the namespace {namespace} with values: {list(updated_data.keys())}")
                 # update data values in dm
                 for data_name, new_data in updated_data.items():
                     key = data_dict[KEY][data_name]
                     new_value = new_data[DatasetsManager.VALUE]
                     connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
                     dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_id
-                    self.apply_parameter_change(key, new_value, parameter_changes, connector_id, dataset_id)
+                    # dataset_parameter_id = new_data[DatasetsManager.DATASET_INFO].dataset_parameter_id
+                    self.apply_parameter_change(key, new_value, parameter_changes,
+                                                connector_id=connector_id,
+                                                dataset_id=dataset_id,
+                                                dataset_parameter_id=None)
                     already_set_data.add(key)
             else:
                 self.logger.warning(f"the namespace {namespace} is not referenced in the datasets mapping of the study")
 
-    def apply_parameter_change(self, key: str, new_value: Any,
+    def apply_parameter_change(self,
+                               key: str,
+                               new_value: Any,
                                parameter_changes: list[ParameterChange],
                                connector_id: (str, None) = None,
                                dataset_id: (str, None) = None,
+                               dataset_parameter_id: (str, None) = None,
                                update_parameter_changes: bool = True) -> None:
         """
         Applies and logs an input value change on variable with uuid key. It appends to parameter_changes a
@@ -497,6 +495,7 @@ class DataManager:
         :param parameter_changes: ongoing list of parameter changes
         :param connector_id: dataset connector id if updating from dataset or None otherwise
         :param dataset_id: dataset id if updating from dataset or None otherwise
+        :param dataset_parameter_id: id of the parameter in the dataset if updating from dataset or None otherwise  # todo: WIP!
         :return: None, inplace update of the data manager value for variable
         """
         dm_data = self.data_dict[key]
@@ -509,8 +508,71 @@ class DataManager:
                                                          new_value=deepcopy(new_value),  # FIXME: deepcopies avoidable ?
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
+                                                         dataset_parameter_id=dataset_parameter_id,
                                                          date=datetime.now()))
         dm_data[VALUE] = new_value
+
+    def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> None:
+        '''
+        Set values in datasets from data_dict
+
+        :param: datasets_mapping, adatset list and mapping with study namespaces
+        :type: DatasetsMapping
+
+        returns: list of exported data in witch datasets
+        '''
+        # do a map between namespace and data from data_dict not already fetched
+        # to have a list of data by namespace
+        exported_parameters = []
+        namespaced_data_dict = {}
+        KEY = 'key'
+
+        for key, data_value in self.data_dict.items():
+            data_ns = data_value[NS_REFERENCE].value
+            data_name = data_value[VAR_NAME]
+            data_type = data_value[TYPE]
+            data_value = data_value[VALUE]
+
+            # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
+            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.VALUE:{}})
+            namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
+            namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
+            namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value
+
+        # iterate on each datasets to export data in each dataset
+        dataset_parameters_mapping, duplicates = datasets_mapping.get_datasets_namespace_mapping_for_study(self.name, namespaces_dict=namespaced_data_dict)
+        if len(duplicates) > 0:
+            for duplicate, namespace in duplicates.items():
+                self.logger.warning(f"The dataset variable {duplicate} has multiple source parameters. \
+                                    The last value written in dataset was taken from {namespace}")
+        for dataset, mapping_dict in dataset_parameters_mapping.items():
+            # retrieve the list of dataset associated to the namespace from the mapping
+            if len(mapping_dict[DatasetsMapping.VALUE].keys()) > 0:
+                # write data values into the dataset into the right format
+                updated_data = self.dataset_manager.write_data_in_dataset(
+                    dataset_info=datasets_mapping.datasets_infos[dataset],
+                    data_dict=mapping_dict[DatasetsMapping.VALUE],
+                    data_type_dict=mapping_dict[DatasetsMapping.TYPE]
+                )
+
+                # save which data have been exported
+                for data_dataset_name in updated_data.keys():
+                    key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
+                    type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
+                    connector_id =datasets_mapping.datasets_infos[dataset].connector_id
+                    dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
+                    exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
+                                                         variable_type=type,
+                                                         old_value=deepcopy(mapping_dict[DatasetsMapping.VALUE][data_dataset_name]),
+                                                         new_value=None,
+                                                         connector_id=connector_id,
+                                                         dataset_id=dataset_id,
+                                                         dataset_parameter_id=key,
+                                                         date=datetime.now()))
+
+
+        return exported_parameters
+
 
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys
@@ -518,7 +580,7 @@ class DataManager:
         return self.convert_dict_with_maps(self.data_dict, self.data_id_map, keys='full_names')
 
     def convert_data_dict_with_display_name(self, exec_display=False):
-        ''' 
+        '''
         Return data_dict with display namespaced keys if exec_display is False.
         FOr exec display use standard full names
         '''
@@ -536,13 +598,13 @@ class DataManager:
 
     def get_data_dict_values(self, excepted=[]):
         '''
-        Return a dictionaries with all full named keys in the dm and the value of each key from the dm 
+        Return a dictionaries with all full named keys in the dm and the value of each key from the dm
         '''
         return self.get_data_dict_attr(self.VALUE, excepted)
 
     def get_data_dict_attr(self, attr, excepted=[]):
         '''
-        Return a dictionaries with all full named keys in the dm and the value of each key from the dm 
+        Return a dictionaries with all full named keys in the dm and the value of each key from the dm
         '''
         data_dict = self.convert_data_dict_with_full_name()
         exception_list = []
@@ -856,10 +918,10 @@ class DataManager:
         if clean_keys:
             self.clean_keys(disc_id)
         else:
-            keys_to_remove = []
-            for key in disc_ref.DEFAULT_NUMERICAL_PARAM:
-                keys_to_remove.append(
-                    disc_ref._convert_to_namespace_name(key, disc_ref.IO_TYPE_IN))
+            keys_to_remove = [
+                disc_ref._convert_to_namespace_name(key, disc_ref.IO_TYPE_IN)
+                for key in disc_ref.DEFAULT_NUMERICAL_PARAM
+            ]
             self.remove_keys(
                 disc_id, keys_to_remove, disc_ref.IO_TYPE_IN)
 
@@ -971,8 +1033,8 @@ class DataManager:
 
     def check_var_data_input_mismatch(self, var_name, var_f_name, var_id, data1, data2):
         '''
-        Check a mismatch between two dicts (which are data dict for the same input shared by two variables 
-        By default the model origin fills the dm, if difference in DATA_TO_CHECK then a warning is printed 
+        Check a mismatch between two dicts (which are data dict for the same input shared by two variables
+        By default the model origin fills the dm, if difference in DATA_TO_CHECK then a warning is printed
         '''
 
         if self.logger.level <= logging.DEBUG:

@@ -20,25 +20,25 @@ import pandas as pd
 
 def gather_selected_outputs(gather_outputs, gather_suffix):
     """
-    get selected output from the eval_output variable 
+    get selected output from the eval_output variable
     :param gather_outputs: dataframe containing the outputs with the columns:
                             - selected_output
                             - full_name
                             - output_name
-    :param gather_suffix: string to add after the output if the name is not defined 
+    :param gather_suffix: string to add after the output if the name is not defined
                             so that it as a different name from the input
-    :return: final_out_names. final_in_names is a dict of the name of the selected_output as key and 
+    :return: final_out_names. final_in_names is a dict of the name of the selected_output as key and
                 the output name as value
     """
     final_out_names = {}
     if gather_outputs is not None:
-        selected_outputs = gather_outputs[gather_outputs['selected_output'] == True]['full_name'].tolist()
+        selected_outputs = gather_outputs.loc[gather_outputs['selected_output']]['full_name'].tolist()
         if 'output_name' in gather_outputs.columns:
-            eval_out_names = gather_outputs[gather_outputs['selected_output']== True]['output_name'].tolist()
+            eval_out_names = gather_outputs.loc[gather_outputs['selected_output']]['output_name'].tolist()
         else:
             eval_out_names = [None for _ in selected_outputs]
 
-        
+
         for out_var, out_name in zip(selected_outputs, eval_out_names):
             _out_name = out_name or f'{out_var}{gather_suffix}'
             final_out_names[out_var] = _out_name
@@ -71,7 +71,7 @@ def get_eval_output(possible_out_values, eval_output_dm):
                     (already_set_values[index], already_set_out_names[index])
     return default_dataframe, error_msg
 
-            
+
 
 def check_eval_io(given_list, default_list, is_eval_input):
     """

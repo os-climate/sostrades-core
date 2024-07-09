@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/06/24 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,11 +20,6 @@ from typing import Union
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
-# from sostrades_core.execution_engine.gemseo_addon.grammars.sos_simple_grammar import SoSSimpleGrammar
-from gemseo.core.grammars.simpler_grammar import SimplerGrammar
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
 
 
 class MDODisciplineWrappException(Exception):
@@ -246,6 +241,9 @@ class MDODisciplineWrapp(object):
             mdo_discipline.eval_jac = proxy.eval_jac
             mdo_discipline.dict_desactivated_elem = proxy.dict_desactivated_elem
             mdo_discipline.input_design_space = proxy.get_sosdisc_inputs('design_space')
+            # retrieve the option to desactivate the storage of the design space outputs for post processings
+            mdo_discipline.desactivate_optim_out_storage = proxy.get_sosdisc_inputs(
+                [proxy.DESACTIVATE_OPTIM_OUT_STORAGE])
 
             self.mdo_discipline = mdo_discipline
 
@@ -266,8 +264,8 @@ class MDODisciplineWrapp(object):
                     {full_key: value['value']})
 
     def __update_gemseo_grammar(self, proxy, mdachain):
-        ''' 
-        update GEMSEO grammar with sostrades 
+        '''
+        update GEMSEO grammar with sostrades
         # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
         '''
         # - retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain

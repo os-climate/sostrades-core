@@ -3,13 +3,13 @@ External Dependencies
 
 sostrades-core depends on software with compatible licenses that are listed below.
 
-`pycryptodome (3.19.0) <https://www.pycryptodome.org>`_
+`pycryptodome (3.19.1) <https://www.pycryptodome.org>`_
     BSD, Public Domain
 
-`black (22.3.0) <https://github.com/psf/black>`_
+`black (24.4.2) <https://github.com/psf/black>`_
     MIT
 
-`chaospy (4.3.7) <https://chaospy.readthedocs.io/en/master/>`_
+`chaospy (4.3.15) <https://chaospy.readthedocs.io/en/master/>`_
     MIT license
 
 `cma (2.7.0) <https://github.com/CMA-ES/pycma>`_
@@ -18,16 +18,16 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `cvxpy (1.1.18) <https://github.com/cvxpy/cvxpy>`_
     Apache License, Version 2.0
 
-`python-dotenv (0.12.0) <https://github.com/theskumar/python-dotenv>`_
-    BSD-3-Clause
+`gitpython (3.1.43) <https://github.com/gitpython-developers/GitPython>`_
+    BSD
 
-`python-arango (7.9.1) <https://github.com/arangodb/python-arango>`_
+`python-arango (8.0.0) <https://github.com/arangodb/python-arango>`_
     MIT
 
-`matplotlib (3.4.3) <https://matplotlib.org>`_
+`matplotlib (3.9.0) <https://matplotlib.org>`_
     PSF
 
-`numpy (1.24.3) <https://numpy.org>`_
+`numpy (1.24.4) <https://numpy.org>`_
     BSD License
 
 `openturns (1.18) <http://www.openturns.org>`_
@@ -48,9 +48,6 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `PyYAML (6.0.1) <https://pyyaml.org/>`_
     MIT
 
-`requests (2.31.0) <https://requests.readthedocs.io>`_
-    Apache 2.0
-
 `scipy (1.10.1) <https://scipy.org/>`_
     BSD License
 
@@ -63,7 +60,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `sympy (1.4) <https://sympy.org>`_
     BSD
 
-`tqdm (4.61.0) <https://tqdm.github.io>`_
+`tqdm (4.66.4) <https://tqdm.github.io>`_
     MPL-2.0 AND MIT
 
 `nose2 (0.9.1) <https://docs.nose2.io/>`_

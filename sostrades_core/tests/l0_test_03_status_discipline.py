@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/11 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ class TestStatusDiscipline(unittest.TestCase):
         values_dict['Test.Disc1.b'] = 5.
         values_dict['Test.x'] = 2.
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         self.process = self.ee.root_process
 
         if self.process.status in self.dic_status.keys():
@@ -65,8 +65,6 @@ class TestStatusDiscipline(unittest.TestCase):
         pass
 
     def test_01_execute(self):
-
-        time.sleep(0.2)
         self.ee.execute()
 
     def test_02_check_status(self):
@@ -78,6 +76,8 @@ class TestStatusDiscipline(unittest.TestCase):
         while(time.time() - t0 < 3):
             if self.process.status in self.dic_status.keys():
                 self.dic_status[self.process.status] = True
+                time.sleep(0.01)
                 # print(self.process.status)
         self.assertTrue(np.all(list(self.dic_status.values())),
                         'Missing status')
+

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from numpy import append, array, atleast_2d, int32
 
-# TODO list : 
+# TODO list :
 # * avoid re-building the NLP
 # * look for a solution to get output dimensions for cases where len(outvars)>0
 # * exclude unfeasible integer solutions
@@ -137,7 +137,7 @@ class OuterApproximationSolver(object):
     def _check_problem(self, dspace, problem):
         ''' performs checks to avoid cases not handled by this algorithm implementation
         - checks if one vectorized design variable
-        - 
+        -
         '''
         # checks if a dv vector components have different types
         for v in dspace.variables_names:
@@ -154,11 +154,13 @@ class OuterApproximationSolver(object):
             if len(c.outvars) > 1:
                 raise ValueError("Several outputs in MDOFunction is not allowed")
 
+
     def _get_integer_variables_indices(self, dspace):
         ''' returns integer variables indices in xvect defined by the design space
         '''
         return self._get_x_indices_by_type(dspace,
                                            DesignSpace.INTEGER.value)  # pylint: disable=E0602,E1101
+
 
     def _get_float_variables_indices(self, dspace):
         ''' returns float variables indices in xvect defined by the design space
@@ -201,7 +203,7 @@ class OuterApproximationSolver(object):
         #         constraints = [eta <= ub - self.epsilon] # eta <= U^(k) - eps
 
         # problem definition
-        prob = cp.Problem(obj)  # , constraints
+        prob = cp.Problem(obj)  #, constraints
 
         return prob
 
@@ -242,14 +244,14 @@ class OuterApproximationSolver(object):
                 bounds_cst.append(dv <= ub)
 
         # - setup of primal problem constraints :
-        # - build dual pb objective linearization
+        #- build dual pb objective linearization
         obj_jac = atleast_2d(self.full_problem.objective.jac(x0))
         data_size = deepcopy(self.size_by_varname)
         data_size.update({self.full_problem.objective.outvars[0]: obj_jac.shape[0]})
         obj_jac_dict = split_array_to_dict_of_arrays(obj_jac,
                                                      data_size,
                                                      self.full_problem.objective.outvars,
-                                                     self.full_problem.design_space.variable_names,
+                                                     self.full_problem.design_space.variables_names,
                                                      )
         # get objective function from main optimization problem
         obj_f = self.full_problem.objective.func(x0)
@@ -263,7 +265,7 @@ class OuterApproximationSolver(object):
         # set the objective hyperplane as constraint
         obj_lin = obj_lin <= eta
 
-        # - build dual pb constraints linearization : c(x0) + dc/dx(x0) . (x - x0) <= 0
+        #- build dual pb constraints linearization : c(x0) + dc/dx(x0) . (x - x0) <= 0
         cst_linearized = []
         # for each constraint function from main optimization problem
         # builds linearization of the constraint wrt all design variables
@@ -277,7 +279,7 @@ class OuterApproximationSolver(object):
             c_jac_dict = split_array_to_dict_of_arrays(c_jac,
                                                        data_size,
                                                        c.outvars,
-                                                       self.full_problem.design_space.variable_names,
+                                                       self.full_problem.design_space.variables_names,
                                                        )
             # compute c(x0) + dc/dx(x0) . (x - x0)
             cst_lin = cst_f
@@ -342,7 +344,7 @@ class OuterApproximationSolver(object):
 
         return sol_int
 
-    # - dual problem definition
+    #- dual problem definition
 
     def build_dual_problem(self, integer_values):
         ''' Build the dual problem
@@ -351,13 +353,14 @@ class OuterApproximationSolver(object):
         full_pb = self.full_problem
 
         # original design space filtered without integer variables
-        cont_vars = []
-        for v in full_pb.design_space:
-            if full_pb.design_space.get_type(v) == DesignSpace.FLOAT.value:  # pylint: disable=E0602
-                cont_vars.append(v)
+        cont_vars = [
+            v
+            for v in full_pb.design_space
+            if full_pb.design_space.get_type(v) == DesignSpace.FLOAT.value
+        ]
         dspace = full_pb.design_space.filter(cont_vars, copy=True)
 
-        input_dim = sum(full_pb.design_space.variable_sizes.values())  # use dspace.dimension
+        input_dim = sum(full_pb.design_space.variables_sizes.values())  # use dspace.dimension
 
         # build restriction of original constraint functions
         LOGGER.info("integer_indices " + str(self.integer_indices))
@@ -538,18 +541,18 @@ class OuterApproximationSolver(object):
             LOGGER.info("LOWER BOUNDS")
             LOGGER.info(self.lower_bounds)
 
-            self.iter_nb += 1
+            self.iter_nb +=1
 
 #         nlp = self.build_dual_pb(xopt_int)
 #         nlp_sol = self.solve_dual(nlp)
 #         xopt_cont = nlp_sol.x_opt
 
 #         xsol = self._build_full_vect(xopt_cont, xopt_int)
-#         
+#
 #         # update x history
 #         self.x_solution_history.append(xsol)
 #         self.update_upper_bounds_history(nlp_sol)
-#         
+#
 #         # update primal problem
 #         uk = self.upper_bounds[self.iter_nb]
 #         mip = self.update_primal_pb(mip, nlp, uk, xsol)
@@ -561,7 +564,7 @@ class OuterApproximationSolver(object):
 #         """ build a wrapping of the restriction function that stores each call
 #         to the database of the main problem
 #         """
-#         
+#
 #         def mdo_f_main_database(xvect):
 #             outval = mdo_f(xvect)
 #             xv = concatenate((self.xopt_int, xvect))
@@ -579,7 +582,7 @@ class OuterApproximationSolver(object):
 #                         self.OA_ITER_NB : self.iter_nb}
 #             self.full_problem.database.store(xv, val_dict, add_iter=True)
 #             return mdo_f(xvect)
-#             
+#
 #         return MDOFunction(mdo_f_main_database,
 #                             mdo_f.name,
 #                             jac=mdo_f._jac,

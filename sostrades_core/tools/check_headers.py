@@ -64,7 +64,7 @@ cartouche_modified_pattern = r"Modifications on (.+) Copyright 202(.) Capgemini"
 
 
 class FileChange(Enum):
-    """ 
+    """
     Enum class for the type of change detected used by HeaderError class
     """
     NOTSET = 0
@@ -73,8 +73,8 @@ class FileChange(Enum):
 
 
 class HeaderError:
-    """ 
-    Class that represents an header error for logging 
+    """
+    Class that represents an header error for logging
     """
     def __init__(
         self,
@@ -114,7 +114,7 @@ class HeaderTools:
         :type file_path: str
         """
 
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
 
         cartouche_match = re.search(
@@ -158,7 +158,7 @@ class HeaderTools:
         :type file_path: str
         """
 
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
 
         cartouche_match = re.search(
@@ -203,7 +203,7 @@ class HeaderTools:
 
     def parse_and_replace_add_cartouche(self,file_path, new_cartouche):
         # Read the content of the file
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
 
         # Search for the cartouche at the start of the content
@@ -243,7 +243,7 @@ class HeaderTools:
 
     def parse_and_replace_modified_cartouche(self,file_path, new_cartouche):
         # Read the content of the file
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
 
         # Search for the cartouche at the start of the content
@@ -294,9 +294,9 @@ class HeaderTools:
         write back method
         """
         #Write the modified content back to the file
-        with open(file, "w") as file:
+        with open(file, "w", encoding="utf-8") as file:
             file.write(new_content)
-        
+
 
     def get_first_commit_time(self, git_git, full_file_path: str) -> datetime:
         """
@@ -333,7 +333,7 @@ class HeaderTools:
     def write_headers_if_needed_in_repo(self,ignored_exts, ignored_files, sha, repo_dir):
 
         print("Start to analyse Headers for repository "+ os.path.abspath(os.path.dirname(repo_dir) + "..."))
-        
+
         # Initialize a Git Repo object
         git_repo = git.Repo(repo_dir)
         git_git = git.Git(repo_dir)

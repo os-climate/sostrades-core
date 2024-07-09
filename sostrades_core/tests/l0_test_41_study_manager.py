@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/10 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ limitations under the License.
 import unittest
 from os.path import dirname, join
 from pathlib import Path
-from shutil import rmtree
 from tempfile import gettempdir
-from time import sleep
 
 from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tests.data import __file__ as data_folder
+from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import CryptedLoadDump
 
 
@@ -56,8 +55,7 @@ class TestStudyManager(unittest.TestCase):
     def tearDown(self):
 
         if Path(self.__dump_dir).is_dir():
-            rmtree(self.__dump_dir)
-        sleep(0.5)
+            rmtree_safe(self.__dump_dir)
 
     def test_01_Create_Study(self):
         """ Check only basique execution engine setp from study manager
@@ -88,7 +86,7 @@ class TestStudyManager(unittest.TestCase):
                 study.execution_engine.dm.data_dict[var_id][DataManager.VALUE], value)
 
     def test_03_Dump_And_Load_Into_Study_With_Same_Name(self):
-        """ Check that load and dump on file function are working when source 
+        """ Check that load and dump on file function are working when source
         and destination study have the same process and the same name
         """
         study = BaseStudyManager(
@@ -109,7 +107,7 @@ class TestStudyManager(unittest.TestCase):
                 study.execution_engine.dm.data_dict[var_id][DataManager.VALUE], study_bis.execution_engine.dm.data_dict[var_id_bis][DataManager.VALUE])
 
     def test_04_Dump_And_Load_Into_Study_With_Different_Name(self):
-        """ Check that load and dump on file function are working when source 
+        """ Check that load and dump on file function are working when source
         and destination study have the same process but not the same name
         (verify that pickle dump are correctly save without study information)
         """
@@ -170,4 +168,4 @@ class TestStudyManager(unittest.TestCase):
             var_id_bis = study_bis.execution_engine.dm.get_data_id(
                 key.replace(self.__study_name, study_bis_name))
             self.assertEqual(study.execution_engine.dm.data_dict[var_id][DataManager.VALUE],
-                             study_bis.execution_engine.dm.data_dict[var_id_bis][DataManager.VALUE])
+                             study_bis.execution_engine.dm.data_dict[var_id_bis][DataManager.VALUE], f"error for parameter {key}")

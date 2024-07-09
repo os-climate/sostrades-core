@@ -26,6 +26,33 @@ class AbstractDatasetsConnector(abc.ABC):
     """
     __logger = logging.getLogger(__name__)
 
+
+    NAME = "name"
+    UNIT = "unit"
+    DESCRIPTION = "description"
+    SOURCE = "source"
+    LINK = "link"
+    LAST_UPDATE = "last_update_date"
+    # generic default metadata dict
+    DEFAULT_METADATA_DICT = {
+        NAME: "",
+        UNIT: "",
+        DESCRIPTION: "",
+        SOURCE: "",
+        LINK: "",
+        LAST_UPDATE: ""
+    }
+    # generic dataset connector value entry (RESERVED)
+    VALUE = "value"
+    VALUE_KEYS = {VALUE}
+    # bigquery specific value entries (RESERVED), need to be defined here to avoid their copy btw connectors as metadata
+    PARAMETER_NAME = "parameter_name"
+    STRING_VALUE = "parameter_string_value"
+    INT_VALUE = "parameter_int_value"
+    FLOAT_VALUE = "parameter_float_value"
+    BOOL_VALUE = "parameter_bool_value"
+    VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, PARAMETER_NAME})
+
     @abc.abstractmethod
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
@@ -37,7 +64,7 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a data from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -47,6 +74,7 @@ class AbstractDatasetsConnector(abc.ABC):
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         """
+        return values_to_write
 
     @abc.abstractmethod
     def get_values_all(self, dataset_identifier: str, data_types_dict:dict[str:str]) -> dict[str:Any]:
@@ -65,7 +93,7 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -78,9 +106,10 @@ class AbstractDatasetsConnector(abc.ABC):
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
+        :return: values_to_write: dict[str: Any]
         """
-    
-    
+        return values_to_write
+
     def copy_dataset_from(self, connector_from:AbstractDatasetsConnector, dataset_identifier: str, data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False):
         """
         Copies a dataset from another AbstractDatasetsConnector
@@ -99,7 +128,7 @@ class AbstractDatasetsConnector(abc.ABC):
         dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier, data_types_dict=data_types_dict)
         self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, data_types_dict=data_types_dict, create_if_not_exists=create_if_not_exists, override=override)
 
-    
+
     def copy_all_datasets_from(self, connector_from:AbstractDatasetsConnector, data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False):
         """
         Copies all datasets from another AbstractDatasetsConnector
@@ -119,8 +148,48 @@ class AbstractDatasetsConnector(abc.ABC):
             self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, data_types_dict=data_types_dict, create_if_not_exists=create_if_not_exists, override=override)
 
     def __str__(self) -> str:
-        return f"{type(self).__name__}"     
+        return f"{type(self).__name__}"
 
+    # Metadata handling
+    def _new_datum(self, old_datum):
+        if old_datum is None:
+            new_datum = self.DEFAULT_METADATA_DICT.copy()
+        else:
+            new_datum = self._extract_metadata_from_datum(old_datum)
+            # new_datum.update({key: value for key, value in self.DEFAULT_METADATA_DICT.items() if key not in new_datum})
+        return new_datum
+
+    def _insert_value_into_datum(self,
+                                 value: Any,
+                                 datum: dict[str:Any],
+                                 parameter_name: str,
+                                 parameter_type: str) -> dict[str:Any]:
+        new_datum = {self.VALUE: value}
+        new_datum.update(self._new_datum(datum))
+        # TODO: keeping dataset metadata "as is", insert metadata handling here
+        return new_datum
+
+    def _update_data_with_values(self, data: dict[str:dict[str:Any]], values: dict[str:Any],
+                                 data_types: dict[str:str]) -> None:
+        for key, value in values.items():
+            new_datum = self._insert_value_into_datum(value=value,
+                                                      datum=data.get(key, None),
+                                                      parameter_name=key,
+                                                      parameter_type=data_types[key])
+            if new_datum is not None:
+                data[key] = new_datum
+
+    def _extract_value_from_datum(self, datum: dict[str:Any]) -> Any:
+        return datum[self.VALUE]
+
+    def _extract_metadata_from_datum(self, datum_to_extract: dict[str:Any]) -> dict[str:str]:
+        return {_k: _v for _k, _v in datum_to_extract.items() if _k not in self.VALUE_KEYS}
+
+    def extract_values_from_data(self, data_to_extract: dict[str:dict[str:Any]]) -> dict[str:Any]:
+        return {key: self._extract_value_from_datum(_datum) for key, _datum in data_to_extract.items()}
+
+    def extract_metadata_from_data(self, data_to_extract: dict[str:dict[str:Any]]) -> dict[str:dict[str:str]]:
+        return {key: self._extract_metadata_from_datum(_datum) for key, _datum in data_to_extract.items()}
 
 class DatasetGenericException(Exception):
     """
@@ -135,6 +204,14 @@ class DatasetNotFoundException(DatasetGenericException):
     def __init__(self, dataset_name:str):
         self.dataset_name = dataset_name
         super().__init__(f"Dataset '{dataset_name}' not found")
+
+class DatasetDeserializeException(DatasetGenericException):
+    """
+    Exception when a dataset deserializing
+    """
+    def __init__(self, dataset_name:str, error_message:str):
+        self.dataset_name = dataset_name
+        super().__init__(f"Error reading dataset '{dataset_name}': \n{error_message}")
 
 class DatasetUnableToInitializeConnectorException(DatasetGenericException):
     """

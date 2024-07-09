@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/17-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -381,6 +381,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if len(disc_to_configure) > 0:
             self.set_configure_status(False)
             for disc in disc_to_configure:
+                # possibly some one else like the driver has already configured the discipline
+                # not working for multiscenario of architecture builder ...
+                # if not disc.is_configured():
                 disc.configure()
         else:
             self.set_children_numerical_inputs()
@@ -821,13 +824,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 ):
                     # - MDA detection
                     # in this case, mda i/o is the union of all i/o (different from MDOChain)
-                    sub_mda_disciplines = []
                     # order the MDA disciplines the same way as the
                     # original disciplines
                     # -> works only if the disciplines are built following the same order than proxy ones
-                    for disc in self.coupling_structure.disciplines:
-                        if disc in coupled_disciplines:
-                            sub_mda_disciplines.append(disc)
+                    sub_mda_disciplines = [
+                        disc
+                        for disc in self.coupling_structure.disciplines
+                        if disc in coupled_disciplines
+                    ]
 
                     chained_disciplines.append(sub_mda_disciplines)
                 else:
@@ -898,7 +902,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             dim = y.shape[1]
             series = []
             for d in range(dim):
-                series_name = varname if dim == 1 else f"{varname}\{d}"
+                series_name = varname if dim == 1 else rf"{varname}\{d}"
                 new_series = InstanciatedSeries(
                     x, list(y[:, d]),
                     series_name, 'lines', True)

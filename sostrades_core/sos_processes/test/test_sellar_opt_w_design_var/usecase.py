@@ -93,6 +93,8 @@ class Study(StudyManager):
         func_df = pd.DataFrame(
             columns=['variable', 'ftype', 'weight', AGGR_TYPE])
         func_df['variable'] = ['c_1', 'c_2', 'obj']
+        func_df['parent'] = "parent"
+        func_df['namespace'] = "ns_functions"
         func_df['ftype'] = [INEQ_CONSTRAINT, INEQ_CONSTRAINT, OBJECTIVE]
         func_df['weight'] = [200, 0.000001, 0.1]
         func_df[AGGR_TYPE] = [AGGR_TYPE_SUM, AGGR_TYPE_SUM, AGGR_TYPE_SUM]

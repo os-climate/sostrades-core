@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/23-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/06/23-2024/06/11 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from importlib import import_module
-from os import listdir, makedirs
+from os import listdir
 from os.path import dirname, isdir
 from tempfile import gettempdir
 
 from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
+from sostrades_core.tools.folder_operations import makedirs_safe
 
 
 class UseCaseFailedException(Exception):
@@ -73,7 +74,7 @@ def run_all_usecases(processes_repo):
     # Set dir to dump reference
     dump_dir = f'{ gettempdir() }/references'
     if not isdir(dump_dir):
-        makedirs(dump_dir, exist_ok=True)
+        makedirs_safe(dump_dir, exist_ok=True)
     for repository in process_dict:
         for process in process_dict[repository]:
 
@@ -121,7 +122,7 @@ def run_optim_usecases(processes_repo):
     # Set dir to dump reference
     dump_dir = f'{ gettempdir() }/references'
     if not isdir(dump_dir):
-        makedirs(dump_dir, exist_ok=True)
+        makedirs_safe(dump_dir, exist_ok=True)
     for repository in process_dict:
         for process in process_dict[repository]:
 

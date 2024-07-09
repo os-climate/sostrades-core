@@ -56,7 +56,7 @@ class BaseStudyManager():
 
     def __init__(self, repository_name, process_name, study_name, dump_directory: Optional[str] = None,
                  run_usecase=True,
-                 yield_method=None, logger=None, execution_engine=None):
+                 yield_method=None, logger=None, execution_engine=None, test_post_procs: bool = True):
         """ Constructor
 
         :params: repository_name, package name that contain the target process to load
@@ -65,7 +65,7 @@ class BaseStudyManager():
         :params: process_name, process name of the target process to load
         :type: str
 
-        :params: study_name, name of the study 
+        :params: study_name, name of the study
         :type: str
         """
         self._run_usecase = run_usecase
@@ -82,6 +82,7 @@ class BaseStudyManager():
         self.dumped_cache = False
         self.dump_cache_map = None
         self.check_outputs = False
+        self.test_post_procs = test_post_procs
 
     @property
     def run_usecase(self):
@@ -177,47 +178,56 @@ class BaseStudyManager():
     def setup_process(self):
         pass
 
-    def load_study(self, from_json_file_path=None, display_treeview=True):
+    def update_data_from_dataset_mapping(self, from_datasets_mapping=None, display_treeview=True):
         """
         Method that load data into the execution engine with datasets
 
         :params: display_treeview, display or not treeview state (optional parameter)
         :type: boolean
+
+        :return: list of parameters which has been changed
         """
-        start_time = time()
+        if from_datasets_mapping is not None:
+            start_time = time()
 
-        logger = self.execution_engine.logger
+            logger = self.execution_engine.logger
 
-        if display_treeview:
-            logger.info('TreeView display BEFORE data setup & configure')
-            self.execution_engine.display_treeview_nodes()
+            # load study by retrieving data from datasets, set them into the dm and configure study
+            parameter_changes = self.execution_engine.load_study_from_dataset(from_datasets_mapping)
 
-        # load json mapping data file
-        # TODO: to be changed in next version
-        if from_json_file_path is not None:
-            json_file_path = from_json_file_path
-        else:
-            # if the file is not given in argument, we take the one saved at the old pkl place
-            # not tested in the POC
-            json_file_path = join(self.dump_directory, f'{self.study_name}.json')
-        # read json mapping file
-        datasets_mapping_dict = DatasetsMapping.from_json_file(file_path=json_file_path)
+            if parameter_changes is not None and len(parameter_changes) > 0:
+                if display_treeview:
+                    logger.info('TreeView display BEFORE data setup & configure')
+                    self.execution_engine.display_treeview_nodes()
 
-        # load study by retieving data from datasets, set them into the dm and configure study
-        parameter_changes = self.execution_engine.load_study_from_dataset(datasets_mapping_dict)
+                # keep old next steps after loading data
+                self.specific_check_inputs()
+                if display_treeview:
+                    logger.info('TreeView display AFTER  data setup & configure')
+                    self.execution_engine.display_treeview_nodes()
 
-        # keep old next steps after loading data
-        self.specific_check_inputs()
-        if display_treeview:
-            logger.info('TreeView display AFTER  data setup & configure')
-            self.execution_engine.display_treeview_nodes()
+            study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
+            message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
+            logger.info(message)
+            return parameter_changes
 
-        study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
-        message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
-        logger.info(message)
+    def export_data_from_dataset_mapping(self, from_datasets_mapping):
+        """
+        Method that export data within datasets
+
+        :params from_datasets_mapping:dataset mapping
+        :type: DatasetMapping
+
+        """
+        # export study by saving data intg datasets, get them from the dm
+        parameter_changes = self.execution_engine.dm.export_data_in_datasets(from_datasets_mapping)
+
         return parameter_changes
 
-    def load_data(self, from_path=None, from_input_dict=None, display_treeview=True):
+    def load_data(self, from_path=None,
+                  from_input_dict=None,
+                  display_treeview=True,
+                  from_datasets_mapping=None):
         """ Method that load data into the execution engine
 
         :params: from_path, location of pickle file to load (optional parameter)
@@ -248,8 +258,6 @@ class BaseStudyManager():
         else:
             usecase_data = self.setup_usecase(study_folder_path=from_path)
 
-        datasets_mapping = self.get_dataset_mapping()  # pylint: disable=assignment-from-none
-
         if not isinstance(usecase_data, list):
             usecase_data = [usecase_data]
         input_dict_to_load = {}
@@ -263,10 +271,17 @@ class BaseStudyManager():
         parameter_changes = self.execution_engine.load_study_from_input_dict(input_dict_to_load)
 
         # Load datasets data
-        if datasets_mapping is not None:
+        if from_datasets_mapping is not None:
             datasets_parameter_changes = self.execution_engine.load_study_from_dataset(
-                datasets_mapping=datasets_mapping)
+                datasets_mapping=from_datasets_mapping)
             parameter_changes.extend(datasets_parameter_changes)
+        else:
+            use_case_datasets_mapping = self.get_dataset_mapping()  # pylint: disable=assignment-from-none
+            if use_case_datasets_mapping is not None:
+                datasets_parameter_changes = self.execution_engine.load_study_from_dataset(
+                    datasets_mapping=use_case_datasets_mapping)
+                parameter_changes.extend(datasets_parameter_changes)
+
         self.specific_check_inputs()
         if display_treeview:
             logger.info('TreeView display AFTER  data setup & configure')
@@ -318,7 +333,7 @@ class BaseStudyManager():
         '''
         Mathod that defines the dump strategy in several cases
         Three solutions :
-            1 Execution is done, a cache_map exists is not empty 
+            1 Execution is done, a cache_map exists is not empty
             --> dump cache_map
             2 prepare execution is done and cache map is empty because all cache_type are None
             --> delete the existing pkl
@@ -591,7 +606,7 @@ class BaseStudyManager():
 
             input_dict = {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
         else:
-            raise Exception(f"study_folder_path is None, can't get data from file")
+            raise Exception("study_folder_path is None, can't get data from file")
 
         result.append(input_dict)
 

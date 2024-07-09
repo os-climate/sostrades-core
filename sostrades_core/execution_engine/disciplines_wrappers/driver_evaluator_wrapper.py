@@ -28,7 +28,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN
             |_ BUILDER_MODE (structuring)
-            |_ USECASE_DATA (structuring)                
+            |_ USECASE_DATA (structuring)
             |_ SUB_PROCESS_INPUTS (structuring) #TODO V1
     2) Description of DESC parameters:
         |_ DESC_IN
@@ -46,7 +46,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
                                                     USECASE_DATA:         anonymized dictionary of usecase inputs to be nested in context
                                                                           it is a temporary input: it will be put to None as soon as
                                                                           its content is 'loaded' in the dm. We will have it has editable
-                                                It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget) 
+                                                It is in dict type (specific 'proc_builder_modale' type to have a specific GUI widget)
 
     """
 

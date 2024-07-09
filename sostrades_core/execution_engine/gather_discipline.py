@@ -80,7 +80,7 @@ class GatherDiscipline(SoSWrapp):
 
         Arguments:
             sos_name (string): name of the discipline/node
-            
+
         """
         super().__init__(sos_name, logger)
         self.gather_names = None
@@ -88,8 +88,8 @@ class GatherDiscipline(SoSWrapp):
 
     def setup_sos_disciplines(self):
         '''
-           We add to the desc_in all the outputs of each child 
-           We add to the desc_out the dict which will gather all inputs by name 
+           We add to the desc_in all the outputs of each child
+           We add to the desc_out the dict which will gather all inputs by name
         '''
         try:
             eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, self.get_data_in())
@@ -158,7 +158,7 @@ class GatherDiscipline(SoSWrapp):
 
     def build_dynamic_io_from_gather_outputs(self):
         '''
-        Add in dynamic_input the gather_outputs that needs to be gathered 
+        Add in dynamic_input the gather_outputs that needs to be gathered
         and in dynamic_output the dict of gather_outputs that have been gathered
         '''
         dynamic_inputs = {}

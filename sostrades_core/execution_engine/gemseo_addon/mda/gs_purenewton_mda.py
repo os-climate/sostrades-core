@@ -108,7 +108,7 @@ class GSPureNewtonMDA(MDASequential):
     def _run(self):
         '''
         Override _run of sequential MDA to update PureNR MDA local data and normed residual
-        with the values from GS MDA, to avoid an early termination flag before residual 
+        with the values from GS MDA, to avoid an early termination flag before residual
         recalculation
         '''
         self._couplings_warm_start()

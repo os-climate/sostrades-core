@@ -1,39 +1,242 @@
 {
-  "dataset_all_in_one": {
-    "a": 1,
-    "b": "string_2",
-    "c": "string_3",
-    "x": 4
-  },
-  "dataset_all_types": {
-    "a": 1,
-    "b": 2,
-    "b_bool": false,
-    "name": "A1",
-    "x": 4.0,
-    "x_dict": {
-      "test1": 1,
-      "test2": 2
+    "dataset_all_in_one": {
+        "a": {
+            "value": 1
+        },
+        "b": {
+            "value":"string_2"
+        },
+        "c": {
+            "value": "string_3"
+        },
+        "x": {
+            "value": 4
+        }
     },
-    "y_array": [
-      1.0,
-      2.0,
-      3.0
-    ],
-    "z_list": [
-      1.0,
-      2.0,
-      3.0
-    ],
-    "d": {
-      "years": [
-        2023,
-        2024
-      ],
-      "x": [
-        1.0,
-        10.0
-      ]
+    "dataset_all_types": {
+        "a": {
+            "value": 1
+        },
+        "b": {
+            "value": 2
+        },
+        "b_bool": {
+            "value": false
+        },
+        "name": {
+            "value":"A1"
+        },
+        "x": {
+            "value": 4.0
+        },
+        "x_dict": {
+            "value": {
+                "test1": 1,
+                "test2": 2
+            }
+        },
+        "y_array": {
+            "value": [
+                1.0,
+                2.0,
+                3.0
+            ]
+        },
+        "z_list": {
+            "value": [
+                1.0,
+                2.0,
+                3.0
+            ]
+        },
+        "d": {
+            "value": {
+                "years": [
+                    2023,
+                    2024
+                ],
+                "x": [
+                    1.0,
+                    10.0
+                ]
+            }
+        }
+    },
+    "dataset_sellar": {
+        "x": {
+            "value": [
+                1.0
+            ]
+        },
+        "y_1": {
+            "value": [
+                2.0
+            ]
+        },
+        "y_2": {
+            "value": [
+                3.0
+            ]
+        },
+        "z": {
+            "value": [
+                4.0,
+                5.0
+            ]
+        },
+        "local_dv": {
+            "value": 10.0
+        }
+    },
+    "dataset_ax": {
+        "a": {
+            "value": 10
+        },
+        "x": {
+            "value": 20
+        }
+    },
+    "dataset_bc": {
+        "b": {
+            "value": "string_1"
+        },
+        "c": {
+            "value": "string_2"
+        }
+    },
+    "dataset_a": {
+        "a": {
+            "value": 15
+        }
+    },
+    "dataset_bcx_1": {
+        "x": {
+            "value": 30
+        },
+        "b": {
+            "value": "string_40"
+        },
+        "c": {
+            "value": "string_50"
+        }
+    },
+    "dataset_bcx_2": {
+        "x": {
+            "value": 4
+        },
+        "b": {
+            "value": "string_5"
+        },
+        "c": {
+            "value": "string_6"
+        }
+    },
+    "dataset_bw": {
+        "b": {
+            "value": "string_5"
+        },
+        "w": {
+            "value": "dumb_value"
+        }
+    },
+    "dataset_c_1": {
+        "c": {
+            "value": "string_11"
+        }
+    },
+    "dataset_c_2": {
+        "c": {
+            "value": "string_12"
+        }
+    },
+    "dataset_b": {
+        "b": {
+            "value": "string_42"
+        }
+    },
+    "default_numerical_parameters": {
+        "linearization_mode": {
+            "value": "auto"
+        },
+        "debug_mode": {
+            "value": ""
+        },
+        "cache_type": {
+            "value": "None"
+        },
+        "cache_file_path": {
+            "value": ""
+        },
+        "sub_mda_class": {
+            "value": "MDAJacobi"
+        },
+        "max_mda_iter": {
+            "value": 30
+        },
+        "n_processes": {
+            "value": 1
+        },
+        "chain_linearize": {
+            "value": false
+        },
+        "tolerance": {
+            "value": 1.0e-6
+        },
+        "use_lu_fact": {
+            "value": false
+        },
+        "warm_start": {
+            "value": false
+        },
+        "acceleration": {
+            "value": "m2d"
+        },
+        "warm_start_threshold": {
+            "value": -1
+        },
+        "n_subcouplings_parallel": {
+            "value": 1
+        },
+        "tolerance_gs": {
+            "value": 10.0
+        },
+        "relax_factor": {
+            "value": 0.99
+        },
+        "epsilon0": {
+            "value": 1.0e-6
+        },
+        "linear_solver_MDO": {
+            "value": "GMRES"
+        },
+        "linear_solver_MDO_preconditioner": {
+            "value": "None"
+        },
+        "linear_solver_MDO_options": {
+            "value": {
+                "max_iter": 1000,
+                "tol": 1.0e-8
+            }
+        },
+        "linear_solver_MDA": {
+            "value": "GMRES"
+        },
+        "linear_solver_MDA_preconditioner": {
+            "value": "None"
+        },
+        "linear_solver_MDA_options": {
+            "value": {
+                "max_iter": 1000,
+                "tol":  1.0e-8
+            }
+        },
+
+        "group_mda_disciplines": {
+            "value": false
+        },
+        "propagate_cache_to_children": {
+            "value": false
+        }
     }
   },
   "dataset_sellar": {

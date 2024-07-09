@@ -29,13 +29,13 @@ A chain of MDAs to build hybrids of MDA algorithms sequentially
 """
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.root import MDARoot
+from gemseo.mda.base_mda_root import BaseMDARoot
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 
 
-class PureNewtonRaphson(MDARoot):
+class PureNewtonRaphson(BaseMDARoot):
     """
     Pure NewtonRaphson solver based on Taylor's theorem.
     """
@@ -50,7 +50,7 @@ class PureNewtonRaphson(MDARoot):
         linear_solver="DEFAULT",  # type: str
         tolerance=1e-6,  # type: float
         linear_solver_tolerance=1e-12,  # type: float
-        scaling_method=MDARoot.ResidualScaling.N_COUPLING_VARIABLES,
+        scaling_method=BaseMDARoot.ResidualScaling.N_COUPLING_VARIABLES,
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
@@ -132,10 +132,10 @@ class PureNewtonRaphson(MDARoot):
         self.reset_disciplines_statuses()
 
         # build current_couplings: concatenated strong couplings, converted into arrays
-        current_couplings, old_x_array = self._current_strong_couplings(return_converted_dict=True)
+        current_couplings, old_x_array = self._current_strong_couplings(return_converted_dict=True, update_dm=True)
         # self.execute_all_disciplines(self.local_data)
 
-        while True:
+        while not self._termination(current_iter):
 
             # Set coupling variables as differentiated variables for gradient
             # computation

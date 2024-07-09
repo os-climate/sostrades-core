@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -143,9 +143,8 @@ class TreeNode:
             {'markdown_documentation': self.markdown_documentation})
 
         # Serialize children attribute
-        dict_child = []
-        for tn in self.children:
-            dict_child.append(tn.to_dict())
+        dict_child = [tn.to_dict() for tn in self.children]
+
         dict_obj.update({'children': dict_child})
         return dict_obj
 
@@ -205,6 +204,7 @@ class TreeNode:
                                                                      namespaced_key,
                                                                      data_management_discipline.model_name_full_path,
                                                                      data_management_discipline.disciplinary_inputs)
+
 
         disc_out = discipline.get_data_out()
         if not no_data:
@@ -332,7 +332,7 @@ class TreeNode:
         :type: str
 
         :params: key, associated key (used to manage multiple documentation into the same treenode
-        :type: key 
+        :type: key
         """
 
         if markdown_data is not None and markdown_data != "":

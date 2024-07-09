@@ -25,7 +25,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Sellar Opt with Func Manager',
+        'label': 'Core Test Sellar Opt with Func Manager Faulty',
         'description': '',
         'category': '',
         'version': '',
@@ -38,12 +38,12 @@ class ProcessBuilder(BaseProcessBuilder):
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.sellar.'
 
         mod_func = 'sostrades_core.execution_engine.func_manager.func_manager_disc.FunctionManagerDisc'
-    
+
         mods_dict = {'Sellar_Problem': disc_dir + 'SellarProblem',
                      'Sellar_1': disc_dir + 'Sellar1',
                      'Sellar_3': disc_dir + 'Sellar3',
                      'FunctionManager': mod_func}
-    
+
         ns_dict = {'ns_functions': self.ee.study_name + '.' + 'SellarOptimScenario.SellarCoupling',
                    'ns_optim': self.ee.study_name + '.' + 'SellarOptimScenario.SellarCoupling',
                    'ns_OptimSellar': self.ee.study_name + '.SellarOptimScenario.SellarCoupling'}
@@ -53,5 +53,5 @@ class ProcessBuilder(BaseProcessBuilder):
         #coupling_builder.set_builder_info('with_data_io', True)
         opt_builder = self.ee.factory.create_optim_builder(
             'SellarOptimScenario', [coupling_builder])
-    
+
         return opt_builder

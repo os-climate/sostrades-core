@@ -94,10 +94,10 @@ class CheckDataIntegrity():
     def check_variable_value(self, var_data_dict, new_check):
         '''
         Check the value of a data
-        1st : Check the type of the value vs the type specified in the dm 
-        2nd : Check if the value is in the range 
+        1st : Check the type of the value vs the type specified in the dm
+        2nd : Check if the value is in the range
         3rd : Check if the value is in possible values
-        4th : For dataframe, check if the value is OK with the df_descriptor 
+        4th : For dataframe, check if the value is OK with the df_descriptor
         5th : CHeck the subtype of the value if there is subtypes
         '''
         self.check_integrity_msg_list = []
@@ -137,8 +137,9 @@ class CheckDataIntegrity():
                             self.__check_variable_range(var_data_dict)
                         if self.variable_possible_values is not None:
                             self.__check_possible_values()
-
-        return '\n'.join(self.check_integrity_msg_list)
+        out = '\n\t'.join(self.check_integrity_msg_list)
+        out = '\n\t' + out if len(out) else out
+        return out
 
     def __check_variable_range(self, var_data_dict):
         '''
@@ -182,7 +183,7 @@ class CheckDataIntegrity():
 
     def __check_range_type_vs_value_type(self, value, variable_range):
         '''
-        Check the type of the first value in the range vs the type of the value 
+        Check the type of the first value in the range vs the type of the value
         '''
 
         if not can_cast(type(value), type(variable_range[0])):
@@ -254,14 +255,18 @@ class CheckDataIntegrity():
                             check_integrity_msg_df_descriptor)
 
             if df_descriptor_well_defined:
+                for column in dataframe_descriptor.keys():
+                    if column not in self.variable_value.columns:
+                        check_integrity_msg_df_descriptor = f"Missing column '{column}'"
+                        self.__add_msg_to_check_integrity_msg_list(check_integrity_msg_df_descriptor)
                 for key in self.variable_value.columns:
                     if dynamic_dataframe_column and key not in dataframe_descriptor:
                         # The key is not in the dataframe descriptor but the datafrmae has dynamic columns that cannot be described in the df_descriptor depending on the use
                         pass
                     elif key not in dataframe_descriptor and not dynamic_dataframe_column:
-                        check_integrity_msg_df_descriptor = f'Dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
-                        self.__add_msg_to_check_integrity_msg_list(
-                            check_integrity_msg_df_descriptor)
+                        #check_integrity_msg_df_descriptor = f'Dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
+                        #self.__add_msg_to_check_integrity_msg_list(check_integrity_msg_df_descriptor)
+                        pass
                     elif key == "Unnamed: 0":
                         pass
                     else:
@@ -287,14 +292,19 @@ class CheckDataIntegrity():
             if not all(isinstance(item, self.VAR_TYPE_MAP[column_type]) for item in values_in_column):
                 check_integrity_msg = f'Dataframe values in column {key} are not as type {column_type} requested in the dataframe descriptor'
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
-        if column_range is not None and len(column_range) == 2:
-            if column_type == 'string':
+        if column_range is not None:
+            if not isinstance(column_range, list):
+                check_integrity_msg = f"Dataframe descriptor incorrect completion of range for column '{key}'. Should be a list."
+                self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
+            elif column_type == 'string':
                 if not all(item in column_range for item in values_in_column):
                     check_integrity_msg = f'Dataframe values in column {key} are not in the possible list {column_range} requested in the dataframe descriptor'
                     self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
             elif column_type in ['float', 'int']:
-
-                if not all(item <= column_range[1] for item in values_in_column) and all(
+                if len(column_range) != 2:
+                    check_integrity_msg = f"Dataframe descriptor incorrect completion of range for column '{key}' of type 'float' or 'int'. Should be list of len 2."
+                    self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
+                elif not all(item <= column_range[1] for item in values_in_column) and all(
                         column_range[0] <= item for item in values_in_column):
                     check_integrity_msg = f'Dataframe values in column {key} are not in the range {column_range} requested in the dataframe descriptor'
                     self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
@@ -390,7 +400,7 @@ class CheckDataIntegrity():
 
     def __check_formula(self, formula):
         '''
-        Check a single formula 
+        Check a single formula
         '''
         err_msg = None
         try:

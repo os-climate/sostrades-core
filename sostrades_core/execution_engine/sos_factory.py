@@ -313,7 +313,7 @@ class SosFactory:
             sos_name, mod_path)
 
         return builder
-    
+
     def add_tornado_chart_analysis_builder(self, sos_name):
         '''
         Add tornado chart analysis builder

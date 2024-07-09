@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/09/19-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/09/19-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -257,10 +257,10 @@ class SympyFormula():
         """
         Gets the token list for the expression
         """
-        token_list = list()
-
-        for token in map(str, self.get_symbols(self.__fexpr_sympy)):
-            token_list.append(token.replace(DOT_CHAR, '.'))
+        token_list = [
+            token.replace(DOT_CHAR, '.')
+            for token in map(str, self.get_symbols(self.__fexpr_sympy))
+        ]
 
         return token_list
 

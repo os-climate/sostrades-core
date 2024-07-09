@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/04-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/04/04-2024/06/28 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ from numpy import asarray, float64, ndarray
 from plotly import graph_objects as go
 
 from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.execution_engine.optim_manager_disc import OptimManagerDisc
 from sostrades_core.tools.base_functions.exp_min import (
     compute_dfunc_with_exp_min,
     compute_func_with_exp_min,
@@ -44,7 +44,7 @@ from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plot
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-class FunctionManagerDisc(SoSWrapp):
+class FunctionManagerDisc(OptimManagerDisc):
     """
     Constraints aggregation discipline
     """
@@ -959,7 +959,7 @@ class FunctionManagerDisc(SoSWrapp):
                                                   name='lagrangian objective'):
         """
         Function to create the post proc of aggregated objectives and constraints
-        A dropdown menu is used to select between: 
+        A dropdown menu is used to select between:
             -"Simple" : Simple scatter+line of lagrangian objective
             -Detailed Contribution" : scatter+line of aggregated (sum*100) lagrangian objective + summed area of individual contributions (*100)
         Inputs: main_parameters (lagrangian objective) name, list of sub-parameters (aggregated objectives, inequality constraints and
@@ -1048,12 +1048,12 @@ class FunctionManagerDisc(SoSWrapp):
                                         eq_constraints={}, name='aggregated'):
         """
         Function to create the post proc of aggregated objectives and constraints
-        A dropdown menu is used to select between: 
+        A dropdown menu is used to select between:
             -"All Aggregated" : Simple scatter+line of all the aggregated values
             -"Objective - Detailed" : scatter+line of aggregated (sum) objective + summed area of individual contributions
-            -"Ineq Constraint - Detailed" : scatter+line of aggregated (smax) inequality constraint + area of individual contributions 
-            -"Eq Constraint - Detailed": scatter+line of aggregated (smax) equality constraint + area of individual contributions 
-        Inputs: main_parameters (aggregated) names, list of objectives, inequality constraints and equality constraints names, 
+            -"Ineq Constraint - Detailed" : scatter+line of aggregated (smax) inequality constraint + area of individual contributions
+            -"Eq Constraint - Detailed": scatter+line of aggregated (smax) equality constraint + area of individual contributions
+        Inputs: main_parameters (aggregated) names, list of objectives, inequality constraints and equality constraints names,
         and name of the plot
         Ouput: instantiated plotly chart
         """
@@ -1232,7 +1232,7 @@ class FunctionManagerDisc(SoSWrapp):
         # parents_list = list(set(np.asarray([parent.split(
         # '-') for parent in parameters_df[self.PARENT].to_list()]).flatten()))
 
-        for lvl, parent_level in level_list.items():
+        for parent_level in level_list.values():
             for parent in parent_level:
                 # if parent isn't in df
                 if parent not in parameters_df[self.VARIABLE]:
@@ -1356,7 +1356,7 @@ class FunctionManagerDisc(SoSWrapp):
     def get_chart_obj_constraints_iterations(self, func_df, optim_output, objectives, name):
         """
         Function to create a summary post proc of the optim problem
-        In black : the aggregated objective 
+        In black : the aggregated objective
         In colorscale from green to red : the sum of all the constraints (green == negative values)
         Additionnal information such as the name and value of the dominant constraint are shown in the hovertext
         Inputs: objective name, name of the plot and boolean for log scale

@@ -176,7 +176,6 @@ class TestExtendFloat(unittest.TestCase):
             converted_inputs, new_reduced_dm = convert_new_type_into_array(key, value, red_dm)
             red_dm.update(new_reduced_dm)
             reconverted_data_dm[key] = convert_array_into_new_type(key, converted_inputs, red_dm)
-
         self.assertTrue(isinstance(
             reconverted_data_dm['study.Disc0.r'], type(r)))
         self.assertTrue(isinstance(

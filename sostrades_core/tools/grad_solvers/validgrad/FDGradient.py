@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -113,9 +113,10 @@ class FDGradient(object):
                 for proc in jobs:
                     proc.join()
                 n += n_subs
-            y = []
-            for i in range(n_samples):
-                y.append(return_dict[i])
+            y = [
+                return_dict[i]
+                for i in range(n_samples)
+            ]
         else:
             y = []
             for x in samples:
@@ -177,8 +178,8 @@ class FDGradient(object):
         for i, x in enumerate(self.__scheme.get_samples()):
             dy_array_list[:, i, :] = self.__dfpointer(x)
 
-        H_list = []
-        for f in range(nb_func):
-            H_list.append(self.__scheme.compute_hessian(
-                dy_array_list[f, :, :]))
+        H_list = [
+            self.__scheme.compute_hessian(dy_array_list[f, :, :])
+            for f in range(nb_func)
+        ]
         return H_list

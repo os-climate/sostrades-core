@@ -118,7 +118,7 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
         if proxy.EVAL_INPUTS in disc_in:
             eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
             if eval_inputs is not None:
-                selected_inputs = eval_inputs[eval_inputs["selected_input"] == True]["full_name"].tolist()
+                selected_inputs = eval_inputs.loc[eval_inputs["selected_input"]]["full_name"].tolist()
 
                 # save selected inputs in sample generator
                 if set(selected_inputs) != set(self.selected_inputs):

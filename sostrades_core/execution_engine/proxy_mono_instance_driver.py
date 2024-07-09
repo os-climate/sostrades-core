@@ -35,8 +35,8 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         'icon': '',
         'version': '',
     }
-    
-    
+
+
     SUBCOUPLING_NAME = 'subprocess'
     # TODO: manage desc_in in correct classes
     DESC_IN = {
@@ -63,7 +63,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                  ):
         super().__init__(sos_name, ee,cls_builder, driver_wrapper_cls, associated_namespaces=associated_namespaces, map_name=map_name)
         self.driver_eval_mode = self.DRIVER_EVAL_MODE_MONO
-        
+
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
         dynamic_outputs = {}
@@ -194,7 +194,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 if sampling_generation_mode == ProxySampleGenerator.AT_RUN_TIME:
                     value_check = False
             if value_check:
-                # check that there is at least one trade variables 
+                # check that there is at least one trade variables
                 # (the trades variables are column with variable names in samples_df)
                 samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
                 variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
