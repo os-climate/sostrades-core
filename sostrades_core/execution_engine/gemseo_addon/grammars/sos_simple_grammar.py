@@ -19,7 +19,6 @@ import logging
 from typing import ClassVar
 
 from gemseo.core.grammars.simpler_grammar import SimplerGrammar
-from gemseo.core.grammars.required_names import RequiredNames
 
 """Most basic grammar implementation."""
 
@@ -36,23 +35,23 @@ class SoSSimpleGrammar(SimplerGrammar):
     """
     DATA_CONVERTER_CLASS: ClassVar[str] = "SoSTradesDataConverter"
 
-    def validate(self, data,
-                 raise_exception=True):
-        pass
-
-    @property
-    def defaults(self):
-        """The mapping from the names to the default values, if any."""
-        return self._defaults
-
-    @defaults.setter
-    def defaults(self, data) -> None:
-        self._defaults = data
-
-    def clear(self) -> None:
-        """Empty the grammar."""
-        self.to_namespaced = {}
-        self.from_namespaced = {}
-        self._defaults = {}
-        self._required_names = set()
-        self._clear()
+    # def validate(self, data,
+    #              raise_exception=True):
+    #     pass
+    #
+    # @property
+    # def defaults(self):
+    #     """The mapping from the names to the default values, if any."""
+    #     return self._defaults
+    #
+    # @defaults.setter
+    # def defaults(self, data) -> None:
+    #     self._defaults = data
+    #
+    # def clear(self) -> None:
+    #     """Empty the grammar."""
+    #     super().clear()
+    #     self.to_namespaced = {}
+    #     self.from_namespaced = {}
+    #     self._defaults = {}
+    #     self._required_names = set()

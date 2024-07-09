@@ -20,7 +20,8 @@ from typing import Union
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
-
+# from sostrades_core.execution_engine.gemseo_addon.grammars.sos_simple_grammar import SoSSimpleGrammar
+from gemseo.core.grammars.simpler_grammar import SimplerGrammar
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
@@ -194,7 +195,7 @@ class MDODisciplineWrapp(object):
 
             self.mdo_discipline = mdo_discipline
 
-            self.__update_gemseo_grammar(proxy, mdo_discipline)
+            # self.__update_gemseo_grammar(proxy, mdo_discipline)
 
             # set linear solver options (todo after call to _get_numerical_inputs() )
             # TODO: check with IRT how to handle it
@@ -248,7 +249,7 @@ class MDODisciplineWrapp(object):
 
             self.mdo_discipline = mdo_discipline
 
-            self.__update_gemseo_grammar(proxy, mdo_discipline)
+            #self.__update_gemseo_grammar(proxy, mdo_discipline)
             proxy.status = self.mdo_discipline.status
 
         elif self.wrapping_mode == 'GEMSEO':
@@ -275,18 +276,31 @@ class MDODisciplineWrapp(object):
         #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)
         soscoupling_inputs = set(proxy.get_input_data_names())
         mdachain_inputs = set(mdachain.get_input_data_names())
-        missing_inputs = soscoupling_inputs - mdachain_inputs
+        missing_inputs = soscoupling_inputs | mdachain_inputs
+        # var_type_map = {
+        #     key: (value[0] if isinstance(value, tuple) else value)
+        #     for key, value in proxy.VAR_TYPE_MAP.items()
+        # }
+        # missing_inputs_names_to_types = {key: var_type_map[proxy.dm.get_data(key, proxy.TYPE)] for key in
+        #                                  missing_inputs}
 
         soscoupling_outputs = set(proxy.get_output_data_names())
         mdachain_outputs = set(mdachain.get_output_data_names())
-        missing_outputs = soscoupling_outputs - mdachain_outputs
+        missing_outputs = soscoupling_outputs | mdachain_outputs
+        # missing_outputs_names_to_types = {key: var_type_map[proxy.dm.get_data(key, proxy.TYPE)] for key in
+        #                                   missing_outputs}
 
         # i/o grammars update with SoSTrades i/o
         for names, grammar in zip([missing_inputs, missing_outputs], [mdachain.input_grammar, mdachain.output_grammar]):
             # This works since (for now) this method (for SimpleGrammar only)
             # does not clear the existing grammar of MDAChain
+            grammar.clear()
             grammar.update_from_names(names)
-
+        # missing_inputs_grammar = SimplerGrammar(f'{self.name}_inputgrammar', missing_inputs_names_to_types)
+        # missing_outputs_grammar = SimplerGrammar(f'{self.name}_outputgrammar', missing_outputs_names_to_types)
+        #
+        # mdachain.input_grammar.update(missing_inputs_grammar)
+        # mdachain.output_grammar.update(missing_outputs_grammar)
     def execute(self, input_data):
         """
         Discipline execution delegated to the GEMSEO objects.

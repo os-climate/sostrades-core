@@ -185,7 +185,7 @@ class SoSMDAChain(MDAChain):
         self.residuals_history = DataFrame(
             {f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.sub_mda_list})
 
-        del self.local_data[self.RESIDUALS_NORM]
+        #del self.local_data[self.RESIDUALS_NORM]
         # TODO: use a method to get the full name
         out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
         self.store_local_data(**out)

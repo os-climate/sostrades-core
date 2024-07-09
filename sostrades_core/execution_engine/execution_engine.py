@@ -726,6 +726,7 @@ class ExecutionEngine:
 
         self.logger.info("Storing local data in datamanager.")
         # -- store local data in datamanager
+        ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data.pop("MDA residuals norm", None)
         self.update_dm_with_local_data(
             ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
 
