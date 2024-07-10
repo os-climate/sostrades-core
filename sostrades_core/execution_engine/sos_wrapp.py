@@ -22,6 +22,7 @@ from scipy.sparse import lil_matrix
 
 from sostrades_core.tools.base_functions.compute_len import compute_len
 
+
 class SoSWrappException(Exception):
     pass
 
