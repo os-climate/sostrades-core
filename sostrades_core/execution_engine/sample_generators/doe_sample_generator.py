@@ -167,7 +167,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         algo_options = get_default_args(fn)
 
         # get option keys dedicated to algo
-        opts_gram = algo_lib._init_options_grammar(sampling_algo_name)
+        opts_gram = algo_lib._init_options_grammar()
         opt_to_keep = opts_gram.names
 
         # remove options that are not in the grammar of the algo

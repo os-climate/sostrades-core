@@ -422,7 +422,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         if len(sub_mdo_disciplines) == 1:
             coupling = sub_mdo_disciplines[0]
             # gather all disciplines under the coupling that are FunctionManagerDisc disicpline
-            func_manager_list = [disc.sos_wrapp for disc in coupling.sos_disciplines if
+            func_manager_list = [disc.sos_wrapp for disc in coupling.proxy_disciplines if
                                  isinstance(disc.sos_wrapp, OptimManagerDisc)]
             # Normally only one OptimManagerDisc should be under the optim
             # if multiple do nothing
@@ -589,7 +589,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         default_dict = {}
         driver_lib = OptimizationLibraryFactory().create(algo_name)
-        driver_lib._init_options_grammar(algo_name)
+        driver_lib._init_options_grammar()
         schema_dict = driver_lib._option_grammar.schema
         properties = schema_dict.get('properties')
         algo_options_keys = list(properties.keys())
@@ -636,7 +636,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         # fill the possible values of formulations
         _form_factory = MDOFormulationFactory()
-        avail_formulations = _form_factory.formulations
+        avail_formulations = _form_factory.class_names
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}', self.POSSIBLE_VALUES, avail_formulations)
 
         # fill the possible values of maximize_objective

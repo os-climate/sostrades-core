@@ -190,7 +190,7 @@ class MDODisciplineWrapp(object):
 
             self.mdo_discipline = mdo_discipline
 
-            # self.__update_gemseo_grammar(proxy, mdo_discipline)
+            self.__update_gemseo_grammar(proxy, mdo_discipline)
 
             # set linear solver options (todo after call to _get_numerical_inputs() )
             # TODO: check with IRT how to handle it
@@ -247,7 +247,7 @@ class MDODisciplineWrapp(object):
 
             self.mdo_discipline = mdo_discipline
 
-            #self.__update_gemseo_grammar(proxy, mdo_discipline)
+            self.__update_gemseo_grammar(proxy, mdo_discipline)
             proxy.status = self.mdo_discipline.status
 
         elif self.wrapping_mode == 'GEMSEO':

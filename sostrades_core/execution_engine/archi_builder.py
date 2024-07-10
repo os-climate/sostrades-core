@@ -1091,7 +1091,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         for disc in disc_list:
             #             if isinstance(disc, SoSDisciplineScatter):
             #                 disc.clean_scattered_disciplines([])
-            self.ee.root_process.sos_disciplines.remove(disc)
+            self.ee.root_process.proxy_disciplines.remove(disc)
             disc.clean_dm_from_disc()
             self.ee.ns_manager.remove_dependencies_after_disc_deletion(
                 disc, self.disc_id
