@@ -27,7 +27,6 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import (
     Study as study_sellar_opt_discopt,
 )
-
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,
 )
