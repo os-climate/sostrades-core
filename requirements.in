@@ -5,22 +5,22 @@
 black==24.4.2
 chaospy==4.3.15
 cma==2.7.0
-cvxpy==1.1.18
+cvxpy==1.5.2
 gitpython==3.1.43
 matplotlib==3.9.0
 numpy==1.24.4
 openturns==1.18
 pandas==2.2.2
 plotly==5.3.0
-pycryptodome==3.19.1
-python-arango==7.5.8
+pycryptodome==3.20.0
+python-arango==8.0.0
 PyYAML==6.0.1
 scipy==1.10.1
 six==1.16.0
-sympy==1.4
+sympy==1.9
 tqdm==4.66.4
 pycel==1.0b30
-google-cloud-bigquery==3.24.0
+google-cloud-bigquery==3.25.0
 db-dtypes==1.2.0
 pyarrow==16.1.0
 
