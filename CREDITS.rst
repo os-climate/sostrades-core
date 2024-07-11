@@ -24,7 +24,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `python-arango (7.9.1) <https://github.com/arangodb/python-arango>`_
     MIT
 
-`matplotlib (3.9.0) <https://matplotlib.org>`_
+`matplotlib (3.9.1) <https://matplotlib.org>`_
     PSF
 
 `numpy (1.24.4) <https://numpy.org>`_
@@ -57,7 +57,7 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `SQLAlchemy (1.3.13) <https://www.sqlalchemy.org>`_
     MIT
 
-`sympy (1.4) <https://sympy.org>`_
+`sympy (1.13.0) <https://sympy.org>`_
     BSD
 
 `tqdm (4.66.4) <https://tqdm.github.io>`_
