@@ -128,7 +128,7 @@ class FunctionManagerDisc(OptimManagerDisc):
         If no formulation then we compute in the old way, iter is the number of method calls
         '''
         if self.__formulation is not None:
-            return self.__formulation.optimization_problem.current_iter
+            return self.__formulation.optimization_problem.evaluation_counter.current
         else:
             self.iter += 1
             return self.iter

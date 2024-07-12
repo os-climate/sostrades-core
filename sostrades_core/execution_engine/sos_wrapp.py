@@ -65,6 +65,7 @@ class SoSWrapp(object):
     RANGE = 'range'
     UNIT = 'unit'
     NUMERICAL = 'numerical'
+    RUN_NEEDED = 'run_needed'
     DESCRIPTION = 'description'
     VISIBLE = 'visible'
     VAR_NAME = 'var_name'

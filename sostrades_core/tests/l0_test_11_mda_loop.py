@@ -1258,7 +1258,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
 
         # check if proxyCoupling grammar is the same than the MDAChain
-        proxy_in_names = sorted(exec_eng.root_process.get_input_data_names())
+        proxy_in_names = sorted(exec_eng.root_process.get_input_data_names(numerical_inputs=False))
         disc_in_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_input_data_names())
         self.assertEqual(len(proxy_in_names), len(disc_in_names))
         self.assertListEqual(proxy_in_names, disc_in_names)
@@ -1339,7 +1339,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
 
         # check if proxyCoupling grammar is the same than the MDAChain
-        proxy_in_names = sorted(exec_eng.root_process.get_input_data_names())
+        proxy_in_names = sorted(exec_eng.root_process.get_input_data_names(numerical_inputs=False))
         disc_in_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_input_data_names())
         self.assertEqual(len(proxy_in_names), len(disc_in_names))
         self.assertListEqual(proxy_in_names, disc_in_names)

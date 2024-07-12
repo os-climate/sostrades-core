@@ -118,13 +118,13 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
             exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode,
             MDODiscipline.LinearizationMode.FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
 
     def test_02_linearization_mode_children_propagation_from_root_process(self):
@@ -179,13 +179,13 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         self.assertEqual(
             exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode, FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
 
     def test_03_linearization_mode_children_propagation_from_children_process(self):
@@ -244,13 +244,13 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
             exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
 
     def test_04_reconfigure_after_run(self):
@@ -306,13 +306,13 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         self.assertEqual(
             exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode, FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
         self.assertEqual(
-            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             FINITE_DIFFERENCES)
 
         # 2 : revert to Auto
@@ -350,11 +350,11 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
             exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearization_mode,
             MDODiscipline.LinearizationMode.AUTO)
         self.assertEqual(
-            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             MDODiscipline.LinearizationMode.AUTO)
         self.assertEqual(
-            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             MDODiscipline.LinearizationMode.AUTO)
         self.assertEqual(
-            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs(LINEARIZATION_MODE),
+            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline._linearization_mode,
             MDODiscipline.LinearizationMode.AUTO)

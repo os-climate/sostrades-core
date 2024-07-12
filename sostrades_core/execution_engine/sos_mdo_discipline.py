@@ -393,7 +393,7 @@ class SoSMDODiscipline(MDODiscipline):
         Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac
         '''
 
-        if x_key in self.jac[y_key]:
+        if y_key in self.jac and x_key in self.jac[y_key]:
             if isinstance(value, ndarray):
                 value = lil_matrix(value)
             self.jac[y_key][x_key] = value

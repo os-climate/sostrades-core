@@ -101,6 +101,9 @@ class TestAnalyticGradients(unittest.TestCase):
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
             mdo_disc.linearize(values_dict, compute_all_jacobians=True)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
+            added_values_dict = {key: exec_eng.dm.get_value(key) for key in
+                                 proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
+            values_dict.update(added_values_dict)
         exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict,
                                                                                                  compute_all_jacobians=True)
         print('LINEARIZE performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
@@ -128,6 +131,10 @@ class TestAnalyticGradients(unittest.TestCase):
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
             mdo_disc.linearize(values_dict, compute_all_jacobians=True)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
+
+            added_values_dict = {key: exec_eng.dm.get_value(key) for key in
+                                 proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
+            values_dict.update(added_values_dict)
         exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict,
                                                                                                  compute_all_jacobians=True)
         print('LINEARIZE performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
@@ -157,6 +164,10 @@ class TestAnalyticGradients(unittest.TestCase):
             assert (mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
                                             step=1e-15, threshold=1e-8, ))
             print('CHECK_JACOBIAN performed for ', proxy_disc.get_disc_full_name())
+
+            added_values_dict = {key: exec_eng.dm.get_value(key) for key in
+                                 proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
+            values_dict.update(added_values_dict)
         assert (exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
             values_dict, linearization_mode='adjoint', derr_approx='complex_step', step=1e-15, threshold=1e-8, ))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
@@ -185,6 +196,10 @@ class TestAnalyticGradients(unittest.TestCase):
             assert (mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
                                             step=1e-15, threshold=1e-8, ))
             print('CHECK_JACOBIAN performed for ', proxy_disc.get_disc_full_name())
+
+            added_values_dict = {key: exec_eng.dm.get_value(key) for key in
+                                 proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
+            values_dict.update(added_values_dict)
         assert (exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
             values_dict, derr_approx='complex_step', step=1e-15, threshold=1e-8, linearization_mode='adjoint'))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())

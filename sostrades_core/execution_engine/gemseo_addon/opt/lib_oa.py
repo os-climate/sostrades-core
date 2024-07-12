@@ -19,8 +19,8 @@ from builtins import super, zip
 from dataclasses import dataclass
 
 from future import standard_library
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from numpy import isfinite
 
 from sostrades_core.execution_engine.gemseo_addon.opt.core.OuterApproximationSolver import (
@@ -44,17 +44,17 @@ class OuterApproximationAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "OuterApproximation"
 
 
-class OuterApproximationOpt(OptimizationLibrary):
+class OuterApproximationOpt(BaseOptimizationLibrary):
     """Outer Approximation optimization library interface.
 
-    See OptimizationLibrary.
+    See BaseOptimizationLibrary.
     """
 
     LIB_COMPUTE_GRAD = False
 
-    OPTIONS_MAP = {OptimizationLibrary.MAX_ITER: "max_iter",
-                   OptimizationLibrary.F_TOL_REL: "ftol_rel",
-                   OptimizationLibrary.MAX_FUN_EVAL: "maxfun"
+    OPTIONS_MAP = {BaseOptimizationLibrary.MAX_ITER: "max_iter",
+                   BaseOptimizationLibrary.F_TOL_REL: "ftol_rel",
+                   BaseOptimizationLibrary.MAX_FUN_EVAL: "maxfun"
                    }
     LIBRARY_NAME = "OuterApproximation"
     def __init__(self):

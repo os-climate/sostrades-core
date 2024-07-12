@@ -94,6 +94,7 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.RANGE: [0.0, 100.0],
             SoSWrapp.STRUCTURING: False,
             SoSWrapp.NUMERICAL: True,
+            SoSWrapp.RUN_NEEDED: True,
             SoSWrapp.USER_LEVEL: 2,
         },
         'sample_size': {
@@ -102,6 +103,7 @@ class UncertaintyQuantification(SoSWrapp):
             SoSWrapp.DEFAULT: 1000,
             SoSWrapp.STRUCTURING: False,
             SoSWrapp.NUMERICAL: True,
+            SoSWrapp.RUN_NEEDED: True,
             SoSWrapp.USER_LEVEL: 2,
         },
         'prepare_samples_function': {

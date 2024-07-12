@@ -147,6 +147,7 @@ class ProxyDiscipline:
     UNIT = SoSWrapp.UNIT
     DESCRIPTION = SoSWrapp.DESCRIPTION
     NUMERICAL = SoSWrapp.NUMERICAL
+    RUN_NEEDED = SoSWrapp.RUN_NEEDED
     SUBTYPE: SoSWrapp.SUBTYPE
     META_INPUT = 'meta_input'
     OPTIONAL = 'optional'
@@ -250,9 +251,9 @@ class ProxyDiscipline:
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                     NUMERICAL: True, STRUCTURING: True},
-        RESIDUAL_VARIABLES: {TYPE: 'dict', DEFAULT: {}, SUBTYPE: {'dict': 'string'}},
-        RUN_SOLVE_RESIDUALS: {TYPE: 'bool', DEFAULT: False}
+                     NUMERICAL: True, STRUCTURING: True, RUN_NEEDED: True},
+        RESIDUAL_VARIABLES: {TYPE: 'dict', DEFAULT: {}, SUBTYPE: {'dict': 'string'}, NUMERICAL: True, RUN_NEEDED: True},
+        RUN_SOLVE_RESIDUALS: {TYPE: 'bool', DEFAULT: False, NUMERICAL: True}
 
     }
 
@@ -608,13 +609,17 @@ class ProxyDiscipline:
             except:
                 pass
 
-    def get_input_data_names(self, as_namespaced_tuple: bool = False) -> list[str]:
+    def get_input_data_names(self, as_namespaced_tuple: bool = False, numerical_inputs=True) -> list[str]:
         '''
         Returns:
             (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
         '''
-        return list(self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple).keys())
-
+        if numerical_inputs:
+            return list(self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple).keys())
+        else:
+            data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
+            return [key for key, value in data_in.items() if
+                    (not value[self.NUMERICAL] or value[self.NUMERICAL] and value[self.RUN_NEEDED])]
     def get_output_data_names(self, as_namespaced_tuple: bool = False) -> list[str]:
         '''
         Returns:
@@ -1431,6 +1436,9 @@ class ProxyDiscipline:
                 new_data[self.OPTIONAL] = False
             if self.NUMERICAL not in data_keys:
                 new_data[self.NUMERICAL] = False
+            if new_data[self.NUMERICAL]:
+                if self.RUN_NEEDED not in data_keys:
+                    new_data[self.RUN_NEEDED] = False
             if self.META_INPUT not in data_keys:
                 new_data[self.META_INPUT] = False
 

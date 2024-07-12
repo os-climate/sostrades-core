@@ -21,8 +21,8 @@ from builtins import super
 from dataclasses import dataclass
 import cma
 from future import standard_library
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from numpy import real
 
 """
@@ -40,17 +40,18 @@ class CMAESAlgorithmDescription(OptimizationAlgorithmDescription):
 
     library_name: str = "CMAES"
 
-class CMAESOpt(OptimizationLibrary):
+
+class CMAESOpt(BaseOptimizationLibrary):
     """Scipy optimization library interface.
 
-    See OptimizationLibrary.
+    See BaseOptimizationLibrary.
     """
 
     LIB_COMPUTE_GRAD = True
 
-    OPTIONS_MAP = {OptimizationLibrary.MAX_ITER: "maxiter",
-                   OptimizationLibrary.F_TOL_REL: "ftol_rel",
-                   OptimizationLibrary.MAX_FUN_EVAL: "maxfun"
+    OPTIONS_MAP = {BaseOptimizationLibrary.MAX_ITER: "maxiter",
+                   BaseOptimizationLibrary.F_TOL_REL: "ftol_rel",
+                   BaseOptimizationLibrary.MAX_FUN_EVAL: "maxfun"
                    }
     LIBRARY_NAME = "CMAES"
 

@@ -17,9 +17,11 @@ import logging
 from builtins import super, zip
 from dataclasses import dataclass
 from future import standard_library
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.optimization_result import OptimizationResult
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.algos.design_space_utils import get_value_and_bounds
 from numpy import float64, isfinite, real
 from scipy.optimize import fmin_tnc
 
@@ -39,17 +41,17 @@ class ProjectedGradientAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "ProjectedGradient"
 
 
-class ProjectedGradientOpt(OptimizationLibrary):
+class ProjectedGradientOpt(BaseOptimizationLibrary):
     """Projected Gradient optimization library interface.
 
-    See OptimizationLibrary.
+    See BaseOptimizationLibrary.
     """
 
     LIB_COMPUTE_GRAD = True
 
-    OPTIONS_MAP = {OptimizationLibrary.MAX_ITER: "max_iter",
-                   OptimizationLibrary.F_TOL_REL: "ftol_rel",
-                   OptimizationLibrary.MAX_FUN_EVAL: "maxfun"
+    _OPTIONS_MAP = {BaseOptimizationLibrary._MAX_ITER: "max_iter",
+                    BaseOptimizationLibrary._F_TOL_REL: "ftol_rel",
+                    BaseOptimizationLibrary._MAX_FUN_EVAL: "maxfun"
                    }
     LIBRARY_NAME = "ProjectedGradient"
 
@@ -65,7 +67,7 @@ class ProjectedGradientOpt(OptimizationLibrary):
         - does it handle inequality constraints
 
         '''
-        super(ProjectedGradientOpt, self).__init__()
+        super(ProjectedGradientOpt, self).__init__(self.LIBRARY_NAME)
         doc = 'https://docs.scipy.org/doc/scipy/reference/'
         self.descriptions = {
             "ProjectedGradient": ProjectedGradientAlgorithmDescription(
@@ -108,20 +110,20 @@ class ProjectedGradientOpt(OptimizationLibrary):
     def _process_options(
             self, **options  # type:Any
     ):  # type: (...) -> Dict[str, Any]
-        options = OptimizationLibrary._process_options(self, **options)
-        self.OPTIONS_MAP[self.MAX_ITER] = options['maxfun']
-        self.OPTIONS_MAP[self.NORMALIZE_DESIGN_SPACE_OPTION] = True
-        options.update(self.OPTIONS_MAP)
+        options = BaseOptimizationLibrary._process_options(self, **options)
+        self._OPTIONS_MAP[self._MAX_ITER] = options['maxfun']
+        self._OPTIONS_MAP[self._NORMALIZE_DESIGN_SPACE_OPTION] = True
+        options.update(self._OPTIONS_MAP)
         return options
 
-    def _run(self, **options):
+    def _run(self, problem: OptimizationProblem, **options):
         """Runs the algorithm,
 
         :param options: the options dict for the algorithm
         """
-        normalize_ds = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        normalize_ds = options.get(self._NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the normalized bounds:
-        x_0, l_b, u_b = self.get_x0_and_bounds(normalize_ds)
+        x_0, l_b, u_b = get_value_and_bounds(problem.design_space, normalize_ds)
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]

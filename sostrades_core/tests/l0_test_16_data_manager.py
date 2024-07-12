@@ -138,6 +138,8 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.Disc1.cache_type': init_dict('string'),
                     ns_2 + '.Disc1.cache_file_path': init_dict('string'),
                     ns_2 + '.Disc1.debug_mode': init_dict('string'),
+                    ns_2 + '.Disc1.residual_variables': init_dict('dict'),
+                    ns_2 + '.Disc1.run_solves_residuals': init_dict('bool'),
                     ns_2 + '.linearization_mode': init_dict('string'),
                     ns_2 + '.linear_solver_MDA': init_dict('string'),
                     ns_2 + '.linear_solver_MDA_preconditioner': init_dict('string'),
@@ -159,7 +161,9 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.group_mda_disciplines': init_dict('bool'),
                     ns_2 + '.propagate_cache_to_children': init_dict('bool'),
                     ns_2 + '.tolerance_gs': init_dict('float'),
-                    ns_2 + '.over_relaxation_factor': init_dict('float'), }
+                    ns_2 + '.over_relaxation_factor': init_dict('float'),
+                    ns_2 + '.residual_variables': init_dict('dict'),
+                    ns_2 + '.run_solves_residuals': init_dict('bool'), }
 
         val_dict = {'default': None, 'type': 'string', 'unit': None,
                     'possible_values': None, 'range': None, 'user_level': 1,

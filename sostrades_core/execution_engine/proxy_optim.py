@@ -143,6 +143,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         FINITE_DIFFERENCES,
         COMPLEX_STEP,
     )
+    POST_PROC_MDO_DATA = 'post_processing_mdo_data'
     # To be defined in the heritage
     is_constraints = None
     INEQ_CONSTRAINTS = 'ineq_constraints'
@@ -277,7 +278,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                }
 
     DESC_OUT = {'design_space_out': {'type': 'dataframe'},
-                'post_processing_mdo_data': {'type': 'dict'}}
+                POST_PROC_MDO_DATA: {'type': 'dict'}}
 
     def __init__(self, sos_name, ee, cls_builder, with_data_io=True, associated_namespaces=None):
         """
@@ -422,7 +423,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         if len(sub_mdo_disciplines) == 1:
             coupling = sub_mdo_disciplines[0]
             # gather all disciplines under the coupling that are FunctionManagerDisc disicpline
-            func_manager_list = [disc.sos_wrapp for disc in coupling.proxy_disciplines if
+            func_manager_list = [disc.sos_wrapp for disc in coupling.disciplines if
                                  isinstance(disc.sos_wrapp, OptimManagerDisc)]
             # Normally only one OptimManagerDisc should be under the optim
             # if multiple do nothing
@@ -470,7 +471,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         desactivate_post_processing_mdo_data = self.get_sosdisc_inputs(self.DESACTIVATE_OPTIM_OUT_STORAGE)
         if not desactivate_post_processing_mdo_data:
-            post_processing_mdo_data = self.get_sosdisc_outputs("post_processing_mdo_data")
+            post_processing_mdo_data = self.get_sosdisc_outputs(self.POST_PROC_MDO_DATA)
 
             if len(post_processing_mdo_data["constraints"]) > 0:
                 chart_list.append("Constraints variables")
@@ -498,7 +499,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             else:
                 select_all = True
 
-            post_processing_mdo_data = self.get_sosdisc_outputs("post_processing_mdo_data")
+            post_processing_mdo_data = self.get_sosdisc_outputs(self.POST_PROC_MDO_DATA)
 
             def to_series(varname: str, x: List, y: ndarray) -> List[InstanciatedSeries]:
                 dim = y.shape[1]
@@ -685,14 +686,14 @@ class ProxyOptim(ProxyDriverEvaluator):
         ineq_full_names = self._update_names(ineq_names, self.IO_TYPE_OUT)
         for ineq, is_pos in zip(ineq_full_names, is_positive):
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
-                ineq, MDOFunction.ConstraintType.INEQ, ineq, value=None, positive=is_pos)
+                ineq, MDOFunction.ConstraintType.INEQ, ineq, positive=is_pos)
 
         # -- equality constraints
         eq_names = self.get_sosdisc_inputs(self.EQ_CONSTRAINTS)
         eq_full_names = self._update_names(eq_names, self.IO_TYPE_OUT)
         for eq in eq_full_names:
             self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
-                eq, MDOFunction.ConstraintType.EQ, eq, value=None,
+                eq, MDOFunction.ConstraintType.EQ, eq,
                 positive=False)
 
     def _set_flush_submdas_to_true(self):

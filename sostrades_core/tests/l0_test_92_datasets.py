@@ -19,7 +19,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 import \
     sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict

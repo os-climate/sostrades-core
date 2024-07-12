@@ -57,6 +57,7 @@ class SoSMDAChain(MDAChain):
     STRUCTURING = 'structuring'
     POSSIBLE_VALUES = 'possible_values'
     NUMERICAL = 'numerical'
+    RUN_NEEDED = 'run_needed'
     CACHE_TYPE = 'cache_type'
     CACHE_FILE_PATH = 'cache_file_path'
     DEBUG_MODE = "debug_mode"
@@ -74,7 +75,7 @@ class SoSMDAChain(MDAChain):
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                     NUMERICAL: True, STRUCTURING: True}
+                     NUMERICAL: True, STRUCTURING: True, RUN_NEEDED: True}
     }
 
     def __init__(self,

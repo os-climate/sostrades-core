@@ -237,8 +237,7 @@
         "propagate_cache_to_children": {
             "value": false
         }
-    }
-  },
+    },
   "dataset_sellar": {
     "x": [
       1.0

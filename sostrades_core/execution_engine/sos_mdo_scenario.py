@@ -44,6 +44,8 @@ class SoSMDOScenario(MDOScenario):
         'version': '',
     }
 
+    POST_PROC_MDO_DATA = 'post_processing_mdo_data'
+
     def __init__(self,
                  disciplines,
                  name,
@@ -103,9 +105,12 @@ class SoSMDOScenario(MDOScenario):
         # save or not the output of design space for post processings
         if not self.desactivate_optim_out_storage:
             self.update_design_space_out()
+            post_processing_mdo_data = {}
             if not self.eval_mode:
-                self.update_post_processing_df()
-
+                post_processing_mdo_data = self.update_post_processing_df()
+            self.local_data.update({
+                [key for key in self.get_output_data_names() if self.POST_PROC_MDO_DATA in key][
+                    0]: post_processing_mdo_data})
 
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
@@ -126,17 +131,16 @@ class SoSMDOScenario(MDOScenario):
             corrected_var_name = ".".join(varname.split(".")[1:])
             return corrected_var_name
 
-        out = {
+        post_processing_mdo_data = {
             "objective": np.array(dataframe[dataframe.FUNCTION_GROUP][objective_name].values),
             "variables": {correct_var_name(var): np.array(dataframe[dataframe.DESIGN_GROUP][var].values) for var in
                           self.design_space.variable_names},
             "constraints": {correct_var_name(var): np.array(dataframe[dataframe.FUNCTION_GROUP][var].values) for var in
                             constraints_names}
         }
+        return post_processing_mdo_data
 
-        self.local_data.update({
-            [key for key in self.get_output_data_names() if 'post_processing_mdo_data' in key][
-                0]: out})
+
 
     def execute_at_xopt(self):
         '''
@@ -188,10 +192,16 @@ class SoSMDOScenario(MDOScenario):
     def run_eval_mode(self):
         '''
         Run evaluate functions with the initial x
+        jacobian_functions: The functions computing the Jacobians.
+                If ``None``, evaluate all the functions computing Jacobians.
+                If empty, do not evaluate functions computing Jacobians.
         '''
-
-        self.formulation.optimization_problem.evaluate_functions(
-            eval_jac=self.eval_jac, normalize=False)
+        if self.eval_jac:
+            self.formulation.optimization_problem.evaluate_functions(normalize=False)
+        else:
+            output_functions, jacobian_functions = self.formulation.optimization_problem.get_functions()
+            self.formulation.optimization_problem.evaluate_functions(output_functions=output_functions,
+                                                                     jacobian_functions=[], normalize=False)
 
         # self.store_local_data(**local_data)
         # if eval mode design space was not modified
@@ -208,8 +218,7 @@ class SoSMDOScenario(MDOScenario):
 
         # preprocess functions
         problem.preprocess_functions(is_function_input_normalized=normalize)
-        functions = problem.nonproc_constraints + \
-                    [problem.nonproc_objective]
+        functions = list(problem.constraints.get_originals()) + [problem.objective.original]
 
         self.functions_before_run = functions
 
@@ -319,7 +328,9 @@ class SoSMDOScenario(MDOScenario):
 
         # store mdo_chain default inputs
         if disc.is_sos_coupling:
-            disc.mdo_chain.default_inputs.update(input_data)
+            input_data_in_mdochain = {key: value for key, value in input_data.items() if
+                                      key in disc.mdo_chain.input_grammar.names}
+            disc.mdo_chain.default_inputs.update(input_data_in_mdochain)
         disc.default_inputs.update(input_data)
 
         if hasattr(disc, 'disciplines'):

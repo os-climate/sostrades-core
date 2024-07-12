@@ -71,7 +71,7 @@ class TestPrepareExecution(unittest.TestCase):
             self.assertIn(proxy_disc.mdo_discipline_wrapp.mdo_discipline,
                           ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines)
             self.assertIn(proxy_disc, ee.root_process.proxy_disciplines)
-            self.assertListEqual(proxy_disc.get_input_data_names(),
+            self.assertListEqual(proxy_disc.get_input_data_names(numerical_inputs=False),
                                  list(proxy_disc.mdo_discipline_wrapp.mdo_discipline.input_grammar.names))
             self.assertListEqual(proxy_disc.get_output_data_names(),
                                  list(proxy_disc.mdo_discipline_wrapp.mdo_discipline.output_grammar.names))

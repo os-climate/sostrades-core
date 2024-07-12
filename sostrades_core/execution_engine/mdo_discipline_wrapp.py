@@ -143,7 +143,7 @@ class MDODisciplineWrapp(object):
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
         '''
-        input_names = proxy.get_input_data_names()
+        input_names = proxy.get_input_data_names(numerical_inputs=False)
         grammar = self.mdo_discipline.input_grammar
         grammar.clear()
         grammar.update_from_names(input_names)
@@ -258,10 +258,10 @@ class MDODisciplineWrapp(object):
         '''
 
         for key, value in proxy.get_data_in().items():
-            if value['value'] is not None:
+            if value[proxy.VALUE] is not None and not value[proxy.NUMERICAL]:
                 full_key = proxy.get_var_full_name(key, proxy.get_data_in())
                 self.mdo_discipline.default_inputs.update(
-                    {full_key: value['value']})
+                    {full_key: value[proxy.VALUE]})
 
     def __update_gemseo_grammar(self, proxy, mdachain):
         '''
@@ -272,7 +272,7 @@ class MDODisciplineWrapp(object):
         # (e.g., numerical inputs mainly)
         # TODO: [to discuss] ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
         #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)
-        soscoupling_inputs = set(proxy.get_input_data_names())
+        soscoupling_inputs = set(proxy.get_input_data_names(numerical_inputs=False))
         mdachain_inputs = set(mdachain.get_input_data_names())
         missing_inputs = soscoupling_inputs | mdachain_inputs
         # var_type_map = {
