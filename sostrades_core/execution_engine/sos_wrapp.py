@@ -161,14 +161,14 @@ class SoSWrapp(object):
 
     # methods delegated to the proxy totally (that only make sense at configuration time)
     @at_proxy
-    def add_inputs(self, input_dict):
+    def add_inputs(self, input_dict, clean_inputs=True):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 
     @at_proxy
-    def add_outputs(self, output_dict):
+    def add_outputs(self, output_dict, clean_outputs=True):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
