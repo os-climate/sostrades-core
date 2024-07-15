@@ -6,27 +6,29 @@ black==24.4.2
 chaospy==4.3.15
 cma==2.7.0
 cvxpy==1.5.2
+db-dtypes==1.2.0
 gitpython==3.1.43
-matplotlib==3.9.0
+google-cloud-bigquery==3.25.0
+matplotlib==3.9.1
 numpy==1.24.4
-openturns==1.18
+openturns==1.23
 pandas==2.2.2
 plotly==5.3.0
+pyarrow==16.1.0
+pycel==1.0b30
 pycryptodome==3.20.0
 python-arango==8.0.0
 PyYAML==6.0.1
 scipy==1.10.1
 six==1.16.0
-sympy==1.9
+sympy==1.13.0
 tqdm==4.66.4
-pycel==1.0b30
-google-cloud-bigquery==3.25.0
-db-dtypes==1.2.0
-pyarrow==16.1.0
 
 # Development requirements
-pytest==7.4.3
-pytest-cov==4.1.0
-pytest-xdist==3.4.0
+# breaking change in 8.2.0 https://docs.pytest.org/en/stable/changelog.html#pytest-8-2-0-2024-04-27
+# Will be fixed in 8.3.0 https://github.com/pytest-dev/pytest/issues/12275#issuecomment-2108348204
+pytest==8.1.2
+pytest-cov==5.0.0
+pytest-xdist==3.6.1
 pytest-durations==1.2.0
 ruff==0.5.0
