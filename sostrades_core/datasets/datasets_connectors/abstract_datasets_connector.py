@@ -33,7 +33,7 @@ class AbstractDatasetsConnector(abc.ABC):
     SOURCE = "source"
     LINK = "link"
     LAST_UPDATE = "last_update_date"
-
+    # generic default metadata dict
     DEFAULT_METADATA_DICT = {
         NAME: "",
         UNIT: "",
@@ -42,8 +42,16 @@ class AbstractDatasetsConnector(abc.ABC):
         LINK: "",
         LAST_UPDATE: ""
     }
+    # generic dataset connector value entry (RESERVED)
     VALUE = "value"
     VALUE_KEYS = {VALUE}
+    # bigquery specific value entries (RESERVED), need to be defined here to avoid their copy btw connectors as metadata
+    PARAMETER_NAME = "parameter_name"
+    STRING_VALUE = "parameter_string_value"
+    INT_VALUE = "parameter_int_value"
+    FLOAT_VALUE = "parameter_float_value"
+    BOOL_VALUE = "parameter_bool_value"
+    VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, PARAMETER_NAME})
 
     @abc.abstractmethod
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
@@ -147,7 +155,8 @@ class AbstractDatasetsConnector(abc.ABC):
         if old_datum is None:
             new_datum = self.DEFAULT_METADATA_DICT.copy()
         else:
-            new_datum = {key: value for key, value in old_datum.items() if key not in self.VALUE_KEYS}
+            new_datum = self._extract_metadata_from_datum(old_datum)
+            # new_datum.update({key: value for key, value in self.DEFAULT_METADATA_DICT.items() if key not in new_datum})
         return new_datum
 
     def _insert_value_into_datum(self,

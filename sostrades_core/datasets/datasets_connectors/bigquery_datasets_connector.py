@@ -39,17 +39,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     NO_TABLE_TYPES = ["string", "int", "float", "bool"]
     DESCRIPTOR_TABLE_NAME = "descriptor_parameters"         # reserved table for dataset descriptor
     COL_NAME_INDEX_TABLE_NAME = "__col_name_index_table__"  # reserved table for bigquery characters compatibility
-    # extra metadata for parameter name handling in bigquery
-    PARAMETER_NAME = "parameter_name"
-    DEFAULT_METADATA_DICT = AbstractDatasetsConnector.DEFAULT_METADATA_DICT.copy()
-    DEFAULT_METADATA_DICT.update({PARAMETER_NAME: ""})
-    # extra value columns for type handling in bigquery
-    STRING_VALUE = "parameter_string_value"
-    INT_VALUE = "parameter_int_value"
-    FLOAT_VALUE = "parameter_float_value"
-    BOOL_VALUE = "parameter_bool_value"
-    VALUE_KEYS = AbstractDatasetsConnector.VALUE_KEYS.copy()
-    VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE})
 
     def __init__(self, project_id: str,
                  serializer_type: DatasetSerializerType = DatasetSerializerType.BigQuery):
@@ -262,7 +251,9 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                                  datum: dict[str:Any],
                                  parameter_name: str,
                                  parameter_type: str) -> dict[str:Any]:
-        new_datum = {self.PARAMETER_NAME: parameter_name}
+
+        new_datum = self._new_datum(datum)
+        new_datum[self.PARAMETER_NAME] = parameter_name
         # if data is none or empty (dict with no elements ect) bigquery raise an error at the import
         is_empty = value is None or (parameter_type in {"list", "array", "dict", "dataframe"} and len(value) == 0)
         if not is_empty:
@@ -279,7 +270,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             elif parameter_type in BigqueryDatasetsConnector.SELF_TABLE_TYPES:
                 # the name of the value is a string value is the type of the data + the name of the table associated
                 new_datum[self.STRING_VALUE] = f"@{parameter_type}@{parameter_name}"
-            new_datum.update(self._new_datum(datum))
             # TODO: keeping dataset metadata "as is", insert metadata handling here
             return new_datum
 

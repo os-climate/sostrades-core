@@ -30,6 +30,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
     LOGO_OFFICIAL = 'logo_official'
     LOGO_NOTOFFICIAL = 'logo_notofficial'
     LOGO_WORK_IN_PROGRESS = 'logo_work_in_progress'
+    POST_PROCESSING_SECTION_NAME = 'post_processing_section_name'
 
     def __init__(self):
         """ Initialize members variables
@@ -38,6 +39,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
         # Initialize annotation properties
         self.annotation_upper_left = {}
         self.annotation_upper_right = {}
+        self.post_processing_section_name = ""
         self._plot_csv_data = None
         self.logo_official = False
         self.logo_notofficial = False
