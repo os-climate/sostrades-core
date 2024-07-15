@@ -48,6 +48,15 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `plotly (5.3.0) <https://plotly.com/python/>`_
     MIT
 
+`pycel (1.0b30) <https://github.com/stephenrauch/pycel>`_
+    GNU General Public License v2 (GPLv2)
+
+`pycryptodome (3.20.0) <https://www.pycryptodome.org>`_
+    BSD, Public Domain
+
+`python-arango (8.0.0) <https://github.com/arangodb/python-arango>`_
+    MIT
+
 `PyYAML (6.0.1) <https://pyyaml.org/>`_
     MIT
 
