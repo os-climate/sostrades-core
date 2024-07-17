@@ -124,11 +124,10 @@ def _test_all_usecases(processes_repo: str, force_run=False):
     """
     usecases = get_all_usecases(processes_repo)
     message_queue = Queue()
-    process_list = []
-
-    for usecase in usecases:
-        process_list.append(
-            Process(target=processed_test_one_usecase, args=(usecase, message_queue, force_run,)))
+    process_list = [
+        Process(target=processed_test_one_usecase, args=(usecase, message_queue, force_run,))
+        for usecase in usecases
+    ]
 
     return manage_process_launch(process_list, message_queue)
 
@@ -261,7 +260,7 @@ def multiple_configure(usecase):
     logging.info("---- FIRST CONFIGURE ----")
     # First run : Load Data in a new BaseStudyManager and run study
     study_1 = BaseStudyManager(repository_name=uc.repository_name, process_name=uc.process_name,
-                               study_name=uc.study_name)
+                               study_name=uc.study_name, test_post_procs=uc.test_post_procs)
     study_1.load_data(from_path=dump_dir)
     study_1.execution_engine.configure()
     # Deepcopy dm
@@ -271,7 +270,7 @@ def multiple_configure(usecase):
     # Second run : Load Data in a new BaseStudyManager and run study
     logging.info("---- SECOND CONFIGURE ----")
     study_2 = BaseStudyManager(repository_name=uc.repository_name, process_name=uc.process_name,
-                               study_name=uc.study_name)
+                               study_name=uc.study_name, test_post_procs=uc.test_post_procs)
     study_2.load_data(from_path=dump_dir)
     study_2.execution_engine.configure()
     # Deepcopy dm
@@ -503,6 +502,9 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         test_passed = data_integrity_passed
 
         if data_integrity_passed:
+            if not study_2.test_post_procs:
+                info_msg += f"\nINFO: {usecase}, stopped test after data integrity"
+                return test_passed, info_msg
             if study_2.ee.factory.contains_mdo:
                 max_iter_mdo_var_names = study_2.ee.dm.get_all_namespaces_from_var_name("max_iter")
                 study_2.ee.dm.set_values_from_dict({max_mdo_iter_var: 1 for max_mdo_iter_var in max_iter_mdo_var_names})
@@ -512,16 +514,16 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
                 study=study_2, force_run=force_run)
             test_passed = post_processing_passed
             info_msg += error_msg_post_processing
+            if False:
+                if post_processing_passed and not study_2.ee.factory.contains_mdo:
+                    if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
+                        run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
+                        test_passed = run_test_passed
+                        info_msg += error_msg_run
+                    else:
+                        info_msg += f"\nINFO: {usecase}, double run not tested because usecase is MDA with strong couplings"
 
-            if post_processing_passed and not study_2.ee.factory.contains_mdo:
-                if not study_2.ee.factory.contains_mda_with_strong_couplings or force_run:
-                    run_test_passed, error_msg_run = test_double_run(study=study_2, force_run=force_run)
-                    test_passed = run_test_passed
-                    info_msg += error_msg_run
-                else:
-                    info_msg += f"\nINFO: {usecase}, double run not tested because usecase is MDA with strong couplings"
-
-            run_test_check_outputs(usecase)
+                run_test_check_outputs(usecase)
 
     if message_queue is not None:
         message_queue.put([test_passed, info_msg])

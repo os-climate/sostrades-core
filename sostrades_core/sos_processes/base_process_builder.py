@@ -33,7 +33,7 @@ class BaseProcessBuilder:
         return []
 
     def create_builder_list(self, mods_dict, ns_dict=None, associate_namespace=False):
-        ''' 
+        '''
         define a base namespace
         instantiate builders iterating over a list of module paths
         return the list of disciplines built

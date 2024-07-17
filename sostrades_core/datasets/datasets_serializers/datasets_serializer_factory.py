@@ -19,6 +19,9 @@ from enum import Enum
 from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer import (
     AbstractDatasetsSerializer,
 )
+from sostrades_core.datasets.datasets_serializers.bigquery_datasets_serializer import (
+    BigQueryDatasetsSerializer,
+)
 from sostrades_core.datasets.datasets_serializers.filesystem_datasets_serializer import (
     FileSystemDatasetsSerializer,
 )
@@ -35,6 +38,7 @@ class DatasetSerializerType(Enum):
 
     JSON = JSONDatasetsSerializer
     FileSystem = FileSystemDatasetsSerializer
+    BigQuery = BigQueryDatasetsSerializer
 
     @classmethod
     def get_enum_value(cls, value_str):

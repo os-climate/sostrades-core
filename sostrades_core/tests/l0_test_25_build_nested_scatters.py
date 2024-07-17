@@ -126,7 +126,7 @@ class TestBuildScatter(unittest.TestCase):
                        '\t\t\t|_ Disc2',
                        '\t\t|_ scatter2',
                        '\t\t\t|_ Disc1',
-                       '\t\t\t|_ Disc2', 
+                       '\t\t\t|_ Disc2',
                        f'\t|_ {driver_name}_gather',]
 
         exp_tv_str = '\n'.join(exp_tv_list)

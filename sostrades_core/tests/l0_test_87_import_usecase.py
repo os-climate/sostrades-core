@@ -76,7 +76,7 @@ class TestSoSimportUsecase(unittest.TestCase):
     def test_1_usecase_import_multi_instances_eval_simple_disc1_disc3(self):
         """
         This test checks the usecase import capability in multi instance mode with eval
-        It uses the test_disc1_disc3_list nested process 
+        It uses the test_disc1_disc3_list nested process
         """
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
@@ -160,7 +160,7 @@ class TestSoSimportUsecase(unittest.TestCase):
     def test_2_usecase_import_multi_instances_eval_generator_cp_disc1_disc3(self):
         """
         This test checks the usecase import capability in mono instance mode with doe algo product generator + eval
-        It uses the test_disc1_disc3_list nested process 
+        It uses the test_disc1_disc3_list nested process
         """
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
@@ -243,7 +243,7 @@ class TestSoSimportUsecase(unittest.TestCase):
     def _test_3_usecase_import_mono_instances_eval_generator_doe_disc1_disc3(self):
         """
         This test checks the usecase import capability in mono instance mode with doe algo product generator + eval
-        It uses the test_disc1_disc3_list nested process 
+        It uses the test_disc1_disc3_list nested process
         """
 
         ref_dir = join(dirname(__file__), 'data')
@@ -328,7 +328,7 @@ class TestSoSimportUsecase(unittest.TestCase):
 
     def test_4_usecase_import_multi_instances_eval_simple_sellar(self):
         """
-        This test checks the usecase import capability in multi instance mode with eval 
+        This test checks the usecase import capability in multi instance mode with eval
         It uses the sellar_coupling nested process
         """
         ref_dir = join(dirname(__file__), 'data')
@@ -813,7 +813,7 @@ class TestSoSimportUsecase(unittest.TestCase):
     def test_8_usecase_import_multi_instances_basic_Disc1Disc3(self):
         """
         This test checks the usecase import capability in multi instance mode with eval and without generator (very simple MultiScenario)
-        It uses the test_disc1_disc3_list nested process 
+        It uses the test_disc1_disc3_list nested process
         """
         # Old test that could be depreciated: already covered by test 1
         ref_dir = join(dirname(__file__), 'data')
@@ -901,7 +901,7 @@ class TestSoSimportUsecase(unittest.TestCase):
     def test_9_usecase_import_multi_instances_cp_Disc1Disc3(self):
         """
         This test checks the usecase import capability in multi instance mode with cartesian product generator + eval
-        It uses the test_disc1_disc3_list nested process 
+        It uses the test_disc1_disc3_list nested process
         """
         # Old test that could be depreciated: already covered by test 2
         ref_dir = join(dirname(__file__), 'data')

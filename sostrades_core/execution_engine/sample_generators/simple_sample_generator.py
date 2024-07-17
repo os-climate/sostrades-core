@@ -89,6 +89,6 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
     def get_arguments(self, wrapper):
         eval_inputs = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
         samples_df = wrapper.dm.get_value(self.samples_df_f_name)
-        selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
+        selected_inputs = eval_inputs.loc[eval_inputs['selected_input']]['full_name'].tolist()
         simple_kwargs = {'samples_df': samples_df, 'var_names': selected_inputs}
         return [], simple_kwargs

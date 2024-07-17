@@ -259,8 +259,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         # NB assuming that the samples_df entries are unique otherwise there
         # is some intelligence to be added
-        scenario_names = samples_df[samples_df[self.SELECTED_SCENARIO]
-                                    == True][self.SCENARIO_NAME].values.tolist()
+        scenario_names = samples_df.loc[samples_df[self.SELECTED_SCENARIO]][self.SCENARIO_NAME].values.tolist()
         trade_vars = []
         # check that all the input scenarios have indeed been built
         # (configuration sequence allows the opposite)
@@ -337,8 +336,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         self.set_variables_editability(scenario_names_, not_editable_dict)
 
     '''
-    All methods below are here for reference scenario and need to be cleaned 
-    
+    All methods below are here for reference scenario and need to be cleaned
+
     '''
 
     def manage_reference_scenario_features(self, trade_vars, scenario_names):
@@ -580,7 +579,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         # subdisc_to_check = disc.scenarios if hasattr(disc, 'scenarios') else disc.proxy_disciplines
         for subdisc in disc.proxy_disciplines:
             if subdisc.__class__.__name__ == 'ProxyMultiInstanceDriver':
-                if subdisc.get_sosdisc_inputs(self.INSTANCE_REFERENCE) == True:
+                if subdisc.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
                     # If upper ProxyDriverEvaluator is in linked mode, all
                     # lower ProxyDriverEvaluator shall be as well.
                     if self.get_sosdisc_inputs(self.REFERENCE_MODE) == self.LINKED_MODE:
@@ -615,12 +614,12 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                         if element[0] in key:  # Ignore variables from inner ProxyDriverEvaluators
                             pass
                         else:
-                            if self.original_editable_dict_non_ref[key] == False:
+                            if not self.original_editable_dict_non_ref[key]:
                                 pass
                             else:
                                 self.ee.dm.set_data(key, 'editable', True)
                 else:
-                    if self.original_editable_dict_non_ref[key] == False:
+                    if not self.original_editable_dict_non_ref[key]:
                         pass
                     else:
                         self.ee.dm.set_data(key, 'editable', True)

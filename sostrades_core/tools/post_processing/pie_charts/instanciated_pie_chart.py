@@ -30,12 +30,12 @@ Class that define a pie chart display as post post processing
 """
 
 class InstanciatedPieChartException(Exception):
-    """ Overload Exception basic type 
+    """ Overload Exception basic type
     """
 
 
 class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a pie chart display as post post processing 
+    """ Class that define a pie chart display as post post processing
     """
 
     PIE_CHART_NAME = 'pie_chart_name'
@@ -142,5 +142,6 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
         json[self.LOGO_NOTOFFICIAL] = self.logo_notofficial
         json[self.LOGO_OFFICIAL] = self.logo_official
         json[self.LOGO_WORK_IN_PROGRESS] = self.logo_work_in_progress
+        json[self.POST_PROCESSING_SECTION_NAME] = self.post_processing_section_name.capitalize()
 
         return json

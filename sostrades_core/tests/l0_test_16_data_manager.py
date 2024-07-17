@@ -117,7 +117,7 @@ class TestDataManagerGenerator(unittest.TestCase):
         if Path(disc_dir_to_load_2).is_dir():
             rmtree_safe(disc_dir_to_load_2)
         makedirs_safe(disc_dir_to_load_2)
-        
+
         pkl_dump(dm_data_dict_2, open(join(disc_dir_to_load_2,
                                            DataSerializer.pkl_filename), 'wb'))
 
@@ -257,7 +257,7 @@ class TestDataManagerGenerator(unittest.TestCase):
 
 
 ''' HOW TO UPDATE dm.pkl file (reference dm.data_dict):
-go to ref dir (sostrades_core\tests\data\ref_output\<STUDY_DIR>)
+go to ref dir (sostrades_core\tests\\data\ref_output\\<STUDY_DIR>)
 import pickle
 a_d=pickle.load(open('dm.pkl','rb'))
 a_d.update(<DICT>)

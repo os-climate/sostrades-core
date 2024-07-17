@@ -20,10 +20,8 @@ from functools import wraps
 from numpy import array, complex128, ndarray
 from scipy.sparse import lil_matrix
 
-from sostrades_core.execution_engine.design_var.design_var import DesignVar
 from sostrades_core.tools.base_functions.compute_len import compute_len
 
-# decorator for delegating a method to the ProxyDiscipline object during configuration
 
 class SoSWrappException(Exception):
     pass
@@ -74,9 +72,11 @@ class SoSWrapp(object):
     DYNAMIC_DATAFRAME_COLUMNS = 'dynamic_dataframe_columns'
     DATAFRAME_EDITION_LOCKED = 'dataframe_edition_locked'
     DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
-    DATAFRAME_FILL = DesignVar.DATAFRAME_FILL
-    ONE_COLUMN_FOR_KEY = DesignVar.ONE_COLUMN_FOR_KEY
-    COLUMNS_NAMES = DesignVar.COLUMNS_NAMES
+    # DesignVar related
+    DATAFRAME_FILL = 'dataframe_fill'
+    COLUMNS_NAMES = 'columns_names'
+    ONE_COLUMN_PER_KEY = 'one column per key'
+    ONE_COLUMN_FOR_KEY = 'one column for key, one for value'
     IO_TYPE = 'io_type'
     IO_TYPE_IN = 'in'
     IO_TYPE_OUT = 'out'
@@ -161,14 +161,14 @@ class SoSWrapp(object):
 
     # methods delegated to the proxy totally (that only make sense at configuration time)
     @at_proxy
-    def add_inputs(self, input_dict):
+    def add_inputs(self, input_dict, clean_inputs=True):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
         pass
 
     @at_proxy
-    def add_outputs(self, output_dict):
+    def add_outputs(self, output_dict, clean_outputs=True):
         """
         Method add_inputs delegated to associated ProxyDiscipline object during configuration.
         """
@@ -536,7 +536,7 @@ class SoSWrapp(object):
         if type(value[0]) in [complex, complex128]:
             # Create a new lil_matrix with the same shape but with complex dtype
             complex_matrix = lil_matrix(self.jac_dict[y_key_full][x_key_full].shape, dtype=complex)
-            
+
             # Copy the data from the original matrix to the new complex matrix
             complex_matrix[:, :] = self.jac_dict[y_key_full][x_key_full][:, :]
             self.jac_dict[y_key_full][x_key_full] = complex_matrix
@@ -544,7 +544,7 @@ class SoSWrapp(object):
             if value.dtype in [complex, complex128]:
                 # Create a new lil_matrix with the same shape but with complex dtype
                 complex_matrix = lil_matrix(self.jac_dict[y_key_full][x_key_full].shape, dtype=complex)
-                
+
                 # Copy the data from the original matrix to the new complex matrix
                 complex_matrix[:, :] = self.jac_dict[y_key_full][x_key_full][:, :]
                 self.jac_dict[y_key_full][x_key_full] = complex_matrix

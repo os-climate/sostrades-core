@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import json
 import logging
+import os
 import pickle
 from os.path import join
 from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
-import json
-import os
 
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
@@ -37,7 +37,7 @@ def _save_dataframe(file_path: str, df: pd.DataFrame) -> None:
 
 def _load_dataframe(file_path: str) -> pd.DataFrame:
     df_value = pd.read_csv(file_path, na_filter=False)
-    return df_value.applymap(isevaluatable)
+    return df_value.map(isevaluatable)
 
 
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
@@ -70,10 +70,13 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         """
         self.__current_dataset_directory = dataset_directory
 
-    def load_pickle_data(self):
+    def load_pickle_data(self) -> None:
+        """
+        Load and buffer the non-serializable types data stored in the pickle file.
+        """
         pkl_data = {}
         if self.__current_dataset_directory is None:
-            self.__logger.error(f"Error while trying to load pickled data because dataset directory is undefined")
+            self.__logger.error("Error while trying to load pickled data because dataset directory is undefined")
         else:
             non_serializable_pkl_path = os.path.join(self.__current_dataset_directory, self.NON_SERIALIZABLE_PKL)
             if os.path.exists(non_serializable_pkl_path):
@@ -87,12 +90,18 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         self.__pickle_data = pkl_data
 
     def clear_pickle_data(self):
+        """
+        Clear buffered data from pickle load.
+        """
         self.__pickle_data = {}
 
-    def dump_pickle_data(self):
+    def dump_pickle_data(self) -> None:
+        """
+        Write the buffered non-serializable data into the dataset pickle file and clear the buffer.
+        """
         if self.__pickle_data:
             if self.__current_dataset_directory is None:
-                self.__logger.error(f"Error while trying to dump pickled data because dataset directory is undefined")
+                self.__logger.error("Error while trying to dump pickled data because dataset directory is undefined")
             else:
                 non_serializable_pkl_path = os.path.join(self.__current_dataset_directory, self.NON_SERIALIZABLE_PKL)
                 with open(non_serializable_pkl_path, 'wb') as pkl_file:
@@ -100,6 +109,10 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         self.clear_pickle_data()
 
     def __clean_from_pickle_data(self, data_name: str) -> None:
+        """
+        Utility method used to clear an entry from the buffered pickle data, in order to make sure that regularly
+        serialized data are not repeated in the pickle too.
+        """
         # TODO: [discuss] is this necessary ?
         if data_name in self.__pickle_data:
             del self.__pickle_data[data_name]
@@ -228,16 +241,15 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
                     os.remove(data_path)
                 return self.__serialize_object(data_value, data_name)
 
-    def _deserialize_dataframe(self, data_value: str) -> pd.DataFrame:
+    def _deserialize_dataframe(self, data_value: str, data_name: str = None) -> pd.DataFrame:
         # NB: dataframe csv deserialization as in webapi
         return self.__deserialize_from_filesystem(_load_dataframe, data_value)
 
     def _deserialize_array(self, data_value: str) -> np.ndarray:
         # NB: to be improved with astype(subtype) along subtype management
-        return self.__deserialize_from_filesystem(np.loadtxt, data_value)
+        return self.__deserialize_from_filesystem(np.loadtxt, data_value, ndmin=1)
 
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
-        # TODO: TEST whether api serialization methods suffice for dataframe nested types
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name)),
             self.CSV_EXTENSION))
@@ -251,7 +263,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, data_name, descriptor_value)
 
-    def _serialize_jsonifiable(self, data_value, data_name):
+    def _serialize_jsonifiable(self, data_value: Any, data_name: str) -> Any:
         try:
             _ = json.dumps(data_value)
             self.__clean_from_pickle_data(data_name)
@@ -260,7 +272,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             self.__logger.debug(f"{data_name} to be stored in pickle because non-jsonifiable")
             return self.__serialize_object(data_value, data_name)
 
-    def __serialize_object(self, data_value, data_name):
+    def __serialize_object(self, data_value: Any, data_name: str) -> str:
         descriptor_value = self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_OBJECT, data_name))
         self.__pickle_data[data_name] = data_value
         return descriptor_value

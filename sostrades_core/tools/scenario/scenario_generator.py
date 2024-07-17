@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -91,9 +91,8 @@ class ScenarioGenerator:
                 else:
                     val_in_dict.append(val)
 
-            combinations = []
-            for product_val in product(*val_in_dict):
-                combinations.append(list(flatten(list(product_val))))
+            combinations = [list(flatten(list(product_val))) for product_val in product(*val_in_dict)]
+
             return combinations
 
     def configure_scenario(self, inputs_scenario, scenario_name):

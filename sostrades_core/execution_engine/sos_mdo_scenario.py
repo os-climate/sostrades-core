@@ -77,10 +77,10 @@ class SoSMDOScenario(MDOScenario):
         self.reduced_dm = reduced_dm
         self.activated_variables = self.formulation.design_space.variables_names
         self.is_sos_coupling=False
-        
-        # desactivate designspace outputs for post processings 
+
+        # desactivate designspace outputs for post processings
         self.desactivate_optim_out_storage = False
-    
+
     def _run(self):
         '''
 
@@ -103,7 +103,7 @@ class SoSMDOScenario(MDOScenario):
             if not self.eval_mode:
                 self.update_post_processing_df()
 
-   
+
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
         dataset = self.export_to_dataset()
@@ -196,7 +196,7 @@ class SoSMDOScenario(MDOScenario):
 
     def preprocess_functions(self):
         """
-        preprocess functions to store functions list 
+        preprocess functions to store functions list
         """
 
         problem = self.formulation.opt_problem
@@ -267,7 +267,7 @@ class SoSMDOScenario(MDOScenario):
         Args:
             x_vect: The input vector at which the functions must be evaluated;
                 if None, x_0 is used.
-            problem: opt problem object 
+            problem: opt problem object
 
 
         """

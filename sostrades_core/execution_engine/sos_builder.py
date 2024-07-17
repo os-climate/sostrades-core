@@ -155,7 +155,7 @@ class SoSBuilder:
     def add_namespace_list_in_associated_namespaces(self, ns_list):
         '''
         Add a namespace in associated namespaces list but check if one already exists with the same name
-        If yes then the new one has the priority : 
+        If yes then the new one has the priority :
         we do this with a dict for performances the update gives the priority to the new one
         '''
         new_ns_dict = {ns.split(self.NS_NAME_SEPARATOR)[
@@ -167,7 +167,7 @@ class SoSBuilder:
     def delete_all_associated_namespaces(self):
         '''
         Add a namespace in associated namespaces list but check if one already exists with the same name
-        If yes then the new one has the priority : 
+        If yes then the new one has the priority :
         we do this with a dict for performances the update gives the priority to the new one
         '''
         self.__associated_namespaces_dict = {}

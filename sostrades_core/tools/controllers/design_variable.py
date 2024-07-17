@@ -25,15 +25,15 @@ class DesignVariable(BaseController):
     """
     CLASS_MSG = 'DesignVariable'
     ERROR_MSG = 'ERROR '+CLASS_MSG+'.'
-    
+
     #--Constructor
     def __init__(self,PBCManager,Id,value,bounds, complex_mode=False):
-        
+
         self.__bounds = None
         self.set_bounds(bounds)
 
         BaseController.__init__(self, PBCManager, Id, value=value, BCType='DesignVariable', complex_mode=complex_mode)
-        
+
         self.__nvalue = 0.
         self.__norm_value()
 
@@ -44,12 +44,12 @@ class DesignVariable(BaseController):
         info_string+="\n   Bounds          :%24s"%str(self.get_bounds())
         info_string+="\n   Gradient        : "+str(self.get_gradient())
         return info_string
-    
+
     def __norm_value(self):
         lbnd=self.__bounds[0]
         ubnd=self.__bounds[1]
         self.__nvalue = (self.get_value() - lbnd) / ( ubnd - lbnd)
-        
+
     def __revert_value(self):
         lbnd=self.__bounds[0]
         ubnd=self.__bounds[1]
@@ -58,12 +58,12 @@ class DesignVariable(BaseController):
     #--accessors
     def get_bounds(self):
         return self.__bounds
-    
+
     def get_revert_fact(self):
         lbnd=self.__bounds[0]
         ubnd=self.__bounds[1]
         return (ubnd - lbnd)
-    
+
     def get_normalized_value(self):
         return self.__nvalue
 
@@ -75,7 +75,7 @@ class DesignVariable(BaseController):
         ubnd=self.__bounds[1]
         if lbnd >= ubnd:
             raise Exception(ERROR_MSG+' Lower bound greater or equal to upper bound!')
-    
+
     def set_value(self,value,flag_updates=True, raise_error=False):
         """
         Set value of the PDesignVariable
@@ -83,11 +83,11 @@ class DesignVariable(BaseController):
         BaseController.set_value(self,value,flag_updates=flag_updates)
         self.check_bounds(raise_error)
         self.__norm_value()
-        
+
     def update_nomalized_value(self,nvalue):
         if self.get_normalized_value()!=nvalue:
             self.set_normalized_value(nvalue)
-        
+
     def set_normalized_value(self,nvalue):
         self.__nvalue = nvalue
         self.__revert_value()
@@ -115,4 +115,4 @@ class DesignVariable(BaseController):
         index=self.get_manager().get_dv_index(self.get_id())
         gradient[index]=1.
         self.set_gradient(gradient)
-        
+

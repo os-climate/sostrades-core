@@ -4,11 +4,11 @@ To create a use case and provide input data for your process in the SoSTrades pl
 
 Create a **usecase.py** in a process directory.
 
-Each usecase contains a set of input data to run on a given process.
+Each usecase contains a set of input data to run on a given process.
 
-The file usecase.py implements a class **Study** based on **StudyManager**.
+The file usecase.py implements a class **Study** based on **StudyManager**.
 
-This class implements a method **setup_usecase()** that returns a dictionary (or list of dictionaries), with all inputs needed for execution of the usecase.
+This class implements a method **setup_usecase()** that returns a dictionary (or list of dictionaries), with all inputs needed for execution of the usecase.
 
 In the main, the study is instantiated, asked to load data and to run.
 

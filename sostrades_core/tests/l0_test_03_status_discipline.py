@@ -55,7 +55,7 @@ class TestStatusDiscipline(unittest.TestCase):
         values_dict['Test.Disc1.b'] = 5.
         values_dict['Test.x'] = 2.
         self.ee.load_study_from_input_dict(values_dict)
-        
+
         self.process = self.ee.root_process
 
         if self.process.status in self.dic_status.keys():
@@ -76,6 +76,8 @@ class TestStatusDiscipline(unittest.TestCase):
         while(time.time() - t0 < 3):
             if self.process.status in self.dic_status.keys():
                 self.dic_status[self.process.status] = True
+                time.sleep(0.01)
                 # print(self.process.status)
         self.assertTrue(np.all(list(self.dic_status.values())),
                         'Missing status')
+

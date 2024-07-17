@@ -80,7 +80,7 @@ class GatherDiscipline(SoSWrapp):
 
         Arguments:
             sos_name (string): name of the discipline/node
-            
+
         """
         super().__init__(sos_name, logger)
         self.gather_names = None
@@ -88,8 +88,8 @@ class GatherDiscipline(SoSWrapp):
 
     def setup_sos_disciplines(self):
         '''
-           We add to the desc_in all the outputs of each child 
-           We add to the desc_out the dict which will gather all inputs by name 
+           We add to the desc_in all the outputs of each child
+           We add to the desc_out the dict which will gather all inputs by name
         '''
         dynamic_inputs, dynamic_outputs = self.build_dynamic_io()
         self.add_inputs(dynamic_inputs)
@@ -146,7 +146,7 @@ class GatherDiscipline(SoSWrapp):
 
     def build_dynamic_io_from_gather_outputs(self):
         '''
-        Add in dynamic_input the gather_outputs that needs to be gathered 
+        Add in dynamic_input the gather_outputs that needs to be gathered
         and in dynamic_output the dict of gather_outputs that have been gathered
         '''
         dynamic_inputs = {}
@@ -253,10 +253,11 @@ class GatherDiscipline(SoSWrapp):
             # define rule for key name
             key_split = key_column_name.split('_')
             if len(key_split) == 1:
-                key_column_name = 'key_level_1'
+                key_column_name = key_split[0] + "_1"
+                # key_column_name = 'key_level_1'
             else:
                 key_split[-1] = str(int(key_split[-1]) + 1)
-            key_column_name = '_'.join(key_split)
+                key_column_name = '_'.join(key_split)
             df = self.add_key_column_to_df(df, key_column_name, key_column_value)
 
         return df

@@ -27,9 +27,6 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import (
     Study as study_sellar_opt_discopt,
 )
-from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import (
-    Study,
-)
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,
 )
@@ -61,7 +58,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.dspace = pd.DataFrame(dspace_dict)
         self.repo = 'sostrades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_discopt'
-        
+
 
     def _test_01_optim_scenario_check_treeview(self):
         print("\n Test 1 : check configure and treeview")
@@ -744,7 +741,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                 self.assertEqual(coupling_value, eval_value)
             except:
                 self.assertListEqual(list(coupling_value), list(eval_value))
-    
+
     def test_08b_optim_scenario_eval_mode_no_post_proc(self):
         print("\n Test 8b : Sellar optim with eval_mode with no output design space post proc")
         set_printoptions(precision=20)
@@ -771,7 +768,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # -- set up disciplines in Scenario
         disc_dict = {}
-        
+
         #desactivate the optim post processings
         disc_dict[f'{self.ns}.SellarOptimScenario.desactivate_optim_out_storage'] = True
 
@@ -819,10 +816,10 @@ class TestSoSOptimScenario(unittest.TestCase):
                 disc)
             graph_list = ppf.get_post_processing_by_discipline(
                 disc, filters, as_json=False)
-            
+
         assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
-            
-        
+
+
 
     def test_09_optim_scenario_eval_mode_with_eval_jac(self):
         print("\n Test 9 : Sellar optim with eval_mode and eval_jac")
@@ -1316,7 +1313,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                 disc)
             graph_list = ppf.get_post_processing_by_discipline(
                 disc, filters, as_json=False)
-            
+
 
     def _test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
         print("\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")
@@ -1504,38 +1501,6 @@ class TestSoSOptimScenario(unittest.TestCase):
             #graph.to_plotly().show()
             pass
 
-    def test_18_optim_scenario_optim_algo_projected_gradient_func_manager(self):
-        self.name = 'Test12'
-        self.ee = ExecutionEngine(self.name)
-
-        builder = self.ee.factory.get_builder_from_process('sostrades_core.sos_processes.test',
-                                                           'test_sellar_opt_w_func_manager'
-                                                           )
-        self.ee.factory.set_builders_to_coupling_builder(builder)
-        self.ee.configure()
-
-        usecase = Study(execution_engine=self.ee)
-        usecase.study_name = self.name
-
-        values_dict = usecase.setup_usecase()
-        full_values_dict = {}
-        for dict_v in values_dict:
-            full_values_dict.update(dict_v)
-
-        full_values_dict.update({
-            f"{self.name}.SellarOptimScenario.{'max_iter'}": 67,
-            f"{self.name}.SellarOptimScenario.{'algo'}": 'ProjectedGradient',
-        })
-        self.ee.load_study_from_input_dict(full_values_dict)
-
-        self.ee.execute()
-
-        proxy_optim = self.ee.root_process.proxy_disciplines[0]
-        filters = proxy_optim.get_chart_filter_list()
-        graph_list = proxy_optim.get_post_processing_list(filters)
-        for graph in graph_list:
-            #graph.to_plotly().show()
-            pass
 
     def test_19_proxyoptim_data_integrity(self):
         """

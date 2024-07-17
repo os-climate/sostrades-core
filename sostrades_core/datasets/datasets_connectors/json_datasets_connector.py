@@ -39,7 +39,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         """
         Constructor for JSON data connector
 
-        
+
         :param file_path: file_path for this dataset connector
         :type file_path: str
         :param serializer_type: type of serializer to deserialize data from connector
@@ -100,15 +100,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         if dataset_identifier not in self.__json_data:
             raise DatasetNotFoundException(dataset_identifier)
 
-        dataset_data = self.__json_data[dataset_identifier]
-
         # Filter data
-        filtered_data = {key:self._datasets_serializer.convert_from_dataset_data(key,
-                                                                                 dataset_data[key],
-                                                                                 data_to_get)
-                        for key in dataset_data if key in data_to_get}
-        self.__logger.debug(f"Values obtained {list(filtered_data.keys())} for dataset {dataset_identifier} for connector {self}")
-        return filtered_data
+        dataset_data = self.__json_data[dataset_identifier]
+        filtered_values = {key: self._datasets_serializer.convert_from_dataset_data(key,
+                                                                                    self._extract_value_from_datum(dataset_data[key]),
+                                                                                    data_to_get)
+                           for key in dataset_data if key in data_to_get}
+        self.__logger.debug(f"Values obtained {list(filtered_values.keys())} for dataset {dataset_identifier} for connector {self}")
+        return filtered_values
 
     def get_datasets_available(self) -> list[str]:
         """
@@ -120,7 +119,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
         return list(self.__json_data.keys())
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> None:
+    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
@@ -139,13 +138,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             raise DatasetNotFoundException(dataset_identifier)
 
         # Write data
-        self.__json_data[dataset_identifier].update({key:self._datasets_serializer.convert_to_dataset_data(key,
-                                                                                                           value,
-                                                                                                           data_types_dict)
-                                                    for key, value in values_to_write.items()})
-
+        dataset_values = {key: self._datasets_serializer.convert_to_dataset_data(key,
+                                                                                 value,
+                                                                                 data_types_dict)
+                          for key, value in values_to_write.items()}
+        self._update_data_with_values(self.__json_data[dataset_identifier], dataset_values, data_types_dict)
         self.__save_json_data()
-    
+        return values_to_write
+
     def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to get all values from a dataset for a specific API
@@ -162,14 +162,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         if dataset_identifier not in self.__json_data:
             raise DatasetNotFoundException(dataset_identifier)
 
-        dataset_data ={key:self._datasets_serializer.convert_from_dataset_data(key,
-                                                                               value,
-                                                                               data_types_dict)
-                        for key, value in self.__json_data[dataset_identifier].items()}
-        return dataset_data
-        
+        dataset_values = {key: self._datasets_serializer.convert_from_dataset_data(key,
+                                                                                   self._extract_value_from_datum(datum),
+                                                                                   data_types_dict)
+                          for key, datum in self.__json_data[dataset_identifier].items()}
+        return dataset_values
 
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
+
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str: Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -194,6 +194,5 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-        
-        self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
-            
+
+        return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)

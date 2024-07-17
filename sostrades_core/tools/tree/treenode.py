@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ class TreeNode:
         # Serialize data_management_disciplines attribute
         json_data_management_disciplines = {}
         for key in self.data_management_disciplines.keys():
-            json_data_management_disciplines[key] = self.data_management_disciplines[key].to_json() 
+            json_data_management_disciplines[key] = self.data_management_disciplines[key].to_json()
         dict_obj.update({'data_management_disciplines': json_data_management_disciplines})
 
         # Serialize markdown_documentation
@@ -142,9 +142,8 @@ class TreeNode:
             {'markdown_documentation': self.markdown_documentation})
 
         # Serialize children attribute
-        dict_child = []
-        for tn in self.children:
-            dict_child.append(tn.to_dict())
+        dict_child = [tn.to_dict() for tn in self.children]
+
         dict_obj.update({'children': dict_child})
         return dict_obj
 
@@ -162,13 +161,13 @@ class TreeNode:
 
         self.model_name_full_path = discipline.get_module()
         self.models_full_path_list.append(self.model_name_full_path)
-        
+
         # add a new data_management_discipline
         data_management_discipline = DataManagementDiscipline()
         data_management_discipline.namespace = self.full_namespace
         data_management_discipline.model_name_full_path = self.model_name_full_path
         data_management_discipline.discipline_label = discipline.get_disc_label()
-        
+
 
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
@@ -195,17 +194,17 @@ class TreeNode:
                     self.disciplines_by_variable[namespaced_key] = []
                 self.disciplines_by_variable[namespaced_key].append(data_management_discipline.discipline_label)
                 if new_disc_data[ProxyDiscipline.NUMERICAL]:
-                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
-                                                                    namespaced_key, 
+                    self.add_disc_data_in_data_management_discipline(new_disc_data,
+                                                                    namespaced_key,
                                                                     data_management_discipline.model_name_full_path,
                                                                     data_management_discipline.numerical_parameters)
                 else:
-                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
-                                                                    namespaced_key, 
+                    self.add_disc_data_in_data_management_discipline(new_disc_data,
+                                                                    namespaced_key,
                                                                     data_management_discipline.model_name_full_path,
                                                                     data_management_discipline.disciplinary_inputs)
-                
-                
+
+
         disc_out = discipline.get_data_out()
         if not no_data:
             for key, data_key in disc_out.items():
@@ -229,13 +228,13 @@ class TreeNode:
                     self.disciplines_by_variable[namespaced_key] = []
                 self.disciplines_by_variable[namespaced_key].append(data_management_discipline.discipline_label)
                 if new_disc_data[ProxyDiscipline.NUMERICAL]:
-                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
-                                                                    namespaced_key, 
+                    self.add_disc_data_in_data_management_discipline(new_disc_data,
+                                                                    namespaced_key,
                                                                     data_management_discipline.model_name_full_path,
                                                                     data_management_discipline.numerical_parameters)
                 else:
-                    self.add_disc_data_in_data_management_discipline(new_disc_data, 
-                                                                    namespaced_key, 
+                    self.add_disc_data_in_data_management_discipline(new_disc_data,
+                                                                    namespaced_key,
                                                                     data_management_discipline.model_name_full_path,
                                                                     data_management_discipline.disciplinary_outputs)
 
@@ -332,7 +331,7 @@ class TreeNode:
         :type: str
 
         :params: key, associated key (used to manage multiple documentation into the same treenode
-        :type: key 
+        :type: key
         """
 
         if markdown_data is not None and markdown_data != "":

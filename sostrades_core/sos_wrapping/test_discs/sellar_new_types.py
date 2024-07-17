@@ -168,13 +168,11 @@ class Sellar1Df(SoSWrapp):
         :rtype: float
         """
         out = pd.DataFrame({'years': np.arange(1, 5), 'value': 0.0})
-        i = 0
+
         y_2['years'] = y_2['years'].astype('int64')
-        for year in out['years']:
-            out.loc[out['years'] == year, 'value'] = z[0] ** 2 + x['value'][i] + z[1] - 0.2 * \
-                                                     y_2.loc[y_2['years'] == year,
-                                                             'value'].values[0]
-            i += 1
+
+        out['value'] = z[0] ** 2 + x['value'] + z[1] - 0.2 *  y_2['value']
+
         return out
 
     def compute_sos_jacobian(self):
@@ -248,9 +246,9 @@ class Sellar2Df(SoSWrapp):
 
         out = pd.DataFrame({'years': np.arange(1, 5), 'value': 0.0})
         y_1['years'] = y_1['years'].astype('int64')
-        for year in out['years']:
-            out.loc[out['years'] == year, 'value'] = z[0] + z[1] + sqrt(y_1.loc[y_1['years'] == year,
-                                                                                'value'].values[0])
+
+        out['value'] = z[0] + z[1] + y_1['value'].apply(sqrt)
+
         return out
 
     def compute_sos_jacobian(self):

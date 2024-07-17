@@ -36,7 +36,9 @@ class Study(StudyManager):
         disc1_name = 'Disc1'
         ns = f'{self.study_name}'
         dspace_dict = {'variable': [f'subprocess.{disc1_name}.a', 'x'],
-
+                       'shortest_name': [f'subprocess.{disc1_name}.a', 'x'],
+                       'full_name': [f'subprocess.{disc1_name}.a', 'x'],
+                       'nb_points': [10, 10],
                        'lower_bnd': [0., 0.],
                        'upper_bnd': [10., 10.],
 

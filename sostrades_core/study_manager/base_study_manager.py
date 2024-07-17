@@ -55,7 +55,7 @@ class BaseStudyManager():
     """
 
     def __init__(self, repository_name, process_name, study_name, dump_directory: Optional[str] = None, run_usecase=True,
-                 yield_method=None, logger=None, execution_engine=None):
+                 yield_method=None, logger=None, execution_engine=None, test_post_procs: bool = True):
         """ Constructor
 
         :params: repository_name, package name that contain the target process to load
@@ -64,7 +64,7 @@ class BaseStudyManager():
         :params: process_name, process name of the target process to load
         :type: str
 
-        :params: study_name, name of the study 
+        :params: study_name, name of the study
         :type: str
         """
         self._run_usecase = run_usecase
@@ -81,6 +81,7 @@ class BaseStudyManager():
         self.dumped_cache = False
         self.dump_cache_map = None
         self.check_outputs = False
+        self.test_post_procs = test_post_procs
 
     @property
     def run_usecase(self):
@@ -209,6 +210,19 @@ class BaseStudyManager():
             logger.info(message)
             return parameter_changes
 
+    def export_data_from_dataset_mapping(self, from_datasets_mapping):
+        """
+        Method that export data within datasets
+
+        :params from_datasets_mapping:dataset mapping
+        :type: DatasetMapping
+
+        """
+        # export study by saving data intg datasets, get them from the dm
+        parameter_changes = self.execution_engine.dm.export_data_in_datasets(from_datasets_mapping)
+
+        return parameter_changes
+
     def load_data(self, from_path=None,
                   from_input_dict=None,
                   display_treeview=True,
@@ -254,7 +268,7 @@ class BaseStudyManager():
         # import ipdb
         # ipdb.set_trace()
         parameter_changes = self.execution_engine.load_study_from_input_dict(input_dict_to_load)
-        
+
         # Load datasets data
         if from_datasets_mapping is not None:
             datasets_parameter_changes = self.execution_engine.load_study_from_dataset(
@@ -318,7 +332,7 @@ class BaseStudyManager():
         '''
         Mathod that defines the dump strategy in several cases
         Three solutions :
-            1 Execution is done, a cache_map exists is not empty 
+            1 Execution is done, a cache_map exists is not empty
             --> dump cache_map
             2 prepare execution is done and cache map is empty because all cache_type are None
             --> delete the existing pkl

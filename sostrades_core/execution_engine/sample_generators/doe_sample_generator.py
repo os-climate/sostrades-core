@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2024/07/04 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -185,7 +185,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Check provided options before sample generation
         Arguments:
             sampling_algo_name (string): name of the numerical algorithm
-            algo_options (dict): provides the selected value of each option of the algorithm        
+            algo_options (dict): provides the selected value of each option of the algorithm
         '''
 
         if self.N_SAMPLES not in algo_options:
@@ -198,9 +198,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         '''
         Method that checks the sample output type
         Arguments:
-            samples_df (dataframe) : generated samples 
+            samples_df (dataframe) : generated samples
         Raises:
-            Exception if samples_df is not a dataframe                   
+            Exception if samples_df is not a dataframe
         '''
         if not (isinstance(samples_df, pd.DataFrame)):
             msg = "Expected sampling output type should be pandas.core.frame.DataFrame"
@@ -241,8 +241,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
 
         Returns:
-            normalized_samples (numpy matrix) :   matrix of n raws  (each raw is an input point to be evaluated)  
-                                                  any variable of dim m will be in m columns of the matrix 
+            normalized_samples (numpy matrix) :   matrix of n raws  (each raw is an input point to be evaluated)
+                                                  any variable of dim m will be in m columns of the matrix
         '''
         gemseo_options = self._generate_gemseo_options(
             algo_options, design_space)
@@ -253,10 +253,10 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     def _generate_gemseo_options(self, algo_options, design_space):
         """
-        Providing algorithm's option in format needed for the _generate_samples method of the Doe Factory. 
+        Providing algorithm's option in format needed for the _generate_samples method of the Doe Factory.
         Those options comes:
         - from algo_options dict
-        - from design space: dimension, variables_names, variables_sizes 
+        - from design space: dimension, variables_names, variables_sizes
                   - dimension is not in algo options in gemseo because it is in the design space and it is needed in the doe selected algorithm
                   - variables_names, variables_sizes: only needed for DiagonalDOE algo and provided by design space
 
@@ -264,11 +264,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Arguments:
             algo_options (dict): provides the selected value of each option of the algorithm
                                  each option can be either 'default' or with a user's selected value
-            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs    
+            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
 
         Returns:
              gemseo_options (dict): the gemseo options dict for _generate_samples method of the Doe Factory.
-                                    It has options of the algorithm and the dimension of the design space. 
+                                    It has options of the algorithm and the dimension of the design space.
                                     It has also variables_names, and variables_sizes (for DiagonalDOE algo)
 
         """
@@ -297,13 +297,13 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         Arguments:
              gemseo_options (dict): the gemseo options dict for _generate_samples method of the Doe Factory.
-                                    It has options of the algorithm and dimension of the design space. 
+                                    It has options of the algorithm and dimension of the design space.
                                     It has also variables_names, and variables_sizes (for DiagonalDOE algo)
 
         Returns:
             normalized_samples (numpy matrix of floats) :  normalized_samples
-                                                 matrix of n raws  (each raw is an input point to be evaluated)  
-                                                 any variable of dim m will be in m columns of the matrix 
+                                                 matrix of n raws  (each raw is an input point to be evaluated)
+                                                 any variable of dim m will be in m columns of the matrix
 
         """
         #         doe_factory = DOEFactory()
@@ -318,14 +318,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         It uses methods from gemseo Design Space
 
         Arguments:
-            normalized_samples (numpy matrix of floats) :  matrix of n raws  (each raw is an input point to be evaluated)  
-                                                  any variable of dim m will be in m columns of the matrix  
+            normalized_samples (numpy matrix of floats) :  matrix of n raws  (each raw is an input point to be evaluated)
+                                                  any variable of dim m will be in m columns of the matrix
             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
 
         Returns:
-            samples (numpy matrix of floats) : unnormalized samples    
-                                     matrix of n raws  (each raw is an input point to be evaluated)  
-                                     any variable of dim m will be in m columns of the matrix 
+            samples (numpy matrix of floats) : unnormalized samples
+                                     matrix of n raws  (each raw is an input point to be evaluated)
+                                     any variable of dim m will be in m columns of the matrix
 
 
         Raises:
@@ -349,19 +349,19 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         """
         Reformat samples based on the design space to take into account variables with dim >1
         It uses methods from gemseo Design Space
-        For instance in case of variables of x of dim 1 and z of dim 2 
+        For instance in case of variables of x of dim 1 and z of dim 2
         [0.0,-10.0, 0.0] becomes [[0.0]   [-10.0, 0.0]]
 
         Arguments:
-            samples (numpy matrix of floats) : matrix of n raws  (each raw is an input point to be evaluated)  
-                                     any variable of dim m will be an array of dim m in a single column of the matrix 
+            samples (numpy matrix of floats) : matrix of n raws  (each raw is an input point to be evaluated)
+                                     any variable of dim m will be an array of dim m in a single column of the matrix
             selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
 
         Returns:
             reformated_samples (numpy matrix of arrays) : Reformated samples that takes into account variables with dim >1
-                                    matrix of n raws  (each raw is an input point to be evaluated)  
-                                    any variable of dim m is an array of dim m in a single column of the matrix 
+                                    matrix of n raws  (each raw is an input point to be evaluated)
+                                    any variable of dim m is an array of dim m in a single column of the matrix
         """
         selected_inputs = list(design_space.keys())
 
@@ -394,11 +394,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         # To be vectorized
 
         Arguments:
-            samples (numpy matrix of arrays) : matrix of n raws  (each raw is an input point to be evaluated)  
+            samples (numpy matrix of arrays) : matrix of n raws  (each raw is an input point to be evaluated)
                                                any variable of dim m will be an array of dim m in a single column of the matrix
             design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
         Returns:
-            samples_df (data_frame) : dataframe of a matrix of n raws  (each raw is an input point to be evaluated)  
+            samples_df (data_frame) : dataframe of a matrix of n raws  (each raw is an input point to be evaluated)
                                       any variable of dim m is an array of dim m in a single column of the matrix
         """
         selected_inputs = list(design_space.keys())
@@ -467,7 +467,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
             eval_inputs = proxy.get_sosdisc_inputs(proxy.EVAL_INPUTS)
             if eval_inputs is not None:
-                selected_inputs = eval_inputs[eval_inputs['selected_input'] == True]['full_name'].tolist()
+                selected_inputs = eval_inputs.loc[eval_inputs['selected_input']]['full_name'].tolist()
 
                 if set(selected_inputs) != set(self.selected_inputs):
                     self.selected_inputs = selected_inputs
@@ -527,7 +527,10 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                         final_dataframe[self.NB_POINTS] = final_dataframe[self.NB_POINTS].astype(int)
                     for element in from_eval_inputs:
                         default_df = default_design_space[default_design_space[self.VARIABLES] == element]
-                        final_dataframe = pd.concat([final_dataframe, default_df], ignore_index=True)
+                        if final_dataframe.empty:
+                            final_dataframe = default_df.copy()
+                        else:
+                            final_dataframe = pd.concat([final_dataframe, default_df], ignore_index=True)
                         if element in from_design_space:
                             to_append = disc_in['design_space'][proxy.VALUE][disc_in['design_space'][proxy.VALUE][
                                                                                  self.VARIABLES] == element]
@@ -593,7 +596,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         algo_options = wrapper.get_sosdisc_inputs(wrapper.ALGO_OPTIONS)
         dspace_df = wrapper.get_sosdisc_inputs(wrapper.DESIGN_SPACE)
         eval_inputs = wrapper.get_sosdisc_inputs(wrapper.EVAL_INPUTS)
-        selected_inputs = eval_inputs[eval_inputs[wrapper.SELECTED_INPUT] == True][wrapper.FULL_NAME].tolist()
+        selected_inputs = eval_inputs.loc[eval_inputs[wrapper.SELECTED_INPUT]][wrapper.FULL_NAME].tolist()
         design_space = self.create_design_space(selected_inputs, dspace_df)
         doe_kwargs = {'sampling_algo_name': algo_name,
                       'algo_options': algo_options,

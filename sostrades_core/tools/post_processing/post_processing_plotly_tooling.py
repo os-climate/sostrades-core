@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ limitations under the License.
 from abc import ABC
 
 """
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define annotations for post processing
 """
 
@@ -31,6 +30,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
     LOGO_OFFICIAL = 'logo_official'
     LOGO_NOTOFFICIAL = 'logo_notofficial'
     LOGO_WORK_IN_PROGRESS = 'logo_work_in_progress'
+    POST_PROCESSING_SECTION_NAME = 'post_processing_section_name'
 
     def __init__(self):
         """ Initialize members variables
@@ -39,6 +39,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
         # Initialize annotation properties
         self.annotation_upper_left = {}
         self.annotation_upper_right = {}
+        self.post_processing_section_name = ""
         self._plot_csv_data = None
         self.logo_official = False
         self.logo_notofficial = False
@@ -203,11 +204,10 @@ class AbstractPostProcessingPlotlyTooling(ABC):
         annotation_upper_left_dict = {}
 
         if len(self.annotation_upper_left) > 0:
-            annotation_text_list = []
-
-            for annotation_key in self.annotation_upper_left.keys():
-                annotation_text_list.append(
-                    f'{annotation_key}: {self.annotation_upper_left[annotation_key]}')
+            annotation_text_list = [
+                f'{annotation_key}: {self.annotation_upper_left[annotation_key]}'
+                for annotation_key in self.annotation_upper_left.keys()
+            ]
 
             annotation_upper_left_dict.update(
                 {'text': '<br>'.join(annotation_text_list)})
@@ -235,11 +235,10 @@ class AbstractPostProcessingPlotlyTooling(ABC):
         annotation_upper_right_dict = {}
 
         if len(self.annotation_upper_right) > 0:
-            annotation_text_list = []
-
-            for annotation_key in self.annotation_upper_right.keys():
-                annotation_text_list.append(
-                    f'{annotation_key}: {self.annotation_upper_right[annotation_key]}')
+            annotation_text_list = [
+                f'{annotation_key}: {self.annotation_upper_right[annotation_key]}'
+                for annotation_key in self.annotation_upper_right.keys()
+            ]
 
             annotation_upper_right_dict.update(
                 {'text': '<br>'.join(annotation_text_list)})

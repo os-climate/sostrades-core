@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/23-2024/06/11 Copyright 2023 Capgemini
+Modifications on 2023/06/23-2024/07/04 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 '''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Data manager pickle (de)serializer
 '''
 
@@ -112,7 +111,7 @@ class DataSerializer:
                     print("Error DM_db should not be a file and could not be deleted: %s : %s" % (db_dir, e.strerror))
             # we set the option exists_ok=True so that if the folder already exists it doen't raise an error
             makedirs_safe(db_dir, exist_ok=True)
-        
+
 
     def is_structured_data_type(self, data):
         return isinstance(data, ndarray) \
@@ -173,13 +172,13 @@ class DataSerializer:
         status_dict_f = join(study_to_load, self.disc_status_filename)
 
         rw_strategy.dump(status_dict, status_dict_f)
-        
+
     def load_cache_dict(self, study_to_load, rw_strategy):
         ''' load disciplines status from binary file (containing disc/status info into dictionary) '''
 
         cache_dict_f = self.get_dm_file(study_to_load=study_to_load,
                                          file_type=self.cache_filename)
-        
+
         if cache_dict_f is not None:
             return rw_strategy.load(cache_dict_f)
 
@@ -210,7 +209,7 @@ class DataSerializer:
         ''' export values and units of the whole DM data_dict to csv file and zip '''
         if not Path(export_dir).is_dir():
             makedirs_safe(export_dir)
-            
+
         data_df = self.export_data_dict_to_csv(origin_dict,
                                                export_dir=export_dir)
         self.dm_val_file = join(export_dir, self.val_filename)
@@ -314,7 +313,7 @@ class DataSerializer:
 
         # serialise raw tree_node.data dict with pickle
         rw_strategy.dump(data_dict, self.dm_pkl_file)
-        
+
     def put_cache_from_study(self, study_to_load, rw_strategy, cache_map):
         '''
         :params: anonymize_function, a function that map a given key of the data
@@ -398,7 +397,10 @@ class DataSerializer:
                     # iterate on keys of this dict and concatenate value
                     for k, a_df in param_data.items():
                         # append built dataframe to global one
-                        df_data = concat([df_data, a_df.assign(variable=k)],
+                        if df_data.empty:
+                            df_data = a_df.assign(variable=k).copy()
+                        else:
+                            df_data = concat([df_data, a_df.assign(variable=k)],
                                          sort=False)
                     df_data = df_data[df_col]
                 else:
