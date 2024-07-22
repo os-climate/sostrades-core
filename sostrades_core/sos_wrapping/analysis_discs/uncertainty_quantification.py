@@ -178,7 +178,6 @@ class UncertaintyQuantification(SoSWrapp):
                     selected_inputs = eval_inputs.loc[eval_inputs['selected_input']]['full_name']
 
                     in_param = selected_inputs.tolist()
-                    # in_param.sort()
 
                     selected_outputs = gather_outputs.loc[gather_outputs['selected_output']]['full_name']
 
@@ -187,24 +186,7 @@ class UncertaintyQuantification(SoSWrapp):
 
                     parameter_list = in_param + out_param
                     parameter_list = [val.split(".")[-1] for val in parameter_list]
-
                     conversion_full_ontology = {parameter: [parameter, ""] for parameter in parameter_list}
-
-                    # possible_distrib = ["Normal", "PERT", "LogNormal", "Triangular"]
-
-                    # distrib = [possible_distrib[random.randrange(
-                    # len(possible_distrib))] for i in range(len(in_param))]
-                    # distrib = ["Normal", "PERT", "Triangular"]
-                    # def random_distribution(input):
-                    #     return np.random.choice(
-                    #         [i for i in range(len(possible_distrib))],
-                    #         # p=[1 / len(possible_distrib)
-                    #         # for input in
-                    #         # possible_distrib])
-                    #         p=[0, 1, 0, 0],
-                    #     )
-                    #
-                    # # distrib = [possible_distrib[random_distribution(input)] for input in selected_inputs.tolist()]
                     distrib = ["PERT" for _ in selected_inputs.tolist()]
 
                     if ("design_space" in data_in) & (len(in_param) > 0) and data_in["design_space"][
@@ -489,7 +471,6 @@ class UncertaintyQuantification(SoSWrapp):
 
         # fixes a particular state of the random generator algorithm thanks to
         # the seed sample_size
-        np.random.Generator(42)
         ot.RandomGenerator.SetSeed(42)
 
         distrib_list = self.compute_distribution_list()
