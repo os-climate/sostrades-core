@@ -97,7 +97,10 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str:Any]:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:dict[str:Any]],
+                      data_types_dict: dict[str:dict[str:str]], create_if_not_exists: bool = True, override: bool = False
+                      ) -> dict[str:Any]:
+        # FIXME: docstrings
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
