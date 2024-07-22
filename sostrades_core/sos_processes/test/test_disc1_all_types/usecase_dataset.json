@@ -1,7 +1,7 @@
 {
     "process_module_path": "sostrades_core.sos_processes.test.test_disc1_all_types",
     "namespace_datasets_mapping": {
-        "v0|<study_ph>|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_all_types|*"],
-        "v0|<study_ph>.Disc1|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_all_types|*"]
+        "v0|<study_ph>|*": ["MVP0_datasets_connector|default_numerical_parameters|all_data|*","MVP0_datasets_connector|dataset_all_types|all_data|*"],
+        "v0|<study_ph>.Disc1|*": ["MVP0_datasets_connector|default_numerical_parameters|all_data|*","MVP0_datasets_connector|dataset_all_types|all_data|*"]
     }
 }

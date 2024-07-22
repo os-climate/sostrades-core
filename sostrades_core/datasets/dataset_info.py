@@ -26,19 +26,23 @@ class DatasetInfo:
     # Keys for parsing json
     CONNECTOR_ID_KEY = "connector_id"
     DATASET_ID_KEY = "dataset_id"
+    DATA_GROUP_ID_KEY = "data_group_id"
+    MAPPING_SEP = "|"
     WILDCARD = "*"
     # Id of the connector
     connector_id: str
     # Dataset id for this connector
     dataset_id: str
+    # Data group id within the dataset
+    data_group_id: str
 
     @property
     def dataset_info_id(self)->str:
-        return DatasetInfo.get_mapping_id(self.connector_id, self.dataset_id)
+        return DatasetInfo.get_mapping_id(self.connector_id, self.dataset_id, self.data_group_id)
 
     @staticmethod
-    def get_mapping_id(id1:str, id2:str )->str:
-        return DatasetInfo.SEPARATOR.join(id1, id2)
+    def get_mapping_id(*identifiers: str) -> str:
+        return DatasetInfo.MAPPING_SEP.join(identifiers)
 
     @staticmethod
     def deserialize(input_dict: dict) -> DatasetInfo:

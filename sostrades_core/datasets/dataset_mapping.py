@@ -41,14 +41,15 @@ class DatasetsMapping:
 
     # Mapping format
     # e.g.: {"map_version|namespace_value|parameter_name": ["connector_id|dataset_id|parameter_name",...], ...}
-    MAPPING_SEP = "|"
+    MAPPING_SEP = DatasetInfo.MAPPING_SEP
     MAP_VERSION = "map_version"
     NAMESPACE_VALUE = "namespace_value"
     PARAMETER_NAME = "parameter_name"
     CONNECTOR_ID_KEY = DatasetInfo.CONNECTOR_ID_KEY
     DATASET_ID_KEY = DatasetInfo.DATASET_ID_KEY
+    DATA_GROUP_ID_KEY = DatasetInfo.DATA_GROUP_ID_KEY
     MAPPING_KEY_FIELDS = [MAP_VERSION, NAMESPACE_VALUE, PARAMETER_NAME]
-    MAPPING_ITEM_FIELDS = [CONNECTOR_ID_KEY, DATASET_ID_KEY, PARAMETER_NAME]
+    MAPPING_ITEM_FIELDS = [CONNECTOR_ID_KEY, DATASET_ID_KEY, DATA_GROUP_ID_KEY, PARAMETER_NAME]
 
     KEY = 'key'
     VALUE = 'value'
@@ -123,17 +124,20 @@ class DatasetsMapping:
                         dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
                         connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
                         dataset_id = dataset_fields[DatasetsMapping.DATASET_ID_KEY]
+                        data_group_id = dataset_fields[DatasetsMapping.DATA_GROUP_ID_KEY]
                         parameter_id = dataset_fields[DatasetsMapping.PARAMETER_NAME]
 
                         # build just the id with connector and dataset
-                        dataset_info_id = DatasetsMapping.MAPPING_SEP.join([connector_id, dataset_id])
+                        dataset_info_id = DatasetInfo.get_mapping_id(connector_id, dataset_id, data_group_id)
 
                         # check that there is no "*" on dataset name, it is not allowed
                         if dataset_id == DatasetInfo.WILDCARD:
                             raise DatasetsMappingException(f"Wrong format for '{dataset}', the dataset name '*' is not authorised")
+                        elif data_group_id == DatasetInfo.WILDCARD:
+                            raise NotImplementedError("wip")  # FIXME
 
                         if dataset_info_id not in datasets_infos:
-                            datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id)
+                            datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id, data_group_id)
 
                         namespace_datasets_mapping[namespace].append(dataset_info_id)
 
@@ -187,7 +191,7 @@ class DatasetsMapping:
         if len(fields) != len(format_fields):
             raise ValueError(f"Wrong format for {mapping_key_or_value}, "
                              f"the expected {error_mode} format "
-                             f"is {cls.MAPPING_SEP.join(format_fields)}")
+                             f"is {DatasetInfo.get_mapping_id(*format_fields)}")
 
         else:
             return dict(zip(format_fields, fields))
