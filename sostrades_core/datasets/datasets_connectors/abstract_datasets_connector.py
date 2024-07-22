@@ -66,11 +66,13 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
+    def write_values(self, dataset_identifier: str, data_group_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a data from a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
+        :param data_group_identifier: data group identifier within dataset
+        :type data_group_identifier: str
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data type {name: type}

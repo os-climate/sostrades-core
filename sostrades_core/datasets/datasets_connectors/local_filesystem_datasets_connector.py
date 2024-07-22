@@ -112,7 +112,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
     def __clear_pickle_data(self):
         self.__datasets_serializer.clear_pickle_data()
 
-    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
+    def get_values(self, dataset_identifier: str, data_group_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
         Method to retrieve data from local dataset and fill a data_dict
 
@@ -122,15 +122,16 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
         """
-        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
-        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
+        self.__logger.debug(f"Getting values {data_to_get.keys()} for data group {data_group_identifier} in dataset "
+                            f"{dataset_identifier} with connector {self}")
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier, data_group_identifier))
         # Load the descriptor, the serializer loads the pickle if it exists
         dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         # Filter data
         filtered_values = {key: self.__datasets_serializer.convert_from_dataset_data(key,
-                                                                                     self._extract_value_from_datum(dataset_descriptor[key]),
+                                                                                     self._extract_value_from_datum(dataset_descriptor[data_group_identifier][key]),
                                                                                      data_to_get)
-                           for key in dataset_descriptor if key in data_to_get}
+                           for key in dataset_descriptor[data_group_identifier] if key in data_to_get}
         # Clear pickle buffer from serializer
         self.__clear_pickle_data()
         self.__logger.debug(f"Values obtained {list(filtered_values.keys())} for dataset {dataset_identifier} for connector {self}")

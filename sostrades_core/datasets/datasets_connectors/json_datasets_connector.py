@@ -93,7 +93,8 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
         """
-        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
+        self.__logger.debug(f"Getting values {data_to_get.keys()} for data group {data_group_identifier} in dataset "
+                            f"{dataset_identifier} with connector {self}")
         # Read JSON if not read already
         if self.__json_data is None:
             self.__load_json_data()
@@ -120,7 +121,18 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             self.__load_json_data()
         return list(self.__json_data.keys())
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
+    def get_data_groups_for_dataset(self, dataset_identifier: str) -> list[str]:
+        # FIXME: the
+        """
+        Get all available data groups for a specific dataset in a specific API
+        """
+        self.__logger.debug(f"Getting all data groups for connector {self} for dataset {dataset_identifier}")
+        # Read JSON if not read already
+        if self.__json_data is None:
+            self.__load_json_data()
+        return list(self.__json_data[dataset_identifier].keys())
+
+    def write_values(self, dataset_identifier: str, data_group_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
@@ -130,6 +142,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         """
+        # FIXME: functionality looks untested !?
         # Read JSON if not read already
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         if self.__json_data is None:
@@ -143,7 +156,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
                                                                                  value,
                                                                                  data_types_dict)
                           for key, value in values_to_write.items()}
-        self._update_data_with_values(self.__json_data[dataset_identifier], dataset_values, data_types_dict)
+        self._update_data_with_values(self.__json_data[dataset_identifier][data_group_identifier], dataset_values, data_types_dict)
         self.__save_json_data()
         return values_to_write
 
