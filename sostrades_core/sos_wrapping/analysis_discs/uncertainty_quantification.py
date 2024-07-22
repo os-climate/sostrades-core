@@ -876,7 +876,7 @@ class UncertaintyQuantification(SoSWrapp):
         hist = np.histogram(data_list, bins=bins)[0]
         norm_hist = hist / np.cumsum(hist)[-1]
         y_max = max(norm_hist)
-        np.median(data_list)
+        median = np.median(data_list)
         y_mean = np.mean(data_list)
 
         # left boundary confidence interval
@@ -968,14 +968,13 @@ class UncertaintyQuantification(SoSWrapp):
             showarrow=False,
             xanchor="left",
         )
-
         hist_y.add_annotation(
             x=0.60,
             y=1.15,
             font={"family": "Arial", "color": "#7f7f7f", "size": 10},
             text=f"Confidence Interval: {int(confidence_interval * 100)} "
-            f"% [{format_currency_legend(y_left_boundary, "")}, {format_currency_legend(y_right_boundary, "")}] {unit} "
-            "<br> Mean: {format_currency_legend(y_mean, unit)} <br> Median: {format_currency_legend(median, unit)} ",
+            f"% [{format_currency_legend(y_left_boundary, '')}, {format_currency_legend(y_right_boundary, '')}] {unit} "
+            f"<br> Mean: {format_currency_legend(y_mean, unit)} <br> Median: {format_currency_legend(median, unit)}",
             showarrow=False,
             xanchor="left",
             align="right",
