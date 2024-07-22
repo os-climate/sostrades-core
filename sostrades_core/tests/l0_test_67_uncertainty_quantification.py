@@ -1,6 +1,5 @@
-'''
-Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/06/10 Copyright 2023 Capgemini
+'''Copyright 2022 Airbus SAS
+Modifications on 2023/04/13-2024/06/10 Copyright 2023 Capgemini.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,8 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from __future__ import annotations
+
+import math
 import unittest
-from os.path import dirname, join
 from pathlib import Path
 
 import numpy as np
@@ -27,14 +28,10 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestUncertaintyQuantification(unittest.TestCase):
-    """
-    UncertaintyQuantification test class
-    """
+    """UncertaintyQuantification test class."""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        """Initialize third data needed for testing."""
         self.repo = 'sostrades_core.sos_processes.test'
         self.mod_path = 'sostrades_core.sos_wrapping.analysis_discs.uncertainty_quantification'
         self.proc_name = 'test_uncertainty_quantification_analysis'
@@ -46,11 +43,13 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.dir_to_del = []
 
     def tearDown(self):
-        for dir in self.dir_to_del:
-            if Path(dir).is_dir():
-                rmtree_safe(dir)
+        """Test teardown."""
+        for directory in self.dir_to_del:
+            if Path(directory).is_dir():
+                rmtree_safe(directory)
 
     def test_01_uncertainty_quantification(self):
+        """Test uncertainty quantification."""
         builder = self.factory.get_builder_from_process(self.repo, self.proc_name)
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
@@ -67,29 +66,26 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.display_treeview_nodes()
 
-        self.data_dir = join(dirname(dirname(__file__)), 'sos_processes', 'test', self.proc_name, 'data')
+        self.data_dir = Path(__file__).parents[1] / f"sos_processes/test/{self.proc_name}/data"
 
-        self.samples_dataframe = pd.read_csv(join(self.data_dir, 'samples_df.csv'))
+        self.samples_dataframe = pd.read_csv(self.data_dir / "samples_df.csv")
 
         # fixes a particular state of the random generator algorithm thanks to
         # the seed sample_size
-        np.random.seed(42)
+        generator = np.random.default_rng(seed=42)
+        var1 = generator.uniform(-1, 1, size=len(self.samples_dataframe))
+        var2 = generator.uniform(-1, 1, size=len(self.samples_dataframe))
 
-        Var1 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
-        Var2 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
+        out1 = list(pd.Series(var1 + var2) * 100000)
+        out2 = list(pd.Series(var1 * var2) * 100000)
+        out3 = list(pd.Series(np.square(var1) + np.square(var2)) * 100000)
 
-        out1 = list(pd.Series(Var1 + Var2) * 100000)
-        out2 = list(pd.Series(Var1 * Var2) * 100000)
-        out3 = list(pd.Series(np.square(Var1) + np.square(Var2)) * 100000)
-
-        self.data_df = pd.DataFrame(
-            {
-                'scenario_name': self.samples_dataframe['scenario_name'],
-                'output1': out1,
-                'output2': out2,
-                'output3': out3,
-            }
-        )
+        self.data_df = pd.DataFrame({
+            'scenario_name': self.samples_dataframe['scenario_name'],
+            'output1': out1,
+            'output2': out2,
+            'output3': out3,
+        })
 
         input_selection = {
             'selected_input': [True, True, True],
@@ -103,16 +99,14 @@ class TestUncertaintyQuantification(unittest.TestCase):
             'full_name': ['output1', 'output2', 'output3'],
         }
 
-        dspace = pd.DataFrame(
-            {
-                'variable': ['COC', 'RC', 'NRC'],
-                'shortest_name': ['COC', 'RC', 'NRC'],
-                'lower_bnd': [85.0, 80.0, 80.0],
-                'upper_bnd': [105.0, 120.0, 120.0],
-                'nb_points': [10, 10, 10],
-                'full_name': ['COC', 'RC', 'NRC'],
-            }
-        )
+        dspace = pd.DataFrame({
+            'variable': ['COC', 'RC', 'NRC'],
+            'shortest_name': ['COC', 'RC', 'NRC'],
+            'lower_bnd': [85.0, 80.0, 80.0],
+            'upper_bnd': [105.0, 120.0, 120.0],
+            'nb_points': [10, 10, 10],
+            'full_name': ['COC', 'RC', 'NRC'],
+        })
 
         private_values = {
             f'{self.name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
@@ -131,15 +125,15 @@ class TestUncertaintyQuantification(unittest.TestCase):
         )[0]
 
         uncertainty_quanti_disc_output = uncertainty_quanti_disc.get_sosdisc_outputs()
-        out_df = uncertainty_quanti_disc_output['output_interpolated_values_df']
+        uncertainty_quanti_disc_output['output_interpolated_values_df']
 
-        filter = uncertainty_quanti_disc.get_chart_filter_list()
-        graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
+        chart_filter = uncertainty_quanti_disc.get_chart_filter_list()
+        uncertainty_quanti_disc.get_post_processing_list(chart_filter)
         # for graph in graph_list:
         #    graph.to_plotly().show()
 
     def test_02_uncertainty_quantification_from_cartesian_product(self):
-        """In this test we prove the ability to couple a grid search and an uq"""
+        """In this test we prove the ability to couple a grid search and an uq."""
         proc_name = 'test_mono_driver_with_uq'
         repo_name = self.repo + ".tests_driver_eval.mono"
         builder = self.factory.get_builder_from_process(repo_name, proc_name)
@@ -173,18 +167,16 @@ class TestUncertaintyQuantification(unittest.TestCase):
         a_list = np.linspace(0, 10, 2).tolist()
         x_list = np.linspace(0, 10, 2).tolist()
 
-        eval_inputs_cp = pd.DataFrame(
-            {
-                'selected_input': [True, False, True, False],
-                'full_name': [
-                    f'subprocess.{disc1_name}.a',
-                    f'subprocess.{disc1_name}.b',
-                    'x',
-                    'subprocess.Disc2.power',
-                ],
-                'list_of_values': [a_list, [], x_list, []],
-            }
-        )
+        eval_inputs_cp = pd.DataFrame({
+            'selected_input': [True, False, True, False],
+            'full_name': [
+                f'subprocess.{disc1_name}.a',
+                f'subprocess.{disc1_name}.b',
+                'x',
+                'subprocess.Disc2.power',
+            ],
+            'list_of_values': [a_list, [], x_list, []],
+        })
         disc_dict[f'{self.ee.study_name}.Eval.with_sample_generator'] = True
         disc_dict[f'{self.ee.study_name}.SampleGenerator.eval_inputs'] = eval_inputs_cp
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
@@ -193,7 +185,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         disc_dict[f'{ns}.Eval.x'] = 10.0
         disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.a'] = 5.0
         disc_dict[f'{ns}.Eval.subprocess.{disc1_name}.b'] = 2.0
-        disc_dict[f'{ns}.Eval.subprocess.Disc2.constant'] = 3.1416
+        disc_dict[f'{ns}.Eval.subprocess.Disc2.constant'] = math.pi
         disc_dict[f'{ns}.Eval.subprocess.Disc2.power'] = 2
 
         self.ee.load_study_from_input_dict(disc_dict)
@@ -201,7 +193,7 @@ class TestUncertaintyQuantification(unittest.TestCase):
         self.ee.execute()
 
     def test_03_uncertainty_quantification_with_arrays_in_inputs(self):
-        """This tests evaluates the capacity to perform uncertainty quantification when some inputs are arrays"""
+        """This tests evaluates the capacity to perform uncertainty quantification when some inputs are arrays."""
         builder = self.factory.get_builder_from_process(self.repo, self.proc_name)
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
@@ -218,9 +210,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.display_treeview_nodes()
 
-        self.data_dir = join(dirname(dirname(__file__)), 'sos_processes', 'test', self.proc_name, 'data')
-
-        self.samples_dataframe = pd.read_csv(join(self.data_dir, 'samples_df.csv'))
+        self.data_dir = Path(__file__).parents[1] / f"sos_processes/test/{self.proc_name}/data"
+        self.samples_dataframe = pd.read_csv(self.data_dir / "samples_df.csv")
 
         # builds a sample dataframe with regular arrays samples
         x_range = np.arange(50, 150, 15)
@@ -242,23 +233,19 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         # fixes a particular state of the random generator algorithm thanks to
         # the seed sample_size
-        np.random.seed(42)
+        generator = np.random.default_rng(seed=42)
+        var1 = generator.uniform(-1, 1, size=len(self.samples_dataframe))
+        var2 = generator.uniform(-1, 1, size=len(self.samples_dataframe))
+        out1 = list(pd.Series(var1 + var2) * 100000)
+        out2 = list(pd.Series(var1 * var2) * 100000)
+        out3 = list(pd.Series(np.square(var1) + np.square(var2)) * 100000)
 
-        Var1 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
-        Var2 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
-
-        out1 = list(pd.Series(Var1 + Var2) * 100000)
-        out2 = list(pd.Series(Var1 * Var2) * 100000)
-        out3 = list(pd.Series(np.square(Var1) + np.square(Var2)) * 100000)
-
-        self.data_df = pd.DataFrame(
-            {
-                'scenario_name': self.samples_dataframe['scenario_name'],
-                'output1': out1,
-                'output2': out2,
-                'output3': out3,
-            }
-        )
+        self.data_df = pd.DataFrame({
+            'scenario_name': self.samples_dataframe['scenario_name'],
+            'output1': out1,
+            'output2': out2,
+            'output3': out3,
+        })
 
         input_selection = {
             'selected_input': [True, True, True, True],
@@ -272,16 +259,14 @@ class TestUncertaintyQuantification(unittest.TestCase):
             'full_name': ['output1', 'output2', 'output3'],
         }
 
-        dspace = pd.DataFrame(
-            {
-                'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
-                'lower_bnd': [85.0, 80.0, 80.0, np.array([50.0, 40.0, 60])],
-                'upper_bnd': [105.0, 120.0, 120.0, np.array([150.0, 80.0, 120.0])],
-                'nb_points': [10, 10, 10, 10],
-                'full_name': ['COC', 'RC', 'NRC', 'input_array'],
-                'variable': ['COC', 'RC', 'NRC', 'input_array'],
-            }
-        )
+        dspace = pd.DataFrame({
+            'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
+            'lower_bnd': [85.0, 80.0, 80.0, np.array([50.0, 40.0, 60])],
+            'upper_bnd': [105.0, 120.0, 120.0, np.array([150.0, 80.0, 120.0])],
+            'nb_points': [10, 10, 10, 10],
+            'full_name': ['COC', 'RC', 'NRC', 'input_array'],
+            'variable': ['COC', 'RC', 'NRC', 'input_array'],
+        })
 
         private_values = {
             f'{self.name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
@@ -300,10 +285,10 @@ class TestUncertaintyQuantification(unittest.TestCase):
         )[0]
 
         uncertainty_quanti_disc_output = uncertainty_quanti_disc.get_sosdisc_outputs()
-        out_df = uncertainty_quanti_disc_output['output_interpolated_values_df']
+        uncertainty_quanti_disc_output['output_interpolated_values_df']
 
-        filter = uncertainty_quanti_disc.get_chart_filter_list()
-        graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
+        chart_filter = uncertainty_quanti_disc.get_chart_filter_list()
+        uncertainty_quanti_disc.get_post_processing_list(chart_filter)
         """
         for graph in graph_list:
             graph.to_plotly().show()
@@ -311,7 +296,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
     def test_04_uncertainty_quantification_with_arrays_in_input_and_outputs(self):
         """This tests evaluates the capacity to perform uncertainty quantification when some inputs are arrays and
-        some outputs are arrays"""
+        some outputs are arrays.
+        """
         builder = self.factory.get_builder_from_process(self.repo, self.proc_name)
 
         self.ee.factory.set_builders_to_coupling_builder(builder)
@@ -328,9 +314,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         self.ee.display_treeview_nodes()
 
-        self.data_dir = join(dirname(dirname(__file__)), 'sos_processes', 'test', self.proc_name, 'data')
-
-        self.samples_dataframe = pd.read_csv(join(self.data_dir, 'samples_df.csv'))
+        self.data_dir = Path(__file__).parents[1] / f"sos_processes/test/{self.proc_name}/data"
+        self.samples_dataframe = pd.read_csv(self.data_dir / "samples_df.csv")
 
         # builds a sample dataframe with regular inputs arrays
         x_range = np.arange(50, 150, 15)
@@ -352,31 +337,27 @@ class TestUncertaintyQuantification(unittest.TestCase):
 
         # fixes a particular state of the random generator algorithm thanks to
         # the seed sample_size
-        np.random.seed(42)
-
-        Var1 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
-        Var2 = np.random.uniform(-1, 1, size=len(self.samples_dataframe))
+        generator = np.random.default_rng(seed=42)
+        var1 = generator.uniform(-1, 1, size=len(self.samples_dataframe))
+        var2 = generator.uniform(-1, 1, size=len(self.samples_dataframe))
+        out1 = list(pd.Series(var1 + var2) * 100000)
 
         # set outputs to be both floats and arrays
-        out1 = list(pd.Series(Var1 + Var2) * 100000)
+        out1 = list(pd.Series(var1 + var2) * 100000)
         out_array = list(
-            np.array(
-                [
-                    (Var1 * Var2) * 100_000,
-                    (Var1**2 + Var2**2) * 100_000,
-                    (Var1**4 - Var2**2) * 100_000,
-                    (-(Var1**2) - Var2**2) * 100_000,
-                ]
-            ).T
+            np.array([
+                (var1 * var2) * 100_000,
+                (var1**2 + var2**2) * 100_000,
+                (var1**4 - var2**2) * 100_000,
+                (-(var1**2) - var2**2) * 100_000,
+            ]).T
         )
 
-        self.data_df = pd.DataFrame(
-            {
-                'scenario_name': self.samples_dataframe['scenario_name'],
-                'output1': out1,
-                'output_array': out_array,
-            }
-        )
+        self.data_df = pd.DataFrame({
+            'scenario_name': self.samples_dataframe['scenario_name'],
+            'output1': out1,
+            'output_array': out_array,
+        })
 
         input_selection = {
             'selected_input': [True, True, True, True],
@@ -390,16 +371,14 @@ class TestUncertaintyQuantification(unittest.TestCase):
             'full_name': ['output1', 'output_array'],
         }
 
-        dspace = pd.DataFrame(
-            {
-                'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
-                'lower_bnd': [85.0, 80.0, 80.0, np.array([50.0, 40.0, 60])],
-                'upper_bnd': [105.0, 120.0, 120.0, np.array([150.0, 80.0, 120.0])],
-                'nb_points': [10, 10, 10, 10],
-                'full_name': ['COC', 'RC', 'NRC', 'input_array'],
-                'variable': ['COC', 'RC', 'NRC', 'input_array'],
-            }
-        )
+        dspace = pd.DataFrame({
+            'shortest_name': ['COC', 'RC', 'NRC', 'input_array'],
+            'lower_bnd': [85.0, 80.0, 80.0, np.array([50.0, 40.0, 60])],
+            'upper_bnd': [105.0, 120.0, 120.0, np.array([150.0, 80.0, 120.0])],
+            'nb_points': [10, 10, 10, 10],
+            'full_name': ['COC', 'RC', 'NRC', 'input_array'],
+            'variable': ['COC', 'RC', 'NRC', 'input_array'],
+        })
 
         private_values = {
             f'{self.name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
@@ -418,11 +397,9 @@ class TestUncertaintyQuantification(unittest.TestCase):
         )[0]
 
         uncertainty_quanti_disc_output = uncertainty_quanti_disc.get_sosdisc_outputs()
-        out_df = uncertainty_quanti_disc_output['output_interpolated_values_df']
+        uncertainty_quanti_disc_output['output_interpolated_values_df']
 
-        filter = uncertainty_quanti_disc.get_chart_filter_list()
-        graph_list = uncertainty_quanti_disc.get_post_processing_list(filter)
-        """
-        for graph in graph_list:
-            graph.to_plotly().show()
-        """
+        chart_filter = uncertainty_quanti_disc.get_chart_filter_list()
+        uncertainty_quanti_disc.get_post_processing_list(chart_filter)
+        # for graph in graph_list:
+        #     graph.to_plotly().show()
