@@ -141,13 +141,14 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         except KeyError as exc:
             raise DatasetNotFoundException(dataset_name=name) from exc
 
-    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
+    def get_values(self, dataset_identifier: str, data_group_identifier: str, data_to_get: dict[str:str]) -> None:
         """
         Method to retrieve data from JSON and fill a data_dict
 
         :param dataset_identifier: identifier of the dataset
         :type dataset_identifier: str
-
+        :param data_group_identifier: data group identifier within dataset
+        :type data_group_identifier: str
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
         """

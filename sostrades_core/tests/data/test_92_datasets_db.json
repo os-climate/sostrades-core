@@ -1,16 +1,18 @@
 {
     "dataset_all_in_one": {
-        "a": {
-            "value": 1
-        },
-        "b": {
-            "value":"string_2"
-        },
-        "c": {
-            "value": "string_3"
-        },
-        "x": {
-            "value": 4
+        "all_data": {
+            "a": {
+                "value": 1
+            },
+            "b": {
+                "value": "string_2"
+            },
+            "c": {
+                "value": "string_3"
+            },
+            "x": {
+                "value": 4
+            }
         }
     },
     "dataset_all_types": {
@@ -65,95 +67,115 @@
         }
     },
     "dataset_sellar": {
-        "x": {
-            "value": [
-                1.0
-            ]
-        },
-        "y_1": {
-            "value": [
-                2.0
-            ]
-        },
-        "y_2": {
-            "value": [
-                3.0
-            ]
-        },
-        "z": {
-            "value": [
-                4.0,
-                5.0
-            ]
-        },
-        "local_dv": {
-            "value": 10.0
+        "all_data": {
+            "x": {
+                "value": [
+                    1.0
+                ]
+            },
+            "y_1": {
+                "value": [
+                    2.0
+                ]
+            },
+            "y_2": {
+                "value": [
+                    3.0
+                ]
+            },
+            "z": {
+                "value": [
+                    4.0,
+                    5.0
+                ]
+            },
+            "local_dv": {
+                "value": 10.0
+            }
         }
     },
     "dataset_ax": {
-        "a": {
-            "value": 10
-        },
-        "x": {
-            "value": 20
+        "all_data": {
+            "a": {
+                "value": 10
+            },
+            "x": {
+                "value": 20
+            }
         }
     },
     "dataset_bc": {
-        "b": {
-            "value": "string_1"
-        },
-        "c": {
-            "value": "string_2"
+        "all_data": {
+            "b": {
+                "value": "string_1"
+            },
+            "c": {
+                "value": "string_2"
+            }
         }
     },
     "dataset_a": {
-        "a": {
-            "value": 15
+        "all_data": {
+            "a": {
+                "value": 15
+            }
         }
     },
     "dataset_bcx_1": {
-        "x": {
-            "value": 30
-        },
-        "b": {
-            "value": "string_40"
-        },
-        "c": {
-            "value": "string_50"
+        "all_data": {
+            "x": {
+                "value": 30
+            },
+            "b": {
+                "value": "string_40"
+            },
+            "c": {
+                "value": "string_50"
+            }
         }
     },
     "dataset_bcx_2": {
-        "x": {
-            "value": 4
-        },
-        "b": {
-            "value": "string_5"
-        },
-        "c": {
-            "value": "string_6"
+        "all_data": {
+            "x": {
+                "value": 4
+            },
+            "b": {
+                "value": "string_5"
+            },
+            "c": {
+                "value": "string_6"
+            }
         }
     },
     "dataset_bw": {
-        "b": {
-            "value": "string_5"
-        },
-        "w": {
-            "value": "dumb_value"
+        "all_data": {
+            "b": {
+                "value": "string_5"
+            },
+            "w": {
+                "value": "dumb_value"
+            }
         }
     },
     "dataset_c_1": {
-        "c": {
-            "value": "string_11"
+        "all_data": {
+            "c": {
+                "value": "string_11"
+            }
         }
     },
     "dataset_c_2": {
-        "c": {
-            "value": "string_12"
+        "all_data": {
+            "c": {
+                "value": "string_12"
+            }
         }
     },
     "dataset_b": {
-        "b": {
-            "value": "string_42"
+        "all_data": {
+            "b": {
+                "value": "string_42"
+            }
         }
     },
     "default_numerical_parameters": {

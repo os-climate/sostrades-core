@@ -695,7 +695,9 @@ class TestDatasets(unittest.TestCase):
                                        dataset_identifier="dataset_df_bq",
                                        data_types_dict=data_types_dict,
                                        create_if_not_exists=True)
-        data_values = connector_to.get_values("dataset_df_bq", data_to_get=data_types_dict)
+        data_values = connector_to.get_values(dataset_identifier="dataset_df_bq",
+                                              data_group_identifier="all_data",
+                                              data_to_get=data_types_dict)
 
         data_name = "WITNESS_gdp"
         ref_df = pd.read_csv(os.path.realpath(os.path.join(os.path.dirname(__file__),

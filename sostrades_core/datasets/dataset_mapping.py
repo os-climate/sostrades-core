@@ -66,6 +66,7 @@ class DatasetsMapping:
 
     @staticmethod
     def deserialize(input_dict: dict) -> DatasetsMapping:
+        # FIXME: docstring
         """
         Method to deserialize
         expected example

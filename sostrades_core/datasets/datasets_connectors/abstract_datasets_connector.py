@@ -54,11 +54,13 @@ class AbstractDatasetsConnector(abc.ABC):
     VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, PARAMETER_NAME})
 
     @abc.abstractmethod
-    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
+    def get_values(self, dataset_identifier: str,  data_group_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to get a list of data from a specific API
         :param: dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
+        :param data_group_identifier: data group identifier within dataset
+        :type data_group_identifier: str
         :param data_to_get: dict of data name and type of data to get {name: type}
         :type data_to_get: dict[str:str]
         """

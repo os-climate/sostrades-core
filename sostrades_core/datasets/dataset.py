@@ -37,4 +37,6 @@ class Dataset:
         :param data_names: dict of names and types of data to retrieve
         :type data_names: dict[str:str] name: type
         """
-        return self.connector.get_values(dataset_identifier=self.dataset_info.dataset_id, data_to_get=data_dict)
+        return self.connector.get_values(dataset_identifier=self.dataset_info.dataset_id,
+                                         data_group_identifier=self.dataset_info.data_group_id,
+                                         data_to_get=data_dict)

@@ -82,13 +82,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         with open(db_path, "w", encoding="utf-8") as file:
             json.dump(obj=self.__json_data, fp=file, indent=4)
 
-    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
+    def get_values(self, dataset_identifier: str, data_group_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
         Method to retrieve data from JSON and fill a data_dict
 
         :param dataset_identifier: identifier of the dataset
         :type dataset_identifier: str
-
+        :param data_group_identifier: data group identifier within dataset
+        :type data_group_identifier: str
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
         """
@@ -101,7 +102,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             raise DatasetNotFoundException(dataset_identifier)
 
         # Filter data
-        dataset_data = self.__json_data[dataset_identifier]
+        dataset_data = self.__json_data[dataset_identifier][data_group_identifier]
         filtered_values = {key: self._datasets_serializer.convert_from_dataset_data(key,
                                                                                     self._extract_value_from_datum(dataset_data[key]),
                                                                                     data_to_get)
