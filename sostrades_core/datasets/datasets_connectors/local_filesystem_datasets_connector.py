@@ -145,7 +145,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Getting all datasets for connector {self}")
         return next(os.walk(self.__root_directory_path))[1]
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
+    def write_values(self, dataset_identifier: str, data_group_identifier: str, values_to_write: dict[str:Any],
+                     data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
@@ -157,7 +158,10 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
-        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
+        data_group_dir = os.path.join(self.__root_directory_path, dataset_identifier, data_group_identifier)
+        if not os.path.exists(data_group_dir):
+            makedirs_safe(data_group_dir, exist_ok=True)
+        self.__datasets_serializer.set_dataset_directory(data_group_dir)
         # read the already existing values
         dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
         # Write data, serializer buffers the data to pickle and already pickled
@@ -165,7 +169,10 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                                                                      value,
                                                                                      data_types_dict)
                              for key, value in values_to_write.items()}
-        self._update_data_with_values(dataset_descriptor, descriptor_values, data_types_dict)
+        if data_group_identifier not in dataset_descriptor:
+            dataset_descriptor[data_group_identifier] = dict()
+        self._update_data_with_values(dataset_descriptor[data_group_identifier],
+                                      descriptor_values, data_types_dict)
         self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier,
                                                   descriptor_data=dataset_descriptor)
         return values_to_write
@@ -189,7 +196,9 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__clear_pickle_data()
         return dataset_values
 
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:dict[str:Any]],
+                      data_types_dict: dict[str:dict[str:str]], create_if_not_exists: bool = True, override: bool = False
+                      ) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -219,7 +228,13 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
             # Handle override
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-        return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
+        written_values = dict()
+        for _group_id, _group_data in values_to_write.items():
+            written_values[_group_id] = self.write_values(dataset_identifier=dataset_identifier,
+                                                          data_group_identifier=_group_id,
+                                                          values_to_write=_group_data,
+                                                          data_types_dict=data_types_dict[_group_id])
+        return written_values
 
     def clear(self, remove_root_directory:bool=False) -> None:
         """

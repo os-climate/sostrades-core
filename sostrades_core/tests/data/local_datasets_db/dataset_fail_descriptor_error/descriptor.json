@@ -9,6 +9,5 @@
         "y_array": {"value": "@array@y_array.csv"},
         "z_list": {"value": [1.0,2.0,3.0]},c
         "d": {"value": "@dataframe@d.csv"}
-        },
     }
 }

@@ -103,11 +103,11 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             raise DatasetNotFoundException(dataset_identifier)
 
         # Filter data
-        dataset_data = self.__json_data[dataset_identifier][data_group_identifier]
+        _group_data = self.__json_data[dataset_identifier][data_group_identifier]
         filtered_values = {key: self._datasets_serializer.convert_from_dataset_data(key,
-                                                                                    self._extract_value_from_datum(dataset_data[key]),
+                                                                                    self._extract_value_from_datum(_group_data[key]),
                                                                                     data_to_get)
-                           for key in dataset_data if key in data_to_get}
+                           for key in _group_data if key in data_to_get}
         self.__logger.debug(f"Values obtained {list(filtered_values.keys())} for dataset {dataset_identifier} for connector {self}")
         return filtered_values
 
@@ -176,14 +176,18 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         if dataset_identifier not in self.__json_data:
             raise DatasetNotFoundException(dataset_identifier)
 
-        dataset_values = {key: self._datasets_serializer.convert_from_dataset_data(key,
-                                                                                   self._extract_value_from_datum(datum),
-                                                                                   data_types_dict)
-                          for key, datum in self.__json_data[dataset_identifier].items()}
-        return dataset_values
+        dataset_values_by_group = dict()
+        for _group_id, _group_data in self.__json_data[dataset_identifier].items():
+            dataset_values_by_group[_group_id] = {
+                key: self._datasets_serializer.convert_from_dataset_data(key,
+                                                                         self._extract_value_from_datum(datum),
+                                                                         data_types_dict[_group_id])
+                for key, datum in _group_data.items()}
+        return dataset_values_by_group
 
 
-    def   write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str: Any]:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str],
+                      create_if_not_exists:bool=True, override:bool=False) -> dict[str: Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector

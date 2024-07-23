@@ -2,7 +2,7 @@
     "process_module_path": "sostrades_core.sos_processes.test.test_disc1_all_types",
     "namespace_datasets_mapping": {
         "v0|*|a": ["MVP0_local_export_test_param|default_numerical_parameters|all_data|a"],
-        "v0|<study_ph>.Disc1|a": ["MVP0_local_export_test_param|dataset_all_typesall_data||all_data|b"],
+        "v0|<study_ph>.Disc1|a": ["MVP0_local_export_test_param|dataset_all_types|all_data|b"],
         "v0|<study_ph>.Disc1|x": ["MVP0_local_export_test_param|dataset_all_types|all_data|*"],
         "v0|<study_ph>.Disc1|*": ["MVP0_local_export_test_param|dataset_all_types|all_data|d"]
     }

@@ -313,7 +313,7 @@ class TestDatasets(unittest.TestCase):
                         "b_bool",
                         "d"]
 
-        data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
+        data_types_dict = {"all_data": {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}}
 
         try:
             connector_to.copy_dataset_from(connector_from=connector_json,
