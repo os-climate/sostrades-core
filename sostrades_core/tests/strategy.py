@@ -46,7 +46,7 @@ def run_tests_l0_l1_l2(main_folder, file_pattern):
     """run the tests in main folder corresponding to file_pattern"""
     initial_path = os.path.abspath(os.path.curdir)
     sub_test_folder = 'tests' if main_folder != "sos_trades_api" else os.path.join('tests', 'controllers')
-    test_folder = os.path.join(main_folder, sub_test_folder)
+    test_folder = os.path.join(initial_path, main_folder, sub_test_folder)
     os.chdir(test_folder)
     # Print the arguments
     print(rf"STARTING TESTS {test_folder}\{file_pattern}")
@@ -185,5 +185,19 @@ def test_strategy(main_folder_default_value: str, processes_folder: Union[str, N
         print('No processes repo specified, exiting test.')
         exit_code = 0
 
-    print(f"EXIT CODE {exit_code}")
+    #print(f"EXIT CODE {exit_code}")
     sys.exit(exit_code)
+
+
+if __name__ == "__main__":
+    exit_code = 0
+    if len(sys.argv) < 2 :
+        print('No mainfolder specified, exiting test.')
+        exit_code = 0
+        sys.exit(exit_code)
+
+    repo_to_test = os.path.basename(os.path.abspath(os.curdir))
+    platfor_or_models_folder = os.path.dirname(os.path.abspath(os.curdir))
+    mainfolder_val = sys.argv[1]
+    sys.argv.pop(0)
+    test_strategy(main_folder_default_value=mainfolder_val, processes_folder="sos_processes")

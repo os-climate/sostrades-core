@@ -265,10 +265,11 @@ class GatherDiscipline(SoSWrapp):
             # define rule for key name
             key_split = key_column_name.split('_')
             if len(key_split) == 1:
-                key_column_name = 'key_level_1'
+                key_column_name = key_split[0] + "_1"
+                # key_column_name = 'key_level_1'
             else:
                 key_split[-1] = str(int(key_split[-1]) + 1)
-            key_column_name = '_'.join(key_split)
+                key_column_name = '_'.join(key_split)
             df = self.add_key_column_to_df(df, key_column_name, key_column_value)
 
         return df

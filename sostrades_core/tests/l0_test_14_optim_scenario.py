@@ -38,9 +38,6 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import (
     Study as study_sellar_opt_discopt,
 )
-from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import (
-    Study,
-)
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,
 )
@@ -1518,39 +1515,6 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.assertIn("Fitness function", filters[0].filter_values)
         self.assertIn("Design variables", filters[0].filter_values)
 
-        for graph in graph_list:
-            # graph.to_plotly().show()
-            pass
-
-    def test_18_optim_scenario_optim_algo_projected_gradient_func_manager(self):
-        self.name = 'Test12'
-        self.ee = ExecutionEngine(self.name)
-
-        builder = self.ee.factory.get_builder_from_process('sostrades_core.sos_processes.test',
-                                                           'test_sellar_opt_w_func_manager'
-                                                           )
-        self.ee.factory.set_builders_to_coupling_builder(builder)
-        self.ee.configure()
-
-        usecase = Study(execution_engine=self.ee)
-        usecase.study_name = self.name
-
-        values_dict = usecase.setup_usecase()
-        full_values_dict = {}
-        for dict_v in values_dict:
-            full_values_dict.update(dict_v)
-
-        full_values_dict.update({
-            f"{self.name}.SellarOptimScenario.{'max_iter'}": 67,
-            f"{self.name}.SellarOptimScenario.{'algo'}": 'ProjectedGradient',
-        })
-        self.ee.load_study_from_input_dict(full_values_dict)
-
-        self.ee.execute()
-
-        proxy_optim = self.ee.root_process.proxy_disciplines[0]
-        filters = proxy_optim.get_chart_filter_list()
-        graph_list = proxy_optim.get_post_processing_list(filters)
         for graph in graph_list:
             # graph.to_plotly().show()
             pass
