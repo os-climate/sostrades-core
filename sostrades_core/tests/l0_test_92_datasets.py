@@ -708,6 +708,33 @@ class TestDatasets(unittest.TestCase):
         }
         self.assertEqual(dict_strange_keys_ref, dict_strange_keys)
 
+    def test_18_load_multiple_groups_local_connector(self):
+        """
+        Check correctness of loaded values after loading a handcrafted local directories' dataset,  testing usage of
+        LocalDatasetsConnector and FileSystemDatasetsSerializer. Basically same as test_07 with the difference that
+        values are loaded from two groups inside a dataset, instead of two distinct datasets.
+        """
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+
+        dm = study.execution_engine.dm
+
+        study.update_data_from_dataset_mapping(
+            DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset_2groups.json")))
+
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame(
+            {"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
+
+
 if __name__=="__main__":
     cls = TestDatasets()
     cls.setUp()

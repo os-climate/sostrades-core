@@ -28,7 +28,7 @@ from sostrades_core.datasets.datasets_serializers.json_datasets_serializer impor
 )
 from sostrades_core.tools.tree.deserialization import isevaluatable
 from sostrades_core.tools.tree.serializer import CSV_SEP
-
+from sostrades_core.tools.folder_operations import makedirs_safe
 
 # Utility functions that mimic exactly the fashion in which api loads and saves dataframes from/to .csv
 def _save_dataframe(file_path: str, df: pd.DataFrame) -> None:
@@ -103,6 +103,8 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             if self.__current_dataset_directory is None:
                 self.__logger.error("Error while trying to dump pickled data because dataset directory is undefined")
             else:
+                if not os.path.exists(self.__current_dataset_directory):
+                    makedirs_safe(self.__current_dataset_directory, exist_ok=True)
                 non_serializable_pkl_path = os.path.join(self.__current_dataset_directory, self.NON_SERIALIZABLE_PKL)
                 with open(non_serializable_pkl_path, 'wb') as pkl_file:
                     pickle.dump(self.__pickle_data, pkl_file)
@@ -113,7 +115,6 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         Utility method used to clear an entry from the buffered pickle data, in order to make sure that regularly
         serialized data are not repeated in the pickle too.
         """
-        # TODO: [discuss] is this necessary ?
         if data_name in self.__pickle_data:
             del self.__pickle_data[data_name]
 
@@ -228,6 +229,8 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
                                 f"is undefined")
             return data_value
         else:
+            if not os.path.exists(self.__current_dataset_directory):
+                makedirs_safe(self.__current_dataset_directory, exist_ok=True)
             # TODO: may need updating when datasets down to parameter level as assuming that the filename is linked to data name.
             _fname = self.__get_data_path(descriptor_value)
             data_path = join(self.__current_dataset_directory, _fname)

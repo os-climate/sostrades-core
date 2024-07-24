@@ -160,8 +160,6 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         data_group_dir = os.path.join(self.__root_directory_path, dataset_identifier, data_group_identifier)
-        if not os.path.exists(data_group_dir):
-            makedirs_safe(data_group_dir, exist_ok=True)
         self.__datasets_serializer.set_dataset_directory(data_group_dir)
         # read the already existing values
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
