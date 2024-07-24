@@ -34,7 +34,7 @@ class DatasetsManager:
     VALUE = ProxyDiscipline.VALUE
     DATASET_INFO = 'dataset_info'
 
-    def __init__(self, logger:logging.Logger):
+    def __init__(self, logger: logging.Logger):
         self.datasets = {}
         self.__logger = logger
 
@@ -64,7 +64,7 @@ class DatasetsManager:
                 dataset_data_reverse_mapping = {}
                 # we get the data_dataset_key for each param that is in data_dict
                 # it is done in a loop so that it respect the order of appearance
-                #(ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
+                # (ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
                 for data_key, data_dataset_key in mapping_parameters.items():
                     if data_dataset_key == DatasetInfo.WILDCARD:
                         dataset_data_reverse_mapping.update({key: key for key in data_dict.keys()})
@@ -114,7 +114,6 @@ class DatasetsManager:
         :return: data_dict of data names plus a DATASET_INFO field with DatasetInfo object
         """
         self.__logger.debug(f"exporting data {data_dict.keys()} into dataset {dataset_info}")
-
 
         try:
             # Get the dataset, creates it if not exists

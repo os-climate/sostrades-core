@@ -27,8 +27,8 @@ class Study(StudyManager):
     def setup_usecase(self):
         # Sample DataFrame
         data = {
-            'days': [0,1,10,3,0.2,2,1,5,2,15,3,8,10,20,6],
-            'quantity': [25,5,0,0,20,8,8,0,2,1,6,0,0,1,1]
+            'days': [0, 1, 10, 3, 0.2, 2, 1, 5, 2, 15, 3, 8, 10, 20, 6],
+            'quantity': [25, 5, 0, 0, 20, 8, 8, 0, 2, 1, 6, 0, 0, 1, 1]
         }
 
         df = pd.DataFrame(data)
@@ -43,4 +43,3 @@ if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
     uc_cls.run(for_test=True)
-

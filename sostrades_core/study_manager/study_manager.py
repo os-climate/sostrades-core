@@ -18,9 +18,7 @@ limitations under the License.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Union
+from typing import TYPE_CHECKING, Any, Union
 
 import numpy as np
 from numpy.typing import NDArray

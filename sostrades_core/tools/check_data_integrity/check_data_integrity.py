@@ -264,8 +264,8 @@ class CheckDataIntegrity():
                         # The key is not in the dataframe descriptor but the datafrmae has dynamic columns that cannot be described in the df_descriptor depending on the use
                         pass
                     elif key not in dataframe_descriptor and not dynamic_dataframe_column:
-                        #check_integrity_msg_df_descriptor = f'Dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
-                        #self.__add_msg_to_check_integrity_msg_list(check_integrity_msg_df_descriptor)
+                        # check_integrity_msg_df_descriptor = f'Dataframe value has a column {key} but the dataframe descriptor has not, df_descriptor keys : {dataframe_descriptor.keys()}'
+                        # self.__add_msg_to_check_integrity_msg_list(check_integrity_msg_df_descriptor)
                         pass
                     elif key == "Unnamed: 0":
                         pass

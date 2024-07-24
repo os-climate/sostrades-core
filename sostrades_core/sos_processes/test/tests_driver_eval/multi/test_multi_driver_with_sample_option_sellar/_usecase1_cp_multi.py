@@ -48,7 +48,6 @@ class Study(StudyManager):
                                   }
         input_selection_cp_x_z = pd.DataFrame(input_selection_cp_x_z)
 
-
         disc_dict = {}
         # DoE + Eval inputs
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'cartesian_product'

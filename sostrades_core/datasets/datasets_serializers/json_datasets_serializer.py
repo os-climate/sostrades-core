@@ -32,7 +32,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
         super().__init__()
         self.__logger = logging.getLogger(__name__)
 
-    def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
+    def convert_from_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
         '''
         Convert data_value into data_type from the connector
         To be override for specific conversion.
@@ -68,7 +68,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         return converted_data
 
-    def convert_to_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
+    def convert_to_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
         '''
         Convert data_value into connector format
         :param data_name: name of the data that is converted

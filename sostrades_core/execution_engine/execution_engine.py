@@ -396,7 +396,7 @@ class ExecutionEngine:
 
         return converted_dict
 
-    def load_study_from_dataset(self, datasets_mapping: DatasetsMapping, update_status_configure:bool=True):
+    def load_study_from_dataset(self, datasets_mapping: DatasetsMapping, update_status_configure: bool = True):
         '''
         Load a study from a datasets mapping dictionary : retreive dataset value and load study
 

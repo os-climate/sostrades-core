@@ -17,14 +17,14 @@ import json
 
 from sostrades_core.tools.check_headers import HeaderTools
 
-#read local headers_ignore_config.json specific to each repository
+# read local headers_ignore_config.json specific to each repository
 
-if __name__=="__main__":
+if __name__ == "__main__":
     try:
 
-        with open("./headers_ignore_config.json","r",encoding="utf-8") as f:
+        with open("./headers_ignore_config.json", "r", encoding="utf-8") as f:
 
-            headers_ignore_config=json.load(f)
+            headers_ignore_config = json.load(f)
 
             ht = HeaderTools()
 
@@ -36,6 +36,6 @@ if __name__=="__main__":
                 headers_ignore_config["airbus_rev_commit"],
                 ".",
             )
-    except FileNotFoundError as ex :
+    except FileNotFoundError as ex:
         print("headers_ignore_config.json must be available where this command is launched")
         raise ex

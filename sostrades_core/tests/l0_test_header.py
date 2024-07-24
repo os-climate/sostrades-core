@@ -34,19 +34,20 @@ class Testheader(unittest.TestCase):
         '''
         self.pp = pprint.PrettyPrinter(indent=4, compact=True)
 
-        with open(os.path.join(os.path.dirname(__file__),"..","..","headers_ignore_config.json"),"r",encoding="utf-8") as f:
+        with open(os.path.join(os.path.dirname(__file__), "..", "..", "headers_ignore_config.json"), "r", encoding="utf-8") as f:
 
-            headers_ignore_config=json.load(f)
+            headers_ignore_config = json.load(f)
 
             self.extension_to_ignore = headers_ignore_config["extension_to_ignore"]
-            #Add here the files to ignore
+            # Add here the files to ignore
             self.files_to_ignore = headers_ignore_config["files_to_ignore"]
-            #commit from where to compare added, modeified deleted ...
+            # commit from where to compare added, modeified deleted ...
             self.airbus_rev_commit = headers_ignore_config["airbus_rev_commit"]
 
     def test_Headers(self):
         ht = HeaderTools()
         ht.check_headers(self.extension_to_ignore, self.files_to_ignore, self.airbus_rev_commit)
+
 
 if __name__ == "__main__":
     with cProfile.Profile() as pr:

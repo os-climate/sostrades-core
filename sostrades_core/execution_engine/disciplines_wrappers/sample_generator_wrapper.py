@@ -66,7 +66,7 @@ class SampleGeneratorWrapper(SoSWrapp):
         if isinstance(samples_df, pd.DataFrame):
             pass
         else:
-            raise Exception( "Sampling has not been made")
+            raise Exception("Sampling has not been made")
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def sample(self):

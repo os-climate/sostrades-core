@@ -697,7 +697,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.post_processing_manager.add_post_processing_module_to_namespace('ns_out_disc3',
                                                                                 'sostrades_core.sos_wrapping.test_discs.chart_post_proc_disc')
 
-
         multi_scenarios = self.exec_eng.factory.create_multi_instance_driver('multi_scenarios', builder_list)
 
         # add post-processing on 'Post-processing' node by loading a module
@@ -761,9 +760,6 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.assertEqual(len(self.exec_eng.ns_manager.get_all_namespace_with_name('ns_post_proc')), 1)
         # dashboard namespace should have 1 value per scenario, hence 2
         self.assertEqual(len(self.exec_eng.ns_manager.get_all_namespace_with_name('ns_out_disc3')), 2)
-
-
-
 
 
 if '__main__' == __name__:

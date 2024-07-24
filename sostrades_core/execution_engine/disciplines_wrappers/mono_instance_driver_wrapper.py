@@ -58,7 +58,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 time.sleep(0.1)
                 scenario_name = samples[i][SampleGeneratorWrapper.SCENARIO_NAME]
                 self.logger.info(f'   {scenario_name} is running.')
-                x = {key:value for key,value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
+                x = {key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
 
                 evaluation_output[scenario_name] = x, self.evaluation(
                     x, scenario_name, convert_to_array)
@@ -99,8 +99,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             try:
                 # execute all the scenarios (except the reference scenario)  in
                 # parallel
-                #remove the scenario_name key of each sample
-                x = [{key:value for key,value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME} for i in range(len(samples))]
+                # remove the scenario_name key of each sample
+                x = [{key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME} for i in range(len(samples))]
 
                 parallel.execute(x[0:-1], exec_callback=store_callback)
                 # execute the reference scenario in a sequential way so that
@@ -111,7 +111,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 self.proxy_disciplines[0]._update_status_recursive(
                     self.STATUS_DONE)
                 dict_to_return = {}
-                #return the outputs in the same order of the scenario lists
+                # return the outputs in the same order of the scenario lists
                 for sample in samples:
                     scenario_name = sample[SampleGeneratorWrapper.SCENARIO_NAME]
                     if scenario_name in evaluation_output.keys():
@@ -214,12 +214,12 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         samples_df = samples_df.loc[samples_df[SampleGeneratorWrapper.SELECTED_SCENARIO]]
         samples_df = samples_df.drop(SampleGeneratorWrapper.SELECTED_SCENARIO, axis='columns')
 
-        #rename the columns with full names
+        # rename the columns with full names
         for key in input_columns_short_name:
             samples_df[f"{self.attributes['driver_name']}.{key}"] = samples_df[key].values
         samples_df = samples_df.drop(input_columns_short_name, axis='columns')
 
-        #build samples dict
+        # build samples dict
         self.samples = []
         scenario_names = set()
         scenario_nb = len(samples_df[SampleGeneratorWrapper.SCENARIO_NAME])
@@ -278,14 +278,14 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         self.store_sos_outputs_values(
             subprocess_ref_outputs, full_name_keys=True)
         # save doeeval outputs
-        sample_input_df = pd.DataFrame( self.samples)
+        sample_input_df = pd.DataFrame(self.samples)
 
         # go again with short names into samples_inputs_df
         for key in input_columns_short_name:
             sample_input_df[key] = sample_input_df[f"{self.attributes['driver_name']}.{key}"].values
         sample_input_df = sample_input_df.drop(input_columns, axis='columns')
 
-        self.store_sos_outputs_values({'samples_inputs_df':sample_input_df})
+        self.store_sos_outputs_values({'samples_inputs_df': sample_input_df})
 
         self.store_sos_outputs_values(
             {'samples_outputs_df': samples_output_df})

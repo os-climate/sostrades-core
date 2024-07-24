@@ -20,6 +20,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define styles than can be applied to a table row
 """
 
+
 class TableStylesException(Exception):
     """ Overload Exception basic type
     """

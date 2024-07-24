@@ -24,10 +24,10 @@ class DesignVariable(BaseController):
     PDesignVariable Class
     """
     CLASS_MSG = 'DesignVariable'
-    ERROR_MSG = 'ERROR '+CLASS_MSG+'.'
+    ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
 
-    #--Constructor
-    def __init__(self,PBCManager,Id,value,bounds, complex_mode=False):
+    # --Constructor
+    def __init__(self, PBCManager, Id, value, bounds, complex_mode=False):
 
         self.__bounds = None
         self.set_bounds(bounds)
@@ -37,82 +37,81 @@ class DesignVariable(BaseController):
         self.__nvalue = 0.
         self.__norm_value()
 
-    #--Private methods
+    # --Private methods
     def __repr__(self):
-        info_string=BaseController.__repr__(self)
-        info_string+="\n   Value           :%24.16e"%self.get_value()
-        info_string+="\n   Bounds          :%24s"%str(self.get_bounds())
-        info_string+="\n   Gradient        : "+str(self.get_gradient())
+        info_string = BaseController.__repr__(self)
+        info_string += "\n   Value           :%24.16e" % self.get_value()
+        info_string += "\n   Bounds          :%24s" % str(self.get_bounds())
+        info_string += "\n   Gradient        : " + str(self.get_gradient())
         return info_string
 
     def __norm_value(self):
-        lbnd=self.__bounds[0]
-        ubnd=self.__bounds[1]
-        self.__nvalue = (self.get_value() - lbnd) / ( ubnd - lbnd)
+        lbnd = self.__bounds[0]
+        ubnd = self.__bounds[1]
+        self.__nvalue = (self.get_value() - lbnd) / (ubnd - lbnd)
 
     def __revert_value(self):
-        lbnd=self.__bounds[0]
-        ubnd=self.__bounds[1]
+        lbnd = self.__bounds[0]
+        ubnd = self.__bounds[1]
         self.set_value(lbnd + self.__nvalue * (ubnd - lbnd))
 
-    #--accessors
+    # --accessors
     def get_bounds(self):
         return self.__bounds
 
     def get_revert_fact(self):
-        lbnd=self.__bounds[0]
-        ubnd=self.__bounds[1]
+        lbnd = self.__bounds[0]
+        ubnd = self.__bounds[1]
         return (ubnd - lbnd)
 
     def get_normalized_value(self):
         return self.__nvalue
 
-    #--setters
+    # --setters
     def set_bounds(self, bounds):
-        ERROR_MSG=self.ERROR_MSG+'set_bounds: '
+        ERROR_MSG = self.ERROR_MSG + 'set_bounds: '
         self.__bounds = bounds
-        lbnd=self.__bounds[0]
-        ubnd=self.__bounds[1]
+        lbnd = self.__bounds[0]
+        ubnd = self.__bounds[1]
         if lbnd >= ubnd:
-            raise Exception(ERROR_MSG+' Lower bound greater or equal to upper bound!')
+            raise Exception(ERROR_MSG + ' Lower bound greater or equal to upper bound!')
 
-    def set_value(self,value,flag_updates=True, raise_error=False):
+    def set_value(self, value, flag_updates=True, raise_error=False):
         """
         Set value of the PDesignVariable
         """
-        BaseController.set_value(self,value,flag_updates=flag_updates)
+        BaseController.set_value(self, value, flag_updates=flag_updates)
         self.check_bounds(raise_error)
         self.__norm_value()
 
-    def update_nomalized_value(self,nvalue):
-        if self.get_normalized_value()!=nvalue:
+    def update_nomalized_value(self, nvalue):
+        if self.get_normalized_value() != nvalue:
             self.set_normalized_value(nvalue)
 
-    def set_normalized_value(self,nvalue):
+    def set_normalized_value(self, nvalue):
         self.__nvalue = nvalue
         self.__revert_value()
 
-    #--methods
+    # --methods
     def check_bounds(self, raise_error=False):
         """
         Check if variable is consistent
         """
-        lbnd=self.__bounds[0]
-        ubnd=self.__bounds[1]
-        valid=True
-        if self.get_value() < lbnd-1e-1:
-            valid=False
-            msg='WARNING: '+self.get_id()+' value=%24.16e'%self.get_value()+' is lower than lower boundary '+str(lbnd)+'.'
-        if self.get_value() > ubnd+1e-1:
-            valid=False
-            msg='WARNING: '+self.get_id()+' value=%24.16e'%self.get_value()+' is greater than upper boundary '+str(ubnd)+'.'
+        lbnd = self.__bounds[0]
+        ubnd = self.__bounds[1]
+        valid = True
+        if self.get_value() < lbnd - 1e-1:
+            valid = False
+            msg = 'WARNING: ' + self.get_id() + ' value=%24.16e' % self.get_value() + ' is lower than lower boundary ' + str(lbnd) + '.'
+        if self.get_value() > ubnd + 1e-1:
+            valid = False
+            msg = 'WARNING: ' + self.get_id() + ' value=%24.16e' % self.get_value() + ' is greater than upper boundary ' + str(ubnd) + '.'
         if not valid:
             if raise_error:
                 raise Exception(msg)  # pylint: disable=possibly-used-before-assignment
 
     def handle_dv_changes(self):
-        gradient=zeros(self.get_ndv())
-        index=self.get_manager().get_dv_index(self.get_id())
-        gradient[index]=1.
+        gradient = zeros(self.get_ndv())
+        index = self.get_manager().get_dv_index(self.get_id())
+        gradient[index] = 1.
         self.set_gradient(gradient)
-

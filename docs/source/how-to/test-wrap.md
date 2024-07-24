@@ -19,7 +19,7 @@ Usually tested features are :
 * Execution correctness
 * Post-processing beauty
 * ...
-* 
+*
 
 
 ### Example test
@@ -40,7 +40,7 @@ class MyCustomWrapTest(unittest.TestCase):
     def test_01_wrap_execution(self):
         # Get the wrap builder
         wrap_builder = self.ee.factory.get_builder_from_module(self.wrap_name, self.wrap_path )
-        
+
         # Set it to be built directly under the root coupling node
         self.ee.factory.set_builders_to_coupling_builder(wrap_builder)
 

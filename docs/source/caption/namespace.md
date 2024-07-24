@@ -10,7 +10,7 @@ Namespaces are used to set prefixes in front of the variable names to:
 * Choose a suitable data tree breakdown
 * Organize the data location in the GUI
 
-## Visibility possibilities : 
+## Visibility possibilities :
 ![](../images/namespace_1.png)
 
 **Local** (default visibility) : the variable is stored at the root of the discipline
@@ -45,5 +45,3 @@ You need to define the same shared namespace for the shared variable.
 ### Example : Aero-structure model coupling
 
 ![](../images/aero_structure_model_coupling_2.png)
-
-

@@ -971,5 +971,3 @@ ncalls,tottime,percall,cumtime,percall,filename:lineno(function)
 1,0.000,0.000,0.000,0.000,C:\Users\mgueylar\AppData\Local\Programs\Python\Python39\lib\logging\__init__.py:2172(handle)
 1,0.000,0.000,0.000,0.000,C:\Users\mgueylar\AppData\Local\Programs\Python\Python39\lib\site-packages\pandas\core\internals\construction.py:446(<listcomp>)
 1,0.000,0.000,0.000,0.000,c:\Users\mgueylar\Desktop\projets\Business4Planet\sostrades-core\sostrades_core\execution_engine\sos_mda_chain.py:180(<listcomp>)
-
-

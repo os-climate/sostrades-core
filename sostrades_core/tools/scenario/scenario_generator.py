@@ -26,6 +26,7 @@ from sostrades_core.tools.scenario.scenario_manager import ScenarioManager
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
 
+
 class ScenarioGenerator:
     """
     Class to instantiate all classes of the chosen scenario (Products, Actors...) depending on the entry
