@@ -60,7 +60,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Initializing local connector on {root_directory_path}")
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
 
-    def __load_dataset_descriptor_and_pickle(self, dataset_identifier: str) -> dict[str: Any]:
+    def __load_dataset_descriptor(self, dataset_identifier: str) -> dict[str: Any]:
         """
         Method to load dataset descriptor from JSON file containing the basic types variables as well as the dataset
         descriptor values type "@dataframe@d.csv" for the types stored in filesystem.
@@ -84,9 +84,6 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
             raise DatasetDeserializeException(dataset_identifier, f'type error exception in dataset descriptor, {str(exception)}')
         except json.JSONDecodeError as exception:
             raise DatasetDeserializeException(dataset_identifier, f'dataset descriptor does not have a valid json format, {str(exception.msg)}')
-
-        self.__datasets_serializer.load_pickle_data()
-
         return descriptor_data
 
     def __save_dataset_descriptor_and_pickle(self, dataset_identifier: str, descriptor_data: dict[str: Any]) -> None:
@@ -109,6 +106,9 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
             json.dump(obj=descriptor_data, fp=file, indent=4)
         self.__datasets_serializer.dump_pickle_data()
 
+    def __load_pickle_data(self):
+        self.__datasets_serializer.load_pickle_data()
+
     def __clear_pickle_data(self):
         self.__datasets_serializer.clear_pickle_data()
 
@@ -126,7 +126,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                             f"{dataset_identifier} with connector {self}")
         self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier, data_group_identifier))
         # Load the descriptor, the serializer loads the pickle if it exists
-        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
+        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+        self.__load_pickle_data()
         # Filter data
         filtered_values = {key: self.__datasets_serializer.convert_from_dataset_data(key,
                                                                                      self._extract_value_from_datum(dataset_descriptor[data_group_identifier][key]),
@@ -163,7 +164,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
             makedirs_safe(data_group_dir, exist_ok=True)
         self.__datasets_serializer.set_dataset_directory(data_group_dir)
         # read the already existing values
-        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
+        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+        self.__load_pickle_data()
         # Write data, serializer buffers the data to pickle and already pickled
         descriptor_values = {key: self.__datasets_serializer.convert_to_dataset_data(key,
                                                                                      value,
@@ -187,14 +189,20 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
-        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
-        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
-        dataset_values = {key: self.__datasets_serializer.convert_from_dataset_data(key,
-                                                                                 self._extract_value_from_datum(datum),
-                                                                                 data_types_dict)
-                        for key, datum in dataset_descriptor.items()}
-        self.__clear_pickle_data()
-        return dataset_values
+
+        dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+        dataset_values_by_group = dict()
+        for _group_id, _group_data in dataset_descriptor.items():
+            self.__datasets_serializer.set_dataset_directory(
+                os.path.join(self.__root_directory_path, dataset_identifier, _group_id))
+            self.__load_pickle_data()
+            dataset_values_by_group[_group_id] = {
+                key: self.__datasets_serializer.convert_from_dataset_data(key,
+                                                                          self._extract_value_from_datum(datum),
+                                                                          data_types_dict[_group_id])
+                for key, datum in _group_data.items()}
+            self.__clear_pickle_data()
+        return dataset_values_by_group
 
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:dict[str:Any]],
                       data_types_dict: dict[str:dict[str:str]], create_if_not_exists: bool = True, override: bool = False

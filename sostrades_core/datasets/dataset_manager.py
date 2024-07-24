@@ -120,10 +120,10 @@ class DatasetsManager:
             # Get the dataset, creates it if not exists
             dataset = self.get_dataset(dataset_info=dataset_info)
 
-            # Write values
+            # Write values # TODO: maybe implement the get/write_data_group_in_dataset method for clarity?
             dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info.dataset_id,
-                                                                values_to_write=data_dict,
-                                                                data_types_dict=data_type_dict,
+                                                                values_to_write={dataset_info.data_group_id: data_dict},
+                                                                data_types_dict={dataset_info.data_group_id: data_type_dict},
                                                                 create_if_not_exists=True,
                                                                 override=True)
         except DatasetGenericException as exception:

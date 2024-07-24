@@ -506,7 +506,7 @@ class DataManager:
                                                          date=datetime.now()))
         dm_data[VALUE] = new_value
 
-    def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> None:
+    def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> list[ParameterChange]:
         '''
         Set values in datasets from data_dict
 
@@ -550,19 +550,20 @@ class DataManager:
                 )
 
                 # save which data have been exported
-                for data_dataset_name in updated_data.keys():
-                    key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
-                    type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
-                    connector_id =datasets_mapping.datasets_infos[dataset].connector_id
-                    dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
-                    exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
-                                                         variable_type=type,
-                                                         old_value=deepcopy(mapping_dict[DatasetsMapping.VALUE][data_dataset_name]),
-                                                         new_value=None,
-                                                         connector_id=connector_id,
-                                                         dataset_id=dataset_id,
-                                                         dataset_parameter_id=key,
-                                                         date=datetime.now()))
+                for _group_id, _group_data in updated_data.items():
+                    for data_dataset_name in _group_data.keys():
+                        key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
+                        type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
+                        connector_id =datasets_mapping.datasets_infos[dataset].connector_id
+                        dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
+                        exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
+                                                             variable_type=type,
+                                                             old_value=deepcopy(mapping_dict[DatasetsMapping.VALUE][data_dataset_name]),
+                                                             new_value=None,
+                                                             connector_id=connector_id,
+                                                             dataset_id=dataset_id,
+                                                             dataset_parameter_id=key,
+                                                             date=datetime.now()))
 
 
         return exported_parameters

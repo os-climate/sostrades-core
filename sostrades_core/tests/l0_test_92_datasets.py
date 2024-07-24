@@ -433,7 +433,9 @@ class TestDatasets(unittest.TestCase):
         connector_to = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_copy_test_nested')
         connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
 
-        data_types_dict = {_k: dm.get_data(f"usecase_local_dataset.Disc1.{_k}", "type") for _k in self.nested_types_reference_dict}
+        data_types_dict = {"all_data": {
+            _k: dm.get_data(f"usecase_local_dataset.Disc1.{_k}", "type") for _k in self.nested_types_reference_dict}
+        }
 
         try:
             connector_to.copy_dataset_from(connector_from=connector_local,
@@ -503,21 +505,21 @@ class TestDatasets(unittest.TestCase):
                         "b_bool",
                         "d"]
 
-        data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
+        data_types_dict = {"all_data": {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}}
 
         try:
             values = connector_export.get_values_all(dataset_identifier="dataset_disc1",
                                            data_types_dict=data_types_dict)
 
-            self.assertEqual(values["a"], 1)
-            self.assertEqual(values["x"], 4.0)
-            self.assertEqual(values["b"], 2)
-            self.assertEqual(values["name"], "A1")
-            self.assertEqual(values["x_dict"], {"test1":1,"test2":2})
-            self.assertTrue(np.array_equal(values["y_array"], np.array([1.0,2.0,3.0])))
-            self.assertEqual(values["z_list"], [1.0,2.0,3.0])
-            self.assertEqual(values["b_bool"], False)
-            self.assertTrue((values["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+            self.assertEqual(values["all_data"]["a"], 1)
+            self.assertEqual(values["all_data"]["x"], 4.0)
+            self.assertEqual(values["all_data"]["b"], 2)
+            self.assertEqual(values["all_data"]["name"], "A1")
+            self.assertEqual(values["all_data"]["x_dict"], {"test1":1,"test2":2})
+            self.assertTrue(np.array_equal(values["all_data"]["y_array"], np.array([1.0,2.0,3.0])))
+            self.assertEqual(values["all_data"]["z_list"], [1.0, 2.0, 3.0])
+            self.assertEqual(values["all_data"]["b_bool"], False)
+            self.assertTrue((values["all_data"]["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
             connector_export.clear(remove_root_directory=True)
         except Exception as cm:
             connector_export.clear(remove_root_directory=True)
@@ -603,15 +605,15 @@ class TestDatasets(unittest.TestCase):
                             "b_bool",
                             "d"]
 
-            data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
+            data_types_dict = {"all_data": {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}}
 
 
             values = connector_export.get_values_all(dataset_identifier="dataset_all_types",
                                            data_types_dict=data_types_dict)
 
-            self.assertEqual(values["x"], 4.0)
-            self.assertEqual(values["b"], 1)
-            self.assertTrue((values["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+            self.assertEqual(values["all_data"]["x"], 4.0)
+            self.assertEqual(values["all_data"]["b"], 1)
+            self.assertTrue((values["all_data"]["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
             connector_export.clear(remove_root_directory=True)
         except Exception as cm:
             connector_export.clear(remove_root_directory=True)
