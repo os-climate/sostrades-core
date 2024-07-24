@@ -122,7 +122,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         return list(self.__json_data.keys())
 
     def get_data_groups_for_dataset(self, dataset_identifier: str) -> list[str]:
-        # FIXME: the
+        # FIXME: only implemented here + unused
         """
         Get all available data groups for a specific dataset in a specific API
         """
@@ -213,4 +213,10 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
             if not override:
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
 
-        return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
+        written_values = dict()
+        for _group_id, _group_data in values_to_write.items():
+            written_values[_group_id] = self.write_values(dataset_identifier=dataset_identifier,
+                                                          data_group_identifier=_group_id,
+                                                          values_to_write=_group_data,
+                                                          data_types_dict=data_types_dict[_group_id])
+        return written_values

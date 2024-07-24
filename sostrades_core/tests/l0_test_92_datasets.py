@@ -453,8 +453,6 @@ class TestDatasets(unittest.TestCase):
             connector_to.clear(remove_root_directory=True)
             raise cm
 
-
-
     def test_13_export_with_repository_dataset_connector(self):
         """
         Some example to check repository datasets connector export
@@ -465,8 +463,6 @@ class TestDatasets(unittest.TestCase):
         from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
             DatasetsConnectorManager,
         )
-
-
         #create usecase with data
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
@@ -488,9 +484,6 @@ class TestDatasets(unittest.TestCase):
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_repository.json")
 
         study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
-
-
-
 
         dm = study.execution_engine.dm
         connector_export = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_export_test')
