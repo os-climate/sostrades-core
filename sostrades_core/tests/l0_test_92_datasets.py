@@ -80,7 +80,6 @@ class TestDatasets(unittest.TestCase):
                                             'X_dspace_array': dspace_array,
                                             }
 
-
     def test_01_usecase1(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
@@ -105,7 +104,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.c"), "string_3")
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), "string_3")
 
-        #check numerical parameters
+        # check numerical parameters
         self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
         self.assertEqual(dm.get_value("usecase_dataset.debug_mode"), "")
         self.assertEqual(dm.get_value("usecase_dataset.cache_type"), "None")
@@ -135,7 +134,6 @@ class TestDatasets(unittest.TestCase):
             "tol": 1.0e-8})
         self.assertEqual(dm.get_value("usecase_dataset.group_mda_disciplines"), False)
         self.assertEqual(dm.get_value("usecase_dataset.propagate_cache_to_children"), False)
-
 
     def test_02_usecase2(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset.__file__
@@ -182,7 +180,6 @@ class TestDatasets(unittest.TestCase):
             set(["<1connector_id>|<1dataset_id>", "<2connector_id>|<2dataset_id>"]),
         )
 
-
     def test_04_datasets_types(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
@@ -196,11 +193,11 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
-        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
-        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
 
     def test_05_nested_process_level0(self):
         usecase_file_path = sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling.__file__
@@ -215,9 +212,8 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.x"), [1.0])
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_1"), [2.0])
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.y_2"), [3.0])
-        self.assertTrue((dm.get_value(f"{study_name}.SellarCoupling.z")== [4.0,5.0]).all())
+        self.assertTrue((dm.get_value(f"{study_name}.SellarCoupling.z") == [4.0, 5.0]).all())
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)
-
 
     def test_06_parameter_change_returned_in_load_data_using_both_dict_and_datasets(self):
         usecase_file_path = uc_dataset_dict.__file__
@@ -269,11 +265,11 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
-        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
-        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
 
     def test_08_json_to_local_connector_conversion_and_loading(self):
         """
@@ -325,11 +321,11 @@ class TestDatasets(unittest.TestCase):
             self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
             self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
             self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
-            self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
-            self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
-            self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
+            self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
+            self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
             self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
-            self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+            self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
             connector_to.clear(remove_root_directory=True)
         except Exception as cm:
             connector_to.clear(remove_root_directory=True)
@@ -362,7 +358,6 @@ class TestDatasets(unittest.TestCase):
 
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
 
-
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -373,11 +368,11 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
-        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
-        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
 
     def test_11_datasets_local_connector_nested_types(self):
         """
@@ -449,8 +444,6 @@ class TestDatasets(unittest.TestCase):
             connector_to.clear(remove_root_directory=True)
             raise cm
 
-
-
     def test_13_export_with_repository_dataset_connector(self):
         """
         Some example to check repository datasets connector export
@@ -462,8 +455,7 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
 
-
-        #create usecase with data
+        # create usecase with data
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
@@ -484,9 +476,6 @@ class TestDatasets(unittest.TestCase):
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_repository.json")
 
         study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
-
-
-
 
         dm = study.execution_engine.dm
         connector_export = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector_export_test')
@@ -511,11 +500,11 @@ class TestDatasets(unittest.TestCase):
             self.assertEqual(values["x"], 4.0)
             self.assertEqual(values["b"], 2)
             self.assertEqual(values["name"], "A1")
-            self.assertEqual(values["x_dict"], {"test1":1,"test2":2})
-            self.assertTrue(np.array_equal(values["y_array"], np.array([1.0,2.0,3.0])))
-            self.assertEqual(values["z_list"], [1.0,2.0,3.0])
+            self.assertEqual(values["x_dict"], {"test1": 1, "test2": 2})
+            self.assertTrue(np.array_equal(values["y_array"], np.array([1.0, 2.0, 3.0])))
+            self.assertEqual(values["z_list"], [1.0, 2.0, 3.0])
             self.assertEqual(values["b_bool"], False)
-            self.assertTrue((values["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+            self.assertTrue((values["d"] == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
             connector_export.clear(remove_root_directory=True)
         except Exception as cm:
             connector_export.clear(remove_root_directory=True)
@@ -547,7 +536,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {})
         self.assertEqual(len(dm.get_value("usecase_dataset.Disc1.d")), 2)
 
-        #check numerical parameters
+        # check numerical parameters
         self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "auto")
 
@@ -562,8 +551,7 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
 
-
-        #create usecase with data
+        # create usecase with data
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
@@ -585,9 +573,6 @@ class TestDatasets(unittest.TestCase):
         try:
             study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
 
-
-
-
             dm = study.execution_engine.dm
             connector_export = DatasetsConnectorManager.get_connector('MVP0_local_export_test_param')
 
@@ -603,18 +588,16 @@ class TestDatasets(unittest.TestCase):
 
             data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
 
-
             values = connector_export.get_values_all(dataset_identifier="dataset_all_types",
                                            data_types_dict=data_types_dict)
 
             self.assertEqual(values["x"], 4.0)
             self.assertEqual(values["b"], 1)
-            self.assertTrue((values["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+            self.assertTrue((values["d"] == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
             connector_export.clear(remove_root_directory=True)
         except Exception as cm:
             connector_export.clear(remove_root_directory=True)
             raise
-
 
     def _test_16_bigquery_plain_types_export_import(self):
         """
@@ -663,11 +646,11 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1":1,"test2":2})
-        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0,2.0,3.0])))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0,2.0,3.0])
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
+        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
-        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
+        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
 
     def _test_17_bigquery_colum_name_characters_compatibility_on_dataframe_and_dict_tables(self):
         """
@@ -699,7 +682,7 @@ class TestDatasets(unittest.TestCase):
 
         data_name = "WITNESS_gdp"
         ref_df = pd.read_csv(os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                           "data", "local_datasets_db", "dataset_df_bq" ,data_name+".csv")))
+                                                           "data", "local_datasets_db", "dataset_df_bq", data_name + ".csv")))
         self.assertTrue((ref_df == data_values[data_name]).all().all())
 
         dict_strange_keys = data_values["dict_strange_keys"]
@@ -709,7 +692,8 @@ class TestDatasets(unittest.TestCase):
         }
         self.assertEqual(dict_strange_keys_ref, dict_strange_keys)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     cls = TestDatasets()
     cls.setUp()
     cls.test_13_export_with_repository_dataset_connector()

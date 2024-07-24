@@ -39,4 +39,3 @@ class SimpleDisc(SoSWrapp):
         """
         out = z * pow(2, -1)
         return out
-

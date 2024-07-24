@@ -53,7 +53,7 @@ class SoSDiscParallelExecution(DiscParallelExecution):
 
             # Update discipline local data
             local_data = output[0]
-            #self.local_data.update(local_data)
+            # self.local_data.update(local_data)
             # Update values and metadata in DM
             # TODO: we should do a dm merge?
             # update values
@@ -233,13 +233,13 @@ def update_dm_with_worker_results(dm_data, local_data, disc):
     for d in all_discs:
         dm = d.ee.dm
         get_data = dm.get_data
-        #- update data out
+        # - update data out
         data_out = d.get_data_out()
         out_f_keys = [d.get_var_full_name(
             k, data_out) for k in data_out.keys()]
         d_values = {get_data(k, VAR_NAME): dm_values[k] for k in out_f_keys}
         d.store_sos_outputs_values(d_values, update_dm=True)
-        #- update data in
+        # - update data in
         data_in = d.get_data_in()
         in_f_keys = [d.get_var_full_name(
             k, data_in) for k in data_in.keys()]
@@ -248,13 +248,13 @@ def update_dm_with_worker_results(dm_data, local_data, disc):
                         dm_values[full_k], check_value=False)
         # TODO: won't work in case of var names updated by scatterDisciplines since
         # the link between data_i/o and DM is broken
-        #d_values = {get_data(k, VAR_NAME): dm_values[k] for k in in_f_keys}
-        #d._update_with_values(data_in, d_values)
-        #- update GEMS i/o values
+        # d_values = {get_data(k, VAR_NAME): dm_values[k] for k in in_f_keys}
+        # d._update_with_values(data_in, d_values)
+        # - update GEMS i/o values
         loc_data = {k: v for k, v in local_data.items(
         ) if k in d.get_input_output_data_names()}
         d.local_data.update(loc_data)
-        #disc.local_data.update(d.local_data)
+        # disc.local_data.update(d.local_data)
 
     # update metadata
     dm_metadata = dm_data[TYPE_METADATA]

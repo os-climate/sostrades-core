@@ -33,6 +33,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
 """
 
+
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest
@@ -1274,7 +1275,6 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         self.assertEqual(len(eval_disc_ind), 11)
 
-
     def test_15_DoE_OT_FACTORIAL_Eval(self):
         """
         Test DoE + Eval of inputs and outputs of single subdiscipline not in root process with OT_FACTORIAL algo
@@ -1534,8 +1534,8 @@ class TestSoSDOEScenario(unittest.TestCase):
         ref_doe_x_unit = [.9538816734003358, .61862602113776724, .1720324493442158, .0417022004702574, .8396767474230671,
                           .7345560727043048, .33023325726318404, .4146755890817113, .2000114374817345, .5092338594768798]
 
-        ref_doe_x_1 = array(ref_doe_x_unit)*(ub1 - lb1) + lb1
-        ref_doe_x_2 = array(ref_doe_x_unit)*(ub2 - lb2) + lb2
+        ref_doe_x_1 = array(ref_doe_x_unit) * (ub1 - lb1) + lb1
+        ref_doe_x_2 = array(ref_doe_x_unit) * (ub2 - lb2) + lb2
 
         samples_df = exec_eng.dm.get_value(f'{self.ns}.Eval.samples_df').copy()
         for ref, truth in zip(ref_doe_x_1.tolist(), samples_df['x'].values.tolist()):
@@ -1757,4 +1757,3 @@ if '__main__' == __name__:
     cls = TestSoSDOEScenario()
     cls.setUp()
     cls.test_14_doe_eval_of_single_sub_discipline()
-

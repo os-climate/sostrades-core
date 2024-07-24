@@ -54,6 +54,7 @@ DATAFRAME_DESCRIPTOR = ProxyDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
 
+
 @dataclass()
 class ParameterChange:
     """
@@ -67,6 +68,7 @@ class ParameterChange:
     dataset_id: Union[str, None]
     dataset_parameter_id: Union[str, None]
     date: datetime
+
 
 class DataManager:
     """
@@ -352,7 +354,7 @@ class DataManager:
 
     def fill_data_dict_from_dict(self, values_dict: dict[str:Any],
                                  already_set_data: set[str], parameter_changes: list[ParameterChange],
-                                 in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None:
+                                 in_vars: bool, init_coupling_vars: bool, out_vars: bool) -> None:
         '''
         Set values in data_dict from dict with namespaced keys
 
@@ -401,7 +403,7 @@ class DataManager:
 
     def fill_data_dict_from_datasets(self, datasets_mapping: DatasetsMapping,
                                      already_set_data: set[str], parameter_changes: list[ParameterChange],
-                                     in_vars:bool, init_coupling_vars:bool, out_vars:bool
+                                     in_vars: bool, init_coupling_vars: bool, out_vars: bool
     ) -> None:
         '''
         Set values in data_dict from datasets
@@ -443,7 +445,7 @@ class DataManager:
                 data_type = data_value[TYPE]
 
                 # create a dict with namespace, datas with keys (to fill dm after) and types (to convert from dataset)
-                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY:{}, TYPE:{}})
+                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY: {}, TYPE: {}})
                 namespaced_data_dict[data_ns][KEY][data_name] = key
                 namespaced_data_dict[data_ns][TYPE][data_name] = data_type
 
@@ -528,7 +530,7 @@ class DataManager:
             data_value = data_value[VALUE]
 
             # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
-            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.VALUE:{}})
+            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY: {}, DatasetsMapping.TYPE: {}, DatasetsMapping.VALUE: {}})
             namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
             namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
             namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value
@@ -553,7 +555,7 @@ class DataManager:
                 for data_dataset_name in updated_data.keys():
                     key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
                     type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
-                    connector_id =datasets_mapping.datasets_infos[dataset].connector_id
+                    connector_id = datasets_mapping.datasets_infos[dataset].connector_id
                     dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
                     exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                          variable_type=type,
@@ -564,9 +566,7 @@ class DataManager:
                                                          dataset_parameter_id=key,
                                                          date=datetime.now()))
 
-
         return exported_parameters
-
 
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys
@@ -1048,4 +1048,3 @@ class DataManager:
                 if compare_data(data_name):
                     self.logger.debug(
                         f"The variable {var_name} is used in input of several disciplines and does not have same {data_name} : {data1[data_name]} in {self.get_discipline(data1['model_origin']).__class__} different from {data2[data_name]} in {self.get_discipline(var_id).__class__}")
-

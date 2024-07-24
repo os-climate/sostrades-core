@@ -33,7 +33,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
         builder_list = self.create_builder_list(mods_dict)
 
-        self.ee.ns_manager.add_ns_def(ns_info = {'ns_a': self.ee.study_name,
+        self.ee.ns_manager.add_ns_def(ns_info={'ns_a': self.ee.study_name,
                                                  'ns_xy_disc1': self.ee.study_name + '.Disc1VirtualNode',
                                                  'ns_xy_disc2': self.ee.study_name + '.Disc2VirtualNode'})
 

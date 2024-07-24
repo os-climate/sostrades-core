@@ -118,7 +118,7 @@ class TestExecutionEngine(unittest.TestCase):
             'EETests.x': 3.0,
             'EETests.Disc1.a': 10.0,
             'EETests.Disc1.b': 20.0,
-            'EETests.Disc2.constant':-10.0,
+            'EETests.Disc2.constant': -10.0,
             'EETests.Disc2.power': 2,
             'EETests.Disc1.indicator': 200.0,
             'EETests.y': 50.0,

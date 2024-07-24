@@ -54,5 +54,4 @@ if '__main__' == __name__:
     # uc_cls.run()
     #  uc_cls.execution_engine.root_process.coupling_structure.graph.write_full_graph("here.pdf")
     proc_name = "sostrades_core.sos_processes.test.sellar.test_sellar_coupling"
-    run_usecase(proc_name, join(dirname(__file__),'usecase_dataset_sellar_coupling.json'))
-
+    run_usecase(proc_name, join(dirname(__file__), 'usecase_dataset_sellar_coupling.json'))

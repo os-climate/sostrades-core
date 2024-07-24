@@ -169,9 +169,6 @@ class TreeView:
         if not self.no_data:
             temp_data = {k: v for k, v in val.items()}
 
-
-
-
             # retrieve model name full path for variable key
             model_name_full_path = val['model_origin']
             io_type = val['io_type']
@@ -188,7 +185,6 @@ class TreeView:
 
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False
-
 
             if key not in treenode.disciplines_by_variable.keys():
                 # create data management discipline DATA
@@ -217,8 +213,6 @@ class TreeView:
                         treenode.data_management_disciplines[discipline_key].disciplinary_inputs[key] = temp_data
                     elif temp_data[ProxyDiscipline.IO_TYPE] == 'out':
                         treenode.data_management_disciplines[discipline_key].disciplinary_outputs[key] = temp_data
-
-
 
     def add_treenode(self, discipline, namespace=None):
         """ Add a new treenode to the treeview.

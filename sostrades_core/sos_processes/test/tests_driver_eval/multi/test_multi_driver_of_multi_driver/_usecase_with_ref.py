@@ -49,8 +49,8 @@ class Study(StudyManager):
         scenario_list_outer = ['scenario_1', 'scenario_2']
         scenario_list_inner = ['name_1', 'name_2']
         for i, sc in enumerate(scenario_list_outer):
-            values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.samples_df'] = scenario_df_inner
-            values_dict[self.study_name + '.outer_ms.'+sc+'.inner_ms.instance_reference'] = True
+            values_dict[self.study_name + '.outer_ms.' + sc + '.inner_ms.samples_df'] = scenario_df_inner
+            values_dict[self.study_name + '.outer_ms.' + sc + '.inner_ms.instance_reference'] = True
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.samples_df'] = scenario_df_inner
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.instance_reference'] = True
         values_dict[self.study_name + '.outer_ms.ReferenceScenario.inner_ms.reference_mode'] = 'linked_mode'

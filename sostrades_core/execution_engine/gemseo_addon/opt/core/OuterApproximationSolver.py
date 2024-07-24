@@ -37,6 +37,7 @@ from numpy import append, array, atleast_2d, int32
 
 LOGGER = logging.getLogger("gemseo.addons.opt.OuterApproximationSolver")
 
+
 class OuterApproximationSolver(object):
     '''
     Implementation of Outer Approximation solver
@@ -57,7 +58,6 @@ class OuterApproximationSolver(object):
     UPPER_BOUNDS = UPPER_BOUND
     LOWER_BOUNDS = "LB"
     OA_ITER_NB = "oa_ite_nb"
-
 
     def __init__(self, problem):
         '''
@@ -108,7 +108,7 @@ class OuterApproximationSolver(object):
 
         for vname in dspace.variables_names:
             v_ind = dspace.get_variables_indexes([vname])
-            if dspace.get_type(vname) == [DesignSpace.INTEGER.value]: # pylint: disable=E0602,E1101
+            if dspace.get_type(vname) == [DesignSpace.INTEGER.value]:  # pylint: disable=E0602,E1101
                 iv_ind = append(iv_ind, v_ind)
                 iv_names.append(vname)
             else:
@@ -142,7 +142,7 @@ class OuterApproximationSolver(object):
         # checks if a dv vector components have different types
         for v in dspace.variables_names:
             if len(dspace.get_type(v)) > 1:
-                msg = 'The design variable <%s> has several types instead of one for all components.\n' %v
+                msg = 'The design variable <%s> has several types instead of one for all components.\n' % v
                 msg += '(different types for each component of the variable is not handled for now)'
                 raise ValueError(msg)
 
@@ -154,18 +154,17 @@ class OuterApproximationSolver(object):
             if len(c.outvars) > 1:
                 raise ValueError("Several outputs in MDOFunction is not allowed")
 
-
     def _get_integer_variables_indices(self, dspace):
         ''' returns integer variables indices in xvect defined by the design space
         '''
         return self._get_x_indices_by_type(dspace,
-                                           DesignSpace.INTEGER.value) # pylint: disable=E0602,E1101
+                                           DesignSpace.INTEGER.value)  # pylint: disable=E0602,E1101
 
     def _get_float_variables_indices(self, dspace):
         ''' returns float variables indices in xvect defined by the design space
         '''
         return self._get_x_indices_by_type(dspace,
-                                           DesignSpace.FLOAT.value) # pylint: disable=E0602,E1101
+                                           DesignSpace.FLOAT.value)  # pylint: disable=E0602,E1101
 
     def _build_full_vect(self, float_vals, int_vals):
         ''' builds the global xvect with continuous and integer values
@@ -184,8 +183,7 @@ class OuterApproximationSolver(object):
 
         return x
 
-
-    #- primal problem definition
+    # - primal problem definition
 
     def build_primal_problem(self):
         ''' build primal problem without hyperplanes
@@ -203,7 +201,7 @@ class OuterApproximationSolver(object):
 #         constraints = [eta <= ub - self.epsilon] # eta <= U^(k) - eps
 
         # problem definition
-        prob = cp.Problem(obj) #, constraints
+        prob = cp.Problem(obj)  # , constraints
 
         return prob
 
@@ -214,9 +212,9 @@ class OuterApproximationSolver(object):
         '''
         full_dspace = self.full_problem.design_space
         x0_dict = full_dspace.array_to_dict(x0)
-        #- gather eta design variable
+        # - gather eta design variable
         eta = old_primal_pb.var_dict[self.ETA]
-        #- gather x design variable if exists (for iterations > 0)
+        # - gather x design variable if exists (for iterations > 0)
         bounds_cst = []
         if len(old_primal_pb.var_dict) > 1:
             # if there the other design variables than eta have already been created
@@ -231,9 +229,9 @@ class OuterApproximationSolver(object):
                 v_shape = full_dspace.get_current_x_dict()[v].shape
                 # create the design variable as cvxpy object
                 if v in self.float_varnames:
-                    integer=False
+                    integer = False
                 else:
-                    integer=True
+                    integer = True
                 dv = cp.Variable(v_shape, v, integer=integer)
                 all_vars[v] = dv
                 # build the constraint on the lower bounds
@@ -243,8 +241,8 @@ class OuterApproximationSolver(object):
                 ub = full_dspace.get_upper_bounds([v])
                 bounds_cst.append(dv <= ub)
 
-        #- setup of primal problem constraints :
-        #- build dual pb objective linearization
+        # - setup of primal problem constraints :
+        # - build dual pb objective linearization
         obj_jac = atleast_2d(self.full_problem.objective.jac(x0))
         data_size = deepcopy(self.size_by_varname)
         data_size.update({self.full_problem.objective.outvars[0]: obj_jac.shape[0]})
@@ -265,7 +263,7 @@ class OuterApproximationSolver(object):
         # set the objective hyperplane as constraint
         obj_lin = obj_lin <= eta
 
-        #- build dual pb constraints linearization : c(x0) + dc/dx(x0) . (x - x0) <= 0
+        # - build dual pb constraints linearization : c(x0) + dc/dx(x0) . (x - x0) <= 0
         cst_linearized = []
         # for each constraint function from main optimization problem
         # builds linearization of the constraint wrt all design variables
@@ -302,7 +300,7 @@ class OuterApproximationSolver(object):
         for c in old_primal_pb.constraints + hyperplanes + bounds_cst:
             print("c " + str(c))
 
-## handled in the termination criteria
+# handled in the termination criteria
 #         # update upper bound parameter value
 #         ub = primal_pb.param_dict[self.UPPER_BOUND]
 #         print("upper_bnd", upper_bnd)
@@ -344,7 +342,7 @@ class OuterApproximationSolver(object):
 
         return sol_int
 
-    #- dual problem definition
+    # - dual problem definition
 
     def build_dual_problem(self, integer_values):
         ''' Build the dual problem
@@ -360,23 +358,23 @@ class OuterApproximationSolver(object):
         ]
         dspace = full_pb.design_space.filter(cont_vars, copy=True)
 
-        input_dim = sum(full_pb.design_space.variables_sizes.values()) # use dspace.dimension
+        input_dim = sum(full_pb.design_space.variables_sizes.values())  # use dspace.dimension
 
         # build restriction of original constraint functions
         LOGGER.info("integer_indices " + str(self.integer_indices))
         LOGGER.info("integer_values " + str(integer_values))
-        LOGGER.info("input_dim "+ str(input_dim))
+        LOGGER.info("input_dim " + str(input_dim))
 
         cst_restricted = []
         for c in full_pb.constraints:
             # builds the restriction
             new_c_name = c.name + '_restricted'
-            new_c = c.restrict(self.integer_indices, #frozen indexes
-                               integer_values, #frozen values
+            new_c = c.restrict(self.integer_indices,  # frozen indexes
+                               integer_values,  # frozen values
                                input_dim,
                                name=new_c_name,
                                f_type=MDOFunction.TYPE_INEQ,
-                               #expr=f"{f.name}(%s)",
+                               # expr=f"{f.name}(%s)",
                                args=None)
             # build the function with store in main problem database
 
@@ -385,12 +383,12 @@ class OuterApproximationSolver(object):
 
         # build restriction of original objective functions
         new_o_name = full_pb.objective.name + '_restricted'
-        new_o = full_pb.objective.restrict(self.integer_indices, #frozen indexes
-                                           integer_values, #frozen values
+        new_o = full_pb.objective.restrict(self.integer_indices,  # frozen indexes
+                                           integer_values,  # frozen values
                                            input_dim,
                                            name=new_o_name,
                                            f_type=MDOFunction.TYPE_OBJ,
-                                           #expr=f"{f.name}(%s)",
+                                           # expr=f"{f.name}(%s)",
                                            args=None)
 
         # build dual problem
@@ -414,7 +412,6 @@ class OuterApproximationSolver(object):
 
         return pb
 
-
     def update_dual_problem(self, nlp, integer_values):
         ''' Updates frozen values of NLP problem with those provided
         '''
@@ -436,7 +433,7 @@ class OuterApproximationSolver(object):
         LOGGER.info(msg)
 
         cont_sol = OptimizersFactory().execute(nlp, self.algo_NLP,
-                          **self.algo_options_NLP#normalize_design_space=False,
+                          **self.algo_options_NLP  # normalize_design_space=False,
                           )
 
         msg = "Continuous solution is "
@@ -462,12 +459,12 @@ class OuterApproximationSolver(object):
             ub = self.upper_bounds[-1]
             lb = self.lower_bounds[-1]
 
-            if lb >= ub - self.epsilon :
+            if lb >= ub - self.epsilon:
                 _continue = False
                 msg = "*** Tolerance reached : upper bound vs lower bound ***\n"
                 msg += "*** \t Upper Bound (UB) = " + str(self.upper_bounds[-1]) + "\n"
                 msg += "*** \t Lower Bound (LB) = " + str(self.lower_bounds[-1]) + "\n"
-                msg += "*** \t UB - LB = " + str(ub-lb) #+ " <= " + str(self.epsilon)
+                msg += "*** \t UB - LB = " + str(ub - lb)  # + " <= " + str(self.epsilon)
                 LOGGER.info(msg)
             else:
                 _continue = True
@@ -489,7 +486,7 @@ class OuterApproximationSolver(object):
         # update the upper bound list (fopt history) with the current best upper bound
         self.upper_bounds.append(uk)
 
-## use the main optpb db does not seem to be a good solution since overall iterations are different from NLP ones
+# use the main optpb db does not seem to be a good solution since overall iterations are different from NLP ones
 #         # store the history to the original problem database
 #         store = self.full_problem.database.store
 #         val_dicts = {self.UPPER_BOUND_CANDIDATES: current_ub,
@@ -511,9 +508,9 @@ class OuterApproximationSolver(object):
         mip = self.build_primal_problem()
 
         while self._termination_criteria(self.iter_nb, mip):
-            msg = "\n\n" + "*"*20
-            msg += "\nOuterApproximation Iteration %i\n"%self.iter_nb
-            msg += "*"*20 + "\n\n"
+            msg = "\n\n" + "*" * 20
+            msg += "\nOuterApproximation Iteration %i\n" % self.iter_nb
+            msg += "*" * 20 + "\n\n"
             LOGGER.info(msg)
 
             # update NLP(integer solution iteration k)
@@ -542,7 +539,7 @@ class OuterApproximationSolver(object):
             LOGGER.info("LOWER BOUNDS")
             LOGGER.info(self.lower_bounds)
 
-            self.iter_nb +=1
+            self.iter_nb += 1
 
 #         nlp = self.build_dual_pb(xopt_int)
 #         nlp_sol = self.solve_dual(nlp)
@@ -604,5 +601,3 @@ class OuterApproximationSolver(object):
 
 #         LOGGER.info("Integer solution is " + str(self.int_solutions))
 #         LOGGER.info("Continuous solution is"  + str(self.cont_solutions))
-
-

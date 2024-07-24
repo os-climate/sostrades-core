@@ -310,7 +310,6 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         # 2 : revert to Auto
         # 1: Set to Finite difference
 
-
         disc_dict[f'{self.study_name}.{LINEARIZATION_MODE}'] = "auto"
         exec_eng.load_study_from_input_dict(disc_dict)
 

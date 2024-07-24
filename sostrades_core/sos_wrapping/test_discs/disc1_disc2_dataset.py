@@ -53,7 +53,7 @@ class Disc1(SoSWrapp):
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
         c = self.get_sosdisc_inputs('c')
-        dict_values = {'flag': b+' '+c, 'y': a * x}
+        dict_values = {'flag': b + ' ' + c, 'y': a * x}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 
@@ -130,7 +130,7 @@ class Disc2(SoSWrapp):
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
         c = self.get_sosdisc_inputs('c')
-        dict_values = {'flag': c+b, 'y': a * x}
+        dict_values = {'flag': c + b, 'y': a * x}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 

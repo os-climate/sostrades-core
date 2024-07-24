@@ -17,7 +17,9 @@ limitations under the License.
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 """
-class DataManagementDiscipline :
+
+
+class DataManagementDiscipline:
     """
     Class to store discipline data
     """
@@ -35,13 +37,13 @@ class DataManagementDiscipline :
         # Discipline maturity (determined using the discipline maturity)
         self.maturity = ''
 
-        #inputs of the discipline
+        # inputs of the discipline
         self.disciplinary_inputs = {}
 
-        #outputs of the discipline
+        # outputs of the discipline
         self.disciplinary_outputs = {}
 
-        #inputs of the discipline
+        # inputs of the discipline
         self.numerical_parameters = {}
 
     def to_json(self):
