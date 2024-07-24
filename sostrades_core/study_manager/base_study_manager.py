@@ -52,11 +52,9 @@ LOG_LEVEL = INFO  # = 20
 
 
 class BaseStudyManager:
-    """Class defninition.
+    """Base class used to manage making, loading and saving data for a process into an execution engine instance.
 
-    Base class use to manage making, loading and saving data for a process into an execution engine instance
-
-    redefining the method 'setup_use_case' allow to change the way to load data into the execution engine
+    Overloading the method 'setup_use_case' allow to change the way to load data into the execution engine.
     """
 
     def __init__(
