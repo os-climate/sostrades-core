@@ -820,8 +820,8 @@ class TestSoSOptimScenario(unittest.TestCase):
                 disc)
             graph_list = ppf.get_post_processing_by_discipline(
                 disc, filters, as_json=False)
-
-        assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
+        with self.assertRaises(KeyError):
+            exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data")
 
 
 
@@ -1303,7 +1303,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         # execute without post run
         res = exec_eng.execute()
 
-        assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
+        with self.assertRaises(KeyError):
+            exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data")
 
         ppf = PostProcessingFactory()
         for disc in exec_eng.root_process.proxy_disciplines:
