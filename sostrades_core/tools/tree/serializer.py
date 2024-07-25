@@ -18,23 +18,18 @@ limitations under the License.
 from __future__ import annotations
 
 import contextlib
-from io import BytesIO
-from io import StringIO
+from io import BytesIO, StringIO
 from pathlib import Path
 from shutil import make_archive
 from tempfile import gettempdir
 from typing import Any
 
 from numpy import ndarray
-from pandas import DataFrame
-from pandas import concat
-from pandas import read_pickle
+from pandas import DataFrame, concat, read_pickle
 
 from sostrades_core.execution_engine.ns_manager import NS_SEP
-from sostrades_core.tools.folder_operations import makedirs_safe
-from sostrades_core.tools.folder_operations import rmtree_safe
-from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
+from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump, DirectLoadDump
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
