@@ -14,23 +14,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
+from typing import Any
+
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.execution_engine.proxy_discipline_builder import (
-    ProxyDisciplineBuilder,
-)
+from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 
 
 class SoSBuilder:
     '''
     Class that stores a class and associated attributes to be built afterwards
     '''
+
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
-    SPECIFIC_PROXYS = ['ProxyCoupling', 'ProxyDisciplineGather', 'ProxyOptim', 'ArchiBuilder',
-                       'ProxyDriverEvaluator',  # FIXME: to remove
-                       'ProxyMonoInstanceDriver', 'ProxyMultiInstanceDriver',
-                       'SelectorDiscipline',
-                       'ProxySampleGenerator']
+    SPECIFIC_PROXYS = [
+        'ProxyCoupling',
+        'ProxyDisciplineGather',
+        'ProxyOptim',
+        'ArchiBuilder',
+        'ProxyDriverEvaluator',  # FIXME: to remove
+        'ProxyMonoInstanceDriver',
+        'ProxyMultiInstanceDriver',
+        'SelectorDiscipline',
+        'ProxySampleGenerator',
+    ]
 
     def __init__(self, disc_name, ee, cls, is_executable=True):
         '''
@@ -71,8 +80,8 @@ class SoSBuilder:
     def associated_namespaces(self):
         return list(self.__associated_namespaces_dict.values())
 
-    def set_builder_info(self, key_info, value_info):
-        ''' Sets the arguments that will be needed to instantiate self.cls
+    def set_builder_info(self, key_info: str, value_info: Any):
+        '''Sets the arguments that will be needed to instantiate self.cls
         :param args: list of arguments to instantiate the self.cls class
         :type args: list
         '''
@@ -87,18 +96,15 @@ class SoSBuilder:
         elif isinstance(ns_list, list):
             self.add_namespace_list_in_associated_namespaces(ns_list)
         else:
-            raise Exception(
-                'Should specify a list of strings or a string to associate namespaces')
+            raise Exception('Should specify a list of strings or a string to associate namespaces')
         # self.__args['associated_namespaces'] = self.__associated_namespaces
 
     def set_disc_name(self, new_disc_name):
-
         self.__disc_name = new_disc_name
         self.__args['sos_name'] = self.__disc_name
 
     def build(self):
-        ''' Instantiates the class self.cls
-        '''
+        '''Instantiates the class self.cls'''
         current_ns = self.__ee.ns_manager.current_disc_ns
 
         # If we are in the builder of the high level coupling the current ns is None and
@@ -120,7 +126,6 @@ class SoSBuilder:
         return self.disc
 
     def create_disc(self, future_new_ns_disc_name):
-
         if self.cls.__name__ in self.SPECIFIC_PROXYS:
             self.disc = self.cls(**self.__args)
         else:
@@ -132,23 +137,18 @@ class SoSBuilder:
         self.configure_associated_namespaces()
 
     def configure_associated_namespaces(self):
-
         for ns_id in self.associated_namespaces:
             self.__ee.ns_manager.add_disc_in_dependency_list_of_namespace(ns_id, self.disc.disc_id)
-        self.__ee.ns_manager.associate_display_values_to_new_local_namespaces(
-            self)
+        self.__ee.ns_manager.associate_display_values_to_new_local_namespaces(self)
 
     def build_sub_discs(self, current_ns, future_new_ns_disc_name):
-
         # for disc in self.discipline_list:
         disc = self.discipline_dict[future_new_ns_disc_name]
-        self.__ee.ns_manager.set_current_disc_ns(
-            disc.get_disc_full_name())
+        self.__ee.ns_manager.set_current_disc_ns(disc.get_disc_full_name())
         disc.build()
         self.__ee.ns_manager.set_current_disc_ns(current_ns)
 
     def remove_discipline(self, disc):
-
         full_name = disc.get_disc_full_name()
         del self.discipline_dict[full_name]
 
@@ -158,8 +158,7 @@ class SoSBuilder:
         If yes then the new one has the priority :
         we do this with a dict for performances the update gives the priority to the new one
         '''
-        new_ns_dict = {ns.split(self.NS_NAME_SEPARATOR)[
-                           0]: ns for ns in ns_list}
+        new_ns_dict = {ns.split(self.NS_NAME_SEPARATOR)[0]: ns for ns in ns_list}
         self.__associated_namespaces_dict.update(new_ns_dict)
 
         self.__args['associated_namespaces'] = self.associated_namespaces
@@ -185,10 +184,9 @@ class SoSBuilder:
 
         '''
         namespace_object_list = [self.__ee.ns_manager.all_ns_dict[ns_id] for ns_id in self.associated_namespaces]
-        new_associated_namespaces = self.__ee.ns_manager.update_namespace_list_with_extra_ns(extra_name,
-                                                                                             after_name=after_name,
-                                                                                             namespace_list=namespace_object_list,
-                                                                                             clean_existing=False)
+        new_associated_namespaces = self.__ee.ns_manager.update_namespace_list_with_extra_ns(
+            extra_name, after_name=after_name, namespace_list=namespace_object_list, clean_existing=False
+        )
         self.delete_all_associated_namespaces()
         self.associate_namespaces(new_associated_namespaces)
         # remove the now unused initial namespace
