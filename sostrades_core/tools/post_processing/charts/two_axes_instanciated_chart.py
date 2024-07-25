@@ -130,7 +130,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                     (cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_ZERO_Y or cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_NEXT_Y):
 
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name, visible=True if serie.visible else 'legendonly',
-                                         fill=cumulative_surface_value))
+                                         fill=cumulative_surface_value, text=serie.text))
 
                 if cumulative_surface_value == TwoAxesInstanciatedChart.CUMULATIVE_TO_ZERO_Y:
                     cumulative_surface_value = TwoAxesInstanciatedChart.CUMULATIVE_TO_NEXT_Y
@@ -139,27 +139,32 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                          marker_symbol=serie.marker_symbol, mode='markers',
                                          marker=serie.marker, yaxis=serie.y_axis,
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
             elif serie.display_type == InstanciatedSeries.BAR_DISPLAY:
                 fig.add_trace(go.Bar(x=abscissa, y=cumulated_values, name=serie.series_name,
                                      orientation=self.bar_orientation,
-                                     visible=True if serie.visible else 'legendonly', yaxis=serie.y_axis))
+                                     visible=True if serie.visible else 'legendonly', yaxis=serie.y_axis,
+                                     text=serie.text))
             elif serie.display_type == InstanciatedSeries.LINES_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         mode='lines', yaxis=serie.y_axis, line=serie.line,
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
             elif serie.display_type == InstanciatedSeries.LINES_DISPLAY_WITH_MARKERS:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         marker_symbol=serie.marker_symbol, mode='lines+markers',
                                          marker=serie.marker, line=serie.line, yaxis=serie.y_axis,
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
             elif serie.display_type == InstanciatedSeries.DASH_LINES_DISPLAY:
                 line = {'dash': 'dash'}
                 if serie.line is not None:
                    line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         mode='lines', yaxis=serie.y_axis, line=line,
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
             elif serie.display_type == InstanciatedSeries.DASH_LINES_DISPLAY_WITH_MARKERS:
                 line = {'dash': 'dash'}
                 if serie.line is not None:
@@ -167,14 +172,16 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         marker_symbol=serie.marker_symbol, mode='lines+markers',
                                          marker=serie.marker, yaxis=serie.y_axis, line=line,
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
             elif serie.display_type == InstanciatedSeries.DASH_DOT_LINES_DISPLAY:
                 line = {'dash': 'dashdot'}
                 if serie.line is not None:
                    line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         mode='lines', yaxis=serie.y_axis, line=line,
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
             elif serie.display_type == InstanciatedSeries.DASH_DOT_LINES_DISPLAY_WITH_MARKERS:
                 line = {'dash': 'dashdot'}
                 if serie.line is not None:
@@ -182,14 +189,16 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         marker_symbol=serie.marker_symbol, mode='lines+markers',
                                          marker=serie.marker, yaxis=serie.y_axis, line={'dash': 'dashdot'},
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
             elif serie.display_type == InstanciatedSeries.DOT_LINES_DISPLAY:
                 line = {'dash': 'dot'}
                 if serie.line is not None:
                     line.update(serie.line)
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         mode='lines', yaxis=serie.y_axis, line=line,
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
             elif serie.display_type == InstanciatedSeries.DOT_LINES_DISPLAY_WITH_MARKERS:
                 line = {'dash': 'dot'}
                 if serie.line is not None:
@@ -197,7 +206,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
                                         marker_symbol=serie.marker_symbol, mode='lines+markers',
                                          marker=serie.marker, yaxis=serie.y_axis, line={'dash': 'dot'},
-                                         visible=True if serie.visible else 'legendonly'))
+                                         visible=True if serie.visible else 'legendonly',
+                                         text=serie.text))
 
         # -- Annotations management
         chart_annotations = []

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/09-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/03/09-2024/05/17 Copyright 2023 Capgemini.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,23 +14,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+from __future__ import annotations
+
+from contextlib import suppress
 from copy import deepcopy
 from importlib import import_module
-from logging import DEBUG, INFO
-from os import remove
-from os.path import exists, isdir, join
+from logging import DEBUG
+from logging import INFO
+from pathlib import Path
 from time import time
-from typing import Optional, Union
+from typing import TYPE_CHECKING
+from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 
-from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.tools.compare_data_manager_tooling import compare_dict
-from sostrades_core.tools.post_processing.post_processing_factory import (
-    PostProcessingFactory,
-)
-from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump, DirectLoadDump
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
+from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump
+from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 from sostrades_core.tools.tree.serializer import DataSerializer
+
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_mapping import DatasetsMapping
+
+"""
+mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
+Class that manage a whole study process (load, execute, save, dump..)
+"""
 
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20
@@ -40,18 +50,28 @@ LOG_LEVEL = INFO  # = 20
 # pylint: disable=line-too-long, logging-format-interpolation
 
 
-class BaseStudyManager():
-    """ Class defninition
+class BaseStudyManager:
+    """Class defninition.
 
-        Base class use to manage making, loading and saving data for a process into an execution engine instance
+    Base class use to manage making, loading and saving data for a process into an execution engine instance
 
-        redefining the method 'setup_use_case' allow to change the way to load data into the execution engine
+    redefining the method 'setup_use_case' allow to change the way to load data into the execution engine
     """
 
-    def __init__(self, repository_name, process_name, study_name, dump_directory: Optional[str] = None,
-                 run_usecase=True,
-                 yield_method=None, logger=None, execution_engine=None, test_post_procs: bool = True):
-        """ Constructor
+    def __init__(
+        self,
+        repository_name,
+        process_name,
+        study_name,
+        dump_directory: str | None = None,
+        run_usecase=True,
+        yield_method=None,
+        logger=None,
+        execution_engine=None,
+        test_post_procs: bool = True,
+    ):
+        """Constructor.
+
 
         :params: repository_name, package name that contain the target process to load
         :type: str
@@ -68,10 +88,10 @@ class BaseStudyManager():
         self.process_name = process_name
         self.dump_directory = dump_directory
         self.__logger = logger
-        self.__execution_engine: Union[ExecutionEngine, None] = None
+        self.__execution_engine: ExecutionEngine | None = None
         self.__rw_strategy = DirectLoadDump()
         self.__yield_method = yield_method
-        self.__execution_engine: Union[ExecutionEngine, None] = execution_engine
+        self.__execution_engine: ExecutionEngine | None = execution_engine
         self.loaded_cache = None
         self.dumped_cache = False
         self.dump_cache_map = None
@@ -79,22 +99,25 @@ class BaseStudyManager():
         self.test_post_procs = test_post_procs
 
     @property
-    def run_usecase(self):
+    def run_usecase(self) -> bool:
+        """Whether the usecase shall be run."""
         return self._run_usecase
 
     @run_usecase.setter
     def run_usecase(self, value: bool):
         if not isinstance(value, bool):
-            raise TypeError("attribute 'run_usecase' value must be a boolean")
+            msg = "attribute 'run_usecase' value must be a boolean"
+            raise TypeError(msg)
         self._run_usecase = value
 
     @property
     def study_full_path(self) -> str:
-        return f'{self.repository_name}.{self.process_name}.{self.study_name}'
+        """The full name of the study module."""
+        return f"{self.repository_name}.{self.process_name}.{self.study_name}"
 
     @property
     def ee(self) -> ExecutionEngine:
-        """ Return the current execution engine instance
+        """Return the current execution engine instance.
 
         :return: sostrades_core.execution_engine.execution_engine.ExecutionEngine
         """
@@ -102,7 +125,7 @@ class BaseStudyManager():
 
     @property
     def execution_engine(self) -> ExecutionEngine:
-        """ Return the current execution engine instance
+        """Return the current execution engine instance.
 
         :return: sostrades_core.execution_engine.execution_engine.ExecutionEngine
         """
@@ -113,68 +136,65 @@ class BaseStudyManager():
 
     @property
     def rw_strategy(self):
-        """ Get the read/write strategy used for loading and dumping execution engine data
-        """
+        """Get the read/write strategy used for loading and dumping execution engine data."""
         return self.__rw_strategy
 
     @rw_strategy.setter
     def rw_strategy(self, rw_strategy):
-        """ Set a new read/write strategy for loading and dumping execution engine data
-        """
+        """Set a new read/write strategy for loading and dumping execution engine data."""
         if rw_strategy is not None:
             self.__rw_strategy = rw_strategy
 
     @property
     def logger(self):
-        """ return the current Study logger object
+        """Return the current Study logger object.
 
         @return logging.logger
         """
         return self.__logger
 
     @property
-    def study_data_file_path(self):
+    def study_data_file_path(self) -> Path:
+        """The path to the study data manager file."""
         return DataSerializer.study_data_manager_file_path(study_to_load=self.dump_directory)
 
     @property
-    def study_discipline_file_path(self):
+    def study_discipline_file_path(self) -> Path:
+        """The path to the discipline status file"""
         return DataSerializer.study_disciplines_status_file_path(study_to_load=self.dump_directory)
 
     @property
-    def study_cache_file_path(self):
+    def study_cache_file_path(self) -> Path:
+        """The path to the study cache file."""
         return DataSerializer.study_cache_file_path(study_to_load=self.dump_directory)
 
     def _init_exec_engine(self):
-        """
-        Create an instance of the execution engine
-        This method create only the instance and does not apply any process to build
+        """Create an instance of the execution engine
+        This method create only the instance and does not apply any process to build.
 
         It is intended to overload this method if some configuration has to be done between the creation of the
         execution engine instance and the load of a process
         """
         self.__execution_engine = ExecutionEngine(
-            self.study_name, root_dir=self.dump_directory, yield_method=self.__yield_method, logger=self.__logger)
+            self.study_name, root_dir=self.dump_directory, yield_method=self.__yield_method, logger=self.__logger
+        )
 
         # set the level of ExecutioEngine logger and all others its children
         self.__execution_engine.logger.setLevel(LOG_LEVEL)
 
     def _build_execution_engine(self):
-        """
-        Build an execution instance with the attended process to be loaded
-        """
+        """Build an execution instance with the attended process to be loaded."""
         self._init_exec_engine()
 
-        self.ee.select_root_builder_ist(
-            self.repository_name, self.process_name)
+        self.ee.select_root_builder_ist(self.repository_name, self.process_name)
         self.setup_process()
         self.ee.attach_builders_to_root()
 
-    def setup_process(self):
+    def setup_process(self):  # noqa: D102
         pass
 
     def update_data_from_dataset_mapping(self, from_datasets_mapping=None, display_treeview=True):
-        """
-        Method that load data into the execution engine with datasets
+        """Method that load data into the execution engine with datasets.
 
         :params: display_treeview, display or not treeview state (optional parameter)
         :type: boolean
@@ -191,19 +211,20 @@ class BaseStudyManager():
 
             if parameter_changes is not None and len(parameter_changes) > 0:
                 if display_treeview:
-                    logger.info('TreeView display BEFORE data setup & configure')
+                    logger.info("TreeView display BEFORE data setup & configure")
                     self.execution_engine.display_treeview_nodes()
 
                 # keep old next steps after loading data
                 self.specific_check_inputs()
                 if display_treeview:
-                    logger.info('TreeView display AFTER  data setup & configure')
+                    logger.info("TreeView display AFTER  data setup & configure")
                     self.execution_engine.display_treeview_nodes()
 
-            study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
-            message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
+            study_display_name = f"{self.repository_name}.{self.process_name}.{self.study_name}"
+            message = f"Study {study_display_name} loading time : {time() - start_time} seconds"
             logger.info(message)
             return parameter_changes
+        return None
 
     def export_data_from_dataset_mapping(self, from_datasets_mapping):
         """
@@ -214,15 +235,10 @@ class BaseStudyManager():
 
         """
         # export study by saving data intg datasets, get them from the dm
-        parameter_changes = self.execution_engine.dm.export_data_in_datasets(from_datasets_mapping)
+        return self.execution_engine.dm.export_data_in_datasets(from_datasets_mapping)
 
-        return parameter_changes
-
-    def load_data(self, from_path=None,
-                  from_input_dict=None,
-                  display_treeview=True,
-                  from_datasets_mapping=None):
-        """ Method that load data into the execution engine
+    def load_data(self, from_path=None, from_input_dict=None, display_treeview=True, from_datasets_mapping=None):
+        """Method that load data into the execution engine
 
         :params: from_path, location of pickle file to load (optional parameter)
         :type: str
@@ -239,7 +255,7 @@ class BaseStudyManager():
         logger = self.execution_engine.logger
 
         if display_treeview:
-            logger.info('TreeView display BEFORE data setup & configure')
+            logger.info("TreeView display BEFORE data setup & configure")
             self.execution_engine.display_treeview_nodes()
 
         # Retrieve data to load and make sure they have the correct type
@@ -267,81 +283,75 @@ class BaseStudyManager():
         # Load datasets data
         if from_datasets_mapping is not None:
             datasets_parameter_changes = self.execution_engine.load_study_from_dataset(
-                datasets_mapping=from_datasets_mapping)
+                datasets_mapping=from_datasets_mapping
+            )
             parameter_changes.extend(datasets_parameter_changes)
         else:
             use_case_datasets_mapping = self.get_dataset_mapping()  # pylint: disable=assignment-from-none
             if use_case_datasets_mapping is not None:
                 datasets_parameter_changes = self.execution_engine.load_study_from_dataset(
-                    datasets_mapping=use_case_datasets_mapping)
+                    datasets_mapping=use_case_datasets_mapping
+                )
                 parameter_changes.extend(datasets_parameter_changes)
 
         self.specific_check_inputs()
         if display_treeview:
-            logger.info('TreeView display AFTER  data setup & configure')
+            logger.info("TreeView display AFTER  data setup & configure")
             self.execution_engine.display_treeview_nodes()
 
-        study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
-        message = f'Study {study_display_name} loading time : {time() - start_time} seconds'
+        study_display_name = f"{self.repository_name}.{self.process_name}.{self.study_name}"
+        message = f"Study {study_display_name} loading time : {time() - start_time} seconds"
         logger.info(message)
         return parameter_changes
 
     def specific_check_inputs(self):
-        """ Method to overload to have a specific check on input datas
-
-        """
-        pass
+        """Method to overload to have a specific check on input datas."""
 
     def specific_check_outputs(self):
-        """ Method to overload to have a specific check on some output datas
+        """Method to overload to have a specific check on some output datas."""
 
+    def dump_data(self, study_folder_path: Path | str | None = None):
+        """Dump data from the execution engine to a file.
+
+        Args:
+            study_folder_path: The directory where the pickle file will be created.
         """
-        pass
-
-    def dump_data(self, study_folder_path: Optional[str] = None):
-        """ Method that dump data from the execution engine to a file
-
-        :params: study_folder_path, location of pickle file to load
-        :type: str
-        """
-
         # Retrieve data to dump
         data = self.execution_engine.get_anonimated_data_dict()
-        study_folder_path = self.dump_directory if study_folder_path is None else study_folder_path
-        if study_folder_path is None or not isinstance(study_folder_path, str):
-            raise ValueError("'study_folder_path' is None, please specify a value (string) or set 'dump_directory'"
-                             " attribute")
+        study_folder_path = self.dump_directory if study_folder_path is None else Path(study_folder_path)
+        if study_folder_path is None:
+            msg = "`study_folder_path` is None, please specify a path or set `dump_directory` attribute"
+            raise ValueError(msg)
         self._put_data_into_file(study_folder_path, data)
 
     def dump_cache(self, study_folder_path):
-        """ Method that dump cache_map from the data manager to a file
+        """Method that dump cache_map from the data manager to a file
         Do not dump the cache if there is no cache to dump
         :params: study_folder_path, location of pickle file to load
-        :type: str
+        :type: str.
         """
-
         if self.dumped_cache:
             self._put_cache_into_file(study_folder_path, self.dump_cache_map)
 
-    def manage_dump_cache(self):
-        '''
-        Mathod that defines the dump strategy in several cases
-        Three solutions :
-            1 Execution is done, a cache_map exists is not empty
+    def manage_dump_cache(self) -> None:
+        """Define the dump strategy.
+
+        Three possible cases :
+            1 Execution is done, a cache_map exists and is not empty
             --> dump cache_map
             2 prepare execution is done and cache map is empty because all cache_type are None
             --> delete the existing pkl
             3 dump cache is called and no execution have been done, copy study
-            --> dump loaded_cache stored in the study_manager in another pkl
-        '''
+            --> dump loaded_cache stored in the study_manager in another pkl.
+        """
         if self.execution_engine.root_process.is_prepared:
             # Retrieve cache_map to dump
             self.dump_cache_map = self.execution_engine.get_cache_map_to_dump()
             if self.dump_cache_map == {}:
                 # 2nd solution
                 self.dumped_cache = False
-                if exists(self.study_cache_file_path):
-                    remove(self.study_cache_file_path)
+                if self.study_cache_file_path.exists():
+                    self.study_cache_file_path.unlink()
 
             else:
                 # 1st solution
@@ -353,49 +363,44 @@ class BaseStudyManager():
             else:
                 self.dumped_cache = False
 
-    def read_cache_pickle(self, study_folder_path=None):
-        """ Method that read cache pickle and save it into the study manager
+    def read_cache_pickle(self, study_folder_path: Path | str | None = None) -> None:
+        """Read cache pickle and save it into the study manager.
 
-        :params: study_folder_path, location of pickle file to load (optional parameter)
-        :type: str
+        Args:
+            study_folder_path: The path to the directory containing the pickle file to load.
         """
         # Retrieve the cache map to load
-        if study_folder_path is not None and isdir(study_folder_path):
+        if study_folder_path is not None and Path(study_folder_path).is_dir():
             self.loaded_cache = self._get_cache_from_file(study_folder_path)
 
         else:
             self.loaded_cache = None
 
-    def load_disciplines_data(self, study_folder_path=None):
-        """ Method that load data into the execution engine
+    def load_disciplines_data(self, study_folder_path=None) -> None:
+        """Load data into the execution engine.
 
-        :params: study_folder_path, location of pickle file to load (optional parameter)
-        :type: str
+        Args:
+            study_folder_path: The path to the directory containing the pickle file to load.
         """
-
         # Retrieve data to load and make sure they have the correct type
         loaded_dict = self.setup_disciplines_data(study_folder_path)
 
         # Initialize execution engine with data
-        self.execution_engine.load_disciplines_status_dict(
-            loaded_dict)
+        self.execution_engine.load_disciplines_status_dict(loaded_dict)
 
     def dump_disciplines_data(self, study_folder_path):
-        """ Method that load data into the execution engine
+        """Write data to a pickle file.
 
-        :params: study_folder_path, location of pickle file to load
-        :type: str
+        Args:
+            study_folder_path: The path to the directory where the pickle file will be created.
         """
-
         # Retrieve data to dump
         data = self.execution_engine.get_anonimated_disciplines_status_dict()
 
         self._put_disciplines_data_into_file(study_folder_path, data)
 
-    def run(self, logger_level=None,
-            dump_study=False,
-            for_test=False):
-        """ Method that run execution engine study with some additionals options
+    def run(self, logger_level=None, dump_study=False, for_test=False):
+        """Method that run execution engine study with some additionals options.
 
         :params: logger_level, target logging level request for the run (None by default,
                     so use the current class variable value => INFO)
@@ -410,180 +415,147 @@ class BaseStudyManager():
         # API
         if logger_level is not None:
             log_lvl = DEBUG
-            try:
-                if isinstance(logger_level, str):
-                    # try to map with logging levels
-                    log_lvl = eval(logger_level.upper())
-                else:
-                    # try to convert in integer to match with logging level
-                    # types
-                    log_lvl = int(logger_level)
-            except:
-                pass
+            with suppress(Exception):
+                log_lvl = eval(logger_level.upper()) if isinstance(logger_level, str) else int(logger_level)
             logger.setLevel(log_lvl)
-            logger.info(
-                f'set logger level to {log_lvl}')
+            logger.info("set logger level to %s", log_lvl)
 
         # Do not display information on process location on standard run (not
         # DEBUG)
-        study_display_name = ''
+        study_display_name = ""
         if logger.level == DEBUG:
-            study_display_name = f'{self.repository_name}.{self.process_name}.{self.study_name}'
+            study_display_name = f"{self.repository_name}.{self.process_name}.{self.study_name}"
         else:
             study_display_name = self.study_name
 
-        logger.info(f'Study {study_display_name} starts...')
+        logger.info("Study %s starts...", study_display_name)
 
         # Execute study
         start_time = time()
         if self._run_usecase:
             try:
                 self.execution_engine.execute(loaded_cache=self.loaded_cache)
-                message = f'Study {study_display_name} execution time : {time() - start_time} seconds'
+                message = f"Study {study_display_name} execution time : {time() - start_time} seconds"
                 logger.info(message)
-                print(message)
                 if for_test:
                     self.__launch_additional_test()
-            except Exception as ex:
-                message = f'Study {study_display_name} execution time on error : {time() - start_time} seconds'
+            except Exception:
+                message = f"Study {study_display_name} execution time on error : {time() - start_time} seconds"
                 logger.info(message)
-                print(message)
-                raise ex
+                raise
 
         else:
-            print(f'Study {study_display_name} is configured not to run.')
-            print('Skipping execute.')
-            logger.info(
-                f'Study {study_display_name} is configured not to run.')
-            logger.info('Skipping execute.')
+            logger.info("Study %s is configured not to run.", study_display_name)
+            logger.info("Skipping execute.")
 
         # Method after execute and before dump
         try:
             self.after_execute_before_dump()
         except Exception:
-            logger.exception(
-                'The following error occurs in "after_execute_before_dump" methods')
+            logger.exception('The following error occurs in "after_execute_before_dump" methods')
 
         if dump_study and self.dump_directory is not None:
             self.dump_study(self.dump_directory)
-            logger.debug(
-                f'Reference dump to {self.dump_directory}')
+            logger.debug("Reference dump to %s", self.dump_directory)
 
-        logger.info(f'Study {study_display_name} done.')
+        logger.info("Study %s done.", study_display_name)
 
     def dump_study(self, dump_dir):
-        '''
-        Dump a study by dumping its data in the dm.pkl the disciplines in another pkl and the cache in another one
-        '''
+        """Dump a study by dumping its data in the dm.pkl the disciplines in another pkl and the cache in another one."""
         self.dump_data(dump_dir)
         self.dump_disciplines_data(dump_dir)
         # manage what to dump for the cache
         self.manage_dump_cache()
         self.dump_cache(dump_dir)
 
-    def get_dataset_mapping(self) -> Optional[DatasetsMapping]:
-        """ Method to overload in order to provide datasets mapping to load
+    def get_dataset_mapping(self) -> DatasetsMapping | None:
+        """Method to overload in order to provide datasets mapping to load.
 
         :return: Optional[DatasetsMapping]
         """
-
         return None
 
     def setup_usecase(self, study_folder_path=None):
-        """ Method to overload in order to provide data to the loaded study process
-        from a specific way
+        """Method to overload in order to provide data to the loaded study process
+        from a specific way.
 
         :params: study_folder_path, location of pickle file to load (optional parameter)
         :type: str
 
         :return: list od dictionary, [{str: *}]
         """
-
-        if study_folder_path is not None and isdir(study_folder_path):
+        if study_folder_path is not None and Path(study_folder_path).is_dir():
             return self._get_data_from_file(study_folder_path)
 
         return []
 
     def setup_disciplines_data(self, study_folder_path=None):
-        """ Method to overload in order to provide data to the loaded study process
-        from a specific way
+        """Method to overload in order to provide data to the loaded study process
+        from a specific way.
 
         :params: study_folder_path, location of pickle file to load (optional parameter)
         :type: str
 
         :return: dictionary, {str: *}
         """
-
-        if study_folder_path is not None and isdir(study_folder_path):
+        if study_folder_path is not None and Path(study_folder_path).is_dir():
             return self._get_disciplines_data_from_file(study_folder_path)
 
         return {}
 
     def after_execute_before_dump(self):
-        ''' treatment before dumping in order to remove/change data before dumping '''
+        """Treatment before dumping in order to remove/change data before dumping."""
 
     def __launch_additional_test(self):
-        """ Launch additional test based on execution engine
-
-        """
+        """Launch additional test based on execution engine."""
         logger = self.execution_engine.logger
 
         # Save data manager before post-processing
-        dm_dict_before = deepcopy(
-            self.execution_engine.get_anonimated_data_dict())
+        dm_dict_before = deepcopy(self.execution_engine.get_anonimated_data_dict())
 
-        logger.info(
-            '------ Check post-processing integrity ------')
+        logger.info("------ Check post-processing integrity ------")
         ppf = PostProcessingFactory()
-        ppf.get_all_post_processings(
-            execution_engine=self.execution_engine, filters_only=False,
-            for_test=True)
+        ppf.get_all_post_processings(execution_engine=self.execution_engine, filters_only=False, for_test=True)
 
-        logger.info(
-            '------ Check data manager integrity after post-processing calls ------')
+        logger.info("------ Check data manager integrity after post-processing calls ------")
 
         # Save data manager after post-processing
-        dm_dict_after = deepcopy(
-            self.execution_engine.get_anonimated_data_dict())
+        dm_dict_after = deepcopy(self.execution_engine.get_anonimated_data_dict())
 
         test_passed = True
-        output_error = ''
+        output_error = ""
         try:
             dict_error = {}
-            compare_dict(dm_dict_before, dm_dict_after, '', dict_error)
+            compare_dict(dm_dict_before, dm_dict_after, "", dict_error)
             if dict_error != {}:
                 test_passed = False
-                output_error += f'Error while checking data manager after post-processing for usecase {self.repository_name}.{self.process_name}\n'
+                output_error += f"Error while checking data manager after post-processing for usecase {self.repository_name}.{self.process_name}\n"
                 for error in dict_error:
-                    output_error += f'Mismatch in {error}: {dict_error.get(error)}\n'
-                output_error += '---------------------------------------------------------\n'
+                    output_error += f"Mismatch in {error}: {dict_error.get(error)}\n"
+                output_error += "---------------------------------------------------------\n"
         except Exception as e:
             test_passed = False
-            output_error += f'Error while checking data manager after post-processing for usecase {self.repository_name}.{self.process_name}\n'
-            output_error += f'{e}'
-            output_error += '\n---------------------------------------------------------\n'
+            output_error += f"Error while checking data manager after post-processing for usecase {self.repository_name}.{self.process_name}\n"
+            output_error += f"{e}"
+            output_error += "\n---------------------------------------------------------\n"
 
         if not test_passed:
-            raise Exception(output_error)
+            raise RuntimeError(output_error)
 
-    def set_dump_directory(self, dump_dir: str):
-        """ Method to set the dump directory of the StudyManager
+    def set_dump_directory(self, dump_dir: Path | str):
+        """Set the dump directory of the StudyManager.
 
-        :params: dump_dir, dump directory
-        :type: str
+        Args:
+            dump_dir: The dump directory.
         """
         logger = self.execution_engine.logger
-
-        built_directory = join(
-            dump_dir, self.repository_name, self.process_name, self.study_name)
-
-        logger.debug(
-            f'Dump directory set to {built_directory}')
+        built_directory = Path(dump_dir) / self.repository_name / self.process_name / self.study_name
+        logger.debug("Dump directory set to %s", built_directory)
 
         self.dump_directory = built_directory
 
     def _get_data_from_file(self, study_folder_path):
-        """ Method that load data from a file using an serializer object strategy (set with the according setter)
+        """Method that load data from a file using an serializer object strategy (set with the according setter).
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -595,34 +567,32 @@ class BaseStudyManager():
         if study_folder_path is not None:
             serializer = DataSerializer()
 
-            loaded_dict = serializer.get_dict_from_study(
-                study_folder_path, self.__rw_strategy)
+            loaded_dict = serializer.get_dict_from_study(study_folder_path, self.__rw_strategy)
 
             input_dict = {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
         else:
-            raise Exception("study_folder_path is None, can't get data from file")
+            msg = "study_folder_path is None, can't get data from file"
+            raise ValueError(msg)
 
         result.append(input_dict)
 
         return result
 
     def _put_data_into_file(self, study_folder_path: str, data: dict):
-        """ Method that load save from a file using an serializer object strategy (set with the according setter)
-        File will be entirely overwrittent
+        """Method that load save from a file using an serializer object strategy (set with the according setter)
+        File will be entirely overwrittent.
 
         :params: study_folder_path, location of pickle file to save
         :params: data, data to save
         """
-
         if study_folder_path is not None:
             serializer = DataSerializer()
 
-            serializer.put_dict_from_study(
-                study_folder_path, self.__rw_strategy, data)
+            serializer.put_dict_from_study(study_folder_path, self.__rw_strategy, data)
 
     def _put_cache_into_file(self, study_folder_path, data):
-        """ Method that load save from a file using an serializer object strategy (set with the according setter)
-        File will be entirely overwrittent
+        """Method that load save from a file using an serializer object strategy (set with the according setter)
+        File will be entirely overwrittent.
 
         :params: study_folder_path, location of pickle file to save
         :type: str
@@ -631,15 +601,13 @@ class BaseStudyManager():
         :type: dict
 
         """
-
         if study_folder_path is not None:
             serializer = DataSerializer()
 
-            serializer.put_cache_from_study(
-                study_folder_path, self.__rw_strategy, data)
+            serializer.put_cache_from_study(study_folder_path, self.__rw_strategy, data)
 
     def _get_cache_from_file(self, study_folder_path):
-        """ Method that load discipline data into the execution engine
+        """Method that load discipline data into the execution engine.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -649,13 +617,12 @@ class BaseStudyManager():
         serializer = DataSerializer()
 
         if study_folder_path is not None:
-            result = serializer.load_cache_dict(
-                study_folder_path, self.__rw_strategy)
+            result = serializer.load_cache_dict(study_folder_path, self.__rw_strategy)
 
         return result
 
     def _get_disciplines_data_from_file(self, study_folder_path):
-        """ Method that load discipline data into the execution engine
+        """Method that load discipline data into the execution engine.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -665,13 +632,12 @@ class BaseStudyManager():
         serializer = DataSerializer()
 
         if study_folder_path is not None:
-            result = serializer.load_disc_status_dict(
-                study_folder_path, self.__rw_strategy)
+            result = serializer.load_disc_status_dict(study_folder_path, self.__rw_strategy)
 
         return result
 
     def _put_disciplines_data_into_file(self, study_folder_path, disciplines_data):
-        """ Method that load discipline data into the execution engine
+        """Method that load discipline data into the execution engine.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -679,16 +645,14 @@ class BaseStudyManager():
         :params: disciplines_data, disciplines data to save
         :type: dict
         """
-
         if study_folder_path is not None:
             serializer = DataSerializer()
 
-            serializer.dump_disc_status_dict(
-                study_folder_path, self.__rw_strategy, disciplines_data)
+            serializer.dump_disc_status_dict(study_folder_path, self.__rw_strategy, disciplines_data)
 
     @staticmethod
     def static_dump_data(study_folder_path, execution_engine, rw_strategy):
-        """ Method that dump the entire execution engine information
+        """Method that dump the entire execution engine information.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -699,20 +663,18 @@ class BaseStudyManager():
         :params: rw_strategy, raed/write execution strategy instance
         :type: sostrades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
         """
-
         if not isinstance(rw_strategy, AbstractLoadDump):
-            raise TypeError(
-                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+            msg = "rw_strategy arguments is not an inherited type of AbstractLoadDump"
+            raise TypeError(msg)
 
         if study_folder_path is not None:
             serializer = DataSerializer()
 
-            serializer.put_dict_from_study(
-                study_folder_path, rw_strategy, execution_engine.get_anonimated_data_dict())
+            serializer.put_dict_from_study(study_folder_path, rw_strategy, execution_engine.get_anonimated_data_dict())
 
     @staticmethod
-    def static_load_data(study_folder_path, execution_engine, rw_strategy):
-        """ Method that load the entire execution engine information
+    def static_load_data(study_folder_path: Path | str, execution_engine, rw_strategy):
+        """Method that load the entire execution engine information.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -723,26 +685,22 @@ class BaseStudyManager():
         :params: rw_strategy, raed/write execution strategy instance
         :type: sostrades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
         """
-
         if not isinstance(rw_strategy, AbstractLoadDump):
-            raise TypeError(
-                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+            msg = "rw_strategy arguments is not an inherited type of AbstractLoadDump"
+            raise TypeError(msg)
 
-        if isdir(study_folder_path):
+        if Path(study_folder_path).is_dir():
             serializer = DataSerializer()
 
-            loaded_dict = serializer.get_dict_from_study(
-                study_folder_path, DirectLoadDump())
+            loaded_dict = serializer.get_dict_from_study(study_folder_path, DirectLoadDump())
 
-            input_dict = {key: value[ProxyDiscipline.VALUE]
-                          for key, value in loaded_dict.items()}
+            input_dict = {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
 
             execution_engine.load_study_from_input_dict(input_dict)
 
     @staticmethod
-    def static_load_raw_data(folder_path, rw_strategy):
-        """
-        Method that load the data pickle from a folder
+    def static_load_raw_data(folder_path: Path | str, rw_strategy):
+        """Method that load the data pickle from a folder.
 
         :param folder_path: location of pickle file to load
         :type folder_path: str
@@ -750,28 +708,24 @@ class BaseStudyManager():
         :param rw_strategy: read/write execution strategy instance
         :type rw_strategy: sostrades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
         """
-
         if not isinstance(rw_strategy, AbstractLoadDump):
-            raise TypeError(
-                'rw_strategy arguments is not an inherited type of AbstractLoadDump')
+            msg = "rw_strategy arguments is not an inherited type of AbstractLoadDump"
+            raise TypeError(msg)
 
         result = []
 
-        if isdir(folder_path):
+        if Path(folder_path).is_dir():
             serializer = DataSerializer()
 
-            loaded_dict = serializer.get_dict_from_study(
-                folder_path, rw_strategy)
+            loaded_dict = serializer.get_dict_from_study(folder_path, rw_strategy)
 
-            result = {key: value[ProxyDiscipline.VALUE]
-                      for key, value in loaded_dict.items()}
+            result = {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
 
         return result
 
     @staticmethod
     def static_load_raw_usecase_data(repository_name, process_name, usecase_name):
-        """
-        Method that load the data from a specific usecase file from a repository
+        """Method that load the data from a specific usecase file from a repository.
 
         :param repository_name: repository module name where the process is located
         :type repository_name: str
@@ -781,16 +735,11 @@ class BaseStudyManager():
         :type usecase_name: str
         :return: [dict]
         """
-        imported_module = import_module(
-            '.'.join([repository_name, process_name, usecase_name]))
+        imported_module = import_module(f"{repository_name}.{process_name}.{usecase_name}")
 
-        imported_usecase = getattr(
-            imported_module, 'Study')()
+        imported_usecase = imported_module.Study()
 
         imported_usecase.load_data()
         loaded_dict = imported_usecase.execution_engine.get_anonimated_data_dict()
 
-        result = {key: value[ProxyDiscipline.VALUE]
-                  for key, value in loaded_dict.items()}
-
-        return result
+        return {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}

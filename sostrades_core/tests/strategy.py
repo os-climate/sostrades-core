@@ -52,6 +52,8 @@ def run_tests_l0_l1_l2(main_folder, file_pattern):
     print(rf"STARTING TESTS {test_folder}\{file_pattern}")
 
     test_files = glob.glob(file_pattern)
+    if "l0_test_header.py" in test_files:
+        test_files.remove("l0_test_header.py")
     if len(test_files) == 0:
         print(f"No test file discovered corresponding to pattern {file_pattern}")
         return 0
