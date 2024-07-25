@@ -40,12 +40,13 @@ class ExecutionEngineException(Exception):
 
 
 class ExecutionEngine:
-    """
-    SoSTrades execution engine
-    """
-    STUDY_AND_ROOT_PLACEHODER = '<study_and_root_ph>'
-    STUDY_PLACEHOLDER_WITH_DOT = '<study_ph>.'
-    STUDY_PLACEHOLDER_WITHOUT_DOT = '<study_ph>'
+    """SoSTrades execution engine"""
+    STUDY_AND_ROOT_PLACEHODER: str = '<study_and_root_ph>'
+    STUDY_PLACEHOLDER_WITH_DOT: str = '<study_ph>.'
+    STUDY_PLACEHOLDER_WITHOUT_DOT: str = '<study_ph>'
+
+    LOG_LEVEL: int = 20
+    """The default log level (INFO)."""
 
     def __init__(self, study_name,
                  rw_object=None,
@@ -61,6 +62,7 @@ class ExecutionEngine:
             # Use rsplit to get sostrades_core.execution_engine instead of sostrades_core.execution_engine.execution_engine
             # as a default logger if not initialized
             self.logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
+            self.logger.setLevel(self.LOG_LEVEL)  # INFO
         else:
             self.logger = logger
 
@@ -548,7 +550,7 @@ class ExecutionEngine:
         integrity_msg_list = [
             f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG]}'
             for var_id, var_data_dict in self.dm.data_dict.items() if
-            var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG] != '']
+            var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG]]
 
         full_integrity_msg = '\n'.join(integrity_msg_list)
         return full_integrity_msg
@@ -560,7 +562,7 @@ class ExecutionEngine:
         Add the name of the variable in the message
         '''
         data_integrity_msg = self.get_data_integrity_msg()
-        if data_integrity_msg != '':
+        if data_integrity_msg:
             raise ValueError(data_integrity_msg)
 
     def set_debug_mode(self, mode=None, disc=None):
