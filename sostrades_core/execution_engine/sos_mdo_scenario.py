@@ -196,12 +196,13 @@ class SoSMDOScenario(MDOScenario):
                 If ``None``, evaluate all the functions computing Jacobians.
                 If empty, do not evaluate functions computing Jacobians.
         '''
+        output_functions, _ = self.formulation.optimization_problem.get_functions()
+        jacobian_functions = []
         if self.eval_jac:
-            self.formulation.optimization_problem.evaluate_functions(normalize=False)
-        else:
-            output_functions, jacobian_functions = self.formulation.optimization_problem.get_functions()
-            self.formulation.optimization_problem.evaluate_functions(output_functions=output_functions,
-                                                                     jacobian_functions=[], normalize=False)
+            jacobian_functions = output_functions
+
+        self.formulation.optimization_problem.evaluate_functions(output_functions=output_functions,
+                                                                 jacobian_functions=jacobian_functions, normalize=False)
 
         # self.store_local_data(**local_data)
         # if eval mode design space was not modified
@@ -343,10 +344,10 @@ class SoSMDOScenario(MDOScenario):
         """
         design_space = deepcopy(self.input_design_space)
         l_variables = design_space['variable']
-        for var in l_variables:
-            var = var.split('.')[-1]
-            full_name_var = [full_name for full_name in self.get_input_data_names() if
-                             (var == full_name.split('.')[-1] or var == full_name)][0]
+
+        for var_name in l_variables:
+            var_name = var_name.split('.')[-1]
+            full_name_var = self.get_namespace_from_var_name(var_name)
             if full_name_var in self.activated_variables:
                 value_x_opt = list([self.formulation.design_space.get_current_value(
                     [full_name_var])])
@@ -356,8 +357,18 @@ class SoSMDOScenario(MDOScenario):
                                           self.dict_desactivated_elem[full_name_var]['value']):
                         value_x_opt.insert(_pos, _val)
 
-                design_space.loc[design_space['variable'] == var, 'value'] = pd.Series(
+                design_space.loc[design_space['variable'] == var_name, 'value'] = pd.Series(
                     [value_x_opt] * len(design_space))
         self.local_data.update({
             [key for key in self.get_output_data_names() if 'design_space_out' in key][
                 0]: design_space})
+
+    def get_namespace_from_var_name(self, var_name):
+        subcoupling = self.disciplines[0]
+        namespace_list = [full_name for full_name in subcoupling.get_input_data_names() if
+                          (var_name == full_name.split('.')[-1] or var_name == full_name)]
+        if len(namespace_list) == 1:
+            return namespace_list[0]
+        else:
+            raise Exception(
+                f'Cannot find the variable {var_name} in the sub-coupling input grammar of the optim scenario {self.name}')

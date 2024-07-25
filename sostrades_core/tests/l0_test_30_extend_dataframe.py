@@ -15,13 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-import unittest
-
 import cProfile
 import pstats
 import unittest
@@ -33,6 +26,7 @@ from numpy import array
 from pandas.testing import assert_frame_equal
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
     DEFAULT_EXCLUDED_COLUMNS,
     convert_array_into_df,
@@ -141,7 +135,7 @@ class TestExtendDataframe(unittest.TestCase):
         assert_frame_equal(df, df_target, check_exact=False, rtol=1e-5)
 
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].residual_history
+        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].residual_history
 
         # Check residual history
         self.assertLessEqual(len(residual_history), max_mda_iter)

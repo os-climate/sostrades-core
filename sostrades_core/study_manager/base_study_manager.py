@@ -25,18 +25,12 @@ from typing import Optional, Union
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,
 )
 from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump, DirectLoadDump
 from sostrades_core.tools.tree.serializer import DataSerializer
-
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Class that manage a whole study process (load, execute, save, dump..)
-"""
-
-from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20

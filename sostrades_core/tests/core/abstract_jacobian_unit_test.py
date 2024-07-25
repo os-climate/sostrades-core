@@ -19,7 +19,7 @@ import inspect
 import logging
 import os
 import unittest
-from abc import ABC, abstractmethod
+from abc import ABC
 from importlib import import_module
 from multiprocessing import Process
 from os.path import basename, dirname, join

@@ -23,9 +23,6 @@ from numpy.testing import assert_array_equal
 from pandas._testing import assert_frame_equal
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_new_type_into_array, \
-    convert_array_into_new_type
-
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
     convert_array_into_new_type,
     convert_new_type_into_array,

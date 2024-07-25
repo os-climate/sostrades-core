@@ -23,9 +23,8 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
 
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
-
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
     convert_array_into_new_type,
     convert_new_type_into_array,

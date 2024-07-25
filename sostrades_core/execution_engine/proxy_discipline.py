@@ -15,14 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-# set-up the folder where GEMSEO will look-up for new wrapps (solvers,
-# grammars etc)
-from typing import Union, List
-
 import os
 from copy import deepcopy
 from os.path import dirname, join
@@ -44,9 +36,6 @@ parent_dir = dirname(__file__)
 GEMSEO_ADDON_DIR = "gemseo_addon"
 os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
 
-from copy import deepcopy
-
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
@@ -54,10 +43,10 @@ from gemseo.core.discipline import MDODiscipline
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-
 from sostrades_core.tools.check_data_integrity.check_data_integrity import (
     CheckDataIntegrity,
 )
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 
 class ProxyDisciplineException(Exception):
@@ -286,6 +275,7 @@ class ProxyDiscipline:
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
         self.mdo_discipline_wrapp = None
+        self.stored_cache = None
         self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades',
                                         logger=self.logger)
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
@@ -492,7 +482,10 @@ class ProxyDiscipline:
         '''
         GEMSEO objects instanciation
         '''
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is None:
+        if self.mdo_discipline_wrapp is not None:
+
+            if self.mdo_discipline_wrapp.mdo_discipline is not None:
+                self.stored_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
             # init gemseo discipline if it has not been created yet
             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
@@ -502,27 +495,32 @@ class ProxyDiscipline:
                                                                    self.CACHE_FILE_PATH))
             self.add_status_observers_to_gemseo_disc()
 
+        # else:
+        #     # TODO : this should only be necessary when changes in structuring
+        #     # variables happened?
+        #     self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
+        #
+        if self._reset_cache:
+            # set new cache when cache_type have changed (self._reset_cache
+            # == True)
+            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
+                           self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+            if self.get_sosdisc_inputs(
+                self.CACHE_TYPE) == MDODiscipline.CacheType.NONE and self.dm.cache_map is not None:
+                self.delete_cache_in_cache_map()
         else:
-            # TODO : this should only be necessary when changes in structuring
-            # variables happened?
-            self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
-
-            if self._reset_cache:
-                # set new cache when cache_type have changed (self._reset_cache
-                # == True)
-                self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
-                               self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
-                if self.get_sosdisc_inputs(
-                        self.CACHE_TYPE) == MDODiscipline.CacheType.NONE and self.dm.cache_map is not None:
-                    self.delete_cache_in_cache_map()
-
-            #             if self._reset_debug_mode:
-            #                 # update default values when changing debug modes between executions
-            #                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
-            #                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
-            # set the status to pending on GEMSEO side (so that it does not
-            # stay on DONE from last execution)
-            self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.ExecutionStatus.PENDING
+            if self.stored_cache is not None:
+                self.mdo_discipline_wrapp.mdo_discipline.cache = self.stored_cache
+        if self._reset_linearization_mode:
+            self.mdo_discipline_wrapp.mdo_discipline.linearization_mode = self.get_sosdisc_inputs(
+                self.LINEARIZATION_MODE)
+        #             if self._reset_debug_mode:
+        #                 # update default values when changing debug modes between executions
+        #                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
+        #                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
+        #     # set the status to pending on GEMSEO side (so that it does not
+        #     # stay on DONE from last execution)
+        #     self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.ExecutionStatus.PENDING
 
         # clear the proxy from the wrapper before execution
         self.clear_proxy_from_wrapper()
@@ -614,12 +612,29 @@ class ProxyDiscipline:
         Returns:
             (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
         '''
+        data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
         if numerical_inputs:
-            return list(self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple).keys())
+            return list(data_in.keys())
         else:
-            data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
             return [key for key, value in data_in.items() if
                     (not value[self.NUMERICAL] or value[self.NUMERICAL] and value[self.RUN_NEEDED])]
+
+    def get_input_data_names_and_defaults(self, as_namespaced_tuple: bool = False, numerical_inputs=True) -> list[str]:
+
+        data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
+        if numerical_inputs:
+            return {key: value[self.DEFAULT] for key, value in data_in.items()}
+        else:
+            return {key: value[self.DEFAULT] for key, value in data_in.items() if
+                    (not value[self.NUMERICAL] or value[self.NUMERICAL] and value[self.RUN_NEEDED])}
+
+    def get_run_needed_input(self, as_namespaced_tuple: bool = False):
+
+        data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
+
+        return {key: value[self.DEFAULT] for key, value in data_in.items() if
+                value[self.NUMERICAL] and value[self.RUN_NEEDED]}
+
     def get_output_data_names(self, as_namespaced_tuple: bool = False) -> list[str]:
         '''
         Returns:

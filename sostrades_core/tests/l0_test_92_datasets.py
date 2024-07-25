@@ -19,10 +19,8 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
-import \
-    sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
+import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
@@ -35,6 +33,7 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     DatasetGenericException,
 )
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 
 class TestDatasets(unittest.TestCase):
@@ -110,7 +109,7 @@ class TestDatasets(unittest.TestCase):
         # check numerical parameters
         self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
         self.assertEqual(dm.get_value("usecase_dataset.debug_mode"), "")
-        self.assertEqual(dm.get_value("usecase_dataset.cache_type"), "")
+        self.assertEqual(dm.get_value("usecase_dataset.cache_type"), "None")
         self.assertEqual(dm.get_value("usecase_dataset.cache_file_path"), "")
         self.assertEqual(dm.get_value("usecase_dataset.inner_mda_name"), "MDAJacobi")
         self.assertEqual(dm.get_value("usecase_dataset.max_mda_iter"), 30)
@@ -545,8 +544,8 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {})
         self.assertEqual(len(dm.get_value("usecase_dataset.Disc1.d")), 0)
-        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "auto")
+        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "finite_differences")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "finite_differences")
 
         study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
 

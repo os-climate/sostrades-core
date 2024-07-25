@@ -143,10 +143,11 @@ class MDODisciplineWrapp(object):
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
         '''
-        input_names = proxy.get_input_data_names(numerical_inputs=False)
+        input_names_and_defaults = proxy.get_input_data_names_and_defaults(numerical_inputs=False)
         grammar = self.mdo_discipline.input_grammar
         grammar.clear()
-        grammar.update_from_names(input_names)
+        grammar.update_from_names(list(input_names_and_defaults.keys()))
+        grammar.update_defaults({key: value for key, value in input_names_and_defaults.items() if value is not None})
 
         output_names = proxy.get_output_data_names()
         grammar = self.mdo_discipline.output_grammar
@@ -272,7 +273,8 @@ class MDODisciplineWrapp(object):
         # (e.g., numerical inputs mainly)
         # TODO: [to discuss] ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
         #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)
-        soscoupling_inputs = set(proxy.get_input_data_names(numerical_inputs=False))
+        soscoupling_inputs_and_defaults = proxy.get_run_needed_input()
+        soscoupling_inputs = set(soscoupling_inputs_and_defaults.keys())
         mdachain_inputs = set(mdachain.get_input_data_names())
         missing_inputs = soscoupling_inputs | mdachain_inputs
         # var_type_map = {
@@ -288,17 +290,22 @@ class MDODisciplineWrapp(object):
         # missing_outputs_names_to_types = {key: var_type_map[proxy.dm.get_data(key, proxy.TYPE)] for key in
         #                                   missing_outputs}
 
+        # Delete missing inputs that are already outputs not the way of thinking in GEMSEO
+        # missing_inputs.difference_update(missing_outputs)
+
+
         # i/o grammars update with SoSTrades i/o
-        for names, grammar in zip([missing_inputs, missing_outputs], [mdachain.input_grammar, mdachain.output_grammar]):
-            # This works since (for now) this method (for SimpleGrammar only)
-            # does not clear the existing grammar of MDAChain
-            grammar.clear()
-            grammar.update_from_names(names)
-        # missing_inputs_grammar = SimplerGrammar(f'{self.name}_inputgrammar', missing_inputs_names_to_types)
-        # missing_outputs_grammar = SimplerGrammar(f'{self.name}_outputgrammar', missing_outputs_names_to_types)
-        #
-        # mdachain.input_grammar.update(missing_inputs_grammar)
-        # mdachain.output_grammar.update(missing_outputs_grammar)
+        old_defaults = mdachain.input_grammar.defaults
+        mdachain.input_grammar.clear()
+        mdachain.input_grammar.update_from_names(missing_inputs)
+        missing_inputs_defaults = {key: value for key, value in soscoupling_inputs_and_defaults.items() if
+                                   value is not None and key in missing_inputs}
+        missing_inputs_defaults.update({key: value for key, value in old_defaults.items() if key in missing_inputs})
+        mdachain.input_grammar.update_defaults(missing_inputs_defaults)
+
+        mdachain.output_grammar.clear()
+        mdachain.output_grammar.update_from_names(missing_outputs)
+
     def execute(self, input_data):
         """
         Discipline execution delegated to the GEMSEO objects.

@@ -34,3 +34,8 @@ class SoSSimpleGrammar(SimplerGrammar):
             stored in the same order as ``data_names``.
     """
     DATA_CONVERTER_CLASS: ClassVar[str] = "SoSTradesDataConverter"
+
+    def update_defaults(self, defaults: dict):
+        self._defaults.update({
+            k: v for k, v in defaults.items() if k in self.names
+        })

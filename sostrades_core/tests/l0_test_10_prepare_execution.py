@@ -17,7 +17,6 @@ limitations under the License.
 import unittest
 
 from gemseo.mda.mda_chain import MDAChain
-from numpy import array, ones
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline

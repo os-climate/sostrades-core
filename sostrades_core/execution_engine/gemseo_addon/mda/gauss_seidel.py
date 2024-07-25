@@ -21,9 +21,9 @@
 """A Gauss Seidel algorithm for solving MDAs."""
 
 
-from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from numpy import array
+
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 

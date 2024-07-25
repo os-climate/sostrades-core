@@ -14,23 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
-from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-from sostrades_core.sos_processes.test.test_sellar_opt_w_func_manager.usecase import Study
-from sostrades_core.execution_engine.func_manager.func_manager import FunctionManager
-from sostrades_core.execution_engine.func_manager.func_manager_disc import FunctionManagerDisc
-
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-unit test for optimization scenario
-"""
-
 import os
 import unittest
 from copy import deepcopy
 
 import pandas as pd
-from gemseo.scenarios.mdo_scenario import MDOScenario
+
 from numpy import array, set_printoptions
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
@@ -368,7 +357,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
             'c_1', 'c_2']
-        disc_dict[f'{self.ns}.SellarOptimScenario.differentiation_method'] = MDOScenario.COMPLEX_STEP
+        disc_dict[f'{self.ns}.SellarOptimScenario.differentiation_method'] = 'complex_step'
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,
                                                                     "ineq_tolerance": 1e-6,
                                                                     "normalize_design_space": True}
@@ -825,10 +814,6 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         exec_eng.execute()
 
-        # check that the post processings can be executed
-        from sostrades_core.tools.post_processing.post_processing_factory import (
-            PostProcessingFactory,
-        )
         ppf = PostProcessingFactory()
         for disc in exec_eng.root_process.proxy_disciplines:
             filters = ppf.get_post_processing_filters_by_discipline(
@@ -1320,10 +1305,6 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
 
-        # check that the post processings can be executed
-        from sostrades_core.tools.post_processing.post_processing_factory import (
-            PostProcessingFactory,
-        )
         ppf = PostProcessingFactory()
         for disc in exec_eng.root_process.proxy_disciplines:
             filters = ppf.get_post_processing_filters_by_discipline(
@@ -1366,7 +1347,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = [
             'c_1', 'c_2']
-        disc_dict[f'{self.ns}.SellarOptimScenario.differentiation_method'] = MDOScenario.COMPLEX_STEP
+        disc_dict[f'{self.ns}.SellarOptimScenario.differentiation_method'] = 'complex_step'
         fd_step = 1.e-15
         disc_dict[f'{self.ns}.SellarOptimScenario.fd_step'] = fd_step
         disc_dict[f'{self.ns}.SellarOptimScenario.algo_options'] = {"ftol_rel": 1e-6,

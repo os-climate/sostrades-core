@@ -17,17 +17,15 @@ limitations under the License.
 
 from copy import deepcopy
 from multiprocessing import cpu_count
-
-from numpy import array, ndarray, delete, inf
+from typing import List
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.scenarios.scenario import Scenario
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-
-from typing import List
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.scenarios.scenario import Scenario
+from numpy import inf, ndarray
 
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
@@ -144,6 +142,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         COMPLEX_STEP,
     )
     POST_PROC_MDO_DATA = 'post_processing_mdo_data'
+    DESIGN_SPACE_OUT = 'design_space_out'
     # To be defined in the heritage
     is_constraints = None
     INEQ_CONSTRAINTS = 'ineq_constraints'
@@ -277,8 +276,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                DESACTIVATE_OPTIM_OUT_STORAGE: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]}
                }
 
-    DESC_OUT = {'design_space_out': {'type': 'dataframe'},
-                POST_PROC_MDO_DATA: {'type': 'dict'}}
+    DESC_OUT = {}
 
     def __init__(self, sos_name, ee, cls_builder, with_data_io=True, associated_namespaces=None):
         """
@@ -318,7 +316,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
         """
-        if self.ALGO_OPTIONS in self.get_sosdisc_inputs().keys():
+        data_in = self.get_sosdisc_inputs()
+        if self.ALGO_OPTIONS in data_in:
             algo_name = self.get_sosdisc_inputs(self.ALGO)
             algo_options = self.get_sosdisc_inputs(self.ALGO_OPTIONS)
             if algo_name is not None:
@@ -332,7 +331,17 @@ class ProxyOptim(ProxyDriverEvaluator):
                     for key in self._data_in.keys():
                         if self.ALGO_OPTIONS == key[0]:
                             self._data_in[key][self.VALUE] = values_dict
+        dynamic_outputs = {}
+        if self.DESACTIVATE_OPTIM_OUT_STORAGE in data_in:
+            desactivate_optim_storage = self.get_sosdisc_inputs(self.DESACTIVATE_OPTIM_OUT_STORAGE)
+            if not desactivate_optim_storage:
+                dynamic_outputs[self.POST_PROC_MDO_DATA] = {'type': 'dict'}
+                dynamic_outputs[self.DESIGN_SPACE_OUT] = {'type': 'dataframe'}
+
+        self.add_outputs(dynamic_outputs)
+
         self.set_edition_inputs_if_eval_mode()
+
 
     def prepare_build(self):
         """
@@ -700,8 +709,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         # update MDA flag to flush residuals between each mda run
         for disc in self.proxy_disciplines:
             if disc.is_sos_coupling:
-                if len(disc.mdo_discipline_wrapp.mdo_discipline.sub_mda_list) > 0:
-                    for sub_mda in disc.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
+                if len(disc.mdo_discipline_wrapp.mdo_discipline.inner_mdas) > 0:
+                    for sub_mda in disc.mdo_discipline_wrapp.mdo_discipline.inner_mdas:
                         sub_mda.reset_history_each_run = True
 
     def __str__(self):

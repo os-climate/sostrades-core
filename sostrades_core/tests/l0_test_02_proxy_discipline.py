@@ -20,12 +20,9 @@ import unittest
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
-from gemseo.core.discipline import MDODiscipline
-
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.sos_wrapping.test_discs.disc1_all_types import Disc1
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 
 class TestProxyDiscipline(unittest.TestCase):
@@ -420,9 +417,11 @@ class TestProxyDiscipline(unittest.TestCase):
         self.ee.display_treeview_nodes()
 
         self.ee.prepare_execution()
+        self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.activate_input_data_check = False
         local_data = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.execute(values_dict)
         ref_local_data = {'Test.x': 1.0, 'Test.Disc1.a': 1.0, 'Test.Disc1.b': 2.0,
-                          'Test.Disc1.indicator': 2.0, 'Test.y': 3.0}
+                          'Test.Disc1.indicator': 2.0, 'Test.y': 3.0, 'Test.Disc1.debug_mode': '',
+                          'Test.Disc1.residual_variables': {}}
         self.assertTrue(dict_are_equal(local_data, ref_local_data))
         pass
 

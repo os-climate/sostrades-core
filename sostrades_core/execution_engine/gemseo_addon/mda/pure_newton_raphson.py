@@ -14,23 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 
 import logging
-import numpy as np
 from copy import copy
 
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
-    convert_new_type_into_array
-
-"""
-A chain of MDAs to build hybrids of MDA algorithms sequentially
-***************************************************************
-"""
-
-from gemseo.core.discipline import MDODiscipline
+import numpy as np
 from gemseo.mda.base_mda_root import BaseMDARoot
+
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
+    convert_array_into_new_type,
+    convert_new_type_into_array,
+)
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 

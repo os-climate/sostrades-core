@@ -15,15 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from sostrades_core.tools.compare_data_manager_tooling import compare_dict, dict_are_equal
-from sostrades_core.tools.base_functions.compute_len import compute_len
-
 import unittest
 
 from numpy import array, complex128, float32, float64, int32, int64
 from pandas import DataFrame as df
 
 from sostrades_core.tools.base_functions.compute_len import compute_len
+from sostrades_core.tools.compare_data_manager_tooling import (
+    compare_dict,
+    dict_are_equal,
+)
 
 
 class TestCompareDict(unittest.TestCase):

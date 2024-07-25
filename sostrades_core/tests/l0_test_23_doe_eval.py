@@ -932,6 +932,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertEqual(set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_output_data_names()),
                          set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[
                                  0].mdo_discipline_wrapp.mdo_discipline.get_output_data_names()))
+
         self.assertEqual(set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_input_data_names(
             numerical_inputs=False)),
                          set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[

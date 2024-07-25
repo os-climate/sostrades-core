@@ -20,7 +20,6 @@ from logging import Handler
 from os.path import dirname, join
 
 # from gemseo.algos.doe.factory import DOELibraryFactory
-
 import pandas as pd
 from numpy import array
 from pandas.testing import assert_frame_equal

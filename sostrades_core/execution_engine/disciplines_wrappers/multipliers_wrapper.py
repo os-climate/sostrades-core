@@ -18,7 +18,6 @@ import copy
 import logging
 import re
 
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 import pandas as pd
 
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
@@ -27,6 +26,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 
 class MultipliersWrapper(SoSWrapp):

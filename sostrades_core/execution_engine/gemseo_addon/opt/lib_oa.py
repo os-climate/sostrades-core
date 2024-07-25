@@ -19,8 +19,10 @@ from builtins import super, zip
 from dataclasses import dataclass
 
 from future import standard_library
-from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import (
+    BaseOptimizationLibrary,
+    OptimizationAlgorithmDescription,
+)
 from numpy import isfinite
 
 from sostrades_core.execution_engine.gemseo_addon.opt.core.OuterApproximationSolver import (

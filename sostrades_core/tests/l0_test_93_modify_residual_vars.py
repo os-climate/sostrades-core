@@ -17,10 +17,9 @@ import logging
 import os
 import unittest
 
-import numpy as np
-import pandas as pd
 import sostrades_core.sos_processes.test.test_residual_variables.usecase_test_residual_variables
 from sostrades_core.study_manager.study_manager import StudyManager
+
 
 class TestResidualVariables(unittest.TestCase):
     """

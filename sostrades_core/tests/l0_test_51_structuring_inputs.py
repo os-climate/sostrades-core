@@ -311,13 +311,13 @@ class TestStructuringInputs(unittest.TestCase):
     #         self.assertEqual(self.exec_eng.dm.get_value(
     #             'MyCase.SellarOptimScenario.SellarCoupling.tolerance'), mda_tolerance)
     #         self.assertEqual(self.exec_eng.dm.get_value(
-    #             'MyCase.SellarOptimScenario.SellarCoupling.tolerance'), coupling_disc.sub_mda_list[0].tolerance)
+    #             'MyCase.SellarOptimScenario.SellarCoupling.tolerance'), coupling_disc.inner_mdas[0].tolerance)
     #
     #         # check linear solver options for MDANewtonRaphson (gradient based, thus with linear solver options)
     #         # in sostrades, both "tol" and and "max_iter" are filled, in GEMSEO the
     #         # tolerance is filled in a class variable "linear_solver_tolerance"
     #         linear_solver_options_gemseo = copy(
-    #             coupling_disc.sub_mda_list[0].linear_solver_options)
+    #             coupling_disc.inner_mdas[0].linear_solver_options)
     #
     #         if platform.system() == 'Windows':
     #             linear_solver_options_ref = {
@@ -332,7 +332,7 @@ class TestStructuringInputs(unittest.TestCase):
     #         linear_solver_options_dm = deepcopy(self.exec_eng.dm.get_value(
     #             'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options'))
     #         tol_dm = linear_solver_options_dm.pop('tol')
-    #         linear_solver_tolerance_gemseo = coupling_disc.sub_mda_list[0].linear_solver_tolerance
+    #         linear_solver_tolerance_gemseo = coupling_disc.inner_mdas[0].linear_solver_tolerance
     #         assert linear_solver_tolerance_gemseo == tol_dm
     #         assert linear_solver_tolerance_gemseo == linear_solver_tol
     #
@@ -352,10 +352,10 @@ class TestStructuringInputs(unittest.TestCase):
     #         self.assertEqual(self.exec_eng.dm.get_value(
     #             'MyCase.SellarOptimScenario.SellarCoupling.tolerance'), mda_tolerance)
     #         self.assertEqual(self.exec_eng.dm.get_value(
-    #             'MyCase.SellarOptimScenario.SellarCoupling.tolerance'), coupling_disc.sub_mda_list[0].tolerance)
+    #             'MyCase.SellarOptimScenario.SellarCoupling.tolerance'), coupling_disc.inner_mdas[0].tolerance)
     #
     #         linear_solver_options_gemseo = copy(
-    #             coupling_disc.sub_mda_list[0].linear_solver_options)
+    #             coupling_disc.inner_mdas[0].linear_solver_options)
     #
     #         if platform.system() == 'Windows':
     #             linear_solver_options_ref = {
@@ -369,7 +369,7 @@ class TestStructuringInputs(unittest.TestCase):
     #
     #         linear_solver_options_dm = copy(self.exec_eng.dm.get_value(
     #             'MyCase.SellarOptimScenario.SellarCoupling.linear_solver_MDA_options'))
-    #         linear_solver_tolerance_gemseo = coupling_disc.sub_mda_list[0].linear_solver_tolerance
+    #         linear_solver_tolerance_gemseo = coupling_disc.inner_mdas[0].linear_solver_tolerance
     #         assert linear_solver_tolerance_gemseo == 1.0e-8  # GEMSEO default value
     #         # provided by SoSTrades
     #         assert linear_solver_options_dm == ProxyCoupling.DEFAULT_LINEAR_SOLVER_OPTIONS
@@ -422,7 +422,7 @@ class TestStructuringInputs(unittest.TestCase):
                                                            'default': False},
                            # 'authorize_self_coupled_disciplines': {'type': 'bool', 'possible_values': [True, False],
                            #                                        'default': False},
-                           'linearization_mode': {'type': 'string', 'default': FINITE_DIFFERENCES,
+                           'linearization_mode': {'type': 'string', 'default': 'finite_differences',
                                                   'possible_values': ['auto', 'direct', 'adjoint', 'reverse',
                                                                       'finite_differences', 'complex_step']},
                            'cache_type': {'type': 'string', 'default': 'None',
@@ -518,7 +518,7 @@ class TestStructuringInputs(unittest.TestCase):
         self.exec_eng.prepare_execution()
         self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver, 'LGMRES')
         self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.tolerance, 1e-3)
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].tolerance, 1e-03)
+        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].tolerance, 1e-03)
         self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver_tolerance, 1e-10)
         self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver_options, {
             'max_iter': 600, 'use_ilu_precond': True})
@@ -526,16 +526,16 @@ class TestStructuringInputs(unittest.TestCase):
         self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.use_lu_fact, True)
 
         self.assertEqual(
-            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].mda_sequence[0].epsilon0, 1e-04)
+            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].mda_sequence[0].epsilon0, 1e-04)
         self.assertEqual(
-            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].mda_sequence[1].mda_sequence[
+            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
                 0].epsilon0, 1e-04)
         self.assertEqual(
-            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].mda_sequence[1].mda_sequence[
+            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
                 1].epsilon0, 1e-04)
 
         self.assertEqual(
-            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.sub_mda_list[0].mda_sequence[1].mda_sequence[
+            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
                 1].over_relaxation_factor, 0.85)
 
         self.exec_eng.execute()

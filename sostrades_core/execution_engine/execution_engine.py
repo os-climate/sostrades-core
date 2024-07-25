@@ -16,7 +16,6 @@ limitations under the License.
 '''
 # Execution engine SoSTrades code
 import logging
-import json
 from typing import Any, Callable, Optional, Union
 
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
@@ -29,21 +28,11 @@ from sostrades_core.execution_engine.post_processing_manager import (
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
-
-from sostrades_core.execution_engine.post_processing_manager import PostProcessingManager
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
-
-from gemseo.core.discipline import MDODiscipline
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_factory import SosFactory
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'
 DEFAULT_scattermap_manager_NAME = 'default_smap_namanger'
-
-MDODiscipline._MDODiscipline__set_local_data = SoSMDODiscipline._set_local_data_overload
-MDODiscipline._filter_inputs = SoSMDODiscipline._filter_inputs
 
 
 class ExecutionEngineException(Exception):
@@ -665,7 +654,7 @@ class ExecutionEngine:
         #     disc.check_min_max_gradients = True
         elif mode == "min_max_couplings":
             if isinstance(disc, ProxyCoupling):
-                for sub_mda in disc.sub_mda_list:
+                for sub_mda in disc.inner_mdas:
                     sub_mda.debug_mode_couplings = True
         elif mode == 'data_check_integrity':
             self.check_data_integrity = True

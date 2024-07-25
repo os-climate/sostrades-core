@@ -15,18 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
-
-"""
-A chain of MDAs to build hybrids of MDA algorithms sequentially
-***************************************************************
-"""
-
 import logging
 
-from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
-from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.sequential_mda import MDAGSNewton
-from gemseo.mda.sequential_mda import MDASequential
+from gemseo.mda.sequential_mda import MDAGSNewton, MDASequential
+
+from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
+    SoSMDAGaussSeidel,
+)
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
@@ -35,6 +30,8 @@ LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 class GSorNewtonMDA(MDASequential):
     """
     Perform some GaussSeidel iterations and then NewtonRaphson iterations.
+    A chain of MDAs to build hybrids of MDA algorithms sequentially
+
     """
 
     def __init__(self, disciplines, name=None,

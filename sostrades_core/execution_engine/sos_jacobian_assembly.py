@@ -19,8 +19,8 @@ from copy import deepcopy
 from multiprocessing import Pool
 from os import getenv
 
-from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
+from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from numpy import empty, ones, zeros
 from scipy.sparse import dia_matrix, dok_matrix, lil_matrix

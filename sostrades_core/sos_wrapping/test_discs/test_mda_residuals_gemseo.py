@@ -35,13 +35,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-from numpy import array
-from numpy import ndarray
-
-from gemseo import create_discipline
-from gemseo import create_mda
+from gemseo import create_discipline, create_mda
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+from numpy import array, ndarray
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline

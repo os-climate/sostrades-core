@@ -14,19 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 
 import logging
-from sostrades_core.execution_engine.gemseo_addon.mda.pure_newton_raphson import PureNewtonRaphson
 
-"""
-A chain of MDAs to build hybrids of MDA algorithms sequentially
-***************************************************************
-"""
-
-from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
-from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.sequential_mda import MDASequential
+
+from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
+    SoSMDAGaussSeidel,
+)
+from sostrades_core.execution_engine.gemseo_addon.mda.pure_newton_raphson import (
+    PureNewtonRaphson,
+)
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_purenewton_mda")

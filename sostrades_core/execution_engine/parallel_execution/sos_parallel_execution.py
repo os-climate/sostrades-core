@@ -15,11 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
+import multiprocessing as mp
 
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
-from gemseo.core.parallel_execution.disc_parallel_linearization import DiscParallelLinearization
-
-import multiprocessing as mp
+from gemseo.core.parallel_execution.disc_parallel_linearization import (
+    DiscParallelLinearization,
+)
 
 VALUE = 'value'
 VAR_NAME = 'var_name'

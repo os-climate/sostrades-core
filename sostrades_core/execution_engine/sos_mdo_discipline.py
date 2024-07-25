@@ -15,24 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-import collections
-from sostrades_core.tools.filter.filter import filter_variables_to_convert
-from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-
 import logging
 
 # debug mode
 from copy import deepcopy
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
-
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from sostrades_core.execution_engine.sos_discipline_data import SoSDisciplineData
-
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from numpy import floating, ndarray
 from pandas import DataFrame
 from scipy.sparse import lil_matrix
+
+from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
@@ -515,52 +511,6 @@ class SoSMDODiscipline(MDODiscipline):
 
         return indices
 
-
-    def __set_local_data(self, data):
-        self._local_data = SoSDisciplineData(
-            data,
-            input_to_namespaced=self.input_grammar.to_namespaced,
-            output_to_namespaced=self.output_grammar.to_namespaced, )
-
-    def _set_local_data_overload(self, data):
-        self._local_data = SoSDisciplineData(
-            data,
-            input_to_namespaced=self.input_grammar.to_namespaced,
-            output_to_namespaced=self.output_grammar.to_namespaced, )
-
-    def _filter_inputs(
-            self,
-            input_data):
-        """Filter data with the discipline inputs and use the default values if missing.
-
-        Args:
-            input_data: The data to be filtered.
-
-        Returns:
-            The values of the input variables based on the provided data.
-
-        Raises:
-            TypeError: When the input data are not passed as a dictionary.
-        """
-        if input_data is None:
-            return deepcopy(self.default_inputs)
-
-        if not isinstance(input_data, collections.abc.Mapping):
-            raise TypeError(
-                f"Input data must be of dict type, got {type(input_data)} instead."
-            )
-        # Only this line is overloaded
-        full_input_data = SoSDisciplineData({})
-        for input_name in self.input_grammar:
-            input_value = input_data.get(input_name)
-            if input_value is not None:
-                full_input_data[input_name] = input_value
-            else:
-                input_value = self.input_grammar.defaults.get(input_name)
-                if input_value is not None:
-                    full_input_data[input_name] = input_value
-
-        return full_input_data
 
     # ----------------------------------------------------
     # ----------------------------------------------------

@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 import unittest
 
 from numpy import array
@@ -24,9 +23,11 @@ from numpy import int32 as np_int32
 from numpy import int64 as np_int64
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
     convert_array_into_new_type,
-    convert_new_type_into_array)
+    convert_new_type_into_array,
+)
 
 
 class TestExtendFloat(unittest.TestCase):

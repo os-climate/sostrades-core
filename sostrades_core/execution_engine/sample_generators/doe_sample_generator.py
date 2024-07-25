@@ -15,18 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-
-from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import AbstractSampleGenerator, \
-    SampleTypeError
-from sostrades_core.tools.design_space import design_space as dspace_tool
-
-from gemseo import get_available_doe_algorithms
-from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.utils.source_parsing import get_options_doc
 from collections import ChainMap
 from typing import Optional
 
 import pandas as pd
+from gemseo import get_available_doe_algorithms
+from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.utils.source_parsing import get_options_doc
+
+from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import (
+    AbstractSampleGenerator,
+    SampleTypeError,
+)
+from sostrades_core.tools.design_space import design_space as dspace_tool
 
 
 class DoeSampleTypeError(SampleTypeError):

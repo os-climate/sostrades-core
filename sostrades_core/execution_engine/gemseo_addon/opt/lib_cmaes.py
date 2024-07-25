@@ -19,10 +19,13 @@ limitations under the License.
 import logging
 from builtins import super
 from dataclasses import dataclass
+
 import cma
 from future import standard_library
-from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import (
+    BaseOptimizationLibrary,
+    OptimizationAlgorithmDescription,
+)
 from numpy import real
 
 """

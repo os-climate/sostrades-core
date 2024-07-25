@@ -13,18 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from numpy import ndarray
 
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Tooling methods to compare data manager content
-"""
 from collections.abc import MutableMapping
-from pandas.core.frame import DataFrame
-from pandas.testing import assert_frame_equal
 from contextlib import suppress
-from sostrades_core.execution_engine.namespace import Namespace
+
+from numpy import ndarray
+from pandas.core.frame import DataFrame
 from pandas.core.indexes.base import Index
+from pandas.testing import assert_frame_equal
+
+from sostrades_core.execution_engine.namespace import Namespace
 
 
 def dict_are_equal(d1, d2):
@@ -107,7 +105,7 @@ def parse_list_to_compare(list_1, list_2, tree, error, df_equals=False):
             return False
         else:
             error.update(
-                {tree: f'\nProblem parsing a list:\n The length of the compared lists differs'})
+                {tree: '\nProblem parsing a list:\n The length of the compared lists differs'})
     else:
         try:
             current = 0
@@ -188,7 +186,7 @@ def compare_dataframes(df1, df2, tree, error, df_equals):
             if list_col_containing_arrays == []:
                 assert_frame_equal(df1, df2, rtol=1e-3)
             else:
-                # if at least one column of dataframe has array or list, compare these columns using method of list comparison, compare other columns 
+                # if at least one column of dataframe has array or list, compare these columns using method of list comparison, compare other columns
                 for col in list_col_containing_arrays:
                     parse_list_to_compare(df1[col].values, df2[col].values, tree, error)
                 df1_wo_array_columns = df1.drop(list_col_containing_arrays, axis=1)

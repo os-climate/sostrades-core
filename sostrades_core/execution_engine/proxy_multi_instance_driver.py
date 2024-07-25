@@ -16,9 +16,6 @@ limitations under the License.
 import copy
 
 import numpy as np
-
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
-
 import pandas as pd
 
 from sostrades_core.execution_engine.builder_tools.scatter_tool import ScatterTool

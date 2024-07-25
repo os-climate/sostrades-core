@@ -13,18 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
-"""Most basic grammar implementation."""
-
-from typing import Any, Final
-from numpy import ndarray
-from numpy import complex128 as np_complex128
 from collections import defaultdict
+from typing import Any, Final
 
 from gemseo.core.data_converters.simple import SimpleGrammarDataConverter
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import convert_array_into_new_type, \
-    convert_new_type_into_array, STANDARD_TYPES
+from numpy import complex128 as np_complex128
+from numpy import ndarray
+
 from sostrades_core.tools.base_functions.compute_len import compute_len
+from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
+    STANDARD_TYPES,
+    convert_array_into_new_type,
+    convert_new_type_into_array,
+)
 
 ValueTypes: Final[tuple[type]] = tuple(STANDARD_TYPES + [complex, ndarray, np_complex128])
 ValueTypes_Numeric = ['int', 'float']

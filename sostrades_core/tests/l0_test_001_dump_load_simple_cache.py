@@ -19,20 +19,15 @@ from os.path import dirname, exists, join
 from pathlib import Path
 
 from gemseo.caches.simple_cache import SimpleCache
-
-'''
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-'''
-import unittest
-from shutil import rmtree
-from os.path import join, dirname, exists
-from pathlib import Path
-from time import sleep
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from gemseo.core.discipline import MDODiscipline
-from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import Study as study_sellar_mda
-from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import \
-    Study as study_disc1_disc2
+
+from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import (
+    Study as study_disc1_disc2,
+)
+from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
+    Study as study_sellar_mda,
+)
+from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.folder_operations import rmtree_safe
 
 
@@ -338,7 +333,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 0)
 
         # check dumped cache pickle existence
         cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
@@ -360,7 +355,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 2)
+                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
 
         study.run()
         self.assertEqual(len(study.ee.dm.cache_map), 0)

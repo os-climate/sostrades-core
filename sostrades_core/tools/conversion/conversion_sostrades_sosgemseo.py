@@ -16,6 +16,7 @@ limitations under the License.
 '''
 from copy import deepcopy
 from functools import reduce
+from itertools import chain
 
 import numpy as np
 from numpy import append, arange, array, delete, ndarray
@@ -24,7 +25,6 @@ from numpy import float64 as np_float64
 from numpy import int32 as np_int32
 from numpy import int64 as np_int64
 from pandas import DataFrame
-from itertools import chain
 
 BASE_TYPE_EXCLUDED = ['int', 'string']
 DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']

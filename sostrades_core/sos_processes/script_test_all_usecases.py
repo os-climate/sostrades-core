@@ -14,10 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-
-from sostrades_core.tools.compare_data_manager_tooling import compare_dict, \
-    delete_keys_from_dict
-
 import time
 import traceback
 from copy import deepcopy
@@ -31,6 +27,10 @@ from typing import Optional, Union
 
 from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.compare_data_manager_tooling import (
+    compare_dict,
+    delete_keys_from_dict,
+)
 from sostrades_core.tools.folder_operations import makedirs_safe
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,

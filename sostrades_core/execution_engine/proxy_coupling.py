@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-
 from collections import ChainMap
 from copy import copy, deepcopy
 from multiprocessing import cpu_count
@@ -24,9 +23,9 @@ from typing import List
 
 import numpy as np
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
+from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.mda.sequential_mda import MDASequential
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from numpy import ndarray
 from pandas import DataFrame, concat
 
@@ -256,7 +255,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     # reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         '''
-        Update cache_map dict in DM with cache, mdo_chain cache, sub_mda_list caches and its children recursively
+        Update cache_map dict in DM with cache, mdo_chain cache, inner_mdas caches and its children recursively
         '''
         mda_chain = self.mdo_discipline_wrapp.mdo_discipline
 
@@ -268,7 +267,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             self._store_cache_with_hashed_uid(mda_chain.mdo_chain)
 
             # store sub mdas cache recursively
-            for mda in mda_chain.sub_mda_list:
+            for mda in mda_chain.inner_mdas:
                 self._set_sub_mda_dm_cache_map(mda)
         else:
             raise Exception(
@@ -571,19 +570,18 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         # has already been called
         if self.mdo_discipline_wrapp.mdo_discipline is not None:
             mda_chain_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
-            mda_chain_n_calls = self.mdo_discipline_wrapp.mdo_discipline.n_calls
         else:
             mda_chain_cache = None
-            mda_chain_n_calls = 0
+
 
         # create_mda_chain from MDODisciplineWrapp
         self.mdo_discipline_wrapp.create_mda_chain(
             sub_mdo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)
 
         # set cache cache of gemseo object
-        self.set_gemseo_disciplines_caches(mda_chain_cache, mda_chain_n_calls)
+        self.set_gemseo_disciplines_caches(mda_chain_cache)
 
-    def set_gemseo_disciplines_caches(self, mda_chain_cache, mda_chain_n_calls):
+    def set_gemseo_disciplines_caches(self, mda_chain_cache):
         '''
         Set cache of MDAChain, MDOChain and sub MDAs
         '''
@@ -599,15 +597,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         else:
             # reset stored cache and n_calls of MDAChain
             self.mdo_discipline_wrapp.mdo_discipline.cache = mda_chain_cache
-            self.mdo_discipline_wrapp.mdo_discipline.n_calls = mda_chain_n_calls
 
         # set cache of MDOChain with cache_type and cache_file_path inputs of
         # ProxyCoupling
         self.set_cache(
             self.mdo_discipline_wrapp.mdo_discipline.mdo_chain, cache_type, cache_file_path)
 
-        # set epsilon0 and cache of sub_mda_list
-        for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.sub_mda_list:
+        # set epsilon0 and cache of inner_mdas
+        for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.inner_mdas:
             self.set_epsilon0_and_cache(sub_mda)
 
     def check_var_data_mismatch(self):
