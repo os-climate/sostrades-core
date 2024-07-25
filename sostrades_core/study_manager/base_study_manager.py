@@ -20,8 +20,7 @@ from __future__ import annotations
 from contextlib import suppress
 from copy import deepcopy
 from importlib import import_module
-from logging import DEBUG
-from logging import INFO
+from logging import DEBUG, INFO
 from pathlib import Path
 from time import time
 from typing import TYPE_CHECKING
@@ -30,8 +29,7 @@ from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
-from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump
-from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump, DirectLoadDump
 from sostrades_core.tools.tree.serializer import DataSerializer
 
 if TYPE_CHECKING:
