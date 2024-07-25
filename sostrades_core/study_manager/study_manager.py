@@ -18,7 +18,7 @@ limitations under the License.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -27,6 +27,8 @@ from sostrades_core.sos_processes.script_test_all_usecases import processed_test
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 
 if TYPE_CHECKING:
+    from logging import Logger
+
     from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 ValueType = Union[list[Union[float, int]], NDArray, float, int]
@@ -36,13 +38,24 @@ class StudyManager(BaseStudyManager):
     """Class that contains additional methods to manage a study."""
 
     def __init__(
-        self, file_path: Path | str, run_usecase: bool = True, execution_engine: ExecutionEngine = None
+        self,
+        file_path: Path | str,
+        run_usecase: bool = True,
+        execution_engine: ExecutionEngine | None = None,
+        dump_directory: str | None = None,
+        yield_method: Callable | None = None,
+        logger: Logger | None = None,
+        test_post_procs: bool = True,
     ) -> None:
         """
         Args:
             file_path: The path to the usecase file.
             run_usecase: Whether the usecase shall be run.
             execution_engine: The usecase ExecutionEngine.
+            dump_directory: The directory where to dump the data.
+            yield_method: The method to be executed between iterations of the configuration loop.
+            logger: The sutdy's logger.
+            test_post_procs: Whether to also test the post-processing when testing the study.
         """
         # Get the process folder name
         study_file_path = Path(file_path).resolve()
@@ -67,7 +80,15 @@ class StudyManager(BaseStudyManager):
         self.dspace["dspace_size"] = 0
 
         super().__init__(
-            repository_name, process_name, study_file_name, run_usecase=run_usecase, execution_engine=execution_engine
+            repository_name,
+            process_name,
+            study_file_name,
+            dump_directory=dump_directory,
+            run_usecase=run_usecase,
+            yield_method=yield_method,
+            logger=logger,
+            execution_engine=execution_engine,
+            test_post_procs=test_post_procs,
         )
 
     def update_dspace_dict_with(
