@@ -91,7 +91,6 @@ class SoSMDOScenario(MDOScenario):
 
         '''
         self.status = self.ExecutionStatus.RUNNING
-        self.update_default_coupling_inputs()
 
         if self.eval_mode:
             self.run_eval_mode()
@@ -319,40 +318,6 @@ class SoSMDOScenario(MDOScenario):
             # Only solution is to specify design space inputs as outputs of the mdoscenario
             self.local_data.update({k: x[current_idx:current_idx + k_size]})
             current_idx += k_size
-
-    def update_default_coupling_inputs(self):
-        '''
-        Update default inputs of the couplings
-        '''
-        for disc in self._disciplines:
-            self._set_default_inputs_from_local_data(disc)
-
-    def _set_default_inputs_from_local_data(self, disc):
-        """
-        Based on dm values, default_inputs are set to mdachains,
-        and default_inputs dtype is set to complex in case of complex_step gradient computation.
-        """
-        input_data = {}
-        input_data_names = disc.get_input_data_names()
-        for data_name in input_data_names:
-            if data_name in self.local_data.keys():
-                val = self.local_data[data_name]
-            else:
-                val = None
-            # for cases of early configure steps
-            if val is not None:
-                input_data[data_name] = val
-
-        # store mdo_chain default inputs
-        if disc.is_sos_coupling:
-            input_data_in_mdochain = {key: value for key, value in input_data.items() if
-                                      key in disc.mdo_chain.input_grammar.names}
-            disc.mdo_chain.default_inputs.update(input_data_in_mdochain)
-        disc.default_inputs.update(input_data)
-
-        if hasattr(disc, 'disciplines'):
-            for disc in disc.disciplines:
-                self._set_default_inputs_from_local_data(disc)
 
     def update_design_space_out(self):
         """

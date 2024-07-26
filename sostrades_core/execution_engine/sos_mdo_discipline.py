@@ -78,7 +78,6 @@ class SoSMDODiscipline(MDODiscipline):
         # self.disciplines = [] # TODO: remove and leave in driver
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
-        # self.check_linearize_data_changes = False
         self.input_full_name_map = None
         self.output_full_name_map = None
         self.logger = logger
@@ -168,87 +167,6 @@ class SoSMDODiscipline(MDODiscipline):
             return self.get_input_data_names(filtered_inputs=True), self.get_output_data_names(filtered_outputs=True)
 
         return self._differentiated_inputs, self._differentiated_outputs
-
-    # def linearize(self, input_data=None, force_all=False, execute=True,
-    #               exec_before_linearize=True):
-    #     """overloads GEMS linearize function
-    #     """
-    #
-    #     # self.default_inputs = self._default_inputs
-    #     # if input_data is not None:
-    #     #     self.default_inputs.update(input_data)
-    #
-    #     if self.linearization_mode == self.LinearizationMode.COMPLEX_STEP:
-    #         # is complex_step, switch type of inputs variables
-    #         # perturbed to complex
-    #         inputs, _ = self._retreive_diff_inouts(force_all)
-    #         def_inputs = self.default_inputs
-    #         for name in inputs:
-    #             def_inputs[name] = def_inputs[name].astype('complex128')
-    #     else:
-    #         pass
-    #
-    #     # need execution before the linearize
-    #     if execute and exec_before_linearize:
-    #         self.reset_statuses_for_run()
-    #         self.exec_for_lin = True
-    #         self.execute(input_data)
-    #         self.exec_for_lin = False
-    #         execute = False
-    #         need_execution_after_lin = False
-    #
-    #     # need execution but after linearize, in the NR GEMSEO case an
-    #     # execution is done bfore the while loop which udates the local_data of
-    #     # each discipline
-    #     elif execute and not exec_before_linearize:
-    #         execute = False
-    #         need_execution_after_lin = True
-    #
-    #     # no need of any execution
-    #     else:
-    #         need_execution_after_lin = False
-    #         # maybe no exec before the first linearize, GEMSEO needs a
-    #         # local_data with inputs and outputs for the jacobian computation
-    #         # if the local_data is empty
-    #         if self._local_data == {}:
-    #             own_data = {
-    #                 k: v for k, v in self.default_inputs.items() if
-    #                 self.is_input_existing(k) or self.is_output_existing(k)}
-    #             self._local_data = own_data
-    #
-    #     # The local_data shall be reset to their original values
-    #     # in case an input is also an output,
-    #     # if we don't want to keep the computed state (as in MDAs).
-    #     if not self._linearize_on_last_state:
-    #         self._local_data.update(input_data)
-    #
-    #     if self.check_linearize_data_changes and not self.is_sos_coupling:
-    #         disc_data_before_linearize = {key: {'value': value} for key, value in deepcopy(
-    #             self.default_inputs).items() if key in self.input_grammar.keys()}
-    #
-    #     # Set STATUS to LINEARIZE for GUI visualization
-    #     self.status = self.ExecutionStatus.LINEARIZE
-    #     result = MDODiscipline.linearize(
-    #         self, self.default_inputs, force_all, execute)
-    #     self.status = self.ExecutionStatus.DONE
-    #
-    #     self._check_nan_in_data(result)
-    #     if self.check_linearize_data_changes and not self.is_sos_coupling:
-    #         disc_data_after_linearize = {key: {'value': value} for key, value in deepcopy(
-    #             self.default_inputs).items() if key in disc_data_before_linearize.keys()}
-    #         is_output_error = True
-    #         output_error = self.check_discipline_data_integrity(disc_data_before_linearize,
-    #                                                             disc_data_after_linearize,
-    #                                                             'Discipline data integrity through linearize',
-    #                                                             is_output_error=is_output_error)
-    #         if output_error != '':
-    #             raise ValueError(output_error)
-    #
-    #     if need_execution_after_lin:
-    #         self.reset_statuses_for_run()
-    #         self.execute(self.default_inputs)
-    #
-    #     return result
 
     def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
                        step=1e-7, threshold=1e-8, linearization_mode=MDODiscipline.LinearizationMode.AUTO,
@@ -394,41 +312,6 @@ class SoSMDODiscipline(MDODiscipline):
                 value = lil_matrix(value)
             self.jac[y_key][x_key] = value
 
-    # def create_io_full_name_map(self):
-    #     """
-    #     Create an io_full_name_map ainsi que des input_full_name_map and output_full_name_map for its sos_wrapp
-    #
-    #     Return:
-    #         input_full_name_map (Dict[Str]): dict whose keys are input short names and values are input full names
-    #         output_full_name_map (Dict[Str]): dict whose keys are output short names and values are output full names
-    #     Sets attribute:
-    #         self.io_full_name_map (Dict[Str]): union of the two above used for local data update
-    #     """
-    #
-    #     if self.output_full_name_map is None:
-    #         self.output_full_name_map = {}
-    #         for key in self.get_output_data_names():
-    #             short_name_key = self.io_full_name_to_short(key)
-    #             #FIXME: quick fix
-    #             if short_name_key not in self.output_full_name_map:
-    #                 self.output_full_name_map[short_name_key] = key
-    #
-    #     if self.input_full_name_map is None:
-    #         self.input_full_name_map = {}
-    #         for key in self.get_input_data_names():
-    #             short_name_key = self.io_full_name_to_short(key)
-    #             # FIXME: quick fix
-    #             if short_name_key not in self.input_full_name_map:
-    #                 self.input_full_name_map[short_name_key] = key
-    #
-    #     return self.input_full_name_map, self.output_full_name_map
-
-    def io_full_name_to_short(self, full_name_key):
-        return self.reduced_dm[full_name_key][SoSWrapp.VAR_NAME]
-
-    # def io_short_name_to_full(self, short_name_key):
-    #     return self.io_full_name_map[short_name_key]
-
     def get_input_data_names(self, filtered_inputs=False):  # type: (...) -> List[str]
         """
         Retrieve the names of the input variables from the input_grammar.
@@ -459,20 +342,6 @@ class SoSMDODiscipline(MDODiscipline):
             return self.output_grammar.names
         else:
             return filter_variables_to_convert(self.reduced_dm, self.output_grammar.names)
-
-    # def get_attributes_to_serialize(self):  # pylint: disable=R0201
-    #     """
-    #     Define the names of the attributes to be serialized.
-    #
-    #     overload of gemseo's method.
-    #
-    #     Return:
-    #         List[string] the names of the attributes to be serialized.
-    #     """
-    #     # pylint warning ==> method could be a function but when overridden,
-    #     # it is a function==> self is required
-    #
-    #     return super().get_attributes_to_serialize() + [self._NEW_ATTR_TO_SERIALIZE]
 
     def _get_columns_indices(self, inputs, outputs, input_column, output_column):
         """

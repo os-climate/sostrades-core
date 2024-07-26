@@ -62,11 +62,8 @@ class SoSMDAChain(MDAChain):
     RESIDUALS_HISTORY = "residuals_history"
     NUM_DESC_IN = {
         SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto',
-                                              # POSSIBLE_VALUES: list(MDODiscipline.AVAILABLE_MODES),
                                               NUMERICAL: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: MDOChain.CacheType.NONE,
-                     # POSSIBLE_VALUES: [MDOChain.CacheType.NONE, MDODiscipline.SIMPLE_CACHE],
-                     # [MDOChain.CacheType.NONE, MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                      NUMERICAL: True,
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
@@ -120,11 +117,6 @@ class SoSMDAChain(MDAChain):
         """
         self.logger = logger
         self.is_sos_coupling = True
-        # =========================================================================
-        # #         self.ee = ee
-        # #         self.dm = ee.dm
-        # =========================================================================
-        # self.authorize_self_coupled_disciplines = authorize_self_coupled_disciplines
         self.reduced_dm = reduced_dm
 
         super().__init__(disciplines,
@@ -189,123 +181,6 @@ class SoSMDAChain(MDAChain):
         out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
         self.store_local_data(**out)
 
-    # nothing saved in the DM anymore during execution
-
-    #         self.proxy_discipline.store_sos_outputs_values(dict_out, update_dm=True)
-
-    #         # store local data in datamanager
-    #         self.proxy_discipline.update_dm_with_local_data(self.local_data)
-
-    def __set_local_data(self, data):
-        self._local_data = data
-
-    def pre_run_mda(self):
-        '''
-        Pre run needed if one of the strong coupling variables is None in a MDA
-        No need of prerun otherwise
-        '''
-        strong_couplings = [
-            key for key in self.strong_couplings if
-            key in self.local_data]  # TODO: replace local_data[key] per key should work
-        if len(strong_couplings) < len(self.strong_couplings) and len(self.disciplines) > 1:
-            self.logger.info(
-                'Execute a pre-run for the coupling ' + self.name)
-            self.recreate_order_for_first_execution()
-            self.logger.info(
-                'End of pre-run execution for the coupling ' + self.name)
-
-    def recreate_order_for_first_execution(self):
-        '''
-        For each sub mda defined in the GEMS execution sequence,
-        we run disciplines by disciplines when they are ready to fill all values not initialized in the DM
-        until all disciplines have been run.
-        While loop cannot be an infinite loop because raise an exception
-        if no disciplines are ready while some disciplines are missing in the list
-        '''
-        for parallel_tasks in self.coupling_structure.sequence:
-            # to parallelize, check if 1 < len(parallel_tasks)
-            # for now, parallel tasks are run sequentially
-            for coupled_disciplines in parallel_tasks:
-                # several disciplines coupled
-                # first_disc = coupled_disciplines[0]
-                if len(coupled_disciplines) > 1:
-                    # or (len(coupled_disciplines) == 1
-                    # and self.coupling_structure.is_self_coupled(first_disc)
-                    ##### DEACTIVATE OPTION authorize_self_coupled_disciplines that was not correctly implemented for strong couplings (flag in GEMSEO to True)
-                    # Option that is never used
-                    # and self.authorize_self_coupled_disciplines
-                    # several disciplines coupled
-
-                    # get the disciplines from self.disciplines
-                    # order the MDA disciplines the same way as the
-                    # original disciplines
-                    sub_mda_disciplines = [
-                        disc
-                        for disc in self.disciplines
-                        if disc in coupled_disciplines
-                    ]
-                    # submda disciplines are not ordered in a correct exec
-                    # sequence...
-                    # Need to execute ready disciplines one by one until all
-                    # sub disciplines have been run
-                    while sub_mda_disciplines != []:
-                        ready_disciplines = self.get_first_discs_to_execute(
-                            sub_mda_disciplines)
-                        for discipline in ready_disciplines:
-                            # Execute ready disciplines and update local_data
-                            if discipline.is_sos_coupling:
-                                # recursive call if subdisc is a SoSCoupling
-                                # TODO: check if it will work for cases like
-                                # Coupling1 > Driver > Coupling2
-                                discipline.pre_run_mda()
-                                self.local_data.update(discipline.local_data)
-                            else:
-                                temp_local_data = discipline.execute(
-                                    self.local_data)
-                                self.local_data.update(temp_local_data)
-
-                        sub_mda_disciplines = [
-                            disc for disc in sub_mda_disciplines if disc not in ready_disciplines]
-                else:
-                    discipline = coupled_disciplines[0]
-                    if discipline.is_sos_coupling:
-                        # recursive call if subdisc is a SoSCoupling
-                        discipline.local_data.update(self.local_data)
-                        discipline.pre_run_mda()
-                        self.local_data.update(discipline.local_data)
-                    else:
-                        temp_local_data = discipline.execute(self.local_data)
-                        self.local_data.update(temp_local_data)
-
-        self.default_inputs.update(self.local_data)
-
-    def get_first_discs_to_execute(self, disciplines):
-
-        ready_disciplines = []
-        disc_vs_keys_none = {}
-        for disc in disciplines:
-            #             # get inputs values of disc with full_name
-            #             inputs_values = disc.get_inputs_by_name(
-            #                 in_dict=True, full_name=True)
-            # update inputs values with SoSCoupling local_data
-            inputs_values = {}
-            inputs_values.update(disc._filter_inputs(self.local_data))
-            keys_none = [key for key in disc.get_input_data_names()
-                         if inputs_values.get(key) is None and not any(
-                    [key.endswith(num_key) for num_key in self.NUM_DESC_IN])]
-            if keys_none == []:
-                ready_disciplines.append(disc)
-            else:
-                disc_vs_keys_none[disc.name] = keys_none
-        if ready_disciplines == []:
-            message = '\n'.join(' : '.join([disc, str(keys_none)])
-                                for disc, keys_none in disc_vs_keys_none.items())
-            raise Exception(
-                f'The MDA cannot be pre-runned, some input values are missing to run the MDA \n{message}')
-        else:
-            return ready_disciplines
-
-
     def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
                        step=1e-7, threshold=1e-8, linearization_mode='auto',
                        inputs=None, outputs=None, parallel=False,
@@ -338,16 +213,9 @@ class SoSMDAChain(MDAChain):
             save_reference_jacobian = False
 
         if outputs is None:
-            # output_list = []
-            # for disc in self.disciplines:
-            #     output_list += disc.get_output_data_names(
-            #         filtered_outputs=True)
             outputs = self.get_output_data_names(
                 filtered_outputs=True, residual_norm_removal=True)  # list(set(output_list))
         if inputs is None:
-            # input_list = []
-            # for disc in self.disciplines:
-            #     input_list += disc.get_input_data_names(filtered_inputs=True)
             inputs = self.get_input_data_names(
                 filtered_inputs=True)  # list(set(input_list))
         print('Check jacobian mda_chain : ', linearization_mode)
@@ -383,155 +251,6 @@ class SoSMDAChain(MDAChain):
 
         MDAChain._compute_jacobian(self, inputs, outputs)
 
-        # if self.check_min_max_gradients:
-        #     print("IN CHECK of soscoupling")
-        #     self._check_min_max_gradients(self.jac)
-
-    # def _create_mdo_chain(
-    #         self,
-    #         disciplines,
-    #         inner_mda_name="MDAJacobi",
-    #         sub_coupling_structures=None,
-    #         mdachain_parallelize_tasks=False,
-    #         mdachain_parallel_options=None,
-    #         initialize_defaults=False,
-    #         **inner_mda_options
-    # ):
-    #     """
-    #     ** Adapted from MDAChain Class in GEMSEO (overload)**
-    #
-    #     Create an MDO chain from the execution sequence of the disciplines.
-    #
-    #     Args:
-    #         inner_mda_name: The name of the class of the sub-MDAs.
-    #         disciplines: The disciplines.
-    #         sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
-    #             If None, they are created from the sub-disciplines.
-    #         **sub_mda_options: The options to be used to initialize the sub-MDAs.
-    #
-    #     disciplines,  # type: Sequence[MDODiscipline]
-    #     inner_mda_name="MDAJacobi",  # type: str
-    #     # type: Optional[Iterable[MDOCouplingStructure]]
-    #     sub_coupling_structures=None,
-    #     **sub_mda_options  # type: Optional[Union[float,int,bool,str]]
-    #     """
-    #     chained_disciplines = []
-    #     self.inner_mdas = []
-    #
-    #     if sub_coupling_structures is None:
-    #         sub_coupling_structures = repeat(None)
-    #
-    #     self.__sub_coupling_structures_iterator = iter(sub_coupling_structures)
-    #
-    #     for parallel_tasks in self.coupling_structure.sequence:
-    #         # to parallelize, check if 1 < len(parallel_tasks)
-    #         # for now, parallel tasks are run sequentially
-    #         for coupled_disciplines in parallel_tasks:
-    #             first_disc = coupled_disciplines[0]
-    #             if len(coupled_disciplines) > 1:
-    #                 # or (len(coupled_disciplines) == 1
-    #                 # and self.coupling_structure.is_self_coupled(first_disc)
-    #                 # TODO: replace by "and not
-    #                 # isinstance(coupled_disciplines[0], MDA)" as in GEMSEO
-    #                 # actual version
-    #                 # and not coupled_disciplines[0].is_sos_coupling
-    #                 ##### DEACTIVATE OPTION authorize_self_coupled_disciplines that was not correctly implemented for strong couplings (flag in GEMSEO to True)
-    #                 # Option that is never used
-    #                 # #self.authorize_self_coupled_disciplines
-    #
-    #                 # several disciplines coupled
-    #
-    #                 # order the MDA disciplines the same way as the
-    #                 # original disciplines
-    #                 sub_mda_disciplines = [
-    #                     disc
-    #                     for disc in disciplines
-    #                     if disc in coupled_disciplines
-    #                 ]
-    #
-    #                 # if activated, all coupled disciplines involved in the MDA
-    #                 # are grouped into a MDOChain (self coupled discipline)
-    #                 #                     if self.get_inputs_by_name("group_mda_disciplines"):
-    #                 #                         sub_mda_disciplines = [MDOChain(sub_mda_disciplines,
-    #                 #                                                         grammar_type=self.grammar_type)]
-    #                 # create a sub-MDA
-    #                 inner_mda_options["linear_solver_tolerance"] = self.linear_solver_tolerance
-    #                 if inner_mda_name not in ['MDAGaussSeidel', 'MDAQuasiNewton']:
-    #                     inner_mda_options["n_processes"] = self.n_processes
-    #                 sub_mda = create_mda(
-    #                     inner_mda_name,
-    #                     sub_mda_disciplines,
-    #                     max_mda_iter=self.max_mda_iter,
-    #                     tolerance=self.tolerance,
-    #                     scaling_method=self.scaling,
-    #                     grammar_type=self.grammar_type,
-    #                     use_lu_fact=self.use_lu_fact,
-    #                     linear_solver=self.linear_solver,
-    #                     linear_solver_options=self.linear_solver_options,
-    #                     log_convergence=True,
-    #                     coupling_structure=next(
-    #                         self.__sub_coupling_structures_iterator),
-    #                     **inner_mda_options
-    #                 )
-    #                 #                     self.set_epsilon0_and_cache(sub_mda)
-    #
-    #                 chained_disciplines.append(sub_mda)
-    #                 self.inner_mdas.append(sub_mda)
-    #             else:
-    #                 # single discipline
-    #                 chained_disciplines.append(first_disc)
-    #
-    #     # TODO: reactivate parallel
-    #
-    #     #         if self.get_inputs_by_name("n_subcouplings_parallel") > 1:
-    #     #             chained_disciplines = self._parallelize_chained_disciplines(
-    #     #                 chained_disciplines, self.grammar_type)
-    #
-    #     # create the MDO chain that sequentially evaluates the sub-MDAs and the
-    #     # single disciplines
-    #     self.mdo_chain = MDOChain(
-    #         chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
-    #     )
-
-    # =========================================================================
-    #     def _parallelize_chained_disciplines(self, disciplines, grammar_type):
-    #         ''' replace the "parallelizable" flagged (eg, scenarios) couplings by one parallel chain
-    #         with all the scenarios inside
-    #         '''
-    #         scenarios = []
-    #         ind = []
-    #         # - get scenario list, if any
-    #         for i, disc in enumerate(disciplines):
-    #             # check if attribute exists (mainly to avoid gems built-in objects
-    #             # like mdas)
-    #             if hasattr(disc, 'is_parallel'):
-    #                 if disc.is_parallel:
-    #                     scenarios.append(disc)
-    #                     ind.append(i)
-    #         if len(scenarios) > 0:
-    #             # - build the parallel chain
-    #             n_subcouplings_parallel = self.get_inputs_by_name(
-    #                 "n_subcouplings_parallel")
-    #             LOGGER.info(
-    #                 "Detection of %s parallelized disciplines" % str(len(scenarios)))
-    #             par_chain = SoSParallelChain(scenarios, use_threading=False,
-    #                                          name="SoSParallelChain",
-    #                                          grammar_type=grammar_type,
-    #                                          n_processes=n_subcouplings_parallel)
-    #             # - remove the scenarios from the disciplines list
-    #             disciplines[:] = [d for d in disciplines if d not in scenarios]
-    #             # - insert the parallel chain in place of the first scenario
-    #             if ind[0] > len(disciplines):
-    #                 # all scenarios where at the end of the discipline list
-    #                 # we put the parallel chain at the end of the list
-    #                 disciplines.append(par_chain)
-    #             else:
-    #                 # we insert the parallel chain in place of the first scenario
-    #                 # found
-    #                 disciplines.insert(ind[0], par_chain)
-    #
-    #         return disciplines
-    # =========================================================================
 
     #  METHODS TO DEBUG MDA CHAIN (NEEDED FOR LINEARIZE)
     # ----------------------------------------------------
