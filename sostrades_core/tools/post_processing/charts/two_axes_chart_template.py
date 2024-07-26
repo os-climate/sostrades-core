@@ -14,6 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import numpy as np
+import pandas as pd
+
 from sostrades_core.tools.post_processing.post_processing_plotly_tooling import (
     AbstractPostProcessingPlotlyTooling,
 )
@@ -121,10 +124,8 @@ class SeriesTemplate:
 
     @abscissa.setter
     def abscissa(self, values):
-        if not isinstance(values, list):
-            message = f'"abscissa" argument is intended to be a list not {type(values)}'
-            raise TypeError(message)
-        self.__abscissa = values
+        self.__abscissa = self.__convert_to_list(values, 'abscissa')
+
 
     def abscissa_filtered(self, logger=None):
         """
@@ -144,10 +145,7 @@ class SeriesTemplate:
 
     @ordinate.setter
     def ordinate(self, values):
-        if not isinstance(values, list):
-            message = f'"ordinate" argument is intended to be a list not {type(values)}'
-            raise TypeError(message)
-        self.__ordinate = values
+        self.__ordinate = self.__convert_to_list(values, 'ordinate')
 
     def ordinate_filtered(self, logger=None):
         """
@@ -160,6 +158,17 @@ class SeriesTemplate:
         """
 
         return self.__filter_values(self.ordinate, 'Ordinate', logger)
+
+    def __convert_to_list(self, values, attribute_name):
+        if isinstance(values, list):
+            return values
+        elif isinstance(values, (np.ndarray, pd.Series)):
+            return values.tolist()
+        elif hasattr(values, '__iter__'):
+            return list(values)
+        else:
+            message = f'"{attribute_name}" argument is intended to be a list-like object, not {type(values)}'
+            raise TypeError(message)
 
     def __filter_values(self, values, property_name, logger=None):
         """
