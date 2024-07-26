@@ -248,7 +248,7 @@ class MDODisciplineWrapp(object):
 
             self.mdo_discipline = mdo_discipline
 
-            self.__update_gemseo_grammar(proxy, mdo_discipline)
+            self.__update_gemseo_grammar(proxy, mdo_discipline, mdoscenario=True)
             proxy.status = self.mdo_discipline.status
 
         elif self.wrapping_mode == 'GEMSEO':
@@ -264,7 +264,7 @@ class MDODisciplineWrapp(object):
                 self.mdo_discipline.default_inputs.update(
                     {full_key: value[proxy.VALUE]})
 
-    def __update_gemseo_grammar(self, proxy, mdachain):
+    def __update_gemseo_grammar(self, proxy, mdachain, mdoscenario=False):
         '''
         update GEMSEO grammar with sostrades
         # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
@@ -290,8 +290,10 @@ class MDODisciplineWrapp(object):
         # missing_outputs_names_to_types = {key: var_type_map[proxy.dm.get_data(key, proxy.TYPE)] for key in
         #                                   missing_outputs}
 
-        # Delete missing inputs that are already outputs not the way of thinking in GEMSEO
-        # missing_inputs.difference_update(missing_outputs)
+        # if this a mdoscenario then we add design space inputs to the outputs :
+        if mdoscenario:
+            design_space_inputs = self.mdo_discipline.design_space.variable_names
+            missing_outputs.update(design_space_inputs)
 
 
         # i/o grammars update with SoSTrades i/o

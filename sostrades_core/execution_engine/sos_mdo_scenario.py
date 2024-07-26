@@ -102,6 +102,7 @@ class SoSMDOScenario(MDOScenario):
         for data in outputs:
             self.local_data.update(data)
 
+        self.add_design_space_inputs_to_local_data()
         # save or not the output of design space for post processings
         if not self.desactivate_optim_out_storage:
             self.update_design_space_out()
@@ -285,8 +286,7 @@ class SoSMDOScenario(MDOScenario):
 
 
         """
-        functions = problem.nonproc_constraints + \
-                    [problem.nonproc_objective]
+        functions = list(problem.constraints.get_originals()) + [problem.objective.original]
         self.logger.info(f'list of functions to evaluate {functions}')
 
         for func in functions:
@@ -298,10 +298,26 @@ class SoSMDOScenario(MDOScenario):
             except TypeError:
                 self.logger.error("Failed to evaluate function %s", func)
                 raise
+
+    def add_design_space_inputs_to_local_data(self):
+        '''
+
+        Add Design space inputs values to the local_data to store it in the dm
+
+        '''
+
+        problem = self.formulation.optimization_problem
+
+        if problem.solution is not None:
+            x = problem.solution.x_opt
+        else:
+            x = problem.design_space.get_current_value()
         current_idx = 0
         for k, v in problem.design_space.items():
             k_size = v.size
-            self.local_data.update({k: x_vect[current_idx:current_idx + k_size]})
+            # WARNING we fill input in local_data that will be deleted by GEMSEO because they are not outputs ...
+            # Only solution is to specify design space inputs as outputs of the mdoscenario
+            self.local_data.update({k: x[current_idx:current_idx + k_size]})
             current_idx += k_size
 
     def update_default_coupling_inputs(self):
