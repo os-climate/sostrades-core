@@ -771,6 +771,19 @@ class TestDatasets(unittest.TestCase):
                 pass
             raise
 
+    def test_20_import_wildcard_in_namespaces(self):
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+
+        dm = study.execution_engine.dm
+
+        study.update_data_from_dataset_mapping(
+            DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_local_dataset_2groups_wildcard_ns.json")))
+
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
+
+
 if __name__=="__main__":
     cls = TestDatasets()
     cls.setUp()
