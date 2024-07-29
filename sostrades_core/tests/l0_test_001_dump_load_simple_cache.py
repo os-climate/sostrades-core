@@ -373,7 +373,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_1.load_data()
 
         # cache activation
-        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache',
+        dict_values = {f'{study_1.study_name}.SellarCoupling.cache_type': 'SimpleCache',
                        f'{study_1.study_name}.propagate_cache_to_children': True}
         study_1.load_data(from_input_dict=dict_values)
 
@@ -484,7 +484,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_1.load_data()
 
         # cache activation
-        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache',
+        dict_values = {f'{study_1.study_name}.SellarCoupling.cache_type': 'SimpleCache',
                        f'{study_1.study_name}.propagate_cache_to_children': True,
                        f'{study_1.study_name}.SellarCoupling.inner_mda_name': 'MDANewtonRaphson'}
         study_1.load_data(from_input_dict=dict_values)
