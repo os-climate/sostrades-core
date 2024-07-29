@@ -13,8 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+from __future__ import annotations
+
 import platform
 import time
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -33,57 +37,53 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
 
 
 class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
+    """Class that executes a DOE."""
 
-    def samples_evaluation(self, samples, convert_to_array=True, completed_eval_in_list=None):
+    def samples_evaluation(self, samples, convert_to_array=True):
         """
         This function executes a parallel execution of the function sample_evaluation
         over a list a samples. Depending on the numerical parameter n_processes it loops
         on a sequential or parallel way over the list of samples to evaluate
         """
-
         self._init_input_data()
 
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
-        wait_time_between_samples = self.get_sosdisc_inputs(
-            'wait_time_between_fork')
+        wait_time_between_samples = self.get_sosdisc_inputs('wait_time_between_fork')
         if platform.system() == 'Windows' or n_processes == 1:
             if n_processes != 1:
-                self.logger.warning(
-                    "multiprocessing is not possible on Windows")
+                self.logger.warning("multiprocessing is not possible on Windows")
                 n_processes = 1
             self.logger.info("running sos eval in sequential")
             scenario_nb = len(samples)
             for i in tqdm(range(scenario_nb), ncols=100, position=0):
                 time.sleep(0.1)
                 scenario_name = samples[i][SampleGeneratorWrapper.SCENARIO_NAME]
-                self.logger.info(f'   {scenario_name} is running.')
+                self.logger.info("   %s is running.", scenario_name)
                 x = {key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
 
-                evaluation_output[scenario_name] = x, self.evaluation(
-                    x, scenario_name, convert_to_array)
+                evaluation_output[scenario_name] = x, self.evaluation(x, convert_to_array)
             return evaluation_output
 
         if n_processes > 1:
-            self.logger.info(
-                "Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
+            self.logger.info("Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
 
             # Create the parallel execution object. The function we want to
             # parallelize is the sample_evaluation
             def sample_evaluator(sample_to_evaluate):
-                """Evaluate a sample
-                """
+                """Evaluate a sample"""
                 return self.evaluation(sample_to_evaluate, convert_to_array=False)
 
-            parallel = ParallelExecution(sample_evaluator, n_processes=n_processes,
-                                         wait_time_between_fork=wait_time_between_samples)
+            parallel = ParallelExecution(
+                sample_evaluator, n_processes=n_processes, wait_time_between_fork=wait_time_between_samples
+            )
 
             # Define a callback function to store the samples on the fly
             # during the parallel execution
             def store_callback(
-                    index,  # type: int
-                    outputs,  # type: DOELibraryOutputType
-            ):  # type: (...) -> None
+                index: int,
+                outputs: dict[str, Any],
+            ) -> None:
                 """Store the outputs in dedicated dictionnary:
                 - Here the dictionnary key is the sample evaluated and the value is the evaluation output
                 Args:
@@ -93,56 +93,55 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 scenario_name = samples[index][SampleGeneratorWrapper.SCENARIO_NAME]
                 evaluation_output[scenario_name] = (samples[index], outputs)
                 self.logger.info(
-                    f'{scenario_name} has been run. computation progress: {int(((len(evaluation_output)) / len(samples)) * 100)}% done.')
+                    "%s has been run. computation progress: %d %% done.",
+                    scenario_name,
+                    int(((len(evaluation_output)) / len(samples)) * 100),
+                )
                 time.sleep(0.05)
 
             try:
                 # execute all the scenarios (except the reference scenario)  in
                 # parallel
                 # remove the scenario_name key of each sample
-                x = [{key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME} for i in range(len(samples))]
+                x = [
+                    {key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
+                    for i in range(len(samples))
+                ]
 
                 parallel.execute(x[0:-1], exec_callback=store_callback)
                 # execute the reference scenario in a sequential way so that
                 # sostrades objects are updated
                 scenario_name = samples[-1][SampleGeneratorWrapper.SCENARIO_NAME]
-                evaluation_output[scenario_name] = samples[-1], self.evaluation(
-                    x[-1], scenario_name, convert_to_array)
-                self.proxy_disciplines[0]._update_status_recursive(
-                    self.STATUS_DONE)
+                evaluation_output[scenario_name] = samples[-1], self.evaluation(x[-1], convert_to_array)
+                self.proxy_disciplines[0]._update_status_recursive(self.STATUS_DONE)
                 dict_to_return = {}
                 # return the outputs in the same order of the scenario lists
                 for sample in samples:
                     scenario_name = sample[SampleGeneratorWrapper.SCENARIO_NAME]
-                    if scenario_name in evaluation_output.keys():
+                    if scenario_name in evaluation_output:
                         dict_to_return[scenario_name] = evaluation_output[scenario_name]
-
+            except Exception:
+                self.proxy_disciplines[0]._update_status_recursive(self.STATUS_FAILED)  # FIXME: This won't work
+            else:
                 return dict_to_return
+        return None
 
-            except:
-                self.proxy_disciplines[0]._update_status_recursive(
-                    self.STATUS_FAILED)  # FIXME: This won't work
-
-    def evaluation(self, x, scenario_name=None, convert_to_array=True):
+    def evaluation(self, x, convert_to_array=True):
         """
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
         """
         values_dict = x
-        local_data = self.attributes['sub_mdo_disciplines'][0].execute(
-            self._get_input_data(values_dict))
-        out_local_data = self._select_output_data(
-            local_data, self.attributes['eval_out_list'])
+        local_data = self.attributes['sub_mdo_disciplines'][0].execute(self._get_input_data(values_dict))
+        out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'])
 
         # needed for gradient computation
         # TODO: manage data flow for gradient computation ?
         # self.attributes['dm'].set_values_from_dict(local_data)
 
         if convert_to_array:
-            out_local_data_converted = convert_new_type_into_array(
-                out_local_data, self.attributes['reduced_dm'])
-            out_values = np.concatenate(
-                list(out_local_data_converted.values())).ravel()
+            out_local_data_converted = convert_new_type_into_array(out_local_data, self.attributes['reduced_dm'])
+            out_values = np.concatenate(list(out_local_data_converted.values())).ravel()
         else:
             # out_values = list(out_local_data.values())
             out_values = []
@@ -185,24 +184,30 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
     #         # drop irrelevant + reorder
     #         self.custom_samples = self.custom_samples[self.attributes['selected_inputs']]
 
-    def run(self):
-        '''
-            Overloaded SoSEval method
-            The execution of the doe
-        '''
+    def run(self) -> None:
+        """
+        Execute the DOE.
+
+        Overloads the SoSEval method.
+        """
         # upadte default inputs of children with dm values -> should not be necessary in EEV4
         # self.update_default_inputs(self.attributes['sub_mdo_disciplines'])
 
-        dict_sample = {}
         dict_output = {}
 
         # We first begin by sample generation
         samples_df = self.get_sosdisc_inputs(SampleGeneratorWrapper.SAMPLES_DF)
 
-        input_columns = [f"{self.attributes['driver_name']}.{col}" for col in samples_df.columns
-                         if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
-        input_columns_short_name = [col for col in samples_df.columns
-                         if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO]
+        input_columns = [
+            f"{self.attributes['driver_name']}.{col}"
+            for col in samples_df.columns
+            if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO
+        ]
+        input_columns_short_name = [
+            col
+            for col in samples_df.columns
+            if col != SampleGeneratorWrapper.SCENARIO_NAME and col != SampleGeneratorWrapper.SELECTED_SCENARIO
+        ]
         # get reference scenario
         reference_values = self.get_sosdisc_inputs(input_columns, full_name_keys=True)
         if len(input_columns) == 1:
@@ -232,14 +237,12 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             self.samples.append(reference_scenario)
 
         # evaluation of the samples through a call to samples_evaluation
-        evaluation_outputs = self.samples_evaluation(
-            self.samples, convert_to_array=False)
+        evaluation_outputs = self.samples_evaluation(self.samples, convert_to_array=False)
 
         # we loop through the samples evaluated to build dictionaries needed
         # for output generation
 
-        for (scenario_name, evaluated_samples) in evaluation_outputs.items():
-
+        for scenario_name, evaluated_samples in evaluation_outputs.items():
             # generation of the dictionary of outputs
             dict_one_output = {}
             current_output = evaluated_samples[1]
@@ -250,14 +253,10 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         # construction of a dataframe of generated samples
         # columns are selected inputs
 
-        samples_all_row = []
         out_samples_all_row = []
-        for (scenario, scenario_sample) in dict_sample.items():
-            samples_row = [scenario]
+        for scenario in evaluation_outputs:
             out_samples_row = [scenario]
-            samples_row += list(scenario_sample.values())
             out_samples_row += list(dict_output[scenario].values())
-            samples_all_row.append(samples_row)
             out_samples_all_row.append(out_samples_row)
 
         output_columns = ['scenario_name']
@@ -266,17 +265,17 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         # construction of a dictionary of dynamic outputs
         # The key is the output name and the value a dictionary of results
         # with scenarii as keys
-        global_dict_output = {key: {}
-                              for key in self.attributes['eval_out_list']}
-        for (scenario, scenario_output) in dict_output.items():
-            for full_name_out in scenario_output.keys():
+        global_dict_output = {key: {} for key in self.attributes['eval_out_list']}
+        for scenario, scenario_output in dict_output.items():
+            for full_name_out in scenario_output:
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
-        subprocess_ref_outputs = {key: self.attributes['sub_mdo_disciplines'][0].local_data[key]
-                                  for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.get_data_names()}
-        self.store_sos_outputs_values(
-            subprocess_ref_outputs, full_name_keys=True)
+        subprocess_ref_outputs = {
+            key: self.attributes['sub_mdo_disciplines'][0].local_data[key]
+            for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.get_data_names()
+        }
+        self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
         # save doeeval outputs
         sample_input_df = pd.DataFrame(self.samples)
 
@@ -287,8 +286,6 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         self.store_sos_outputs_values({'samples_inputs_df': sample_input_df})
 
-        self.store_sos_outputs_values(
-            {'samples_outputs_df': samples_output_df})
+        self.store_sos_outputs_values({'samples_outputs_df': samples_output_df})
         for dynamic_output, out_name in zip(self.attributes['eval_out_list'], self.attributes['eval_out_names']):
-            self.store_sos_outputs_values({
-                out_name: global_dict_output[dynamic_output]})
+            self.store_sos_outputs_values({out_name: global_dict_output[dynamic_output]})
