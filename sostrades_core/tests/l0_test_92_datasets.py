@@ -34,6 +34,7 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     DatasetGenericException,
 )
 from sostrades_core.study_manager.study_manager import StudyManager
+from sostrades_core.execution_engine.data_manager import VALUE
 
 
 class TestDatasets(unittest.TestCase):
@@ -609,6 +610,7 @@ class TestDatasets(unittest.TestCase):
             self.assertTrue((values["all_data"]["d"] == pd.DataFrame({"years":[2023,2024],"x":[1.0,10.0]})).all().all())
             connector_export.clear(remove_root_directory=True)
         except Exception as cm:
+            connector_export = DatasetsConnectorManager.get_connector('MVP0_local_export_test_param')
             connector_export.clear(remove_root_directory=True)
             raise
 
@@ -734,6 +736,40 @@ class TestDatasets(unittest.TestCase):
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame(
             {"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
 
+    def test_19_export_study_with_wildcard_groups(self):
+        """
+        Some example to check repository datasets connector export
+        """
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        study2 = StudyManager(file_path=usecase_file_path)
+
+        dm = study.execution_engine.dm
+        import_mapping_path = os.path.join(process_path, "usecase_local_dataset_2groups.json")
+        export_mapping_path = os.path.join(process_path, "usecase_local_dataset_wildcards_groups.json")
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+        connector = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
+        study.update_data_from_dataset_mapping(
+            DatasetsMapping.from_json_file(import_mapping_path))
+
+        try:
+            mapping = DatasetsMapping.from_json_file(export_mapping_path)
+            study.export_data_from_dataset_mapping(mapping)
+            study2.update_data_from_dataset_mapping(mapping)
+            connector.clear_dataset("_TEST_dataset_wildcards")
+
+            study_dict = {k: study.ee.dm.data_dict[v][VALUE] for k, v in study.ee.dm.data_id_map.items()}
+            study2_dict = {k: study2.ee.dm.data_dict[v][VALUE] for k, v in study2.ee.dm.data_id_map.items()}
+            assert dict_are_equal(study_dict, study2_dict)
+        except Exception as cm:
+            try:
+                connector.clear_dataset("_TEST_dataset_wildcards")
+            except:
+                pass
+            raise
 
 if __name__=="__main__":
     cls = TestDatasets()

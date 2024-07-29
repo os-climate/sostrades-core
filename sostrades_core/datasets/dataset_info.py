@@ -44,20 +44,22 @@ class DatasetInfo:
     def get_mapping_id(*identifiers: str) -> str:
         return DatasetInfo.MAPPING_SEP.join(identifiers)
 
-    @staticmethod
-    def deserialize(input_dict: dict) -> DatasetInfo:
-        """
-        Method to deserialize
-        expected
-        {
-            "connector_id": <connector_id>,
-            "dataset_id": <dataset_id>,
-            "parameter_ids:<parameter_id>
-        }
-        :param input_dict: dict like input json object
-        :type input_dict: dict
-        """
-        return DatasetInfo(
-            connector_id=input_dict[DatasetInfo.CONNECTOR_ID_KEY],
-            dataset_id=input_dict[DatasetInfo.DATASET_ID_KEY]
-        )
+    # FIXME: method looks unused, and does not account for data_group_id
+    # @staticmethod
+    # def deserialize(input_dict: dict) -> DatasetInfo:
+    #
+    #     """
+    #     Method to deserialize
+    #     expected
+    #     {
+    #         "connector_id": <connector_id>,
+    #         "dataset_id": <dataset_id>,
+    #         "parameter_ids:<parameter_id>
+    #     }
+    #     :param input_dict: dict like input json object
+    #     :type input_dict: dict
+    #     """
+    #     return DatasetInfo(
+    #         connector_id=input_dict[DatasetInfo.CONNECTOR_ID_KEY],
+    #         dataset_id=input_dict[DatasetInfo.DATASET_ID_KEY]
+    #     )

@@ -28,6 +28,7 @@ from pandas import concat
 
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
+from sostrades_core.datasets.dataset_info import DatasetInfo
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
@@ -540,28 +541,31 @@ class DataManager:
                 self.logger.warning(f"The dataset variable {duplicate} has multiple source parameters. \
                                     The last value written in dataset was taken from {namespace}")
         for dataset, mapping_dict in dataset_parameters_mapping.items():
+            # todo: fix formats for wildcards
             # retrieve the list of dataset associated to the namespace from the mapping
-            if len(mapping_dict[DatasetsMapping.VALUE].keys()) > 0:
+            if mapping_dict:
+                _data_dict = {_g: mapping_dict[_g][DatasetsMapping.VALUE] for _g in mapping_dict}
+                _data_type_dict = {_g: mapping_dict[_g][DatasetsMapping.TYPE] for _g in mapping_dict}
                 # write data values into the dataset into the right format
                 updated_data = self.dataset_manager.write_data_in_dataset(
                     dataset_info=datasets_mapping.datasets_infos[dataset],
-                    data_dict=mapping_dict[DatasetsMapping.VALUE],
-                    data_type_dict=mapping_dict[DatasetsMapping.TYPE]
+                    data_dict=_data_dict,
+                    data_type_dict=_data_type_dict
                 )
 
                 # save which data have been exported
                 for _group_id, _group_data in updated_data.items():
                     for data_dataset_name in _group_data.keys():
-                        key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
-                        type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
+                        key = mapping_dict[_group_id][DatasetsMapping.KEY][data_dataset_name]
+                        type = mapping_dict[_group_id][DatasetsMapping.TYPE][data_dataset_name]
                         connector_id =datasets_mapping.datasets_infos[dataset].connector_id
                         dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
                         exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                              variable_type=type,
-                                                             old_value=deepcopy(mapping_dict[DatasetsMapping.VALUE][data_dataset_name]),
+                                                             old_value=deepcopy(mapping_dict[_group_id][DatasetsMapping.VALUE][data_dataset_name]),
                                                              new_value=None,
                                                              connector_id=connector_id,
-                                                             dataset_id=dataset_id,
+                                                             dataset_id=DatasetInfo.get_mapping_id(dataset_id, _group_id),
                                                              dataset_parameter_id=key,
                                                              date=datetime.now()))
 

@@ -57,7 +57,7 @@ class DatasetsMapping:
 
     # Process module name
     process_module_path:str
-    # Dataset info [connector_id|dataset_id| : DatasetInfo]
+    # Dataset info [connector_id|dataset_id|group_id : DatasetInfo]
     datasets_infos: dict[str:DatasetInfo]
     # Namespace mapping [namespace_name : List[connector_id|dataset_id|]]
     namespace_datasets_mapping: dict[str : list[str]]
@@ -128,14 +128,16 @@ class DatasetsMapping:
                         data_group_id = dataset_fields[DatasetsMapping.DATA_GROUP_ID_KEY]
                         parameter_id = dataset_fields[DatasetsMapping.PARAMETER_NAME]
 
-                        # build just the id with connector and dataset
-                        dataset_info_id = DatasetInfo.get_mapping_id(connector_id, dataset_id, data_group_id)
-
                         # check that there is no "*" on dataset name, it is not allowed
                         if dataset_id == DatasetInfo.WILDCARD:
                             raise DatasetsMappingException(f"Wrong format for '{dataset}', the dataset name '*' is not authorised")
-                        elif data_group_id == DatasetInfo.WILDCARD:
-                            raise NotImplementedError("wip")  # FIXME
+
+                        # with a * in data_group, assure the correspondence with namespace, whether it is * or not
+                        if data_group_id == DatasetInfo.WILDCARD:
+                            data_group_id = namespace
+
+                        # build just the id with connector|dataset|group
+                        dataset_info_id = DatasetInfo.get_mapping_id(connector_id, dataset_id, data_group_id)
 
                         if dataset_info_id not in datasets_infos:
                             datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id, data_group_id)
@@ -153,8 +155,6 @@ class DatasetsMapping:
                         if parameter == DatasetInfo.WILDCARD:
                             parameter_from = parameter_id
                         parameters_mapping[dataset_info_id][namespace][parameter_from] = parameter_to_found
-
-
 
         except Exception as exception:
             raise DatasetsMappingException(f'Error reading the dataset mapping file: \n{str(exception)}')
@@ -232,7 +232,13 @@ class DatasetsMapping:
         if DatasetInfo.WILDCARD in self.namespace_datasets_mapping.keys():
             dataset_ids = self.namespace_datasets_mapping[DatasetInfo.WILDCARD]
             for dataset_id in dataset_ids:
-                datasets_mapping[self.datasets_infos[dataset_id]] = self.parameters_mapping[dataset_id].get(DatasetInfo.WILDCARD,{})
+                dataset_infos = self.datasets_infos[dataset_id]
+                # if there is a wildcard at data group level, we generate a namespace-specific DatasetInfo for this ns
+                if dataset_infos.data_group_id == DatasetInfo.WILDCARD:
+                    dataset_infos = DatasetInfo(connector_id=dataset_infos.connector_id,
+                                                dataset_id=dataset_infos.dataset_id,
+                                                data_group_id=namespace)  # FIXME: ANONYMIZE
+                datasets_mapping[dataset_infos] = self.parameters_mapping[dataset_id].get(DatasetInfo.WILDCARD,{})
 
         return datasets_mapping
 
@@ -252,13 +258,20 @@ class DatasetsMapping:
 
 
         for dataset, namespaces_mapping_dict  in self.parameters_mapping.items():
+
             try:
+                # TODO: dirty coding
+                group_id = dataset.split("|")[-1]
+                group_from_ns = lambda _ns: group_id
+
                 # create the dict that will contain all data to write in the dataset for all associated namespaces
-                all_data_in_dataset = {DatasetsMapping.VALUE:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.KEY:{}}
+                def _all_data_in_dataset_ctor():
+                    return {DatasetsMapping.VALUE:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.KEY:{}}
+                from collections import defaultdict
+                all_data_in_dataset = defaultdict(_all_data_in_dataset_ctor)
 
                 # iterate for all namespace associated to the dataset, parameters_mapping_dict contains the association param_name -> dataset_param_name
                 for namespace, parameters_mapping_dict in namespaces_mapping_dict.items():
-
                     study_namespace = namespace.replace(self.STUDY_PLACEHOLDER, study_name)
 
                     # find the corresponding namespace between the namespace_dict and the current namespace
@@ -266,6 +279,7 @@ class DatasetsMapping:
                     corresponding_namespaces = []
                     if namespace == DatasetInfo.WILDCARD:
                         corresponding_namespaces.extend(namespaces_dict.keys())
+                        group_from_ns = lambda _ns: _ns
                     elif study_namespace in namespaces_dict.keys():
                         corresponding_namespaces.append(study_namespace)
 
@@ -277,11 +291,11 @@ class DatasetsMapping:
                                 # search for all the data in the namespaces
                                 for ns in corresponding_namespaces:
                                     for key in namespaces_dict[ns][DatasetsMapping.VALUE].keys():
-                                        if key in all_data_in_dataset[DatasetsMapping.KEY].keys():
+                                        if key in all_data_in_dataset[group_from_ns(ns)][DatasetsMapping.KEY].keys():
                                             duplicates[key] = ns # the last namespace is the one that will hold the value
-                                    all_data_in_dataset[DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
-                                    all_data_in_dataset[DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
-                                    all_data_in_dataset[DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
+                                    all_data_in_dataset[group_from_ns(ns)][DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
+                                    all_data_in_dataset[group_from_ns(ns)][DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
+                                    all_data_in_dataset[group_from_ns(ns)][DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
                             else:
                                 # search for the data name in the corresponding namespaces
                                 corresponding_data = {ns:[value for key, value in namespaces_dict[ns][DatasetsMapping.VALUE].items() if key == data] for ns in corresponding_namespaces}
@@ -294,14 +308,14 @@ class DatasetsMapping:
                                     last_ns = list(corresponding_data.keys())[-1]
                                     if len(corresponding_data[last_ns]) > 0:
                                         last_value = corresponding_data[last_ns][-1]
-                                        all_data_in_dataset[DatasetsMapping.VALUE].update({dataset_data:last_value})
-                                        all_data_in_dataset[DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
-                                        all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
+                                        all_data_in_dataset[group_from_ns(last_ns)][DatasetsMapping.VALUE].update({dataset_data:last_value})
+                                        all_data_in_dataset[group_from_ns(last_ns)][DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
+                                        all_data_in_dataset[group_from_ns(last_ns)][DatasetsMapping.KEY].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
             except Exception as error:
                 raise DatasetsMappingException(f'Error retrieving data from dataset {dataset}]: \n{str(error)}')
 
 
-            datasets_mapping[dataset] = all_data_in_dataset
+            datasets_mapping[dataset] = dict(all_data_in_dataset)
 
         return datasets_mapping, duplicates
 
