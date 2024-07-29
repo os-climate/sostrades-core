@@ -93,7 +93,7 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         disc_dict[f'{self.study_name}.{coupling_name}.{LINEARIZATION_MODE}'] = FINITE_DIFFERENCES
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+        proxy_discs = exec_eng.root_process.proxy_disciplines
         # the dm has the proper values
         self.assertEqual(
             exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_Problem.{LINEARIZATION_MODE}'),
@@ -102,16 +102,16 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
                          FINITE_DIFFERENCES)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
-        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
 
         # the activation has been properly logged
         self.assertIn(f'Discipline Sellar_1 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
         self.assertIn(f'Discipline Sellar_3 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
-        self.assertIn(f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
+        self.assertIn(f'Discipline {self.study_name}.{coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
                       self.my_handler.msg_list)
-        self.assertIn(f'Discipline {self.study_name} set to linearization mode finite_differences',
-                      self.my_handler.msg_list)
+        # self.assertIn(f'Discipline {self.study_name} set to linearization mode finite_differences',
+        #               self.my_handler.msg_list)
 
         exec_eng.execute()
         self.assertEqual(
@@ -155,7 +155,7 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         disc_dict[f'{self.study_name}.{LINEARIZATION_MODE}'] = FINITE_DIFFERENCES
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+        proxy_discs = exec_eng.root_process.proxy_disciplines
         # the dm has the proper values
         self.assertEqual(
             exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_Problem.{LINEARIZATION_MODE}'),
@@ -164,16 +164,16 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
                          FINITE_DIFFERENCES)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
-        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
 
         # the activation has been properly logged
         self.assertIn(f'Discipline Sellar_1 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
         self.assertIn(f'Discipline Sellar_3 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
-        self.assertIn(f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
+        self.assertIn(f'Discipline {self.study_name}.{coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
                       self.my_handler.msg_list)
-        self.assertIn(f'Discipline {self.study_name} set to linearization mode {FINITE_DIFFERENCES}',
-                      self.my_handler.msg_list)
+        # self.assertIn(f'Discipline {self.study_name} set to linearization mode {FINITE_DIFFERENCES}',
+        #               self.my_handler.msg_list)
 
         exec_eng.execute()
         self.assertEqual(
@@ -216,7 +216,7 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         disc_dict[f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'] = FINITE_DIFFERENCES
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+        proxy_discs = exec_eng.root_process.proxy_disciplines
         # the dm has the proper values
         self.assertEqual(
             exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_Problem.{LINEARIZATION_MODE}'),
@@ -225,18 +225,18 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
                          FINITE_DIFFERENCES)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
-        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
 
         # the activation has been properly logged
         self.assertIn(f'Discipline Sellar_1 set to linearization mode {FINITE_DIFFERENCES}',
                       self.my_handler.msg_list)
         self.assertIn(f'Discipline Sellar_3 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
+        # self.assertIn(
+        #     f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
+        #     self.my_handler.msg_list)
         self.assertIn(
-            f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
-            self.my_handler.msg_list)
-        self.assertIn(
-            f'Discipline {self.study_name} set to linearization mode {FINITE_DIFFERENCES}',
+            f'Discipline {self.study_name}.{coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
             self.my_handler.msg_list)
 
         exec_eng.execute()
@@ -282,7 +282,7 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         disc_dict[f'{self.study_name}.{LINEARIZATION_MODE}'] = FINITE_DIFFERENCES
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+        proxy_discs = exec_eng.root_process.proxy_disciplines
         # the dm has the proper values
         self.assertEqual(
             exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_Problem.{LINEARIZATION_MODE}'),
@@ -291,15 +291,15 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
                          FINITE_DIFFERENCES)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
-        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.{LINEARIZATION_MODE}'),
                          FINITE_DIFFERENCES)
 
         # the activation has been properly logged
         self.assertIn(f'Discipline Sellar_1 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
         self.assertIn(f'Discipline Sellar_3 set to linearization mode {FINITE_DIFFERENCES}', self.my_handler.msg_list)
-        self.assertIn(f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
-                      self.my_handler.msg_list)
-        self.assertIn(f'Discipline {self.study_name} set to linearization mode {FINITE_DIFFERENCES}',
+        # self.assertIn(f'Discipline {coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
+        #               self.my_handler.msg_list)
+        self.assertIn(f'Discipline {self.study_name}.{coupling_name} set to linearization mode {FINITE_DIFFERENCES}',
                       self.my_handler.msg_list)
 
         exec_eng.execute()
@@ -318,10 +318,10 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         # 2 : revert to Auto
         # 1: Set to Finite difference
 
-        disc_dict[f'{self.study_name}.{LINEARIZATION_MODE}'] = MDODiscipline.LinearizationMode.AUTO
+        disc_dict[f'{self.study_name}.{coupling_name}.{LINEARIZATION_MODE}'] = MDODiscipline.LinearizationMode.AUTO
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+        proxy_discs = exec_eng.root_process.proxy_disciplines
         # the dm has the proper values
         self.assertEqual(
             exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_Problem.{LINEARIZATION_MODE}'),
@@ -330,7 +330,7 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
                          MDODiscipline.LinearizationMode.AUTO)
         self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.Sellar_3.{LINEARIZATION_MODE}'),
                          MDODiscipline.LinearizationMode.AUTO)
-        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{LINEARIZATION_MODE}'),
+        self.assertEqual(exec_eng.dm.get_value(f'{self.study_name}.{coupling_name}.{LINEARIZATION_MODE}'),
                          MDODiscipline.LinearizationMode.AUTO)
 
         # the activation has been properly logged
@@ -338,11 +338,11 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
                       self.my_handler.msg_list)
         self.assertIn(f'Discipline Sellar_3 set to linearization mode {MDODiscipline.LinearizationMode.AUTO}',
                       self.my_handler.msg_list)
+        # self.assertIn(
+        #     f'Discipline {coupling_name} set to linearization mode {MDODiscipline.LinearizationMode.AUTO}',
+        #     self.my_handler.msg_list)
         self.assertIn(
-            f'Discipline {coupling_name} set to linearization mode {MDODiscipline.LinearizationMode.AUTO}',
-            self.my_handler.msg_list)
-        self.assertIn(
-            f'Discipline {self.study_name} set to linearization mode {MDODiscipline.LinearizationMode.AUTO}',
+            f'Discipline {self.study_name}.{coupling_name} set to linearization mode {MDODiscipline.LinearizationMode.AUTO}',
             self.my_handler.msg_list)
 
         exec_eng.execute()

@@ -632,7 +632,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.load_study_from_input_dict(private_values)
         exec_eng.execute()
 
-        for disc in [exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].proxy_disciplines[0],
+        for disc in [
                      # discipline with no coupled inputs
                      exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0],
                      exec_eng.root_process.proxy_disciplines[0], exec_eng.root_process]:  # couplings

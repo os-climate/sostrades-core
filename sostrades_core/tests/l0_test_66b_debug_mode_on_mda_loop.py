@@ -274,7 +274,7 @@ class TestMDALoop(unittest.TestCase):
         disc_dict[f'{self.name}.debug_mode'] = ''
 
         exec_eng.load_study_from_input_dict(disc_dict)
-        proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
+        proxy_discs = exec_eng.root_process.proxy_disciplines
         # the dm has the proper values
         # self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),
         #                  'linearize_data_change')
@@ -302,7 +302,7 @@ class TestMDALoop(unittest.TestCase):
         #     'linearize_data_change')
 
         # upon activation of another debug mode for the higher coupling
-        disc_dict[f'{self.name}.debug_mode'] = 'input_change'
+        disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = 'input_change'
 
         exec_eng.load_study_from_input_dict(disc_dict)
 
@@ -317,8 +317,9 @@ class TestMDALoop(unittest.TestCase):
         self.assertIn('Discipline Sellar_Problem set to debug mode input_change', self.my_handler.msg_list)
         self.assertIn('Discipline Sellar_1 set to debug mode input_change', self.my_handler.msg_list)
         self.assertIn('Discipline Sellar_3 set to debug mode input_change', self.my_handler.msg_list)
-        self.assertIn(f'Discipline {coupling_name} set to debug mode input_change', self.my_handler.msg_list)
-        self.assertIn(f'Discipline {self.name} set to debug mode input_change', self.my_handler.msg_list)
+        self.assertIn(f'Discipline {self.name}.{coupling_name} set to debug mode input_change',
+                      self.my_handler.msg_list)
+
 
         # sos_wrapps
         exec_eng.execute()

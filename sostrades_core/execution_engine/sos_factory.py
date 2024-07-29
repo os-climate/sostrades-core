@@ -133,9 +133,13 @@ class SosFactory:
             self.coupling_builder.set_builder_info(
                 'cls_builder', list(flatten(builders))
             )
-        else:
-            if builders.cls == SelectorDiscipline:
-                self.coupling_builder = builders
+        elif builders.cls == SelectorDiscipline:
+            self.coupling_builder = builders
+        elif builders.cls == ProxyCoupling :
+            new_builder_name = '.'.join([self.coupling_builder.sos_name,builders.sos_name])
+            self.coupling_builder = builders
+            self.coupling_builder.set_builder_info('sos_name', new_builder_name)
+        else :
 
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
