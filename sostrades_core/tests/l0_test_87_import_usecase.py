@@ -32,6 +32,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
 """
 
+
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest

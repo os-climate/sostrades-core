@@ -25,6 +25,7 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 # FIXME: tests are not active because WIP on gather capabilities
 
+
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest

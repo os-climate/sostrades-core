@@ -98,7 +98,6 @@ class PostProcessingBundle:
         if PostProcessingBundle.DISCIPLINE_NAME in dict_obj:
             discipline_name = dict_obj[PostProcessingBundle.DISCIPLINE_NAME]
 
-
         # Serialize filters parameter attribute
         filters = dict_obj[PostProcessingBundle.FILTERS]
 

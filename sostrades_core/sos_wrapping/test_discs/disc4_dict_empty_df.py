@@ -39,7 +39,7 @@ class Disc4EmptyDf(SoSWrapp):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'h': {'type': 'dict', 'subtype_descriptor':{'dict':'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
     }
 
     DESC_OUT = {

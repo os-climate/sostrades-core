@@ -97,7 +97,7 @@ class Study(StudyManager):
             f'{self.study_name}.{self.uncertainty_quantification}.samples_inputs_df': self.samples_dataframe,
             f'{self.study_name}.{self.uncertainty_quantification}.samples_outputs_df': self.data_df,
             f'{self.study_name}.{self.uncertainty_quantification}.design_space': dspace,
-            #f'{self.study_name}.{self.uncertainty_quantification}.data_details_df': data_details_df,
+            # f'{self.study_name}.{self.uncertainty_quantification}.data_details_df': data_details_df,
 
         }
 
@@ -117,4 +117,4 @@ if '__main__' == __name__:
     for post_proc_list in all_post_processings.values():
         for chart in post_proc_list:
             for fig in chart.post_processings:
-                fig.to_plotly() #.show()
+                fig.to_plotly()  # .show()

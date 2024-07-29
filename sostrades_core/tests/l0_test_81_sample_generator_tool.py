@@ -38,6 +38,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for doe scenario
 """
 
+
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest
@@ -83,7 +84,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
         n_samples = 10
 
-        #======================================================================
+        # ======================================================================
         # user_fullfact_algo_options = {
         #     'n_samples': n_samples,
         #     'alpha': 'orthogonal',
@@ -96,7 +97,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
         #     'center_cc': 'default',
         #     'criterion': 'default',
         #     'levels': 'default'}
-        #======================================================================
+        # ======================================================================
 
         # it is better to always explicit default options values and not use
         # the 'default' input !!
@@ -125,7 +126,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
         self.selected_inputs = self.selected_inputs.tolist()
         self.eval_in_list = [
             f'{self.study_name}.{element}' for element in self.selected_inputs]
-        #self.eval_in_list = ['doe.x', 'doe.z']
+        # self.eval_in_list = ['doe.x', 'doe.z']
         ##########################
 
         target_samples_fullfact = [[array([0.]), array([-10., 0.])],
@@ -250,7 +251,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
         user_pydoe_algo_options = pydoe_algo_options_desc_in
         user_pydoe_algo_options['n_samples'] = n_samples
 
-        #list_of_algo_names = [algo_names for algo_names in pydoe_list_of_algo_names if algo_names not in []]
+        # list_of_algo_names = [algo_names for algo_names in pydoe_list_of_algo_names if algo_names not in []]
         list_of_algo_names = pydoe_list_of_algo_names
 
         for sampling_algo_name in list_of_algo_names:
@@ -286,7 +287,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
             # print(samples_df)
 
-            #assert_frame_equal(samples_df, self.target_samples_df)
+            # assert_frame_equal(samples_df, self.target_samples_df)
 
     def test_04_check_generate_samples_openturns_algo_names(self):
         '''
@@ -297,7 +298,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
                                         'OT_FAURE', 'OT_MONTE_CARLO', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL',
                                         'OT_OPT_LHS', 'OT_LHS', 'OT_LHSC', 'OT_FULLFACT', 'OT_SOBOL_INDICES']
 
-        #list_of_algo_names = [algo_names for algo_names in openturns_list_of_algo_names if algo_names not in []]
+        # list_of_algo_names = [algo_names for algo_names in openturns_list_of_algo_names if algo_names not in []]
         list_of_algo_names = openturns_list_of_algo_names
 
         openturns_algo_options_desc_in = {  # default options
@@ -361,7 +362,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
                 sampling_algo_name, algo_options, design_space)
             # print(samples_df)
 
-            #assert_frame_equal(samples_df, self.target_samples_df)
+            # assert_frame_equal(samples_df, self.target_samples_df)
 
             #################################################################
             if sampling_algo_name in ['OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:

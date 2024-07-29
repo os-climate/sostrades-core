@@ -163,7 +163,7 @@ class TestStructuringInputs(unittest.TestCase):
 
         self.exec_eng.execute()
 
-#=========================================================================
+# =========================================================================
 #     def _test_02_configure_core_process(self):
 #
 #         builder_process = self.exec_eng.factory.get_builder_from_process(
@@ -238,9 +238,9 @@ class TestStructuringInputs(unittest.TestCase):
 #         # With new compare_dict method: 0.0
 #
 #         self.exec_eng.execute()
-#=========================================================================
+# =========================================================================
 
-#=========================================================================
+# =========================================================================
 #     def _test_03_study_instanciation_core_process(self):
 #
 #         t0 = time()
@@ -262,9 +262,9 @@ class TestStructuringInputs(unittest.TestCase):
 #         # Before: 0.07483434677124023
 #         # After: 0.03124070167541504
 #         # With new compare_dict method: 0.0469052791595459
-#=========================================================================
+# =========================================================================
 
-#=========================================================================
+# =========================================================================
 #     def _test_04_SoSCoupling_structuring_variables(self):
 #
 #         repo_discopt = 'sostrades_core.sos_processes.test'
@@ -373,9 +373,9 @@ class TestStructuringInputs(unittest.TestCase):
 #         assert linear_solver_tolerance_gemseo == 1.0e-8  # GEMSEO default value
 #         # provided by SoSTrades
 #         assert linear_solver_options_dm == ProxyCoupling.DEFAULT_LINEAR_SOLVER_OPTIONS
-#=========================================================================
+# =========================================================================
 
-#=========================================================================
+# =========================================================================
     def _test_05_proxycoupling_numerical_inputs_including_petsc(self):
         """
         Test proper definition of coupling numerical inputs, possible values, etc. and execute using LGMRES with
@@ -401,7 +401,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'use_lu_fact': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
                            'warm_start': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
                            'acceleration': {'type': 'string', 'default': 'm2d', 'possible_values': ['m2d', 'secant', 'none']},
-                           'warm_start_threshold': {'type': 'float', 'default':-1, 'possible_values': None},
+                           'warm_start_threshold': {'type': 'float', 'default': -1, 'possible_values': None},
                            'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
                            'tolerance_gs': {'type': 'float', 'default': 10.0, 'possible_values': None},
                            'relax_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
@@ -536,7 +536,7 @@ class TestStructuringInputs(unittest.TestCase):
         self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver_tolerance, 1e-10)
         self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver_options, {
                          'max_iter': 600, 'use_ilu_precond': True})
-#=========================================================================
+# =========================================================================
 
 
 if '__main__' == __name__:

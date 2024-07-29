@@ -32,6 +32,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 unit test for doe scenario
 """
 
+
 class UnitTestHandler(Handler):
     """
     Logging handler for UnitTest

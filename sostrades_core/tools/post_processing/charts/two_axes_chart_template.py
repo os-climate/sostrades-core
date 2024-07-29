@@ -26,6 +26,7 @@ from sostrades_core.tools.post_processing.post_processing_tools import convert_n
 Class that define a 2 dimensional chart template
 """
 
+
 class SeriesTemplateException(Exception):
     """ Overload Exception basic type
     """
@@ -125,7 +126,6 @@ class SeriesTemplate:
     @abscissa.setter
     def abscissa(self, values):
         self.__abscissa = self.__convert_to_list(values, 'abscissa')
-
 
     def abscissa_filtered(self, logger=None):
         """
@@ -439,8 +439,6 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         if len(self.secondary_ordinate_axis_range) > 1:
             sec_ord_axis_range = [
                 self.secondary_ordinate_axis_range[0], self.secondary_ordinate_axis_range[1]]
-
-
 
         chart_string = [f'\nname: {self.chart_name}',
                         f'Abs axis name: {self.abscissa_axis_name}',

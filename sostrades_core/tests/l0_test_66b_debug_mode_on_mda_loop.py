@@ -37,6 +37,7 @@ class UnitTestHandler(Handler):
     def emit(self, record):
         self.msg_list.append(record.msg)
 
+
 class TestMDALoop(unittest.TestCase):
     """
     MDA test class
@@ -166,7 +167,6 @@ class TestMDALoop(unittest.TestCase):
         if exec_ok:
             raise Exception('Execution worked, and it should not have')
 
-
     def test_04_debug_mode_mda_min_max_coupling(self):
         """
         Checks message is logged after activating min_max_coupling debug mode.
@@ -267,13 +267,12 @@ class TestMDALoop(unittest.TestCase):
         disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = 'linearize_data_change'
         disc_dict[f'{self.name}.debug_mode'] = ''
 
-
         exec_eng.load_study_from_input_dict(disc_dict)
         proxy_discs = exec_eng.root_process.proxy_disciplines[0].proxy_disciplines
         # the dm has the proper values
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'linearize_data_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'linearize_data_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'), 'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'), 'linearize_data_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'), 'linearize_data_change')
 
         # the activation has been properly logged
         self.assertIn('Discipline Sellar_1 set to debug mode linearize_data_change', self.my_handler.msg_list)
@@ -299,10 +298,10 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # dm
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'),'input_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'input_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'input_change')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'input_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'), 'input_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'), 'input_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'), 'input_change')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'), 'input_change')
 
         # log
         self.assertIn('Discipline Sellar_Problem set to debug mode input_change', self.my_handler.msg_list)
@@ -326,10 +325,10 @@ class TestMDALoop(unittest.TestCase):
         # check that if I deactivate the debug mode of the lower coupling then all the children get deactivated
         disc_dict[f'{self.name}.{coupling_name}.debug_mode'] = ''
         exec_eng.load_study_from_input_dict(disc_dict)
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'),'')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),'')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),'')
-        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),'')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'), '')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'), '')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'), '')
+        self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'), '')
         exec_eng.execute()
         self.assertEqual(
             proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),

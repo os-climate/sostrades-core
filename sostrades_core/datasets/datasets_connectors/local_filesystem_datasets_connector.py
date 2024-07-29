@@ -188,7 +188,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__clear_pickle_data()
         return dataset_values
 
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> None:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> None:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -220,7 +220,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                 raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
-    def clear(self, remove_root_directory:bool=False) -> None:
+    def clear(self, remove_root_directory: bool = False) -> None:
         """
         Utility method to remove all datasets in the connector root directory.
         :param remove_root_directory: whether to delete the root directory itself too.

@@ -27,14 +27,14 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        ######### Numerical values   ####
+        # Numerical values   ####
         x = 2.
         a = 3.
         b = 4.
         constant = 3.
         power = 2
         z = 1.2
-        ######### Fill the dictionary for dm   ####
+        # Fill the dictionary for dm   ####
         dict_values = {}
         dict_values[self.study_name + '.x'] = x
         dict_values[self.study_name + '.a'] = a

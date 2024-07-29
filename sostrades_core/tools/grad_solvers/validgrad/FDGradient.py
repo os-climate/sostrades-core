@@ -82,7 +82,7 @@ class FDGradient(object):
         Args:
             x : the variables at which gradient is computed.
         """
-        #print('grad_f call')
+        # print('grad_f call')
 
         self.__scheme.set_x(x)
         self.__scheme.generate_samples()
@@ -120,13 +120,13 @@ class FDGradient(object):
         else:
             y = []
             for x in samples:
-                #print('x =',x)
+                # print('x =',x)
                 if args is None:
                     y.append(deepcopy(self.__fpointer(x)))
                 else:
                     y.append(deepcopy(self.__fpointer(x, *args)))
                 grad_index = len(y)
-                #print('grad index = ',grad_index)
+                # print('grad index = ',grad_index)
 
         s = np.shape(y[0])
         if len(s) < 2:

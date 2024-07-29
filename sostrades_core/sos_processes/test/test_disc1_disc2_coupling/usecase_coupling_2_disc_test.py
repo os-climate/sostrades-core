@@ -52,4 +52,3 @@ if '__main__' == __name__:
         for chart in post_proc_list:
             for fig in chart.post_processings:
                 fig.to_plotly().show()
-

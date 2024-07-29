@@ -94,7 +94,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
                 f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
         return converted_data
 
-    def convert_to_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
+    def convert_to_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
         '''
         Convert data_value into connector format
         :param data_name: name of the data that is converted

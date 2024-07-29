@@ -585,7 +585,7 @@ class SoSWrapp(object):
 
         return expected_shape
 
-    #TODO: see if should generalize the get_boundary_jac method with *args, **kwargs
+    # TODO: see if should generalize the get_boundary_jac method with *args, **kwargs
     def get_boundary_jac_for_design_var_columns(self, ykey, column, io_type, xkey, dataframefillmethod):
         '''
         particular case of the design_var discipline where the design var dataframe has been filled following the
@@ -630,7 +630,6 @@ class SoSWrapp(object):
             value = self.get_sosdisc_outputs(key)
         else:
             raise Exception(f"Unknown IO type {io_type}")
-
 
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata

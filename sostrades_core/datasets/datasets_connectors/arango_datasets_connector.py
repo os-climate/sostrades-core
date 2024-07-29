@@ -46,8 +46,8 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     MAX_KEY_SIZE = 254
 
     def __init__(self, host: str, db_name: str, username: str, password: str,
-                 serializer_type:DatasetSerializerType=DatasetSerializerType.JSON,
-                 datasets_descriptor_collection_name:str="datasets"):
+                 serializer_type: DatasetSerializerType = DatasetSerializerType.JSON,
+                 datasets_descriptor_collection_name: str = "datasets"):
         """
         Constructor for Arango data connector
 
@@ -86,7 +86,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=ArangoDatasetsConnector) from exc
 
-    def __name_to_valid_arango_collection_name(self, dataset_name:str) -> str:
+    def __name_to_valid_arango_collection_name(self, dataset_name: str) -> str:
         """
         Constructor for Arango data connector
         Checks that this collection does not exist
@@ -117,8 +117,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         Gets the mapping between datasets name and datasets collections
         """
         collection = self.db.collection(name=self.datasets_descriptor_collection_name)
-        return {document[ArangoDatasetsConnector.DATASET_NAME_STR]:document[ArangoDatasetsConnector.KEY_STR] for document in collection}
-
+        return {document[ArangoDatasetsConnector.DATASET_NAME_STR]: document[ArangoDatasetsConnector.KEY_STR] for document in collection}
 
     def __get_dataset_collection(self, name: str) -> StandardCollection:
         """
@@ -190,7 +189,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         dataset_collection.insert_many(data_for_arango, overwrite=True)
         return values_to_write
 
-    def get_values_all(self, dataset_identifier: str, data_types_dict:dict[str:str]) -> dict[str:Any]:
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Get all values from a dataset for Arango
         :param dataset_identifier: dataset identifier for connector
@@ -220,7 +219,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         self,
         dataset_identifier: str,
         values_to_write: dict[str:Any],
-        data_types_dict:dict[str:str],
+        data_types_dict: dict[str:str],
         create_if_not_exists: bool = True,
         override: bool = False,
     ) -> dict[str: Any]:

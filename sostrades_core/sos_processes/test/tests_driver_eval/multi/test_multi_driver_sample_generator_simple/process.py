@@ -30,7 +30,6 @@ class ProcessBuilder(BaseProcessBuilder):
     def get_builders(self):
         # simple 2-disc process NOT USING nested scatters coupled with a SampleGenerator
 
-
         # multi scenario driver builder
         repo_name = "sostrades_core.sos_processes.test.tests_driver_eval.multi"
         proc_name = "test_multi_driver_simple"

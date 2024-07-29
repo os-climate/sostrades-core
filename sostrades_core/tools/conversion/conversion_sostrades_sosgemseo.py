@@ -226,7 +226,6 @@ def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
                 if not isinstance(dm_reduced_to_type_and_metadata, dict):
                     subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
 
-
                 else:
 
                     subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
@@ -662,7 +661,6 @@ def convert_new_type_into_array(
                                     key, {DF_EXCLUDED_COLUMNS: new_excluded_columns})
                             else:
                                 dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS] = new_excluded_columns
-
 
                     # elif var_type == 'string':
                     #     # if value is a string

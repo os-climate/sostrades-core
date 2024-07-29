@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 Post processing manager allowing to coeespond namespace with post processing to execute
 """
 
+
 class PostProcessingManager:
     """ Class the store couples namespace <=> list of post processing.
     Post processing are sually stored by disciplines, but it exist namespace that are not associated to a discipline
@@ -62,7 +63,7 @@ class PostProcessingManager:
 
         return self.__namespace_postprocessing_dict
 
-    def get_post_processing_functions_from_module(self, module_name:str):
+    def get_post_processing_functions_from_module(self, module_name: str):
         """
         Function to get the post processing functions from a module
         Since filter function is optional, returns None if not found
@@ -74,7 +75,7 @@ class PostProcessingManager:
         """
         filter_function = None
         try:
-            filter_function = getattr(import_module(module_name),PostProcessingManager.FILTER_FUNCTION_NAME)
+            filter_function = getattr(import_module(module_name), PostProcessingManager.FILTER_FUNCTION_NAME)
         except (ModuleNotFoundError, AttributeError, TypeError) as ex:
             self.__logger.exception(f'The following error occurs when trying to load post processing filter function for module f{module_name}.', exc_info=ex)
         try:
@@ -101,7 +102,7 @@ class PostProcessingManager:
 
         self.add_post_processing_functions_to_namespace(namespace_identifier, filters_function, post_processing_function)
 
-    def remove_post_processing_module_to_namespace(self, namespace_identifier: str, module_name: str, missing_ok:bool=True):
+    def remove_post_processing_module_to_namespace(self, namespace_identifier: str, module_name: str, missing_ok: bool = True):
         """ Method that removes a couple of filter+post processing function to a dedicated namespace into
         the PostProcessingManager
 
@@ -125,7 +126,7 @@ class PostProcessingManager:
                                                    namespace_identifier: str,
                                                    filter_func: callable,
                                                    post_processing_func: callable,
-                                                   missing_ok:bool=True):
+                                                   missing_ok: bool = True):
         """ Method that removes a couple of filter+post processing function to a dedicated namespace into
         the PostProcessingManager
 

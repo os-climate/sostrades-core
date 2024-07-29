@@ -35,7 +35,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
     Specific dataset connector for dataset in json format
     """
 
-    def __init__(self, file_path: str, create_if_not_exists: bool=False, serializer_type:DatasetSerializerType=DatasetSerializerType.JSON):
+    def __init__(self, file_path: str, create_if_not_exists: bool = False, serializer_type: DatasetSerializerType = DatasetSerializerType.JSON):
         """
         Constructor for JSON data connector
 
@@ -168,8 +168,7 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
                           for key, datum in self.__json_data[dataset_identifier].items()}
         return dataset_values
 
-
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str: Any]:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str: Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector

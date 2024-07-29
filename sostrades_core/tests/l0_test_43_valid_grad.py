@@ -91,8 +91,8 @@ class TestValidGrad(unittest.TestCase):
         vg2 = FDValidGrad(2, self.f_mat1, self.df_mat1)
         ok1 = vg1.compare(x)
         ok2 = vg2.compare(x)
-        assert(ok1)
-        assert(ok2)
+        assert (ok1)
+        assert (ok2)
 
     def test_02_grad_mat1_CS(self):
         n = 7
@@ -101,7 +101,7 @@ class TestValidGrad(unittest.TestCase):
         x[5] = 9.
         vg3 = FDValidGrad(1j, self.f_mat1, self.df_mat1)
         ok3 = vg3.compare(x, split_out=True)
-        assert(ok3)
+        assert (ok3)
 
     def test_03_grad_mat2(self):
         n = 2
@@ -112,8 +112,8 @@ class TestValidGrad(unittest.TestCase):
         vg2 = FDValidGrad(2, self.f_mat2, self.df_mat2)
         ok1 = vg1.compare(x)
         ok2 = vg2.compare(x)
-        assert(ok1)
-        assert(ok2)
+        assert (ok1)
+        assert (ok2)
 
     def test_04_grad_mat2_CS(self):
         n = 2
@@ -122,7 +122,7 @@ class TestValidGrad(unittest.TestCase):
         x[1] = 6.
         vg3 = FDValidGrad(1j, self.f_mat2_CS, self.df_mat2)
         ok3 = vg3.compare(x)
-        assert(ok3)
+        assert (ok3)
 #
 
     def test_05_grad_scalar(self):
