@@ -127,7 +127,6 @@ class SeriesTemplate:
     def abscissa(self, values):
         self.__abscissa = self.__convert_to_list(values, 'abscissa')
 
-
     def abscissa_filtered(self, logger=None):
         """
         return abscissa values filtered on NaN and Infinite values
