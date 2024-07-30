@@ -495,18 +495,6 @@ class DataSerializer:
             df_data = DataFrame([data], columns=["value"])
         return df_data
 
-    def get_parameter_data(self, var_key: str) -> Any:
-        """Get some variable values from a pickle file.
-
-        Args:
-            var_key: The variable name to extract from the pickle file.
-
-        Returns:
-            The values of the variable.
-        """
-        self.set_dm_pkl_files()
-        return self.get_data_dict_from_pickle()[var_key]
-
     def convert_to_dataframe_and_bytes_io(
         self, param_values: DataFrame | list | ndarray | dict[str, Any] | float | int, param_key: str
     ) -> BytesIO:
