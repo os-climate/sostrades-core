@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2024/07/30 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class ExecutionEngine:
     STUDY_PLACEHOLDER_WITH_DOT: str = '<study_ph>.'
     STUDY_PLACEHOLDER_WITHOUT_DOT: str = '<study_ph>'
 
-    LOG_LEVEL: int = 20
+    LOG_LEVEL: int = logging.INFO
     """The default log level (INFO)."""
 
     def __init__(self, study_name,
@@ -62,9 +62,9 @@ class ExecutionEngine:
             # Use rsplit to get sostrades_core.execution_engine instead of sostrades_core.execution_engine.execution_engine
             # as a default logger if not initialized
             self.logger = logging.getLogger(f"{__name__.rsplit('.', 2)[0]}.{self.__class__.__name__}")
-            self.logger.setLevel(self.LOG_LEVEL)  # INFO
         else:
             self.logger = logger
+        self.logger.setLevel(self.LOG_LEVEL)
 
         self.__post_processing_manager = PostProcessingManager(self)
 
