@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
 
-from sellar_sostrades.sos_processes.sellar_doe.process import ProcessBuilder as ProcessBuilderDOE
-from sellar_sostrades.sos_processes.sellar_uq.usecase import Study
+from sostrades_core.sos_processes.test.test_sellar_uq.sellar_doe.process import ProcessBuilder as ProcessBuilderDOE
+from sostrades_core.sos_processes.test.test_sellar_uq.sellar_uq.usecase import Study
 
 if TYPE_CHECKING:
     from sostrades_core.execution_engine.sos_builder import SoSBuilder

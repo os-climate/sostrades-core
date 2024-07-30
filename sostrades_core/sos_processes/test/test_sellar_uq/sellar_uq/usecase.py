@@ -10,7 +10,7 @@
 
 from __future__ import annotations
 
-from sellar_sostrades.sos_processes.sellar_doe.usecase import Study as DOEStudy
+from sostrades_core.sos_processes.test.test_sellar_uq.sellar_doe.usecase import Study as DOEStudy
 
 
 class Study(DOEStudy):
