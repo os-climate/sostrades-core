@@ -17,6 +17,9 @@ class Study(DOEStudy):
     """The main study for the UQ on the Sellar MDA."""
 
     UQ_NAME = "UncertaintyQuantification"
+    def __init__(self, log_level="INFO", **kwargs) -> None:  # noqa: D107
+        logger = self.configure_logger(log_level)
+        super(DOEStudy, self).__init__(__file__, logger=logger, **kwargs)
 
     def setup_usecase(self):
         """Setup the usecase."""

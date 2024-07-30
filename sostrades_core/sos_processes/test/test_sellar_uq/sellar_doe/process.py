@@ -33,7 +33,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self) -> list[SoSBuilder]:
         """Create the builders for the process."""
-        disc_dir = "sellar_sostrades.disciplines"
+        disc_dir = "sostrades_core.sos_wrapping.test_discs.test_sellar_uq"
         mods_dict = {
             disc: f"{disc_dir}.{disc.lower()}.Sellar{disc}" for disc in ["Disc1", "Disc2", "Obj", "Cstr1", "Cstr2"]
         }
