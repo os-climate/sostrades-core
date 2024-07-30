@@ -36,7 +36,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         'version': '',
     }
 
-
     SUBCOUPLING_NAME = 'subprocess'
     # TODO: manage desc_in in correct classes
     DESC_IN = {
@@ -56,12 +55,13 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     DESC_IN.update(ProxyDriverEvaluator.DESC_IN)
 
     DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None}}
+
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
                  map_name=None
                  ):
-        super().__init__(sos_name, ee,cls_builder, driver_wrapper_cls, associated_namespaces=associated_namespaces, map_name=map_name)
+        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=associated_namespaces, map_name=map_name)
         self.driver_eval_mode = self.DRIVER_EVAL_MODE_MONO
 
     def setup_sos_disciplines(self):

@@ -29,6 +29,7 @@ class ScatterMap:
     SCATTER_LIST_TUPLE = 'scatter_list'
     SCATTER_NAME = 'scatter_name'
     POSSIBLE_KEYS = [NS_TO_UPDATE, NS_NOT_TO_UPDATE, SCATTER_LIST_TUPLE, SCATTER_NAME]
+
     def __init__(self, ee, name, s_map):
         '''
         Class to describe a scatter map and manage several instances of the same scatter map
@@ -81,6 +82,7 @@ class ScatterMap:
         if self.SCATTER_NAME in map_dict and not isinstance(map_dict[self.SCATTER_NAME], str):
             raise Exception(
                 f'The {self.SCATTER_NAME} key in scatter map {self.name} must be a string')
+
     def update_map(self, s_map):
         '''
         Mechanism to update value

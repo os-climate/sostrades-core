@@ -98,6 +98,7 @@ Expected header is :\n{ self.expected_header}\n\
 but header is\n{self.current_header}\n\
 -------------------\n"
 
+
 class HeaderTools:
 
     def __init__(self):
@@ -149,8 +150,7 @@ class HeaderTools:
                 print(f"No Cartouche Error for path {file_path}")
             return HeaderError(file_path, FileChange.ADDED, "No header", CARTOUCHE_CAP)
 
-
-    def check_header_for_modified_file(self,file_path) -> HeaderError:
+    def check_header_for_modified_file(self, file_path) -> HeaderError:
         """
         Check if the header inside the file is matching the modified file header requirement if not return an HeaderError
 
@@ -201,7 +201,7 @@ class HeaderTools:
                 file_path, FileChange.MODIFIED, "No header", CARTOUCHE_CAP_AIRBUS
             )
 
-    def parse_and_replace_add_cartouche(self,file_path, new_cartouche):
+    def parse_and_replace_add_cartouche(self, file_path, new_cartouche):
         # Read the content of the file
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
@@ -240,8 +240,7 @@ class HeaderTools:
             new_content = new_cartouche + content
             self.write_back(file_path, new_content)
 
-
-    def parse_and_replace_modified_cartouche(self,file_path, new_cartouche):
+    def parse_and_replace_modified_cartouche(self, file_path, new_cartouche):
         # Read the content of the file
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
@@ -288,15 +287,13 @@ class HeaderTools:
             new_content = new_cartouche + content
             self.write_back(file_path, new_content)
 
-
-    def write_back(self,file: str, new_content: str):
+    def write_back(self, file: str, new_content: str):
         """
         write back method
         """
-        #Write the modified content back to the file
+        # Write the modified content back to the file
         with open(file, "w", encoding="utf-8") as file:
             file.write(new_content)
-
 
     def get_first_commit_time(self, git_git, full_file_path: str) -> datetime:
         """
@@ -319,7 +316,6 @@ class HeaderTools:
 
         return datetime.fromtimestamp(mktime(d), tz=timezone.utc)
 
-
     def has_been_commited_from_airbus(self, git_git, full_file_path: str, refcommit: git.Commit) -> bool:
         # True if committed from Airbus
 
@@ -329,10 +325,9 @@ class HeaderTools:
         else:
             raise ValueError("Commit_date should not be None")
 
+    def write_headers_if_needed_in_repo(self, ignored_exts, ignored_files, sha, repo_dir):
 
-    def write_headers_if_needed_in_repo(self,ignored_exts, ignored_files, sha, repo_dir):
-
-        print("Start to analyse Headers for repository "+ os.path.abspath(os.path.dirname(repo_dir) + "..."))
+        print("Start to analyse Headers for repository " + os.path.abspath(os.path.dirname(repo_dir) + "..."))
 
         # Initialize a Git Repo object
         git_repo = git.Repo(repo_dir)
@@ -446,8 +441,7 @@ class HeaderTools:
 
         print("Done")
 
-
-    def check_headers(self,ignored_exts, ignored_file, airbus_rev_commit: str):
+    def check_headers(self, ignored_exts, ignored_file, airbus_rev_commit: str):
         header_error_list = []
 
         # Initialize a Git Repo object wity current directory
@@ -479,12 +473,12 @@ class HeaderTools:
                 # Need to add Cap Header for python file
                 if item_path.endswith(".py"):
                     error = self.check_header_for_added_file(file_path)
-                    #if has_been_commited_from_airbus(file_path, commit_airbus):
+                    # if has_been_commited_from_airbus(file_path, commit_airbus):
                         # print(
                         #     "ERROR detected has added but committed by Airbus : "
                         #     + file_path
                         # )
-                        #error = check_header_for_modified_file(file_path)
+                        # error = check_header_for_modified_file(file_path)
                     if error:
                         header_error_list.append(error)
 
@@ -494,7 +488,7 @@ class HeaderTools:
                 else:
                     # Need to check not handled file too
                     error = self.check_header_for_added_file(file_path)
-                    #if has_been_commited_from_airbus(file_path, commit_airbus):
+                    # if has_been_commited_from_airbus(file_path, commit_airbus):
                     #    error = check_header_for_modified_file(file_path)
                     if error:
                         header_error_list.append(error)

@@ -46,12 +46,14 @@ def run_tests_l0_l1_l2(main_folder, file_pattern):
     """run the tests in main folder corresponding to file_pattern"""
     initial_path = os.path.abspath(os.path.curdir)
     sub_test_folder = 'tests' if main_folder != "sos_trades_api" else os.path.join('tests', 'controllers')
-    test_folder = os.path.join(main_folder, sub_test_folder)
+    test_folder = os.path.join(initial_path, main_folder, sub_test_folder)
     os.chdir(test_folder)
     # Print the arguments
     print(rf"STARTING TESTS {test_folder}\{file_pattern}")
 
     test_files = glob.glob(file_pattern)
+    if "l0_test_header.py" in test_files:
+        test_files.remove("l0_test_header.py")
     if len(test_files) == 0:
         print(f"No test file discovered corresponding to pattern {file_pattern}")
         return 0
@@ -71,7 +73,7 @@ def run_generated_usecase_test(temp_file_path):
     """run the tests in main folder corresponding to file_pattern"""
     try:
         # Use subprocess to run the pytest command on the specified file
-        exitcode = pytest.main(['-W', 'ignore','--verbose', '--durations=5', '--durations-min=2.0'] + [temp_file_path])
+        exitcode = pytest.main(['-W', 'ignore', '--verbose', '--durations=5', '--durations-min=2.0'] + [temp_file_path])
     except Exception as e:
         # Handle any errors or exceptions here
         print(f"Error while running pytest on {temp_file_path}: {e}")
@@ -104,8 +106,8 @@ def generate_script_for_usecases_test(usecases):
     script = "import unittest\n\n\nclass TestUsecases(unittest.TestCase):\n\tpass\n"
 
     def get_test_function_for_usecase(usecase_path: str, test_number: int):
-        path_for_import = usecase_path.replace(".py",'').replace("\\",'.').replace("/",'.')
-        test_name = f"test_{test_number:03d}_"+ "_".join(usecase_path.replace(".py",'').replace("\\",'.').replace("/",'.').split(".")[-2:])
+        path_for_import = usecase_path.replace(".py", '').replace("\\", '.').replace("/", '.')
+        test_name = f"test_{test_number:03d}_" + "_".join(usecase_path.replace(".py", '').replace("\\", '.').replace("/", '.').split(".")[-2:])
         test_function_code = f"\n\tdef {test_name}(self):\n" \
                              f"\t\tfrom {path_for_import} import Study\n" \
                              f"\t\tusecase = Study()\n" \
@@ -185,5 +187,19 @@ def test_strategy(main_folder_default_value: str, processes_folder: Union[str, N
         print('No processes repo specified, exiting test.')
         exit_code = 0
 
-    print(f"EXIT CODE {exit_code}")
+    # print(f"EXIT CODE {exit_code}")
     sys.exit(exit_code)
+
+
+if __name__ == "__main__":
+    exit_code = 0
+    if len(sys.argv) < 2:
+        print('No mainfolder specified, exiting test.')
+        exit_code = 0
+        sys.exit(exit_code)
+
+    repo_to_test = os.path.basename(os.path.abspath(os.curdir))
+    platfor_or_models_folder = os.path.dirname(os.path.abspath(os.curdir))
+    mainfolder_val = sys.argv[1]
+    sys.argv.pop(0)
+    test_strategy(main_folder_default_value=mainfolder_val, processes_folder="sos_processes")

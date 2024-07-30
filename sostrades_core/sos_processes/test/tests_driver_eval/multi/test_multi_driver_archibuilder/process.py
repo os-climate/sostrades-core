@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- Generate test 2 process
+# -- Generate test 2 process
 
 import pandas as pd
 
@@ -40,7 +40,7 @@ class ProcessBuilder(BaseProcessBuilder):
             {'Parent': ['Business', 'Remy', 'Remy'],
              'Current': ['Remy', 'CAPEX', 'OPEX'],
              'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'SumValueBlockDiscipline'],
-             'Action': [('standard'),  ('standard'),  ('standard')],
+             'Action': [('standard'), ('standard'), ('standard')],
              'Activation': [True, False, False]})
 
         builder = self.ee.factory.create_architecture_builder(

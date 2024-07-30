@@ -168,7 +168,6 @@ class TreeNode:
         data_management_discipline.model_name_full_path = self.model_name_full_path
         data_management_discipline.discipline_label = discipline.get_disc_label()
 
-
         # Some modification has to be done on variable:
         # identifier : variable namespace + variable name
         # I/O type : 'in' for data_in and 'out' for data_out
@@ -203,7 +202,6 @@ class TreeNode:
                                                                     namespaced_key,
                                                                     data_management_discipline.model_name_full_path,
                                                                     data_management_discipline.disciplinary_inputs)
-
 
         disc_out = discipline.get_data_out()
         if not no_data:
@@ -273,11 +271,9 @@ class TreeNode:
         markdown_data = TreeNode.get_markdown_documentation(filepath)
         self.add_markdown_documentation(markdown_data, self.model_name_full_path)
 
-
     def create_data_key(self, disc_name, io_type, variable_name):
         io_type = io_type.lower()
         return f'{disc_name}_{io_type}put_{variable_name}'
-
 
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data

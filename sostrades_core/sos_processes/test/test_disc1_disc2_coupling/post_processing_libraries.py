@@ -28,6 +28,7 @@ Example of post processing library that can be loaded throught the 'add_post_pro
 method of the post processing manager
 """
 
+
 def post_processing_filters(execution_engine, namespace):
     """ post processing function designed to build a rc vs saleprice 2D chart
 

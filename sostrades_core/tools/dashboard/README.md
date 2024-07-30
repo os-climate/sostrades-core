@@ -1,7 +1,7 @@
 # Dashboard
 
 The dashboard is a process summary to display main lines / inputs / results of a study.
-There is a unique dashboard template for a process, that contains all elements to display. 
+There is a unique dashboard template for a process, that contains all elements to display.
 Then, the dashboard of a study is generating, following the dashboard template of the study's process, with the study data.
 
 
@@ -12,14 +12,14 @@ This file named **dashboard_template.json** must be located in a **dashboard** f
 
 ### Dashboard template format
 
-The content of the dashboard template is in the json format. 
+The content of the dashboard template is in the json format.
 It should contain:
  - a title
  - a list of rows
 
 A row contains a list of elements that will be displayed on the same line of the dashboard. So beware of the number of element you set on a row, it may overflow of the screen.
 A row may contain:
-- a parameter, 
+- a parameter,
 - a chart,
 - a text,
 - a section separator.
@@ -60,12 +60,12 @@ Here is an example of a dashboard template with comments and explanations surrou
 
     {
       "title": "example of dashboard", //The title of the dashboard//
-      "rows": [ 
+      "rows": [
 
         // the first row//
-        [ 
+        [
           //This is the first TEXT element //
-          { 
+          {
             "content_type": "TEXT",
             "content": "This is a process of generic value assessment ",
           }
@@ -80,7 +80,7 @@ Here is an example of a dashboard template with comments and explanations surrou
             "style": "hr-solid"
           }
         ],
-    
+
         //3rd row//
         [
           // a sub title element//
@@ -90,7 +90,7 @@ Here is an example of a dashboard template with comments and explanations surrou
             "style": "h3" //it is the css class name of a title of 3rd level //
           }
         ],
-    
+
         //4th row//
         [
           // a parameter element //
@@ -105,7 +105,7 @@ Here is an example of a dashboard template with comments and explanations surrou
             "content_namespace": "{study_name}.Tomato_sauce.launch_year"
           }
         ],
-    
+
         // a line separator element in a new row//
         [
           {

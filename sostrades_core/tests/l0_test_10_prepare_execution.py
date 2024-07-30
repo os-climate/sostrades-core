@@ -26,6 +26,7 @@ from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 
+
 class TestPrepareExecution(unittest.TestCase):
     """
     SoSCoupling status test class

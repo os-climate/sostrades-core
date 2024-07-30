@@ -30,14 +30,14 @@ class Study(StudyManager):
         """
         Usecase for disc1 disc2 coupling
         """
-        ######### Numerical values   ####
+        # Numerical values   ####
         x = 13.
         a = 13.
         b = 14.
         constant = 13.
         power = 12
         z = 11.2
-        ######### Fill the dictionary for dm   ####
+        # Fill the dictionary for dm   ####
 
         coupling_name = 'D1_D3_Coupling'
         dict_values = {}

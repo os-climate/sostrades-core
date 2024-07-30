@@ -45,7 +45,7 @@ def get_post_processing_list(self, chart_filters=None):
         for chart_filter in chart_filters:
             if chart_filter.filter_key == 'charts':
                 chart_list = chart_filter.selected_values
-    
+
     if 'sample chart' in chart_list:
         # Get the values
         x = self.get_sosdisc_inputs('x')

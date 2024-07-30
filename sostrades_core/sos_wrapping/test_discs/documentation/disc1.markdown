@@ -1,6 +1,6 @@
-# Documentation test   
+# Documentation test
 
-On rc : 
+On rc :
 
 ```mermaid
 graph LR
@@ -21,4 +21,4 @@ $$RC = RC\_Propulsion + RC\_Make + RC\_Liability$$
 $$RC\_Make = (1-Perc\_Labour)*RC\_Material + \\
 Perc\_Labour*RC\_Labour$$
 ![Test Image](test_doc_image.PNG)
-Percentages on Labour (30%), Common (60%), New (30%) and Modify (10%) can be easily changed. 
+Percentages on Labour (30%), Common (60%), New (30%) and Modify (10%) can be easily changed.

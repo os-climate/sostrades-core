@@ -22,7 +22,7 @@ from numpy import ComplexWarning
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
-#IMPORT USECASES
+# IMPORT USECASES
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import (
     Study as Study_disc1_all_types,
 )
@@ -152,10 +152,10 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
-            assert(mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
+            assert (mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
                        step=1e-15, threshold=1e-8,))
             print('CHECK_JACOBIAN performed for ', proxy_disc.get_disc_full_name())
-        assert(exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
+        assert (exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
             values_dict, linearization_mode='adjoint', derr_approx='complex_step', step=1e-15, threshold=1e-8,))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
@@ -180,10 +180,10 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
-            assert(mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
+            assert (mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
                        step=1e-15, threshold=1e-8,))
             print('CHECK_JACOBIAN performed for ', proxy_disc.get_disc_full_name())
-        assert(exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
+        assert (exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
             values_dict, derr_approx='complex_step', step=1e-15, threshold=1e-8, linearization_mode='adjoint'))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
 
@@ -207,7 +207,7 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.prepare_execution()
         exec_eng.display_treeview_nodes()
         mdo_disc = exec_eng.dm.get_disciplines_with_name('usecase.SellarCoupling.Sellar_2')[0].mdo_discipline_wrapp.mdo_discipline
-        inputs=['usecase.SellarCoupling.z']
-        outputs=['usecase.SellarCoupling.y_2']
-        assert(mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
+        inputs = ['usecase.SellarCoupling.z']
+        outputs = ['usecase.SellarCoupling.y_2']
+        assert (mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
                    step=1e-15, threshold=1e-8, inputs=inputs, outputs=outputs, output_column='value'))

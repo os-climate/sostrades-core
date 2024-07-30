@@ -76,7 +76,6 @@ class TestScatter(unittest.TestCase):
         result = '\n'.join([','.join(line.rstrip().split(None, 5))
                             for line in result.split('\n')])
 
-
         with open(join(dirname(__file__), 'test_disc1_perfos.csv'), 'w+') as f:
             # f = open(result.rsplit('.')[0] + '.csv', 'w')
             f.write(result)

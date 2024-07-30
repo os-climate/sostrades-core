@@ -43,7 +43,7 @@ class Study(StudyManager):
 
         disc_dict = {}
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = "tornado_chart_analysis"
-        disc_dict[f'{ns}.SampleGenerator.variation_list'] = [-10.0,10.0]
+        disc_dict[f'{ns}.SampleGenerator.variation_list'] = [-10.0, 10.0]
         disc_dict[f'{ns}.Eval.with_sample_generator'] = True
         disc_dict[f'{ns}.SampleGenerator.eval_inputs'] = input_selection_a
         disc_dict[f'{ns}.Eval.gather_outputs'] = output_selection_ind
