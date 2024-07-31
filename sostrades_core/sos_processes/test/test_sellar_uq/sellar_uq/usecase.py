@@ -17,8 +17,9 @@ class Study(DOEStudy):
     """The main study for the UQ on the Sellar MDA."""
 
     UQ_NAME = "UncertaintyQuantification"
-    def __init__(self, log_level="INFO", **kwargs) -> None:  # noqa: D107
-        logger = self.configure_logger(log_level)
+
+    def __init__(self, log_level="INFO", write_to_file: bool = False, **kwargs) -> None:  # noqa: D107
+        logger = self.configure_logger(log_level, write_to_file)
         super(DOEStudy, self).__init__(__file__, logger=logger, **kwargs)
 
     def setup_usecase(self):
@@ -38,7 +39,8 @@ class Study(DOEStudy):
 
 
 if __name__ == "__main__":
-    usecase = Study(run_usecase=True, log_level="DEBUG")
+    usecase = Study(log_level="DEBUG")
+    usecase.run_usecase = True
     usecase.load_data()
     usecase.execution_engine.display_treeview_nodes(display_variables=True)
 
