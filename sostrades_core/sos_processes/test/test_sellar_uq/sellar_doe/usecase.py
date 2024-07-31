@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from gemseo.api import configure_logger
+from numpy import array
 from pandas import DataFrame
 
 from sostrades_core.study_manager.study_manager import StudyManager
@@ -48,9 +49,9 @@ class Study(StudyManager):
         """Setup the usecase."""
         dspace_dict = {
             "variable": [f"{self.COUPLING_NAME}.{v}" for v in ["x", "z"]],
-            "value": [[1.0], [4.0, 3.0]],
-            "lower_bnd": [[0.0], [-10.0, 0.0]],
-            "upper_bnd": [[10.0], [10.0, 10.0]],
+            "value": [array([1.0]), array([4.0, 3.0])],
+            "lower_bnd": [array([0.0]), array([-10.0, 0.0])],
+            "upper_bnd": [array([10.0]), array([10.0, 10.0])],
             "enable_variable": [True, True],
             "activated_elem": [[True], [True, True]],
         }
