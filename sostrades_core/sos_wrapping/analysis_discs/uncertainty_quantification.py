@@ -327,10 +327,10 @@ class UncertaintyQuantification(SoSWrapp):
                 param_full_ns_list = self.dm.get_all_namespaces_from_var_name(param)
                 for param_full_ns in param_full_ns_list:
                     param_type = self.dm.get_data(param_full_ns, self.TYPE)
-                    if param_type not in ["float", "int"]:
+                    if param_type not in ["float", "int", "array"]:
                         check_integrity_msg = (
-                            f"Parameter {param_full_ns} found in eval_{io_type} should be float or"
-                            f" int for uncertainty quantification"
+                            f"Parameter {param_full_ns} found in eval_{io_type} should be float,"
+                            f" int or array for uncertainty quantification"
                         )
                         check_integrity_msg_list.append(check_integrity_msg)
 
