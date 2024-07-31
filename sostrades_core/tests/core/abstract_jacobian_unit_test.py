@@ -116,13 +116,13 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
             local_logger.info(
                 f'Jacobian dump mode enable on {join(location, filename)}')
             check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
-                                                   outputs=outputs, derr_approx=derr_approx,
+                                                   outputs=outputs, derr_approx=derr_approx, threshold=threshold,
                                                    dump_jac_path=file_path, input_column=input_column,
                                                    output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
         else:
             check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
-                                                   outputs=outputs, derr_approx=derr_approx,
+                                                   outputs=outputs, derr_approx=derr_approx, threshold=threshold,
                                                    load_jac_path=file_path, input_column=input_column,
                                                    output_column=output_column, parallel=parallel,
                                                    n_processes=n_processes, linearization_mode=linearization_mode)
