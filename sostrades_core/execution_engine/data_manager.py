@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/08/01 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -606,12 +606,7 @@ class DataManager:
         if 'numerical' in excepted:
             exception_list = list(ProxyDiscipline.NUM_DESC_IN.keys())
 
-        if 'None' in excepted:
-            data_dict_values = {key: value.get(attr, None)
-                                for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
-        else:
-            data_dict_values = {key: value.get(attr, None)
-                                for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
+        data_dict_values = {key: value.get(attr, None) for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
 
         return data_dict_values
 
