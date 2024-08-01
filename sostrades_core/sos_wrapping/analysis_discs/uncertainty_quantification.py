@@ -433,9 +433,7 @@ class UncertaintyQuantification(SoSWrapp):
         self.float_output_names = []
         for output_name in self.output_names:
             example_value = self.all_samples_df[output_name].values[0]
-            if isinstance(example_value, (float, int)):
-                self.float_output_names.append(output_name)
-            elif isinstance(example_value, np.ndarray):
+            if isinstance(example_value, np.ndarray) and example_value.size != 1:
                 if example_value.ndim != 1:
                     msg = "inputs of type array can only be one-dimensional"
                     raise ValueError(msg)
@@ -445,6 +443,9 @@ class UncertaintyQuantification(SoSWrapp):
                 values = np.stack(self.all_samples_df[output_name].values)
                 for i, float_output_name in enumerate(float_output_names):
                     self.float_all_samples_df[float_output_name] = values[:, i]
+            else:
+                # Float, int or single-value array
+                self.float_output_names.append(output_name)
 
     def set_float_input_distribution_parameters_df_values(self):
         """Set the values taken by each float input in float_all_samples_df."""
