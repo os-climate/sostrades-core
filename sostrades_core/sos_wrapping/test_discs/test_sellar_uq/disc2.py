@@ -69,7 +69,7 @@ class SellarDisc2(SoSWrapp):
         z2 = inputs["z"][1]
         y1 = inputs["y1"]
 
-        y2 = sqrt(y1) + z1 + z2
+        y2 = sqrt(abs(y1)) + z1 + z2
 
         LOGGER.debug("Disc 2")
         LOGGER.debug("z1 = %s", z1)
