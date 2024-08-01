@@ -43,8 +43,7 @@ limitations under the License.
 """
 
 CARTOUCHE_BASE = """'''
-{}
-'''
+{}'''
 """
 
 CAP_COPYRIGHT_2023 = "Copyright 2023 Capgemini"
@@ -53,9 +52,9 @@ CAP_MODIFIED_COPYRIGHT = "Modifications on {} Copyright 2024 Capgemini"
 AIRBUS_COPYRIGHT = "Copyright 2022 Airbus SAS"
 
 CARTOUCHE_CAP_AIRBUS = CARTOUCHE_BASE.format(
-    f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT}\n{LICENCE}"
+    f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT}\n\n{LICENCE}"
 )
-CARTOUCHE_CAP = CARTOUCHE_BASE.format(f"{CAP_COPYRIGHT}\n{LICENCE}")
+CARTOUCHE_CAP = CARTOUCHE_BASE.format(f"{CAP_COPYRIGHT}\n\n{LICENCE}")
 
 # Define a regular expression to match the cartouche only at the beginning
 cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
@@ -406,7 +405,7 @@ class HeaderTools:
                     self.parse_and_replace_modified_cartouche(
                         file_path,
                         CARTOUCHE_BASE.format(
-                            f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT.format(date_str)}\n{LICENCE}"
+                            f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT.format(date_str)}\n\n{LICENCE}"
                         ),
                     )
                     if not self.has_been_commited_from_airbus(git_git, file_path, commit_origin_dev):
@@ -425,7 +424,7 @@ class HeaderTools:
                     self.parse_and_replace_modified_cartouche(
                         file_path,
                         CARTOUCHE_BASE.format(
-                            f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT.format(date_str)}\n{LICENCE}"
+                            f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT.format(date_str)}\n\n{LICENCE}"
                         ),
                     )
                     if not self.has_been_commited_from_airbus(git_git, file_path, commit_origin_dev):
