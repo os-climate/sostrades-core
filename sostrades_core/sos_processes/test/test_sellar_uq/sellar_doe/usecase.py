@@ -70,9 +70,9 @@ class Study(StudyManager):
         sampling_outputs = DataFrame(sampling_outputs)
         sampling_params = {
             "sampling_method": "doe_algo",
-            "sampling_algo": "lhs",
+            "sampling_algo": "fullfact",
             "design_space": dspace,
-            "algo_options": {"n_samples": 30},
+            "algo_options": {"n_samples": 27},
             "eval_inputs": sampling_inputs,
             "sampling_generation_mode": "at_run_time",
         }
