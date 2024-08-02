@@ -875,6 +875,7 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
+
 if '__main__' == __name__:
     cls = TestArchiBuilder()
     cls.setUp()

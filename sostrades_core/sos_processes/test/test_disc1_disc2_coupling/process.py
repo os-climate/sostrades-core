@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2024/01/08 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ def post_processings(execution_engine, namespace, filters):
     if generate_x_vs_y:
         (x, y) = get_x_and_y(execution_engine, namespace)
 
-        if x is not None and x is not None:
+        if x is not None and y is not None:
             x_min = x
             x_max = x
 

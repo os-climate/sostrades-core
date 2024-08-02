@@ -352,7 +352,6 @@ class TestConfigDependencyDiscs(unittest.TestCase):
                                                                                      'scenario_name': ['scenario_1',
                                                                                                        'scenario_2']})
 
-
         self.exec_eng.load_study_from_input_dict(dict_values)
         # expected treeview is Disc2display inside each scenario
         exp_tv_list = [f'Nodes representation for Treeview {self.study_name}',

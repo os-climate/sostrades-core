@@ -54,7 +54,7 @@ if '__main__' == __name__:
 
 ## Visualize the post-processings of your usecase
 
-A dedicated factory (PostprocessingFactory) manages post-processing functionalities within the SoSTrades platform. Users have the option to preview all post-processings created for their usecase (in all the wrapp of the associated process but also at a given node, see how to create-postprocessing for mroe details) with these commands : 
+A dedicated factory (PostprocessingFactory) manages post-processing functionalities within the SoSTrades platform. Users have the option to preview all post-processings created for their usecase (in all the wrapp of the associated process but also at a given node, see how to create-postprocessing for mroe details) with these commands :
 
 ```python
 
@@ -67,5 +67,5 @@ if '__main__' == __name__:
        graph.to_plotly().show()
 
 ```
-The "show" method will open a window in your preferred web browser for each post-processing graph associated with the use case. 
+The "show" method will open a window in your preferred web browser for each post-processing graph associated with the use case.
 There may be variations in typographies or policies compared to the SoSTrades GUI rendering.

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-#-- process configuration class
+# -- process configuration class
 import logging
 import traceback
 from importlib import import_module
@@ -32,11 +32,12 @@ DEFAULT_RIGHTS_FILE_NAME = 'default_process_rights.yaml'
 USER_MAIL = 'user-mail'
 GROUP_NAME = 'group-name'
 
+
 class SoSProcessFactory:
     '''Class to manager processes
     '''
 
-    def __init__(self, additional_repository_list=None, search_python_path=True, logger:Optional[logging.Logger]=None):
+    def __init__(self, additional_repository_list=None, search_python_path=True, logger: Optional[logging.Logger] = None):
         """ SoSProcessFactory constructor
 
         :params: additional_repository_list, list with additonal repository to load
@@ -110,15 +111,15 @@ class SoSProcessFactory:
         """
         return self.__group_default_rights_dict
 
-    #-- Protected methods
+    # -- Protected methods
     def _set_processes_dict(self):
         ''' load processes list
         '''
-        #-- re-initialize processes_list
+        # -- re-initialize processes_list
         self.__processes_dict = {}
         self.__repository_list = []
 
-        #-- Set one dict per repo
+        # -- Set one dict per repo
         for repo_path in self.__raw_repository_list:
 
             resolve_raw_repository_processes = self.__get_repositories_by_process(
@@ -127,7 +128,6 @@ class SoSProcessFactory:
             self.__repository_list.extend(
                 resolve_raw_repository_processes.keys())
             self.__processes_dict.update(resolve_raw_repository_processes)
-
 
     def _set_processes_rights_from_file_dict(self):
         '''
@@ -143,11 +143,11 @@ class SoSProcessFactory:
                         repo_path)
 
                     for process in resolve_raw_repository_processes:
-                        #fill the lists with the datas
+                        # fill the lists with the datas
                         if USER_MAIL in yaml_data.keys() and yaml_data[USER_MAIL] is not None:
-                            self.__user_default_rights_dict[process] =  yaml_data[USER_MAIL]
+                            self.__user_default_rights_dict[process] = yaml_data[USER_MAIL]
                         if GROUP_NAME in yaml_data.keys() and yaml_data[GROUP_NAME] is not None:
-                            self.__group_default_rights_dict[process] =  yaml_data[GROUP_NAME]
+                            self.__group_default_rights_dict[process] = yaml_data[GROUP_NAME]
 
     def __add_python_path_processes(self):
         """

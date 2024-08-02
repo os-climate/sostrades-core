@@ -32,6 +32,7 @@ from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 
+
 class TestMDALoop(unittest.TestCase):
     """
     MDA test class
@@ -1264,7 +1265,6 @@ class TestMDALoop(unittest.TestCase):
 #             if flag:
 #                 print(k1, k2)
 
-
     def test_19_check_if_proxy_coupling_grammar_is_equal_to_GEMSEO_one_for_sobieski_case(self):
         '''
         Context:
@@ -1297,7 +1297,7 @@ class TestMDALoop(unittest.TestCase):
         ns_dict = {'ns_OptimSobieski': self.name}
         exec_eng.ns_manager.add_ns_def(ns_dict)
 
-        builder_list=[disc0_builder,disc1_builder,disc2_builder,disc3_builder]
+        builder_list = [disc0_builder, disc1_builder, disc2_builder, disc3_builder]
         exec_eng.factory.set_builders_to_coupling_builder(builder_list)
 
         exec_eng.configure()
@@ -1305,15 +1305,15 @@ class TestMDALoop(unittest.TestCase):
         # load data
         sc_name = "SobieskyCoupling"
         disc_dict = {
-                      '{sc_name}.z': [0.05,45000,1.6,5.5,55.,1000],
-                      '{sc_name}.y_14': [50606.9,7306.20],
+                      '{sc_name}.z': [0.05, 45000, 1.6, 5.5, 55., 1000],
+                      '{sc_name}.y_14': [50606.9, 7306.20],
                       '{sc_name}.y_24':  [4.15],
                       '{sc_name}.y_34': [1.10],
-                      '{sc_name}.x_1': [0.25,1.0],
+                      '{sc_name}.x_1': [0.25, 1.0],
                       '{sc_name}.y_21':  [50606.9],
                       '{sc_name}.y_31': [6354.32],
                       '{sc_name}.x_2': [1.0],
-                      '{sc_name}.y_12':  [50606.9,0.95],
+                      '{sc_name}.y_12':  [50606.9, 0.95],
                       '{sc_name}.y_32': [12194.2],
                       '{sc_name}.x_3': [0.5],
                       '{sc_name}.y_23':  [12194.2],
@@ -1333,7 +1333,6 @@ class TestMDALoop(unittest.TestCase):
         disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
         self.assertEqual(len(proxy_out_names), len(disc_out_names))
         self.assertListEqual(proxy_out_names, disc_out_names)
-
 
     def test_20_check_linearization_mode_propagation(self):
         """
@@ -1364,8 +1363,8 @@ class TestMDALoop(unittest.TestCase):
 
         exec_eng.execute()
         # assert that linearization mode was correctly propagated
-        #assert exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_2.linearization_mode')== 'finite_differences'
-        #assert disc_dict[f'{self.name}.{coupling_name}.Sellar_1.linearization_mode'] == 'finite_differences'
+        # assert exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_2.linearization_mode')== 'finite_differences'
+        # assert disc_dict[f'{self.name}.{coupling_name}.Sellar_1.linearization_mode'] == 'finite_differences'
 
     def test_21_sellar_coupling_mda_graphs(self):
         """
@@ -1491,6 +1490,7 @@ class TestMDALoop(unittest.TestCase):
                 self.assertAlmostEqual(_r0, _rp)
             for _k, _v in out_0.items():
                 self.assertAlmostEqual(_v, out_p[_k])
+
 
 if '__main__' == __name__:
     cls = TestMDALoop()

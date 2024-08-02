@@ -18,33 +18,34 @@ limitations under the License.
 Controller class: Can be variables, parameters, design variables, ...
 """
 
+
 class Controller:
     """
     Controller class: Can be variables, parameters, design variables, ..
     """
-    #--Class variables
-    CLASS_MSG   = 'Controller'
-    ERROR_MSG   = 'ERROR '+CLASS_MSG+'.'
-    WARNING_MSG = 'WARNING '+CLASS_MSG+'.'
-    USE_GRADIENT_ARRAYS = True #Declares if the class uses grad arrays that must be updated when design variables are created dynamically
+    # --Class variables
+    CLASS_MSG = 'Controller'
+    ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
+    WARNING_MSG = 'WARNING ' + CLASS_MSG + '.'
+    USE_GRADIENT_ARRAYS = True  # Declares if the class uses grad arrays that must be updated when design variables are created dynamically
 
-    #--Constructor
+    # --Constructor
     def __init__(self, Manager, Type, Id, check_add=True):
-        ERROR_MSG=self.ERROR_MSG+'__init__: '
-        self.__manager  = Manager    # a controller is linked to a Controller Manager
-        self.__type     = Type       # type of controller
-        self.__id       = Id         # id of the controller
-        self.__influences     = []
-        self.__influences_id  = []
-        self.__dependances    = []
+        ERROR_MSG = self.ERROR_MSG + '__init__: '
+        self.__manager = Manager    # a controller is linked to a Controller Manager
+        self.__type = Type       # type of controller
+        self.__id = Id         # id of the controller
+        self.__influences = []
+        self.__influences_id = []
+        self.__dependances = []
         self.__dependances_id = []
-        self.__is_updated=False # At least 1 update must be performed at instanciation
-        self.__manager.add(self, check=check_add)#In order to have the right manager.get_ndv(), must be done before intializing self.__ndv
+        self.__is_updated = False  # At least 1 update must be performed at instanciation
+        self.__manager.add(self, check=check_add)  # In order to have the right manager.get_ndv(), must be done before intializing self.__ndv
 
-        self.__ndv          = self.__manager.get_ndv()
+        self.__ndv = self.__manager.get_ndv()
 
         if type(self.__id) not in [str, str]:
-            raise Exception(ERROR_MSG+'Controller ID must a string')
+            raise Exception(ERROR_MSG + 'Controller ID must a string')
 
         self.specific_init()
         self.handle_dv_changes()
@@ -53,12 +54,12 @@ class Controller:
         pass
 
     def __repr__(self):
-        info_string =  '\n----------------------------------------------'
-        info_string += '\n   ID              : '+self.get_id()
-        info_string += '\n   Type            : '+self.get_type()
+        info_string = '\n----------------------------------------------'
+        info_string += '\n   ID              : ' + self.get_id()
+        info_string += '\n   Type            : ' + self.get_type()
         return info_string
 
-    #--Accessors
+    # --Accessors
     def get_manager(self):
         return self.__manager
 
@@ -74,7 +75,7 @@ class Controller:
     def get_ndv(self):
         return self.__ndv
 
-    #Dependancies / Influencies management
+    # Dependancies / Influencies management
     def get_dependances(self):
         return self.__dependances
 
@@ -85,46 +86,46 @@ class Controller:
         return self.__influences
 
     def is_influent(self):
-        return len(self.__influences)>0
+        return len(self.__influences) > 0
 
     def get_influences_id(self):
         return self.__influences_id
 
-    def _add_influence(self,controller):
+    def _add_influence(self, controller):
         """
         influences are managed via dependances, user should not add any dependance to the list.
         """
         if controller is not None:
             cid = controller.get_id()
-            #if cid not in self.get_influences_id():
+            # if cid not in self.get_influences_id():
             self.get_influences().append(controller)
             self.get_influences_id().append(cid)
 
-    def add_dependance(self,controller):
+    def add_dependance(self, controller):
         if controller is not None:
             cid = controller.get_id()
-            #if cid not in self.get_dependances_id():
+            # if cid not in self.get_dependances_id():
             self.get_dependances().append(controller)
             self.get_dependances_id().append(cid)
             controller._add_influence(self)
 
-    def special_dependance_update(self,pt):
+    def special_dependance_update(self, pt):
         return
-        #WARNING_MSG=self.WARNING_MSG+'special_dependance_update: '
-        #print WARNING_MSG+'element ID='+self.get_id()+': unexpected call!!! please contact a padge developper!!!'
+        # WARNING_MSG=self.WARNING_MSG+'special_dependance_update: '
+        # print WARNING_MSG+'element ID='+self.get_id()+': unexpected call!!! please contact a padge developper!!!'
 
-    def del_dependance(self,controller):
+    def del_dependance(self, controller):
         if controller is not None:
             cid = controller.get_id()
-            #if cid in self.get_dependances_id():
+            # if cid in self.get_dependances_id():
             self.get_dependances().remove(controller)
             self.get_dependances_id().remove(cid)
             controller.del_influence(self)
 
-    def del_influence(self,controller):
+    def del_influence(self, controller):
         if controller is not None:
             cid = controller.get_id()
-            #if cid in self.get_influences_id():
+            # if cid in self.get_influences_id():
             self.get_influences().remove(controller)
             self.get_influences_id().remove(cid)
 
@@ -136,7 +137,7 @@ class Controller:
 
     def set_to_update(self):
         self.set_controllers_to_update()
-        self.__is_updated=False
+        self.__is_updated = False
 
     def set_controllers_to_update(self):
         for dep_ctrl in self.get_influences():
@@ -145,7 +146,7 @@ class Controller:
                 dep_ctrl.set_controllers_to_update()
 
     def set_updated(self):
-        self.__is_updated=True
+        self.__is_updated = True
 
     def dependances_updated(self):
         for pt in self.get_dependances():
@@ -153,7 +154,7 @@ class Controller:
                 return False
         return True
 
-    #--Methods
+    # --Methods
     def clean_dependencies(self):
         for pt in self.get_dependances():
             pt.del_influence(self)
@@ -193,6 +194,3 @@ class Controller:
 
         self.update_specific()
         self.set_updated()
-
-
-

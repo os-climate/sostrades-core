@@ -11,3 +11,5 @@ dist/
 sos_trades_core.egg-info/
 sostrades_core.egg-info/
 /.pytest_cache/
+.vscode
+.ruff.toml

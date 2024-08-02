@@ -25,6 +25,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a pareto front optimal chart display as post post processing
 """
 
+
 class InstantiatedPlotlyNativeChartException(Exception):
     """ Overload Exception basic type
     """
@@ -129,6 +130,5 @@ class InstantiatedPlotlyNativeChart(AbstractPostProcessingPlotlyTooling):
         json[self.LOGO_OFFICIAL] = self.logo_official
         json[self.LOGO_WORK_IN_PROGRESS] = self.logo_work_in_progress
         json[self.POST_PROCESSING_SECTION_NAME] = self.post_processing_section_name.capitalize()
-
 
         return json

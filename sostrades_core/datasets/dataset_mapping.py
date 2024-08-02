@@ -28,6 +28,7 @@ class DatasetsMappingException(Exception):
     """
     pass
 
+
 @dataclass()
 class DatasetsMapping:
     """
@@ -55,7 +56,7 @@ class DatasetsMapping:
     TYPE = 'type'
 
     # Process module name
-    process_module_path:str
+    process_module_path: str
     # Dataset info [connector_id|dataset_id| : DatasetInfo]
     datasets_infos: dict[str:DatasetInfo]
     # Namespace mapping [namespace_name : List[connector_id|dataset_id|]]
@@ -144,12 +145,10 @@ class DatasetsMapping:
                         parameter_from = parameter
                         # if we have '*'-> param_name or param_name -> '*' we retreive the param_name
                         if parameter_id == DatasetInfo.WILDCARD:
-                            parameter_to_found  = parameter
+                            parameter_to_found = parameter
                         if parameter == DatasetInfo.WILDCARD:
                             parameter_from = parameter_id
                         parameters_mapping[dataset_info_id][namespace][parameter_from] = parameter_to_found
-
-
 
         except Exception as exception:
             raise DatasetsMappingException(f'Error reading the dataset mapping file: \n{str(exception)}')
@@ -159,7 +158,6 @@ class DatasetsMapping:
             namespace_datasets_mapping=namespace_datasets_mapping,
             parameters_mapping=parameters_mapping
         )
-
 
     @classmethod
     def extract_mapping_key_fields(cls, mapping_key):
@@ -203,8 +201,7 @@ class DatasetsMapping:
             json_data = json.load(file)
         return DatasetsMapping.deserialize(json_data)
 
-
-    def get_datasets_info_from_namespace(self, namespace:str, study_name:str) -> dict[DatasetInfo:dict[str:str]]:
+    def get_datasets_info_from_namespace(self, namespace: str, study_name: str) -> dict[DatasetInfo:dict[str:str]]:
         """
         Gets the datasets info for a namespace: replace the placeholder with study names
         + if wildcard in namespaces return all dataset id associated to this wildcard
@@ -227,12 +224,11 @@ class DatasetsMapping:
         if DatasetInfo.WILDCARD in self.namespace_datasets_mapping.keys():
             dataset_ids = self.namespace_datasets_mapping[DatasetInfo.WILDCARD]
             for dataset_id in dataset_ids:
-                datasets_mapping[self.datasets_infos[dataset_id]] = self.parameters_mapping[dataset_id].get(DatasetInfo.WILDCARD,{})
+                datasets_mapping[self.datasets_infos[dataset_id]] = self.parameters_mapping[dataset_id].get(DatasetInfo.WILDCARD, {})
 
         return datasets_mapping
 
-
-    def get_datasets_namespace_mapping_for_study(self, study_name:str, namespaces_dict:dict[str:dict])-> tuple[dict, dict]:
+    def get_datasets_namespace_mapping_for_study(self, study_name: str, namespaces_dict: dict[str:dict]) -> tuple[dict, dict]:
         """
         Get the datasets_namespace_mapping and replace the study_placeholder with the study_name
         get the mapping of parameters for this namespace
@@ -245,11 +241,10 @@ class DatasetsMapping:
         datasets_mapping = {}
         duplicates = {}
 
-
-        for dataset, namespaces_mapping_dict  in self.parameters_mapping.items():
+        for dataset, namespaces_mapping_dict in self.parameters_mapping.items():
             try:
                 # create the dict that will contain all data to write in the dataset for all associated namespaces
-                all_data_in_dataset = {DatasetsMapping.VALUE:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.KEY:{}}
+                all_data_in_dataset = {DatasetsMapping.VALUE: {}, DatasetsMapping.TYPE: {}, DatasetsMapping.KEY: {}}
 
                 # iterate for all namespace associated to the dataset, parameters_mapping_dict contains the association param_name -> dataset_param_name
                 for namespace, parameters_mapping_dict in namespaces_mapping_dict.items():
@@ -273,35 +268,33 @@ class DatasetsMapping:
                                 for ns in corresponding_namespaces:
                                     for key in namespaces_dict[ns][DatasetsMapping.VALUE].keys():
                                         if key in all_data_in_dataset[DatasetsMapping.KEY].keys():
-                                            duplicates[key] = ns # the last namespace is the one that will hold the value
+                                            duplicates[key] = ns  # the last namespace is the one that will hold the value
                                     all_data_in_dataset[DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
                                     all_data_in_dataset[DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
                                     all_data_in_dataset[DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
                             else:
                                 # search for the data name in the corresponding namespaces
-                                corresponding_data = {ns:[value for key, value in namespaces_dict[ns][DatasetsMapping.VALUE].items() if key == data] for ns in corresponding_namespaces}
+                                corresponding_data = {ns: [value for key, value in namespaces_dict[ns][DatasetsMapping.VALUE].items() if key == data] for ns in corresponding_namespaces}
                                 if len(corresponding_data.keys()) > 0:
                                     # if the name of the dataset parameter already exists, it will overwrite the already set data
                                     # so we retrun the list of duplicated data
                                     if dataset_data in all_data_in_dataset[DatasetsMapping.KEY].keys():
-                                        duplicates[dataset_data] = namespace # the last namespace is the one that will hold the value
+                                        duplicates[dataset_data] = namespace  # the last namespace is the one that will hold the value
                                     # we get the last occurence or the data, the other are added in duplicates list
                                     last_ns = list(corresponding_data.keys())[-1]
                                     if len(corresponding_data[last_ns]) > 0:
                                         last_value = corresponding_data[last_ns][-1]
-                                        all_data_in_dataset[DatasetsMapping.VALUE].update({dataset_data:last_value})
-                                        all_data_in_dataset[DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
-                                        all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
+                                        all_data_in_dataset[DatasetsMapping.VALUE].update({dataset_data: last_value})
+                                        all_data_in_dataset[DatasetsMapping.TYPE].update({dataset_data: namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
+                                        all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data: namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
             except Exception as error:
                 raise DatasetsMappingException(f'Error retrieving data from dataset {dataset}]: \n{str(error)}')
-
 
             datasets_mapping[dataset] = all_data_in_dataset
 
         return datasets_mapping, duplicates
 
-
-    def get_namespace_datasets_mapping_for_parent(self, parent_namespace:str) -> dict[str : list[str]]:
+    def get_namespace_datasets_mapping_for_parent(self, parent_namespace: str) -> dict[str : list[str]]:
         """
         Get the namespace_datasets_mapping and replace the study_placeholder with the parent_namespace
         :param parent_namespace: parent namespace that will replace the <study_ph> in the child namespaces
@@ -315,8 +308,7 @@ class DatasetsMapping:
 
         return datasets_mapping
 
-
-    def get_parameters_datasets_mapping_for_parent(self, parent_namespace:str) -> dict[str: dict[str:dict[str:str]]]:
+    def get_parameters_datasets_mapping_for_parent(self, parent_namespace: str) -> dict[str: dict[str:dict[str:str]]]:
         """
         Get the parameters_mapping and replace the study_placeholder with the parent_namespace
         :param parent_namespace: parent namespace that will replace the <study_ph> in the child namespaces
@@ -325,6 +317,6 @@ class DatasetsMapping:
         """
         parameters_mapping = {}
         for dataset_id, namespace_mapping in self.parameters_mapping.items():
-            parameters_mapping[dataset_id] = {ns.replace(self.STUDY_PLACEHOLDER, parent_namespace):namespace_mapping[ns] for ns in namespace_mapping.keys()}
+            parameters_mapping[dataset_id] = {ns.replace(self.STUDY_PLACEHOLDER, parent_namespace): namespace_mapping[ns] for ns in namespace_mapping.keys()}
 
         return parameters_mapping

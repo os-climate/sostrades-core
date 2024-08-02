@@ -38,7 +38,6 @@ class SimpleDisc1(SoSWrapp):
                                  'namespace': 'ns_sampling_algo'}
                 }
 
-
     def run(self):
         """ Discipline 1 execution
         """
@@ -51,7 +50,6 @@ class SimpleDisc1(SoSWrapp):
         algo_options = self.decide_algo_options(sampling_algo)
         self.store_sos_outputs_values({'sampling_algo': sampling_algo})
         self.store_sos_outputs_values({'algo_options': algo_options})
-
 
     @staticmethod
     def compute_z(z):
@@ -94,6 +92,8 @@ class SimpleDisc1(SoSWrapp):
                     pass
 
         return algo_options
+
+
 class SimpleDisc2(SoSWrapp):
     """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
     """

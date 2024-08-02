@@ -171,7 +171,7 @@ class Sellar1Df(SoSWrapp):
 
         y_2['years'] = y_2['years'].astype('int64')
 
-        out['value'] = z[0] ** 2 + x['value'] + z[1] - 0.2 *  y_2['value']
+        out['value'] = z[0] ** 2 + x['value'] + z[1] - 0.2 * y_2['value']
 
         return out
 

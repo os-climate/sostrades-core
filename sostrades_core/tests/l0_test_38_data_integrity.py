@@ -28,7 +28,7 @@ class TestDataIntegrity(unittest.TestCase):
     Scatter data discipline test class
     """
     def assert_string_equal(self, string1: str, string2: str):
-        string1 = string1.replace('\n','').replace('\t','')
+        string1 = string1.replace('\n', '').replace('\t', '')
         string2 = string2.replace('\n', '').replace('\t', '')
         self.maxDiff = None
         self.assertEqual(string1, string2, )

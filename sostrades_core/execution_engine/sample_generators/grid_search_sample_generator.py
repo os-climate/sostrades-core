@@ -66,7 +66,7 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
         dict_of_list_values = self.cp_generator.filter_eval_inputs_cp(eval_inputs_cp, wrapper)
         return [], {"dict_of_list_values": dict_of_list_values}
 
-    def get_eval_inputs_cp_for_gs(self, eval_inputs, design_space): # FIXME: use class variables
+    def get_eval_inputs_cp_for_gs(self, eval_inputs, design_space):  # FIXME: use class variables
         """
         Method that modifies Doe-type eval_inputs into eval_inputs_cp to use CartesianProduct for GridSearch.
 

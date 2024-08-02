@@ -30,6 +30,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 load/dump - read/write feature to manage load and dump of exported study data
 '''
 
+
 class LoadDumpException(Exception):
     def __init__(self, encryption_mode, action):
         super().__init__(

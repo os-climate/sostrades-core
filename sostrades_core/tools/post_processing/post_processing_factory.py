@@ -33,6 +33,7 @@ from sostrades_core.tools.post_processing.post_processing_bundle import (
 Factory for post processing (2 axes chart, pie chart, table)
 """
 
+
 class PostProcessingFactory:
     """ Class that centralized extraction of post processsing information from discipline
     """
@@ -75,7 +76,7 @@ class PostProcessingFactory:
 
             discipline = value[DataManager.DISC_REF]
             discipline_full_name = discipline.get_disc_full_name()
-            discipline_label =  discipline.get_disc_label()
+            discipline_label = discipline.get_disc_label()
 
             if discipline_full_name not in all_post_processings_bundle:
                 all_post_processings_bundle[discipline_label] = []

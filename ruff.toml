@@ -1,3 +1,5 @@
+line-length = 120
+
 [lint]
 select = ["I", "TCH", "PLC", "PLE", "F", "E", "W", "PERF"]
 # extend-select = ["ALL"]

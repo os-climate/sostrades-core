@@ -198,7 +198,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.multi_scenarios')[0]
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -294,7 +294,7 @@ class TestMultiScenario(unittest.TestCase):
         study_dump.set_dump_directory(dump_dir)
         study_dump.load_data()
 
-        ################ Start checks ##########################
+        # Start checks ##########################
         self.ns = f'{self.study_name}'
 
         self.exec_eng = study_dump.ee
@@ -361,7 +361,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.multi_scenarios')[0]
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -493,7 +493,7 @@ class TestMultiScenario(unittest.TestCase):
             self.assertEqual(self.exec_eng.dm.get_value(self.study_name + '.multi_scenarios.' +
                                                         scenario + '.Disc3.constant'), 23)
 
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.multi_scenarios')[0]
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -581,7 +581,7 @@ class TestMultiScenario(unittest.TestCase):
                                                            self.z2])
         samples_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.multi_scenarios')[0]
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -637,7 +637,7 @@ class TestMultiScenario(unittest.TestCase):
                                                            self.z3])
         samples_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         # self.assertEqual(ms_sub_disc_names, scenario_names)
         for sc in scenario_names:
@@ -686,7 +686,7 @@ class TestMultiScenario(unittest.TestCase):
 
         samples_df['selected_scenario'] = True
         self.exec_eng.load_study_from_input_dict(dict_values)
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         # self.assertEqual(ms_sub_disc_names, scenario_names)
         for sc in scenario_names:
@@ -756,7 +756,7 @@ class TestMultiScenario(unittest.TestCase):
         dict_values[f'{self.study_name}.multi_scenarios.samples_df'] = samples_df
         self.exec_eng.load_study_from_input_dict(dict_values)
 
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.multi_scenarios')[0]
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -1172,6 +1172,7 @@ class TestMultiScenario(unittest.TestCase):
                                                            self.z1,
                                                            self.z2,
                                                            ])
+
 
 if '__main__' == __name__:
     cls = TestMultiScenario()

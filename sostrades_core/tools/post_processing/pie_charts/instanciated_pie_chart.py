@@ -29,6 +29,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Class that define a pie chart display as post post processing
 """
 
+
 class InstanciatedPieChartException(Exception):
     """ Overload Exception basic type
     """

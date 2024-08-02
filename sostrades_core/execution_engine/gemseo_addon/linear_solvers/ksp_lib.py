@@ -54,6 +54,7 @@ KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
 
 # TODO: inherit from PetscKSPAlgo of GEMSEO
 
+
 class PetscKSPAlgos(LinearSolverLib):
     """Interface to PETSC KSP.
 

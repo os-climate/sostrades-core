@@ -62,15 +62,15 @@ The wrap should inherit from
 
 ## Ontology data
 
-The ontology data specify all data regarding your SoSWrapp including : 
-* `label` : Name of the wrapp on the ontology panel of the SoSTrades platform 
+The ontology data specify all data regarding your SoSWrapp including :
+* `label` : Name of the wrapp on the ontology panel of the SoSTrades platform
 * `type` : Type of the model 'Research', 'Industrial' or 'Other'
 * `source` : the person or project that has implemented the wrapp AND the model behind it
 * `version` : A version of the model if necessary
 
-## DESC_IN & DESC_OUT 
+## DESC_IN & DESC_OUT
 
-The DESC_IN and DESC_OUT dictionaries are the input and output variable descriptors. It gives information on variables in the wrapp used by the model. 
+The DESC_IN and DESC_OUT dictionaries are the input and output variable descriptors. It gives information on variables in the wrapp used by the model.
 
 ```python
 DESC_IN = {
@@ -90,7 +90,7 @@ DESC_OUT = {
 * `user_level` : (optional) to filter the display in the GUI (1=Standard by default, 2=Advanced, 3=Expert)
 * `visibility`  : `'Shared'` if you need to specify a namespace for the variable or `'Local'` if the variable by default needs to be stored in the same namespace as the wrapp. If not specified the visibility is considered as `'Local'`.
 * `namespace`  : must be identified by a string name, and its value must be defined within the process utilizing the wrapp. This feature allows for parameterizing the variable's location based on the specific process.
-* `user_level`  : Specify the display level in the GUI: 1 for Standard view, 2 for Advanced, and 3 for Expert. If a variable is assigned an expert user level, it will only be visible in the expert view. This feature is useful for concealing complex variables that may be challenging to define. By default the display levvel is 1. 
+* `user_level`  : Specify the display level in the GUI: 1 for Standard view, 2 for Advanced, and 3 for Expert. If a variable is assigned an expert user level, it will only be visible in the expert view. This feature is useful for concealing complex variables that may be challenging to define. By default the display levvel is 1.
 * `range` : for float or int, range of the variable. the range will be checked by a data integrity method
 * `possible_values` : for string, possible values list of the variable. the possible values will be checked by a data integrity method
 * `optional` : A boolean flag that makes a variable optional to fill in the GUI
@@ -100,9 +100,9 @@ DESC_OUT = {
 
 
 ## Dataframe Descriptors
-Here is an example dataframe descriptor. For each column you define a tuple which defines: 
--  first the type of the values in the column, 
--  second the range (for int or float) or possible values (for string), None if nothing is specified 
+Here is an example dataframe descriptor. For each column you define a tuple which defines:
+-  first the type of the values in the column,
+-  second the range (for int or float) or possible values (for string), None if nothing is specified
 - third if the column is editable in the GUI or not.
 
 ```python
@@ -253,7 +253,7 @@ class GradientSellar(AbstractJacobianUnittest):
                             outputs=[f'{self.ns}.y_1']
                             )
 ```
-The choice of `derr_appox` numerical method is among `complex_step` and `finite_differences`. 
+The choice of `derr_appox` numerical method is among `complex_step` and `finite_differences`.
 The step has to be chosen carefully : not too small to avoid round-off error and not too large to avoid truncation error.
 
 During the call to `check_jacobian`, the analytic jacobian (exact) will be compared to a reference jacobian (derivative approximation) by [GEMSEO](https://gemseo.readthedocs.io/en/stable/examples/disciplines/basics/plot_check_jacobian.html).
@@ -263,4 +263,3 @@ During the gradient validation, you may want to avoid the full computation of th
 To this purpose, it is necessary to set the environment variable `DUMP_JACOBIAN_UNIT_TEST` to `true` so that the result is persisted in a pickle file described by `location` and `filename` arguments.
 
 Once the reference is generated once, you can delete the environment variable or set it to `false` so that the reference jacobian will not be computed twice : it will be loaded from the provided pickle file.
-

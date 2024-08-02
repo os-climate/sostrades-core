@@ -32,7 +32,7 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):
     DATASETS_FOLDER_NAME = 'datasets'
     MAPPINGS_FOLDER_NAME = 'mappings'
 
-    def __init__(self, module_name:str):
+    def __init__(self, module_name: str):
         """
         Constructor for Local Repository Datasets Connector
 
@@ -51,7 +51,6 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):
         # add the datasets default database to the path
         dataset_database_path = join(root_path, self.DATASETS_DB_NAME, self.DATASETS_FOLDER_NAME)
         super().__init__(root_directory_path=dataset_database_path, create_if_not_exists=False)
-
 
     @staticmethod
     def get_datasets_database_mappings_folder_path(module_name, file_name):

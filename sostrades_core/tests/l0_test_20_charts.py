@@ -23,6 +23,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for chart template
 '''
 
+
 class TestChartTemplate(unittest.TestCase):
     """
     Class to test template filters and charts
@@ -116,6 +117,7 @@ class TestChartTemplate(unittest.TestCase):
         dict_series['marker_symbol'] = 'circle'
         dict_series['marker'] = dict(color='LightSkyBlue', size=20, line=dict(color='MediumPurple', width=2))
         dict_series['line'] = dict(color='black')
+        dict_series['text'] = ''
 
         dict_obj['series'] = [dict_series]
 
