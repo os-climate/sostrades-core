@@ -41,7 +41,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
     def is_numeric(self, name: str) -> bool:  # noqa: D102
         element_type = self._grammar[name]
         return element_type is not None and (
-                issubclass(element_type, ndarray) or element_type in self._NUMERIC_TYPES
+                issubclass(element_type, ndarray) or element_type in self._NON_ARRAY_TYPES
         )
 
     def _convert_array_to_value(self, name: str, array: ndarray) -> Any:  # noqa: D102
@@ -88,7 +88,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
         Returns:
             The size.
         """
-        if isinstance(value, cls._NUMERIC_TYPES):
+        if isinstance(value, cls._NON_ARRAY_TYPES):
             return 1
         else:
             return compute_len(value)
