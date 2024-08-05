@@ -237,7 +237,7 @@ class DatasetsMapping:
                 if dataset_infos.data_group_id == DatasetInfo.WILDCARD:
                     dataset_infos = DatasetInfo(connector_id=dataset_infos.connector_id,
                                                 dataset_id=dataset_infos.dataset_id,
-                                                data_group_id=namespace)  # FIXME: ANONYMIZE
+                                                data_group_id=anonimized_ns.replace('<',"_").replace('>',"_")) # TODO: generalize
                 datasets_mapping[dataset_infos] = self.parameters_mapping[dataset_id].get(DatasetInfo.WILDCARD,{})
 
         return datasets_mapping
@@ -279,7 +279,7 @@ class DatasetsMapping:
                     corresponding_namespaces = []
                     if namespace == DatasetInfo.WILDCARD:
                         corresponding_namespaces.extend(namespaces_dict.keys())
-                        group_from_ns = lambda _ns: _ns
+                        group_from_ns = lambda _ns: _ns.replace(study_name, self.STUDY_PLACEHOLDER).replace('<',"_").replace('>',"_") # TODO: generalize
                     elif study_namespace in namespaces_dict.keys():
                         corresponding_namespaces.append(study_namespace)
 
