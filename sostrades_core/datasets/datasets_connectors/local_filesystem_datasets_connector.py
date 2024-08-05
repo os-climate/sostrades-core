@@ -60,6 +60,9 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Initializing local connector on {root_directory_path}")
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
 
+    def __format_filesystem_name(self, fs_name):
+        return self.__datasets_serializer.format_filesystem_name(fs_name)
+
     def __load_dataset_descriptor(self, dataset_identifier: str) -> dict[str: Any]:
         """
         Method to load dataset descriptor from JSON file containing the basic types variables as well as the dataset
@@ -70,8 +73,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         """
         if not os.path.exists(self.__root_directory_path):
             raise DatasetGenericException(f"Datasets database folder not found at {self.__root_directory_path}.")
-
-        dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
+        filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)
+        dataset_directory = os.path.join(self.__root_directory_path, filesystem_dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
 
         if not os.path.exists(dataset_descriptor_path):
@@ -97,7 +100,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type descriptor_data: dict
         """
         # TODO: exception mgmt?
-        dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
+        filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)
+        dataset_directory = os.path.join(self.__root_directory_path, filesystem_dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
         if not os.path.exists(dataset_descriptor_path):
             raise DatasetGenericException() from FileNotFoundError(f"The dataset descriptor json file is not found at "
@@ -122,9 +126,13 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
         """
+        filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)
+        filesystem_data_group_identifier = self.__format_filesystem_name(data_group_identifier)
         self.__logger.debug(f"Getting values {data_to_get.keys()} for data group {data_group_identifier} in dataset "
                             f"{dataset_identifier} with connector {self}")
-        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier, data_group_identifier))
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path,
+                                                                      filesystem_dataset_identifier,
+                                                                      filesystem_data_group_identifier))
         # Load the descriptor, the serializer loads the pickle if it exists
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
         self.__load_pickle_data()
@@ -159,7 +167,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
-        data_group_dir = os.path.join(self.__root_directory_path, dataset_identifier, data_group_identifier)
+        filesystem_data_group_identifier = self.__format_filesystem_name(data_group_identifier)
+        data_group_dir = os.path.join(self.__root_directory_path, dataset_identifier, filesystem_data_group_identifier)
         self.__datasets_serializer.set_dataset_directory(data_group_dir)
         # read the already existing values
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
@@ -192,7 +201,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         dataset_values_by_group = dict()
         for _group_id, _group_data in dataset_descriptor.items():
             self.__datasets_serializer.set_dataset_directory(
-                os.path.join(self.__root_directory_path, dataset_identifier, _group_id))
+                os.path.join(self.__root_directory_path, dataset_identifier, self.__format_filesystem_name(_group_id)))
             self.__load_pickle_data()
             dataset_values_by_group[_group_id] = {
                 key: self.__datasets_serializer.convert_from_dataset_data(key,
@@ -220,7 +229,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
-        dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
+        filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)
+        dataset_directory = os.path.join(self.__root_directory_path, filesystem_dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
         if not os.path.exists(dataset_descriptor_path):
             # Handle dataset creation
@@ -261,4 +271,4 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type dataset_id: str
         :return: None
         """
-        rmtree_safe(os.path.join(self.__root_directory_path, dataset_id))
+        rmtree_safe(os.path.join(self.__root_directory_path, self.__format_filesystem_name(dataset_id)))

@@ -58,11 +58,38 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     TYPE_OBJECT = 'object'
     TYPE_OBJECT_IDENTIFIER = TYPE_IN_FILESYSTEM_PARTICLE.join(("", TYPE_OBJECT, ""))
 
+    # forbidden characters
+    FORBIDDEN_CHARS = {"<", ">", ":", "\"", "/", "\\", "|", "?", "*"}
+    FORBIDDEN_CHARS_END_OF_NAME = {" ", "."}
+    FORBIDDEN_FS_NAMES = { "CON", "PRN", "AUX", "NUL",
+                           "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+                           "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+    PREFFIX_FORBIDDEN_FS_NAMES = "__"
+    REPLACEMENT_FORBIDDEN_CHARS = {_k: "_" for _k in FORBIDDEN_CHARS}
+    REPLACEMENT_FORBIDDEN_CHARS_END_OF_NAME = {_k: "_" for _k in FORBIDDEN_CHARS_END_OF_NAME}
+
     def __init__(self):
         super().__init__()
         self.__logger = logging.getLogger(__name__)
         self.__current_dataset_directory = None
         self.__pickle_data = {}
+
+    @classmethod
+    def format_filesystem_name(cls, fs_name):
+        new_fs_name = ""
+        # replace forbidden characters by their replacement characters
+        for _char in fs_name:
+            if _char in cls.REPLACEMENT_FORBIDDEN_CHARS:
+                new_fs_name += cls.REPLACEMENT_FORBIDDEN_CHARS[_char]
+            else:
+                new_fs_name += _char
+        # replace end of name forbidden
+        if new_fs_name and new_fs_name[-1] in cls.REPLACEMENT_FORBIDDEN_CHARS_END_OF_NAME:
+            new_fs_name = new_fs_name[:-1] + cls.REPLACEMENT_FORBIDDEN_CHARS_END_OF_NAME[new_fs_name[-1]]
+        # replace forbidden names
+        if new_fs_name in cls.FORBIDDEN_FS_NAMES:
+            new_fs_name = cls.PREFFIX_FORBIDDEN_FS_NAMES + new_fs_name
+        return new_fs_name
 
     def set_dataset_directory(self, dataset_directory):
         """
@@ -254,17 +281,17 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
-            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name)),
+            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, self.format_filesystem_name(data_name))),
             self.CSV_EXTENSION))
         # NB: dataframe csv serialization as in webapi
-        return self.__serialize_into_filesystem(_save_dataframe, data_value, data_name, descriptor_value)
+        return self.__serialize_into_filesystem(_save_dataframe, data_value, self.format_filesystem_name(data_name), descriptor_value)
 
     def _serialize_array(self, data_value: np.ndarray, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
-            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name)),
+            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, self.format_filesystem_name(data_name))),
             self.CSV_EXTENSION))
         # NB: converting ints to floats etc. to be improved along subtype management
-        return self.__serialize_into_filesystem(np.savetxt, data_value, data_name, descriptor_value)
+        return self.__serialize_into_filesystem(np.savetxt, data_value, self.format_filesystem_name(data_name), descriptor_value)
 
     def _serialize_jsonifiable(self, data_value: Any, data_name: str) -> Any:
         try:
