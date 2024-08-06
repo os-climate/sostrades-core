@@ -18,7 +18,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-
+from collections import defaultdict
 from sostrades_core.datasets.dataset_info import DatasetInfo
 
 
@@ -260,14 +260,17 @@ class DatasetsMapping:
         for dataset, namespaces_mapping_dict  in self.parameters_mapping.items():
 
             try:
-                # TODO: dirty coding
-                group_id = dataset.split("|")[-1]
+                # get encoded group_id
+                group_id = DatasetsMapping.extract_mapping_item_fields(
+                    f"{dataset}{DatasetsMapping.MAPPING_SEP}")[DatasetsMapping.DATA_GROUP_ID_KEY]
+
+                # and set it as a priori group for all associated namespaces (wildcard handled below)
                 group_from_ns = lambda _ns: group_id
 
                 # create the dict that will contain all data to write in the dataset for all associated namespaces
                 def _all_data_in_dataset_ctor():
                     return {DatasetsMapping.VALUE:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.KEY:{}}
-                from collections import defaultdict
+
                 all_data_in_dataset = defaultdict(_all_data_in_dataset_ctor)
 
                 # iterate for all namespace associated to the dataset, parameters_mapping_dict contains the association param_name -> dataset_param_name
@@ -279,9 +282,11 @@ class DatasetsMapping:
                     corresponding_namespaces = []
                     if namespace == DatasetInfo.WILDCARD:
                         corresponding_namespaces.extend(namespaces_dict.keys())
-                        # (if the data group is also a wildcard then we impose that the group_id be the anonymised ns)
-                        if group_id == DatasetInfo.WILDCARD:
-                            group_from_ns = lambda _ns: _ns.replace(study_name, self.STUDY_PLACEHOLDER)
+
+                    # (if the data group is a wildcard then we impose that the group_id be the anonymised ns for each ns)
+                    if group_id == DatasetInfo.WILDCARD:
+                        group_from_ns = lambda _ns: _ns.replace(study_name, self.STUDY_PLACEHOLDER)
+
                     elif study_namespace in namespaces_dict.keys():
                         corresponding_namespaces.append(study_namespace)
 
