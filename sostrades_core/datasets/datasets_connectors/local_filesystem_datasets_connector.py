@@ -76,6 +76,9 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         if not os.path.exists(self.__root_directory_path):
             raise DatasetGenericException(f"Datasets database folder not found at {self.__root_directory_path}.")
         filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)
+        if filesystem_dataset_identifier != dataset_identifier:
+            self.__logger.warning(f"Dataset {dataset_identifier} has a non-compliant name for connector {self}, using"
+                                  f"compliant name {filesystem_dataset_identifier}, beware of spurious storage.")
         dataset_directory = os.path.join(self.__root_directory_path, filesystem_dataset_identifier)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
 
@@ -171,11 +174,14 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :return: None
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
-        filesystem_data_group_identifier = self.__format_filesystem_name(data_group_identifier)
-        data_group_dir = os.path.join(self.__root_directory_path, dataset_identifier, filesystem_data_group_identifier)
-        self.__datasets_serializer.set_dataset_directory(data_group_dir)
         # read the already existing values
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+
+        filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)
+        filesystem_data_group_identifier = self.__format_filesystem_name(data_group_identifier)
+        data_group_dir = os.path.join(self.__root_directory_path, filesystem_dataset_identifier, filesystem_data_group_identifier)
+        self.__datasets_serializer.set_dataset_directory(data_group_dir)
+
         self.__load_pickle_data()
         # Write data, serializer buffers the data to pickle and already pickled
         descriptor_values = {key: self.__datasets_serializer.convert_to_dataset_data(key,
@@ -236,11 +242,12 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
 
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+        filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)
         dataset_values_by_group = dict()
         for _group_id, _group_data in dataset_descriptor.items():
             filesystem_data_group_id = self.__get_data_group_directory(dataset_descriptor, dataset_identifier, _group_id)
             self.__datasets_serializer.set_dataset_directory(
-                os.path.join(self.__root_directory_path, dataset_identifier, filesystem_data_group_id))
+                os.path.join(self.__root_directory_path, filesystem_dataset_identifier, filesystem_data_group_id))
             self.__load_pickle_data()
             dataset_values_by_group[_group_id] = {
                 key: self.__datasets_serializer.convert_from_dataset_data(key,
