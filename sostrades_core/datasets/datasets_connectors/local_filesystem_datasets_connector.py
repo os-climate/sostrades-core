@@ -36,6 +36,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
     Specific dataset connector for dataset in local filesystem
     """
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
+    DATA_GROUP_DIRECTORY_KEY = '__data_group_filesystem_directory__'
+
 
     def __init__(self, root_directory_path: str,
                  create_if_not_exists: bool = False,
@@ -127,14 +129,16 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type data_to_get: dict[str:str]
         """
         filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)
-        filesystem_data_group_identifier = self.__format_filesystem_name(data_group_identifier)
         self.__logger.debug(f"Getting values {data_to_get.keys()} for data group {data_group_identifier} in dataset "
                             f"{dataset_identifier} with connector {self}")
-        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path,
-                                                                      filesystem_dataset_identifier,
-                                                                      filesystem_data_group_identifier))
+
         # Load the descriptor, the serializer loads the pickle if it exists
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
+
+        filesystem_data_group_id = self.__get_data_group_directory(dataset_descriptor, dataset_identifier, data_group_identifier)
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path,
+                                                                      filesystem_dataset_identifier,
+                                                                      filesystem_data_group_id))
         self.__load_pickle_data()
         # Filter data
         filtered_values = {key: self.__datasets_serializer.convert_from_dataset_data(key,
@@ -182,9 +186,43 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
             dataset_descriptor[data_group_identifier] = dict()
         self._update_data_with_values(dataset_descriptor[data_group_identifier],
                                       descriptor_values, data_types_dict)
+        dataset_descriptor = self.__index_data_group_directory(dataset_descriptor,
+                                                               dataset_identifier,
+                                                               data_group_identifier,
+                                                               filesystem_data_group_identifier)
+
         self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier,
                                                   descriptor_data=dataset_descriptor)
         return values_to_write
+
+    def __index_data_group_directory(self,
+                                     dataset_descriptor,
+                                     dataset_identifier,
+                                     data_group_identifier,
+                                     filesystem_data_group_identifier):
+        if filesystem_data_group_identifier != data_group_identifier:
+            dataset_descriptor[data_group_identifier][self.DATA_GROUP_DIRECTORY_KEY] = filesystem_data_group_identifier
+            for _group_id in dataset_descriptor:
+                if _group_id != data_group_identifier:
+                    _group_dir = dataset_descriptor[_group_id].get(self.DATA_GROUP_DIRECTORY_KEY, _group_id)
+                    if _group_dir == filesystem_data_group_identifier:
+                        self.__logger.error(f"Dataset {dataset_identifier} of connector {self} is storing "
+                                            f"{_group_id} and {data_group_identifier} in the same directory "
+                                            f"{filesystem_data_group_identifier}, please change data group names "
+                                            f"to avoid conflicting storage.")
+        return dataset_descriptor
+
+    def __get_data_group_directory(self,
+                                   dataset_descriptor,
+                                   dataset_identifier,
+                                   data_group_identifier):
+        data_group_dir = dataset_descriptor[data_group_identifier].get(self.DATA_GROUP_DIRECTORY_KEY, data_group_identifier)
+        formatted_data_group_dir = self.__format_filesystem_name(data_group_dir)
+        if data_group_dir != formatted_data_group_dir:
+            self.__logger.error(f"Dataset {dataset_identifier} of connector {self} defines non-compliant "
+                                f"directory name {data_group_dir} for the storage of the data group "
+                                f"{data_group_identifier}, using compliant {formatted_data_group_dir} instead")
+        return formatted_data_group_dir
 
     def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
@@ -200,8 +238,9 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier=dataset_identifier)
         dataset_values_by_group = dict()
         for _group_id, _group_data in dataset_descriptor.items():
+            filesystem_data_group_id = self.__get_data_group_directory(dataset_descriptor, dataset_identifier, _group_id)
             self.__datasets_serializer.set_dataset_directory(
-                os.path.join(self.__root_directory_path, dataset_identifier, self.__format_filesystem_name(_group_id)))
+                os.path.join(self.__root_directory_path, dataset_identifier, filesystem_data_group_id))
             self.__load_pickle_data()
             dataset_values_by_group[_group_id] = {
                 key: self.__datasets_serializer.convert_from_dataset_data(key,
