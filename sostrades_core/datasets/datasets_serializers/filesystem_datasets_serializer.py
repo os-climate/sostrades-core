@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import pickle
+import re
 from os.path import join
 from typing import Any, Callable
 
@@ -59,14 +60,13 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     TYPE_OBJECT_IDENTIFIER = TYPE_IN_FILESYSTEM_PARTICLE.join(("", TYPE_OBJECT, ""))
 
     # forbidden characters
-    FORBIDDEN_CHARS = {"<", ">", ":", "\"", "/", "\\", "|", "?", "*"}
+    FORBIDDEN_CHARS_REGEX = r'[<>:\\/"\|\?\*]'
     FORBIDDEN_CHARS_END_OF_NAME = {" ", "."}
     FORBIDDEN_FS_NAMES = { "CON", "PRN", "AUX", "NUL",
                            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
                            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
     PREFFIX_FORBIDDEN_FS_NAMES = "__"
-    REPLACEMENT_FORBIDDEN_CHARS = {_k: "_" for _k in FORBIDDEN_CHARS}
-    REPLACEMENT_FORBIDDEN_CHARS_END_OF_NAME = {_k: "_" for _k in FORBIDDEN_CHARS_END_OF_NAME}
+    SUFFIX_END_OF_NAME = "_"
 
     def __init__(self):
         super().__init__()
@@ -76,16 +76,17 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     @classmethod
     def format_filesystem_name(cls, fs_name):
-        new_fs_name = ""
+
+        def replace_special_char(c):
+            return f"_#{ord(c.group(0))}_"
+
         # replace forbidden characters by their replacement characters
-        for _char in fs_name:
-            if _char in cls.REPLACEMENT_FORBIDDEN_CHARS:
-                new_fs_name += cls.REPLACEMENT_FORBIDDEN_CHARS[_char]
-            else:
-                new_fs_name += _char
+        new_fs_name = re.sub(cls.FORBIDDEN_CHARS_REGEX, replace_special_char, fs_name)
+
         # replace end of name forbidden
-        if new_fs_name and new_fs_name[-1] in cls.REPLACEMENT_FORBIDDEN_CHARS_END_OF_NAME:
-            new_fs_name = new_fs_name[:-1] + cls.REPLACEMENT_FORBIDDEN_CHARS_END_OF_NAME[new_fs_name[-1]]
+        if new_fs_name and new_fs_name[-1] in cls.FORBIDDEN_CHARS_END_OF_NAME:
+            new_fs_name = new_fs_name[:-1] + cls.SUFFIX_END_OF_NAME
+
         # replace forbidden names
         if new_fs_name in cls.FORBIDDEN_FS_NAMES:
             new_fs_name = cls.PREFFIX_FORBIDDEN_FS_NAMES + new_fs_name
