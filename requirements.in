@@ -17,7 +17,6 @@ openturns==1.23
 pandas==2.2.2
 plotly==5.22.0
 pyarrow==16.1.0
-pycel==1.0b30
 pycryptodome==3.20.0
 python-arango==8.0.0
 PyYAML==6.0.1
