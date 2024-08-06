@@ -783,6 +783,36 @@ class TestDatasets(unittest.TestCase):
 
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
 
+    def test_21_export_parameter_with_strange_name_filesystem_compatible(self):
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        study2 = StudyManager(file_path=usecase_file_path)
+
+        dm = study.execution_engine.dm
+        import_mapping_path = os.path.join(process_path, "usecase_local_dataset_2groups.json")
+        export_mapping_path = os.path.join(process_path, "usecase_local_dataset_strange_name_param.json")
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+        connector = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
+        study.update_data_from_dataset_mapping(
+            DatasetsMapping.from_json_file(import_mapping_path))
+
+        try:
+            mapping = DatasetsMapping.from_json_file(export_mapping_path)
+            study.export_data_from_dataset_mapping(mapping)
+            study2.update_data_from_dataset_mapping(mapping)
+            connector.clear_dataset("_TEST_dataset_strange_name")
+
+            assert dict_are_equal({"y": study.ee.dm.get_value("usecase_dataset.Disc1.y_array")},
+                                  {"y": study2.ee.dm.get_value("usecase_dataset.Disc1.y_array")})
+        except Exception as cm:
+            try:
+                connector.clear_dataset("_TEST_dataset_strange_name")
+            except:
+                pass
+            raise
 
 if __name__=="__main__":
     cls = TestDatasets()

@@ -285,14 +285,14 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, self.format_filesystem_name(data_name))),
             self.CSV_EXTENSION))
         # NB: dataframe csv serialization as in webapi
-        return self.__serialize_into_filesystem(_save_dataframe, data_value, self.format_filesystem_name(data_name), descriptor_value)
+        return self.__serialize_into_filesystem(_save_dataframe, data_value, data_name, descriptor_value)
 
     def _serialize_array(self, data_value: np.ndarray, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, self.format_filesystem_name(data_name))),
             self.CSV_EXTENSION))
         # NB: converting ints to floats etc. to be improved along subtype management
-        return self.__serialize_into_filesystem(np.savetxt, data_value, self.format_filesystem_name(data_name), descriptor_value)
+        return self.__serialize_into_filesystem(np.savetxt, data_value, data_name, descriptor_value)
 
     def _serialize_jsonifiable(self, data_value: Any, data_name: str) -> Any:
         try:
