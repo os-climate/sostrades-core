@@ -160,13 +160,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         self.__save_json_data()
         return values_to_write
 
-    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:dict[str:str]]) -> dict[str:dict[str:Any]]:
         """
-        Abstract method to get all values from a dataset for a specific API
+        Abstract method to get all values from a dataset for the JSON connector.
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
-        :param data_types_dict: dict of data type {name: type}
-        :type data_types_dict: dict[str:str]
+        :param data_types_dict: dict of data type by data group {data_group: {name: type}}
+        :type data_types_dict: dict[str:dict[str:str]]
+        :return: dataset values by group
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
         # Read JSON if not read already
@@ -186,20 +187,21 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         return dataset_values_by_group
 
 
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str],
-                      create_if_not_exists:bool=True, override:bool=False) -> dict[str: Any]:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:dict[str:Any]], data_types_dict:dict[str:dict[str:str]],
+                      create_if_not_exists:bool=True, override:bool=False) -> dict[str: dict[str:Any]]:
         """
-        Abstract method to overload in order to write a dataset from a specific API
+        Abstract method to overload in order to write a dataset for the JSON connector.
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
-        :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:Any]
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
+        :param values_to_write: dict of data to write {data_group: {parameter_name: value}
+        :type values_to_write: dict[str:dict[str:Any]]
+        :param data_types_dict: dict of data types {data_group: {parameter_name: type}}
+        :type data_types_dict: dict[str:dict[str:str]]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
+        :return: values_to_write
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         if dataset_identifier not in self.__json_data:

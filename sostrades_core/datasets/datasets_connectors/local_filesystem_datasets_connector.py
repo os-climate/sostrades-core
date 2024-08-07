@@ -171,11 +171,13 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         Method to write data
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
+        :param data_group_identifier: identifier of the data group inside the dataset
+        :type data_group_identifier: str
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str], name, value
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
-        :return: None
+        :return: values_to_write
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         # read the already existing values
@@ -209,7 +211,6 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                      dataset_identifier,
                                      data_group_identifier,
                                      filesystem_data_group_identifier):
-
         if filesystem_data_group_identifier != data_group_identifier:
             dataset_descriptor[data_group_identifier][self.DATA_GROUP_DIRECTORY_KEY] = filesystem_data_group_identifier
             existing_group_dirs = {dataset_descriptor[_group_id].get(self.DATA_GROUP_DIRECTORY_KEY, _group_id): _group_id
@@ -233,14 +234,14 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                 f"{data_group_identifier}, using compliant {formatted_data_group_dir} instead")
         return formatted_data_group_dir
 
-    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:dict[str:Any]]:
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:dict[str:str]]) -> dict[str:dict[str:Any]]:
         """
-        Abstract method to get all values from a dataset for a specific API
+        Abstract method to get all values from a dataset for the local filesystem connector.
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
-        :param data_types_dict: dict of data type {name: type}
-        :type data_types_dict: dict[str:str]
-        :return: None
+        :param data_types_dict: dict of data type by data group {data_group: {name: type}}
+        :type data_types_dict: dict[str:dict[str:str]]
+        :return: dataset values by group
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
 
@@ -261,9 +262,9 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
 
     def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:dict[str:Any]],
                       data_types_dict: dict[str:dict[str:str]], create_if_not_exists: bool = True, override: bool = False
-                      ) -> dict[str:Any]:
+                      ) -> dict[str:dict[str:Any]]:
         """
-        Abstract method to overload in order to write a dataset from a specific API
+        Abstract method to overload in order to write a dataset for the local filesystem connector.
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
         :param values_to_write: dict of data to write {data_group: {parameter_name: value}
@@ -274,7 +275,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
-        :return: None
+        :return: values_to_write
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         filesystem_dataset_identifier = self.__format_filesystem_name(dataset_identifier)

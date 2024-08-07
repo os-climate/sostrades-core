@@ -81,13 +81,14 @@ class AbstractDatasetsConnector(abc.ABC):
         return values_to_write
 
     @abc.abstractmethod
-    def get_values_all(self, dataset_identifier: str, data_types_dict:dict[str:str]) -> dict[str:Any]:
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:dict[str:str]]) -> dict[str:dict[str:Any]]:
         """
-        Abstract method to get all values from a dataset for a specific API
+        Abstract method to get all values from a dataset for a specific API.
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
+        :param data_types_dict: dict of data type by data group {data_group: {name: type}}
+        :type data_types_dict: dict[str:dict[str:str]]
+        :return: dataset values by group
         """
 
     @abc.abstractmethod
@@ -97,35 +98,34 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:dict[str:Any]],
-                      data_types_dict: dict[str:dict[str:str]], create_if_not_exists: bool = True, override: bool = False
-                      ) -> dict[str:Any]:
-        # FIXME: docstrings, typings, etc
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:dict[str:Any]], data_types_dict:dict[str:dict[str:str]],
+                      create_if_not_exists:bool=True, override:bool=False) -> dict[str: dict[str:Any]]:
         """
-        Abstract method to overload in order to write a dataset from a specific API
+        Abstract method to overload in order to write a dataset for a specific API.
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
-        :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:Any]
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
+        :param values_to_write: dict of data to write {data_group: {parameter_name: value}
+        :type values_to_write: dict[str:dict[str:Any]]
+        :param data_types_dict: dict of data types {data_group: {parameter_name: type}}
+        :type data_types_dict: dict[str:dict[str:str]]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
-        :return: values_to_write: dict[str: Any]
+        :return: values_to_write
         """
         return values_to_write
 
-    def copy_dataset_from(self, connector_from:AbstractDatasetsConnector, dataset_identifier: str, data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False):
+    def copy_dataset_from(self, connector_from:AbstractDatasetsConnector, dataset_identifier: str,
+                          data_types_dict:dict[str:dict[str:str]], create_if_not_exists:bool=True, override:bool=False):
         """
         Copies a dataset from another AbstractDatasetsConnector
         :param connector_from: Connector to copy dataset from
         :type connector_from: AbstractDatasetsConnector
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
+        :param data_types_dict: dict of data types by group {data_group: {name: type}}
+        :type data_types_dict: dict[str:dict[str:str]]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
@@ -148,6 +148,7 @@ class AbstractDatasetsConnector(abc.ABC):
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
         """
+        # TODO: method is untested and should be updated with dataset and data group levels logic
         self.__logger.debug(f"Copying all datasets from {connector_from} to {self}")
         datasets = connector_from.get_datasets_available()
         for dataset_identifier in datasets:
