@@ -537,11 +537,10 @@ class DataManager:
         # iterate on each datasets to export data in each dataset
         dataset_parameters_mapping, duplicates = datasets_mapping.get_datasets_namespace_mapping_for_study(self.name, namespaces_dict=namespaced_data_dict)
         if len(duplicates) > 0:
-            for duplicate, namespace in duplicates.items():
-                self.logger.warning(f"The dataset variable {duplicate} has multiple source parameters. \
-                                    The last value written in dataset was taken from {namespace}")
+            for (duplicate, in_group), namespace in duplicates.items():
+                self.logger.warning(f"The dataset variable {duplicate} in data group {in_group }has multiple source "
+                                    f"parameters. The last value written in dataset was taken from {namespace}")
         for dataset, mapping_dict in dataset_parameters_mapping.items():
-            # todo: fix formats for wildcards
             # retrieve the list of dataset associated to the namespace from the mapping
             if mapping_dict:
                 _data_dict = {_g: mapping_dict[_g][DatasetsMapping.VALUE] for _g in mapping_dict}

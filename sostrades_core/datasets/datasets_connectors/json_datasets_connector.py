@@ -84,14 +84,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
 
     def get_values(self, dataset_identifier: str, data_group_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
-        Method to retrieve data from JSON and fill a data_dict
-
+        Method to retrieve data from a single data group within the JSON dataset and fill a data_dict
         :param dataset_identifier: identifier of the dataset
         :type dataset_identifier: str
-        :param data_group_identifier: data group identifier within dataset
+        :param data_group_identifier: identifier of the data group inside the dataset
         :type data_group_identifier: str
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
+        :return dictionary {parameter_name: value} retreived from the dataset
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for data group {data_group_identifier} in dataset "
                             f"{dataset_identifier} with connector {self}")

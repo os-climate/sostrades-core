@@ -297,27 +297,32 @@ class DatasetsMapping:
                                 # if wildcard at parameter place: dataset_connector|dataset_name|*
                                 # search for all the data in the namespaces
                                 for ns in corresponding_namespaces:
+                                    corresponding_group = group_from_ns(ns)
                                     for key in namespaces_dict[ns][DatasetsMapping.VALUE].keys():
-                                        if key in all_data_in_dataset[group_from_ns(ns)][DatasetsMapping.KEY].keys():
-                                            duplicates[key] = ns # the last namespace is the one that will hold the value
-                                    all_data_in_dataset[group_from_ns(ns)][DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
-                                    all_data_in_dataset[group_from_ns(ns)][DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
-                                    all_data_in_dataset[group_from_ns(ns)][DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
+                                        if corresponding_group in all_data_in_dataset and \
+                                                key in all_data_in_dataset[corresponding_group][DatasetsMapping.KEY].keys():
+                                            duplicates[(key, corresponding_group)] = ns # the last namespace is the one that will hold the value
+                                    all_data_in_dataset[corresponding_group][DatasetsMapping.VALUE].update(namespaces_dict[ns][DatasetsMapping.VALUE])
+                                    all_data_in_dataset[corresponding_group][DatasetsMapping.TYPE].update(namespaces_dict[ns][DatasetsMapping.TYPE])
+                                    all_data_in_dataset[corresponding_group][DatasetsMapping.KEY].update(namespaces_dict[ns][DatasetsMapping.KEY])
                             else:
                                 # search for the data name in the corresponding namespaces
                                 corresponding_data = {ns:[value for key, value in namespaces_dict[ns][DatasetsMapping.VALUE].items() if key == data] for ns in corresponding_namespaces}
-                                if len(corresponding_data.keys()) > 0:
+                                corresponding_data = {ns: ns_values for ns, ns_values in corresponding_data.items() if ns_values} # discard the namespaces with no corresponding data
+                                for ns, ns_values in corresponding_data.items():
+                                    # TODO: duplicate management logic might be improved
                                     # if the name of the dataset parameter already exists, it will overwrite the already set data
                                     # so we retrun the list of duplicated data
-                                    if dataset_data in all_data_in_dataset[DatasetsMapping.KEY].keys():
-                                        duplicates[dataset_data] = namespace # the last namespace is the one that will hold the value
+                                    corresponding_group = group_from_ns(ns)
+                                    if corresponding_group in all_data_in_dataset and \
+                                            dataset_data in all_data_in_dataset[corresponding_group][DatasetsMapping.KEY].keys():
+                                        duplicates[(dataset_data, corresponding_group)] = ns # the last namespace is the one that will hold the value
+
                                     # we get the last occurence or the data, the other are added in duplicates list
-                                    last_ns = list(corresponding_data.keys())[-1]
-                                    if len(corresponding_data[last_ns]) > 0:
-                                        last_value = corresponding_data[last_ns][-1]
-                                        all_data_in_dataset[group_from_ns(last_ns)][DatasetsMapping.VALUE].update({dataset_data:last_value})
-                                        all_data_in_dataset[group_from_ns(last_ns)][DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.TYPE][data]})
-                                        all_data_in_dataset[group_from_ns(last_ns)][DatasetsMapping.KEY].update({dataset_data:namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
+                                    last_value = ns_values[-1]
+                                    all_data_in_dataset[corresponding_group][DatasetsMapping.VALUE].update({dataset_data:last_value})
+                                    all_data_in_dataset[corresponding_group][DatasetsMapping.TYPE].update({dataset_data:namespaces_dict[ns][DatasetsMapping.TYPE][data]})
+                                    all_data_in_dataset[corresponding_group][DatasetsMapping.KEY].update({dataset_data:namespaces_dict[ns][DatasetsMapping.KEY][data]})
             except Exception as error:
                 raise DatasetsMappingException(f'Error retrieving data from dataset {dataset}]: \n{str(error)}')
 

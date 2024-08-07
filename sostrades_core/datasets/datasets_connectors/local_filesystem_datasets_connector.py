@@ -63,15 +63,21 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
 
     def __format_filesystem_name(self, fs_name):
+        """
+        Uses serializer capability to format a filesystem name so that it is compatible with Windows, Ubuntu and MacOS.
+        Used at connector level to format data group identifiers and to check the compliance of dataset identifiers.
+        :param fs_name: filesystem name as defined by the user or namespace in case of wildcards.
+        :return: formatted filesystem name filesystem-compatible using utf-8 encoding of forbidden characters.
+        """
         return self.__datasets_serializer.format_filesystem_name(fs_name)
 
-    def __load_dataset_descriptor(self, dataset_identifier: str) -> dict[str: Any]:
+    def __load_dataset_descriptor(self, dataset_identifier: str) -> dict[str: dict[str: Any]]:
         """
         Method to load dataset descriptor from JSON file containing the basic types variables as well as the dataset
         descriptor values type "@dataframe@d.csv" for the types stored in filesystem.
         :param dataset_identifier: identifier of the dataset whose descriptor is to be loaded
         :type dataset_identifier: str
-        :return: dictionary of descriptor keys and values
+        :return: dictionary {data_group: {parameter_name: parameter_data_and_metadata}}
         """
         if not os.path.exists(self.__root_directory_path):
             raise DatasetGenericException(f"Datasets database folder not found at {self.__root_directory_path}.")
@@ -121,13 +127,14 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
 
     def get_values(self, dataset_identifier: str, data_group_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
-        Method to retrieve data from local dataset and fill a data_dict
-
+        Method to retrieve data from a single data group within the local dataset and fill a data_dict
         :param dataset_identifier: identifier of the dataset
         :type dataset_identifier: str
-
+        :param data_group_identifier: identifier of the data group inside the dataset
+        :type data_group_identifier: str
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
+        :return dictionary {parameter_name: value} retreived from the dataset
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for data group {data_group_identifier} in dataset "
                             f"{dataset_identifier} with connector {self}")
@@ -202,16 +209,16 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                      dataset_identifier,
                                      data_group_identifier,
                                      filesystem_data_group_identifier):
+
         if filesystem_data_group_identifier != data_group_identifier:
             dataset_descriptor[data_group_identifier][self.DATA_GROUP_DIRECTORY_KEY] = filesystem_data_group_identifier
-            for _group_id in dataset_descriptor:
-                if _group_id != data_group_identifier:
-                    _group_dir = dataset_descriptor[_group_id].get(self.DATA_GROUP_DIRECTORY_KEY, _group_id)
-                    if _group_dir == filesystem_data_group_identifier:
-                        self.__logger.error(f"Dataset {dataset_identifier} of connector {self} is storing "
-                                            f"{_group_id} and {data_group_identifier} in the same directory "
-                                            f"{filesystem_data_group_identifier}, please change data group names "
-                                            f"to avoid conflicting storage.")
+            existing_group_dirs = {dataset_descriptor[_group_id].get(self.DATA_GROUP_DIRECTORY_KEY, _group_id): _group_id
+                                   for _group_id in dataset_descriptor if _group_id != data_group_identifier}
+            if filesystem_data_group_identifier in existing_group_dirs:
+                self.__logger.error(f"Dataset {dataset_identifier} of connector {self} is storing "
+                                    f"{existing_group_dirs[filesystem_data_group_identifier]} and "
+                                    f"{data_group_identifier} in the same directory {filesystem_data_group_identifier},"
+                                    f" please change data group names to avoid conflicting storage.")
         return dataset_descriptor
 
     def __get_data_group_directory(self,
@@ -226,7 +233,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                 f"{data_group_identifier}, using compliant {formatted_data_group_dir} instead")
         return formatted_data_group_dir
 
-    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:dict[str:Any]]:
         """
         Abstract method to get all values from a dataset for a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -259,10 +266,10 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: str
-        :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:Any]
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
+        :param values_to_write: dict of data to write {data_group: {parameter_name: value}
+        :type values_to_write: dict[str:dict[str:Any]]
+        :param data_types_dict: dict of data types {data_group: {parameter_name: type}}
+        :type data_types_dict: dict[str:dict[str:str]]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)

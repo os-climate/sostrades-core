@@ -76,9 +76,16 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     @classmethod
     def format_filesystem_name(cls, fs_name):
-
+        """
+        Format a filesystem name so that it is compatible with Windows, Ubuntu and MacOS. Used here to format variable
+        names for types that are serialized into the filesystem, as well as at connector level to format data group
+        identifiers and to check the compliance of dataset identifiers.
+        :param fs_name: filesystem name as defined by the user or namespace in case of wildcards.
+        :return: formatted filesystem name filesystem-compatible using utf-8 encoding of forbidden characters.
+        """
+        # utf-8 replacement
         def replace_special_char(c):
-            return f"_#{ord(c.group(0))}_"
+            return f"_U{ord(c.group(0))}_"
 
         # replace forbidden characters by their replacement characters
         new_fs_name = re.sub(cls.FORBIDDEN_CHARS_REGEX, replace_special_char, fs_name)
@@ -94,7 +101,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     def set_dataset_directory(self, dataset_directory):
         """
-        Define the current dataset directory where specific data types will be serialized.
+        Define the current dataset and data group directory, where specific data types will be serialized.
         """
         self.__current_dataset_directory = dataset_directory
 
@@ -146,7 +153,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         if data_name in self.__pickle_data:
             del self.__pickle_data[data_name]
 
-    def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
+    def convert_from_dataset_data(self, data_name: str, data_value:Any, data_types_dict: dict[str:str]) -> Any:
         '''
         Convert data_value into data_type from the connector
         To be overridden for specific conversion.
@@ -259,7 +266,6 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         else:
             if not os.path.exists(self.__current_dataset_directory):
                 makedirs_safe(self.__current_dataset_directory, exist_ok=True)
-            # TODO: may need updating when datasets down to parameter level as assuming that the filename is linked to data name.
             _fname = self.__get_data_path(descriptor_value)
             data_path = join(self.__current_dataset_directory, _fname)
             try:
