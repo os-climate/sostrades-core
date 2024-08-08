@@ -25,6 +25,7 @@ class AbstractDatasetsSerializer(abc.ABC):
     Abstract class to inherit in order to build specific datasets connector
     """
     __logger = logging.getLogger(__name__)
+    SOSTRADES_TYPES = {'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe', 'array'}
 
     @abc.abstractmethod
     def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:

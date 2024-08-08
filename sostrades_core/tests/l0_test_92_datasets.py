@@ -736,7 +736,7 @@ class TestDatasets(unittest.TestCase):
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame(
             {"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
 
-    def test_19_export_study_with_wildcard_groups(self):
+    def test_19_export_study_with_wildcard_groups_local_filesystem_connector(self):
         """
         Some example to check repository datasets connector export
         """
@@ -810,6 +810,41 @@ class TestDatasets(unittest.TestCase):
         except Exception as cm:
             try:
                 connector.clear_dataset("_TEST_dataset_strange_name")
+            except:
+                pass
+            raise
+
+    def test_22_export_study_with_wildcard_groups_JSON_connector(self):
+        """
+        Check JSON connector export/import with data groups and wildcards, very similar to test 19.
+        """
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyManager(file_path=usecase_file_path)
+        study2 = StudyManager(file_path=usecase_file_path)
+
+        dm = study.execution_engine.dm
+        import_mapping_path = os.path.join(process_path, "usecase_local_dataset_2groups.json")
+        export_mapping_path = os.path.join(process_path, "usecase_JSON_dataset_wildcards_groups.json")
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+        connector_json = DatasetsConnectorManager.get_connector('MVP0_datasets_connector')
+        study.update_data_from_dataset_mapping(
+            DatasetsMapping.from_json_file(import_mapping_path))
+
+        try:
+            mapping = DatasetsMapping.from_json_file(export_mapping_path)
+            study.export_data_from_dataset_mapping(mapping)
+            study2.update_data_from_dataset_mapping(mapping)
+            connector_json.clear_dataset("_TEST_dataset_wildcards")
+
+            study_dict = {k: study.ee.dm.data_dict[v][VALUE] for k, v in study.ee.dm.data_id_map.items()}
+            study2_dict = {k: study2.ee.dm.data_dict[v][VALUE] for k, v in study2.ee.dm.data_id_map.items()}
+            assert dict_are_equal(study_dict, study2_dict)
+        except Exception as cm:
+            try:
+                connector_json.clear_dataset("_TEST_dataset_wildcards")
             except:
                 pass
             raise

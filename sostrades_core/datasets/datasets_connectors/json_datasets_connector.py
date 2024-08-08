@@ -147,10 +147,13 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
         if self.__json_data is None:
             self.__load_json_data()
-
+        # Impose that dataset exists
         if dataset_identifier not in self.__json_data:
             raise DatasetNotFoundException(dataset_identifier)
-
+        # But allow on-the-go creation of data group
+        if data_group_identifier not in self.__json_data[dataset_identifier]:
+            self.__json_data[dataset_identifier][data_group_identifier] = {}
+        
         # Write data
         dataset_values = {key: self._datasets_serializer.convert_to_dataset_data(key,
                                                                                  value,
@@ -204,10 +207,14 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :return: values_to_write
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
+        # Read JSON if not read already
+        if self.__json_data is None:
+            self.__load_json_data()
+
         if dataset_identifier not in self.__json_data:
             # Handle dataset creation
             if create_if_not_exists:
-                self.__json_data = {}
+                self.__json_data[dataset_identifier] = {}
             else:
                 raise DatasetNotFoundException(dataset_identifier)
         else:
@@ -222,3 +229,16 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
                                                           values_to_write=_group_data,
                                                           data_types_dict=data_types_dict[_group_id])
         return written_values
+
+    def clear_dataset(self, dataset_id: str) -> None:
+        """
+        Utility method to remove the directory corresponding to a given dataset_id within the JSON database.
+        :param dataset_id: identifier of the dataset to be removed
+        :type dataset_id: str
+        :return: None
+        """
+        if self.__json_data is None:
+            self.__load_json_data()
+        if dataset_id in self.__json_data:
+            del self.__json_data[dataset_id]
+        self.__save_json_data()

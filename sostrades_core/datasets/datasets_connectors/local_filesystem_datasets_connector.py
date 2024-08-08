@@ -304,7 +304,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                                                           data_types_dict=data_types_dict[_group_id])
         return written_values
 
-    def clear(self, remove_root_directory:bool=False) -> None:
+    def clear(self, remove_root_directory: bool = False) -> None:
         """
         Utility method to remove all datasets in the connector root directory.
         :param remove_root_directory: whether to delete the root directory itself too.

@@ -116,6 +116,15 @@ class AbstractDatasetsConnector(abc.ABC):
         """
         return values_to_write
 
+    @abc.abstractmethod
+    def clear_dataset(self, dataset_id: str) -> None:
+        """
+        Utility method to remove a given dataset from a specific API.
+        :param dataset_id: identifier of the dataset to be removed
+        :type dataset_id: str
+        :return: None
+        """
+
     def copy_dataset_from(self, connector_from:AbstractDatasetsConnector, dataset_identifier: str,
                           data_types_dict:dict[str:dict[str:str]], create_if_not_exists:bool=True, override:bool=False):
         """

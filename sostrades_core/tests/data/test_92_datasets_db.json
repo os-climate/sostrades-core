@@ -205,7 +205,7 @@
                 "value": false
             },
             "tolerance": {
-                "value": 1.0e-6
+                "value": 1e-06
             },
             "use_lu_fact": {
                 "value": false
@@ -229,7 +229,7 @@
                 "value": 0.99
             },
             "epsilon0": {
-                "value": 1.0e-6
+                "value": 1e-06
             },
             "linear_solver_MDO": {
                 "value": "GMRES"
@@ -240,7 +240,7 @@
             "linear_solver_MDO_options": {
                 "value": {
                     "max_iter": 1000,
-                    "tol": 1.0e-8
+                    "tol": 1e-08
                 }
             },
             "linear_solver_MDA": {
@@ -252,10 +252,9 @@
             "linear_solver_MDA_options": {
                 "value": {
                     "max_iter": 1000,
-                    "tol":  1.0e-8
+                    "tol": 1e-08
                 }
             },
-
             "group_mda_disciplines": {
                 "value": false
             },
