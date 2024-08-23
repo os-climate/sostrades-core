@@ -163,11 +163,11 @@ class TreeView:
 
             if self.read_only:
                 treenode.data[key][ProxyDiscipline.EDITABLE] = False
-            
+
             treenode.data[key][ProxyDiscipline.SIZE_MO] = treenode.compute_tree_node_data_size_in_Mo(treenode.data[key][ProxyDiscipline.TYPE], treenode.data[key][ProxyDiscipline.VALUE])
-                
-            
-            
+
+
+
 
     def set_treenode_discipline_data(self, treenode, key, val, disc_dict):
 
@@ -192,7 +192,7 @@ class TreeView:
                 temp_data[ProxyDiscipline.EDITABLE] = False
 
             temp_data[ProxyDiscipline.SIZE_MO] = treenode.compute_tree_node_data_size_in_Mo(val[ProxyDiscipline.TYPE], val[ProxyDiscipline.VALUE])
-                
+
 
             if key not in treenode.disciplines_by_variable.keys():
                 # create data management discipline DATA
@@ -223,8 +223,8 @@ class TreeView:
                         treenode.data_management_disciplines[discipline_key].disciplinary_outputs[key] = temp_data
 
 
-    
-        
+
+
 
     def add_treenode(self, discipline, namespace=None):
         """ Add a new treenode to the treeview.

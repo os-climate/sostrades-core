@@ -18,10 +18,10 @@ import base64
 import inspect
 import os
 import re
+import sys
 from json import dumps
 from os import listdir
 from os.path import dirname, isdir, isfile, join
-import sys
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.tree.data_management_discipline import (
@@ -183,7 +183,7 @@ class TreeNode:
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
                 new_disc_data[ProxyDiscipline.SIZE_MO] = self.compute_tree_node_data_size_in_Mo(new_disc_data[ProxyDiscipline.TYPE], new_disc_data[ProxyDiscipline.VALUE])
-              
+
                 new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_IN, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
@@ -218,7 +218,7 @@ class TreeNode:
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
                 new_disc_data[ProxyDiscipline.SIZE_MO] = self.compute_tree_node_data_size_in_Mo(new_disc_data[ProxyDiscipline.TYPE], new_disc_data[ProxyDiscipline.VALUE])
-              
+
                 new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_OUT, key)
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
