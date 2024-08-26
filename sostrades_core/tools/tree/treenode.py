@@ -18,7 +18,6 @@ import base64
 import inspect
 import os
 import re
-import sys
 from json import dumps
 from os import listdir
 from os.path import dirname, isdir, isfile, join
@@ -441,4 +440,4 @@ class TreeNode:
         else:  # status = ProxyDiscipline.STATUS_FAILED
             return 50
 
-    
+

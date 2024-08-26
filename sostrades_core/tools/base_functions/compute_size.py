@@ -14,8 +14,7 @@ limitations under the License.
 """
 
 import sys
-from numpy import ndarray
-from pandas import DataFrame
+
 
 def compute_data_size_in_Mo(data_value)-> float:
         '''
@@ -26,7 +25,7 @@ def compute_data_size_in_Mo(data_value)-> float:
         '''
         data_size = 0
         if data_value is not None:
-            
+
             # test deep size of the object
             data_size = sys.getsizeof(data_value)
         return data_size/1024/1024
