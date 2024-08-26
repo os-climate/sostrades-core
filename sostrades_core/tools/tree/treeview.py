@@ -16,6 +16,7 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.base_functions.compute_size import compute_data_size_in_Mo
 from sostrades_core.tools.tree.data_management_discipline import (
     DataManagementDiscipline,
 )
@@ -164,7 +165,7 @@ class TreeView:
             if self.read_only:
                 treenode.data[key][ProxyDiscipline.EDITABLE] = False
 
-            treenode.data[key][ProxyDiscipline.SIZE_MO] = treenode.compute_tree_node_data_size_in_Mo(treenode.data[key][ProxyDiscipline.TYPE], treenode.data[key][ProxyDiscipline.VALUE])
+            treenode.data[key][ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(treenode.data[key][ProxyDiscipline.VALUE])
 
 
 
@@ -191,7 +192,7 @@ class TreeView:
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False
 
-            temp_data[ProxyDiscipline.SIZE_MO] = treenode.compute_tree_node_data_size_in_Mo(val[ProxyDiscipline.TYPE], val[ProxyDiscipline.VALUE])
+            temp_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(val[ProxyDiscipline.VALUE])
 
 
             if key not in treenode.disciplines_by_variable.keys():

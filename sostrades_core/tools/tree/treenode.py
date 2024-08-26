@@ -24,6 +24,7 @@ from os import listdir
 from os.path import dirname, isdir, isfile, join
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.base_functions.compute_size import compute_data_size_in_Mo
 from sostrades_core.tools.tree.data_management_discipline import (
     DataManagementDiscipline,
 )
@@ -182,7 +183,7 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
-                new_disc_data[ProxyDiscipline.SIZE_MO] = self.compute_tree_node_data_size_in_Mo(new_disc_data[ProxyDiscipline.TYPE], new_disc_data[ProxyDiscipline.VALUE])
+                new_disc_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(new_disc_data[ProxyDiscipline.VALUE])
 
                 new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_IN, key)
                 self.update_disc_data(
@@ -217,7 +218,7 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_OUT
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
-                new_disc_data[ProxyDiscipline.SIZE_MO] = self.compute_tree_node_data_size_in_Mo(new_disc_data[ProxyDiscipline.TYPE], new_disc_data[ProxyDiscipline.VALUE])
+                new_disc_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(new_disc_data[ProxyDiscipline.VALUE])
 
                 new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path, ProxyDiscipline.IO_TYPE_OUT, key)
                 self.update_disc_data(
@@ -440,20 +441,4 @@ class TreeNode:
         else:  # status = ProxyDiscipline.STATUS_FAILED
             return 50
 
-    def compute_tree_node_data_size_in_Mo(self, data_type:str, data_value)-> float:
-        '''
-        Compute the size of a dict, list or dataframe
-        :param data_type: type of the data
-        :type data_type: str
-        :param data_value: value of the data to be checked
-        :type data_value: depends of the type of the variable
-        :return: the size in Mo (float)
-        '''
-        data_size = 0
-        if data_value is not None:
-            if data_type == 'dataframe':
-                data_size = data_value.memory_usage(deep=True).sum()
-            elif data_type == 'list' or data_type == 'dict':
-                # test deep size of the object
-                data_size = sys.getsizeof(data_value)
-        return data_size/1024/1024
+    
