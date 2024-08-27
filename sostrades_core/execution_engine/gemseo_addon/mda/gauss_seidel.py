@@ -67,7 +67,6 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         # Not possible to parallelize MDAGaussSeidel execution
         self.n_processes = 1
         super().__init__(
-            self,
             disciplines,
             name=name,
             max_mda_iter=max_mda_iter,
