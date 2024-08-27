@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import unittest
 from os import getenv
+from os.path import join
 from pathlib import Path
 from tempfile import gettempdir
 
@@ -41,7 +42,7 @@ class TestMDALoop(unittest.TestCase):
     def setUp(self):
         self.dirs_to_del = []
         self.name = 'EE'
-        self.root_dir = Path(gettempdir())
+        self.root_dir = gettempdir()
 
     def tearDown(self):
         for dir_to_del in self.dirs_to_del:
@@ -232,7 +233,7 @@ class TestMDALoop(unittest.TestCase):
                 exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].name].values.tolist()
         assert residual_history == residual_history_output
 
-        dump_dir = self.root_dir / self.name
+        dump_dir = join(self.root_dir, self.name)
 
         BaseStudyManager.static_dump_data(
             dump_dir, exec_eng, DirectLoadDump())
@@ -371,7 +372,8 @@ class TestMDALoop(unittest.TestCase):
                 self.assertListEqual(
                     list(target[key]), list(res[key]))
         # Clean the dump folder at the end of the test
-        self.dirs_to_del.append(self.root_dir / self.name)
+        self.dirs_to_del.append(
+            join(self.root_dir, self.name))
 
     def test_04_two_mdas_loop_comparison(self):
 
@@ -763,6 +765,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.max_mda_iter'] = 50
         values_dict['EE.max_mda_iter_gs'] = 31
         values_dict['EE.tolerance_gs'] = 1.0
+        values_dict['EE.scaling_method'] = "initial_residual_norm"
         values_dict['EE.inner_mda_name'] = 'MDAGSNewton'
         values_dict['EE.linear_solver_MDA_options'] = {
             'max_iter': 5000,
@@ -774,6 +777,7 @@ class TestMDALoop(unittest.TestCase):
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
         inner_mda_name = mda.inner_mdas[0]
+        assert values_dict["EE.scaling_method"] == inner_mda_name.scaling
         assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
         assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
         values_dict['EE.tolerance'] = 1.e-20
@@ -783,6 +787,7 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
+        inner_mda_name = mda.inner_mdas[0]
         assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
         assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
         assert values_dict['EE.max_mda_iter_gs'] == inner_mda_name.mda_sequence[0].max_mda_iter
@@ -794,10 +799,10 @@ class TestMDALoop(unittest.TestCase):
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
 
-        nr = inner_mda_name.mda_sequence[1]
+        NR = inner_mda_name.mda_sequence[1]
 
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == nr.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == nr.linear_solver_options['max_iter']
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == NR.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.linear_solver_options['max_iter']
 
     def test_11_mda_numerical_options_GSorNR(self):
 
@@ -862,9 +867,9 @@ class TestMDALoop(unittest.TestCase):
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
 
-        nr = inner_mda_name.mda_sequence[1]
+        NR = inner_mda_name.mda_sequence[1]
 
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == nr.linear_solver_options['max_iter']
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.linear_solver_options['max_iter']
 
     # Comment pure newton raphson broken with new gemseo convergence
     def _test_14_mda_numerical_options_GSPureNR(self):
@@ -930,10 +935,10 @@ class TestMDALoop(unittest.TestCase):
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
 
-        nr = inner_mda_name.mda_sequence[1]
+        NR = inner_mda_name.mda_sequence[1]
 
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == nr.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == nr.linear_solver_options['max_iter']
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == NR.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.linear_solver_options['max_iter']
 
     # commnt pure newton raphson test waiting for PureNewtonRaphson revival
     def _test_15_mda_numerical_options_PureNR(self):
@@ -1073,9 +1078,9 @@ class TestMDALoop(unittest.TestCase):
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
 
-        nr = inner_mda_name.mda_sequence[1]
+        NR = inner_mda_name.mda_sequence[1]
 
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == nr.linear_solver_options['max_iter']
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.linear_solver_options['max_iter']
 
     def test_17_mda_loop_with_pre_run_mda_and_post_processing(self):
         """Test the post-processing on discipline 6 after the mda loop"""
