@@ -14,8 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
 from gemseo.mda.sequential_mda import MDAGSNewton, MDASequential
 
@@ -23,6 +27,9 @@ from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
     SoSMDAGaussSeidel,
 )
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 
@@ -34,14 +41,24 @@ class GSorNewtonMDA(MDASequential):
 
     """
 
-    def __init__(self, disciplines, name=None,
-                 grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,
-                 tolerance=1e-6, max_mda_iter=10, over_relaxation_factor=0.99,
-                 linear_solver="lgmres", tolerance_gs=10.0, max_mda_iter_gs=10,
-                 linear_solver_tolerance=1e-12,
-                 scaling_method=MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
-                 linear_solver_options=None, warm_start=False,
-                 use_lu_fact=False, **newton_mda_options):
+    def __init__(
+        self,
+        disciplines: Sequence[MDODiscipline],
+        name: str | None = None,
+        grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        max_mda_iter: int = 10,
+        over_relaxation_factor: float = 0.99,
+        linear_solver: str = "lgmres",
+        tolerance_gs: float = 10.0,
+        max_mda_iter_gs: int = 10,
+        linear_solver_tolerance: float = 1e-12,
+        scaling_method: MDASequential.ResidualScaling = MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
+        linear_solver_options: Mapping[str, Any] | None = None,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        **newton_mda_options,
+    ) -> None:
         """
         Constructor
 
@@ -79,30 +96,39 @@ class GSorNewtonMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs,
-                                   name=None, grammar_type=grammar_type, scaling_method=scaling_method)
+        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs, name=None, grammar_type=grammar_type)
         mda_gs.tolerance = tolerance
 
-        mda_newton = MDAGSNewton(disciplines, max_mda_iter=max_mda_iter,
-                                 name=None, grammar_type=grammar_type,
-                                 linear_solver=linear_solver,
-                                 linear_solver_options=linear_solver_options,
-                                 scaling_method=scaling_method,
-                                 tolerance_gs=tolerance_gs,
-                                 use_lu_fact=use_lu_fact, tolerance=tolerance,
-                                 over_relaxation_factor=over_relaxation_factor,
-                                 **newton_mda_options)
+        mda_newton = MDAGSNewton(
+            disciplines,
+            max_mda_iter=max_mda_iter,
+            name=None,
+            grammar_type=grammar_type,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
+            use_lu_fact=use_lu_fact,
+            tolerance=tolerance,
+            over_relaxation_factor=over_relaxation_factor,
+            **newton_mda_options,
+        )
+        # set the tolerance for the GS MDA
+        mda_newton.mda_sequence[0].tolerance = tolerance_gs
 
         sequence = [mda_gs, mda_newton]
-        super(GSorNewtonMDA,
-              self).__init__(disciplines, sequence, name=name,
-                             grammar_type=grammar_type,
-                             max_mda_iter=max_mda_iter,
-                             tolerance=tolerance,
-                             linear_solver_options=linear_solver_options,
-                             linear_solver_tolerance=linear_solver_tolerance,
-                             scaling_method=scaling_method,
-                             warm_start=warm_start)
+        super().__init__(
+            disciplines,
+            sequence,
+            name=name,
+            grammar_type=grammar_type,
+            max_mda_iter=max_mda_iter,
+            tolerance=tolerance,
+            linear_solver_options=linear_solver_options,
+            linear_solver_tolerance=linear_solver_tolerance,
+            warm_start=warm_start,
+        )
+
+        # set the residual scaling method
+        self.scaling = scaling_method
 
     def _run(self):
         """Runs the MDAs in a sequential way
@@ -123,8 +149,7 @@ class GSorNewtonMDA(MDASequential):
 
             self.local_data = mda_i.execute(self.local_data)
         except:
-            LOGGER.warning(
-                'The MDAGSNewton has not converged try with MDAGaussSeidel')
+            LOGGER.warning('The MDAGSNewton has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
             mda_i.reset_statuses_for_run()
 
