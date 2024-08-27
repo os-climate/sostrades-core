@@ -103,6 +103,7 @@ class SoSMDAChain(MDAChain):
         mdachain_parallelize_tasks: bool = False,
         mdachain_parallel_options=None,
         initialize_defaults: bool = True,
+        scaling_method: MDAChain.ResidualScaling = MDAChain.ResidualScaling.N_COUPLING_VARIABLES,
         **inner_mda_options,
     ) -> None:
         """
@@ -129,6 +130,9 @@ class SoSMDAChain(MDAChain):
         self.is_sos_coupling = True
         self.reduced_dm = reduced_dm
 
+        # tolerance_gs is set after instanciation of the MDA by GEMSEO
+        tolerance_gs = inner_mda_options.pop("tolerance_gs", None)
+
         super().__init__(
             disciplines,
             inner_mda_name=inner_mda_name,
@@ -153,8 +157,11 @@ class SoSMDAChain(MDAChain):
         # pass the reduced_dm to the data_converter
         self.input_grammar.data_converter.reduced_dm = self.reduced_dm
         self.output_grammar.data_converter.reduced_dm = self.reduced_dm
-        # set the residual scaling method
-        self.scaling = self.ResidualScaling.N_COUPLING_VARIABLES
+
+        self.scaling = scaling_method
+        if inner_mda_name == "MDAGSNewton" and tolerance_gs is not None:
+            for mda in self.inner_mdas:
+                mda.mda_sequence[0].tolerance = tolerance_gs
 
     def clear_jacobian(self):
         return SoSMDODiscipline.clear_jacobian(self)  # should rather be double inheritance
