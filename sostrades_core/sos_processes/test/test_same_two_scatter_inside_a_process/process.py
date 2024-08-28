@@ -23,6 +23,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Generate an optimization scenario
 """
 
+
 class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information

@@ -236,15 +236,14 @@ class ProxyDisciplineGather(ProxyDiscipline):
         disc_in = self.get_data_in()
         disc_out = self.get_data_out()
 
-
         modified_inputs = {
-            key:value
+            key: value
             for key, value in self.inst_desc_in.items()
             if key in disc_in and disc_in[key][self.NAMESPACE] != value[self.NAMESPACE]
         }
 
         modified_outputs = {
-            key:value
+            key: value
             for key, value in self.inst_desc_out.items()
             if key in disc_out and disc_out[key][self.NAMESPACE] != value[self.NAMESPACE]
         }

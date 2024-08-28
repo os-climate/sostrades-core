@@ -276,6 +276,7 @@ def check_isnan(value):
 
     return result
 
+
 def get_greataxisrange(serie):
     """
     Get the lower and upper bound of axis for graphs
@@ -288,6 +289,7 @@ def get_greataxisrange(serie):
     max_range = get_value_axis(max_value, 'max')
 
     return min_range, max_range
+
 
 def get_value_axis(value, min_or_max):
     """

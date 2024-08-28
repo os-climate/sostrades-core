@@ -33,9 +33,10 @@ class DatasetConnectorNotFoundException(DatasetGenericException):
     """
     Exception when a dataset connector is not found
     """
-    def __init__(self, connector_name:str):
+    def __init__(self, connector_name: str):
         self.connector_name = connector_name
         super().__init__(f"Dataset connector '{connector_name}' not found")
+
 
 class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     """
@@ -49,7 +50,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     __logger = logging.getLogger(__name__)
 
     @classmethod
-    def get_connector(cls, connector_identifier:str) -> AbstractDatasetsConnector:
+    def get_connector(cls, connector_identifier: str) -> AbstractDatasetsConnector:
         """
         Gets a connector given its identifier
 
@@ -68,7 +69,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         return cls.__registered_connectors[connector_identifier]
 
     @classmethod
-    def register_connector(cls, connector_identifier:str, connector_type:DatasetConnectorType, **connector_instanciation_fields) -> AbstractDatasetsConnector:
+    def register_connector(cls, connector_identifier: str, connector_type: DatasetConnectorType, **connector_instanciation_fields) -> AbstractDatasetsConnector:
         """
         Register a connector with connector_instanciation_fields
         :param connector_identifier: An unique name to identify clearly this connector
@@ -87,7 +88,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         return connector
 
     @classmethod
-    def instanciate_connectors_from_json_file(cls, file_path:str):
+    def instanciate_connectors_from_json_file(cls, file_path: str):
         with open(file=file_path, mode="r", encoding="utf-8") as file:
             json_data = json.load(file)
 
@@ -97,6 +98,8 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
             cls.register_connector(connector_identifier=connector_id, connector_type=connector_type, **connector_data[cls.CONNECTOR_ARGS_STR])
 
 # Initialize some sample connectors
+
+
 default_sample_connector_file_path = os.path.join(os.path.dirname(__file__), "sample_connectors.json")
 sample_connector_file_path = os.environ.get('SOS_TRADES_DATASET_CONNECTOR_CONFIGURATION', default_sample_connector_file_path)
 if os.path.exists(sample_connector_file_path):

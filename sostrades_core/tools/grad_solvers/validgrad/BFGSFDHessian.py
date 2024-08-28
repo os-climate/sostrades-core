@@ -20,64 +20,64 @@ import numpy as np
 
 class BFGSFDHessian():
 
-    def __init__(self,scheme,df_pointer):
-        self.__scheme=scheme
-        self.__dfpointer=df_pointer
+    def __init__(self, scheme, df_pointer):
+        self.__scheme = scheme
+        self.__dfpointer = df_pointer
 
     def get_scheme(self):
         return self.__scheme
 
-    def iterate_bfgs_mat(self,H,xk,xkp1,grad_k,grad_kp1):
-        sk=np.atleast_2d(xkp1-xk).T#numpy.atleast_2d
-        yk=np.atleast_2d(grad_kp1-grad_k).T
+    def iterate_bfgs_mat(self, H, xk, xkp1, grad_k, grad_kp1):
+        sk = np.atleast_2d(xkp1 - xk).T  # numpy.atleast_2d
+        yk = np.atleast_2d(grad_kp1 - grad_k).T
 #        print "sk"+str(sk)
 #        print "yk"+str(yk)
 #        print "numpy.dot(yk.T,sk)"+str(numpy.dot(yk.T,sk))
 #        print "numpy.dot(numpy.dot(sk.T,H),sk)"+str(numpy.dot(numpy.dot(sk.T,H),sk))
-        H+=np.dot(yk,yk.T)/np.dot(yk.T,sk)-np.dot(np.dot(H,sk),np.dot(sk.T,H))/np.dot(np.dot(sk.T,H),sk)
+        H += np.dot(yk, yk.T) / np.dot(yk.T, sk) - np.dot(np.dot(H, sk), np.dot(sk.T, H)) / np.dot(np.dot(sk.T, H), sk)
 #        print "BFGS approximation = \n"+str(H)
 #        d2x=numpy.atleast_2d(xkp1).T
 #        if numpy.dot(numpy.dot(d2x.T,H),d2x)<0.:
 #            print "H is not positive definite !"
         return H
 
-    def hess_f(self,x):
+    def hess_f(self, x):
         """
         Compute hessian BFGS approximation
         """
         self.__scheme.set_x(x)
         self.__scheme.generate_samples()
-        H=np.eye(len(x))
-        grad_k=self.__dfpointer(x)
-        xk=x
+        H = np.eye(len(x))
+        grad_k = self.__dfpointer(x)
+        xk = x
         for x in self.__scheme.get_samples():
-            grad_kp1=self.__dfpointer(x)
-            xkp1=x
-            H=self.iterate_bfgs_mat(H,xk,xkp1,grad_k,grad_kp1)
-            grad_k=grad_kp1
-            xk=xkp1
+            grad_kp1 = self.__dfpointer(x)
+            xkp1 = x
+            H = self.iterate_bfgs_mat(H, xk, xkp1, grad_k, grad_kp1)
+            grad_k = grad_kp1
+            xk = xkp1
         return H
 
-    def vect_hess_f(self,x):
+    def vect_hess_f(self, x):
         """
         Vectorized hessian computation
         """
         self.__scheme.set_x(x)
         self.__scheme.generate_samples()
 
-        grad_k=self.__dfpointer(x)
-        nb_f=np.shape(grad_k)[0]
+        grad_k = self.__dfpointer(x)
+        nb_f = np.shape(grad_k)[0]
         H_list = [
             np.eye(len(x))
             for i in range(nb_f)
         ]
-        xk=x
+        xk = x
         for x_up in self.__scheme.get_samples():
-            grad_kp1=self.__dfpointer(x_up)
-            xkp1=x_up
-            for i,H in enumerate(H_list):
-                #print "update with newgrad"+str(grad_kp1[i,:])+' vs '+str(grad_k[i,:])
-                H_list[i]=self.iterate_bfgs_mat(H,xk,xkp1,grad_k[i,:],grad_kp1[i,:])
-            grad_k=grad_kp1
-            xk=xkp1
+            grad_kp1 = self.__dfpointer(x_up)
+            xkp1 = x_up
+            for i, H in enumerate(H_list):
+                # print "update with newgrad"+str(grad_kp1[i,:])+' vs '+str(grad_k[i,:])
+                H_list[i] = self.iterate_bfgs_mat(H, xk, xkp1, grad_k[i, :], grad_kp1[i, :])
+            grad_k = grad_kp1
+            xk = xkp1
         return H_list

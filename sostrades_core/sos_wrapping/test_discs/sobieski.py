@@ -28,15 +28,16 @@ Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
 '''
 
+
 class SobieskiMission(SoSWrapp):
     """ Sobieski range wrapper using the Breguet formula.
     """
     _maturity = 'Fake'
     DESC_IN = {
-                'y_14': {'type': 'array','default': array([50606.97417114, 7306.20262124]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_24': {'type': 'array','default': array([4.15006276]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_34': {'type': 'array','default': array([1.10754577]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'z': {'type': 'array','default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'y_14': {'type': 'array', 'default': array([50606.97417114, 7306.20262124]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'y_24': {'type': 'array', 'default': array([4.15006276]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'y_34': {'type': 'array', 'default': array([1.10754577]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
                }
 
     DESC_OUT = {'y_4': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}}
@@ -48,7 +49,7 @@ class SobieskiMission(SoSWrapp):
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
         sobieski_problem = SobieskiProblem(dtype=dtype)
-        y_4 = sobieski_problem.blackbox_mission(z,y_14, y_24, y_34)
+        y_4 = sobieski_problem.blackbox_mission(z, y_14, y_24, y_34)
         out = {'y_4': array(y_4)}
         self.store_sos_outputs_values(out)
 
@@ -68,21 +69,22 @@ class SobieskiMission(SoSWrapp):
         dtype = DTYPE_DOUBLE
         sobieski_problem = SobieskiProblem(dtype=dtype)
         gemseo_jac_dict = sobieski_problem.derive_blackbox_mission(z, y_14, y_24, y_34)
-        #We need to convert 'x_shared' variable of gemseo model into 'z'
+        # We need to convert 'x_shared' variable of gemseo model into 'z'
         gemseo_jac_pd = pd.DataFrame(gemseo_jac_dict)
-        sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
+        sos_jac_pd = gemseo_jac_pd.rename(index={'x_shared': 'z'})
         sos_jac_dict = sos_jac_pd.to_dict()
         self.jac = sos_jac_dict
+
 
 class SobieskiStructure(SoSWrapp):
     """ Sobieski mass estimation wrapper.
     """
     _maturity = 'Fake'
     DESC_IN = {
-                'x_1': {'type': 'array','default':array([0.25, 1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_21': {'type': 'array','default':array([50606.9741711]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_31': {'type': 'array','default':array([6354.32430691]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'z': {'type': 'array','default':array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'x_1': {'type': 'array', 'default': array([0.25, 1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'y_21': {'type': 'array', 'default': array([50606.9741711]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'y_31': {'type': 'array', 'default': array([6354.32430691]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
                }
 
     DESC_OUT = {
@@ -127,21 +129,22 @@ class SobieskiStructure(SoSWrapp):
         dtype = DTYPE_DOUBLE
         sobieski_problem = SobieskiProblem(dtype=dtype)
         gemseo_jac_dict = sobieski_problem.derive_blackbox_structure(z, y_21, y_31, x_1)
-        #We need to convert 'x_shared' variable of gemseo model into 'z'
+        # We need to convert 'x_shared' variable of gemseo model into 'z'
         gemseo_jac_pd = pd.DataFrame(gemseo_jac_dict)
-        sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
+        sos_jac_pd = gemseo_jac_pd.rename(index={'x_shared': 'z'})
         sos_jac_dict = sos_jac_pd.to_dict()
         self.jac = sos_jac_dict
+
 
 class SobieskiAerodynamics(SoSWrapp):
     """ Sobieski aerodynamic discipline wrapper.
     """
     _maturity = 'Fake'
     DESC_IN = {
-                'x_2': {'type': 'array','default':array([1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_12': {'type': 'array','default': array([50606.9742, 0.95]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_32': {'type': 'array','default': array([0.50279625]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'z': {'type': 'array','default':array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'x_2': {'type': 'array', 'default': array([1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'y_12': {'type': 'array', 'default': array([50606.9742, 0.95]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'y_32': {'type': 'array', 'default': array([0.50279625]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
                }
 
     DESC_OUT = {
@@ -186,20 +189,21 @@ class SobieskiAerodynamics(SoSWrapp):
         dtype = DTYPE_DOUBLE
         sobieski_problem = SobieskiProblem(dtype=dtype)
         gemseo_jac_dict = sobieski_problem.derive_blackbox_aerodynamics(z, y_12, y_32, x_2)
-        #We need to convert 'x_shared' variable of gemseo model into 'z'
+        # We need to convert 'x_shared' variable of gemseo model into 'z'
         gemseo_jac_pd = pd.DataFrame(gemseo_jac_dict)
-        sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
+        sos_jac_pd = gemseo_jac_pd.rename(index={'x_shared': 'z'})
         sos_jac_dict = sos_jac_pd.to_dict()
         self.jac = sos_jac_dict
+
 
 class SobieskiPropulsion(SoSWrapp):
     """ Sobieski propulsion propulsion wrapper.
     """
     _maturity = 'Fake'
     DESC_IN = {
-                'x_3': {'type': 'array','default':array([0.5]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_23': {'type': 'array','default': array([12562.01206488]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'z': {'type': 'array','default':array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'x_3': {'type': 'array', 'default': array([0.5]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'y_23': {'type': 'array', 'default': array([12562.01206488]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+                'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
                }
 
     DESC_OUT = {
@@ -245,10 +249,9 @@ class SobieskiPropulsion(SoSWrapp):
         sobieski_problem = SobieskiProblem(dtype=dtype)
         gemseo_jac_dict = sobieski_problem.derive_blackbox_propulsion(z, y_23, x_3)
         gemseo_jac_pd = pd.DataFrame(gemseo_jac_dict)
-        sos_jac_pd = gemseo_jac_pd.rename(index = {'x_shared':'z'})
+        sos_jac_pd = gemseo_jac_pd.rename(index={'x_shared': 'z'})
         sos_jac_dict = sos_jac_pd.to_dict()
         self.jac = sos_jac_dict
-
 
 
 if __name__ == '__main__':

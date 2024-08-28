@@ -180,7 +180,7 @@ class TestDriverDataIntegrity(unittest.TestCase):
         data_integrity_error_message = 'You need to select at least one scenario to execute your driver'
         self.assertEqual(check_integrity_msg, data_integrity_error_message)
 
-        ### And now empty dataframe
+        # And now empty dataframe
         samples_df = pd.DataFrame({}, columns=['scenario_name', 'selected_scenario'])
         dict_values = {f'{self.study_name}.multi_scenarios.samples_df': samples_df}
 
@@ -245,7 +245,6 @@ class TestDriverDataIntegrity(unittest.TestCase):
         integrity_error_message = 'Your samples_df is empty, the driver cannot be configured'
 
         self.assertEqual(check_integrity_msg, integrity_error_message)
-
 
     def test_05_mono_integrity_samples_df_no_input(self):
         proc_name = 'test_mono_driver_simple'
@@ -417,6 +416,7 @@ class TestDriverDataIntegrity(unittest.TestCase):
         self.assertFalse(sc1_b_editable, 'Trades variable should be not editable')
         sc2_b_editable = self.exec_eng.dm.get_data(f'{self.study_name}.multi_scenarios.scenario_2.Disc1.b', 'editable')
         self.assertFalse(sc2_b_editable, 'Trades variable should be not editable')
+
 
 if '__main__' == __name__:
     cls = TestDriverDataIntegrity()

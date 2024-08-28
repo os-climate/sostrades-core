@@ -39,8 +39,8 @@ class Disc4(SoSWrapp):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'h': {'type': 'dict', 'subtype_descriptor':{'dict':'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'mydict': {'type': 'dict', 'subtype_descriptor':{'dict':'array'}}
+        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'mydict': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}}
     }
 
     DESC_OUT = {

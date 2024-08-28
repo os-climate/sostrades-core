@@ -31,7 +31,7 @@ class BSpline(object):
         self.ERROR_MSG = errmsg
         self.set_uniform_knots_list()
         self.ctrl_pts = None
-    #-- B-Splines methods
+    # -- B-Splines methods
 
     def set_uniform_knots_list(self):
         """
@@ -39,7 +39,7 @@ class BSpline(object):
         - n_poles : number of poles
         """
         ERROR_MSG = self.ERROR_MSG + 'set_uniform_knots_list: '
-        #-- set knots
+        # -- set knots
         n, n_poles = self.degree, self.n_poles
         m = n_poles + n + 1
         if m < 2 * (n + 1):
@@ -54,7 +54,7 @@ class BSpline(object):
     def set_non_uniform_knots_list(self, unif_fact):
         # unif_fact supposed to be in[0;1]
         ERROR_MSG = self.ERROR_MSG + 'set_non_uniform_knots_list: '
-        #-- set knots
+        # -- set knots
         n, n_poles = self.degree, self.n_poles
         m = n_poles + n + 1
         if m < 2 * (n + 1):
@@ -153,13 +153,13 @@ class BSpline(object):
         else:
             result = np.zeros(len(t_adim), dtype=self.dtype)
 
-        #-- compute information
+        # -- compute information
         for i, t in enumerate(t_adim):
             B_array = self.eval(t, diff=0)
             barray_list[i] = B_array
             result[i] = np.dot(self.ctrl_pts, B_array)
 
-            #result[i] = bsp_scipy(t)
+            # result[i] = bsp_scipy(t)
         return result, barray_list
 
     def update_b_array(self, b_array, index_desactivated=None):

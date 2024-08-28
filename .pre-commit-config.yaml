@@ -7,6 +7,7 @@ repos:
           --fix,
           --preview,
           --exit-non-zero-on-fix,
+          --config=ruff.toml,
         ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0

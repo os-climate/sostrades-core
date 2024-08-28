@@ -62,7 +62,7 @@ CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.
    reproduce, prepare Derivative Works of, publicly display, publicly perform,
    Distribute and sublicense the Contribution of such Contributor, if any, and
    such Derivative Works.
-    
+
    b) Subject to the terms of this Agreement, each Contributor hereby grants
    Recipient a non-exclusive, worldwide, royalty-free patent license under
    Licensed Patents to make, use, sell, offer to sell, import and otherwise

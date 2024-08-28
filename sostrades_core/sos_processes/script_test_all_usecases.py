@@ -529,6 +529,7 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
         message_queue.put([test_passed, info_msg])
     return test_passed, info_msg
 
+
 def run_test_check_outputs(usecase):
     """ Runs the outputs check for the test """
     imported_module = import_module(usecase)

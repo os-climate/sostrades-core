@@ -27,7 +27,7 @@ class AbstractDatasetsSerializer(abc.ABC):
     __logger = logging.getLogger(__name__)
 
     @abc.abstractmethod
-    def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
+    def convert_from_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
         '''
         Convert data_value into data_type from the dataset connector
         To be override for specific conversion.
@@ -42,7 +42,7 @@ class AbstractDatasetsSerializer(abc.ABC):
         '''
 
     @abc.abstractmethod
-    def convert_to_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
+    def convert_to_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
         '''
         Convert data_value into dataset connector format
         :param data_name: name of the data that is converted

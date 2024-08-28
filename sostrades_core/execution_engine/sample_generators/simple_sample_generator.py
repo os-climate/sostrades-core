@@ -68,7 +68,7 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
         Raises:
             Exception if samples_df is not a dataframe
         '''
-        if not(isinstance(samples_df, pd.DataFrame)):
+        if not (isinstance(samples_df, pd.DataFrame)):
             msg = "Expected sampling output type should be pandas.core.frame.DataFrame"
             msg += "however sampling type of sampling generator <%s> " % str(
                 self.__class__.__name__)

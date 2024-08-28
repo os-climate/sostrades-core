@@ -104,7 +104,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     DRIVER_EVAL_MODE_MONO = 'mono'
     DRIVER_EVAL_MODE_MULTI = 'multi'
 
-
     SAMPLES_DF = ProxySampleGenerator.SAMPLES_DF
     SAMPLES_DF_DESC = ProxySampleGenerator.SAMPLES_DF_DESC.copy()
     SAMPLES_DF_DESC[ProxyDiscipline.STRUCTURING] = True
@@ -126,7 +125,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                WITH_SAMPLE_GENERATOR: WITH_SAMPLE_GENERATOR_DESC}
 
     ##
-    ## To refactor instancce reference and subprocess import
+    # To refactor instancce reference and subprocess import
     ##
 
     INSTANCE_REFERENCE = 'instance_reference'
@@ -157,7 +156,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                  'optional': False}
 
     ##
-    ## End to refactor
+    # End to refactor
     ##
     def __init__(self, sos_name, ee, cls_builder,
                  driver_wrapper_cls=None,

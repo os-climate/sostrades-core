@@ -14,6 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import numpy as np
+import pandas as pd
+
 from sostrades_core.tools.post_processing.post_processing_plotly_tooling import (
     AbstractPostProcessingPlotlyTooling,
 )
@@ -22,6 +25,7 @@ from sostrades_core.tools.post_processing.post_processing_tools import convert_n
 """
 Class that define a 2 dimensional chart template
 """
+
 
 class SeriesTemplateException(Exception):
     """ Overload Exception basic type
@@ -61,9 +65,11 @@ class SeriesTemplate:
     MARKER_SYMBOL = 'marker_symbol'
     MARKER = 'marker'
     LINE = 'line'
+    TEXT = 'text'
 
     def __init__(self, abscissa=[], ordinate=[], series_name='', display_type='lines', visible=True,
-                 y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle', marker=None, line=None):
+                 y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle', marker=None, line=None,
+                 text=None):
         """ Create a new series to add in a chart
 
         :param abscissa: list of number values for abscissa
@@ -86,6 +92,8 @@ class SeriesTemplate:
         :type marker: dict(), ex: marker=dict(color='LightSkyBlue', size=20, line=dict(color='MediumPurple', width=2))
         :param line: symbol to use to describe the line displayed on the chart
         :type line: dict(), ex: line=dict(color='black')
+        :param text: symbol to describe the data to be displayed on as label of the datapoint on the graph
+        :type text: list(floats)
         """
 
         self.__ordinate = []
@@ -109,6 +117,7 @@ class SeriesTemplate:
         self.marker_symbol = marker_symbol
         self.marker = marker
         self.line = line
+        self.text = text
 
     @property
     def abscissa(self):
@@ -116,10 +125,7 @@ class SeriesTemplate:
 
     @abscissa.setter
     def abscissa(self, values):
-        if not isinstance(values, list):
-            message = f'"abscissa" argument is intended to be a list not {type(values)}'
-            raise TypeError(message)
-        self.__abscissa = values
+        self.__abscissa = self.__convert_to_list(values, 'abscissa')
 
     def abscissa_filtered(self, logger=None):
         """
@@ -139,10 +145,7 @@ class SeriesTemplate:
 
     @ordinate.setter
     def ordinate(self, values):
-        if not isinstance(values, list):
-            message = f'"ordinate" argument is intended to be a list not {type(values)}'
-            raise TypeError(message)
-        self.__ordinate = values
+        self.__ordinate = self.__convert_to_list(values, 'ordinate')
 
     def ordinate_filtered(self, logger=None):
         """
@@ -155,6 +158,17 @@ class SeriesTemplate:
         """
 
         return self.__filter_values(self.ordinate, 'Ordinate', logger)
+
+    def __convert_to_list(self, values, attribute_name):
+        if isinstance(values, list):
+            return values
+        elif isinstance(values, (np.ndarray, pd.Series)):
+            return values.tolist()
+        elif hasattr(values, '__iter__'):
+            return list(values)
+        else:
+            message = f'"{attribute_name}" argument is intended to be a list-like object, not {type(values)}'
+            raise TypeError(message)
 
     def __filter_values(self, values, property_name, logger=None):
         """
@@ -195,7 +209,8 @@ class SeriesTemplate:
                          f'custom_data: {self.custom_data}\n',
                          f'marker_symbol: {self.marker_symbol}\n',
                          f'marker: {self.marker}\n',
-                         f'line: {self.line}\n'
+                         f'line: {self.line}\n',
+                         f'text: {self.text}\n'
                          ]
 
         return '\n'.join(series_string)
@@ -239,6 +254,9 @@ class SeriesTemplate:
 
         # Serialize line attribute
         dict_obj.update({SeriesTemplate.LINE: self.line})
+
+        # Serialize text attribute
+        dict_obj.update({SeriesTemplate.TEXT: self.text})
 
         return dict_obj
 
@@ -286,6 +304,10 @@ class SeriesTemplate:
         # Deserialize line attribute
         if SeriesTemplate.LINE in dict_obj:
             self.line = dict_obj[SeriesTemplate.LINE]
+
+        # Deserialize text attribute
+        if SeriesTemplate.TEXT in dict_obj:
+            self.text = dict_obj[SeriesTemplate.TEXT]
 
 
 class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
@@ -417,8 +439,6 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         if len(self.secondary_ordinate_axis_range) > 1:
             sec_ord_axis_range = [
                 self.secondary_ordinate_axis_range[0], self.secondary_ordinate_axis_range[1]]
-
-
 
         chart_string = [f'\nname: {self.chart_name}',
                         f'Abs axis name: {self.abscissa_axis_name}',

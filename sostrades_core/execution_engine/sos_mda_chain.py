@@ -201,7 +201,7 @@ class SoSMDAChain(MDAChain):
                 if len(coupled_disciplines) > 1:
                     # or (len(coupled_disciplines) == 1
                     # and self.coupling_structure.is_self_coupled(first_disc)
-                    ##### DEACTIVATE OPTION authorize_self_coupled_disciplines that was not correctly implemented for strong couplings (flag in GEMSEO to True)
+                    # DEACTIVATE OPTION authorize_self_coupled_disciplines that was not correctly implemented for strong couplings (flag in GEMSEO to True)
                     # Option that is never used
                     # and self.authorize_self_coupled_disciplines
                     # several disciplines coupled
@@ -443,7 +443,7 @@ class SoSMDAChain(MDAChain):
                     # isinstance(coupled_disciplines[0], MDA)" as in GEMSEO
                     # actual version
                     # and not coupled_disciplines[0].is_sos_coupling
-                    ##### DEACTIVATE OPTION authorize_self_coupled_disciplines that was not correctly implemented for strong couplings (flag in GEMSEO to True)
+                    # DEACTIVATE OPTION authorize_self_coupled_disciplines that was not correctly implemented for strong couplings (flag in GEMSEO to True)
                     # Option that is never used
                     # #self.authorize_self_coupled_disciplines
 
