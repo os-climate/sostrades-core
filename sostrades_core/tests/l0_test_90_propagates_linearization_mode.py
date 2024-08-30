@@ -319,6 +319,7 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
         # 1: Set to Finite difference
 
         disc_dict[f'{self.study_name}.{coupling_name}.{LINEARIZATION_MODE}'] = MDODiscipline.LinearizationMode.AUTO
+
         exec_eng.load_study_from_input_dict(disc_dict)
 
         proxy_discs = exec_eng.root_process.proxy_disciplines

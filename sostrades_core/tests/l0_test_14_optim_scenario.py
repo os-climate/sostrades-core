@@ -59,7 +59,6 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.repo = 'sostrades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_discopt'
 
-
     def _test_01_optim_scenario_check_treeview(self):
         print("\n Test 1 : check configure and treeview")
         exec_eng = ExecutionEngine(self.study_name)
@@ -823,8 +822,6 @@ class TestSoSOptimScenario(unittest.TestCase):
         with self.assertRaises(KeyError):
             exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data")
 
-
-
     def test_09_optim_scenario_eval_mode_with_eval_jac(self):
         print("\n Test 9 : Sellar optim with eval_mode and eval_jac")
 
@@ -1312,7 +1309,6 @@ class TestSoSOptimScenario(unittest.TestCase):
                 disc)
             graph_list = ppf.get_post_processing_by_discipline(
                 disc, filters, as_json=False)
-
 
     def _test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
         print(

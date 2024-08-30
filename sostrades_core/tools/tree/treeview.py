@@ -16,6 +16,7 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.base_functions.compute_size import compute_data_size_in_Mo
 from sostrades_core.tools.tree.data_management_discipline import (
     DataManagementDiscipline,
 )
@@ -77,10 +78,10 @@ class TreeView:
             from importlib import import_module
             documentation_folder = import_module(process_module).__file__
 
-            if documentation_folder != '':
+            # if documentation_folder != '':
 
-                self.root.add_markdown_documentation(TreeNode.get_markdown_documentation(
-                    documentation_folder), TreeView.PROCESS_DOCUMENTATION)
+            #     self.root.add_markdown_documentation(TreeNode.get_markdown_documentation(
+            #         documentation_folder), TreeView.PROCESS_DOCUMENTATION)
         except:
             pass
 
@@ -164,13 +165,15 @@ class TreeView:
             if self.read_only:
                 treenode.data[key][ProxyDiscipline.EDITABLE] = False
 
+            treenode.data[key][ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(treenode.data[key][ProxyDiscipline.VALUE])
+
+
+
+
     def set_treenode_discipline_data(self, treenode, key, val, disc_dict):
 
         if not self.no_data:
             temp_data = {k: v for k, v in val.items()}
-
-
-
 
             # retrieve model name full path for variable key
             model_name_full_path = val['model_origin']
@@ -188,6 +191,8 @@ class TreeView:
 
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False
+
+            temp_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(val[ProxyDiscipline.VALUE])
 
 
             if key not in treenode.disciplines_by_variable.keys():
@@ -217,6 +222,8 @@ class TreeView:
                         treenode.data_management_disciplines[discipline_key].disciplinary_inputs[key] = temp_data
                     elif temp_data[ProxyDiscipline.IO_TYPE] == 'out':
                         treenode.data_management_disciplines[discipline_key].disciplinary_outputs[key] = temp_data
+
+
 
 
 

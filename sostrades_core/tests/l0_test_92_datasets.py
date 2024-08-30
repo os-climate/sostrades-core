@@ -80,7 +80,6 @@ class TestDatasets(unittest.TestCase):
                                             'X_dspace_array': dspace_array,
                                             }
 
-
     def test_01_usecase1(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
@@ -183,7 +182,6 @@ class TestDatasets(unittest.TestCase):
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
             set(["<1connector_id>|<1dataset_id>", "<2connector_id>|<2dataset_id>"]),
         )
-
 
     def test_04_datasets_types(self):
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
@@ -704,6 +702,7 @@ class TestDatasets(unittest.TestCase):
         ref_df = pd.read_csv(os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                            "data", "local_datasets_db", "dataset_df_bq",
                                                            data_name + ".csv")))
+
         self.assertTrue((ref_df == data_values[data_name]).all().all())
 
         dict_strange_keys = data_values["dict_strange_keys"]

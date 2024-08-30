@@ -34,6 +34,7 @@ def get_ns_list_in_builder_list(builder_list):
         ns_list.extend(ns_sublist)
     return list(set(ns_list))
 
+
 def get_ns_list_in_sub_builder(builder):
 
     if not isinstance(builder, SoSBuilder):

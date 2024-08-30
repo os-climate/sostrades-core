@@ -21,6 +21,7 @@ from abc import ABC
 Class that define annotations for post processing
 """
 
+
 class AbstractPostProcessingPlotlyTooling(ABC):
     """ Class that define general tools for post processing with plotly
     """

@@ -20,11 +20,12 @@ from __future__ import annotations
 from contextlib import suppress
 from copy import deepcopy
 from importlib import import_module
-from logging import DEBUG, INFO
+from logging import DEBUG, INFO, Logger
 from pathlib import Path
 from time import time
 from typing import TYPE_CHECKING
 from sostrades_core.tools.compare_data_manager_tooling import compare_dict
+
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
@@ -49,23 +50,24 @@ LOG_LEVEL = INFO  # = 20
 
 
 class BaseStudyManager:
-    """Class defninition.
+    """Base class used to manage making, loading and saving data for a process into an execution engine instance.
 
-    Base class use to manage making, loading and saving data for a process into an execution engine instance
-
-    redefining the method 'setup_use_case' allow to change the way to load data into the execution engine
+    Overloading the method 'setup_use_case' allow to change the way to load data into the execution engine.
     """
+
+    __execution_engine: ExecutionEngine | None
+    """The study's execution engine."""
 
     def __init__(
         self,
-        repository_name,
-        process_name,
-        study_name,
+        repository_name: str,
+        process_name: str,
+        study_name: str,
         dump_directory: str | None = None,
-        run_usecase=True,
-        yield_method=None,
-        logger=None,
-        execution_engine=None,
+        run_usecase: bool = True,
+        yield_method: Callable | None = None,
+        logger: Logger | None = None,
+        execution_engine: ExecutionEngine | None = None,
         test_post_procs: bool = True,
     ):
         """Constructor.
@@ -86,10 +88,9 @@ class BaseStudyManager:
         self.process_name = process_name
         self.dump_directory = dump_directory
         self.__logger = logger
-        self.__execution_engine: ExecutionEngine | None = None
         self.__rw_strategy = DirectLoadDump()
         self.__yield_method = yield_method
-        self.__execution_engine: ExecutionEngine | None = execution_engine
+        self.__execution_engine = execution_engine
         self.loaded_cache = None
         self.dumped_cache = False
         self.dump_cache_map = None
@@ -176,9 +177,6 @@ class BaseStudyManager:
         self.__execution_engine = ExecutionEngine(
             self.study_name, root_dir=self.dump_directory, yield_method=self.__yield_method, logger=self.__logger
         )
-
-        # set the level of ExecutioEngine logger and all others its children
-        self.__execution_engine.logger.setLevel(LOG_LEVEL)
 
     def _build_execution_engine(self):
         """Build an execution instance with the attended process to be loaded."""

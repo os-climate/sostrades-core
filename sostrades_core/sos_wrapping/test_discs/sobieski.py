@@ -206,6 +206,7 @@ class SobieskiAerodynamics(SoSWrapp):
         sos_jac_dict = sos_jac_pd.to_dict()
         self.jac = sos_jac_dict
 
+
 class SobieskiPropulsion(SoSWrapp):
     """ Sobieski propulsion propulsion wrapper.
     """

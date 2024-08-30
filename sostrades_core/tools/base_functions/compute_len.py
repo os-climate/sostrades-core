@@ -39,7 +39,7 @@ def compute_len(obj, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
     elif isinstance(obj, DataFrame):
         num_cols = len(set(obj.select_dtypes(include=[number]).columns) - set(excluded_columns))
         df_without_strings = obj.select_dtypes(exclude=['object'])
-        #df_without_nans = df_without_strings.dropna()
+        # df_without_nans = df_without_strings.dropna()
         num_rows = len(df_without_strings)
         return num_rows * num_cols
     elif isinstance(obj, (tuple, list)):
@@ -52,4 +52,3 @@ def compute_len(obj, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
         for val in obj.values():
             computed_len += compute_len(val)
         return computed_len
-

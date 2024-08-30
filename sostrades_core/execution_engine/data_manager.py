@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/08/01 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ from hashlib import sha256
 from typing import Any, Union
 from uuid import uuid4
 
+import pandas as pd
 from gemseo.caches.simple_cache import SimpleCache
+
 from pandas import concat
 
 from sostrades_core.datasets.dataset_manager import DatasetsManager
@@ -534,7 +536,9 @@ class DataManager:
             data_value = data_value[VALUE]
 
             # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
-            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY:{}, DatasetsMapping.TYPE:{}, DatasetsMapping.VALUE:{}})
+            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns,
+                                                                     {DatasetsMapping.KEY: {}, DatasetsMapping.TYPE: {},
+                                                                      DatasetsMapping.VALUE: {}})
             namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
             namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
             namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value
@@ -559,7 +563,7 @@ class DataManager:
                 for data_dataset_name in updated_data.keys():
                     key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
                     type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
-                    connector_id =datasets_mapping.datasets_infos[dataset].connector_id
+                    connector_id = datasets_mapping.datasets_infos[dataset].connector_id
                     dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
                     exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                          variable_type=type,
@@ -570,9 +574,7 @@ class DataManager:
                                                          dataset_parameter_id=key,
                                                          date=datetime.now()))
 
-
         return exported_parameters
-
 
     def convert_data_dict_with_full_name(self):
         ''' Return data_dict with namespaced keys
@@ -611,12 +613,8 @@ class DataManager:
         if 'numerical' in excepted:
             exception_list = list(ProxyDiscipline.NUM_DESC_IN.keys())
 
-        if 'None' in excepted:
-            data_dict_values = {key: value.get(attr, None)
-                                for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
-        else:
-            data_dict_values = {key: value.get(attr, None)
-                                for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
+        data_dict_values = {key: value.get(attr, None) for key, value in data_dict.items() if
+                            key.split('.')[-1] not in exception_list}
 
         return data_dict_values
 
@@ -1047,6 +1045,9 @@ class DataManager:
                         data2[data_name]) or data1[data_name] is None
                 elif var_f_name in self.no_check_default_variables:
                     return False
+                elif isinstance(data1[data_name], pd.DataFrame) and isinstance(data2[data_name], pd.DataFrame):
+                    return compare_dataframes(data1[data_name], data2[data_name], tree=None, error=None,
+                                              df_equals=False)
                 else:
                     return str(data1[data_name]) != str(data2[data_name])
 

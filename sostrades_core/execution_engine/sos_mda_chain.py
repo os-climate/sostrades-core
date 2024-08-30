@@ -182,6 +182,7 @@ class SoSMDAChain(MDAChain):
         self.store_local_data(**out)
 
     def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
+
                        step=1e-7, threshold=1e-8, linearization_mode='auto',
                        inputs=None, outputs=None, parallel=False,
                        n_processes=MDAChain.N_CPUS,
@@ -250,7 +251,6 @@ class SoSMDAChain(MDAChain):
         self.linear_solver_tolerance = self.linear_solver_tolerance_MDO
 
         MDAChain._compute_jacobian(self, inputs, outputs)
-
 
     #  METHODS TO DEBUG MDA CHAIN (NEEDED FOR LINEARIZE)
     # ----------------------------------------------------

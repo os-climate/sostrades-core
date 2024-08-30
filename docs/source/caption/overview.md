@@ -9,7 +9,7 @@ You can access it by following this [link](https://validation.osc-tsa.com/) :
 
 ## A generic platform adaptable to the simulation needs of specific projects
 
-* Designed to handle long-term trajectories 2030, 2050, 2100 unlike industrial digital twins or classic "System of Systems" approaches 
+* Designed to handle long-term trajectories 2030, 2050, 2100 unlike industrial digital twins or classic "System of Systems" approaches
 * Provides all the state of the art in mathematics for simulation:
 >* Design of experiments
 >* Sensitivity analyses

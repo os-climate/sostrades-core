@@ -24,6 +24,7 @@ from gemseo.core.discipline import MDODiscipline
 from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import (
     Study as study_disc1_disc2,
 )
+
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
     Study as study_sellar_mda,
 )

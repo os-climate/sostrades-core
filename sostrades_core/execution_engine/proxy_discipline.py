@@ -153,6 +153,7 @@ class ProxyDiscipline:
     IS_EVAL = 'is_eval'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     VARIABLE_KEY = 'variable_key'  # key for ontology
+    SIZE_MO = 'size_mo' #size of a data
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -1036,7 +1037,6 @@ class ProxyDiscipline:
 
                 del self._data_in[(var_name, self._io_ns_map_in[var_name])]
                 del self._io_ns_map_in[var_name]
-
 
             elif io_type == self.IO_TYPE_OUT:
                 if var_name in self.inst_desc_out:

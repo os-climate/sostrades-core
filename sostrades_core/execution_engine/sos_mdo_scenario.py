@@ -141,7 +141,6 @@ class SoSMDOScenario(MDOScenario):
         return post_processing_mdo_data
 
 
-
     def execute_at_xopt(self):
         '''
         trigger post run if execute at optimum is activated

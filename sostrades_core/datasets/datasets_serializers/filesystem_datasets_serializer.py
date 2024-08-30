@@ -117,7 +117,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         if data_name in self.__pickle_data:
             del self.__pickle_data[data_name]
 
-    def convert_from_dataset_data(self, data_name:str, data_value:Any, data_types_dict:dict[str:str])-> Any:
+    def convert_from_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
         '''
         Convert data_value into data_type from the connector
         To be overridden for specific conversion.
@@ -161,7 +161,6 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
                                                      data_types_dict=data_types_dict)
         else:
             return data_value
-
 
     def __get_filesystem_type(self, data_value: str) -> str:
         """

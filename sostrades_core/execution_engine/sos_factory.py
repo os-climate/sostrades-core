@@ -323,7 +323,7 @@ class SosFactory:
         Add tornado chart analysis builder
         '''
         mod_path = 'sostrades_core.sos_wrapping.analysis_discs.tornado_chart_analysis.TornadoChartAnalysis'
-        builder = self.get_builder_from_module( sos_name, mod_path)
+        builder = self.get_builder_from_module(sos_name, mod_path)
 
         return builder
 

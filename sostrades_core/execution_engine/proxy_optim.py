@@ -471,7 +471,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df)
         return design_space
 
-
     def get_chart_filter_list(self):
         chart_filters = []
 

@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 2024/07/24 Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -97,7 +98,6 @@ class PostProcessingBundle:
         discipline_name = ''
         if PostProcessingBundle.DISCIPLINE_NAME in dict_obj:
             discipline_name = dict_obj[PostProcessingBundle.DISCIPLINE_NAME]
-
 
         # Serialize filters parameter attribute
         filters = dict_obj[PostProcessingBundle.FILTERS]

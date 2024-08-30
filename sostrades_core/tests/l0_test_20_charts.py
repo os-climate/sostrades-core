@@ -23,6 +23,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 unit test for chart template
 '''
 
+
 class TestChartTemplate(unittest.TestCase):
     """
     Class to test template filters and charts

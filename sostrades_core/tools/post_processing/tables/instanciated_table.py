@@ -173,7 +173,7 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
             return fig
 
     @staticmethod
-    def from_pd_df(table_name:str, df:pd.DataFrame):
+    def from_pd_df(table_name: str, df: pd.DataFrame):
         return InstanciatedTable(table_name=table_name, header=df.columns.to_list(), cells=df.values.T.tolist())
 
     def __to_csv(self):

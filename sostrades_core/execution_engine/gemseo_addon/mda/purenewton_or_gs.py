@@ -106,6 +106,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             use_lu_fact=use_lu_fact, tolerance=tolerance,
             relax_factor=relax_factor,
             **newton_mda_options
+
         )
 
         # mda_newton = GSPureNewtonMDA(disciplines,  max_mda_iter=max_mda_iter,

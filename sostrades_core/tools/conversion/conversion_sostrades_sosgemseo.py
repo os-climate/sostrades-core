@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/21-2024/07/03 Copyright 2023 Capgemini
+Modifications on 2023/02/21-2024/08/01 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -219,6 +219,7 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
                 var_new_type = convert_array_into_dict_old_version(
                     var_array, new_data, deepcopy(metadata_list))
 
+
             else:
                 check_subtype(name, subtype, 'dict')
                 var_new_type = convert_array_into_dict(
@@ -284,7 +285,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
         if prev_metadata is None:
             prev_metadata_key = None
         else:
-            if len(prev_metadata) != 0.:
+            if len(prev_metadata) != 0:
                 prev_metadata_key = prev_metadata.pop(0)
             else:
                 prev_metadata_key = None
@@ -606,6 +607,7 @@ def convert_new_type_into_array(
                     var_converted, metadata = var, None
 
                 var_converted = array(var_converted)
+
             else:
                 var_converted = var
     else:

@@ -44,10 +44,10 @@ class Disc1(SoSWrapp):
 
         'y_array': {'type': 'array', 'default': np.array([])},
         'z_list': {'type': 'list', 'default': []},
-        'b_bool': {'type': 'bool', 'default':True},
+        'b_bool': {'type': 'bool', 'default': True},
         'd': {'type': 'dataframe',
-              'dataframe_descriptor': {"years":('int',None,True),"x":('float',None,True)},
-              'default':pd.DataFrame(columns=["years", "x"])}
+              'dataframe_descriptor': {"years": ('int', None, True), "x": ('float', None, True)},
+              'default': pd.DataFrame(columns=["years", "x"])}
     }
     DESC_OUT = {
         'indicator': {'type': 'int'},

@@ -23,6 +23,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 Treenode test suite
 '''
 
+
 class TestTreenode(unittest.TestCase):
     """
     Treenode test class

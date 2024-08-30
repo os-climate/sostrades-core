@@ -70,6 +70,7 @@ class UsecaseCreator:
             write_default_value: bool = False,
             write_outputs: bool = False,
             inputs_from_usecase=None,
+
     ) -> None:
         """Class to generate usecase.py file and related input and output data from a pickle file
 

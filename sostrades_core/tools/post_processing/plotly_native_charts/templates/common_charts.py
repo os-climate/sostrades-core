@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2024/08/01 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -497,7 +497,6 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         )
 
         # Create native plotly chart
-        chart_name = chart_name
         new_chart = InstantiatedPlotlyNativeChart(fig=fig, chart_name=chart_name)
 
         return new_chart

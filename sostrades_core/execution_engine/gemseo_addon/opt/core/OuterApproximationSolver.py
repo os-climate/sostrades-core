@@ -154,13 +154,11 @@ class OuterApproximationSolver(object):
             if len(c.outvars) > 1:
                 raise ValueError("Several outputs in MDOFunction is not allowed")
 
-
     def _get_integer_variables_indices(self, dspace):
         ''' returns integer variables indices in xvect defined by the design space
         '''
         return self._get_x_indices_by_type(dspace,
                                            DesignSpace.INTEGER.value)  # pylint: disable=E0602,E1101
-
 
     def _get_float_variables_indices(self, dspace):
         ''' returns float variables indices in xvect defined by the design space
@@ -205,6 +203,7 @@ class OuterApproximationSolver(object):
         # problem definition
         prob = cp.Problem(obj)  #, constraints
 
+
         return prob
 
     def update_primal_problem(self, old_primal_pb, dual_pb, upper_bnd, x0):
@@ -245,6 +244,7 @@ class OuterApproximationSolver(object):
 
         # - setup of primal problem constraints :
         #- build dual pb objective linearization
+
         obj_jac = atleast_2d(self.full_problem.objective.jac(x0))
         data_size = deepcopy(self.size_by_varname)
         data_size.update({self.full_problem.objective.outvars[0]: obj_jac.shape[0]})
@@ -265,7 +265,7 @@ class OuterApproximationSolver(object):
         # set the objective hyperplane as constraint
         obj_lin = obj_lin <= eta
 
-        #- build dual pb constraints linearization : c(x0) + dc/dx(x0) . (x - x0) <= 0
+        # - build dual pb constraints linearization : c(x0) + dc/dx(x0) . (x - x0) <= 0
         cst_linearized = []
         # for each constraint function from main optimization problem
         # builds linearization of the constraint wrt all design variables
@@ -344,7 +344,7 @@ class OuterApproximationSolver(object):
 
         return sol_int
 
-    #- dual problem definition
+    # - dual problem definition
 
     def build_dual_problem(self, integer_values):
         ''' Build the dual problem
@@ -541,7 +541,7 @@ class OuterApproximationSolver(object):
             LOGGER.info("LOWER BOUNDS")
             LOGGER.info(self.lower_bounds)
 
-            self.iter_nb +=1
+            self.iter_nb += 1
 
 #         nlp = self.build_dual_pb(xopt_int)
 #         nlp_sol = self.solve_dual(nlp)

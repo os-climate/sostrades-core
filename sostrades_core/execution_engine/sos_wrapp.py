@@ -632,7 +632,6 @@ class SoSWrapp(object):
         else:
             raise Exception(f"Unknown IO type {io_type}")
 
-
         if key_type == 'dataframe':
             # Get the number of lines and the index of column from the metadata
             # for standard dataframe fill, there is one column of value per asset in the dataframe value

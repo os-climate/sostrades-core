@@ -1285,7 +1285,6 @@ class TestMDALoop(unittest.TestCase):
     #             if flag:
     #                 print(k1, k2)
 
-
     def test_19_check_if_proxy_coupling_grammar_is_equal_to_GEMSEO_one_for_sobieski_case(self):
         '''
         Context:
@@ -1339,6 +1338,7 @@ class TestMDALoop(unittest.TestCase):
             '{sc_name}.x_3': [0.5],
             '{sc_name}.y_23': [12194.2],
         }
+
         exec_eng.load_study_from_input_dict(disc_dict)
 
         # prepare execution (create GEMSEO objects)

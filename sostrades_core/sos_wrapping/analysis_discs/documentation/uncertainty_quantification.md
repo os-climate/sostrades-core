@@ -24,7 +24,7 @@ For instance, here is an example of a Normal distribution of the input 'COC' wit
 
 ![1.1](SA_input.PNG)
 
-Here is an example of the output 'Cashflow' interpolated values with the mean, lower/upper values displayed on the histogram and the extrem values of the confidence interval. Here, as the confidence interval is 80%, there is a 80% chance that the cashflow values will be between -69.04keuros and 82keuros. 
+Here is an example of the output 'Cashflow' interpolated values with the mean, lower/upper values displayed on the histogram and the extrem values of the confidence interval. Here, as the confidence interval is 80%, there is a 80% chance that the cashflow values will be between -69.04keuros and 82keuros.
 
 
 ![1.2](SA_output.PNG)

@@ -128,46 +128,6 @@ class TestMDALoop(unittest.TestCase):
         if exec_ok:
             raise Exception('Execution worked, and it should not have')
 
-    # linearize dtaa change debug mode has been deactivated
-    # def test_03_debug_mode_mda_linearize_data_change(self):
-    #     """
-    #     Checks exception is raised by activating linearize_data_change debug mode in a bugged discipline.
-    #     """
-    #
-    #     exec_eng = ExecutionEngine(self.name)
-    #
-    #     # add disciplines SellarCoupling
-    #     coupling_name = "SellarCoupling"
-    #     mda_builder = exec_eng.factory.get_builder_from_process(
-    #         'sostrades_core.sos_processes.test', 'test_sellar_coupling13')
-    #     exec_eng.factory.set_builders_to_coupling_builder(mda_builder)
-    #     exec_eng.configure()
-    #
-    #     # Sellar inputs
-    #     disc_dict = {}
-    #     disc_dict[f'{self.name}.{coupling_name}.x'] = array([1.])
-    #     disc_dict[f'{self.name}.{coupling_name}.y_1'] = array([1.])
-    #     disc_dict[f'{self.name}.{coupling_name}.y_2'] = array([1.])
-    #     disc_dict[f'{self.name}.{coupling_name}.z'] = array([1., 1.])
-    #     disc_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
-    #
-    #     disc_dict[f'{self.name}.{coupling_name}.Sellar_3.error_string'] = 'linearize_data_change'
-    #     disc_dict[f'{self.name}.{coupling_name}.Sellar_3.debug_mode'] = 'linearize_data_change'
-    #     disc_dict[f'{self.name}.{coupling_name}.linearization_mode'] = 'adjoint'
-    #     disc_dict[f'{self.name}.{coupling_name}.inner_mda_name'] = 'MDANewtonRaphson'
-    #     exec_eng.load_study_from_input_dict(disc_dict)
-    #
-    #     exec_ok = False
-    #     try:
-    #         exec_eng.execute()
-    #         exec_ok = True
-    #     except ValueError as ve:
-    #         assert "Mismatch in .EE.SellarCoupling.y_1.value: 2.8 and 3.3 don't match" in ve.args[0]
-    #     except:
-    #         raise Exception('Execution failed, and not for the good reason')
-    #     if exec_ok:
-    #         raise Exception('Execution worked, and it should not have')
-
     def test_04_debug_mode_mda_min_max_coupling(self):
         """
         Checks message is logged after activating min_max_coupling debug mode.
@@ -276,12 +236,6 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.load_study_from_input_dict(disc_dict)
         proxy_discs = exec_eng.root_process.proxy_disciplines
         # the dm has the proper values
-        # self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),
-        #                  'linearize_data_change')
-        # self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'),
-        #                  'linearize_data_change')
-        # self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'),
-        #                  'linearize_data_change')
 
         # # the activation has been properly logged
         # self.assertIn('Discipline Sellar_1 set to debug mode linearize_data_change', self.my_handler.msg_list)
@@ -310,6 +264,7 @@ class TestMDALoop(unittest.TestCase):
         self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.debug_mode'), 'input_change')
         self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_Problem.debug_mode'),
                          'input_change')
+
         self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_1.debug_mode'), 'input_change')
         self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'), 'input_change')
 

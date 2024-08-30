@@ -59,6 +59,7 @@ class SoSMDODiscipline(MDODiscipline):
     LINEARIZATION_MODE = 'linearization_mode'
     RESIDUAL_VARIABLES = 'residual_variables'
     RUN_SOLVE_RESIDUALS = 'run_solves_residuals'
+
     NUM_DESC_IN = {LINEARIZATION_MODE, 'cache_type', 'cache_file_path', 'debug_mode'}
 
     def __init__(self,

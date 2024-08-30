@@ -82,13 +82,13 @@ class Study(StudyManager):
 
         # Sellar inputs
         local_dv = 10.
-        #======================================================================
+        # ======================================================================
         # disc_dict[f'{ns}.Eval.{coupling_name}.x'] = array([1.])
         # disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = array([1.])
         # disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = array([1.])
         # disc_dict[f'{ns}.Eval.{coupling_name}.z'] = array([1., 1.])
         # disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
-        #======================================================================
+        # ======================================================================
 
         disc_dict[f'{ns}.Eval.{coupling_name}.x'] = array([1.])
         disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = array([1.])

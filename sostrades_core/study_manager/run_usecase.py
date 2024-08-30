@@ -24,7 +24,7 @@ from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
-def test_module_importability(module_name:str):
+def test_module_importability(module_name: str):
     """
     Tests if a module can be imported
 
@@ -36,7 +36,8 @@ def test_module_importability(module_name:str):
     except ImportError as e:
         raise Exception(f"Unable to import process module '{module_name}' is this module correct and in PYTHONPATH ?") from e
 
-def run_usecase(usecase_file:str, dataset_mapping_json_file:Optional[str]):
+
+def run_usecase(usecase_file: str, dataset_mapping_json_file: Optional[str]):
     """
     Runs the usecase
 
@@ -71,6 +72,7 @@ def run_usecase(usecase_file:str, dataset_mapping_json_file:Optional[str]):
 
     uc_cls.run()
 
+
 if __name__ == "__main__":
     """
     Run a usecase from CLI
@@ -78,7 +80,7 @@ if __name__ == "__main__":
     example
     python -m sostrades_core.study_manager.run_usecase ./sostrades_core/sos_processes/test/test_disc1_disc2_dataset/usecase_dataset.py ./sostrades_core/sos_processes/test/test_disc1_disc2_dataset/usecase_2datasets.json
     """
-    if not 2<= len(sys.argv) <= 3:
+    if not 2 <= len(sys.argv) <= 3:
         print(f"Usage: python -m {sostrades_core.study_manager.run_usecase.__name__} <usecase_file> Optional<dataset_mapping_json_file>")
         sys.exit(1)
 

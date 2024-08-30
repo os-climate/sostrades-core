@@ -97,4 +97,5 @@ class TestDefaultInDM(unittest.TestCase):
         local_data2 = copy(res2.mdo_discipline_wrapp.mdo_discipline.local_data)
         residuals2 = local_data2.pop('EETests.' + SoSMDAChain.RESIDUALS_HISTORY, None)
         self.assertTrue(local_data == local_data2, "results are not equal")
+
         assert_frame_equal(residuals, residuals2)

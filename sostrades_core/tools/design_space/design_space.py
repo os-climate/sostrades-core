@@ -161,6 +161,7 @@ def _check_design_space_dimensions_for_one_variable(design_space_row):
     mismatch = map(check_mismatch, *zip(*combinations(to_check_mismatch, 2)))
     return not any(mismatch)
 
+
 def _check_deactivation_for_one_variable(design_space_row):
     """
     Utility method that checks whether a variable needs to be deactivated i.e. the variable is activated but all its

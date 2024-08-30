@@ -27,6 +27,7 @@ Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
 '''
 
+
 class SellarProblem(SoSWrapp):
     """ Sellar Optimization Problem functions
     """

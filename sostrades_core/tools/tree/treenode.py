@@ -23,6 +23,7 @@ from os import listdir
 from os.path import dirname, isdir, isfile, join
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.base_functions.compute_size import compute_data_size_in_Mo
 from sostrades_core.tools.tree.data_management_discipline import (
     DataManagementDiscipline,
 )
@@ -138,10 +139,6 @@ class TreeNode:
             json_data_management_disciplines[key] = self.data_management_disciplines[key].to_json()
         dict_obj.update({'data_management_disciplines': json_data_management_disciplines})
 
-        # Serialize markdown_documentation
-        dict_obj.update(
-            {'markdown_documentation': self.markdown_documentation})
-
         # Serialize children attribute
         dict_child = [tn.to_dict() for tn in self.children]
 
@@ -186,8 +183,11 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
+                new_disc_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(new_disc_data[ProxyDiscipline.VALUE])
+
                 new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path,
                                                                                    ProxyDiscipline.IO_TYPE_IN, key)
+
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -205,7 +205,6 @@ class TreeNode:
                                                                      data_management_discipline.model_name_full_path,
                                                                      data_management_discipline.disciplinary_inputs)
 
-
         disc_out = discipline.get_data_out()
         if not no_data:
             for key, data_key in disc_out.items():
@@ -221,8 +220,12 @@ class TreeNode:
                 new_disc_data[ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_OUT
                 if read_only:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
+
+                new_disc_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(new_disc_data[ProxyDiscipline.VALUE])
+
                 new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path,
                                                                                    ProxyDiscipline.IO_TYPE_OUT, key)
+
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
 
@@ -272,8 +275,9 @@ class TreeNode:
 
         # Manage markdown documentation
         filepath = inspect.getfile(discipline.__class__)
-        markdown_data = TreeNode.get_markdown_documentation(filepath)
-        self.add_markdown_documentation(markdown_data, self.model_name_full_path)
+        # markdown_data = TreeNode.get_markdown_documentation(filepath)
+        # self.add_markdown_documentation(markdown_data, self.model_name_full_path)
+
 
     def create_data_key(self, disc_name, io_type, variable_name):
         io_type = io_type.lower()
