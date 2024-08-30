@@ -15,8 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
 from gemseo import create_mda
 from gemseo.mda.sequential_mda import MDASequential
@@ -26,34 +29,33 @@ from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
 )
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
+
 LOGGER = logging.getLogger("gemseo.addons.mda.purenewton_or_gs")
 
 
 class GSPureNewtonorGSMDA(MDASequential):
-    """
-    Perform some GaussSeidel iterations and then NewtonRaphson iterations.
-    """
+    """Perform some GaussSeidel iterations and then NewtonRaphson iterations."""
 
     def __init__(
-            self,
-            disciplines,  # type: Sequence[MDODiscipline]
-            name=None,  # type: Optional[str]
-            grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
-            tolerance=1e-6,  # type: float
-            max_mda_iter=10,  # type: int
-            relax_factor=0.99,  # type: float
-            linear_solver="DEFAULT",  # type: str
-            tolerance_gs=10.0,
-            max_mda_iter_gs=10,
-            linear_solver_tolerance=1e-12,  # type: float
-            scaling_method=MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
-            warm_start=False,  # type: bool
-            use_lu_fact=False,  # type: bool
-            coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-            linear_solver_options=None,  # type: Mapping[str,Any]
-            log_convergence=False,  # type: bool
-            **newton_mda_options  # type: float,  # type: Mapping[str,Any]
-    ):
+        self,
+        disciplines: Sequence[MDODiscipline],
+        name: str | None = None,
+        grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        max_mda_iter: int = 10,
+        relax_factor: float = 0.99,
+        linear_solver: str = "DEFAULT",
+        tolerance_gs: float = 10.0,
+        max_mda_iter_gs: int = 10,
+        linear_solver_tolerance: float = 1e-12,
+        scaling_method: MDASequential.ResidualScaling = MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        linear_solver_options: Mapping[str, Any] | None = None,
+        **newton_mda_options,
+    ) -> None:
         """
         Constructor
 
@@ -91,43 +93,40 @@ class GSPureNewtonorGSMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs, tolerance=tolerance_gs,
-                                   name=None, grammar_type=grammar_type)
+        mda_gs = SoSMDAGaussSeidel(
+            disciplines, max_mda_iter=max_mda_iter_gs, tolerance=tolerance_gs, name=None, grammar_type=grammar_type
+        )
         mda_gs.tolerance = tolerance
 
         mda_newton = create_mda(
-            'GSPureNewtonMDA', disciplines, max_mda_iter=max_mda_iter,
-            name=None, grammar_type=grammar_type,
+            'GSPureNewtonMDA',
+            disciplines,
+            max_mda_iter=max_mda_iter,
+            name=None,
+            grammar_type=grammar_type,
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
-            scaling_method=scaling_method,
             tolerance_gs=tolerance_gs,
             max_mda_iter_gs=max_mda_iter_gs,
-            use_lu_fact=use_lu_fact, tolerance=tolerance,
+            use_lu_fact=use_lu_fact,
+            tolerance=tolerance,
             relax_factor=relax_factor,
-            **newton_mda_options
-
+            **newton_mda_options,
         )
 
-        # mda_newton = GSPureNewtonMDA(disciplines,  max_mda_iter=max_mda_iter,
-        #                          name=None, grammar_type=grammar_type,
-        #                          linear_solver=linear_solver,
-        #                          linear_solver_options=linear_solver_options,
-        #                          tolerance_gs=tolerance_gs,
-        #                          use_lu_fact=use_lu_fact, tolerance=tolerance,
-        #                          relax_factor=relax_factor,
-        #                          ** newton_mda_options)
-
         sequence = [mda_gs, mda_newton]
-        super(GSPureNewtonorGSMDA,
-              self).__init__(disciplines, sequence, name=name,
-                             grammar_type=grammar_type,
-                             max_mda_iter=max_mda_iter,
-                             tolerance=tolerance,
-                             linear_solver_options=linear_solver_options,
-                             linear_solver_tolerance=linear_solver_tolerance,
-                             scaling_method=scaling_method,
-                             warm_start=warm_start)
+        super().__init__(
+            disciplines,
+            sequence,
+            name=name,
+            grammar_type=grammar_type,
+            max_mda_iter=max_mda_iter,
+            tolerance=tolerance,
+            linear_solver_options=linear_solver_options,
+            linear_solver_tolerance=linear_solver_tolerance,
+            warm_start=warm_start,
+        )
+        self.scaling = scaling_method
 
     def _run(self):
         """Runs the MDAs in a sequential way
@@ -146,8 +145,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             dm_values = deepcopy(self._disciplines[0].dm.get_data_dict_values())
             self.local_data = mda_i.execute(self.local_data)
         except:
-            LOGGER.warning(
-                'The GSPureNewtonMDA has not converged try with MDAGaussSeidel')
+            LOGGER.warning('The GSPureNewtonMDA has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
             mda_i.reset_statuses_for_run()
             dm = self._disciplines[0].ee.dm

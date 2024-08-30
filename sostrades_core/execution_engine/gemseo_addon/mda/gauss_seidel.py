@@ -20,35 +20,43 @@
 # pylint: skip-file
 """A Gauss Seidel algorithm for solving MDAs."""
 
+from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
+
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from numpy import array
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
+if TYPE_CHECKING:
+    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.discipline import MDODiscipline
+
 
 class SoSMDAGaussSeidel(MDAGaussSeidel):
-    """ Overload of GEMSEO's MDA GaussSeidel
+    """Overload of GEMSEO's MDA GaussSeidel
     (overload introduces warm_start_threshold option)
     """
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        name=None,  # type: Optional[str]
-        max_mda_iter=10,  # type: int
-        grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,
-        scaling_method=MDAGaussSeidel.ResidualScaling.N_COUPLING_VARIABLES,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        over_relaxation_factor=1.0,  # type: float
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type: bool
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        name: str | None = None,
+        max_mda_iter: int = 10,
+        grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        scaling_method: BaseMDA.ResidualScaling = BaseMDA.ResidualScaling.N_COUPLING_VARIABLES,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        over_relaxation_factor: float = 1.0,
+        coupling_structure: MDOCouplingStructure | None = None,
+        log_convergence: bool = False,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] | None = None,
+    ) -> None:
         """
         Args:
             over_relax_factor: The relaxation coefficient,
@@ -58,15 +66,13 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         """
         # Not possible to parallelize MDAGaussSeidel execution
         self.n_processes = 1
-        MDAGaussSeidel.__init__(
-            self,
+        super().__init__(
             disciplines,
             name=name,
             max_mda_iter=max_mda_iter,
             grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
-            scaling_method=scaling_method,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
             over_relaxation_factor=over_relaxation_factor,
@@ -75,6 +81,8 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
         )
+        # set the residual scaling method
+        self.scaling = scaling_method
 
     def _run(self):
         # Run the disciplines in a sequential way
@@ -96,18 +104,14 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
                 if use_relax:
                     # First time this output is computed, update directly local
                     # data
-                    self.local_data.update(
-                        {k: v for k, v in outs.items() if k not in self.local_data}
-                    )
+                    self.local_data.update({k: v for k, v in outs.items() if k not in self.local_data})
                     # The couplings already exist in the local data,
                     # so the over relaxation can be applied
-                    self.local_data.update(
-                        {
-                            k: relax * v + (1.0 - relax) * self.local_data[k]
-                            for k, v in outs.items()
-                            if k in self.local_data
-                        }
-                    )
+                    self.local_data.update({
+                        k: relax * v + (1.0 - relax) * self.local_data[k]
+                        for k, v in outs.items()
+                        if k in self.local_data
+                    })
                 else:
                     self.local_data.update(outs)
 

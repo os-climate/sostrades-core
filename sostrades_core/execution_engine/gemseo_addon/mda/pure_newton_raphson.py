@@ -15,8 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from __future__ import annotations
+
 import logging
 from copy import copy
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
 import numpy as np
 from gemseo.mda.base_mda_root import BaseMDARoot
@@ -27,47 +30,47 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
     convert_new_type_into_array,
 )
 
+if TYPE_CHECKING:
+    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.discipline import MDODiscipline
+
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 
 
 class PureNewtonRaphson(BaseMDARoot):
-    """
-    Pure NewtonRaphson solver based on Taylor's theorem.
-    """
+    """Pure NewtonRaphson solver based on Taylor's theorem."""
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        max_mda_iter=10,  # type: int
-        over_relaxation_factor=0.99,  # type: float
-        name=None,  # type: Optional[str]
-        grammar_type=ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
-        linear_solver="DEFAULT",  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        scaling_method=BaseMDARoot.ResidualScaling.N_COUPLING_VARIABLES,
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type:bool
-        linear_solver_options=None,  # type: Mapping[str,Any]
-        n_processes=1
-    ):
+        disciplines: Sequence[MDODiscipline],  # type: Sequence[MDODiscipline]
+        max_mda_iter: int = 10,  # type: int
+        over_relaxation_factor: float = 0.99,  # type: float
+        name: str | None = None,  # type: Optional[str]
+        grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
+        linear_solver: str = "DEFAULT",  # type: str
+        tolerance: float = 1e-6,  # type: float
+        linear_solver_tolerance: float = 1e-12,  # type: float
+        scaling_method: BaseMDARoot.ResidualScaling = BaseMDARoot.ResidualScaling.N_COUPLING_VARIABLES,
+        warm_start: bool = False,  # type: bool
+        use_lu_fact: bool = False,  # type: bool
+        coupling_structure: MDOCouplingStructure = None,  # type: Optional[MDOCouplingStructure]
+        log_convergence: bool = False,  # type:bool
+        linear_solver_options: Mapping[str, Any] | None = None,  # type: Mapping[str,Any]
+        n_processes=1,
+    ) -> None:
         """
         Args:
             relax_factor: The relaxation factor in the Newton step.
         """
-
         self.n_processes = n_processes
 
-        super(PureNewtonRaphson, self).__init__(
+        super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
             grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
-            scaling_method=scaling_method,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
             linear_solver=linear_solver,
@@ -77,11 +80,11 @@ class PureNewtonRaphson(BaseMDARoot):
         )
         self.over_relaxation_factor = self.__check_relax_factor(over_relaxation_factor)
         self.linear_solver = linear_solver
+        self.scaling = scaling_method
 
         # break the object link before update the dict object
         self.linear_solver_options = copy(self.linear_solver_options)
-        self.linear_solver_options.update(
-            {'tol': self.linear_solver_tolerance})
+        self.linear_solver_options.update({'tol': self.linear_solver_tolerance})
 
         # self.parallel_execution = SoSDiscParallelExecution(
         #     disciplines, n_processes=self.n_processes, use_threading=True
@@ -92,7 +95,7 @@ class PureNewtonRaphson(BaseMDARoot):
 
     @staticmethod
     def __check_relax_factor(
-            relax_factor,  # type: float
+        relax_factor,  # type: float
     ):  # type:(...) -> float
         """Check that the relaxation factor in the Newton step is in (0, 1].
 
@@ -100,28 +103,26 @@ class PureNewtonRaphson(BaseMDARoot):
             relax_factor: The relaxation factor.
         """
         if relax_factor <= 0.0 or relax_factor > 1:
-            raise ValueError(
-                "Newton relaxation factor should belong to (0, 1] "
-                "(current value: {}).".format(relax_factor)
-            )
+            msg = f"Newton relaxation factor should belong to (0, 1] (current value: {relax_factor})."
+            raise ValueError(msg)
         return relax_factor
 
     def _run(self):  # type: (...) -> None
-        '''
-            R = self.__R(self.__W)
-            if self.__dRdW is None:
-                dRdW = FD_grad.grad_f(self.__W)
+        """
+        R = self.__R(self.__W)
+        if self.__dRdW is None:
+            dRdW = FD_grad.grad_f(self.__W)
 
-            step = self.get_relax_factor() * -solve(dRdW, R)
+        step = self.get_relax_factor() * -solve(dRdW, R)
 
-            self.__W = self.__W + step
+        self.__W = self.__W + step
 
-            if self.__Res0 is None:
-                self.__Res0 = norm(R)
-            # Compute stop criteria
-            self.__residual = norm(R) / self.__Res0
-            self.__residual_hist.append(self.__residual)
-        '''
+        if self.__Res0 is None:
+            self.__Res0 = norm(R)
+        # Compute stop criteria
+        self.__residual = norm(R) / self.__Res0
+        self.__residual_hist.append(self.__residual)
+        """
         # store initial residual
         current_iter = 1
         self.reset_disciplines_statuses()
@@ -131,11 +132,11 @@ class PureNewtonRaphson(BaseMDARoot):
         # self.execute_all_disciplines(self.local_data)
 
         while not self._termination(current_iter):
-
             # Set coupling variables as differentiated variables for gradient
             # computation
             self.assembly._add_differentiated_inouts(
-                self.strong_couplings, self.strong_couplings, self.strong_couplings)
+                self.strong_couplings, self.strong_couplings, self.strong_couplings
+            )
 
             # Compute all discipline gradients df(x)/dx with x
             self.linearize_all_disciplines(self.local_data, execute=False)
@@ -151,14 +152,10 @@ class PureNewtonRaphson(BaseMDARoot):
 
             # compute_normed_residual
             self._compute_residual(
-                current_couplings,
-                new_couplings,
-                current_iter,
-                first=True,
-                log_normed_residual=self.log_convergence)
+                current_couplings, new_couplings, current_iter, first=True, log_normed_residual=self.log_convergence
+            )
 
             if self._stop_criterion_is_reached:
-                print(current_iter, self.normed_residual, self.tolerance)
                 break
             # compute newton step with res and gradients computed with x=
             # coupling_variables(n)
@@ -168,7 +165,8 @@ class PureNewtonRaphson(BaseMDARoot):
                 self.over_relaxation_factor,
                 self.linear_solver,
                 matrix_type=self.matrix_type,
-                **self.linear_solver_options)
+                **self.linear_solver_options,
+            )
 
             # ynew = yk+1 + step
             # update current solution with Newton step
@@ -177,8 +175,7 @@ class PureNewtonRaphson(BaseMDARoot):
                 old_x_array[c_var] += c_step.real  # SoSTrades fix (.real)
 
             # convert old_x_array into SoSTrades types and store it into local_data for next execution
-            self.local_data.update(convert_array_into_new_type(
-                old_x_array, self._disciplines[0].reduced_dm))
+            self.local_data.update(convert_array_into_new_type(old_x_array, self._disciplines[0].reduced_dm))
 
             # store current_couplings for residual computation of next iteration
             current_couplings = np.hstack(list(old_x_array.values()))
@@ -191,13 +188,12 @@ class PureNewtonRaphson(BaseMDARoot):
         strong_couplings_array = {}
         # build a dictionary of strong_couplings values
         for input_key in self.strong_couplings:
-            strong_couplings_array[input_key], new_dm = convert_new_type_into_array(input_key,
-                                                                                    self.local_data[input_key],
-                                                                                    self.disciplines[0].reduced_dm)
+            strong_couplings_array[input_key], new_dm = convert_new_type_into_array(
+                input_key, self.local_data[input_key], self.disciplines[0].reduced_dm
+            )
         # concatenate strong_couplings values
         concat_strong_couplings = np.hstack(list(strong_couplings_array.values()))
 
         if return_converted_dict:
             return concat_strong_couplings, strong_couplings_array
-        else:
-            return concat_strong_couplings
+        return concat_strong_couplings
