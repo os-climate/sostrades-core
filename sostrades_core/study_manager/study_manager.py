@@ -22,6 +22,7 @@ from sostrades_core.sos_processes.script_test_all_usecases import (
     processed_test_one_usecase,
 )
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.check_process_gradients.tools import check_each_discpline_jacobians_in_process
 
 
 class StudyManager(BaseStudyManager):
@@ -144,3 +145,6 @@ class StudyManager(BaseStudyManager):
             raise Exception(f"Test not passed {error_msg}")
         else:
             print('Test is OK')
+
+    def test_jacobians_of_each_disc(self):
+        check_each_discpline_jacobians_in_process(self.study_full_path)
