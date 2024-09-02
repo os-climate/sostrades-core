@@ -39,14 +39,14 @@ class TimeLogger(object):
         self.__object_dict = dict()
         self.__index = 0
 
-    #-- Setters
+    # -- Setters
     def set_complex_mode(self, complex_mode):
         '''
         Set the complex mode in the Logger database
         '''
         self.__LoggerData.set_complex_mode(complex_mode)
 
-    #-- Accessors
+    # -- Accessors
     def get_full_save_dir(self, save_dir=None):
         '''
         Save directory from the Logger Database
@@ -77,7 +77,7 @@ class TimeLogger(object):
         '''
         return self.__index
 
-    #-- Methods
+    # -- Methods
     def add_object_to_log(self, obj):
         '''
         Add an object to the logger database in object_dict
@@ -152,7 +152,7 @@ class TimeLogger(object):
                         self.__LoggerData.add_to_database(database_id, None)
                     list_keys.append(database_id)
 
-        #-- Init all arrays for database_id in list_keys
+        # -- Init all arrays for database_id in list_keys
         self.__LoggerData.init_database(list_keys, size)
 
     def run(self, main_var):

@@ -346,7 +346,6 @@ class ScatterTool(SosTool):
         disc_name = '.'.join(parts)
         return disc_name
 
-
     def apply_display_options(self, disc, name, old_builder_name):
         '''
         Apply the display options proposed by the driver in multiinstance mode

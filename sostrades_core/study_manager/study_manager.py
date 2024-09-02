@@ -14,137 +14,168 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from os.path import abspath, basename, dirname, exists, join, splitext
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 import numpy as np
+from numpy.typing import NDArray
 
-from sostrades_core.sos_processes.script_test_all_usecases import (
-    processed_test_one_usecase,
-)
+from sostrades_core.sos_processes.script_test_all_usecases import processed_test_one_usecase
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.check_process_gradients.tools import check_each_discpline_jacobians_in_process
 
+if TYPE_CHECKING:
+    from logging import Logger
+
+    from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+
+ValueType = Union[list[Union[float, int]], NDArray, float, int]
+
 
 class StudyManager(BaseStudyManager):
+    """Class that contains additional methods to manage a study."""
 
-    def __init__(self, file_path, run_usecase=True, execution_engine=None):
+    def __init__(
+        self,
+        file_path: Path | str,
+        run_usecase: bool = True,
+        execution_engine: ExecutionEngine | None = None,
+        dump_directory: str | None = None,
+        yield_method: Callable | None = None,
+        logger: Logger | None = None,
+        test_post_procs: bool = True,
+    ) -> None:
         """
-        Constructor
-
-        :params: file_path, path of the file of the usecase
-        :type: str
+        Args:
+            file_path: The path to the usecase file.
+            run_usecase: Whether the usecase shall be run.
+            execution_engine: The usecase ExecutionEngine.
+            dump_directory: The directory where to dump the data.
+            yield_method: The method to be executed between iterations of the configuration loop.
+            logger: The sutdy's logger.
+            test_post_procs: Whether to also test the post-processing when testing the study.
         """
-        # get the process folder name
-        study_file_path = abspath(file_path)
-        study_file_name = splitext(basename(study_file_path))[0]
-        module_path = dirname(study_file_path)
-        process_name = basename(module_path)
+        # Get the process folder name
+        study_file_path = Path(file_path).resolve()
+        study_file_name = study_file_path.stem
+        process_name = study_file_path.parent.name
 
         # Find the module path
-        module_path = dirname(module_path)
+        module_path = study_file_path.parents[1]
         module_path_list = []
 
         # Check if __init__.py exists in the parent directory
         # If yes, it is a module
         # If not, we stop
-        while exists(join(module_path, '__init__.py')):
-            module_path_list.append(basename(module_path))
-            module_path = dirname(module_path)
+        while (module_path / "__init__.py").exists():
+            module_path_list.append(module_path.name)
+            module_path = module_path.parent
 
-        repository_name = '.'.join(module_path_list[::-1])
+        repository_name = ".".join(module_path_list[::-1])
 
         # init dspace dict
         self.dspace = {}
-        self.dspace['dspace_size'] = 0
+        self.dspace["dspace_size"] = 0
 
-        super().__init__(repository_name, process_name, study_file_name,
-                         run_usecase=run_usecase, execution_engine=execution_engine)
+        super().__init__(
+            repository_name,
+            process_name,
+            study_file_name,
+            dump_directory=dump_directory,
+            run_usecase=run_usecase,
+            yield_method=yield_method,
+            logger=logger,
+            execution_engine=execution_engine,
+            test_post_procs=test_post_procs,
+        )
 
-    def update_dspace_with(self, name, value, lower, upper):
-        ''' type(value) has to be ndarray
-        '''
-        if not isinstance(lower, (list, np.ndarray)):
-            lower = [lower] * len(value)
-        if not isinstance(upper, (list, np.ndarray)):
-            upper = [upper] * len(value)
-        self.dspace['variable'].append(name)
-        self.dspace['value'].append(value)
-        self.dspace['lower_bnd'].append(lower)
-        self.dspace['upper_bnd'].append(upper)
-        self.dspace['dspace_size'] += len(value)
+    def update_dspace_dict_with(
+        self,
+        name: str,
+        value: ValueType,
+        lower_bnd: ValueType,
+        upper_bnd: ValueType,
+        activated_elem: list[bool] | None = None,
+        enable_variable: bool = True,
+    ) -> None:
+        """Add a design variable to the design space.
 
-    def update_dspace_dict_with(self, name, value, lower, upper, activated_elem=None, enable_variable=True):
-        if not isinstance(lower, (list, np.ndarray)):
-            lower = [lower] * len(value)
-        if not isinstance(upper, (list, np.ndarray)):
-            upper = [upper] * len(value)
+        Args:
+            name: The variable's name.
+            value: The variable's initial value(s).
+            lower_bnd: The variable's lower bound(s).
+            upper_bnd: The variable's upper bound(s).
+            activated_elem: Whether each component of the variable is activated.
+            enable_variable: Whether to enable the whole variable.
+        """
+        if not isinstance(lower_bnd, (list, np.ndarray)):
+            lower_bnd = [lower_bnd] * len(value)
+        if not isinstance(upper_bnd, (list, np.ndarray)):
+            upper_bnd = [upper_bnd] * len(value)
 
         if activated_elem is None:
             activated_elem = [True] * len(value)
-#         # TODO: to remove once lists are converted in SoSTrades
-#         if not isinstance(value, ndarray):
-#             if isinstance(value, list):
-#                 value = array(value)
-#                 ini_type = "list"
-#             elif isinstance(value, float):
-#                 value = array([value])
-#                 ini_type = "float"
-#             else:
-#                 raise ValueError(f"Design variable {name} is not an numpy array but of type <{ini_type}>.")
-#             msg = f"StudyManager: Design variable {name} type is <{ini_type}> (unsupported for now) "
-#             msg += "and has been converted to <ndarray>."
-#             self.execution_engine.logger.info(msg)
+        self.dspace[name] = {
+            "value": value,
+            "lower_bnd": lower_bnd,
+            "upper_bnd": upper_bnd,
+            "enable_variable": enable_variable,
+            "activated_elem": activated_elem,
+        }
 
-        #
-        self.dspace[name] = {'value': value,
-                             'lower_bnd': lower, 'upper_bnd': upper, 'enable_variable': enable_variable, 'activated_elem': activated_elem}
+        self.dspace["dspace_size"] += len(value)
 
-        self.dspace['dspace_size'] += len(value)
+    def merge_design_spaces(self, dspace_list: list[dict[str, Any]]) -> None:
+        """Update the design space from a list of other design spaces.
 
-    def merge_design_spaces(self, dspace_list):
-        """
-        Merge design spaces
+        It is necessary to use a set difference here, instead of dictionary update,
+        to correctly update the design space size.
+
+        Args:
+            dspace_list: The list of design spaces to add.
+
+        Raises:
+            ValueError: If some variables are duplicated in several design spaces.
         """
         for dspace in dspace_list:
-            dspace_size = dspace.pop('dspace_size')
-            self.dspace['dspace_size'] += dspace_size
+            dspace_size = dspace.pop("dspace_size")
+            duplicated_variables = set(dspace.keys()).intersection(self.dspace.keys())
+            if duplicated_variables:
+                msg = (
+                    "Failed to merge the design spaces; "
+                    f"the following variables are present multiple times: {' '.join(duplicated_variables)}"
+                )
+                raise ValueError(msg)
+            self.dspace["dspace_size"] += dspace_size
             self.dspace.update(dspace)
 
-    def setup_usecase_sub_study_list(self, merge_design_spaces=False):
+    def setup_usecase_sub_study_list(self) -> None:
+        """Instantiate sub-studies and values dictionaries from setup_usecase.
+
+        To be implemented in the sub-classes.
         """
-        Instantiate sub studies and values dict from setup_usecase
-        """
-        values_dict_list = []
-        instanced_sub_studies = []
-        for sub_study in self.sub_study_list:
-            instance_sub_study = sub_study(
-                self.year_start, self.year_end, self.time_step)
-            instance_sub_study.study_name = self.study_name
-            data_dict = instance_sub_study.setup_usecase()
-            values_dict_list.extend(data_dict)
-            instanced_sub_studies.append(instance_sub_study)
+        raise NotImplementedError
 
-        if merge_design_spaces:
-            self.merge_design_spaces(
-                [sub_study.dspace for sub_study in instanced_sub_studies])
-
-        return values_dict_list, instanced_sub_studies
-
-    def set_debug_mode(self):
+    def set_debug_mode(self) -> None:
+        """Activate debug mode for the study."""
         self.execution_engine.set_debug_mode()
 
-    def get_dv_arrays(self):
-        """
-        Method to get dv_arrays
-        """
-        pass
+    def test(self, force_run: bool = False) -> None:
+        """Test the usecase.
 
-    def test(self, force_run: bool = False):
+        Args:
+            force_run: Whether to run the usecas with strong MDA couplings and MDO.
+
+        Raises:
+            Exception: If the test fails.
+        """
         test_passed, error_msg = processed_test_one_usecase(usecase=self.study_full_path, force_run=force_run)
         if not test_passed:
-            raise Exception(f"Test not passed {error_msg}")
-        else:
-            print('Test is OK')
+            msg = f"Testing the study resulted in the following exception: {error_msg}"
+            raise RuntimeError(msg)
 
     def test_jacobians_of_each_disc(self):
         check_each_discpline_jacobians_in_process(self.study_full_path)

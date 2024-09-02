@@ -44,7 +44,6 @@ class Study(StudyManager):
                        f'{self.study_name}.outer_ms.sc1_business.inner_ms.samples_df': scenario_df_inner1,
                        f'{self.study_name}.outer_ms.sc2_business.inner_ms.samples_df': scenario_df_inner2}
 
-
         activation_df_business_1 = pd.DataFrame({'Business': ['Remy'],
                                                  'CAPEX': [True],
                                                  'OPEX': [False]})
@@ -53,15 +52,15 @@ class Study(StudyManager):
                                                  'CAPEX': [True],
                                                  'OPEX': [True]})
 
-        activation_df_production_local = pd.DataFrame({'Production': ['Abroad','Local'],
+        activation_df_production_local = pd.DataFrame({'Production': ['Abroad', 'Local'],
                                                        'Road': [False, True],
                                                        'Local': [False, True],
                                                        'Plane': [False, False]})
-        activation_df_production_abroad = pd.DataFrame({'Production': ['Abroad','Local'],
+        activation_df_production_abroad = pd.DataFrame({'Production': ['Abroad', 'Local'],
                                                          'Road': [True, False],
                                                         'Local': [True, False],
                                                          'Plane': [True, False]})
-        activation_df_production_road = pd.DataFrame({'Production': ['Abroad','Local'],
+        activation_df_production_road = pd.DataFrame({'Production': ['Abroad', 'Local'],
                                                       'Road': [True, True],
                                                       'Local': [True, True],
                                                       'Plane': [False, False]})

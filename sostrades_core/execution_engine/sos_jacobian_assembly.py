@@ -37,11 +37,13 @@ Coupled derivatives calculations
 ********************************
 """
 
+
 def none_factory():
     """Returns None...
 
     To be used for defaultdict
     """
+
 
 def default_dict_factory():
     """Instantiates a defaultdict(None) object."""
@@ -112,7 +114,7 @@ class SoSJacobianAssembly(JacobianAssembly):
                         assert n_j == variable_size
                         jac = jac.tocoo()
                         # Fill the sparse Jacobian block
-                        #dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
+                        # dres_dvar[out_i: out_i + n_i, out_j: out_j + n_j] = jac
                         dict.update(dres_dvar,
                                     {(out_i + jac_i, out_j + jac_j): jac_value for jac_i, jac_j, jac_value in zip(jac.row.astype(float), jac.col.astype(float), jac.data)})
 

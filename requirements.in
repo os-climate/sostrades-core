@@ -9,13 +9,14 @@ cvxpy==1.5.2
 db-dtypes==1.2.0
 gitpython==3.1.43
 google-cloud-bigquery==3.25.0
-matplotlib==3.9.1
+# For big query data fetch performances
+google-cloud-bigquery-storage==2.25.0
+matplotlib==3.9.2
 numpy==1.24.4
 openturns==1.23
 pandas==2.2.2
-plotly==5.3.0
+plotly==5.22.0
 pyarrow==16.1.0
-pycel==1.0b30
 pycryptodome==3.20.0
 python-arango==8.0.0
 PyYAML==6.0.1

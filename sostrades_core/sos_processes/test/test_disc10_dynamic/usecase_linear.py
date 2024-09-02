@@ -26,10 +26,10 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        ######### Numerical values   ####
+        # Numerical values   ####
         x = 2.0
 
-        ######### Fill the dictionary for dm   ####
+        # Fill the dictionary for dm   ####
         values_dict = {}
         values_dict[f'{self.study_name}.Disc10.Model_Type'] = 'Linear'
         values_dict[f'{self.study_name}.Disc10.x'] = x

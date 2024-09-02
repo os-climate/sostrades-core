@@ -26,7 +26,7 @@ class CManager:
     """
     ERROR_MSG = 'ERROR CManager.'
 
-    #--constructor
+    # --constructor
     def __init__(self, FatherObj, gradient_active=True):
         self.__FatherObj = FatherObj
         self.__list_id = []
@@ -35,7 +35,7 @@ class CManager:
         self.__gradient_active = True
         self.set_gradient_active(gradient_active)
 
-    #--accessors
+    # --accessors
     def get_FatherObj(self):
         return self.__FatherObj
 
@@ -45,11 +45,11 @@ class CManager:
     def get_list_pt(self):
         return self.__list_pt
 
-    #-- gradient active methods
+    # -- gradient active methods
     def get_gradient_active(self):
         return self.__gradient_active
 
-    #-- Setters
+    # -- Setters
     def set_gradient_active(self, gradient_active):
         if gradient_active != self.__gradient_active:
             self.__gradient_active = gradient_active
@@ -71,7 +71,7 @@ class CManager:
             if pt.USE_GRADIENT_ARRAYS:
                 pt.set_to_update()
 
-    #--private methods
+    # --private methods
     def __repr__(self):
         info_string = self.get_print_header()
         if self.get_FatherObj() is not None:
@@ -83,7 +83,7 @@ class CManager:
         info_string += self.get_print_footer()
         return info_string
 
-    #--Methods
+    # --Methods
     def is_gradient_active(self):
         return self.__gradient_active
 

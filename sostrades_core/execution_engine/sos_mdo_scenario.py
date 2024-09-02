@@ -50,7 +50,7 @@ class SoSMDOScenario(MDOScenario):
                  formulation,
                  objective_name,
                  design_space,
-                 logger:logging.Logger,
+                 logger: logging.Logger,
                  grammar_type=None,
                  reduced_dm=None):
         """
@@ -76,7 +76,7 @@ class SoSMDOScenario(MDOScenario):
         self.input_design_space = None
         self.reduced_dm = reduced_dm
         self.activated_variables = self.formulation.design_space.variables_names
-        self.is_sos_coupling=False
+        self.is_sos_coupling = False
 
         # desactivate designspace outputs for post processings
         self.desactivate_optim_out_storage = False
@@ -103,7 +103,6 @@ class SoSMDOScenario(MDOScenario):
             if not self.eval_mode:
                 self.update_post_processing_df()
 
-
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
         dataset = self.export_to_dataset()
@@ -112,7 +111,7 @@ class SoSMDOScenario(MDOScenario):
         # context : empty fields due to several calls to the same design space lead to NaN in dataframes
         # TODO: post proc this dataframe (or directly retrieve values from database) so that NaN values are replaced by already computed values
         dataframe = dataframe.fillna(-1)
-        #dataframe = dataframe.rename(columns=rename_func)
+        # dataframe = dataframe.rename(columns=rename_func)
 
         constraints_names = [constraint.name for constraint in
                              self.formulation.opt_problem.constraints]
@@ -132,7 +131,6 @@ class SoSMDOScenario(MDOScenario):
         self.local_data.update({
             [key for key in self.get_output_data_names() if 'post_processing_mdo_data' in key][
                 0]: out})
-
 
     def execute_at_xopt(self):
         '''
@@ -189,7 +187,7 @@ class SoSMDOScenario(MDOScenario):
         self.formulation.opt_problem.evaluate_functions(
             eval_jac=self.eval_jac, normalize=False)
 
-        #self.store_local_data(**local_data)
+        # self.store_local_data(**local_data)
         # if eval mode design space was not modified
         # self.store_sos_outputs_values(
         #     {'design_space_out': self.formulation.design_space}, update_dm=True)
@@ -284,11 +282,11 @@ class SoSMDOScenario(MDOScenario):
             except TypeError:
                 self.logger.error("Failed to evaluate function %s", func)
                 raise
-        current_idx=0
-        for k,v in problem.design_space.items():
-            k_size=v.size
-            self.local_data.update({k: x_vect[current_idx:current_idx+k_size]})
-            current_idx+=k_size
+        current_idx = 0
+        for k, v in problem.design_space.items():
+            k_size = v.size
+            self.local_data.update({k: x_vect[current_idx:current_idx + k_size]})
+            current_idx += k_size
 
     def update_default_coupling_inputs(self):
         '''

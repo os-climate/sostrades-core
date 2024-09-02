@@ -75,5 +75,3 @@ class DatasetsSerializerFactory(metaclass=NoInstanceMeta):
             return serializer_type.value()
         except TypeError as exc:
             raise Exception(serializer_type) from exc
-
-

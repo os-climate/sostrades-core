@@ -85,7 +85,7 @@ class GSorNewtonMDA(MDASequential):
                                    name=None, grammar_type=grammar_type)
         mda_gs.tolerance = tolerance
 
-        mda_newton = GSNewtonMDA(disciplines,  max_mda_iter=max_mda_iter,
+        mda_newton = GSNewtonMDA(disciplines, max_mda_iter=max_mda_iter,
                                  name=None, grammar_type=grammar_type,
                                  linear_solver=linear_solver,
                                  linear_solver_options=linear_solver_options,

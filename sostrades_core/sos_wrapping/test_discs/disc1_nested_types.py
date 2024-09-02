@@ -24,6 +24,7 @@ TYPE = "type"
 ENABLE_VARIABLE_BOOL = "enable_variable"
 LIST_ACTIVATED_ELEM = "activated_elem"
 
+
 class Disc1(SoSWrapp):
     # ontology information
     _ontology_data = {
@@ -63,4 +64,3 @@ class Disc1(SoSWrapp):
 
     def run(self):
         pass
-
