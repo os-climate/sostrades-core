@@ -51,6 +51,7 @@ VAR_TYPE_MAP = {
     'dict': dict,
     'dataframe': DataFrame,
     'bool': bool,
+    'tuple': tuple
 }
 NEW_VAR_TYPE_MAP_INVERTED = {str: 'string', list: 'list', ndarray: 'array', dict: 'dict', DataFrame: 'dataframe',
                              bool: 'bool'}
@@ -66,7 +67,7 @@ NEW_VAR_TYPE = list(set(chain.from_iterable(elt if isinstance(elt, tuple) else [
 
 def is_value_type_handled(val):
     return isinstance(val, tuple(VAR_TYPE_MAP.values())
-                      ) or isinstance(val, np_complex128)
+                      ) or isinstance(val, np_complex128) or val is None
 
 
 def get_nested_val(dict_in, keys):
@@ -109,7 +110,8 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
                 arr_to_convert = delete(arr_to_convert, arange(_size))
 
             # int, float, or complex
-            elif _type in [int, float, np_int32, np_int64, np_float64, np_complex128, bool]:
+            elif _type in [int, float, np_int32, np_int64, np_float64, np_complex128, bool, tuple] or _type is type(
+                None):
                 _val = arr_to_convert[0]
                 arr_to_convert = delete(arr_to_convert, [0])
                 to_update[_key] = _type(_val)
@@ -301,7 +303,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
             # if value is a dataframe
             values_list, metadata = convert_df_into_array(
                 val, values_list, metadata, nested_keys)
-        elif _type in STANDARD_TYPES:
+        elif _type in STANDARD_TYPES or _type is type(None) or _type is tuple:
             # if value is a int or float
             values_list = append(values_list, [val])
             metadata.append(val_data)
@@ -575,7 +577,7 @@ def convert_new_type_into_array(
                         var_converted, metadata = convert_dict_into_array(
                             var, subtype)
                 else:
-                    msg = f"\n Dictionary values must be among {list(VAR_TYPE_MAP.keys())}"
+                    msg = f"\n Dictionary values {key} : {var} \n must be among {list(VAR_TYPE_MAP.keys())}"
                     raise ValueError(msg)
             elif var_type == DataFrame:
                 # if value is a DataFrame
