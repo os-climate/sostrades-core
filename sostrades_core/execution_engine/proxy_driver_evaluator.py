@@ -142,18 +142,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
     USECASE_DATA = 'usecase_data'
     if with_modal:
-        DESC_IN[SUB_PROCESS_INPUTS] = {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
-                                       'structuring': True,
-                                       'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                                       'user_level': 1,
-                                       'optional': False}
+        DESC_IN[SUB_PROCESS_INPUTS] = {ProxyDisciplineBuilder.TYPE: ProxyDiscipline.PROC_BUILDER_MODAL,
+                                       ProxyDisciplineBuilder.STRUCTURING: True,
+                                       ProxyDisciplineBuilder.DEFAULT: default_process_builder_parameter_type.to_data_manager_dict(),
+                                       ProxyDisciplineBuilder.USER_LEVEL: 1,
+                                       ProxyDisciplineBuilder.OPTIONAL: False,
+                                       ProxyDisciplineBuilder.NUMERICAL: True}
     else:
 
-        DESC_IN[USECASE_DATA] = {'type': 'dict',
-                                 'structuring': True,
-                                 'default': {},
-                                 'user_level': 1,
-                                 'optional': False}
+        DESC_IN[USECASE_DATA] = {ProxyDisciplineBuilder.TYPE: 'dict',
+                                 ProxyDisciplineBuilder.STRUCTURING: True,
+                                 ProxyDisciplineBuilder.DEFAULT: {},
+                                 ProxyDisciplineBuilder.USER_LEVEL: 1,
+                                 ProxyDisciplineBuilder.OPTIONAL: False, }
 
     ##
     # End to refactor

@@ -254,7 +254,8 @@ class ProxyOptim(ProxyDriverEvaluator):
                                                                        VALUES: ('string', None, True)},
                               'dataframe_edition_locked': False,
                               'default': default_algo_options,
-                              'structuring': True},
+                              'structuring': True,
+                              'numerical': True},
                PARALLEL_OPTIONS: {'type': 'dict',  # SoSDisciplineBuilder.OPTIONAL: True,
                                   'dataframe_descriptor': {VARIABLES: ('string', None, False),  # bool
                                                            VALUES: ('string', None, True)},
