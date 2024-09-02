@@ -278,7 +278,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
         subprocess_ref_outputs = {key: self.attributes['sub_mdo_disciplines'][0].local_data[key]
                                   for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.names if
-                                  not key.endswith(ProxyCoupling.MDA_RESIDUALS_NORM)}
+                                  not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM)}
         self.store_sos_outputs_values(
             subprocess_ref_outputs, full_name_keys=True)
 

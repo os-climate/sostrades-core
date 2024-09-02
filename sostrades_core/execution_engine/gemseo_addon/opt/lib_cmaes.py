@@ -129,7 +129,7 @@ class CMAESOpt(BaseOptimizationLibrary):
             """
             Wraps the function and returns the real part
             """
-            return real(self.problem.objective.func(x_vect))
+            return real(self.problem.objective.func.evaluate(x_vect))
 
         fun = real_part_fun
         # GEMSEO is in charge of ensuring max iterations, since it may

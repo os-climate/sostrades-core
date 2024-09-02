@@ -87,7 +87,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'version': '',
     }
     RESIDUALS_HISTORY = "residuals_history"
-    MDA_RESIDUALS_NORM = 'MDA residuals norm'
+    NORMALIZED_RESIDUAL_NORM = 'MDA residuals norm'
     # AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
 
     # get list of available linear solvers from LinearSolversFactory
@@ -199,7 +199,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     DESC_OUT = {
         RESIDUALS_HISTORY: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'dataframe',
                             ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True},
-        # MDA_RESIDUALS_NORM: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'array',
+        # NORMALIZED_RESIDUAL_NORM: {ProxyDiscipline.USER_LEVEL: 3, ProxyDiscipline.TYPE: 'array',
         #                      ProxyDiscipline.UNIT: '-', ProxyDiscipline.NUMERICAL: True}
     }
 

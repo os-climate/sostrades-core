@@ -1183,7 +1183,7 @@ class TestMDALoop(unittest.TestCase):
         proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
         disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
         # MDA residuals norm is now in local_data of the mda but not retrieved by the proxy (already last value of residuals_history) so we deete it from gemseo local_data before check length
-        disc_out_names.remove(BaseMDA.RESIDUALS_NORM)
+        disc_out_names.remove(BaseMDA.NORMALIZED_RESIDUAL_NORM)
         assert len(proxy_out_names) == len(disc_out_names)
         self.assertListEqual(proxy_out_names, disc_out_names)
 
@@ -1265,7 +1265,7 @@ class TestMDALoop(unittest.TestCase):
         proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
         disc_out_names = sorted(exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.get_output_data_names())
         # MDA residuals norm is now in local_data of the mda but not retrieved by the proxy (already last value of residuals_history) so we deete it from gemseo local_data before check length
-        disc_out_names.remove(BaseMDA.RESIDUALS_NORM)
+        disc_out_names.remove(BaseMDA.NORMALIZED_RESIDUAL_NORM)
         assert len(proxy_out_names) == len(disc_out_names)
         self.assertListEqual(proxy_out_names, disc_out_names)
 

@@ -201,7 +201,7 @@ class SoSMDOScenario(MDOScenario):
             jacobian_functions = output_functions
 
         self.formulation.optimization_problem.evaluate_functions(output_functions=output_functions,
-                                                                 jacobian_functions=jacobian_functions, normalize=False)
+                                                                 jacobian_functions=jacobian_functions)
 
         # self.store_local_data(**local_data)
         # if eval mode design space was not modified
@@ -267,7 +267,7 @@ class SoSMDOScenario(MDOScenario):
                 "Warning: executing the functions in the except after nominal execution of post run failed")
 
             for func in self.functions_before_run:
-                func(x_opt)
+                func.evaluate(x_opt)
 
     def evaluate_functions(self,
                            problem,
@@ -289,7 +289,7 @@ class SoSMDOScenario(MDOScenario):
 
         for func in functions:
             try:
-                func(x_vect)
+                func.evaluate(x_vect)
             except ValueError:
                 self.logger.error("Failed to evaluate function %s", func.name)
                 raise

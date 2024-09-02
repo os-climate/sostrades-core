@@ -192,7 +192,7 @@ class SoSMDAChain(MDAChain):
         # TODO: to write in data_out after execution
         self.residuals_history = DataFrame({f'{sub_mda.name}': sub_mda.residual_history for sub_mda in self.inner_mdas})
 
-        # del self.local_data[self.RESIDUALS_NORM]
+        # del self.local_data[self.NORMALIZED_RESIDUAL_NORM]
         # TODO: use a method to get the full name
         out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
         self.store_local_data(**out)
@@ -380,7 +380,7 @@ class SoSMDAChain(MDAChain):
 
         # Remove the residual norm if the flag is set and it's present in the output data names
         if residual_norm_removal:
-            output_data_names.discard(self.RESIDUALS_NORM)
+            output_data_names.discard(self.NORMALIZED_RESIDUAL_NORM)
 
         # Return filtered or unfiltered output data names
         if filtered_outputs:

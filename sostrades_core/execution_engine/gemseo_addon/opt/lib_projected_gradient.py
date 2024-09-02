@@ -143,7 +143,7 @@ class ProjectedGradientOpt(BaseOptimizationLibrary):
             Returns:
                 The real part of the evaluation of the objective function.
             """
-            return real(self.problem.objective.func(x))
+            return real(self.problem.objective.func.evaluate(x))
 
         def real_part_fun_grad(
                 x,  # type: ndarray
