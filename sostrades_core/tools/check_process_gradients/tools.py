@@ -8,6 +8,8 @@ from tqdm import tqdm
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobianUnittest
 
+GENERATED_TEST_FOLDERNAME = 'generated_jacobian_tests'
+
 
 def check_each_discpline_jacobians_in_process(usecase_path: str):
     """
@@ -33,7 +35,14 @@ def check_each_discpline_jacobians_in_process(usecase_path: str):
     usecase.init_from_subusecase = True
     # First step : Dump data to a temp folder
 
-    values_dict = usecase.setup_usecase()
+    values = usecase.setup_usecase()
+    values_dict = {}
+    if isinstance(values, list):
+        for val in values:
+            values_dict.update(val)
+    else:
+        values_dict = values
+
     ee.load_study_from_input_dict(values_dict)
     ee.execute()
 
@@ -79,10 +88,16 @@ def check_each_discpline_jacobians_in_process(usecase_path: str):
             discipline_with_wrong_gradients.append(discipline_class_path)
         time.sleep(2.)
 
-    os.remove('jacobian_pkls')
     if len(discipline_with_wrong_gradients) > 0:
         print_msg = '\n'.join(discipline_with_wrong_gradients)
+
         raise ValueError(f'Following disciplines have incorrect gradients : \n{print_msg}')
+    else:
+        if os.path.exists(GENERATED_TEST_FOLDERNAME):
+            os.remove(GENERATED_TEST_FOLDERNAME)
+        if os.path.exists("jacobian_pkls"):
+            os.remove("jacobian_pkls")
+        print("No gradients errors in disciplines of process")
 
 
 def get_discipline_classname_from_module(module_path):
@@ -125,7 +140,6 @@ def one_test_gradients_discipline(test_name: str,
                                   namespaces: dict,
                                   coupling_inputs: list[str],
                                   coupling_outputs: list[str],
-                                  test_gradient: bool = True,
                                   ):
     if len(coupling_inputs) == 0 or len(coupling_outputs) == 0:
         return True
@@ -151,30 +165,34 @@ def one_test_gradients_discipline(test_name: str,
         def test(self):
             self.ee.execute()
             result = True
-            if test_gradient:
-                self.override_dump_jacobian = True
-                disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-                try:
-                    pickle_filename = f'jacobian_{test_name}.{model_name}'.replace('.','_') +'.pkl'
-                    self.check_jacobian(location=os.path.abspath(os.curdir),
-                                        filename=pickle_filename,
-                                        discipline=disc_techno, step=1e-15, derr_approx='complex_step',
-                                        local_data=disc_techno.local_data,
-                                        inputs=coupling_inputs,
-                                        outputs=coupling_outputs)
-                    pkl_to_remove = os.path.join(os.path.abspath(os.curdir), "jacobian_pkls",pickle_filename)
-                    os.remove(pkl_to_remove)
-                    print(f'Gradients OK for {discipline_class_path}')
-                except AssertionError as e:
-                    handle_discipline_with_wrong_gradients(coupling_inputs=coupling_inputs,
-                                                           coupling_outputs=coupling_outputs,
-                                                           discipline_module_path=discipline_class_path,
-                                                           discipline_inputs=inputs,
-                                                           model_name=model_name,
-                                                           ns_dict=namespaces,
-                                                           name=test_name)
-                    print(f'WRONG Gradient for {discipline_class_path}')
-                    result = False
+
+            self.override_dump_jacobian = True
+            disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+            pickle_filename = f'{test_name}.{model_name}'.replace('.','_') +'.pkl'
+            if not os.path.exists(GENERATED_TEST_FOLDERNAME):
+                os.mkdir(GENERATED_TEST_FOLDERNAME)
+                os.mkdir(os.path.join(GENERATED_TEST_FOLDERNAME, 'jacobian_pkls'))
+            try:
+                self.check_jacobian(location=os.path.join(os.path.abspath(os.curdir), GENERATED_TEST_FOLDERNAME),
+                                    filename=pickle_filename,
+                                    discipline=disc_techno, step=1e-15, derr_approx='complex_step',
+                                    local_data=disc_techno.local_data,
+                                    inputs=coupling_inputs,
+                                    outputs=coupling_outputs)
+                pkl_to_remove = os.path.join(os.path.abspath(os.curdir), GENERATED_TEST_FOLDERNAME, "jacobian_pkls", pickle_filename)
+                os.remove(pkl_to_remove)
+                print(f'Gradients OK for {discipline_class_path}')
+            except AssertionError as e:
+                handle_discipline_with_wrong_gradients(coupling_inputs=coupling_inputs,
+                                                       coupling_outputs=coupling_outputs,
+                                                       discipline_module_path=discipline_class_path,
+                                                       discipline_inputs=inputs,
+                                                       model_name=model_name,
+                                                       ns_dict=namespaces,
+                                                       name=test_name,
+                                                       jacobian_pkl_name=pickle_filename)
+                print(f'WRONG Gradient for {discipline_class_path}')
+                result = False
 
             return result
 
@@ -189,12 +207,9 @@ def handle_discipline_with_wrong_gradients(coupling_inputs: list[str],
                                            discipline_inputs: dict,
                                            ns_dict: dict,
                                            model_name: str,
-                                           name: str):
+                                           name: str,
+                                           jacobian_pkl_name: str):
     """Prepares a dedicated test file to help debug the gradients"""
-    generated_test_folder = 'generated_jacobian_tests'
-    if not os.path.exists(generated_test_folder):
-        os.mkdir(generated_test_folder)
-        os.mkdir(os.path.join(generated_test_folder, 'jacobian_pkls'))
 
     pickle_to_dump = {
         'ns_dict': ns_dict,
@@ -204,17 +219,17 @@ def handle_discipline_with_wrong_gradients(coupling_inputs: list[str],
         'mod_path': discipline_module_path,
         'model_name': model_name
     }
-    generated_data_test_filename = discipline_module_path.replace('.','_')  + '.pkl'
-    generated_test_data_folder = os.path.join(generated_test_folder, 'data')
+    generated_test_filename = discipline_module_path.replace('.','_')  + '.pkl'
+    generated_test_data_folder = os.path.join(GENERATED_TEST_FOLDERNAME, 'data')
 
     if not os.path.exists(generated_test_data_folder):
         os.mkdir(generated_test_data_folder)
-    path_generated_test_file_data = os.path.join(generated_test_data_folder, generated_data_test_filename)
+    path_generated_test_file_data = os.path.join(generated_test_data_folder, generated_test_filename)
 
     with open(path_generated_test_file_data, 'wb') as f:
         pickle.dump(pickle_to_dump, f)
 
-    path_pickle_in_test_file = os.path.join("data", generated_data_test_filename)
+    path_pickle_in_test_file = os.path.join("data", generated_test_filename)
 
     generated_code = f"""
 import pickle
@@ -260,14 +275,13 @@ class MyGeneratedTest(AbstractJacobianUnittest):
 
         disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
 
-        self.override_dump_jacobian = True
-        self.check_jacobian(location=dirname(__file__), filename=f'jacobian_generated_test_' + model_name + '.pkl',
+        self.check_jacobian(location=dirname(__file__), filename='{jacobian_pkl_name}',
                             discipline=disc_techno, step=1e-15, derr_approx='complex_step', local_data = disc_techno.local_data,
                             inputs=coupling_inputs,
                             outputs=coupling_ouputs)
     """
     genretated_test_file_name = discipline_module_path.replace('.','_')  + '.py'
-    path_generated_test_file = os.path.join(generated_test_folder, genretated_test_file_name)
+    path_generated_test_file = os.path.join(GENERATED_TEST_FOLDERNAME, genretated_test_file_name)
 
     with open(path_generated_test_file, 'w') as f:
         f.write(generated_code)
