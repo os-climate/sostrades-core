@@ -13,11 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 '''
-import os
-import inspect
 import importlib
+import inspect
+import os
 import pickle
 import time
+
 from tqdm import tqdm
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
