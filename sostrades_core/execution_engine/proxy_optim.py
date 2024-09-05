@@ -22,7 +22,7 @@ from typing import List
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.scenarios.scenario import Scenario
 from numpy import inf, ndarray

@@ -19,11 +19,11 @@ from copy import deepcopy
 
 import cvxpy as cp
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.driver_lib import DriverLib
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt.opt_lib import OptimizationLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.algos.base_driver_library import BaseDriverLibrary
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from numpy import append, array, atleast_2d, int32
 
@@ -50,9 +50,9 @@ class OuterApproximationSolver(object):
     ALGO_OPTIONS_MILP = "algo_options_MILP"
     ALGO_OPTIONS_NLP = "algo_options_NLP"
     ALGO_NLP = "algo_NLP"
-    NORMALIZE_DESIGN_SPACE_OPTION = DriverLib.NORMALIZE_DESIGN_SPACE_OPTION
-    MAX_ITER = OptimizationLibrary.MAX_ITER
-    F_TOL_ABS = OptimizationLibrary.F_TOL_ABS
+    NORMALIZE_DESIGN_SPACE_OPTION = BaseDriverLibrary.NORMALIZE_DESIGN_SPACE_OPTION
+    MAX_ITER = BaseOptimizationLibrary.MAX_ITER
+    F_TOL_ABS = BaseOptimizationLibrary.F_TOL_ABS
     # tags for problem database
     UPPER_BOUND_CANDIDATES = UPPER_BOUND + "_history"
     UPPER_BOUNDS = UPPER_BOUND
@@ -407,8 +407,8 @@ class OuterApproximationSolver(object):
         options = self.algo_options_NLP
         pb.preprocess_functions(
             normalize=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
-            use_database=options.get(DriverLib.USE_DATABASE_OPTION, True),
-            round_ints=options.get(DriverLib.ROUND_INTS_OPTION, True),
+            use_database=options.get(BaseDriverLibrary.USE_DATABASE_OPTION, True),
+            round_ints=options.get(BaseDriverLibrary.ROUND_INTS_OPTION, True),
             eval_obs_jac=False,
         )
 
@@ -434,7 +434,7 @@ class OuterApproximationSolver(object):
         msg = "\n\n######## NLP Solver \n\n"
         LOGGER.info(msg)
 
-        cont_sol = OptimizersFactory().execute(nlp, self.algo_NLP,
+        cont_sol = OptimizationLibraryFactory().execute(nlp, self.algo_NLP,
                                                **self.algo_options_NLP  # normalize_design_space=False,
                                                )
 
