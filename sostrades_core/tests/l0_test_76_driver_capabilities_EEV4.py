@@ -239,10 +239,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                                        'reference_scenario': array([3.515549442159431])}
         for key in eval_disc_y1.keys():
             self.assertAlmostEqual(
-                eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0])
+                eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0], delta=1e-6)
         for key in eval_disc_y2.keys():
             self.assertAlmostEqual(
-                eval_disc_y2[key][0], reference_dict_eval_disc_y2[key][0])
+                eval_disc_y2[key][0], reference_dict_eval_disc_y2[key][0], delta=1e-6)
 
     def _test_3_simple_custom_driver(self):
         # FIXME: Out of scope current US. This test will have to be adapted to

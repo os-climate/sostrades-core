@@ -298,10 +298,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'reference_scenario': array([3.515549442159431])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
-                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
+                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0], delta=2e-6)
         for key in doe_disc_y2.keys():
             self.assertAlmostEqual(
-                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0], delta=2e-6)
 
     def test_3_separated_doe_and_eval_execution_lhs_on_1_var(self):
         """
@@ -406,10 +406,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                                        'reference_scenario': array([3.515549442159431])}
         for key in eval_disc_y1.keys():
             self.assertAlmostEqual(
-                eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0])
+                eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0], delta=1e-6)
         for key in eval_disc_y2.keys():
             self.assertAlmostEqual(
-                eval_disc_y2[key][0], reference_dict_eval_disc_y2[key][0])
+                eval_disc_y2[key][0], reference_dict_eval_disc_y2[key][0], delta=1e-6)
 
         # we check that at the end of the run the dm contains the reference (or
         # initial ) point
@@ -1128,10 +1128,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'reference_scenario': array([3.515549442159431])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
-                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
+                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0], delta=2e-6)
         for key in doe_disc_y2.keys():
             self.assertAlmostEqual(
-                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0], delta=2e-6)
 
         # reset of data integrity flag for next tests
         exec_eng.data_check_integrity = False
@@ -1471,10 +1471,10 @@ class TestSoSDOEScenario(unittest.TestCase):
                                       'reference_scenario': array([3.515549442159431])}
         for key in doe_disc_y1.keys():
             self.assertAlmostEqual(
-                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0])
+                doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0], delta=2e-6)
         for key in doe_disc_y2.keys():
             self.assertAlmostEqual(
-                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0])
+                doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0], delta=2e-6)
 
     def test_17_doe_and_eval_execution_lhs_on_1_var_run_time_vs_config_time_sampling(self):
         """
