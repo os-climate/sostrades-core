@@ -25,6 +25,7 @@ import numpy as np
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.sequential_mda import MDASequential
 from numpy import ndarray
 from pandas import DataFrame, concat
@@ -136,6 +137,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'acceleration_method': {ProxyDiscipline.TYPE: 'string',
                                 ProxyDiscipline.POSSIBLE_VALUES: list(AccelerationMethod),
                                 ProxyDiscipline.DEFAULT: AccelerationMethod.ALTERNATE_2_DELTA,
+                                ProxyDiscipline.NUMERICAL: True,
+                                ProxyDiscipline.STRUCTURING: True},
+        "scaling_method": {ProxyDiscipline.TYPE: 'string',
+                                ProxyDiscipline.POSSIBLE_VALUES: list(BaseMDA.ResidualScaling),
+                                ProxyDiscipline.DEFAULT: BaseMDA.ResidualScaling.N_COUPLING_VARIABLES,
                                 ProxyDiscipline.NUMERICAL: True,
                                 ProxyDiscipline.STRUCTURING: True},
         # parallel sub couplings execution
@@ -573,7 +579,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         else:
             mda_chain_cache = None
 
-
         # create_mda_chain from MDODisciplineWrapp
         self.mdo_discipline_wrapp.create_mda_chain(
             sub_mdo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)
@@ -666,8 +671,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         '''
         # get input for MDAChain instantiation
         needed_numerical_param = ['inner_mda_name', 'max_mda_iter', 'n_processes', 'chain_linearize', 'tolerance',
-                                  'use_lu_fact', 'warm_start',
-                                  'n_processes']
+                                  'use_lu_fact', 'warm_start', 'n_processes', "scaling_method"]
         num_data = self.get_sosdisc_inputs(
             needed_numerical_param, in_dict=True)
 
