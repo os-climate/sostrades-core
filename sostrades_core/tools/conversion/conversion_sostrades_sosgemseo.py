@@ -314,6 +314,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
             metadata.append(val_data)
         elif _type in [list, ndarray]:
             # if val contains strings :
+            new_val = val.copy()
             if any(isinstance(elem, str) for elem in val):
                 val_data['known_values'] = {}
                 # We look for strings inside the list
@@ -332,18 +333,18 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
                         int_val, val_data_ielem = convert_string_to_int(
                             elem, val_data_ielem)
 
-                        val[i_elem] = int_val
+                        new_val[i_elem] = int_val
                         val_data['known_values'][i_elem] = val_data_ielem
 
             if isinstance(val, list):
                 size = len(val)
                 val_data['__shape__'] = (size,)
                 val_data['__size__'] = size
-                values_list = append(values_list, val)
+                values_list = append(values_list, new_val)
             else:
-                val_data['__shape__'] = val.shape
-                val_data['__size__'] = val.size
-                values_list = append(values_list, val.flatten())
+                val_data['__shape__'] = new_val.shape
+                val_data['__size__'] = new_val.size
+                values_list = append(values_list, new_val.flatten())
             metadata.append(val_data)
         elif _type is str:
             # if value is a string look for is prev_metadata to find known
