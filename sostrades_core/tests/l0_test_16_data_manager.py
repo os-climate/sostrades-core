@@ -171,7 +171,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     'model_origin': 'NPS.CH19_Kero.Disc1', 'value': None}
         for var_id in ['n_processes',
                        'chain_linearize', 'tolerance', 'use_lu_fact',
-                       'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode']:
+                       'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode', "scaling_method"]:
             var_n = ns_2 + '.' + var_id
             ref_dict[var_n] = copy(val_dict)
         data_id_map_2 = {}
@@ -229,9 +229,9 @@ class TestDataManagerGenerator(unittest.TestCase):
             ns_pv_disc2 + '.power': 2}
 
         # check outputs
-        for key in res_target:
+        for key, value in res_target.items():
             key_id = exec_engine.dm.get_data_id(key)
-            self.assertEqual(res[key_id]['value'], res_target[key])
+            self.assertEqual(res[key_id]['value'], value)
 
         # check data with data manager methods
         self.assertEqual(
