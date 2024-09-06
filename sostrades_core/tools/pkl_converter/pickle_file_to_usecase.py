@@ -69,7 +69,7 @@ class UsecaseCreator:
         usecase_name: str,
         write_default_value: bool = False,
         write_outputs: bool = False,
-        inputs_from_usecase = None,
+        inputs_from_usecase=None,
     ) -> None:
         """Class to generate usecase.py file and related input and output data from a pickle file
 
@@ -83,7 +83,7 @@ class UsecaseCreator:
         self.usecase_name = usecase_name
         self.write_default_value = write_default_value
         self.write_outputs = write_outputs
-        self.study_to_match=None
+        self.study_to_match = None
         if inputs_from_usecase:
             spec = importlib.util.spec_from_file_location("usecase", inputs_from_usecase)
             # creates a new module based on spec
@@ -91,7 +91,7 @@ class UsecaseCreator:
             # executes the module in its own namespace
             # when a module is imported or reloaded.
             spec.loader.exec_module(foo)
-            self.study_to_match=foo.Study()
+            self.study_to_match = foo.Study()
             # self.study_to_match.load_data()
             # self.study_to_match.ee.configure()
         self.dm_data_dict = pd.read_pickle(self.pkl_path)
@@ -430,7 +430,7 @@ if '__main__' == __name__:
 
         # return string to load file
         if isinstance(value, pd.DataFrame):
-            str_eval=self.get_converter_string(value)
+            str_eval = self.get_converter_string(value)
             return f"pd.read_csv(join(self.data_dir,'{fileName}'){str_eval})"
 
         elif isinstance(value, dict):
@@ -443,19 +443,19 @@ if '__main__' == __name__:
         This method checks if such a conversion is needed for a given df and
         returns a string with the complement for 'pd.read_csv({csv}, {complement})'
         """
-        col_to_eval = list(df.dtypes[(df.dtypes is object)].index) #list of col with object type
-        str_eval, i_eval = '', 0 # initialize return string and counter
+        col_to_eval = list(df.dtypes[(df.dtypes is object)].index)  # list of col with object type
+        str_eval, i_eval = '', 0  # initialize return string and counter
         if col_to_eval:
             str_eval = ', converters={'
             for col in col_to_eval:
-                try: # test if the eval (str -> list) is achievable
+                try:  # test if the eval (str -> list) is achievable
                     assert isinstance(eval(str(df[col].values[0])), list)
                     str_eval = str_eval + f"'{col}': eval, "
                     i_eval += 1
                 except:
                     pass
             str_eval = str_eval + '}'
-        if i_eval == 0: # if there is no successful eval str to list, return empty string
+        if i_eval == 0:  # if there is no successful eval str to list, return empty string
             str_eval = ''
         return str_eval
 
@@ -504,10 +504,10 @@ if '__main__' == __name__:
         for key, value in sorted(merged_setup_dict.items()):
             abstracted_key = key.replace(self.study_to_match.study_name, '<study_ph>')
             try:
-                data_dict=self.study_to_match.ee.dm.get_data(key)
+                data_dict = self.study_to_match.ee.dm.get_data(key)
             except:
                 continue
-            if data_dict['io_type']=='in' and key.split('.')[-1] not in self.ignore_list:
+            if data_dict['io_type'] == 'in' and key.split('.')[-1] not in self.ignore_list:
                 write = True
                 if not self.write_default_value:
                     # check if value is different from default value:
@@ -525,16 +525,16 @@ if '__main__' == __name__:
                                       pkl_key.split('.')[-1] == key.split('.')[-1]]
                     if len(simple_matches) == 1:
                         self.dm_dict_to_write[abstracted_key] = self.dm_data_dict[simple_matches[0]]['value']
-                    elif len(simple_matches)>1:
+                    elif len(simple_matches) > 1:
                         middle_key = '.'.join(abstracted_key.split('.')[-2:])
                         new_matches = [pkl_key for pkl_key in self.dm_data_dict.keys() if
                                        '.'.join(pkl_key.split('.')[-2:]) == middle_key]
-                        if len(new_matches)==1:
+                        if len(new_matches) == 1:
                             self.dm_dict_to_write[abstracted_key] = self.dm_data_dict[new_matches[0]]['value']
-                        elif len(new_matches)==0:
-                            if type(value)==pd.DataFrame:
+                        elif len(new_matches) == 0:
+                            if type(value) == pd.DataFrame:
                                 self.dm_dict_to_write[abstracted_key] = value.map(str)
-                            elif type(value) in  [dict, list]:
+                            elif type(value) in [dict, list]:
                                 self.dm_dict_to_write[abstracted_key] = [str(val) for val in value]
                             else:
                                 if value is not None:

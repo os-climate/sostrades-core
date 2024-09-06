@@ -310,8 +310,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.check_integrity_msg_list = []
         self.opt_data_integrity = True
 
-
-
     def setup_sos_disciplines(self):
         """
         Overload setup_sos_disciplines to create a dynamic desc_in
@@ -407,8 +405,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
 
-
-
     def set_formulation_for_func_manager(self, sub_mdo_disciplines):
         """
 
@@ -461,7 +457,6 @@ class ProxyOptim(ProxyDriverEvaluator):
         dspace_df[self.VARIABLES] = self._update_names(dspace_df[self.VARIABLES], self.IO_TYPE_IN)
         design_space, self.dict_desactivated_elem = dspace_tool.create_gemseo_dspace_from_dspace_df(dspace_df)
         return design_space
-
 
     def get_chart_filter_list(self):
         chart_filters = []
@@ -640,7 +635,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.dm.set_data(f'{self.get_disc_full_name()}.{self.FORMULATION}', self.POSSIBLE_VALUES, avail_formulations)
 
         # fill the possible values of maximize_objective
-        self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}',  self.POSSIBLE_VALUES, [False, True])
+        self.dm.set_data(f'{self.get_disc_full_name()}.{self.MAXIMIZE_OBJECTIVE}', self.POSSIBLE_VALUES, [False, True])
 
     def _update_eval_output_with_possible_out_values(self, possible_out_values, disc_in):
         pass

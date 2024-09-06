@@ -52,7 +52,7 @@ class DiscAllTypes(SoSWrapp):
         'dict_string_in': {'type': 'dict', ProxyDiscipline.SUBTYPE: {'dict': 'string'}, 'unit': 'kg', 'user_level': 1},
         'list_dict_string_in': {'type': 'list', ProxyDiscipline.SUBTYPE: {'list': {'dict': 'string'}}, 'unit': 'kg', 'user_level': 1},
         'df_in': {'type': 'dataframe', 'unit': 'kg', 'user_level': 1, 'dataframe_descriptor': {'variable': ('float', [-1e4, 1e4], True),  # input function
-                                                                                               'c2': ('float', None, True), 'c3': ('float', None, True),},
+                                                                                               'c2': ('float', None, True), 'c3': ('float', None, True), },
                   'dataframe_edition_locked': False, },
         'weather': {'type': 'string', 'default': 'cloudy, it is Toulouse ...', 'user_level': 1,
                     'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test', 'possible_values': ['cloudy, it is Toulouse ...', 'sunny', 'rainy']},

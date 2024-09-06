@@ -82,7 +82,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         """
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
-        assert(NRPb is not None)
+        assert (NRPb is not None)
 
     def test_02_NewtonRaphsonProblem_W0_list(self):
         """
@@ -90,7 +90,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         """
         W0 = [1., 1., 1.]
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
-        assert(NRPb is not None)
+        assert (NRPb is not None)
 
     def test_03_NewtonRaphsonProblem_set_relax_factor(self):
         """
@@ -99,7 +99,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         NRPb.set_relax_factor(0.80)
-        assert(NRPb.get_relax_factor() == 0.80)
+        assert (NRPb.get_relax_factor() == 0.80)
 
     def test_04_NewtonRaphsonProblem_set_stop_residual(self):
         """
@@ -108,7 +108,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         NRPb.set_stop_residual(1.e-9)
-        assert(NRPb.get_stop_residual() == 1.e-9)
+        assert (NRPb.get_stop_residual() == 1.e-9)
 
     def test_05_NewtonRaphsonProblem_set_max_iterations(self):
         """
@@ -117,7 +117,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         NRPb.set_max_iterations(200)
-        assert(NRPb.get_max_iterations() == 200)
+        assert (NRPb.get_max_iterations() == 200)
 
     def test_06_NewtonRaphsonProblem_defaults_parameters(self):
         """
@@ -125,9 +125,9 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         """
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
-        assert(NRPb.get_relax_factor() == 0.99)
-        assert(NRPb.get_stop_residual() == 1.e-6)
-        assert(NRPb.get_max_iterations() == 100)
+        assert (NRPb.get_relax_factor() == 0.99)
+        assert (NRPb.get_stop_residual() == 1.e-6)
+        assert (NRPb.get_max_iterations() == 100)
 
     def test_07_NewtonRaphsonProblem_jacobian_validation(self):
         """
@@ -136,7 +136,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         ok = NRPb.valid_jacobian(W0, iprint=True)
-        assert(ok)
+        assert (ok)
 
         remove('gradient_file0.dat')
         remove('gradient_file1.dat')
@@ -149,7 +149,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_wrong_dRdW)
         ok, df_fd, df = NRPb.valid_jacobian(W0, iprint=False)
-        assert(not ok)
+        assert (not ok)
 
     def test_09_NewtonRaphsonProblem_solving(self):
         W0 = array([1., 1., 1.])
@@ -174,7 +174,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         NRPb.set_max_iterations(10)
         W = NRPb.solve()
         res_hist = NRPb.get_residual_hist()
-        assert(len(res_hist) == 10)
+        assert (len(res_hist) == 10)
 
     def test_11_NewtonRaphsonProblem_solving_limit_residual(self):
         W0 = array([1., 1., 1.])
@@ -186,7 +186,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         NRPb.set_max_iterations(100)
         W = NRPb.solve()
         res = NRPb.get_residual()
-        assert(1.e-7 < res < 1.e-6)
+        assert (1.e-7 < res < 1.e-6)
 
     def test_12_NewtonRaphsonProblem_solving_parallel(self):
         W0 = array([1., 1., 1.])

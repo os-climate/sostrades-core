@@ -58,4 +58,4 @@ if '__main__' == __name__:
     # uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
     # uc_cls.run()
     proc_name = "sostrades_core.sos_processes.test.sellar.test_sellar_list"
-    run_usecase(proc_name, join(dirname(__file__),'usecase_dataset_sellar_list.json'))
+    run_usecase(proc_name, join(dirname(__file__), 'usecase_dataset_sellar_list.json'))

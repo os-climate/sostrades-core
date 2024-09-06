@@ -32,7 +32,9 @@
     "docs/LICENSE-DOC",
     "docs/make.bat",
     "docs/Makefile",
-    ".pre-commit-config.yaml"
+    ".pre-commit-config.yaml",
+    "LICENSE",
+    "NOTICE"
   ],
   "airbus_rev_commit": "11d7f9f"
 }

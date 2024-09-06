@@ -49,14 +49,14 @@ class LoggerData(object):
 
         self.set_complex_mode(False)
 
-        #-- Clean Outputs directory at instantiation
+        # -- Clean Outputs directory at instantiation
         full_save_dir = self.get_full_save_dir()
 #         if os.path.isdir(full_save_dir):
 #             shutil.rmtree(full_save_dir)
         if not os.path.isdir(full_save_dir):
             makedirs_safe(full_save_dir)
 
-    #-- Setters
+    # -- Setters
     def set_complex_mode(self, complex_mode):
         '''
         Set the complex mode in the Database
@@ -67,7 +67,7 @@ class LoggerData(object):
         else:
             self.dtype = np.float64
 
-    #-- Accessors
+    # -- Accessors
     def get_units(self, var_id):
         '''
         Get the units of a variable var_id
@@ -100,7 +100,7 @@ class LoggerData(object):
             save_dir = self.base_save_dir
         return os.path.join(save_dir, self.__tag)
 
-    #-- Methods
+    # -- Methods
     def add_unit(self, d_id, value):
         '''
         Add a unit to the units dictionary to the name d_id

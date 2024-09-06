@@ -119,7 +119,7 @@ class OuterApproximationOpt(OptimizationLibrary):
 
         # execute the optimization
         solver = OuterApproximationSolver(self.problem)
-        solver.set_options(**options)#**options
+        solver.set_options(**options)  # **options
         solver.init_solver()
         solver.solve()
 

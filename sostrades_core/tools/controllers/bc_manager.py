@@ -41,7 +41,7 @@ class BCManager(CManager):
             if pt.get_BCType() in ['Variable', 'DesignVariable']:
                 pt.set_value(pt.get_value())
 
-    #-- Update methods
+    # -- Update methods
     def update(self, check_deps=True):
         if check_deps:
             for pt in self.get_list_pt():
@@ -67,7 +67,7 @@ class BCManager(CManager):
         ]
         return list_to_update
 
-    #-- Methods
+    # -- Methods
     def get_all_values(self):
         values = [
             pt.get_value()
@@ -220,7 +220,7 @@ class BCManager(CManager):
         Create base controllers from a file
         """
         ERROR_MSG = self.ERROR_MSG + 'import_from_file: '
-        #- Open file and read all lines
+        # - Open file and read all lines
         fid = open(filename, 'r')
         all_lines = fid.readlines()
         fid.close()
@@ -294,7 +294,7 @@ class BCManager(CManager):
                 print('WARNING : BCManager export_to_file: ignoring controller export: ' +
                       str(controller.get_id()) + ' of BCType ' + str(controller.get_BCType()))
 
-        #- Open file in write mode
+        # - Open file in write mode
         fid = open(filename, 'w')
         if len(variable_list) > 0:
             # Write variables part
@@ -344,7 +344,7 @@ class BCManager(CManager):
         update base controller from file
         """
         ERROR_MSG = self.ERROR_MSG + 'update_from_file: '
-        #- Open file and store all lines in memory
+        # - Open file and store all lines in memory
         fid = open(filename, 'r')
         all_lines = fid.readlines()
         fid.close()
@@ -394,7 +394,7 @@ class BCManager(CManager):
                                 pass
 
         # self.get_CAD_model().update()
-        #- De-allocate all_lines
+        # - De-allocate all_lines
         del all_lines
 
     def update_from_x(self, x):
@@ -446,7 +446,7 @@ class BCManager(CManager):
         Update design variables from a design variables file
         """
         ERROR_MSG = self.ERROR_MSG + 'update_dv_from_file: '
-        #- Open file and store all lines in memory
+        # - Open file and store all lines in memory
         fid = open(filename, 'r')
         all_lines = fid.readlines()
         fid.close()
@@ -471,14 +471,14 @@ class BCManager(CManager):
                         except:
                             pass
         self.update()
-        #- De-allocate all_lines
+        # - De-allocate all_lines
         del all_lines
 
     def export_dv_to_file(self, filename):
         """
         Export design variable to a file
         """
-        #- File object creation
+        # - File object creation
         all_lines = []
         all_lines.append('# Design variables file generate from PADGE \n')
         for pt in self.__DV_pt:

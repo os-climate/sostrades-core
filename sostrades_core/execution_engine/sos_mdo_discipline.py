@@ -33,6 +33,7 @@ from sostrades_core.tools.filter.filter import filter_variables_to_convert
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
+
 class SoSMDODisciplineException(Exception):
     pass
 
@@ -55,11 +56,11 @@ class SoSMDODiscipline(MDODiscipline):
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
     DEBUG_MODE = 'debug_mode'
     LINEARIZATION_MODE = 'linearization_mode'
-    NUM_DESC_IN = {LINEARIZATION_MODE,'cache_type','cache_file_path','debug_mode'}
+    NUM_DESC_IN = {LINEARIZATION_MODE, 'cache_type', 'cache_file_path', 'debug_mode'}
 
     def __init__(self,
-                 full_name :str, grammar_type: str, cache_type: str,
-                 cache_file_path: str, sos_wrapp: SoSWrapp, reduced_dm: dict, logger:logging.Logger):
+                 full_name: str, grammar_type: str, cache_type: str,
+                 cache_file_path: str, sos_wrapp: SoSWrapp, reduced_dm: dict, logger: logging.Logger):
         '''
         Constructor
 
@@ -106,7 +107,7 @@ class SoSMDODiscipline(MDODiscipline):
             self._check_nan_in_data(self.local_data)
 
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['linearize_data_change']:
-            self.check_linearize_data_changes=True
+            self.check_linearize_data_changes = True
 
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {key: {'value': value} for key, value in deepcopy(

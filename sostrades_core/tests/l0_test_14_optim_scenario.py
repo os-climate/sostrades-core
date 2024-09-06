@@ -59,7 +59,6 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.repo = 'sostrades_core.sos_processes.test'
         self.proc_name = 'test_sellar_opt_discopt'
 
-
     def _test_01_optim_scenario_check_treeview(self):
         print("\n Test 1 : check configure and treeview")
         exec_eng = ExecutionEngine(self.study_name)
@@ -454,7 +453,6 @@ class TestSoSOptimScenario(unittest.TestCase):
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
 
-
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
                        f'\t|_ {self.sc_name}',
@@ -769,7 +767,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # -- set up disciplines in Scenario
         disc_dict = {}
 
-        #desactivate the optim post processings
+        # desactivate the optim post processings
         disc_dict[f'{self.ns}.SellarOptimScenario.desactivate_optim_out_storage'] = True
 
         # Optim inputs
@@ -818,8 +816,6 @@ class TestSoSOptimScenario(unittest.TestCase):
                 disc, filters, as_json=False)
 
         assert KeyError(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"))
-
-
 
     def test_09_optim_scenario_eval_mode_with_eval_jac(self):
         print("\n Test 9 : Sellar optim with eval_mode and eval_jac")
@@ -1023,7 +1019,6 @@ class TestSoSOptimScenario(unittest.TestCase):
             1., 1.])
         values_dict[f'{self.ns}.{self.sc_name}.{self.c_name}.Sellar_Problem.local_dv'] = local_dv
         exec_eng.load_study_from_input_dict(values_dict)
-
 
         exp_tv_list = [f'Nodes representation for Treeview {self.ns}',
                        '|_ optim',
@@ -1256,9 +1251,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         # -- set up disciplines in Scenario
         disc_dict = {}
 
-        #desactivate the optim post processings
+        # desactivate the optim post processings
         disc_dict[f'{self.ns}.SellarOptimScenario.desactivate_optim_out_storage'] = True
-
 
         # Optim inputs
         disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 10
@@ -1313,7 +1307,6 @@ class TestSoSOptimScenario(unittest.TestCase):
                 disc)
             graph_list = ppf.get_post_processing_by_discipline(
                 disc, filters, as_json=False)
-
 
     def _test_17_optim_scenario_execution_disciplinaryopt_complex_step_with_custom_step(self):
         print("\n Test 17 : Sellar optim solution check with DisciplinaryOpt formulation with complex step and a finite differences step")
@@ -1498,9 +1491,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         self.assertIn("Design variables", filters[0].filter_values)
 
         for graph in graph_list:
-            #graph.to_plotly().show()
+            # graph.to_plotly().show()
             pass
-
 
     def test_19_proxyoptim_data_integrity(self):
         """
@@ -1626,8 +1618,8 @@ class TestSoSOptimScenario(unittest.TestCase):
         error_message = "Variable optim.SellarOptimScenario.objective_name : Variable wrong_obj is not among subprocess outputs."
         self.assertTrue(str(cm.exception).startswith(error_message))
 
+
 if '__main__' == __name__:
     cls = TestSoSOptimScenario()
     cls.setUp()
     cls.test_16b_test_post_run()
-

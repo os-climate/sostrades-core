@@ -39,6 +39,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     NO_TABLE_TYPES = ["string", "int", "float", "bool"]
     DESCRIPTOR_TABLE_NAME = "descriptor_parameters"         # reserved table for dataset descriptor
     COL_NAME_INDEX_TABLE_NAME = "__col_name_index_table__"  # reserved table for bigquery characters compatibility
+    URL_BQ_FORMAT = "https://console.cloud.google.com/bigquery?project={}&p={}&d={}&t={}&page=table"
+
 
     def __init__(self, project_id: str,
                  serializer_type: DatasetSerializerType = DatasetSerializerType.BigQuery):
@@ -64,7 +66,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=BigqueryDatasetsConnector) from exc
 
-
     def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
         Method to retrieve data from dataset and fill a data_dict
@@ -84,7 +85,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             if data in json_descriptor.keys():
                 if data_type in self.NO_TABLE_TYPES:
                     try:
-                        parameters_data[data] = self.__datasets_serializer.convert_from_dataset_data(data, json_descriptor[data][self.__get_col_name_from_type(data_type)], {data:data_type})
+                        parameters_data[data] = self.__datasets_serializer.convert_from_dataset_data(data, json_descriptor[data][self.__get_col_name_from_type(data_type)], {data: data_type})
                     except Exception as ex:
                         self.__logger.warning(f"Error while reading the parameter {data} in descriptor for dataset {dataset_id}: {ex}")
                 elif data_type in self.SELF_TABLE_TYPES:
@@ -107,7 +108,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             f"Values obtained {list(parameters_data.keys())} for dataset {dataset_identifier} for connector {self}"
         )
         return parameters_data
-
 
     def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
@@ -137,13 +137,13 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             table = bigquery.Table(table_descriptor_id)
             job_config = bigquery.LoadJobConfig()
             job_config.autodetect = True
-            job_config.write_disposition="WRITE_TRUNCATE"
-            job = self.client.load_table_from_json(list(json_descriptor.values()), table, job_config = job_config)
+            job_config.write_disposition = "WRITE_TRUNCATE"
+            job = self.client.load_table_from_json(list(json_descriptor.values()), table, job_config=job_config)
             res = job.result()
         except Exception as ex:
             raise DatasetGenericException(f"Error while writing the Descriptor table for dataset {dataset_id}: {ex}") from ex
 
-        #then write the complex parameters tables
+        # then write the complex parameters tables
         for data, value in complex_parameters.items():
             # check that the value we want to write in a table has data,
             # if not bigquery api will raise an error
@@ -155,13 +155,13 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 job_config = bigquery.LoadJobConfig()
                 job_config.autodetect = True
                 # the data is overwrited
-                job_config.write_disposition="WRITE_TRUNCATE"
+                job_config.write_disposition = "WRITE_TRUNCATE"
 
                 try:
                     if data_types_dict[data] == "dataframe":
-                        job = self.client.load_table_from_dataframe(value, table, job_config = job_config)
+                        job = self.client.load_table_from_dataframe(value, table, job_config=job_config)
                     else:
-                        job = self.client.load_table_from_json([value], table, job_config = job_config)
+                        job = self.client.load_table_from_json([value], table, job_config=job_config)
 
                     res = job.result()
                     self.__logger.debug(f"created or updated table for data {data}:{res}")
@@ -174,15 +174,15 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             table = bigquery.Table(table_index_id)
             job_config = bigquery.LoadJobConfig()
             job_config.autodetect = True
-            job_config.write_disposition="WRITE_TRUNCATE"
-            job = self.client.load_table_from_json([new_index], table, job_config = job_config)
+            job_config.write_disposition = "WRITE_TRUNCATE"
+            job = self.client.load_table_from_json([new_index], table, job_config=job_config)
             res = job.result()
         except Exception as ex:
             raise DatasetGenericException(f"Error while writing the Descriptor table for dataset {dataset_id}: {ex}") from ex
 
         return values_to_write
 
-    def get_values_all(self, dataset_identifier: str, data_types_dict:dict[str:str]) -> dict[str:Any]:
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Get all values from a dataset
         :param dataset_identifier: dataset identifier for connector
@@ -192,7 +192,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         """
 
         return self.get_values(dataset_identifier, data_types_dict)
-
 
     def get_datasets_available(self) -> list[str]:
         """
@@ -206,7 +205,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         self,
         dataset_identifier: str,
         values_to_write: dict[str:Any],
-        data_types_dict:dict[str:str],
+        data_types_dict: dict[str:str],
         create_if_not_exists: bool = True,
         override: bool = False,
     ) -> dict[str: Any]:
@@ -246,6 +245,32 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
+    def build_path_to_data(self, dataset_identifier:str, data_name:str, data_type:str)->str:
+        """
+        Overloaded method in order to build the url to the bigquery data
+        :param dataset_identifier: dataset identifier into connector
+        :type dataset_identifier: str
+        :param data_name: data in dataset
+        :type data_name: str
+        :param data_type: type of the data in dataset
+        :type data_type: str
+        :return: path/url/uri to find the dataset data
+        """
+        path_to_data = ""
+
+        # if data is simple data, the link is to the descriptor table
+        if data_type in ["int", "float", "bool", "string"]:
+            table_id = self.DESCRIPTOR_TABLE_NAME
+        else:
+            #if data is a dataframe or other, the data has its own table
+            table_id = data_name
+        path_to_data = self.URL_BQ_FORMAT.format(self.client.project,
+                                                 self.client.project,
+                                                 dataset_identifier,
+                                                 table_id)
+
+        return path_to_data
+
     def _insert_value_into_datum(self,
                                  value: Any,
                                  datum: dict[str:Any],
@@ -276,7 +301,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     def __update_json_descriptor_and_parameters(self,
                                                 values_to_write: dict[str:Any],
                                                 old_json_descriptor: dict[str:dict[str:Any]],
-                                                data_types_dict: dict[str:str])->tuple[dict, dict]:
+                                                data_types_dict: dict[str:str]) -> tuple[dict, dict]:
 
         json_descriptor_parameters = old_json_descriptor or {}
         json_values = {parameter: self.__datasets_serializer.convert_to_dataset_data(parameter, parameter_value,
@@ -293,8 +318,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         return json_descriptor_parameters, complex_type_parameters_values
 
-
-    def __get_col_name_from_type(self, parameter_type:str)->str:
+    def __get_col_name_from_type(self, parameter_type: str) -> str:
         '''
         retrieve column name from parameter type
         '''
@@ -343,7 +367,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                                     f" {ex}, assuming an empty index.")
         return json_descriptor_read, index_read, table_descriptor_id, table_index_id
 
-    def __read_descriptor_or_index_table(self, table_id:str)-> dict:
+    def __read_descriptor_or_index_table(self, table_id: str) -> dict:
         '''
         read the descriptor parameter table
         :param descriptor_table_id: descriptor_parameter table id
@@ -352,9 +376,9 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         '''
         QUERY = (f'SELECT * FROM `{table_id}` ')
         query_job = self.client.query(QUERY)  # API request
-        return {row.parameter_name: {key:values for key, values in row.items()} for row in query_job.result()}
+        return {row.parameter_name: {key: values for key, values in row.items()} for row in query_job.result()}
 
-    def __read_dataframe_table(self, table_id:str)-> pd.DataFrame:
+    def __read_dataframe_table(self, table_id: str) -> pd.DataFrame:
         '''
         read a dataframe parameter table
         :param table_id:  table id
@@ -364,7 +388,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         QUERY = (f'SELECT * FROM `{table_id}` ')
         return self.client.query(QUERY).result().to_dataframe()
 
-    def __read_dict_table(self, table_id:str)-> dict:
+    def __read_dict_table(self, table_id: str) -> dict:
         '''
         read a dict parameter table
         :param table_id:  table id
@@ -373,7 +397,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         '''
         QUERY = (f'SELECT * FROM `{table_id}` ')
         query_job = self.client.query(QUERY)
-        result = [ {key:values for key, values in row.items()} for row in query_job.result()]
+        result = [{key: values for key, values in row.items()} for row in query_job.result()]
         if len(result) == 1:
             result = result[0]
         return result

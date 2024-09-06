@@ -11,8 +11,8 @@ elif Model_Type== 'Affine':
 elif Model_Type== 'Polynomial':
 
 	y = Disc10(a,x,b,power) =  a * x**power + b
-	
-Default value of 'Model_Type' is 'Linear'.	
+
+Default value of 'Model_Type' is 'Linear'.
 
 Default value of 'a' is 1.
 

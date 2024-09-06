@@ -37,8 +37,8 @@ class Disc5(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {
         'z': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'subtype_descriptor':{'dict':'float'}, 'default': {'key1': 1, 'key2': 2}, 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'dict_of_dict_out': {'type': 'dict', 'subtype_descriptor':{'dict':{'dict':'float'}}, 'default': {'key1': {'1': 1, '2': 2}}, 'visibility': 'Shared', 'namespace': 'ns_test'}
+        'dict_out': {'type': 'dict', 'subtype_descriptor': {'dict': 'float'}, 'default': {'key1': 1, 'key2': 2}, 'visibility': 'Shared', 'namespace': 'ns_test'},
+        'dict_of_dict_out': {'type': 'dict', 'subtype_descriptor': {'dict': {'dict': 'float'}}, 'default': {'key1': {'1': 1, '2': 2}}, 'visibility': 'Shared', 'namespace': 'ns_test'}
     }
 
     DESC_OUT = {

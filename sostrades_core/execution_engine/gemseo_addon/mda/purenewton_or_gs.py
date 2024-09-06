@@ -99,7 +99,7 @@ class GSPureNewtonorGSMDA(MDASequential):
         mda_gs.tolerance = tolerance
 
         mda_newton = create_mda(
-            'GSPureNewtonMDA',disciplines,  max_mda_iter=max_mda_iter,
+            'GSPureNewtonMDA', disciplines, max_mda_iter=max_mda_iter,
                                  name=None, grammar_type=grammar_type,
                                  linear_solver=linear_solver,
                                  linear_solver_options=linear_solver_options,

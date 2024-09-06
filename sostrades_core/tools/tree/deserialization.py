@@ -34,6 +34,7 @@ def isevaluatable(s):
             return evaluate_arrays(s)
         return s
 
+
 def evaluate_arrays(input_str):
     """
     convert a string into an array or a list of array
@@ -42,13 +43,13 @@ def evaluate_arrays(input_str):
     :return: the numpy array
     """
     # fix the \n and , if needed and split by ' '
-    array_content = input_str.replace('array(' ,'').replace(')' ,'').replace('\n' ,' ').replace(',' ,' ').split(' ')
+    array_content = input_str.replace('array(', '').replace(')', '').replace('\n', ' ').replace(',', ' ').split(' ')
     # remove empty entry
     array_content = [x for x in array_content if x != '']
     # check bracket alone (when there is a space between bracket and digit '[ 1 2 ]'
     # we need to remove the bracket alone and add it to the next digit)
-    for i in range(0 ,len(array_content)):
-        if array_content[i] == '[' and i+ 1 < len(array_content):
+    for i in range(0, len(array_content)):
+        if array_content[i] == '[' and i + 1 < len(array_content):
             array_content[i + 1] = '[' + array_content[i + 1]
         if array_content[i] == ']' and i - 1 >= 0:
             array_content[i - 1] = array_content[i - 1] + ']'
@@ -80,4 +81,3 @@ def convert_list_to_arrays(input_list):
     else:
         # Si l'élément est un nombre return the element
         return input_list
-

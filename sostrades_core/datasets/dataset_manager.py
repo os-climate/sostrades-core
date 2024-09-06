@@ -34,7 +34,7 @@ class DatasetsManager:
     VALUE = ProxyDiscipline.VALUE
     DATASET_INFO = 'dataset_info'
 
-    def __init__(self, logger:logging.Logger):
+    def __init__(self, logger: logging.Logger):
         self.datasets = {}
         self.__logger = logger
 
@@ -64,7 +64,7 @@ class DatasetsManager:
                 dataset_data_reverse_mapping = {}
                 # we get the data_dataset_key for each param that is in data_dict
                 # it is done in a loop so that it respect the order of appearance
-                #(ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
+                # (ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
                 for data_key, data_dataset_key in mapping_parameters.items():
                     if data_dataset_key == DatasetInfo.WILDCARD:
                         dataset_data_reverse_mapping.update({key: key for key in data_dict.keys()})
@@ -115,7 +115,6 @@ class DatasetsManager:
         """
         self.__logger.debug(f"exporting data {data_dict.keys()} into dataset {dataset_info}")
 
-
         try:
             # Get the dataset, creates it if not exists
             dataset = self.get_dataset(dataset_info=dataset_info)
@@ -129,6 +128,35 @@ class DatasetsManager:
         except DatasetGenericException as exception:
             raise DatasetGenericException(f'Error exporting dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return dataset_values
+
+    def get_path_to_dataset_data(self, dataset_info: DatasetInfo, data_name:str, data_type:str)-> str:
+        """
+        get path/link/uri to retrieve the dataset data
+
+        :param dataset_info: dataset in witch the data is
+        :type dataset_info: DatasetInfo
+
+        :param data_name: data name to build the path
+        :type data_name: str
+
+        :param data_type: type of the data in dataset
+        :type data_type: str
+
+        :return: path/link/uri (str) to dataset data
+        """
+        path_to_dataset_data = ""
+        try:
+            # Get the dataset, creates it if not exists
+            dataset = self.get_dataset(dataset_info=dataset_info)
+
+            # get path
+            path_to_dataset_data = dataset.connector.build_path_to_data(dataset_identifier=dataset_info.dataset_id,
+                                                                        data_name=data_name,
+                                                                        data_type=data_type)
+        except DatasetGenericException as exception:
+            raise DatasetGenericException(f'Error finding path of data {data_name} into dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
+        return path_to_dataset_data
+
 
     def __create_dataset(self, dataset_info: DatasetInfo) -> Dataset:
         """

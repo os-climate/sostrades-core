@@ -4,7 +4,7 @@ The Tornado Chart analysis determines how different values of an independent var
 
 The Tornado chart analysis functionality in SoSTrades is accessed by creating a driver in a process, with sample generator and sampling method = "tornado chart analysis". It allows to measure the effect of input variations on outputs of the subprocess, and to automatically generate the Tornado charts.
 
-A given percentage variation (+-X%) is considered for each input under study in the vicinity of the data point given by the subprocess original input. Each input is considered independently, in the fashion of a pattern search. Percentage variations are applied to input absolute values (same percentages for all inputs studied). 
+A given percentage variation (+-X%) is considered for each input under study in the vicinity of the data point given by the subprocess original input. Each input is considered independently, in the fashion of a pattern search. Percentage variations are applied to input absolute values (same percentages for all inputs studied).
 
 At the selection of the 'tornado chart analysis" in the sample generator, a post processing namespace is added to the Eval namespace of the driver.
 
@@ -61,7 +61,7 @@ scenario_variations  = { 'scenario_reference' : {a: 0, b: 0 },
                          'scenario_4' : {a: 0, b: 5.0 }}
 ```
 
-### Charts 
+### Charts
 
 
 For now, only float outputs are handled in charts.
@@ -73,5 +73,5 @@ We make 1 graph for each output, with 1 line for each input :
 
 When an output value of the reference scenario case is zero, it is not possible to compute a variation percentage with respect to the zero reference value (division by zero).
 
-Then the string 'N/A' for not applicable is written in the output results. 
-An empty chart is created for this output where the title defines that the computation si not possible with this reference value. 
+Then the string 'N/A' for not applicable is written in the output results.
+An empty chart is created for this output where the title defines that the computation si not possible with this reference value.
