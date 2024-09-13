@@ -217,7 +217,7 @@ class TestBuildScatter(unittest.TestCase):
                        '\t\t|_ scatter2',
                        '\t\t\t|_ Disc1',
                        '\t\t\t|_ Disc2',
-                       f'\t|_ {driver_name}_gather' ]
+                       f'\t|_ {driver_name}_gather']
 
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes(exec_display=True)
@@ -471,6 +471,7 @@ class TestBuildScatter(unittest.TestCase):
             f'{self.study_name}.{driver_name}.{scatter_name}.z') for scatter_name in scatter_list}
 
         self.assertDictEqual(z_gather, z_gather_th)
+
 
 if __name__ == '__main__':
     test = TestBuildScatter()

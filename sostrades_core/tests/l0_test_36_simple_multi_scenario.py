@@ -125,7 +125,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.samples_df')['scenario_name'].values.tolist(), ['scenario_1',
                                                                                     'scenario_W',
                                                                                     'scenario_2'])
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.multi_scenarios')[0]
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -260,7 +260,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
             self.exec_eng.dm.get_value('MyCase.multi_scenarios.samples_df')['scenario_name'].values.tolist(),
             ['scenario_1', 'scenario_W', 'scenario_2'])
 
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.multi_scenarios')[0]
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -395,7 +395,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_disc = self.exec_eng.dm.get_disciplines_with_name(
         #     'MyCase.multi_scenarios')[0]
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
@@ -410,7 +410,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         # self.assertEqual(ms_sub_disc_names, ['scenario_1',
         #                                      'scenario_2'])
@@ -424,7 +424,7 @@ class TestSimpleMultiScenario(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         self.exec_eng.display_treeview_nodes()
 
-        ## flatten_subprocess
+        # flatten_subprocess
         # ms_sub_disc_names = [d.sos_name for d in ms_disc.proxy_disciplines]
         # self.assertEqual(ms_sub_disc_names, ['scenario_1'])
 

@@ -26,38 +26,38 @@ class Parameter(BaseController):
     """
     PParameter Class
     """
-    #--Class Variables
+    # --Class Variables
     CLASS_MSG = 'PParameter'
-    ERROR_MSG = 'ERROR '+CLASS_MSG+'.'
+    ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
 
-    #--Constructor
-    def __init__(self,PBCManager,Id,fexpr,AliasDict=None, namespace=None):
+    # --Constructor
+    def __init__(self, PBCManager, Id, fexpr, AliasDict=None, namespace=None):
 
         BaseController.__init__(self, PBCManager, Id, value=0., BCType='Parameter')
 
-        self.__fexpr       = None
-        self.__AliasDict   = None
-        self.__FormulaObj  = None
+        self.__fexpr = None
+        self.__AliasDict = None
+        self.__FormulaObj = None
         self.__dep_id_list = []
-        self.__dep_dict    = {}
-        self.new_id_list   = None
+        self.__dep_dict = {}
+        self.new_id_list = None
         self.namespace = namespace
 
-        self.set_fexpr(fexpr,AliasDict=AliasDict)
+        self.set_fexpr(fexpr, AliasDict=AliasDict)
 
     def __repr__(self):
         """
         Display some information about the variable
         """
-        info_string =BaseController.__repr__(self)
-        info_string+="\n   Formula         : "+self.__FormulaObj.get_formula()
-        info_string+="\n   Grad Formula    : "+self.__FormulaObj.get_grad_formula()
-        info_string+="\n   Value           :%24.16e"%self.get_value()
-        info_string+="\n   Gradient        : "+str(self.get_gradient())
+        info_string = BaseController.__repr__(self)
+        info_string += "\n   Formula         : " + self.__FormulaObj.get_formula()
+        info_string += "\n   Grad Formula    : " + self.__FormulaObj.get_grad_formula()
+        info_string += "\n   Value           :%24.16e" % self.get_value()
+        info_string += "\n   Gradient        : " + str(self.get_gradient())
         return info_string
 
     def __replace_aliases(self):
-        BC_manager=self.get_manager()
+        BC_manager = self.get_manager()
         if self.__AliasDict is not None:
             alias_keys = list(self.__AliasDict.keys())
             sep = compile(r'([,\^\*\+\[\]/\(\)-])')
@@ -65,32 +65,32 @@ class Parameter(BaseController):
             for indice in range(len(fexpr)):
                 if fexpr[indice].strip() in alias_keys:
                     fexpr[indice] = self.__AliasDict[fexpr[indice].strip()]
-            self.__fexpr=str.join('',fexpr)
+            self.__fexpr = str.join('', fexpr)
         if self.namespace is not None:
-            self.__FormulaObj  = Formula(self.__fexpr, fgrad=False)
+            self.__FormulaObj = Formula(self.__fexpr, fgrad=False)
             dep_id_list = self.__FormulaObj.get_token_list()
-            prefix = self.namespace+'.'
+            prefix = self.namespace + '.'
             sep = compile(r'([,\^\*\+\[\]/\(\)-])')
             fexpr = sep.split(self.__fexpr)
             for indice in range(len(fexpr)):
                 if fexpr[indice] in dep_id_list:
-                    pt=BC_manager.get_pt(fexpr[indice], raise_error=False)
+                    pt = BC_manager.get_pt(fexpr[indice], raise_error=False)
                     if pt is None:
-                        fexpr[indice] = prefix+fexpr[indice]
-            self.__fexpr=str.join('',fexpr)
+                        fexpr[indice] = prefix + fexpr[indice]
+            self.__fexpr = str.join('', fexpr)
 
     def set_and_check_deps(self):
         self.__update_dep_list()
 
-    def set_fexpr(self,fexpr,AliasDict=None):
-        self.__fexpr       = fexpr
-        self.__AliasDict   = AliasDict
+    def set_fexpr(self, fexpr, AliasDict=None):
+        self.__fexpr = fexpr
+        self.__AliasDict = AliasDict
 
         self.__replace_aliases()
 
-        fgrad=self.is_gradient_active()
+        fgrad = self.is_gradient_active()
 
-        self.__FormulaObj  = Formula(self.__fexpr, fgrad=fgrad)
+        self.__FormulaObj = Formula(self.__fexpr, fgrad=fgrad)
 
         self.new_id_list = self.__FormulaObj.get_token_list()
 
@@ -104,55 +104,55 @@ class Parameter(BaseController):
         return self.__FormulaObj.get_grad_formula()
 
     def __update_dep_list(self):
-        BC_manager=self.get_manager()
+        BC_manager = self.get_manager()
 
         for Id in self.__dep_id_list:
             if Id not in self.new_id_list:
-                pt=BC_manager.get_pt(Id)
+                pt = BC_manager.get_pt(Id)
                 self.del_dependance(pt)
                 del self.__dep_dict[Id]
 
         for Id in self.new_id_list:
             if Id not in self.__dep_id_list:
                 try:
-                    pt=BC_manager.get_pt(Id)
+                    pt = BC_manager.get_pt(Id)
                 except:
                     print(BC_manager)
                     print(self, list(self.new_id_list))
-                    raise Exception('Error in Parameter: '+str(self.get_id())+' cannot find '+str(Id)+'!')
+                    raise Exception('Error in Parameter: ' + str(self.get_id()) + ' cannot find ' + str(Id) + '!')
                 self.add_dependance(pt)
-                self.__dep_dict[Id]=pt
+                self.__dep_dict[Id] = pt
 
-        self.__dep_id_list=self.new_id_list
+        self.__dep_id_list = self.new_id_list
 
-    def special_dependance_update(self,pt):
-        ERROR_MSG=self.ERROR_MSG+'special_dependance_update: '
-        Id=pt.get_id()
+    def special_dependance_update(self, pt):
+        ERROR_MSG = self.ERROR_MSG + 'special_dependance_update: '
+        Id = pt.get_id()
         if Id not in self.__dep_id_list:
-            raise Exception(ERROR_MSG+'method cannot be applied to non existing id ('+str(Id)+')')
+            raise Exception(ERROR_MSG + 'method cannot be applied to non existing id (' + str(Id) + ')')
         self.add_dependance(pt)
         self.set_to_update()
-        self.__dep_dict[Id]=pt
+        self.__dep_dict[Id] = pt
 
     def update_specific(self):
-        eval_dict={}
+        eval_dict = {}
         for Id in self.__dep_id_list:
-            eval_dict[Id]     = self.__dep_dict[Id].get_value()
+            eval_dict[Id] = self.__dep_dict[Id].get_value()
         if self.is_gradient_active():
             self.__FormulaObj.set_grad(fgrad=True)
             for Id in self.__dep_id_list:
-                eval_dict['d'+Id] = self.__dep_dict[Id].get_gradient()
+                eval_dict['d' + Id] = self.__dep_dict[Id].get_gradient()
         else:
             self.__FormulaObj.set_grad(fgrad=False)
 
         try:
             self.__FormulaObj.evaluate(eval_dict)
         except:
-            ERROR_MSG=self.ERROR_MSG+' Failed to evaluate parameter '+self.get_id()+' of expression: '+self.__fexpr
+            ERROR_MSG = self.ERROR_MSG + ' Failed to evaluate parameter ' + self.get_id() + ' of expression: ' + self.__fexpr
             raise Exception(ERROR_MSG)
 
-        value    = self.__FormulaObj.get_value()
-        self.set_value(value,flag_updates=False)
+        value = self.__FormulaObj.get_value()
+        self.set_value(value, flag_updates=False)
 
         if self.is_gradient_active():
             gradient = self.__FormulaObj.get_gradient()

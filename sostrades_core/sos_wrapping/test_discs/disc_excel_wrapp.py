@@ -44,14 +44,14 @@ class DiscExcelWrapp(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'df': {'type': 'dataframe','dataframe_descriptor': {'days': ('float', None, True),
+        'df': {'type': 'dataframe', 'dataframe_descriptor': {'days': ('float', None, True),
                                            'quantity': ('float', None, True)}}
     }
     DESC_OUT = {
         'df_out': {'type': 'dataframe'}
     }
 
-    FILENAME ='excel_example.xlsx'
+    FILENAME = 'excel_example.xlsx'
     SHEETNAME = 'pricing with team'
 
     def run(self):

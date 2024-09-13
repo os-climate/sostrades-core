@@ -10,7 +10,7 @@
 > In SoSTrades, a group of SoSDisciplines interacting together.
 
 * Usecase
-> In SosTrades, allows to define a set of input variables for a study and to run this study with thus values. 
+> In SosTrades, allows to define a set of input variables for a study and to run this study with thus values.
 
 * Coupling
 > In SoSTrades and Gemseo, coupling means associating output variables of a model to the input variables of another model.

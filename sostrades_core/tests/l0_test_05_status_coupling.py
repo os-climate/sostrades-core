@@ -83,7 +83,7 @@ class TestStatusCoupling(unittest.TestCase):
 
         _thread.start_new_thread(self.test_01_execute, ())
 
-        while(time.time() - t0 < 3):
+        while (time.time() - t0 < 3):
             if self.process.status in self.dic_status.keys():
                 self.dic_status[self.process.status] = True
 

@@ -24,7 +24,7 @@ from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_couplin
     Study as study_disc1_disc2,
 )
 
-#from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var.usecase import Study as study_sellar_opt
+# from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var.usecase import Study as study_sellar_opt
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
     Study as study_sellar_mda,
 )

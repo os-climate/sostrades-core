@@ -383,15 +383,12 @@ class ProxySampleGenerator(ProxyDiscipline):
             # remove the tornado chart analysis discipline
             if self.analysis_disc is not None:
 
-
                 self.father_executor.remove_discipline(self.analysis_disc)
                 self.ee.factory.remove_sos_discipline(self.analysis_disc)
-
 
                 ns = self.ee.ns_manager.shared_ns_dict[TornadoChartAnalysisSampleGenerator.NS_ANALYSIS]
                 self.ee.ns_manager.clean_namespace_from_discipline(ns, self.analysis_disc)
                 self.ee.ns_manager.clean_namespace_from_discipline(ns, self)
-
 
                 self.analysis_disc = None
 

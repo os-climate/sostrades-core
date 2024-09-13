@@ -23,6 +23,7 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 
+
 class TestVisibility(unittest.TestCase):
     """
     Visibility test class

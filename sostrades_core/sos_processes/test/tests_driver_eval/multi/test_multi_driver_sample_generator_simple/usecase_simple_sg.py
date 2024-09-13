@@ -42,6 +42,7 @@ class Study(StudyManager):
         dict_values[self.study_name + '.multi_scenarios.Reference Scenario.z'] = self.z
         return [dict_values]
 
+
 if '__main__' == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()

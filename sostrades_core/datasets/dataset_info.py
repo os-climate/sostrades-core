@@ -33,11 +33,11 @@ class DatasetInfo:
     dataset_id: str
 
     @property
-    def dataset_info_id(self)->str:
+    def dataset_info_id(self) -> str:
         return DatasetInfo.get_mapping_id(self.connector_id, self.dataset_id)
 
     @staticmethod
-    def get_mapping_id(id1:str, id2:str )->str:
+    def get_mapping_id(id1: str, id2: str) -> str:
         return DatasetInfo.SEPARATOR.join(id1, id2)
 
     @staticmethod

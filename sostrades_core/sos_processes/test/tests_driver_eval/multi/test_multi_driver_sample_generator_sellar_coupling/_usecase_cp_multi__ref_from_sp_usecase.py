@@ -35,7 +35,7 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
 
-        #======================================================================
+        # ======================================================================
         # dict_of_list_values = {
         #     'SellarCoupling.x': [array([3.]), array([4.])],
         #     'SellarCoupling.z': [array([-10., 0.])],
@@ -43,7 +43,7 @@ class Study(StudyManager):
         #     'SellarCoupling.y_1': [array([1.])],
         #     'SellarCoupling.y_2': [array([1.])]
         # }
-        #======================================================================
+        # ======================================================================
 
         dict_of_list_values = {
             'SellarCoupling.x': [array([3.]), array([4.])],

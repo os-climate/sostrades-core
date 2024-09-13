@@ -26,7 +26,6 @@ class AbstractDatasetsConnector(abc.ABC):
     """
     __logger = logging.getLogger(__name__)
 
-
     NAME = "name"
     UNIT = "unit"
     DESCRIPTION = "description"
@@ -77,7 +76,7 @@ class AbstractDatasetsConnector(abc.ABC):
         return values_to_write
 
     @abc.abstractmethod
-    def get_values_all(self, dataset_identifier: str, data_types_dict:dict[str:str]) -> dict[str:Any]:
+    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to get all values from a dataset for a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -93,7 +92,7 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
     @abc.abstractmethod
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False) -> dict[str:Any]:
+    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -110,7 +109,7 @@ class AbstractDatasetsConnector(abc.ABC):
         """
         return values_to_write
 
-    def copy_dataset_from(self, connector_from:AbstractDatasetsConnector, dataset_identifier: str, data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False):
+    def copy_dataset_from(self, connector_from: AbstractDatasetsConnector, dataset_identifier: str, data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False):
         """
         Copies a dataset from another AbstractDatasetsConnector
         :param connector_from: Connector to copy dataset from
@@ -128,8 +127,7 @@ class AbstractDatasetsConnector(abc.ABC):
         dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier, data_types_dict=data_types_dict)
         self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, data_types_dict=data_types_dict, create_if_not_exists=create_if_not_exists, override=override)
 
-
-    def copy_all_datasets_from(self, connector_from:AbstractDatasetsConnector, data_types_dict:dict[str:str], create_if_not_exists:bool=True, override:bool=False):
+    def copy_all_datasets_from(self, connector_from: AbstractDatasetsConnector, data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False):
         """
         Copies all datasets from another AbstractDatasetsConnector
         :param connector_from: Connector to copy dataset from
@@ -191,32 +189,36 @@ class AbstractDatasetsConnector(abc.ABC):
     def extract_metadata_from_data(self, data_to_extract: dict[str:dict[str:Any]]) -> dict[str:dict[str:str]]:
         return {key: self._extract_metadata_from_datum(_datum) for key, _datum in data_to_extract.items()}
 
+
 class DatasetGenericException(Exception):
     """
     Generic exception for datasets
     """
     pass
 
+
 class DatasetNotFoundException(DatasetGenericException):
     """
     Exception when a dataset is not found
     """
-    def __init__(self, dataset_name:str):
+    def __init__(self, dataset_name: str):
         self.dataset_name = dataset_name
         super().__init__(f"Dataset '{dataset_name}' not found")
+
 
 class DatasetDeserializeException(DatasetGenericException):
     """
     Exception when a dataset deserializing
     """
-    def __init__(self, dataset_name:str, error_message:str):
+    def __init__(self, dataset_name: str, error_message: str):
         self.dataset_name = dataset_name
         super().__init__(f"Error reading dataset '{dataset_name}': \n{error_message}")
+
 
 class DatasetUnableToInitializeConnectorException(DatasetGenericException):
     """
     Exception when an error occurs during dataset initialization
     """
-    def __init__(self, connector_type:AbstractDatasetsConnector):
+    def __init__(self, connector_type: AbstractDatasetsConnector):
         self.connector_type = connector_type
         super().__init__(f"Unable to initialize connector of type {connector_type}")

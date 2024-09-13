@@ -203,7 +203,7 @@ class Sellar2(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'debug_mode_sellar': {'type': 'bool', 'default':False, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+               'debug_mode_sellar': {'type': 'bool', 'default': False, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'array',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
