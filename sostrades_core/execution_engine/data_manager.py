@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2024/08/01 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ from pandas import concat
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.ontology_variables.ontology_variable_key import create_data_key
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
 
@@ -69,6 +70,8 @@ class ParameterChange:
     dataset_id: Union[str, None]
     dataset_parameter_id: Union[str, None]
     date: datetime
+    dataset_data_path: str
+    variable_key:str
 
 
 class DataManager:
@@ -466,11 +469,20 @@ class DataManager:
                     new_value = new_data[DatasetsManager.VALUE]
                     connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
                     dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_id
+                    dataset_data_name = datasets_info[new_data[DatasetsManager.DATASET_INFO]].get(data_name,data_name)
+                    dataset_data_path = self.dataset_manager.get_path_to_dataset_data(new_data[DatasetsManager.DATASET_INFO],
+                                                                                 dataset_data_name,
+                                                                                 data_dict[TYPE][data_name])
+                    io_type = self.data_dict[key][ProxyDiscipline.IO_TYPE]
+                    discipline_name = self.disciplines_dict.get(self.data_dict[key].get('model_origin')).get('model_name_full_path')
+                    variable_key = create_data_key(discipline_name, io_type, data_name)
                     # dataset_parameter_id = new_data[DatasetsManager.DATASET_INFO].dataset_parameter_id
                     self.apply_parameter_change(key, new_value, parameter_changes,
                                                 connector_id=connector_id,
                                                 dataset_id=dataset_id,
-                                                dataset_parameter_id=None)
+                                                dataset_parameter_id=None,
+                                                dataset_data_path=dataset_data_path,
+                                                variable_key=variable_key)
                     already_set_data.add(key)
             else:
                 self.logger.warning(f"the namespace {namespace} is not referenced in the datasets mapping of the study")
@@ -482,6 +494,8 @@ class DataManager:
                                connector_id: (str, None) = None,
                                dataset_id: (str, None) = None,
                                dataset_parameter_id: (str, None) = None,
+                               dataset_data_path:(str, None) = None,
+                               variable_key:str = None,
                                update_parameter_changes: bool = True) -> None:
         """
         Applies and logs an input value change on variable with uuid key. It appends to parameter_changes a
@@ -493,6 +507,8 @@ class DataManager:
         :param connector_id: dataset connector id if updating from dataset or None otherwise
         :param dataset_id: dataset id if updating from dataset or None otherwise
         :param dataset_parameter_id: id of the parameter in the dataset if updating from dataset or None otherwise  # todo: WIP!
+        :param dataset_data_path: path to the parameter in the dataset if updating from dataset or None otherwise
+        :param variable_key: ontology key
         :return: None, inplace update of the data manager value for variable
         """
         dm_data = self.data_dict[key]
@@ -506,7 +522,9 @@ class DataManager:
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
                                                          dataset_parameter_id=dataset_parameter_id,
-                                                         date=datetime.now()))
+                                                         date=datetime.now(),
+                                                         dataset_data_path=dataset_data_path,
+                                                         variable_key=variable_key))
         dm_data[VALUE] = new_value
 
     def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> None:
@@ -558,6 +576,14 @@ class DataManager:
                     type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
                     connector_id = datasets_mapping.datasets_infos[dataset].connector_id
                     dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
+                    dataset_data_path = self.dataset_manager.get_path_to_dataset_data(datasets_mapping.datasets_infos[dataset],
+                                                                                 data_dataset_name,
+                                                                                 type)
+                    #build ontology key
+                    io_type = self.data_dict[key][ProxyDiscipline.IO_TYPE]
+                    discipline_name = self.disciplines_dict.get(self.data_dict[key].get('model_origin')).get('model_name_full_path')
+                    variable_key = create_data_key(discipline_name, io_type, self.data_dict[key].get('var_name'))
+
                     exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                          variable_type=type,
                                                          old_value=deepcopy(mapping_dict[DatasetsMapping.VALUE][data_dataset_name]),
@@ -565,7 +591,9 @@ class DataManager:
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
                                                          dataset_parameter_id=key,
-                                                         date=datetime.now()))
+                                                         date=datetime.now(),
+                                                         dataset_data_path=dataset_data_path,
+                                                         variable_key=variable_key))
 
         return exported_parameters
 
@@ -606,12 +634,7 @@ class DataManager:
         if 'numerical' in excepted:
             exception_list = list(ProxyDiscipline.NUM_DESC_IN.keys())
 
-        if 'None' in excepted:
-            data_dict_values = {key: value.get(attr, None)
-                                for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
-        else:
-            data_dict_values = {key: value.get(attr, None)
-                                for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
+        data_dict_values = {key: value.get(attr, None) for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
 
         return data_dict_values
 

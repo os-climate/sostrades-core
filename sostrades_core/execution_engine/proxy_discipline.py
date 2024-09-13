@@ -151,6 +151,7 @@ class ProxyDiscipline:
     IS_EVAL = 'is_eval'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     VARIABLE_KEY = 'variable_key'  # key for ontology
+    SIZE_MO = 'size_mo' #size of a data
 
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]

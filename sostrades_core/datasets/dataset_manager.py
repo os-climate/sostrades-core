@@ -129,6 +129,35 @@ class DatasetsManager:
             raise DatasetGenericException(f'Error exporting dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return dataset_values
 
+    def get_path_to_dataset_data(self, dataset_info: DatasetInfo, data_name:str, data_type:str)-> str:
+        """
+        get path/link/uri to retrieve the dataset data
+
+        :param dataset_info: dataset in witch the data is
+        :type dataset_info: DatasetInfo
+
+        :param data_name: data name to build the path
+        :type data_name: str
+
+        :param data_type: type of the data in dataset
+        :type data_type: str
+
+        :return: path/link/uri (str) to dataset data
+        """
+        path_to_dataset_data = ""
+        try:
+            # Get the dataset, creates it if not exists
+            dataset = self.get_dataset(dataset_info=dataset_info)
+
+            # get path
+            path_to_dataset_data = dataset.connector.build_path_to_data(dataset_identifier=dataset_info.dataset_id,
+                                                                        data_name=data_name,
+                                                                        data_type=data_type)
+        except DatasetGenericException as exception:
+            raise DatasetGenericException(f'Error finding path of data {data_name} into dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
+        return path_to_dataset_data
+
+
     def __create_dataset(self, dataset_info: DatasetInfo) -> Dataset:
         """
         Private method

@@ -32,6 +32,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
     COL_NAME_ALLOWED_CHAR_0 = set(ascii_letters + '_')
     COL_NAME_ALLOWED_CHAR_1 = set(digits)
     REPLACEMENT_FORBIDDEN_CHAR = "_"
+    COL_INDEX = "__index__"
 
     def __init__(self):
         super().__init__()
@@ -127,6 +128,12 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
     def _serialize_dataframe(self, data_value, data_name):
         _renamer = dict()
         _all_new_cols = set()
+
+        # add the index column into the dataframe to save the index and retrieve it
+        # copy the df so that the true dataframe is not impacted
+        data_value = data_value.copy(deep=True)
+        data_value[self.COL_INDEX] = data_value.index
+
         for old_col_name in data_value.columns:
             new_col_name = self.__format_bigquery_col_name(old_col_name)
             new_index = self.__col_name_index.get(data_name, dict())
@@ -140,7 +147,17 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
         return data_value.rename(columns=_renamer, copy=True)
 
     def _deserialize_dataframe(self, data_value, data_name):
-        return data_value.rename(columns=self.__col_name_index[data_name])
+        converted_df = data_value.rename(columns=self.__col_name_index[data_name])
+
+        # reorder rows with index column
+        if self.COL_INDEX in converted_df.columns:
+            converted_df = converted_df.sort_values(by=self.COL_INDEX)
+            # set the index
+            converted_df = converted_df.set_index(self.COL_INDEX)
+            # remove the name __index__ from the index
+            converted_df.index.name = None
+
+        return converted_df
 
     def _serialize_array(self, data_value, data_name):
         return {self.LIST_VALUE: self._serialize_sub_element_jsonifiable(data_value.tolist())}
@@ -186,7 +203,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
                                 np.int16, np.int32, np.int64, np.uint8,
                                 np.uint16, np.uint32, np.uint64)):
 
-               json_value.append(int(element))
+                json_value.append(int(element))
 
             elif isinstance(element, (np.float_, np.float16, np.float32, np.float64)):
                 json_value.append(float(element))

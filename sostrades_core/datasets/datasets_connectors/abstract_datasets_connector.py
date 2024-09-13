@@ -109,6 +109,20 @@ class AbstractDatasetsConnector(abc.ABC):
         """
         return values_to_write
 
+
+    def build_path_to_data(self, dataset_identifier:str, data_name:str, data_type:str)->str:
+        """
+        Method that can be overloaded in order to build the path to a dataset data for a specific API
+        :param dataset_identifier: dataset identifier into connector
+        :type dataset_identifier: str
+        :param data_name: data in dataset
+        :type data_name: str
+        :param data_type: type of the data in dataset
+        :type data_type: str
+        :return: path/url/uri to find the dataset data
+        """
+        return ""
+
     def copy_dataset_from(self, connector_from: AbstractDatasetsConnector, dataset_identifier: str, data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False):
         """
         Copies a dataset from another AbstractDatasetsConnector

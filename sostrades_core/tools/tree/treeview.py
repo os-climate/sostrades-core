@@ -16,6 +16,8 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.base_functions.compute_size import compute_data_size_in_Mo
+from sostrades_core.tools.ontology_variables.ontology_variable_key import create_data_key
 from sostrades_core.tools.tree.data_management_discipline import (
     DataManagementDiscipline,
 )
@@ -77,10 +79,10 @@ class TreeView:
             from importlib import import_module
             documentation_folder = import_module(process_module).__file__
 
-            if documentation_folder != '':
+            # if documentation_folder != '':
 
-                self.root.add_markdown_documentation(TreeNode.get_markdown_documentation(
-                    documentation_folder), TreeView.PROCESS_DOCUMENTATION)
+            #     self.root.add_markdown_documentation(TreeNode.get_markdown_documentation(
+            #         documentation_folder), TreeView.PROCESS_DOCUMENTATION)
         except:
             pass
 
@@ -155,7 +157,7 @@ class TreeView:
                     and var_name in discipline_info['reference']._data_out.keys():
                     io_type = 'out'
 
-            treenode.data[key][ProxyDiscipline.VARIABLE_KEY] = treenode.create_data_key(model_name_full_path, io_type, val['var_name'])
+            treenode.data[key][ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type, val['var_name'])
 
             if key in treenode.disc_data:
                 treenode.data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = \
@@ -163,6 +165,11 @@ class TreeView:
 
             if self.read_only:
                 treenode.data[key][ProxyDiscipline.EDITABLE] = False
+
+            treenode.data[key][ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(treenode.data[key][ProxyDiscipline.VALUE])
+
+
+
 
     def set_treenode_discipline_data(self, treenode, key, val, disc_dict):
 
@@ -181,10 +188,13 @@ class TreeView:
                     and var_name in discipline_info['reference']._data_out.keys():
                     io_type = 'out'
 
-            temp_data[ProxyDiscipline.VARIABLE_KEY] = treenode.create_data_key(model_name_full_path, io_type, val['var_name'])
+            temp_data[ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type, val['var_name'])
 
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False
+
+            temp_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(val[ProxyDiscipline.VALUE])
+
 
             if key not in treenode.disciplines_by_variable.keys():
                 # create data management discipline DATA
@@ -213,6 +223,10 @@ class TreeView:
                         treenode.data_management_disciplines[discipline_key].disciplinary_inputs[key] = temp_data
                     elif temp_data[ProxyDiscipline.IO_TYPE] == 'out':
                         treenode.data_management_disciplines[discipline_key].disciplinary_outputs[key] = temp_data
+
+
+
+
 
     def add_treenode(self, discipline, namespace=None):
         """ Add a new treenode to the treeview.

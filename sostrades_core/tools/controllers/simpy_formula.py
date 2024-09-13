@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/09/19-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/09/19-2024/08/01 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -87,7 +87,8 @@ def my_transformation(tokens, local_dict, global_dict):
             current_token = tokens[i]
 
         if current_token[0] == NAME and i + 1 < len(tokens):
-            while i + 1 < len(tokens) and tokens[i + 1][1] != '' and tokens[i + 1][1][0] == '.':
+            # Explicit comparison for code clarity
+            while i + 1 < len(tokens) and tokens[i + 1][1] != '' and tokens[i + 1][1][0] == '.':  # noqa: PLC1901
 
                 if tokens[i + 1][0] == OP:
                     current_token = (NAME, DOT_CHAR.join(
@@ -147,7 +148,7 @@ class SympyFormula():
         """
         if simplify_expr:
             if simpl_func is not None:
-                "(" + str(simpl_func(self.__fexpr_sympy.diff(atom))
+                return "(" + str(simpl_func(self.__fexpr_sympy.diff(atom))
                           ) + ")*d" + str(atom)
             else:
                 return "(" + str(factor(self.__fexpr_sympy.diff(atom))
