@@ -15,7 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
 
 class ProcessBuilder(BaseProcessBuilder):
