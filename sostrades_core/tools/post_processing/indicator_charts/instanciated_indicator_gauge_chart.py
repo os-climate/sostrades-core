@@ -27,12 +27,12 @@ Class that define a pie chart display as post post processing
 """
 
 
-class InstanciatedIndicatorChartException(Exception):
+class InstantiatedIndicatorChartException(Exception):
     """ Overload Exception basic type
     """
 
 
-class InstanciatedIndiactorChart(AbstractPostProcessingPlotlyTooling):
+class InstantiatedIndicatorChart(AbstractPostProcessingPlotlyTooling):
     """ Class that define a pie chart display as post post processing
     """
 
