@@ -118,7 +118,7 @@ class DatasetsMapping:
                     # TODO: version not handled
                     namespace = mapping_key_fields[DatasetsMapping.NAMESPACE_VALUE]
                     parameter = mapping_key_fields[DatasetsMapping.PARAMETER_NAME]
-                    namespace_datasets_mapping[namespace] = []
+                    namespace_datasets_mapping[namespace] = namespace_datasets_mapping.get(namespace, [])
 
                     for dataset in datasets:
                         dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
@@ -136,7 +136,8 @@ class DatasetsMapping:
                         if dataset_info_id not in datasets_infos:
                             datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id)
 
-                        namespace_datasets_mapping[namespace].append(dataset_info_id)
+                        if dataset_info_id not in namespace_datasets_mapping[namespace]:
+                            namespace_datasets_mapping[namespace].append(dataset_info_id)
 
                         # update dataset, namespace, parameter associations
                         parameters_mapping[dataset_info_id] = parameters_mapping.get(dataset_info_id, {})
