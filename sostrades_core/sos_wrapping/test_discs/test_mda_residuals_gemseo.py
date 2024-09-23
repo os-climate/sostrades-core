@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from gemseo import create_discipline, create_mda
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from numpy import array, ndarray
 
@@ -177,7 +177,7 @@ def res_disciplines() -> list[MDODiscipline]:
 
 def test_residuals_mda(res_disciplines) -> None:
     """Test MDA execution with residuals variables in disciplines."""
-    coupling_structure = MDOCouplingStructure(res_disciplines)
+    coupling_structure = CouplingStructure(res_disciplines)
     for disc in res_disciplines:
         assert not coupling_structure.is_self_coupled(disc)
     mda = create_mda("MDAChain", disciplines=res_disciplines)
@@ -188,7 +188,7 @@ def test_residuals_mda(res_disciplines) -> None:
     for disc in res_disciplines:
         disc.linearize(compute_all_jacobians=True)
 
-    assembly = JacobianAssembly(MDOCouplingStructure(res_disciplines))
+    assembly = JacobianAssembly(CouplingStructure(res_disciplines))
     assembly.compute_sizes(
         ["obj"],
         variables=["x"],

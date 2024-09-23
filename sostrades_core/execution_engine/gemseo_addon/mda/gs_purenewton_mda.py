@@ -30,7 +30,7 @@ from sostrades_core.execution_engine.gemseo_addon.mda.pure_newton_raphson import
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 if TYPE_CHECKING:
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_purenewton_mda")
@@ -54,7 +54,7 @@ class GSPureNewtonMDA(MDASequential):
         scaling_method: MDASequential.ResidualScaling = MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        coupling_structure: MDOCouplingStructure = None,
+        coupling_structure: CouplingStructure = None,
         linear_solver_options: Mapping[str, Any] | None = None,
         log_convergence: bool = False,
         **newton_mda_options,

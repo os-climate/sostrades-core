@@ -31,7 +31,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
 )
 
 if TYPE_CHECKING:
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
@@ -53,7 +53,7 @@ class PureNewtonRaphson(BaseMDARoot):
         scaling_method: BaseMDARoot.ResidualScaling = BaseMDARoot.ResidualScaling.N_COUPLING_VARIABLES,
         warm_start: bool = False,  # type: bool
         use_lu_fact: bool = False,  # type: bool
-        coupling_structure: MDOCouplingStructure = None,  # type: Optional[MDOCouplingStructure]
+        coupling_structure: CouplingStructure | None = None,  # type: Optional[MDOCouplingStructure]
         log_convergence: bool = False,  # type:bool
         linear_solver_options: Mapping[str, Any] | None = None,  # type: Mapping[str,Any]
         n_processes=1,

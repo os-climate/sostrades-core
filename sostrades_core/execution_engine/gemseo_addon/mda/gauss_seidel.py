@@ -31,7 +31,7 @@ from numpy import array
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 if TYPE_CHECKING:
-    from gemseo.core.coupling_structure import MDOCouplingStructure
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline import MDODiscipline
 
 
@@ -52,7 +52,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         warm_start: bool = False,
         use_lu_fact: bool = False,
         over_relaxation_factor: float = 1.0,
-        coupling_structure: MDOCouplingStructure | None = None,
+        coupling_structure: CouplingStructure | None = None,
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
         linear_solver_options: Mapping[str, Any] | None = None,

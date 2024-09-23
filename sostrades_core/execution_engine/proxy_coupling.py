@@ -24,7 +24,7 @@ from typing import List
 import numpy as np
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.sequential_mda import MDASequential
 from numpy import ndarray
@@ -447,9 +447,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def _build_coupling_structure(self):
         """
-        Build MDOCouplingStructure
+        Build CouplingStructure
         """
-        self.coupling_structure = MDOCouplingStructure(self.proxy_disciplines)
+        self.coupling_structure = CouplingStructure(self.proxy_disciplines)
         self.strong_couplings = filter_variables_to_convert(self.ee.dm.convert_data_dict_with_full_name(),
                                                             self.coupling_structure.strong_couplings,
                                                             write_logs=True, logger=self.logger)
