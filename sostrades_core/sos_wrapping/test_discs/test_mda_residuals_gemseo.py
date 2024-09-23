@@ -12,20 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Copyright 2022 IRT Saint Exupéry, https://www.irt-saintexupery.com
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License version 3 as published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -44,9 +30,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline
 
 
-def disc_1_expr(
-    w1: float = 0.0, y2: float = 2.0, x: float = 3.0
-) -> tuple[float, float, float]:
+def disc_1_expr(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> tuple[float, float, float]:
     """A linear function with residuals. First toy discipline.
 
     Args:
@@ -82,9 +66,7 @@ def disc_1_expr_jac(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> ndarray
     return d_y_w_r_d_w_y_x  # noqa: RET504
 
 
-def disc_2_expr(
-    w2: float = 3.0, y1: float = 1.0, x: float = 2.0
-) -> tuple[float, float, float]:
+def disc_2_expr(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> tuple[float, float, float]:
     """A linear function with residuals. Second toy discipline.
 
     Args:
@@ -151,26 +133,20 @@ def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray
     return d_obj_d_y1_y2_x  # noqa: RET504
 
 
-@pytest.fixture()
+@pytest.fixture
 def res_disciplines() -> list[MDODiscipline]:
     """Create the three disciplines required to make a MDA with residual variables.
 
     Returns:
         The disciplines instances.
     """
-    d1 = create_discipline(
-        "AutoPyDiscipline", py_func=disc_1_expr, py_jac=disc_1_expr_jac
-    )
+    d1 = create_discipline("AutoPyDiscipline", py_func=disc_1_expr, py_jac=disc_1_expr_jac)
     d1.residual_variables = {"r1": "w1"}
     d1.run_solves_residuals = True
-    d2 = create_discipline(
-        "AutoPyDiscipline", py_func=disc_2_expr, py_jac=disc_2_expr_jac
-    )
+    d2 = create_discipline("AutoPyDiscipline", py_func=disc_2_expr, py_jac=disc_2_expr_jac)
     d2.residual_variables = {"r2": "w2"}
     d2.run_solves_residuals = True
-    d3 = create_discipline(
-        "AutoPyDiscipline", py_func=disc_3_expr, py_jac=disc_3_expr_jac
-    )
+    d3 = create_discipline("AutoPyDiscipline", py_func=disc_3_expr, py_jac=disc_3_expr_jac)
 
     return [d1, d2, d3]
 
