@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import glob
 import inspect
 import logging
@@ -31,9 +33,7 @@ PROCESS_IN_PARALLEL = 5
 
 
 class AbstractJacobianUnittest(unittest.TestCase, ABC):
-    """
-    unit test jacobian management implement
-    """
+    """unit test jacobian management implement"""
 
     DUMP_JACOBIAN_ENV_VAR = "DUMP_JACOBIAN_UNIT_TEST"
     PICKLE_DIRECTORY = 'jacobian_pkls'
@@ -42,9 +42,10 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         super().__init__(*args, **kwargs)
         self.__override_dump_jacobian = False
 
-    def generate_analytic_gradient_pickle(self, test_names=[]):
-        """ Main method to launch associated jacobian test and force dump of jacobian pickle
-        """
+    def generate_analytic_gradient_pickle(self, test_names=None):
+        """Main method to launch associated jacobian test and force dump of jacobian pickle"""
+        if test_names is None:
+            test_names = []
         local_logger = logging.getLogger(__name__)
         jacobian_test_entries = self.analytic_grad_entry()
 
@@ -59,13 +60,12 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
             if not is_in_list:
                 continue
             try:
-                local_logger.info(
-                    f'Jacobian launched on {str(entry)}')
+                local_logger.info(f'Jacobian launched on {entry!s}')
                 self.setUp()
                 self.override_dump_jacobian = True
                 entry()
             except Exception as ex:
-                local_logger.exception(f'Jacobian fail on {str(entry)}', exc_info=ex)
+                local_logger.exception(f'Jacobian fail on {entry!s}', exc_info=ex)
 
     @property
     def dump_jacobian(self):
@@ -80,73 +80,95 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
 
     @property
     def override_dump_jacobian(self):
-        """
-        Whether to force a jacobian recomputation and dump ONLY for the next check_jacobian call.
-        """
+        """Whether to force a jacobian recomputation and dump ONLY for the next check_jacobian call."""
         return self.__override_dump_jacobian
 
     @override_dump_jacobian.setter
     def override_dump_jacobian(self, do_override):
-        """
-        Whether to force a jacobian recomputation and dump ONLY for the next check_jacobian call.
-        """
+        """Whether to force a jacobian recomputation and dump ONLY for the next check_jacobian call."""
         self.__override_dump_jacobian = bool(do_override)
 
-
     def analytic_grad_entry(self):
-        """ Method to overload with jacobian test in order to be dump with the automated script
-        """
-        raise TypeError('test_analytic_gradient must be overloaded')
+        """Method to overload with jacobian test in order to be dump with the automated script"""
+        msg = 'test_analytic_gradient must be overloaded'
+        raise TypeError(msg)
 
-    def check_jacobian(self, location, filename, discipline, local_data, inputs, outputs,
-                       step=1e-15, derr_approx='complex_step',
-                       input_column=None, output_column=None, threshold=1e-8, parallel=False,
-                       n_processes=5, linearization_mode=MDODiscipline.LinearizationMode.AUTO,
-                       directory=PICKLE_DIRECTORY):
-        """ Method that encapsulate check_jacobian call in order to witch between loading and dumping mode
-        """
-
+    def check_jacobian(
+        self,
+        location,
+        filename,
+        discipline,
+        local_data,
+        inputs,
+        outputs,
+        step=1e-15,
+        derr_approx='complex_step',
+        input_column=None,
+        output_column=None,
+        threshold=1e-8,
+        parallel=False,
+        n_processes=5,
+        linearization_mode=MDODiscipline.LinearizationMode.AUTO,
+        directory=PICKLE_DIRECTORY,
+    ):
+        """Method that encapsulate check_jacobian call in order to witch between loading and dumping mode"""
         if n_processes > N_CPUS:
             n_processes = N_CPUS
 
         local_logger = logging.getLogger(__name__)
 
-        file_path = join(location, directory,
-                         filename)
+        file_path = join(location, directory, filename)
 
         if self.override_dump_jacobian or self.dump_jacobian:
-            local_logger.info(
-                f'Jacobian dump mode enable on {join(location, filename)}')
-            check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
-                                                   outputs=outputs, derr_approx=derr_approx, threshold=threshold,
-                                                   dump_jac_path=file_path, input_column=input_column,
-                                                   output_column=output_column, parallel=parallel,
-                                                   n_processes=n_processes, linearization_mode=linearization_mode)
+            local_logger.info(f'Jacobian dump mode enable on {join(location, filename)}')
+            check_flag = discipline.check_jacobian(
+                step=step,
+                inputs=inputs,
+                input_data=local_data,
+                outputs=outputs,
+                derr_approx=derr_approx,
+                threshold=threshold,
+                dump_jac_path=file_path,
+                input_column=input_column,
+                output_column=output_column,
+                parallel=parallel,
+                n_processes=n_processes,
+                linearization_mode=linearization_mode,
+            )
         else:
-            check_flag = discipline.check_jacobian(step=step, inputs=inputs, input_data=local_data,
-                                                   outputs=outputs, derr_approx=derr_approx, threshold=threshold,
-                                                   load_jac_path=file_path, input_column=input_column,
-                                                   output_column=output_column, parallel=parallel,
-                                                   n_processes=n_processes, linearization_mode=linearization_mode)
+            check_flag = discipline.check_jacobian(
+                step=step,
+                inputs=inputs,
+                input_data=local_data,
+                outputs=outputs,
+                derr_approx=derr_approx,
+                threshold=threshold,
+                load_jac_path=file_path,
+                input_column=input_column,
+                output_column=output_column,
+                parallel=parallel,
+                n_processes=n_processes,
+                linearization_mode=linearization_mode,
+            )
 
         self.override_dump_jacobian = False  # Note systematic de-activation after each check
-        self.assertTrue(check_flag, msg=f"Wrong gradient in {discipline.name}")
+        assert check_flag, f"Wrong gradient in {discipline.name}"
 
     @staticmethod
-    def launch_all_pickle_generation(root_module, file_regex='l1*.py', directories=[PICKLE_DIRECTORY], test_names=[]):
-        """ Static method that look for jacobian test to generate associated pickle (in the given folder)
-            and then push newly generated files into git repository
+    def launch_all_pickle_generation(root_module, file_regex='l1*.py', directories=None, test_names=None):
+        """Static method that look for jacobian test to generate associated pickle (in the given folder)
+        and then push newly generated files into git repository
         """
-
+        if test_names is None:
+            test_names = []
+        if directories is None:
+            directories = [PICKLE_DIRECTORY]
         root_dir = dirname(root_module.__file__)
         local_logger = logging.getLogger(__name__)
-        local_logger.info(
-            f'Looking for L1 tests into {root_dir}')
+        local_logger.info(f'Looking for L1 tests into {root_dir}')
 
-        l1_list = glob.glob(
-            join(root_dir, file_regex))
-        local_logger.info(
-            f'found files {l1_list}')
+        l1_list = glob.glob(join(root_dir, file_regex))
+        local_logger.info(f'found files {l1_list}')
 
         process_list = []
 
@@ -157,24 +179,25 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
             try:
                 a = import_module(module_name)
                 for name, obj in inspect.getmembers(a):
-                    if inspect.isclass(obj) and issubclass(obj,
-                                                           AbstractJacobianUnittest) and name != AbstractJacobianUnittest.__name__:
-                        local_logger.info(
-                            f'Execute jacobian dump on {module_name}')
+                    if (
+                        inspect.isclass(obj)
+                        and issubclass(obj, AbstractJacobianUnittest)
+                        and name != AbstractJacobianUnittest.__name__
+                    ):
+                        local_logger.info(f'Execute jacobian dump on {module_name}')
                         inst = obj()
                         process_list.append(
-                            Process(target=inst.generate_analytic_gradient_pickle(test_names=test_names)))
+                            Process(target=inst.generate_analytic_gradient_pickle(test_names=test_names))
+                        )
             except Exception as ex:
-                local_logger.error(f'Error on module : {module_name}\n{ex}')
+                local_logger.exception(f'Error on module : {module_name}\n{ex}')
 
         if len(process_list) > 0:
-
             while len(process_list) > 0:
                 candidate_process = []
 
                 if len(process_list) > PROCESS_IN_PARALLEL:
-                    candidate_process = [process_list.pop()
-                                         for index in range(PROCESS_IN_PARALLEL)]
+                    candidate_process = [process_list.pop() for index in range(PROCESS_IN_PARALLEL)]
                 else:
                     candidate_process = process_list
                     process_list = []

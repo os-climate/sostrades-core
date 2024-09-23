@@ -17,24 +17,24 @@ limitations under the License.
 
 from __future__ import annotations
 
-from multiprocessing import cpu_count
 from typing import TYPE_CHECKING, Any, ClassVar, Mapping, Sequence
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.core.chain import MDOChain
 from gemseo.mda.mda_chain import MDAChain
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from numpy import floating, ndarray
 from pandas import DataFrame
 
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
-from gemseo.utils.constants import N_CPUS
 
 if TYPE_CHECKING:
     from logging import Logger
 
     from gemseo.core.discipline import MDODiscipline
+
 
 def get_available_linear_solvers():
     """Get available linear solvers list."""
