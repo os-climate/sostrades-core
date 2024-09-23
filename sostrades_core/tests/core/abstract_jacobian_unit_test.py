@@ -25,6 +25,7 @@ from multiprocessing import Process
 from os.path import basename, dirname, join
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.constants import N_CPUS
 
 PROCESS_IN_PARALLEL = 5
 
@@ -105,8 +106,8 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         """ Method that encapsulate check_jacobian call in order to witch between loading and dumping mode
         """
 
-        if n_processes > MDODiscipline.N_CPUS:
-            n_processes = MDODiscipline.N_CPUS
+        if n_processes > N_CPUS:
+            n_processes = N_CPUS
 
         local_logger = logging.getLogger(__name__)
 

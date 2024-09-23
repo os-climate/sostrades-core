@@ -29,14 +29,12 @@ from pandas import DataFrame
 
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
+from gemseo.utils.constants import N_CPUS
 
 if TYPE_CHECKING:
     from logging import Logger
 
     from gemseo.core.discipline import MDODiscipline
-
-N_CPUS = cpu_count()
-
 
 def get_available_linear_solvers():
     """Get available linear solvers list."""
@@ -207,7 +205,7 @@ class SoSMDAChain(MDAChain):
         inputs=None,
         outputs=None,
         parallel=False,
-        n_processes=MDAChain.N_CPUS,
+        n_processes=N_CPUS,
         use_threading=False,
         wait_time_between_fork=0,
         auto_set_step=False,

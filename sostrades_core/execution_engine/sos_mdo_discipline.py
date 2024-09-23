@@ -26,6 +26,7 @@ from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from numpy import floating, ndarray
 from pandas import DataFrame
 from scipy.sparse import lil_matrix
+from gemseo.utils.constants import N_CPUS
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
@@ -172,7 +173,7 @@ class SoSMDODiscipline(MDODiscipline):
     def check_jacobian(self, input_data=None, derr_approx=ApproximationMode.FINITE_DIFFERENCES,
                        step=1e-7, threshold=1e-8, linearization_mode=MDODiscipline.LinearizationMode.AUTO,
                        inputs=None, outputs=None, parallel=False,
-                       n_processes=MDODiscipline.N_CPUS,
+                       n_processes=N_CPUS,
                        use_threading=False, wait_time_between_fork=0,
                        auto_set_step=False, plot_result=False,
                        file_path="jacobian_errors.pdf",

@@ -40,7 +40,7 @@ from sostrades_core.tools.tree.serializer import (
     generate_unique_data_csv,
 )
 
-N_CPUS = cpu_count()
+from gemseo.utils.constants import N_CPUS
 
 
 def init_dict(dtype, unit=None, value=None, st_name=None, visi=None, ns=None, var_name=None):
