@@ -747,7 +747,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         needed_numerical_param = [
             'inner_mda_name',
             'max_mda_iter',
-            'n_processes',
             'chain_linearize',
             'tolerance',
             'use_lu_fact',
