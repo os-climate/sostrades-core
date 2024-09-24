@@ -23,11 +23,10 @@ from pathlib import Path
 from tempfile import gettempdir
 
 import numpy as np
-
+from gemseo.mda.base_mda import BaseMDA
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from gemseo.mda.base_mda import BaseMDA
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
@@ -649,13 +648,13 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
+        inner_mda = mda.inner_mdas[0]
 
-        assert values_dict['EE.use_lu_fact'] == inner_mda_name.use_lu_fact
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.n_processes'] == inner_mda_name.n_processes
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
+        assert values_dict['EE.use_lu_fact'] == inner_mda.use_lu_fact
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.n_processes'] == inner_mda.n_processes
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
         values_dict = {}
         values_dict['EE.use_lu_fact'] = True
@@ -672,13 +671,13 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.use_lu_fact'] == inner_mda_name.use_lu_fact
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.n_processes'] == inner_mda_name.n_processes
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.use_lu_fact'] == inner_mda.use_lu_fact
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.n_processes'] == inner_mda.n_processes
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
         exec_eng.execute()
 
@@ -713,9 +712,9 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-20
         values_dict['EE.n_processes'] = 4
@@ -727,10 +726,10 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
+        inner_mda = mda.inner_mdas[0]
 
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
 
     def test_10_mda_numerical_options_GSNR(self):
 
@@ -777,10 +776,10 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict["EE.scaling_method"] == inner_mda_name.scaling
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict["EE.scaling_method"] == inner_mda.scaling
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
         values_dict['EE.tolerance'] = 1.e-20
         values_dict['EE.max_mda_iter'] = 150
         exec_eng.load_study_from_input_dict(values_dict)
@@ -788,19 +787,19 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
-        assert values_dict['EE.max_mda_iter_gs'] == inner_mda_name.mda_sequence[0].max_mda_iter
-        assert values_dict['EE.tolerance_gs'] == inner_mda_name.mda_sequence[0].tolerance
-        assert values_dict['EE.tolerance'] == inner_mda_name.mda_sequence[1].tolerance
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
+        assert values_dict['EE.max_mda_iter_gs'] == inner_mda.mda_sequence[0].max_mda_iter
+        assert values_dict['EE.tolerance_gs'] == inner_mda.mda_sequence[0].tolerance
+        assert values_dict['EE.tolerance'] == inner_mda.mda_sequence[1].tolerance
 
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.mda_sequence[1].max_mda_iter
+        assert values_dict['EE.max_mda_iter'] == inner_mda.mda_sequence[1].max_mda_iter
 
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
-        NR = inner_mda_name.mda_sequence[1]
+        NR = inner_mda.mda_sequence[1]
 
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == NR.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.linear_solver_options['max_iter']
@@ -847,9 +846,9 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
         values_dict['EE.tolerance'] = 1.e-20
         values_dict['EE.max_mda_iter'] = 150
         exec_eng.load_study_from_input_dict(values_dict)
@@ -857,18 +856,18 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
-        assert values_dict['EE.tolerance'] == inner_mda_name.mda_sequence[0].tolerance
-        assert values_dict['EE.tolerance'] == inner_mda_name.mda_sequence[1].tolerance
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
+        assert values_dict['EE.tolerance'] == inner_mda.mda_sequence[0].tolerance
+        assert values_dict['EE.tolerance'] == inner_mda.mda_sequence[1].tolerance
 
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.mda_sequence[1].max_mda_iter
+        assert values_dict['EE.max_mda_iter'] == inner_mda.mda_sequence[1].max_mda_iter
 
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
-        NR = inner_mda_name.mda_sequence[1]
+        NR = inner_mda.mda_sequence[1]
 
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.linear_solver_options['max_iter']
 
@@ -915,9 +914,9 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
         values_dict['EE.tolerance'] = 1.e-20
         values_dict['EE.max_mda_iter'] = 150
         exec_eng.load_study_from_input_dict(values_dict)
@@ -925,18 +924,18 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
-        assert inner_mda_name.mda_sequence[0].tolerance == 10.0
-        assert values_dict['EE.tolerance'] == inner_mda_name.mda_sequence[1].tolerance
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
+        assert inner_mda.mda_sequence[0].tolerance == 10.0
+        assert values_dict['EE.tolerance'] == inner_mda.mda_sequence[1].tolerance
 
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.mda_sequence[1].max_mda_iter
+        assert values_dict['EE.max_mda_iter'] == inner_mda.mda_sequence[1].max_mda_iter
 
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
-        NR = inner_mda_name.mda_sequence[1]
+        NR = inner_mda.mda_sequence[1]
 
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == NR.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.linear_solver_options['max_iter']
@@ -976,12 +975,12 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
+        inner_mda = mda.inner_mdas[0]
 
-        assert values_dict['EE.use_lu_fact'] == inner_mda_name.use_lu_fact
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
+        assert values_dict['EE.use_lu_fact'] == inner_mda.use_lu_fact
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
         values_dict = {}
         values_dict['EE.h'] = array([8., 9.])
@@ -1000,12 +999,12 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.use_lu_fact'] == inner_mda_name.use_lu_fact
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.use_lu_fact'] == inner_mda.use_lu_fact
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
         import tracemalloc
         tracemalloc.start()
@@ -1058,9 +1057,9 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
         values_dict['EE.tolerance'] = 1.e-20
         values_dict['EE.max_mda_iter'] = 150
         exec_eng.load_study_from_input_dict(values_dict)
@@ -1068,18 +1067,18 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline
 
-        inner_mda_name = mda.inner_mdas[0]
-        assert values_dict['EE.tolerance'] == inner_mda_name.tolerance
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.max_mda_iter
-        assert values_dict['EE.tolerance'] == inner_mda_name.mda_sequence[0].tolerance
-        assert values_dict['EE.tolerance'] == inner_mda_name.mda_sequence[1].tolerance
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
+        assert values_dict['EE.tolerance'] == inner_mda.mda_sequence[0].tolerance
+        assert values_dict['EE.tolerance'] == inner_mda.mda_sequence[1].tolerance
 
-        assert values_dict['EE.max_mda_iter'] == inner_mda_name.mda_sequence[1].max_mda_iter
+        assert values_dict['EE.max_mda_iter'] == inner_mda.mda_sequence[1].max_mda_iter
 
-        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda_name.linear_solver_tolerance
-        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda_name.linear_solver_options['max_iter']
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
-        NR = inner_mda_name.mda_sequence[1]
+        NR = inner_mda.mda_sequence[1]
 
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.linear_solver_options['max_iter']
 
