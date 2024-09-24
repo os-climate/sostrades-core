@@ -14,12 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-from typing import Union
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Union
 
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
+
+if TYPE_CHECKING:
+    import logging
+
+    from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 
 
 class MDODisciplineWrappException(Exception):
@@ -113,14 +120,15 @@ class MDODisciplineWrapp(object):
             cache_file_path (string): file path of the pickle file to dump/load the cache [???]
         """
         if self.wrapping_mode == 'SoSTrades':
-            self.mdo_discipline = SoSMDODiscipline(full_name=proxy.get_disc_full_name(),
-                                                   grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                                   cache_type=cache_type,
-                                                   cache_file_path=cache_file_path,
-                                                   sos_wrapp=self.wrapper,
-                                                   reduced_dm=reduced_dm,
-                                                   logger=self.logger.getChild("SoSMDODiscipline")
-                                                   )
+            self.mdo_discipline = SoSMDODiscipline(
+                full_name=proxy.get_disc_full_name(),
+                grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                cache_type=cache_type,
+                cache_file_path=cache_file_path,
+                sos_wrapp=self.wrapper,
+                reduced_dm=reduced_dm,
+                logger=self.logger.getChild("SoSMDODiscipline"),
+            )
             self._init_grammar_with_keys(proxy)
             self._set_wrapper_attributes(proxy, self.wrapper)
             self._update_all_default_values(proxy)
@@ -164,18 +172,22 @@ class MDODisciplineWrapp(object):
             check_input (bool): flag to specify if inputs are checked or not to exist in input grammar
         '''
         if input_dict is not None:
-            to_update = [(key, value) for (key, value) in input_dict.items()
-                         if not check_input or key in self.mdo_discipline.input_grammar.names]
+            to_update = [
+                (key, value)
+                for (key, value) in input_dict.items()
+                if not check_input or key in self.mdo_discipline.input_grammar.names
+            ]
             self.mdo_discipline._default_inputs.update(to_update)
 
-    def create_mda_chain(self, sub_mdo_disciplines, proxy=None, input_data=None,
-                         reduced_dm=None):  # type: (...) -> None
+    def create_mda_chain(
+        self, sub_mdo_disciplines, proxy: ProxyCoupling | None = None, input_data=None, reduced_dm=None
+    ):  # type: (...) -> None
         """
         MDAChain instantiation when owned by a ProxyCoupling.
 
         Arguments:
             sub_mdo_disciplines (List[MDODiscipline]): list of sub-MDODisciplines of the MDAChain
-            proxy (ProxyDiscipline): proxy discipline for grammar initialisation
+            proxy: proxy coupling for grammar initialisation and numericla inputs.
             input_data (dict): input data to update default values of the MDAChain with
         """
         if self.wrapping_mode == 'SoSTrades':
@@ -186,7 +198,7 @@ class MDODisciplineWrapp(object):
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
                 **proxy._get_numerical_inputs(),
                 # authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs(proxy.AUTHORIZE_SELF_COUPLED_DISCIPLINES),
-                logger=self.logger.getChild("SoSMDAChain")
+                logger=self.logger.getChild("SoSMDAChain"),
             )
 
             self.mdo_discipline = mdo_discipline
@@ -201,8 +213,7 @@ class MDODisciplineWrapp(object):
             mdo_discipline.linear_solver_MDO = proxy.linear_solver_MDO
             mdo_discipline.linear_solver_options_MDO = proxy.linear_solver_options_MDO
             mdo_discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
-            mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs(
-                SoSMDODiscipline.LINEARIZATION_MODE)
+            mdo_discipline.linearization_mode = proxy.get_sosdisc_inputs(SoSMDODiscipline.LINEARIZATION_MODE)
 
             # # set other additional options (SoSTrades)
             # mdo_discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(
@@ -215,8 +226,7 @@ class MDODisciplineWrapp(object):
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
-    def create_mdo_scenario(self, sub_mdo_disciplines, proxy=None,
-                            reduced_dm=None):  # type: (...) -> None
+    def create_mdo_scenario(self, sub_mdo_disciplines, proxy=None, reduced_dm=None):  # type: (...) -> None
         """
         SoSMDOScenario instantiation when owned by a ProxyOptim.
 
@@ -229,9 +239,15 @@ class MDODisciplineWrapp(object):
             # Pass as arguments to __init__ parameters needed for MDOScenario
             # creation
             mdo_discipline = SoSMDOScenario(
-                sub_mdo_disciplines, proxy.sos_name, proxy.formulation, proxy.objective_name, proxy.design_space,
+                sub_mdo_disciplines,
+                proxy.sos_name,
+                proxy.formulation,
+                proxy.objective_name,
+                proxy.design_space,
                 logger=self.logger.getChild("SoSMDOScenario"),
-                grammar_type=proxy.SOS_GRAMMAR_TYPE, reduced_dm=reduced_dm)
+                grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                reduced_dm=reduced_dm,
+            )
             # Set parameters for SoSMDOScenario
             mdo_discipline.eval_mode = proxy.eval_mode
             mdo_discipline.maximize_objective = proxy.maximize_objective
@@ -243,8 +259,9 @@ class MDODisciplineWrapp(object):
             mdo_discipline.dict_desactivated_elem = proxy.dict_desactivated_elem
             mdo_discipline.input_design_space = proxy.get_sosdisc_inputs('design_space')
             # retrieve the option to desactivate the storage of the design space outputs for post processings
-            mdo_discipline.desactivate_optim_out_storage = proxy.get_sosdisc_inputs(
-                [proxy.DESACTIVATE_OPTIM_OUT_STORAGE])
+            mdo_discipline.desactivate_optim_out_storage = proxy.get_sosdisc_inputs([
+                proxy.DESACTIVATE_OPTIM_OUT_STORAGE
+            ])
 
             self.mdo_discipline = mdo_discipline
 
@@ -255,14 +272,12 @@ class MDODisciplineWrapp(object):
             pass
 
     def _update_all_default_values(self, proxy):
-        '''Store all input grammar data names' values from input data in default values of mdo_discipline
-        '''
+        '''Store all input grammar data names' values from input data in default values of mdo_discipline'''
 
         for key, value in proxy.get_data_in().items():
             if value[proxy.VALUE] is not None and not value[proxy.NUMERICAL]:
                 full_key = proxy.get_var_full_name(key, proxy.get_data_in())
-                self.mdo_discipline.default_inputs.update(
-                    {full_key: value[proxy.VALUE]})
+                self.mdo_discipline.default_inputs.update({full_key: value[proxy.VALUE]})
 
     def __update_gemseo_grammar(self, proxy, mdachain, mdoscenario=False):
         '''
@@ -295,13 +310,15 @@ class MDODisciplineWrapp(object):
             design_space_inputs = self.mdo_discipline.design_space.variable_names
             missing_outputs.update(design_space_inputs)
 
-
         # i/o grammars update with SoSTrades i/o
         old_defaults = mdachain.input_grammar.defaults
         mdachain.input_grammar.clear()
         mdachain.input_grammar.update_from_names(missing_inputs)
-        missing_inputs_defaults = {key: value for key, value in soscoupling_inputs_and_defaults.items() if
-                                   value is not None and key in missing_inputs}
+        missing_inputs_defaults = {
+            key: value
+            for key, value in soscoupling_inputs_and_defaults.items()
+            if value is not None and key in missing_inputs
+        }
         missing_inputs_defaults.update({key: value for key, value in old_defaults.items() if key in missing_inputs})
         mdachain.input_grammar.update_defaults(missing_inputs_defaults)
 
@@ -311,6 +328,6 @@ class MDODisciplineWrapp(object):
     def execute(self, input_data):
         """
         Discipline execution delegated to the GEMSEO objects.
-            """
+        """
 
         return self.mdo_discipline.execute(input_data)
