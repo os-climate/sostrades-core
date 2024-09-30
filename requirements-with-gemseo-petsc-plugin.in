@@ -1,3 +1,2 @@
-petsc4py == 3.21.3
+petsc4py==3.21.6
 gemseo-petsc
-
