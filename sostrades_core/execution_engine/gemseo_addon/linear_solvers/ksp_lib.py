@@ -17,10 +17,10 @@ limitations under the License.
 import logging
 
 import petsc4py
-from gemseo.algos.linear_solvers.ksp_lib import (
+from gemseo.algos.linear_solvers.ksp_library import (
     _convert_ndarray_to_mat_or_vec,
 )
-from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
+from gemseo.algos.linear_solvers.base_linear_solver_library import BaseLinearSolverLibrary
 from numpy import isnan
 
 # Must be done before from petsc4py import PETSc
@@ -29,7 +29,7 @@ from petsc4py import PETSc  # noqa: E402
 
 """A PETSC KSP linear solvers library wrapper."""
 
-LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_lib")
+LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_library")
 
 KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
                         9: 'KSP_CONVERGED_ATOL_NORMAL',
@@ -55,7 +55,7 @@ KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
 # TODO: inherit from PetscKSPAlgo of GEMSEO
 
 
-class PetscKSPAlgos(LinearSolverLib):
+class PetscKSPAlgos(BaseLinearSolverLibrary):
     """Interface to PETSC KSP.
 
     For further information, please read
@@ -86,9 +86,9 @@ class PetscKSPAlgos(LinearSolverLib):
         Returns:
             The properties of the solver.
         """
-        return {cls.LHS_MUST_BE_POSITIVE_DEFINITE: False,
-                cls.LHS_MUST_BE_SYMMETRIC: False,
-                cls.LHS_CAN_BE_LINEAR_OPERATOR: True,
+        return {cls.lhs_must_be_positive_definite: False,
+                cls.lhs_must_be_symmetric: False,
+                cls.lhs_must_be_linear_operator: True,
                 cls.INTERNAL_NAME: algo_name}
 
     def _get_options(
