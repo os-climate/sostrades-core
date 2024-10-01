@@ -1702,7 +1702,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         """ Here we test a DoEEval process on a single sub-discipline so that there is no ProxyCoupling built in node.
         """
 
-        dspace_dict = {'variable': ['x'],
+        dspace_dict = {'variable': ['Disc1.a'],
 
                        'lower_bnd': [0.],
                        'upper_bnd': [100.],
