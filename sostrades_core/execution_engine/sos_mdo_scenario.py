@@ -311,7 +311,7 @@ class SoSMDOScenario(MDOScenario):
         else:
             x = problem.design_space.get_current_value()
         current_idx = 0
-        for k, v in problem.design_space.items():
+        for k, v in problem.design_space._variables.items():
             k_size = v.size
             # WARNING we fill input in local_data that will be deleted by GEMSEO because they are not outputs ...
             # Only solution is to specify design space inputs as outputs of the mdoscenario

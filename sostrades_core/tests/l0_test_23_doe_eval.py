@@ -74,7 +74,8 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         dspace_dict_eval = {'variable': ['x', 'z'],
                             'lower_bnd': [[0.], [-10., 0.]],
-                            'upper_bnd': [[10.], [10., 10.]]
+                            'upper_bnd': [[10.], [10., 10.]],
+                            #            'variable_type': ['array', 'array']
                             }
 
         self.dspace = pd.DataFrame(dspace_dict)
@@ -679,7 +680,13 @@ class TestSoSDOEScenario(unittest.TestCase):
         """ This tests aims at proving the ability of the
         doe factory to generate samples within the specified range
         """
+        dspace_dict_x = {'variable': ['x'],
 
+                         'lower_bnd': [0.],
+                         'upper_bnd': [10.],
+
+                         }
+        dspace_x = pd.DataFrame(dspace_dict_x)
         dspace_dict_x_eval = {'variable': ['x'],
 
                               'lower_bnd': [5.],
@@ -734,7 +741,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_gen_mode
-
+        disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples, 'face': 'faced'}
@@ -1212,7 +1219,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         """ Here we test a DoEEval process on a single sub-discipline so that there is no ProxyCoupling built in node.
         """
 
-        dspace_dict = {'variable': ['x'],
+        dspace_dict = {'variable': ['Disc1.a'],
 
                        'lower_bnd': [0.],
                        'upper_bnd': [100.],

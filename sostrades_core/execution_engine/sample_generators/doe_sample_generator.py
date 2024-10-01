@@ -364,13 +364,13 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                                     matrix of n raws  (each raw is an input point to be evaluated)
                                     any variable of dim m is an array of dim m in a single column of the matrix
         """
-        selected_inputs = list(design_space.keys())
+        selected_inputs = design_space.variable_names
 
         reformated_samples = []
         for current_point in samples:  # To be vectorized
             # Current point  is an array with variables ordered as in selected_inputs
             # Find the dictionary version of the current point sample
-            current_point_dict = design_space.array_to_dict(current_point)
+            current_point_dict = design_space.convert_array_to_dict(current_point)
 
             reformated_current_point = []
             for in_variable in selected_inputs:
@@ -402,7 +402,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             samples_df (data_frame) : dataframe of a matrix of n raws  (each raw is an input point to be evaluated)
                                       any variable of dim m is an array of dim m in a single column of the matrix
         """
-        selected_inputs = list(design_space.keys())
+        selected_inputs = design_space.variable_names
 
         samples_df = pd.DataFrame(data=samples,
                                   columns=selected_inputs)
@@ -522,7 +522,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
                     df_cols = [self.VARIABLES, self.LOWER_BOUND, self.UPPER_BOUND] + (
                         [self.NB_POINTS] if proxy.sampling_method == proxy.GRID_SEARCH else []) + (
-                                  [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
+                        [self.LIST_ACTIVATED_ELEM, self.ENABLE_VARIABLE_BOOL, self.VALUES])
                     final_dataframe = pd.DataFrame(columns=df_cols)
                     if proxy.sampling_method == proxy.GRID_SEARCH:
                         final_dataframe[self.NB_POINTS] = final_dataframe[self.NB_POINTS].astype(int)

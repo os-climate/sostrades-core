@@ -212,7 +212,7 @@ class OuterApproximationSolver(object):
         of the NLP(x_int)^{(k)} )
         '''
         full_dspace = self.full_problem.design_space
-        x0_dict = full_dspace.array_to_dict(x0)
+        x0_dict = full_dspace.convert_array_to_dict(x0)
         # - gather eta design variable
         eta = old_primal_pb.var_dict[self.ETA]
         # - gather x design variable if exists (for iterations > 0)
