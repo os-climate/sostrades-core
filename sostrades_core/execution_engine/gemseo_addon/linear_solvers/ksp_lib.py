@@ -17,7 +17,7 @@ limitations under the License.
 import logging
 
 import petsc4py
-from gemseo.algos.linear_solvers.ksp_library import (
+from gemseo_petsc.linear_solvers.ksp_library import (
     _convert_ndarray_to_mat_or_vec,
 )
 from gemseo.algos.linear_solvers.base_linear_solver_library import BaseLinearSolverLibrary
