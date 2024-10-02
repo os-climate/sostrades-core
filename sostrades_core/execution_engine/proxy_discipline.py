@@ -492,10 +492,10 @@ class ProxyDiscipline:
             # init gemseo discipline if it has not been created yet
             cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
             if cache_type == '':
-                cache_type_gemseo = MDODiscipline.CacheType.NONE
+                cache_type = MDODiscipline.CacheType.NONE
             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
-                                                               cache_type=cache_type_gemseo,
+                                                               cache_type=cache_type,
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
             self.add_status_observers_to_gemseo_disc()
