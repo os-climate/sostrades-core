@@ -68,8 +68,8 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
                                'LGMRES_PETSC', 'BICG_PETSC', 'BCGS_PETSC']
     AVAILABLE_PRECONDITIONER = ['jacobi', 'ilu', 'gasm']
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, algo_name):
+        super().__init__(algo_name)
 
         self.lib_dict = {name: self.get_default_properties(
             name) for name in self.AVAILABLE_LINEAR_SOLVER}

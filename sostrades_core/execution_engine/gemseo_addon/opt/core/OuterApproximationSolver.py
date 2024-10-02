@@ -399,14 +399,14 @@ class OuterApproximationSolver(object):
         pb.objective = new_o
         # constraints setup
         for c in cst_restricted:
-            pb.add_constraint(c, cstr_type=MDOFunction.TYPE_INEQ)
+            pb.add_constraint(c, constraint_type=MDOFunction.TYPE_INEQ)
         pb.differentiation_method = self.differentiation_method  # either FINITE_DIFFERENCES or USER_GRAD
 
         # functions are preprocessed once here (before the call in DriverLib at execution)
         # so that from now nonprocessed_* functions are accessible (see update_nlp)
         options = self.algo_options_NLP
         pb.preprocess_functions(
-            normalize=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
+            is_function_input_normalized=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
             use_database=options.get(BaseDriverLibrary.USE_DATABASE_OPTION, True),
             round_ints=options.get(BaseDriverLibrary.ROUND_INTS_OPTION, True),
             eval_obs_jac=False,

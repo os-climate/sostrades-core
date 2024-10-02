@@ -45,13 +45,13 @@ class AbstractSampleGenerator(object):
         # check options
         self._check_options(*args, **kwargs)
         # generate the sampling by subclass
-        samples = self.generate_samples(*args, **kwargs)
+        samples = self._generate_samples(*args, **kwargs)
         # check sample formatting
         self._check_samples(samples)
 
         return samples
 
-    def generate_samples(self, *args, **kwargs):
+    def _generate_samples(self, *args, **kwargs):
         '''
         Method that generate samples
         To be overloaded by subclass

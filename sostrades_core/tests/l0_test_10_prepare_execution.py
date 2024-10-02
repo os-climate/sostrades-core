@@ -75,34 +75,3 @@ class TestPrepareExecution(unittest.TestCase):
             self.assertListEqual(proxy_disc.get_output_data_names(),
                                  list(proxy_disc.mdo_discipline_wrapp.mdo_discipline.output_grammar.names))
 
-    # def test_02_init_execution(self):
-    #     '''
-    #     test of models initialization in wrapps
-    #     '''
-    #     disc_name = "KnapsackProblem"
-    #     # Knapsack characteristics.
-    #     values = array([55.0, 10.0, 47.0, 5.0, 4.0, 50.0, 8.0, 61.0, 85.0, 87.0])
-    #     weights = array([95.0, 4.0, 60.0, 32.0, 23.0, 72.0, 80.0, 62.0, 65.0, 46.0])
-    #     capacity_weight = 269.
-    #     n_items = len(values)
-    #
-    #     values_dict = {
-    #         f"{self.name}.{disc_name}.x": ones(n_items, dtype=int),
-    #         f"{self.name}.{disc_name}.items_value": values,
-    #         f"{self.name}.{disc_name}.items_weight": weights,
-    #         f"{self.name}.{disc_name}.capacity_weight": capacity_weight,
-    #     }
-    #
-    #     # Set-up execution engine.
-    #     exec_eng = ExecutionEngine(self.name)
-    #     mod_id = "sostrades_core.sos_wrapping.test_discs.knapsack.KnapsackProblem"
-    #     builder = exec_eng.factory.get_builder_from_module("KnapsackProblem", mod_id)
-    #     exec_eng.factory.set_builders_to_coupling_builder(builder)
-    #     exec_eng.configure()
-    #
-    #     # Set-up study.
-    #     exec_eng.load_study_from_input_dict(values_dict)
-    #     exec_eng.configure()
-    #
-    #     # Execute.
-    #     exec_eng.execute()

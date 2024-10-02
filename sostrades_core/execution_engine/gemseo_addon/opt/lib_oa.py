@@ -59,7 +59,8 @@ class OuterApproximationOpt(BaseOptimizationLibrary):
                    BaseOptimizationLibrary.MAX_FUN_EVAL: "maxfun"
                    }
     LIBRARY_NAME = "OuterApproximation"
-    def __init__(self):
+
+    def __init__(self, algo_name):
         '''
         Constructor
 
@@ -72,7 +73,7 @@ class OuterApproximationOpt(BaseOptimizationLibrary):
 
         '''
 
-        super(OuterApproximationOpt, self).__init__()
+        super(OuterApproximationOpt, self).__init__(algo_name)
         doc = 'https://docs.scipy.org/doc/scipy/reference/'
         self.descriptions = {
             "ProjectedGradient": OuterApproximationAlgorithmDescription(

@@ -58,7 +58,7 @@ class CMAESOpt(BaseOptimizationLibrary):
                    }
     LIBRARY_NAME = "CMAES"
 
-    def __init__(self):
+    def __init__(self, algo_name):
         '''
         Constructor
 
@@ -71,7 +71,7 @@ class CMAESOpt(BaseOptimizationLibrary):
 
         '''
 
-        super(CMAESOpt, self).__init__()
+        super(CMAESOpt, self).__init__(algo_name)
         doc = 'https://docs.scipy.org/doc/scipy/reference/'
         self.descriptions = {
             "CMAES": CMAESAlgorithmDescription(
@@ -81,7 +81,7 @@ class CMAESOpt(BaseOptimizationLibrary):
                 positive_constraints=False,
                 handle_equality_constraints=False,
                 handle_inequality_constraints=False,
-                internal_algorithm_name="CMAES",
+                internal_algorithm_name=algo_name,
                 website=f"{doc}optimize.minimize-slsqp.html",
             )}
 

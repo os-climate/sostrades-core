@@ -58,7 +58,7 @@ class ProjectedGradientOpt(BaseOptimizationLibrary):
                    }
     LIBRARY_NAME = "ProjectedGradient"
 
-    def __init__(self):
+    def __init__(self, algo_name):
         '''
         Constructor
 
@@ -70,7 +70,7 @@ class ProjectedGradientOpt(BaseOptimizationLibrary):
         - does it handle inequality constraints
 
         '''
-        super(ProjectedGradientOpt, self).__init__(self.LIBRARY_NAME)
+        super(ProjectedGradientOpt, self).__init__(algo_name)
         doc = 'https://docs.scipy.org/doc/scipy/reference/'
         self.descriptions = {
             "ProjectedGradient": ProjectedGradientAlgorithmDescription(
@@ -184,7 +184,7 @@ class ProjectedGradientOpt(BaseOptimizationLibrary):
             x_opt=x_opt,
             f_opt=f_opt,
             status=status,
-            constraints_values=None,
+            constraint_values=None,
             constraints_grad=None,
             optimizer_name=self.algo_name,
             message="",

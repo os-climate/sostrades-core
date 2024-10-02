@@ -92,6 +92,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         """Method to overload with jacobian test in order to be dump with the automated script"""
         msg = 'test_analytic_gradient must be overloaded'
         raise TypeError(msg)
+        return []
 
     def check_jacobian(
         self,
