@@ -584,13 +584,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         """
         # In get_options_and_default_values, it is already checked whether the algo_name belongs to the list of possible Gemseo
         # DoE algorithms
-        if algo_name in get_available_doe_algorithms():
+        available_algos = get_available_doe_algorithms()
+        if algo_name in available_algos:
             algo_options_desc_in, algo_options_descr_dict = self.get_options_and_default_values(
                 algo_name)
             return algo_options_desc_in
         else:
             raise Exception(
-                "A DoE algorithm which is not available in GEMSEO has been selected.")
+                f"The DoE algorithm {algo_name} is not available in GEMSEO list :{available_algos}")
 
     def get_arguments(self, wrapper):
         # Dynamic input of default design space
