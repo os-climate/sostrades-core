@@ -24,6 +24,7 @@ scipy==1.10.1
 six==1.16.0
 sympy==1.13.0
 tqdm==4.66.4
+future==1.0.0
 
 # Development requirements
 # breaking change in 8.2.0 https://docs.pytest.org/en/stable/changelog.html#pytest-8-2-0-2024-04-27
