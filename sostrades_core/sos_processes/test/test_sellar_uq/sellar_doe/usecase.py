@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from numpy import array
 from pandas import DataFrame
 

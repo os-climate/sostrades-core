@@ -36,7 +36,7 @@ class Study(StudyManager):
         # coupling_name = 'subprocess'
         coupling_name = 'D1_D3_Coupling'
 
-        dspace_dict = {'variable': [f'Eval.{coupling_name}.Disc1.b', 'Eval.{coupling_name}.z', ],
+        dspace_dict = {'variable': [f'{coupling_name}.Disc1.b', f'{coupling_name}.z', ],
                        'lower_bnd': [0., 0.],
                        'upper_bnd': [10., 10.],
                        }
