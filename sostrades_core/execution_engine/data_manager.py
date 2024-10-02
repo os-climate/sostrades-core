@@ -24,17 +24,14 @@ from uuid import uuid4
 
 import pandas as pd
 from gemseo.caches.simple_cache import SimpleCache
-
 from pandas import concat
 
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
-from sostrades_core.tools.compare_data_manager_tooling import compare_dataframes
+from sostrades_core.tools.compare_data_manager_tooling import compare_dataframes, dict_are_equal
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
-
 
 TYPE = ProxyDiscipline.TYPE
 VALUE = ProxyDiscipline.VALUE

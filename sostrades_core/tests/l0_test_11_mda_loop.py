@@ -23,14 +23,13 @@ from pathlib import Path
 from tempfile import gettempdir
 
 import numpy as np
-
+from gemseo.mda.base_mda import BaseMDA
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
-from gemseo.mda.base_mda import BaseMDA
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8

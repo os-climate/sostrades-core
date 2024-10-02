@@ -18,8 +18,9 @@ from cmath import exp as exp_cp
 from cmath import sqrt as sqrt_cp
 
 from numpy import NaN, array, atleast_2d, floating
-from numpy import sqrt as sqrt_np
 from numpy import exp as exp_np
+from numpy import sqrt as sqrt_np
+
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 

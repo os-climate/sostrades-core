@@ -18,10 +18,10 @@ import logging
 from copy import deepcopy
 
 import cvxpy as cp
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.base_driver_library import BaseDriverLibrary
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays

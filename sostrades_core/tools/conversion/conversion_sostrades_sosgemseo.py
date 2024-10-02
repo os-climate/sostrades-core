@@ -558,7 +558,7 @@ def convert_new_type_into_array(
             var_converted = []
             prev_key = []
             # if type needs to be converted
-            if var_type == dict:
+            if var_type is dict:
                 # if value is a dictionary
                 all_values = list(var.values())
                 if all([is_value_type_handled(val)
@@ -580,7 +580,7 @@ def convert_new_type_into_array(
                 else:
                     msg = f"\n Dictionary values {key} : {var} \n must be among {list(VAR_TYPE_MAP.keys())}"
                     raise ValueError(msg)
-            elif var_type == DataFrame:
+            elif var_type is DataFrame:
                 # if value is a DataFrame
                 # TO DO: Create a function to get the dtypes of columns without the "big" function 'convert_df_into_array'
                 init_var_converted, init_metadata = deepcopy(var_converted), deepcopy(metadata)
@@ -599,7 +599,7 @@ def convert_new_type_into_array(
                         var, init_var_converted, init_metadata, prev_key, new_excluded_columns)
                     new_reduced_dm[DF_EXCLUDED_COLUMNS] = new_excluded_columns
 
-            elif var_type == list:
+            elif var_type is list:
 
                 subtype = reduced_dm.get(VAR_SUBTYPE_ID)
 

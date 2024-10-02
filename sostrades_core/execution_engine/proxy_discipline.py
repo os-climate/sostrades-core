@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+# ruff: noqa: E402 (disable Module level import not at top of file because we need to define gemseo path before import)
 import logging
 import os
 from copy import deepcopy
@@ -43,9 +44,7 @@ from gemseo.core.discipline import MDODiscipline
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.tools.check_data_integrity.check_data_integrity import (
-    CheckDataIntegrity,
-)
+from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 

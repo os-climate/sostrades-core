@@ -19,7 +19,6 @@ import unittest
 from copy import deepcopy
 
 import pandas as pd
-
 from numpy import array, set_printoptions
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 

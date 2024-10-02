@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import unittest
 from copy import deepcopy
-from multiprocessing import cpu_count
 from os.path import basename, dirname, join, realpath
 from pathlib import Path
 from shutil import unpack_archive
@@ -27,7 +26,6 @@ from tempfile import gettempdir
 from time import sleep
 
 import pandas as pd
-from gemseo.utils.constants import N_CPUS
 from numpy import array
 from pandas import DataFrame, read_csv
 from pandas.testing import assert_frame_equal

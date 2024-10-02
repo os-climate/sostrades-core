@@ -16,15 +16,8 @@ limitations under the License.
 
 from __future__ import annotations
 
-import platform
-import time
-from typing import Any
-
 import numpy as np
 import pandas as pd
-from gemseo.core.parallel_execution.callable_parallel_execution import (
-    CallableParallelExecution,
-)
 from tqdm import tqdm
 
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
@@ -53,82 +46,83 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         evaluation_output = {}
         n_processes = self.get_sosdisc_inputs('n_processes')
         wait_time_between_samples = self.get_sosdisc_inputs('wait_time_between_fork')
-        if platform.system() == 'Windows' or n_processes == 1:
-            if n_processes != 1:
-                self.logger.warning("multiprocessing is not possible on Windows")
-                n_processes = 1
-            self.logger.info("running sos eval in sequential")
-            scenario_nb = len(samples)
-            for i in tqdm(range(scenario_nb), ncols=100, position=0):
-                time.sleep(0.1)
-                scenario_name = samples[i][SampleGeneratorWrapper.SCENARIO_NAME]
-                self.logger.info(f'   {scenario_name} is running.')
+        # if platform.system() == 'Windows' or n_processes == 1:
+        if n_processes != 1:
+            self.logger.warning(
+                "multiprocessing is not possible yet for samples evaluation (need to check with GEMSEO parallel feature)")
+            n_processes = 1
+        self.logger.info("running sos eval in sequential")
+        scenario_nb = len(samples)
+        for i in tqdm(range(scenario_nb), ncols=100, position=0):
+            # time.sleep(0.1)
+            scenario_name = samples[i][SampleGeneratorWrapper.SCENARIO_NAME]
+            self.logger.info(f'   {scenario_name} is running.')
 
-                x = {key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
+            x = {key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
 
-                evaluation_output[scenario_name] = x, self.evaluation(x, convert_to_array)
-            return evaluation_output
+            evaluation_output[scenario_name] = x, self.evaluation(x, convert_to_array)
+        return evaluation_output
 
-        if n_processes > 1:
-            self.logger.info("Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
-
-            # Create the parallel execution object. The function we want to
-            # parallelize is the sample_evaluation
-            def sample_evaluator(sample_to_evaluate):
-                """Evaluate a sample"""
-                return self.evaluation(sample_to_evaluate, convert_to_array=False)
-
-            parallel = ParallelExecution(
-                sample_evaluator, n_processes=n_processes, wait_time_between_fork=wait_time_between_samples
-            )
-
-            # Define a callback function to store the samples on the fly
-            # during the parallel execution
-            def store_callback(
-                index: int,
-                outputs: dict[str, Any],
-            ) -> None:
-                """Store the outputs in dedicated dictionnary:
-                - Here the dictionnary key is the sample evaluated and the value is the evaluation output
-                Args:
-                    index: The sample index.
-                    outputs: The outputs of the parallel execution.
-                """
-                scenario_name = samples[index][SampleGeneratorWrapper.SCENARIO_NAME]
-                evaluation_output[scenario_name] = (samples[index], outputs)
-                self.logger.info(
-                    "%s has been run. computation progress: %d %% done.",
-                    scenario_name,
-                    int(((len(evaluation_output)) / len(samples)) * 100),
-                )
-                time.sleep(0.05)
-
-            try:
-                # execute all the scenarios (except the reference scenario)  in
-                # parallel
-                # remove the scenario_name key of each sample
-                x = [
-                    {key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
-                    for i in range(len(samples))
-                ]
-
-                parallel.execute(x[0:-1], exec_callback=store_callback)
-                # execute the reference scenario in a sequential way so that
-                # sostrades objects are updated
-                scenario_name = samples[-1][SampleGeneratorWrapper.SCENARIO_NAME]
-                evaluation_output[scenario_name] = samples[-1], self.evaluation(x[-1], convert_to_array)
-                self.proxy_disciplines[0]._update_status_recursive(self.STATUS_DONE)
-                dict_to_return = {}
-                # return the outputs in the same order of the scenario lists
-                for sample in samples:
-                    scenario_name = sample[SampleGeneratorWrapper.SCENARIO_NAME]
-                    if scenario_name in evaluation_output:
-                        dict_to_return[scenario_name] = evaluation_output[scenario_name]
-            except Exception:
-                self.proxy_disciplines[0]._update_status_recursive(self.STATUS_FAILED)  # FIXME: This won't work
-            else:
-                return dict_to_return
-        return None
+        # if n_processes > 1:
+        #     self.logger.info("Running SOS EVAL in parallel on n_processes = %s", str(n_processes))
+        #
+        #     # Create the parallel execution object. The function we want to
+        #     # parallelize is the sample_evaluation
+        #     def sample_evaluator(sample_to_evaluate):
+        #         """Evaluate a sample"""
+        #         return self.evaluation(sample_to_evaluate, convert_to_array=False)
+        #
+        #     parallel = ParallelExecution(
+        #         sample_evaluator, n_processes=n_processes, wait_time_between_fork=wait_time_between_samples
+        #     )
+        #
+        #     # Define a callback function to store the samples on the fly
+        #     # during the parallel execution
+        #     def store_callback(
+        #         index: int,
+        #         outputs: dict[str, Any],
+        #     ) -> None:
+        #         """Store the outputs in dedicated dictionnary:
+        #         - Here the dictionnary key is the sample evaluated and the value is the evaluation output
+        #         Args:
+        #             index: The sample index.
+        #             outputs: The outputs of the parallel execution.
+        #         """
+        #         scenario_name = samples[index][SampleGeneratorWrapper.SCENARIO_NAME]
+        #         evaluation_output[scenario_name] = (samples[index], outputs)
+        #         self.logger.info(
+        #             "%s has been run. computation progress: %d %% done.",
+        #             scenario_name,
+        #             int(((len(evaluation_output)) / len(samples)) * 100),
+        #         )
+        #         time.sleep(0.05)
+        #
+        #     try:
+        #         # execute all the scenarios (except the reference scenario)  in
+        #         # parallel
+        #         # remove the scenario_name key of each sample
+        #         x = [
+        #             {key: value for key, value in samples[i].items() if key != SampleGeneratorWrapper.SCENARIO_NAME}
+        #             for i in range(len(samples))
+        #         ]
+        #
+        #         parallel.execute(x[0:-1], exec_callback=store_callback)
+        #         # execute the reference scenario in a sequential way so that
+        #         # sostrades objects are updated
+        #         scenario_name = samples[-1][SampleGeneratorWrapper.SCENARIO_NAME]
+        #         evaluation_output[scenario_name] = samples[-1], self.evaluation(x[-1], convert_to_array)
+        #         self.proxy_disciplines[0]._update_status_recursive(self.STATUS_DONE)
+        #         dict_to_return = {}
+        #         # return the outputs in the same order of the scenario lists
+        #         for sample in samples:
+        #             scenario_name = sample[SampleGeneratorWrapper.SCENARIO_NAME]
+        #             if scenario_name in evaluation_output:
+        #                 dict_to_return[scenario_name] = evaluation_output[scenario_name]
+        #     except Exception:
+        #         self.proxy_disciplines[0]._update_status_recursive(self.STATUS_FAILED)  # FIXME: This won't work
+        #     else:
+        #         return dict_to_return
+        #return None
 
     def evaluation(self, x, convert_to_array=True):
         """

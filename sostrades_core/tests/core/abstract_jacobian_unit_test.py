@@ -162,7 +162,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         if test_names is None:
             test_names = []
         if directories is None:
-            directories = [PICKLE_DIRECTORY]
+            directories = [AbstractJacobianUnittest.PICKLE_DIRECTORY]
         root_dir = dirname(root_module.__file__)
         local_logger = logging.getLogger(__name__)
         local_logger.info(f'Looking for L1 tests into {root_dir}')
