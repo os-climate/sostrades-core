@@ -87,7 +87,6 @@ class SoSMDAChain(MDAChain):
         inner_mda_name: str = "MDAJacobi",
         max_mda_iter: int = 20,
         name: str | None = None,
-        n_processes: int = N_CPUS,
         chain_linearize: bool = False,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
@@ -130,13 +129,15 @@ class SoSMDAChain(MDAChain):
 
         # tolerance_gs is set after instanciation of the MDA by GEMSEO
         tolerance_gs = inner_mda_options.pop("tolerance_gs", None)
+        # Gauss seidel cannot be launched in parallel by construction (one discipline is launched with the results of the last one)
+        if inner_mda_name == 'MDAGaussSeidel':
+            inner_mda_options.pop('n_processes')
 
         super().__init__(
             disciplines,
             inner_mda_name=inner_mda_name,
             max_mda_iter=max_mda_iter,
             name=name,
-            n_processes=n_processes,
             chain_linearize=chain_linearize,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,

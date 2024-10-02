@@ -23,13 +23,14 @@ from pathlib import Path
 from tempfile import gettempdir
 
 import numpy as np
-from gemseo.mda.base_mda import BaseMDA
+
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.folder_operations import rmtree_safe
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
+from gemseo.mda.base_mda import BaseMDA
 
 """
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -139,6 +140,8 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-8
         values_dict['EE.chain_linearize'] = True
+        # Only NewtonRaphson can run in parallel ?
+        values_dict['EE.inner_mda_name'] = 'MDANewtonRaphson'
         values_dict['EE.n_processes'] = 2
         values_dict['EE.max_mda_iter'] = 50
         exec_eng.load_study_from_input_dict(values_dict)
@@ -148,15 +151,15 @@ class TestMDALoop(unittest.TestCase):
 
         assert values_dict['EE.use_lu_fact'] == mda.use_lu_fact
         assert values_dict['EE.tolerance'] == mda.tolerance
-
-        assert values_dict['EE.n_processes'] == mda.n_processes
+        mda_nr = mda.mdo_chain.disciplines[0]
+        assert values_dict['EE.n_processes'] == mda_nr._parallel_execution.n_processes
         assert values_dict['EE.max_mda_iter'] == mda.max_mda_iter
         exec_eng.execute()
 
         assert values_dict['EE.use_lu_fact'] == mda.use_lu_fact
         assert values_dict['EE.tolerance'] == mda.tolerance
 
-        assert values_dict['EE.n_processes'] == mda.n_processes
+        assert values_dict['EE.n_processes'] == mda_nr._parallel_execution.n_processes
         assert values_dict['EE.max_mda_iter'] == mda.max_mda_iter
 
         target = {'EE.h': array([0.70710678,
@@ -652,14 +655,14 @@ class TestMDALoop(unittest.TestCase):
 
         assert values_dict['EE.use_lu_fact'] == inner_mda.use_lu_fact
         assert values_dict['EE.tolerance'] == inner_mda.tolerance
-        assert values_dict['EE.n_processes'] == inner_mda.n_processes
+        assert inner_mda._parallel_execution is None
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
 
         values_dict = {}
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-20
-        values_dict['EE.n_processes'] = 1
+        values_dict['EE.n_processes'] = 2
         values_dict['EE.max_mda_iter'] = 100
         values_dict['EE.inner_mda_name'] = 'MDANewtonRaphson'
         values_dict['EE.linear_solver_MDA_options'] = {
@@ -674,7 +677,7 @@ class TestMDALoop(unittest.TestCase):
         inner_mda = mda.inner_mdas[0]
         assert values_dict['EE.use_lu_fact'] == inner_mda.use_lu_fact
         assert values_dict['EE.tolerance'] == inner_mda.tolerance
-        assert values_dict['EE.n_processes'] == inner_mda.n_processes
+        assert values_dict['EE.n_processes'] == inner_mda._parallel_execution.n_processes
         assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.linear_solver_options['max_iter']
@@ -703,7 +706,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.x'] = array([5., 3.])
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-15
-        values_dict['EE.n_processes'] = 4
+        values_dict['EE.n_processes'] = 1
         values_dict['EE.max_mda_iter'] = 50
         values_dict['EE.inner_mda_name'] = 'MDAGaussSeidel'
 
@@ -717,7 +720,7 @@ class TestMDALoop(unittest.TestCase):
         assert values_dict['EE.max_mda_iter'] == inner_mda.max_mda_iter
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-20
-        values_dict['EE.n_processes'] = 4
+        values_dict['EE.n_processes'] = 1
         values_dict['EE.max_mda_iter'] = 100
         values_dict['EE.inner_mda_name'] = 'MDAGaussSeidel'
 
