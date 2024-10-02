@@ -14,12 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# ruff: noqa: E402 (disable Module level import not at top of file because we need to define gemseo path before import)
+
 import logging
 from copy import deepcopy
-
 from typing import List, Union
 
+from gemseo.core.chain import MDOChain
+from gemseo.core.discipline import MDODiscipline
 from numpy import bool_ as np_bool
 from numpy import complex128 as np_complex128
 from numpy import float32 as np_float32
@@ -28,9 +29,6 @@ from numpy import int32 as np_int32
 from numpy import int64 as np_int64
 from numpy import ndarray
 from pandas import DataFrame
-
-from gemseo.core.chain import MDOChain
-from gemseo.core.discipline import MDODiscipline
 
 from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
 from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline

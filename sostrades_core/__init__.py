@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from os.path import dirname, join
 import os
+from os.path import dirname, join
 
 logging.basicConfig(level=logging.INFO)
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
