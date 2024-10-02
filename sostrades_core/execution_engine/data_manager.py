@@ -57,7 +57,7 @@ VAR_NAME = ProxyDiscipline.VAR_NAME
 DATAFRAME_DESCRIPTOR = ProxyDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
-
+DISPLAY_NAME = ProxyDiscipline.DISPLAY_NAME
 
 @dataclass()
 class ParameterChange:
@@ -595,7 +595,7 @@ class DataManager:
             else:
                 display_name = self.get_var_display_name(data_id)
 
-            data_info['display_name'] = display_name
+            data_info[DISPLAY_NAME] = display_name
             display_data_dict[self.get_var_full_name(data_id)] = data_info
 
         return display_data_dict
