@@ -776,10 +776,10 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         """
         Set samples_df value by reading activation_df input
         """
-        dynamic_outputs = {}
+        dynamic_inputs = {}
         for driver_name, input_name in self.driver_input_to_fill.items():
 
-            if f'{driver_name}.samples_df' in self.get_data_out():
+            if f'{driver_name}.samples_df' in self.get_data_in():
                 activation_df = deepcopy(self.get_sosdisc_inputs(self.ACTIVATION_DF))
 
                 if driver_name == 'driver':
@@ -806,20 +806,24 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 indexes = np.unique(input_value, return_index=True)[1]
                 input_value = [input_value[index] for index in sorted(indexes)]
 
-                scenario_full_name = self.get_var_full_name(f'{driver_name}.samples_df', self.get_data_out())
+                scenario_full_name = self.get_var_full_name(f'{driver_name}.samples_df', self.get_data_in())
                 self.dm.set_data(scenario_full_name, 'value', pd.DataFrame({self.SCENARIO_NAME: input_value,
                                                                             self.SELECTED_SCENARIO: True}),
                                  check_value=False)
-            dynamic_outputs.update(
+            dynamic_inputs.update(
                 {f'{driver_name}.samples_df': {'type': 'dataframe',
                                                'default': pd.DataFrame(
-                                                   columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
+                                                   columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO)),
+                                               'structuring': True,
+                                               'editable': False
+                                               }
+
                  # f'{driver_name}.builder_mode': {'type': 'string',
                  #                                 'value': 'multi_instance'}
                  },
             )
 
-        self.add_outputs(dynamic_outputs)
+        self.add_inputs(dynamic_inputs, clean_inputs=False)
 
     def get_scatter_builder(
             self,
