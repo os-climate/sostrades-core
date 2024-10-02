@@ -1,7 +1,9 @@
 {
     "linearization_mode":  {"value": "auto"},
     "debug_mode":  {"value": ""},
-    "cache_type":  {"value": "None"},
+    "cache_type": {
+        "value": ""
+    },
     "cache_file_path": {"value": ""},
     "sub_mda_class":  {"value": "MDAJacobi"},
     "max_mda_iter":  {"value": 30},

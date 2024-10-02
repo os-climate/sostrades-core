@@ -108,7 +108,7 @@ class TestDatasets(unittest.TestCase):
         # check numerical parameters
         self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
         self.assertEqual(dm.get_value("usecase_dataset.debug_mode"), "")
-        self.assertEqual(dm.get_value("usecase_dataset.cache_type"), "None")
+        self.assertEqual(dm.get_value("usecase_dataset.cache_type"), "")
         self.assertEqual(dm.get_value("usecase_dataset.cache_file_path"), "")
         self.assertEqual(dm.get_value("usecase_dataset.inner_mda_name"), "MDAJacobi")
         self.assertEqual(dm.get_value("usecase_dataset.max_mda_iter"), 30)

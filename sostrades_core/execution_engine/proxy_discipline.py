@@ -126,6 +126,7 @@ class ProxyDiscipline:
         SHARED_VISIBILITY]
     NAMESPACE = SoSWrapp.NAMESPACE
     NS_REFERENCE = 'ns_reference'
+    REFERENCE = 'reference'
     VALUE = SoSWrapp.VALUE
     DEFAULT = SoSWrapp.DEFAULT
     EDITABLE = SoSWrapp.EDITABLE
@@ -141,6 +142,7 @@ class ProxyDiscipline:
     META_INPUT = 'meta_input'
     OPTIONAL = 'optional'
     ORIGIN = 'model_origin'
+    MODEL_NAME_FULL_PATH = 'model_name_full_path'
     HEADERS = 'headers'
     COMPOSED_OF = 'composed_of'
     DISCIPLINES_DEPENDENCIES = 'disciplines_dependencies'
@@ -154,7 +156,7 @@ class ProxyDiscipline:
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     VARIABLE_KEY = 'variable_key'  # key for ontology
     SIZE_MO = 'size_mo' #size of a data
-
+    DISPLAY_NAME = 'display_name'
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
     NO_UNIT_TYPES = ['bool', 'string', 'string_list']
@@ -488,10 +490,12 @@ class ProxyDiscipline:
             if self.mdo_discipline_wrapp.mdo_discipline is not None:
                 self.stored_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
             # init gemseo discipline if it has not been created yet
+            cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
+            if cache_type == '':
+                cache_type_gemseo = MDODiscipline.CacheType.NONE
             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
-                                                               cache_type=self.get_sosdisc_inputs(
-                                                                   self.CACHE_TYPE),
+                                                               cache_type=cache_type_gemseo,
                                                                cache_file_path=self.get_sosdisc_inputs(
                                                                    self.CACHE_FILE_PATH))
             self.add_status_observers_to_gemseo_disc()
@@ -1653,10 +1657,10 @@ class ProxyDiscipline:
         """
         disc_ns_name = self.get_disc_full_name()
         disc_dict_info = {}
-        disc_dict_info['reference'] = self
+        disc_dict_info[self.REFERENCE] = self
         disc_dict_info['classname'] = self.__class__.__name__
         #         disc_dict_info['model_name'] = self.__module__.split('.')[-2]
-        disc_dict_info['model_name_full_path'] = self.get_module()
+        disc_dict_info[self.MODEL_NAME_FULL_PATH] = self.get_module()
         disc_dict_info['disc_label'] = self.get_disc_label()
         disc_dict_info['treeview_order'] = 'no'
         disc_dict_info[self.NS_REFERENCE] = self.ee.ns_manager.get_local_namespace(
