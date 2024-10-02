@@ -16,9 +16,8 @@ limitations under the License.
 '''
 # ruff: noqa: E402 (disable Module level import not at top of file because we need to define gemseo path before import)
 import logging
-import os
 from copy import deepcopy
-from os.path import dirname, join
+
 from typing import List, Union
 
 from numpy import bool_ as np_bool
@@ -29,14 +28,6 @@ from numpy import int32 as np_int32
 from numpy import int64 as np_int64
 from numpy import ndarray
 from pandas import DataFrame
-
-# set-up the folder where GEMSEO will look-up for new wrapps (solvers,
-# grammars etc)
-
-parent_dir = dirname(__file__)
-GEMSEO_ADDON_DIR = "gemseo_addon"
-os.environ["GEMSEO_PATH"] = join(parent_dir, GEMSEO_ADDON_DIR)
-
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline

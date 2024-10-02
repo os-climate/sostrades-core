@@ -15,5 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
+from os.path import dirname, join
+import os
 
 logging.basicConfig(level=logging.INFO)
+# set-up the folder where GEMSEO will look-up for new wrapps (solvers,
+# grammars etc)
+
+parent_dir = dirname(__file__)
+GEMSEO_ADDON_DIR = "gemseo_addon"
+EXEC_ENGINE = "execution_engine"
+os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
