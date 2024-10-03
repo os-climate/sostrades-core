@@ -1388,7 +1388,7 @@ class TestMDALoop(unittest.TestCase):
                 k = disc.get_data_out().keys()
                 v = [disc.get_sosdisc_outputs(_k) for _k in k]
                 out_0.update(dict(zip(k, v)))
-            rh_0 = exec_eng.root_process.proxy_disciplines[0].get_sosdisc_outputs('residuals_history')
+            rh_0 = exec_eng.root_process.get_sosdisc_outputs('residuals_history')
             rh_0 = [_r[0] for _r in rh_0['MDAJacobi']]
 
             # instantiate another exec engine, load data with petsc and execute
@@ -1408,13 +1408,13 @@ class TestMDALoop(unittest.TestCase):
             exec_eng2.execute()
 
             # save new results
-            disc_p = exec_eng2.root_process.proxy_disciplines[0].proxy_disciplines
+            disc_p = exec_eng2.root_process.proxy_disciplines
             out_p = {}
             for disc in disc_p:
                 k = disc.get_data_out().keys()
                 v = [disc.get_sosdisc_outputs(_k) for _k in k]
                 out_p.update(dict(zip(k, v)))
-            rh_p = exec_eng2.root_process.proxy_disciplines[0].get_sosdisc_outputs('residuals_history')
+            rh_p = exec_eng2.root_process.get_sosdisc_outputs('residuals_history')
             rh_p = [_r[0] for _r in rh_p['MDAJacobi']]
 
             # Test results equivalence
