@@ -1389,7 +1389,6 @@ class TestMDALoop(unittest.TestCase):
                 v = [disc.get_sosdisc_outputs(_k) for _k in k]
                 out_0.update(dict(zip(k, v)))
             rh_0 = exec_eng.root_process.get_sosdisc_outputs('residuals_history')
-            rh_0 = [_r[0] for _r in rh_0['MDAJacobi']]
 
             # instantiate another exec engine, load data with petsc and execute
             exec_eng2 = ExecutionEngine(self.name)
@@ -1415,10 +1414,9 @@ class TestMDALoop(unittest.TestCase):
                 v = [disc.get_sosdisc_outputs(_k) for _k in k]
                 out_p.update(dict(zip(k, v)))
             rh_p = exec_eng2.root_process.get_sosdisc_outputs('residuals_history')
-            rh_p = [_r[0] for _r in rh_p['MDAJacobi']]
 
             # Test results equivalence
-            for _r0, _rp in zip(rh_0, rh_p):
+            for _r0, _rp in zip(rh_0['MDAJacobi'], rh_p['MDAJacobi']):
                 self.assertAlmostEqual(_r0, _rp)
             for _k, _v in out_0.items():
                 self.assertAlmostEqual(_v, out_p[_k])
