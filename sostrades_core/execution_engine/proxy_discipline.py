@@ -613,14 +613,33 @@ class ProxyDiscipline:
                     (not value[self.NUMERICAL] or value[self.NUMERICAL] and value[self.RUN_NEEDED])]
 
     def get_input_data_names_and_defaults(self, as_namespaced_tuple: bool = False, numerical_inputs=True) -> list[str]:
+        '''
 
+        Args:
+            as_namespaced_tuple: bool to choose if we wqnt to keep tuple in keys to deal with multiple variable in inputs (gather case)
+            numerical_inputs: If numerical inputs is False then we do not tajke numerical variables that are not needed during the run (filter all unnecessary variables for gemseo)
+
+        Returns: dict of input variables and value
+
+        '''
         data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
         if numerical_inputs:
             return {key: value[self.DEFAULT] for key, value in data_in.items()}
         else:
             return {key: value[self.DEFAULT] for key, value in data_in.items() if
-                    (not value[self.NUMERICAL] or value[self.NUMERICAL] and value[self.RUN_NEEDED])}
+                    not self.variable_is_numerical(value)}
 
+    def variable_is_numerical(self, definition_input_dict):
+        '''
+
+        Args:
+            definition_input_dict : dict with all parameters to define the variable
+
+        Returns: True if the variable is numerical or  not needed for the run
+
+        '''
+
+        return definition_input_dict[self.NUMERICAL] and not definition_input_dict[self.RUN_NEEDED]
     def get_run_needed_input(self, as_namespaced_tuple: bool = False):
 
         data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
@@ -1587,7 +1606,9 @@ class ProxyDiscipline:
             # get data in local_data during run or linearize steps
             # #TODO: this should not be possible in command line mode, is it possible in the GUI?
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
-                values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
+                # a variable is in the local_data if the variable is not numerical, do not need of numerical variables in the run phase
+                if not self.variable_is_numerical(self.dm.get_data(q_key)):
+                    values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
             # get data in data manager during configure step
             else:
                 values_dict[key] = self.dm.get_value(q_key)
