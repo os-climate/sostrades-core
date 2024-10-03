@@ -28,7 +28,7 @@ class GenerativeEngineService:
     """
     Service for interacting with the Generative Engine API
     """
-    def __init__(self, url: str, key: str, session_name=None) -> None:
+    def __init__(self, url: str, key: str, session_name=None, workspace_id=None) -> None:
 
         self.__api_key = key
         self.url = url
@@ -38,6 +38,8 @@ class GenerativeEngineService:
 
         else:
             self.session = session_name
+
+        self.workspace_id = workspace_id
 
         self.default_model_kwargs = {
             "streaming": False,
@@ -101,10 +103,11 @@ class GenerativeEngineService:
                 "modelName": model,
                 "provider": provider,
                 "sessionId": self.session,
-                #"workspaceId": "b0a44672-147d-4886-8617-6af28bbff436",
                 "modelKwargs": generation_kwargs,
             },
         }
+        if self.workspace_id is not None:
+            data["data"].update({"workspaceId": self.workspace_id})
         url = os.path.join(self.url, "v1/llm/invoke").replace("\\", "/")
         r = requests.post(url, headers=self.__get_headers(), json=data)
         response = self._parse_invoke_response(r.text)
