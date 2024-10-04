@@ -19,7 +19,9 @@ import json
 import os
 from dataclasses import dataclass
 
-from sostrades_core.datasets.dataset_info import DatasetInfo
+from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+from sostrades_core.datasets.dataset_info.dataset_info_factory import DatasetInfoFactory
+
 
 
 class DatasetsMappingException(Exception):
@@ -46,10 +48,8 @@ class DatasetsMapping:
     MAP_VERSION = "map_version"
     NAMESPACE_VALUE = "namespace_value"
     PARAMETER_NAME = "parameter_name"
-    CONNECTOR_ID_KEY = DatasetInfo.CONNECTOR_ID_KEY
-    DATASET_ID_KEY = DatasetInfo.DATASET_ID_KEY
+    WILDCARD = AbstractDatasetInfo.WILDCARD
     MAPPING_KEY_FIELDS = [MAP_VERSION, NAMESPACE_VALUE, PARAMETER_NAME]
-    MAPPING_ITEM_FIELDS = [CONNECTOR_ID_KEY, DATASET_ID_KEY, PARAMETER_NAME]
 
     KEY = 'key'
     VALUE = 'value'
@@ -58,7 +58,7 @@ class DatasetsMapping:
     # Process module name
     process_module_path: str
     # Dataset info [connector_id|dataset_id| : DatasetInfo]
-    datasets_infos: dict[str:DatasetInfo]
+    datasets_infos: dict[str:AbstractDatasetInfo]
     # Namespace mapping [namespace_name : List[connector_id|dataset_id|]]
     namespace_datasets_mapping: dict[str : list[str]]
     # Dataset namespace mapping [connector_id|dataset_id| : [namespace: dict[parameter:parameter_dataset]]]
@@ -120,21 +120,22 @@ class DatasetsMapping:
                     parameter = mapping_key_fields[DatasetsMapping.PARAMETER_NAME]
                     namespace_datasets_mapping[namespace] = namespace_datasets_mapping.get(namespace, [])
 
-                    for dataset in datasets:
-                        dataset_fields = DatasetsMapping.extract_mapping_item_fields(dataset)
-                        connector_id = dataset_fields[DatasetsMapping.CONNECTOR_ID_KEY]
-                        dataset_id = dataset_fields[DatasetsMapping.DATASET_ID_KEY]
+                    for dataset_mapping_key in datasets:
+                        #first extract the version
+                        dataset_info_version = DatasetInfoFactory.get_dataset_info_version(dataset_mapping_key)
+
+                        # extract the fields of the dataset info key
+                        dataset_fields = dataset_info_version.value.deserialize(dataset_mapping_key)
                         parameter_id = dataset_fields[DatasetsMapping.PARAMETER_NAME]
 
+                        #create the dataset info then Check if there is wildcard in dataset info id and replace by ns if needed
+                        dataset_info = dataset_info_version.value.create(dataset_fields).copy_with_new_ns(namespace)
+                        
                         # build just the id with connector and dataset
-                        dataset_info_id = DatasetsMapping.MAPPING_SEP.join([connector_id, dataset_id])
-
-                        # check that there is no "*" on dataset name, it is not allowed
-                        if dataset_id == DatasetInfo.WILDCARD:
-                            raise DatasetsMappingException(f"Wrong format for '{dataset}', the dataset name '*' is not authorised")
+                        dataset_info_id = dataset_info.dataset_info_id                       
 
                         if dataset_info_id not in datasets_infos:
-                            datasets_infos[dataset_info_id] = DatasetInfo(connector_id, dataset_id)
+                            datasets_infos[dataset_info_id] = dataset_info
 
                         if dataset_info_id not in namespace_datasets_mapping[namespace]:
                             namespace_datasets_mapping[namespace].append(dataset_info_id)
@@ -145,9 +146,9 @@ class DatasetsMapping:
                         parameter_to_found = parameter_id
                         parameter_from = parameter
                         # if we have '*'-> param_name or param_name -> '*' we retreive the param_name
-                        if parameter_id == DatasetInfo.WILDCARD:
+                        if parameter_id == DatasetsMapping.WILDCARD:
                             parameter_to_found = parameter
-                        if parameter == DatasetInfo.WILDCARD:
+                        if parameter == DatasetsMapping.WILDCARD:
                             parameter_from = parameter_id
                         parameters_mapping[dataset_info_id][namespace][parameter_from] = parameter_to_found
 
@@ -164,9 +165,6 @@ class DatasetsMapping:
     def extract_mapping_key_fields(cls, mapping_key):
         return cls.__extract_mapping_fields(mapping_key, cls.MAPPING_KEY_FIELDS, "mapping key")
 
-    @classmethod
-    def extract_mapping_item_fields(cls, mapping_item):
-        return cls.__extract_mapping_fields(mapping_item, cls.MAPPING_ITEM_FIELDS, "mapping value item")
 
     @classmethod
     def __extract_mapping_fields(cls, mapping_key_or_value: str, format_fields: list[str],
@@ -202,7 +200,7 @@ class DatasetsMapping:
             json_data = json.load(file)
         return DatasetsMapping.deserialize(json_data)
 
-    def get_datasets_info_from_namespace(self, namespace: str, study_name: str) -> dict[DatasetInfo:dict[str:str]]:
+    def get_datasets_info_from_namespace(self, namespace: str, study_name: str) -> dict[AbstractDatasetInfo:dict[str:str]]:
         """
         Gets the datasets info for a namespace: replace the placeholder with study names
         + if wildcard in namespaces return all dataset id associated to this wildcard
@@ -222,10 +220,16 @@ class DatasetsMapping:
                 datasets_mapping[self.datasets_infos[dataset_id]] = self.parameters_mapping[dataset_id].get(anonimized_ns, {})
 
         # if there is in the mapping a wildcard at ns level, we need for all namespace to return the datasets associated
-        if DatasetInfo.WILDCARD in self.namespace_datasets_mapping.keys():
-            dataset_ids = self.namespace_datasets_mapping[DatasetInfo.WILDCARD]
+        if DatasetsMapping.WILDCARD in self.namespace_datasets_mapping.keys():
+            dataset_ids = self.namespace_datasets_mapping[DatasetsMapping.WILDCARD]
             for dataset_id in dataset_ids:
-                datasets_mapping[self.datasets_infos[dataset_id]] = self.parameters_mapping[dataset_id].get(DatasetInfo.WILDCARD, {})
+                if self.WILDCARD in dataset_id:
+                    # if there is still wildcard in dataset info, create a new one and replace the ns
+                    dataset_info = self.datasets_infos[dataset_id].copy_with_new_ns(anonimized_ns)
+                else:
+                    dataset_info = self.datasets_infos[dataset_id]
+                datasets_mapping[dataset_info] = datasets_mapping.get(dataset_info,{})
+                datasets_mapping[dataset_info].update(self.parameters_mapping[dataset_id].get(DatasetsMapping.WILDCARD, {}))
 
         return datasets_mapping
 
@@ -255,7 +259,7 @@ class DatasetsMapping:
                     # find the corresponding namespace between the namespace_dict and the current namespace
                     # (if the current namespace is a wildcard '*' we retreive all the namespaces)
                     corresponding_namespaces = []
-                    if namespace == DatasetInfo.WILDCARD:
+                    if namespace == DatasetsMapping.WILDCARD:
                         corresponding_namespaces.extend(namespaces_dict.keys())
                     elif study_namespace in namespaces_dict.keys():
                         corresponding_namespaces.append(study_namespace)
@@ -263,7 +267,7 @@ class DatasetsMapping:
                     if len(corresponding_namespaces) > 0:
                         for data, dataset_data in parameters_mapping_dict.items():
 
-                            if dataset_data == DatasetInfo.WILDCARD:
+                            if dataset_data == DatasetsMapping.WILDCARD:
                                 # if wildcard at parameter place: dataset_connector|dataset_name|*
                                 # search for all the data in the namespaces
                                 for ns in corresponding_namespaces:

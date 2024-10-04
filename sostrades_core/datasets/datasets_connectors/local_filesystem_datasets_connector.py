@@ -18,6 +18,8 @@ import logging
 import os
 from typing import Any
 
+from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetDeserializeException,
@@ -37,7 +39,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
     """
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
 
-    def __init__(self, root_directory_path: str,
+    def __init__(self, connector_id: str, root_directory_path: str,
                  create_if_not_exists: bool = False,
                  serializer_type: DatasetSerializerType = DatasetSerializerType.FileSystem):
         """
@@ -59,6 +61,7 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug(f"Initializing local connector on {root_directory_path}")
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
+        self.connector_id = connector_id
 
     def __load_dataset_descriptor_and_pickle(self, dataset_identifier: str) -> dict[str: Any]:
         """
@@ -112,20 +115,20 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
     def __clear_pickle_data(self):
         self.__datasets_serializer.clear_pickle_data()
 
-    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
+    def _get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
         Method to retrieve data from local dataset and fill a data_dict
 
         :param dataset_identifier: identifier of the dataset
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
 
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
         """
-        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
-        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
+        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier.dataset_id} for connector {self}")
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier.dataset_id))
         # Load the descriptor, the serializer loads the pickle if it exists
-        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier.dataset_id)
         # Filter data
         filtered_values = {key: self.__datasets_serializer.convert_from_dataset_data(key,
                                                                                      self._extract_value_from_datum(dataset_descriptor[key]),
@@ -133,54 +136,54 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                            for key in dataset_descriptor if key in data_to_get}
         # Clear pickle buffer from serializer
         self.__clear_pickle_data()
-        self.__logger.debug(f"Values obtained {list(filtered_values.keys())} for dataset {dataset_identifier} for connector {self}")
+        self.__logger.debug(f"Values obtained {list(filtered_values.keys())} for dataset {dataset_identifier.dataset_id} for connector {self}")
         return filtered_values
 
-    def get_datasets_available(self) -> list[str]:
+    def get_datasets_available(self) -> list[AbstractDatasetInfo]:
         """
         Get all available datasets for a specific API
         :return: list of datasets identifiers
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
-        return next(os.walk(self.__root_directory_path))[1]
+        return [DatasetInfoV0(self.connector_id, dataset_id) for dataset_id in next(os.walk(self.__root_directory_path))[1]]
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
+    def _write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str], name, value
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         :return: None
         """
-        self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
-        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
+        self.__logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier.dataset_id))
         # read the already existing values
-        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier.dataset_id)
         # Write data, serializer buffers the data to pickle and already pickled
         descriptor_values = {key: self.__datasets_serializer.convert_to_dataset_data(key,
                                                                                      value,
                                                                                      data_types_dict)
                              for key, value in values_to_write.items()}
         self._update_data_with_values(dataset_descriptor, descriptor_values, data_types_dict)
-        self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier,
+        self.__save_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier.dataset_id,
                                                   descriptor_data=dataset_descriptor)
         return values_to_write
 
-    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
+    def _get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to get all values from a dataset for a specific API
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         :return: None
         """
-        self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
-        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier))
-        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier)
+        self.__logger.debug(f"Getting all values for dataset {dataset_identifier.dataset_id} for connector {self}")
+        self.__datasets_serializer.set_dataset_directory(os.path.join(self.__root_directory_path, dataset_identifier.dataset_id))
+        dataset_descriptor = self.__load_dataset_descriptor_and_pickle(dataset_identifier=dataset_identifier.dataset_id)
         dataset_values = {key: self.__datasets_serializer.convert_from_dataset_data(key,
                                                                                  self._extract_value_from_datum(datum),
                                                                                  data_types_dict)
@@ -188,11 +191,11 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         self.__clear_pickle_data()
         return dataset_values
 
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> None:
+    def _write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> None:
         """
         Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data types {name: type}
@@ -203,8 +206,8 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
         :type override: bool
         :return: None
         """
-        self.__logger.debug(f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
-        dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier)
+        self.__logger.debug(f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
+        dataset_directory = os.path.join(self.__root_directory_path, dataset_identifier.dataset_id)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
         if not os.path.exists(dataset_descriptor_path):
             # Handle dataset creation
@@ -213,11 +216,11 @@ class LocalFileSystemDatasetsConnector(AbstractDatasetsConnector):
                 with open(dataset_descriptor_path, "w", encoding="utf-8") as f:
                     json.dump({}, f)
             else:
-                raise DatasetNotFoundException(dataset_identifier)
+                raise DatasetNotFoundException(dataset_identifier.dataset_id)
         else:
             # Handle override
             if not override:
-                raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
+                raise DatasetGenericException(f"Dataset {dataset_identifier.dataset_id} would be overriden")
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
     def clear(self, remove_root_directory: bool = False) -> None:

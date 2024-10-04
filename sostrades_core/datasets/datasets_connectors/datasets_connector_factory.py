@@ -69,7 +69,7 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
     __logger = logging.getLogger(__name__)
 
     @classmethod
-    def get_connector(cls,
+    def get_connector(cls, connector_identifier:str,
         connector_type: DatasetConnectorType, **connector_instanciation_fields
     ) -> AbstractDatasetsConnector:
         """
@@ -85,6 +85,6 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
         ):
             raise DatasetUnableToInitializeConnectorException(f"Unexpected connector type {connector_type}")
         try:
-            return connector_type.value(**connector_instanciation_fields)
+            return connector_type.value(connector_identifier, **connector_instanciation_fields)
         except TypeError as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type) from exc

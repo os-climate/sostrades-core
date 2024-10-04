@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
+from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
@@ -167,17 +168,17 @@ class TestDatasets(unittest.TestCase):
         json_file_path = os.path.join(test_data_folder, "test_92_example_mapping.json")
 
         dataset_mapping = DatasetsMapping.from_json_file(file_path=json_file_path)
-        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>"].connector_id, "<1connector_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["<1connector_id>|<1dataset_id>"].dataset_id, "<1dataset_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>"].connector_id, "<2connector_id>")
-        self.assertEqual(dataset_mapping.datasets_infos["<2connector_id>|<2dataset_id>"].dataset_id, "<2dataset_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["V0|<1connector_id>|<1dataset_id>"].connector_id, "<1connector_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["V0|<1connector_id>|<1dataset_id>"].dataset_id, "<1dataset_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["V0|<2connector_id>|<2dataset_id>"].connector_id, "<2connector_id>")
+        self.assertEqual(dataset_mapping.datasets_infos["V0|<2connector_id>|<2dataset_id>"].dataset_id, "<2dataset_id>")
 
         self.assertEqual(
-            dataset_mapping.namespace_datasets_mapping["namespace1"], ["<1connector_id>|<1dataset_id>"]
+            dataset_mapping.namespace_datasets_mapping["namespace1"], ["V0|<1connector_id>|<1dataset_id>"]
         )
         self.assertEqual(
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
-            set(["<1connector_id>|<1dataset_id>", "<2connector_id>|<2dataset_id>"]),
+            set(["V0|<1connector_id>|<1dataset_id>", "V0|<2connector_id>|<2dataset_id>"]),
         )
 
     def test_04_datasets_types(self):
@@ -311,7 +312,7 @@ class TestDatasets(unittest.TestCase):
 
         try:
             connector_to.copy_dataset_from(connector_from=connector_json,
-                                           dataset_identifier="dataset_all_types",
+                                           dataset_identifier=DatasetInfoV0(connector_json,"dataset_all_types"),
                                            data_types_dict=data_types_dict,
                                            create_if_not_exists=True)
 
@@ -430,7 +431,7 @@ class TestDatasets(unittest.TestCase):
 
         try:
             connector_to.copy_dataset_from(connector_from=connector_local,
-                                           dataset_identifier="dataset_nested_types",
+                                           dataset_identifier=DatasetInfoV0(connector_local,"dataset_nested_types"),
                                            data_types_dict=data_types_dict,
                                            create_if_not_exists=True)
 
@@ -493,7 +494,7 @@ class TestDatasets(unittest.TestCase):
         data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
 
         try:
-            values = connector_export.get_values_all(dataset_identifier="dataset_disc1",
+            values = connector_export.get_values_all(dataset_identifier=DatasetInfoV0('MVP0_local_datasets_connector_export_test',"dataset_disc1"),
                                            data_types_dict=data_types_dict)
 
             self.assertEqual(values["a"], 1)
@@ -588,7 +589,7 @@ class TestDatasets(unittest.TestCase):
 
             data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
 
-            values = connector_export.get_values_all(dataset_identifier="dataset_all_types",
+            values = connector_export.get_values_all(dataset_identifier=DatasetInfoV0('MVP0_local_export_test_param',"dataset_all_types"),
                                            data_types_dict=data_types_dict)
 
             self.assertEqual(values["x"], 4.0)
@@ -636,7 +637,7 @@ class TestDatasets(unittest.TestCase):
         data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
 
         connector_to.copy_dataset_from(connector_from=connector_json,
-                                       dataset_identifier="dataset_all_types",
+                                       dataset_identifier=DatasetInfoV0(connector_json,"dataset_all_types"),
                                        data_types_dict=data_types_dict,
                                        create_if_not_exists=True)
 
@@ -675,10 +676,10 @@ class TestDatasets(unittest.TestCase):
                            "dict_strange_keys": "dict"}
 
         connector_to.copy_dataset_from(connector_from=connector_from,
-                                       dataset_identifier="dataset_df_bq",
+                                       dataset_identifier=DatasetInfoV0(connector_from,"dataset_df_bq"),
                                        data_types_dict=data_types_dict,
                                        create_if_not_exists=True)
-        data_values = connector_to.get_values("dataset_df_bq", data_to_get=data_types_dict)
+        data_values = connector_to.get_values(DatasetInfoV0('MVP0_bigquery_connector_copy_test',"dataset_df_bq"), data_to_get=data_types_dict)
 
         data_name = "WITNESS_gdp"
         ref_df = pd.read_csv(os.path.realpath(os.path.join(os.path.dirname(__file__),
@@ -696,4 +697,4 @@ class TestDatasets(unittest.TestCase):
 if __name__ == "__main__":
     cls = TestDatasets()
     cls.setUp()
-    cls.test_13_export_with_repository_dataset_connector()
+    cls.test_08_json_to_local_connector_conversion_and_loading()
