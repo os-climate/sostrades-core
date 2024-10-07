@@ -95,7 +95,18 @@ class AbstractDatasetInfo(abc.ABC):
         Check if there is wilcard in the dataset info and update it with namespace info if needed
         '''
 
-    
+    @classmethod
+    def extract_mapping_key_field(cls, dataset_mapping_key: str, dataset_mapping_fields: list[str])-> dict[str: str]:
+
+        fields = dataset_mapping_key.split(cls.SEPARATOR)
+
+        if len(fields) != len(dataset_mapping_fields):
+            raise ValueError(f"Wrong format for {dataset_mapping_key}, "
+                             f"the expected format "
+                             f"is {cls.SEPARATOR.join(dataset_mapping_fields)}")
+
+        else:
+            return dict(zip(dataset_mapping_fields, fields))
 
     
 

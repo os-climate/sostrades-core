@@ -27,7 +27,6 @@ class DatasetInfoV0(AbstractDatasetInfo):
     """
     Stores the informations of a dataset V0
     """
-    version_id = "V0"
 
     MAPPING_ITEM_FIELDS = [
                         AbstractDatasetInfo.VERSION_ID_KEY,
