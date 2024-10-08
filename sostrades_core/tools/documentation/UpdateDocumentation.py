@@ -13,15 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import ast
 import importlib
 import importlib.util
-import os
-import logging
-import mistune
-import re
 import inspect
-import ast
+import logging
+import os
+import re
+
 import astor
+import mistune
+
 from sostrades_core.tools.gen_ai.gen_engine_services import GenerativeEngineService
 
 
@@ -118,7 +120,7 @@ class DocGenerator():
         """
         replaces the content of a section within a markdown
         if section does not exist, it adds it at the beginning of the markdown
-        Assumes that a section starts with a title #SOMETHING and ends at the beginning of another section that also 
+        Assumes that a section starts with a title #SOMETHING and ends at the beginning of another section that also
         starts with a title #SOMETHINGELSE
         Args:
             initial_markdown_str: documentation content in markdown syntax (not the file, the actual content)

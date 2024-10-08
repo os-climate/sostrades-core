@@ -12,12 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import unittest
-import os
 import importlib
 import inspect
+import os
 import textwrap
-from scripts.UpdateDocumentation import DocGenerator
+import unittest
+
+from UpdateDocumentation import DocGenerator
+
 
 # example of class to be used for the tests
 class A:
@@ -60,7 +62,7 @@ class UpdatedDocumentation(unittest.TestCase):
         doc.get_discipline_class()
         self.assertEqual(doc.discipline_class, None)
         # with pythonfile defined
-        doc.pythonfile = 'climateeconomics\sos_wrapping\sos_wrapping_witness\macroeconomics\macroeconomics_discipline.py'
+        doc.pythonfile = r'climateeconomics\sos_wrapping\sos_wrapping_witness\macroeconomics\macroeconomics_discipline.py'
         doc.get_discipline_class()
         self.assertEqual(doc.discipline_class.__name__, doc.class_name)
 
