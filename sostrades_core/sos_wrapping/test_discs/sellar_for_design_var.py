@@ -15,7 +15,7 @@ limitations under the License.
 '''
 from cmath import exp, sqrt
 
-from numpy import array, atleast_2d, atleast_1d
+from numpy import array, atleast_1d, atleast_2d
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
