@@ -13,10 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import json
-import os
-import requests
 import logging
+import os
 from uuid import uuid4
+
+import requests
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
