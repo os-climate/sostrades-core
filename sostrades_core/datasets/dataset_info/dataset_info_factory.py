@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from enum import Enum
 import logging
 import re
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+from enum import Enum
+
 from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
+
 
 class DatasetInfoSerializerVersion(Enum):
     """
@@ -35,8 +36,8 @@ class DatasetInfoSerializerVersion(Enum):
             return next(member for member in cls if member.name == value_str)
         except StopIteration:
             raise ValueError(f"No matching enum value found for '{value_str}'")
-        
-        
+
+
 class DatasetInfoFactory(metaclass=NoInstanceMeta):
     """
     Dataset info factory
@@ -58,5 +59,5 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
         version = DatasetInfoSerializerVersion.V0
         if match:
             version = DatasetInfoSerializerVersion.get_enum_value(match.group(1))
-        
+
         return version

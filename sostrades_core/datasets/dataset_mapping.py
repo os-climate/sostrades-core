@@ -23,7 +23,6 @@ from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractD
 from sostrades_core.datasets.dataset_info.dataset_info_factory import DatasetInfoFactory
 
 
-
 class DatasetsMappingException(Exception):
     """
     Generic exception for dataset mapping
@@ -130,9 +129,9 @@ class DatasetsMapping:
 
                         #create the dataset info then Check if there is wildcard in dataset info id and replace by ns if needed
                         dataset_info = dataset_info_version.value.create(dataset_fields).copy_with_new_ns(namespace)
-                        
+
                         # build just the id with connector and dataset
-                        dataset_info_id = dataset_info.dataset_info_id                       
+                        dataset_info_id = dataset_info.dataset_info_id
 
                         if dataset_info_id not in datasets_infos:
                             datasets_infos[dataset_info_id] = dataset_info

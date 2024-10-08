@@ -18,6 +18,7 @@ from __future__ import annotations
 import abc
 from dataclasses import dataclass
 
+
 class DatasetsInfoMappingException(Exception):
     """
     Generic exception for dataset info
@@ -37,7 +38,7 @@ class AbstractDatasetInfo(abc.ABC):
 
     WILDCARD = "*"
     SEPARATOR = '|'
-    
+
     # Id of the connector
     connector_id: str
     # Dataset id for this connector
@@ -58,7 +59,7 @@ class AbstractDatasetInfo(abc.ABC):
     def get_mapping_id(ids: list[str]) -> str:
         return AbstractDatasetInfo.SEPARATOR.join(ids)
 
-    
+
     @staticmethod
     @abc.abstractmethod
     def deserialize(dataset_mapping_key:str) -> dict[str:str]:
@@ -66,7 +67,6 @@ class AbstractDatasetInfo(abc.ABC):
         Method to deserialize
         expected
         <connector_id>|<dataset_id>|<parameter_id> (for V0)
-        
         :param dataset_mapping_key: datasets informations of mapping dataset
         :type dataset_mapping_key: str
         """
@@ -83,7 +83,6 @@ class AbstractDatasetInfo(abc.ABC):
         "dataset_id": <dataset_id>
         ...
          } (for V0)
-        
         :param input_dict: datasets informations of mapping dataset
         :type input_dict: dict
         """
@@ -107,9 +106,3 @@ class AbstractDatasetInfo(abc.ABC):
 
         else:
             return dict(zip(dataset_mapping_fields, fields))
-
-    
-
-
-
-    

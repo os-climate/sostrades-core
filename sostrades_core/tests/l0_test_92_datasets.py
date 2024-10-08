@@ -21,12 +21,12 @@ import numpy as np
 import pandas as pd
 from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
-from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
 import sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset
+from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 from sostrades_core.datasets.dataset_mapping import (
     DatasetsMapping,
     DatasetsMappingException,

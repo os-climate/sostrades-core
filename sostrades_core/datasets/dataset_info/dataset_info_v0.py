@@ -15,7 +15,6 @@ limitations under the License.
 '''
 from __future__ import annotations
 
-
 from dataclasses import dataclass
 
 from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo, DatasetsInfoMappingException
@@ -30,8 +29,8 @@ class DatasetInfoV0(AbstractDatasetInfo):
 
     MAPPING_ITEM_FIELDS = [
                         AbstractDatasetInfo.VERSION_ID_KEY,
-                        AbstractDatasetInfo.CONNECTOR_ID_KEY, 
-                        AbstractDatasetInfo.DATASET_ID_KEY, 
+                        AbstractDatasetInfo.CONNECTOR_ID_KEY,
+                        AbstractDatasetInfo.DATASET_ID_KEY,
                         AbstractDatasetInfo.PARAMETER_ID_KEY
                         ]
 
@@ -45,11 +44,10 @@ class DatasetInfoV0(AbstractDatasetInfo):
         Method to deserialize
         expected
         'vx(optional)|'<connector_id>|<dataset_id>|<parameter_id> (for V0)
-        
         :param dataset_mapping_key: datasets informations of mapping dataset
         :type dataset_mapping_key: str
         """
-        # check if the version is in the mapping key or not  
+        # check if the version is in the mapping key or not
         input_dict = DatasetInfoV0.extract_mapping_key_field(dataset_mapping_key, DatasetInfoV0.MAPPING_ITEM_FIELDS)
         if input_dict[DatasetInfoV0.DATASET_ID_KEY] == DatasetInfoV0.WILDCARD:
             raise DatasetsInfoMappingException(f"Wrong format for V0 mapping key {dataset_mapping_key}, the dataset name '*' is not authorised")
@@ -58,7 +56,7 @@ class DatasetInfoV0(AbstractDatasetInfo):
 
     @staticmethod
     def create(input_dict: dict) -> DatasetInfoV0:
-        
+
         return DatasetInfoV0(
             connector_id=input_dict[DatasetInfoV0.CONNECTOR_ID_KEY],
             dataset_id=input_dict[DatasetInfoV0.DATASET_ID_KEY]
