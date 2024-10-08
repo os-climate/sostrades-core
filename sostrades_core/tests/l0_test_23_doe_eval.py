@@ -492,7 +492,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.Eval.gather_outputs'] = self.output_selection_obj
         exec_eng.load_study_from_input_dict(disc_dict)
 
-        default_algo_options_lhs, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(
+        default_algo_options_lhs = DoeSampleGenerator().get_options_and_default_values(
             algo_name)
 
         self.assertDictEqual(exec_eng.dm.get_value(
@@ -517,7 +517,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         algo_name = "fullfact"
         disc_dict = {'doe.SampleGenerator.sampling_algo': algo_name}
         exec_eng.load_study_from_input_dict(disc_dict)
-        default_algo_options_fullfact, algo_options_descr_dict = DoeSampleGenerator().get_options_and_default_values(
+        default_algo_options_fullfact = DoeSampleGenerator().get_options_and_default_values(
             algo_name)
         self.assertEqual(exec_eng.dm.get_value(
             'doe.SampleGenerator.algo_options')['n_samples'], n_samples)

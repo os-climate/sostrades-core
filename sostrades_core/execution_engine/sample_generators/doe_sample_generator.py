@@ -21,6 +21,7 @@ from typing import Optional
 import pandas as pd
 from gemseo import get_available_doe_algorithms
 from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
 from gemseo.utils.source_parsing import get_options_doc
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import (
@@ -144,41 +145,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         # create the algo library
         algo_lib = self.doe_factory.create(sampling_algo_name)
-
-        # Remark: The following lines of code should be in gemseo
-        # We should use only one line or two provided by gemseo
-        #         default_opt = algo_lib._get_options()
-        #        # provided options and not providing default options
-
-        fn = algo_lib.__class__._get_options
-
-        # retrieve description of options provided in docstrings
-        algo_options_descr_dict = get_options_doc(fn)
-
-        # retrieve default algo options and values
-        def get_default_args(func):
-            import inspect
-            signature = inspect.signature(func)
-            return {
-                k: v.default
-                for k, v in signature.parameters.items()
-                if v.default is not inspect.Parameter.empty
-            }
-
-        algo_options = get_default_args(fn)
-
-        # get option keys dedicated to algo
-        opts_gram = algo_lib._init_options_grammar()
-        opt_to_keep = opts_gram.names
-
-        # remove options that are not in the grammar of the algo
-        all_options = list(algo_options.keys())
-        for k in all_options:
-            if k not in opt_to_keep:
-                algo_options.pop(k, None)
-                algo_options_descr_dict.pop(k, None)
-
-        return algo_options, algo_options_descr_dict
+        algo_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].settings().dict()
+        return algo_options
 
     def _check_options(self, sampling_algo_name, algo_options, design_space):
         '''
@@ -309,7 +277,10 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         """
         #         doe_factory = DOEFactory()
         algo = self.doe_factory.create(sampling_algo_name)
-        normalized_samples = algo._generate_unit_samples(design_space, **gemseo_options)
+        # Filter settings to get only the ones of the global optimizer
+        settings = algo._filter_settings(gemseo_options, BaseDOELibrarySettings)
+
+        normalized_samples = algo._generate_unit_samples(design_space, **settings)
         return normalized_samples
 
     def _unnormalize_samples_from_design_space(self, normalized_samples, design_space):
@@ -586,7 +557,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         # DoE algorithms
         available_algos = get_available_doe_algorithms()
         if algo_name in available_algos:
-            algo_options_desc_in, algo_options_descr_dict = self.get_options_and_default_values(
+            algo_options_desc_in = self.get_options_and_default_values(
                 algo_name)
             return algo_options_desc_in
         else:

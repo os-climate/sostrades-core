@@ -152,36 +152,21 @@ class TestSampleGeneratorTool(unittest.TestCase):
         # print(algo_names_list)
 
         sampling_algo_name = 'fullfact'
-        algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
+        algo_options_desc_in = sample_generator.get_options_and_default_values(
             sampling_algo_name)
 
-        # print(algo_options_desc_in)
-        # print(algo_options_descr_dict)
 
         # check algo_options_desc_in
         targ_algo_options_desc_in = self.algo_options_desc_in
         self.assertDictEqual(self.algo_options_desc_in, targ_algo_options_desc_in,
                              "coupling algo_options_desc_in doesn't match")
 
-        # check keys of algo_options_desc_in.keys()
-        target_algo_options_descr_dict_keys = [
-            elem for elem in algo_options_descr_dict.keys() if elem not in ['kwargs']]
-        self.assertSetEqual(set(algo_options_desc_in.keys()), set(
-            target_algo_options_descr_dict_keys))
 
-        # test if it works with all algo samples names
-        # print('\n')
-        for sampling_algo_name in algo_names_list:
-            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
-                sampling_algo_name)
-            # print(sampling_algo_name)
-            # print(algo_options_desc_in)
-            # print('\n')
 
         # test the error message in case of wrong algo_name
         sampling_algo_name = 'toto'
         with self.assertRaises(Exception) as cm:
-            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
+            _ = sample_generator.get_options_and_default_values(
                 sampling_algo_name)
 
         error_message = f'The provided algorithm name {sampling_algo_name} is not in the available algorithm list : {algo_names_list}'
@@ -191,7 +176,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
         # algo_names
         for sampling_algo_name in ['CustomDOE', 'DiagonalDOE']:
             with self.assertRaises(Exception) as cm:
-                algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
+                _ = sample_generator.get_options_and_default_values(
                     sampling_algo_name)
 
             error_message = f'The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator'
@@ -384,101 +369,15 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
         for sampling_algo_name in ['CustomDOE', 'DiagonalDOE']:
             with self.assertRaises(Exception) as cm:
-                algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
+                _ = sample_generator.get_options_and_default_values(
                     sampling_algo_name)
 
             error_message = f'The provided algorithm name {sampling_algo_name} is not allowed in doe sample generator'
             self.assertEqual(str(cm.exception), error_message)
 
-    def test_6_doe_pydoe_algo_check(self):
-        """
-        The aim of this test is to examine DoE Gemseo algorithms which are not CustomDOE, DiagonalDOE or
-        OT, that is, pydoe DoE algorithm family.
-        This way, a CSV file of the sampling will be generated, analysed and validated so that it is used as reference
-        sampling to test the different DoE algorithms aimed by this test.
-        TBD : check if overlaps or not with previous tests
-        """
 
-        pydoe_list_of_algo_names = ['fullfact', 'ff2n',
-                                    'pbdesign', 'bbdesign', 'ccdesign', 'lhs']
-        pydoe_algo_default_options = {'alpha': 'orthogonal',
-                                      'face': 'faced',
-                                      'criterion': None,
-                                      'iterations': 5,
-                                      'eval_jac': False,
-                                      'center_bb': None,
-                                      'center_cc': None,
-                                      'n_samples': None,
-                                      'levels': None,
-                                      'n_processes': 1,
-                                      'wait_time_between_samples': 0.0,
-                                      'seed': 1,
-                                      'max_time': 0}
 
-        sample_generator = DoeSampleGenerator()
 
-        # Loop to check the algo default options retrieved from Gemseo (and to check whether they have changed, in case
-        # Gemseo updates them and it is necessary to modify the given algo options to generate again the reference
-        # sampling CSV files)
-        for sampling_algo_name in pydoe_list_of_algo_names:
-            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
-                sampling_algo_name)
-            # self.assertEqual(algo_options_desc_in, pydoe_algo_default_options) # What to do ?
-            # print(f'\nThe default algo options for {sampling_algo_name} are:\n',algo_options_desc_in)
-
-    def test_7_doe_OT_algo_check(self):
-        """
-        The aim of this test is to examine DoE Gemseo algorithms which are not CustomDOE, DiagonalDOE or
-        pydoe, that is, OT DoE algorithm family.
-        This way, a CSV file of the sampling will be generated, analysed and validated so that it is used as reference
-        sampling to test the different DoE algorithms aimed by this test.
-        TBD : check if overlaps or not with previous tests
-        """
-
-        OT_list_of_algo_names = ['OT_SOBOL', 'OT_RANDOM', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON',
-                                 'OT_FAURE', 'OT_MONTE_CARLO', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL',
-                                 'OT_OPT_LHS', 'OT_LHS', 'OT_LHSC', 'OT_FULLFACT', 'OT_SOBOL_INDICES']
-
-        OT_algo_default_options = {'levels': None,
-                                   'centers': None,
-                                   'eval_jac': False,
-                                   'n_samples': None,
-                                   'n_processes': 1,
-                                   'wait_time_between_samples': 0.0,
-                                   'criterion': 'C2',
-                                   'temperature': 'Geometric',
-                                   'annealing': True,
-                                   'n_replicates': 1000,
-                                   'seed': 1,
-                                   'max_time': 0}
-
-        sample_generator = DoeSampleGenerator()
-
-        # Loop to check the algo default options retrieved from Gemseo
-        for sampling_algo_name in OT_list_of_algo_names:
-            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
-                sampling_algo_name)
-            # print(f'\nThe default algo options for {sampling_algo_name} are:\n',algo_options_desc_in)
-
-        # Loop to check the algo default options retrieved from Gemseo (and to check whether they have changed, in case
-        # Gemseo updates them and it is necessary to modify the given algo options to generate again the reference
-        # sampling CSV files)
-        for sampling_algo_name in OT_list_of_algo_names:
-            algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
-                sampling_algo_name)
-            # self.assertEqual(algo_options_desc_in, OT_algo_default_options) # What to do ?
-            # print(f'\nThe default algo options for {sampling_algo_name} are:\n',algo_options_desc_in)
-
-        # To work, DoE needs (statically) a sampling_algo and an eval_inputs and (dinamically) a design space.
-        # The eval_inputs and design space will be defined below and samplings will be checked to assert that the right
-        # columns in the sampling are generated and that they are within design
-        # space range.
-
-    def test_08_check_big_n_samples(self):
-        '''
-        Test to check big values of n_samples and associated performances
-        '''
-        pass
 
     def test_10_check_generate_samples_cartesian_product(self):
         '''

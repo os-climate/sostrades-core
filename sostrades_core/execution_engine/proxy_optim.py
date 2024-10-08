@@ -599,10 +599,9 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         default_dict = {}
         driver_lib = OptimizationLibraryFactory().create(algo_name)
-        driver_lib._init_options_grammar()
-        schema_dict = driver_lib._option_grammar.schema
-        properties = schema_dict.get('properties')
-        algo_options_keys = list(properties.keys())
+        # driver_lib._init_options_grammar()
+        algo_options = driver_lib.ALGORITHM_INFOS[algo_name].settings().dict()
+        algo_options_keys = list(algo_options.keys())
 
         found_algo_names = [
             key for key in self.algo_dict.keys() if key in algo_name]

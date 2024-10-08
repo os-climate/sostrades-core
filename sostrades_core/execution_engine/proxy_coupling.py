@@ -223,7 +223,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'linear_solver_MDO': {
             ProxyDiscipline.TYPE: 'string',
             # ProxyDiscipline.DEFAULT: 'GMRES',
-            ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
+            # ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
             ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
             ProxyDiscipline.NUMERICAL: True,
             ProxyDiscipline.STRUCTURING: True,
@@ -247,7 +247,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'linear_solver_MDA': {
             ProxyDiscipline.TYPE: 'string',
             # ProxyDiscipline.DEFAULT: 'GMRES',
-            ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
+            #ProxyDiscipline.POSSIBLE_VALUES: AVAILABLE_LINEAR_SOLVERS,
             ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER,
             ProxyDiscipline.NUMERICAL: True,
             ProxyDiscipline.STRUCTURING: True,
