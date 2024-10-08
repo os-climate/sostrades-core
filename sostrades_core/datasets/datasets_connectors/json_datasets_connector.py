@@ -137,8 +137,8 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         if self.__json_data is None:
             self.__load_json_data()
 
-        if dataset_identifier not in self.__json_data:
-            raise DatasetNotFoundException(dataset_identifier.dataset_id)
+        if dataset_identifier.dataset_id not in self.__json_data:
+            self.__json_data[dataset_identifier.dataset_id] = {}
 
         # Write data
         dataset_values = {key: self._datasets_serializer.convert_to_dataset_data(key,
@@ -186,6 +186,9 @@ class JSONDatasetsConnector(AbstractDatasetsConnector):
         :type override: bool
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
+        if self.__json_data is None:
+            self.__load_json_data()
+
         if dataset_identifier not in self.__json_data:
             # Handle dataset creation
             if create_if_not_exists:
