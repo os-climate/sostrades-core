@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V0
 
@@ -71,7 +71,7 @@ class AbstractDatasetsConnector(abc.ABC):
             raise DatasetDeserializeException(dataset_identifier.dataset_id, f'the version {dataset_identifier.version_id} is not compatible with the dataset connector {dataset_identifier.connector_id}')
 
 
-    def get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:any]:
+    def get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
         get a list of data from a specific API
         :param: dataset_identifier: dataset identifier for connector
@@ -84,7 +84,7 @@ class AbstractDatasetsConnector(abc.ABC):
         return self._get_values(dataset_identifier=dataset_identifier,data_to_get=data_to_get)
 
     @abc.abstractmethod
-    def _get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:any]:
+    def _get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to get a list of data from a specific API
         :param: dataset_identifier: dataset identifier for connector
@@ -94,13 +94,13 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
 
-    def write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:any], data_types_dict: dict[str:str]) -> dict[str:any]:
+    def write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a data from a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:any]
+        :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         """
@@ -108,20 +108,20 @@ class AbstractDatasetsConnector(abc.ABC):
         return self._write_values( dataset_identifier, values_to_write, data_types_dict)
 
     @abc.abstractmethod
-    def _write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:any], data_types_dict: dict[str:str]) -> dict[str:any]:
+    def _write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Protected Abstract method to overload in order to write a data from a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:any]
+        :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         """
         return values_to_write
 
 
-    def get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:any]:
+    def get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         get all values from a dataset for a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -133,7 +133,7 @@ class AbstractDatasetsConnector(abc.ABC):
         return self._get_values_all( dataset_identifier, data_types_dict)
 
     @abc.abstractmethod
-    def _get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:any]:
+    def _get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Protected Abstract method to get all values from a dataset for a specific API
         :param dataset_identifier: dataset identifier for connector
@@ -149,39 +149,39 @@ class AbstractDatasetsConnector(abc.ABC):
         """
 
 
-    def write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str:any]:
+    def write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str:Any]:
         """
         write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:any]
+        :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data types {name: type}
         :type data_types_dict: dict[str:str]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
-        :return: values_to_write: dict[str: any]
+        :return: values_to_write: dict[str: Any]
         """
         self.check_dataset_info_version(dataset_identifier)
         return self._write_dataset(dataset_identifier, values_to_write, data_types_dict, create_if_not_exists, override)
 
     @abc.abstractmethod
-    def _write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str:any]:
+    def _write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str:Any]:
         """
         Protected Abstract method to overload in order to write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
         :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:any]
+        :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data types {name: type}
         :type data_types_dict: dict[str:str]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
         :type create_if_not_exists: bool
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
-        :return: values_to_write: dict[str: any]
+        :return: values_to_write: dict[str: Any]
         """
         return values_to_write
 
@@ -265,16 +265,16 @@ class AbstractDatasetsConnector(abc.ABC):
         return new_datum
 
     def _insert_value_into_datum(self,
-                                 value: any,
-                                 datum: dict[str:any],
+                                 value: Any,
+                                 datum: dict[str:Any],
                                  parameter_name: str,
-                                 parameter_type: str) -> dict[str:any]:
+                                 parameter_type: str) -> dict[str:Any]:
         new_datum = {self.VALUE: value}
         new_datum.update(self._new_datum(datum))
         # TODO: keeping dataset metadata "as is", insert metadata handling here
         return new_datum
 
-    def _update_data_with_values(self, data: dict[str:dict[str:any]], values: dict[str:any],
+    def _update_data_with_values(self, data: dict[str:dict[str:Any]], values: dict[str:Any],
                                  data_types: dict[str:str]) -> None:
         for key, value in values.items():
             new_datum = self._insert_value_into_datum(value=value,
@@ -284,16 +284,16 @@ class AbstractDatasetsConnector(abc.ABC):
             if new_datum is not None:
                 data[key] = new_datum
 
-    def _extract_value_from_datum(self, datum: dict[str:any]) -> any:
+    def _extract_value_from_datum(self, datum: dict[str:Any]) -> Any:
         return datum[self.VALUE]
 
-    def _extract_metadata_from_datum(self, datum_to_extract: dict[str:any]) -> dict[str:str]:
+    def _extract_metadata_from_datum(self, datum_to_extract: dict[str:Any]) -> dict[str:str]:
         return {_k: _v for _k, _v in datum_to_extract.items() if _k not in self.VALUE_KEYS}
 
-    def extract_values_from_data(self, data_to_extract: dict[str:dict[str:any]]) -> dict[str:any]:
+    def extract_values_from_data(self, data_to_extract: dict[str:dict[str:Any]]) -> dict[str:Any]:
         return {key: self._extract_value_from_datum(_datum) for key, _datum in data_to_extract.items()}
 
-    def extract_metadata_from_data(self, data_to_extract: dict[str:dict[str:any]]) -> dict[str:dict[str:str]]:
+    def extract_metadata_from_data(self, data_to_extract: dict[str:dict[str:Any]]) -> dict[str:dict[str:str]]:
         return {key: self._extract_metadata_from_datum(_datum) for key, _datum in data_to_extract.items()}
 
 
