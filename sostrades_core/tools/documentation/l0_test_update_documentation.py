@@ -18,16 +18,16 @@ import os
 import textwrap
 import unittest
 
-from UpdateDocumentation import DocGenerator
+from sostrades_core.tools.documentation.update_documentation import DocGenerator
 
 
 # example of class to be used for the tests
 class A:
     """This is the docstring for class A"""
-    DESC_IN = {'var_in1':{'unit':'G$','type':'float','description':'input var1'},
+    DESC_IN = {'var_in1': {'unit': 'G$', 'type': 'float', 'description': 'input var1'},
                'var_in2': {'unit': 'G$', 'type': 'float', 'description': 'input var2'},
                }
-    DESC_OUT = {'var_out1':{'unit':'G$','type':'float','description':'output var1'},
+    DESC_OUT = {'var_out1': {'unit': 'G$', 'type': 'float', 'description': 'output var1'},
                'var_out2': {'unit': 'G$', 'type': 'float', 'description': 'output var2'},
                }
     def method1(self):
@@ -43,12 +43,11 @@ class A:
 def write_class_to_file(cls, filename):
     # Get the source code of the class
     source = inspect.getsource(cls)
-
     # Remove any leading indentation
     source = textwrap.dedent(source)
-
     with open(filename, 'w') as file:
         file.write(source)
+
 class UpdatedDocumentation(unittest.TestCase):
 
     MARKDOWN_REF = "# Model Data\n ## Static inputs\n- var_in1, unit=G$, type=float, description=input var1\n- var_in2, unit=G$, type=float, description=input var2\n ## Static outputs\n- var_out1, unit=G$, type=float, description=output var1\n- var_out2, unit=G$, type=float, description=output var2"
@@ -62,7 +61,7 @@ class UpdatedDocumentation(unittest.TestCase):
         doc.get_discipline_class()
         self.assertEqual(doc.discipline_class, None)
         # with pythonfile defined
-        doc.pythonfile = r'climateeconomics\sos_wrapping\sos_wrapping_witness\macroeconomics\macroeconomics_discipline.py'
+        doc.pythonfile = r'C:\Users\bherry\Documents\sostrades-dev-tools\models\witness-core\climateeconomics\sos_wrapping\sos_wrapping_witness\macroeconomics\macroeconomics_discipline.py'
         doc.get_discipline_class()
         self.assertEqual(doc.discipline_class.__name__, doc.class_name)
 
@@ -98,7 +97,7 @@ class UpdatedDocumentation(unittest.TestCase):
     def test_write_markdown_file(self):
         doc = DocGenerator()
         doc.discipline_class = A
-        doc.markdown_file = "test_write_markdown.md"
+        doc.markdown_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_write_markdown.md")
         doc.write_markdown_file(self.MARKDOWN_REF)
         with open(doc.markdown_file , "r") as f:
             markdown_read = f.read()
@@ -115,7 +114,7 @@ class UpdatedDocumentation(unittest.TestCase):
     def test_update_code_docstring(self):
         method_name = "method1"
         doc = DocGenerator()
-        doc.pythonfile = r"temp_class_A.py"
+        doc.pythonfile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp_class_A.py")
         # write initial code of class A to file
         write_class_to_file(A, doc.pythonfile)
         doc.class_name = "A"
@@ -124,8 +123,7 @@ class UpdatedDocumentation(unittest.TestCase):
         new_docstring = "This is the new docstring for method1"
         doc.update_code_docstring(method_name, new_docstring)
         #reload module and discipline as the code and file have changed.
-        module = importlib.import_module(os.path.splitext(doc.pythonfile)[0].replace(os.sep, '.'))
-        importlib.reload(module)
+        module = doc.load_module(doc.pythonfile)
         doc.get_discipline_class()
         method = getattr(doc.discipline_class, method_name)
         self.assertEqual(method.__doc__, new_docstring)
@@ -133,11 +131,11 @@ class UpdatedDocumentation(unittest.TestCase):
 
     def test_run(self):
         doc = DocGenerator()
-        discipline_py_file_path = r"temp_class_A.py"
+        discipline_py_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp_class_A.py")
         discipline_class_name = "A"
         model_py_file_path = discipline_py_file_path
         model_class_name = discipline_class_name
-        markdown_file_path = "temp_disc.md"
+        markdown_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp_disc.md")
         api_key = "E2QSy0VXlI7MaalEcc6z98hCyUT7UOmn1IfxXI1o"
 
         # markdown and temp_class do not exist => create them
