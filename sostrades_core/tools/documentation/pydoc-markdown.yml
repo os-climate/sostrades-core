@@ -1,0 +1,6 @@
+loader:
+  type: python
+
+renderers:
+  - type: markdown
+    insert_header_anchors: true
