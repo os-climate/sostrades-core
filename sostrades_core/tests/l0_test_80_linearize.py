@@ -35,6 +35,7 @@ from sostrades_core.sos_processes.test.test_sellar_coupling_new_types._usecase i
 from sostrades_core.tools.folder_operations import rmtree_safe
 
 
+
 class TestAnalyticGradients(unittest.TestCase):
     """
     Class to test analytic gradients of Sellar optim case
@@ -97,16 +98,15 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
         exec_eng.display_treeview_nodes()
-        for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
+        for proxy_disc in exec_eng.root_process.proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
             mdo_disc.linearize(values_dict, compute_all_jacobians=True)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
             added_values_dict = {key: exec_eng.dm.get_value(key) for key in
                                  proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
             values_dict.update(added_values_dict)
-        exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict,
-                                                                                                 compute_all_jacobians=True)
-        print('LINEARIZE performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
+        exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearize(values_dict, compute_all_jacobians=True)
+        print('LINEARIZE performed for ', exec_eng.root_process.get_disc_full_name())
 
     def test_03_linearize_on_sellar_coupling_new_types(self):
 
@@ -127,7 +127,7 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
         exec_eng.display_treeview_nodes()
-        for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
+        for proxy_disc in exec_eng.root_process.proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
             mdo_disc.linearize(values_dict, compute_all_jacobians=True)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
@@ -135,9 +135,9 @@ class TestAnalyticGradients(unittest.TestCase):
             added_values_dict = {key: exec_eng.dm.get_value(key) for key in
                                  proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
             values_dict.update(added_values_dict)
-        exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.linearize(values_dict,
+        exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.linearize(values_dict,
                                                                                                  compute_all_jacobians=True)
-        print('LINEARIZE performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
+        print('LINEARIZE performed for ', exec_eng.root_process.get_disc_full_name())
 
     def test_04_check_jacobian_on_sellar_coupling(self):
 
@@ -159,7 +159,7 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
         exec_eng.display_treeview_nodes()
-        for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
+        for proxy_disc in exec_eng.root_process.proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
             assert (mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
                                             step=1e-15, threshold=1e-8, ))
@@ -168,10 +168,10 @@ class TestAnalyticGradients(unittest.TestCase):
             added_values_dict = {key: exec_eng.dm.get_value(key) for key in
                                  proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
             values_dict.update(added_values_dict)
-        assert (exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
+        assert (exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.check_jacobian(
             values_dict, linearization_mode='adjoint', derr_approx='complex_step', step=1e-15, threshold=1e-8, ))
 
-        print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
+        print('CHECK_JACOBIAN performed for ', exec_eng.root_process.get_disc_full_name())
 
     def test_05_check_jacobian_on_sellar_coupling_new_types(self):
 
@@ -192,7 +192,7 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
         exec_eng.prepare_execution()
         exec_eng.display_treeview_nodes()
-        for proxy_disc in exec_eng.root_process.proxy_disciplines[0].proxy_disciplines:
+        for proxy_disc in exec_eng.root_process.proxy_disciplines:
             mdo_disc = proxy_disc.mdo_discipline_wrapp.mdo_discipline
             assert (mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
                                             step=1e-15, threshold=1e-8, ))
@@ -202,9 +202,9 @@ class TestAnalyticGradients(unittest.TestCase):
                                  proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
             values_dict.update(added_values_dict)
 
-        assert (exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.check_jacobian(
+        assert (exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.check_jacobian(
             values_dict, derr_approx='complex_step', step=1e-15, threshold=1e-8, linearization_mode='adjoint'))
-        print('CHECK_JACOBIAN performed for ', exec_eng.root_process.proxy_disciplines[0].get_disc_full_name())
+        print('CHECK_JACOBIAN performed for ', exec_eng.root_process.get_disc_full_name())
 
     def test_06_check_jacobian_specified_inputs_outputs(self):
 
