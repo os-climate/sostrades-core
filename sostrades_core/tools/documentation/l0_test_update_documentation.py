@@ -61,7 +61,8 @@ class UpdatedDocumentation(unittest.TestCase):
         doc.get_discipline_class()
         self.assertEqual(doc.discipline_class, None)
         # with pythonfile defined
-        doc.pythonfile = r'C:\Users\bherry\Documents\sostrades-dev-tools\models\witness-core\climateeconomics\sos_wrapping\sos_wrapping_witness\macroeconomics\macroeconomics_discipline.py'
+        platform_path_abs = os.path.dirname(os.path.abspath(__file__)).split(os.sep + "platform")[0]
+        doc.pythonfile = os.path.join(platform_path_abs, r'models\witness-core\climateeconomics\sos_wrapping\sos_wrapping_witness\macroeconomics\macroeconomics_discipline.py')
         doc.get_discipline_class()
         self.assertEqual(doc.discipline_class.__name__, doc.class_name)
 
@@ -89,10 +90,10 @@ class UpdatedDocumentation(unittest.TestCase):
                                                                new_content)
         assert(new_content in updated_markdown_content and next_section in updated_markdown_content)
 
-    def test_generate_markdown_of_model(self):
+    def test_generate_markdown_str_of_model(self):
         doc = DocGenerator()
         doc.discipline_class = A
-        markdown_str = doc.generate_markdown_of_model()
+        markdown_str = doc.generate_markdown_str_of_model()
         self.assertEqual(markdown_str, "# A\n\nThis is the docstring for class A\n\n## method1\n\nThis is the docstring for method1\n\n## method2\n\nthis is the docstring for method2\n\n")
     def test_write_markdown_file(self):
         doc = DocGenerator()
@@ -151,7 +152,7 @@ class UpdatedDocumentation(unittest.TestCase):
             api_key)
         for file in [discipline_py_file_path,
                      markdown_file_path,
-                     markdown_file_path.replace('_disc', '_model'),
+                     markdown_file_path.replace(".md", "_for_dev.md"),
             ]:
             # since docstrings are not generated in a deterministic manner, they can't be crosschecked with a reference
             self.assertTrue(os.path.exists(file))
