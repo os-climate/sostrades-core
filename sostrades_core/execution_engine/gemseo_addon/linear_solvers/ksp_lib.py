@@ -15,7 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
+from typing import ClassVar
 
+from gemseo.algos.linear_solvers.base_linear_solver_library import (
+    LinearSolverDescription,
+)
 import petsc4py
 from gemseo.algos.linear_solvers.base_linear_solver_library import BaseLinearSolverLibrary
 from gemseo_petsc.linear_solvers.ksp_library import (
@@ -68,11 +72,21 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
                                'LGMRES_PETSC', 'BICG_PETSC', 'BCGS_PETSC']
     AVAILABLE_PRECONDITIONER = ['jacobi', 'ilu', 'gasm']
 
+    ALGORITHM_INFOS: ClassVar[dict[str, LinearSolverDescription]] = {
+        algo_name: LinearSolverDescription(
+            algorithm_name=algo_name,
+            description="Linear solver " + algo_name,
+            internal_algorithm_name=algo_name,
+            lhs_must_be_linear_operator=True,
+            library_name="PETSC_KSP",
+            website="https://petsc.org/release/docs/manualpages/KSP/KSP.html#KSP",
+        ) for algo_name in AVAILABLE_LINEAR_SOLVER}
+
     def __init__(self, algo_name):
         super().__init__(algo_name)
 
-        self.lib_dict = {name: self.get_default_properties(
-            name) for name in self.AVAILABLE_LINEAR_SOLVER}
+        # self.lib_dict = {name: self.get_default_properties(
+        #     name) for name in self.AVAILABLE_LINEAR_SOLVER}
 
         self.default_tol = 1e-200
 
