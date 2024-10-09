@@ -35,7 +35,6 @@ from sostrades_core.sos_processes.test.test_sellar_coupling_new_types._usecase i
 from sostrades_core.tools.folder_operations import rmtree_safe
 
 
-
 class TestAnalyticGradients(unittest.TestCase):
     """
     Class to test analytic gradients of Sellar optim case
