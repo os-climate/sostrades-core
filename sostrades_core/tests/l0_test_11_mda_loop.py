@@ -1371,6 +1371,7 @@ class TestMDALoop(unittest.TestCase):
         values_dict[f'{self.name}.{coupling_name}.Sellar_Problem.local_dv'] = 10.
         # Coupling inputs
         values_dict[f'{self.name}.{coupling_name}.max_mda_iter'] = 5
+        values_dict[f'{self.name}.{coupling_name}.inner_mda_name'] = 'MDANewtonRaphson'
         values_dict[f'{self.name}.{coupling_name}.linear_solver_MDO'] = 'GMRES'
         values_dict[f'{self.name}.{coupling_name}.linear_solver_MDO_preconditioner'] = 'None'
         values_dict[f'{self.name}.{coupling_name}.linear_solver_MDA'] = 'GMRES'

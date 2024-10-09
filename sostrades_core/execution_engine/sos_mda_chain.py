@@ -78,7 +78,7 @@ class SoSMDAChain(MDAChain):
             RUN_NEEDED: True,
         },
     }
-
+    NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
@@ -132,6 +132,9 @@ class SoSMDAChain(MDAChain):
         # Gauss seidel cannot be launched in parallel by construction (one discipline is launched with the results of the last one)
         if inner_mda_name == 'MDAGaussSeidel':
             inner_mda_options.pop('n_processes')
+        elif inner_mda_name in self.NEWTON_ALGO_LIST:
+            inner_mda_options['newton_linear_solver_name'] = linear_solver
+            inner_mda_options['newton_linear_solver_options'] = linear_solver_options
 
         super().__init__(
             disciplines,

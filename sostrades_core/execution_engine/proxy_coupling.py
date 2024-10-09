@@ -94,6 +94,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     # get list of available linear solvers from LinearSolversFactory
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
+    NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']
 
     # set default value of linear solver according to the operating system
     if getenv("USE_PETSC", "").lower() in ("true", "1"):
@@ -763,7 +764,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             # , 'GSPureNewtonMDA', 'GSPureNewtonorGSMDA'
             num_data['max_mda_iter_gs'] = copy(self.get_sosdisc_inputs('max_mda_iter_gs'))
             num_data['tolerance_gs'] = copy(self.get_sosdisc_inputs('tolerance_gs'))
-        if num_data['inner_mda_name'] in ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']:
+        if num_data['inner_mda_name'] in self.NEWTON_ALGO_LIST:
             # 'PureNewtonRaphson', 'GSPureNewtonMDA', 'GSPureNewtonorGSMDA'
             num_data['over_relaxation_factor'] = copy(self.get_sosdisc_inputs('over_relaxation_factor'))
 
