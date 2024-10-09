@@ -345,8 +345,11 @@ class TreeNode:
         markdown_data = ""
         if isdir(doc_folder_path):
             # look for markdown file with extension .markdown or .md
-            markdown_list = [join(doc_folder_path, md_file) for md_file in listdir(doc_folder_path) if ((
+            markdown_list_all = [join(doc_folder_path, md_file) for md_file in listdir(doc_folder_path) if ((
                 md_file.endswith(r".markdown") or md_file.endswith(r".md")) and md_file.startswith(filename))]
+            # there could be the md for the model. In this case, it contains "_model" in the name
+            markdown_list_model = [md for md in markdown_list_all if "_for_dev" in md]
+            markdown_list = [md for md in markdown_list_all if md not in markdown_list_model]
 
             if len(markdown_list) > 0:
                 # build file path
@@ -358,6 +361,11 @@ class TreeNode:
                     with open(markdown_filepath, 'r+t', encoding='utf-8') as f:
                         markdown_data = f.read()
 
+                    if len(markdown_list_model) > 0:
+                        if isfile(markdown_list_model[0]):
+                            markdown_data += "\n"
+                            with open(markdown_list_model[0], 'r+t', encoding='utf-8') as f:
+                                markdown_data += f.read()
                     # Find file reference in markdown file
                     place_holder = '!\\[(.*)\\]\\((.*)\\)'
                     matches = re.finditer(place_holder, markdown_data)
