@@ -17,11 +17,11 @@ limitations under the License.
 import logging
 from typing import ClassVar
 
+import petsc4py
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
+    BaseLinearSolverLibrary,
     LinearSolverDescription,
 )
-import petsc4py
-from gemseo.algos.linear_solvers.base_linear_solver_library import BaseLinearSolverLibrary
 from gemseo_petsc.linear_solvers.ksp_library import (
     _convert_ndarray_to_mat_or_vec,
 )
