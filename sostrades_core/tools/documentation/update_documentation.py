@@ -82,7 +82,7 @@ class DocGenerator():
         if self.discipline_class is None:
             self.get_discipline_class()
             logging.debug(f"extracting DESC_IN and DESC_OUT of discipline {self.discipline_class.__name__}")
-        markdown_str = "# Model Data"
+        markdown_str = ""
         for desc_type in ["DESC_IN", "DESC_OUT"]:
             do_process = False
             if desc_type == "DESC_IN":
