@@ -81,7 +81,7 @@ class UpdatedDocumentation(unittest.TestCase):
     def test_update_markdown_section(self):
         doc = DocGenerator()
         doc.discipline_class = A
-        section_to_replace = "# Model Data"
+        section_to_replace = "# Model data"
         new_content = self.MARKDOWN_REF + "\n- var_out3, unit=G$, type=float, description=output var3"
         next_section = "\n#Model description \nThis model does this and that"
         initial_markdown_str = self.MARKDOWN_REF + next_section

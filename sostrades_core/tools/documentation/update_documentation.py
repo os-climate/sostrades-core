@@ -20,6 +20,7 @@ import inspect
 import logging
 import os
 import re
+import codecs
 
 import astor
 import mistune
@@ -82,7 +83,7 @@ class DocGenerator():
         if self.discipline_class is None:
             self.get_discipline_class()
             logging.debug(f"extracting DESC_IN and DESC_OUT of discipline {self.discipline_class.__name__}")
-        markdown_str = ""
+        markdown_str = "# Model data"
         for desc_type in ["DESC_IN", "DESC_OUT"]:
             do_process = False
             if desc_type == "DESC_IN":
@@ -148,16 +149,25 @@ class DocGenerator():
         Returns:
             updated_markdown_content
         """
-        section_pattern = f"{section_to_replace}" + r'\n(.*?)\n#'
-        match = re.search(section_pattern, initial_markdown_str, re.DOTALL)
+        # because of using codecs, a robust search method must be used
+        match = False
+        lines = initial_markdown_str.split('\n')
+        in_section = False
+        modified_lines = []
+        for line in lines:
+            if line.strip() == section_to_replace:
+                in_section = True
+                match = True
+                modified_lines.extend([new_content])
+            elif in_section and (line.startswith('# ') or not line):
+                in_section = False
+                modified_lines.append(line)
+            elif not in_section:
+                modified_lines.append(line)
 
-        if match:
-            content = match.group(1)
+            updated_markdown_content = '\n'.join(modified_lines)
 
-            # Replace content
-            updated_markdown_content = re.sub(section_pattern, f"{section_to_replace}\n{new_content}\n#", initial_markdown_str, flags=re.DOTALL)
-
-        else:
+        if not match:
             updated_markdown_content = section_to_replace + "\n" + new_content + "\n" + initial_markdown_str
 
         return updated_markdown_content
@@ -169,7 +179,7 @@ class DocGenerator():
         Args:
             markdown_str: content of the markdown file
         """
-        with open(self.markdown_file, "w", encoding='utf-8') as f:
+        with codecs.open(self.markdown_file, "w", encoding='utf-8') as f:
             f.write(markdown_str)
 
     def extract_markdown_from_method(self, method_name: [str], api_key:[str]) -> [str]:
@@ -339,7 +349,8 @@ class DocGenerator():
             markdown_str_dynamic_in_out = mistune.markdown(docstring_dynamic_in_out)
             markdown_str += "\n" + markdown_str_dynamic_in_out
         """
-        with open(self.markdown_file, "r") as f:
+        # markdown may contain symbols that require treatment with codecs
+        with codecs.open(self.markdown_file, "r", encoding='utf-8') as f:
             markdown_initial = f.read()
         updated_markdown_content = self.update_markdown_section(markdown_initial,
                                                                 section_to_replace,
