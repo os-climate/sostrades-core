@@ -21,9 +21,7 @@ import logging
 import os
 import re
 import codecs
-
 import astor
-import mistune
 from docstring_to_markdown import convert
 
 from sostrades_core.tools.gen_ai.gen_engine_services import GenerativeEngineService
@@ -144,11 +142,18 @@ class DocGenerator():
         starts with a title #SOMETHINGELSE
         Args:
             initial_markdown_str: documentation content in markdown syntax (not the file, the actual content)
-            section_to_replace: Name of the section to replace
+            section_to_replace: Name of the section to replace. Assumes that the section starts with one or several # sign
             new_content: the new content that replaces the initial one
         Returns:
             updated_markdown_content
         """
+        # the section to be replaced starts at section_to_replace and ends when the same number of # signs are encountered
+        match = re.match(r'^#+', section_to_replace) # Find all consecutive '#' characters at the start of the string
+        next_section_must_start_with = None
+        if match:
+            next_section_must_start_with = match.group() + " "
+        else:
+            raise ValueError(f"A section to replace must be a markdown section starting with the # sign. Here, section_to_replace = {section_to_replace}")
         # because of using codecs, a robust search method must be used
         match = False
         lines = initial_markdown_str.split('\n')
@@ -159,7 +164,7 @@ class DocGenerator():
                 in_section = True
                 match = True
                 modified_lines.extend([new_content])
-            elif in_section and (line.startswith('# ') or not line):
+            elif in_section and (line.startswith(next_section_must_start_with) or not line):
                 in_section = False
                 modified_lines.append(line)
             elif not in_section:
@@ -396,6 +401,7 @@ class DocGenerator():
         # then make one loop instead of two
         docstring_dict = {}
         for method_name in methods:
+            logging.info(f"using genai to generate docstring for method {method_name}")
             docstring_dict[method_name] = self.generate_docstring(method_name, api_key)
         for method_name in methods:
             self.update_code_docstring(method_name, docstring_dict[method_name])
@@ -410,7 +416,7 @@ if '__main__' == __name__:
     generate the docstring of the damage_model and create its markdown
     """
     doc = DocGenerator()
-    model = "damage"
+    model = "macroeconomics"
     platform_path_abs = os.path.dirname(os.path.abspath(__file__)).split(os.sep + "platform")[0]
     if model == "damage":
         discipline_py_file_path = os.path.join(platform_path_abs, r"models\witness-core\climateeconomics\sos_wrapping\sos_wrapping_witness\damagemodel\damagemodel_discipline.py")
