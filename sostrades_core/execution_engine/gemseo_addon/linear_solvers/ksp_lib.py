@@ -34,7 +34,7 @@ from petsc4py import PETSc  # noqa: E402
 """A PETSC KSP linear solvers library wrapper."""
 
 LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_library")
-
+LOGGER.setLevel(logging.DEBUG)
 KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
                         9: 'KSP_CONVERGED_ATOL_NORMAL',
                         2: 'KSP_CONVERGED_RTOL',
