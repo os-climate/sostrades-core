@@ -130,6 +130,17 @@ class UpdatedDocumentation(unittest.TestCase):
         self.assertEqual(method.__doc__, new_docstring)
         os.remove(doc.pythonfile)
 
+    def test_extract_markdown_from_method(self):
+        doc = DocGenerator()
+        platform_path_abs = os.path.dirname(os.path.abspath(__file__)).split(os.sep + "platform")[0]
+        doc.pythonfile = os.path.join(platform_path_abs,
+                                               r"models\witness-core\climateeconomics\sos_wrapping\sos_wrapping_witness\macroeconomics\macroeconomics_discipline.py")
+        doc.class_name = "MacroeconomicsDiscipline"
+        doc.get_discipline_class()
+        api_key = "E2QSy0VXlI7MaalEcc6z98hCyUT7UOmn1IfxXI1o"
+        markdown_str = doc.extract_markdown_from_method("setup_sos_disciplines", api_key)
+        print()
+
     def test_run(self):
         doc = DocGenerator()
         discipline_py_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp_class_A.py")
