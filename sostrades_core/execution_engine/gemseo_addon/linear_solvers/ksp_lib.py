@@ -15,17 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import petsc4py
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     BaseLinearSolverLibrary,
     LinearSolverDescription,
 )
+from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo_petsc.linear_solvers.ksp_library import (
     _convert_ndarray_to_mat_or_vec,
 )
-from numpy import isnan
+from numpy import isnan, ndarray
 
 # Must be done before from petsc4py import PETSc
 petsc4py.init([])
@@ -109,7 +110,7 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
         self,
         solver_type="gmres",  # type: str
         max_iter=100000,  # type: int
-        tol=1.0e-200,  # type: float
+        rtol=1.0e-200,  # type: float
         atol=1e-8,  # type: float
         dtol=1.0e50,  # type: float
         preconditioner_type="ilu",  # type: str
@@ -129,7 +130,7 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
             solver_type: The KSP solver type.
                 See `https://petsc.org/release/docs/manualpages/KSP/KSPType.html#KSPType`_
             max_iter: The maximum number of iterations.
-            tol: The relative convergence tolerance,
+            rtol: The relative convergence tolerance,
                 relative decrease in the (possibly preconditioned) residual norm.
             atol: The absolute convergence tolerance of the
                 (possibly preconditioned) residual norm.
@@ -160,7 +161,7 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
             max_iter=max_iter,
             solver_type=solver_type,
             monitor_residuals=monitor_residuals,
-            tol=tol,
+            rtol=rtol,
             atol=atol,
             dtol=dtol,
             preconditioner_type=preconditioner_type,
@@ -170,27 +171,7 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
             ksp_pre_processor=ksp_pre_processor,
         )
 
-    def __monitor(
-        self,
-        ksp,  # type: PETSc.KSP
-        its,  # type: int
-        rnorm,  # type: float
-    ):  # type: (...) -> None
-        """Add the normed residual value to the problem residual history.
-
-        This method is aimed to be passed to petsc4py as a reference.
-        This is the reason why some of its arguments are not used.
-
-        Args:
-             ksp: The KSP PETSc solver.
-             its: The current iteration.
-             rnorm: The normed residual.
-        """
-        self.problem.residuals_history.append(rnorm)
-
-    def _run(
-        self, **options  # type: Any
-    ):  # type: (...) -> ndarray
+    def _run(self, problem: LinearProblem, **options: Any) -> ndarray:
         """Run the algorithm.
 
         Args:
@@ -205,10 +186,10 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
         options['max_iter'] = int(options['max_iter'])
 #         if 'tol' not in options:
 #             options['tol'] = 1e-8
-        options['atol'] = options['tol']
-        options['tol'] = self.default_tol
-        b = self.problem.rhs
-        A = self.problem.lhs
+        options['atol'] = options['rtol']
+        options['rtol'] = self.default_tol
+        b = problem.rhs
+        A = problem.lhs
         if 'maxiter' not in options:
             options['maxiter'] = 50 * b.shape[0]
         else:
@@ -218,7 +199,7 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
         # first run
         options["old_sol"] = None
 
-        sol, info, ksp = self._run_petsc_strategy(**options)
+        sol, info, ksp = self._run_petsc_strategy(problem, **options)
 
         if info < 0:
 
@@ -227,7 +208,7 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
             options['old_sol'] = sol
 
             # second run
-            sol, info, ksp = self._run_petsc_strategy(**options)
+            sol, info, ksp = self._run_petsc_strategy(problem, **options)
 
             if info >= 0:
 
@@ -251,11 +232,11 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
                     options['old_sol'] = sol
 
                     # third run
-                    sol, info, ksp = self._run_petsc_strategy(**options)
+                    sol, info, ksp = self._run_petsc_strategy(problem, **options)
 
-        return self.problem.solution
+        return problem.solution
 
-    def _run_petsc_strategy(self, **options):
+    def _run_petsc_strategy(self, problem, **options):
         # Initialize the KSP solver.
         # Create the options database
         options_cmd = options.get("options_cmd")
@@ -269,12 +250,12 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
         # Set all solver options
         ksp.setType(options["solver_type"])
         ksp.setTolerances(
-            options["tol"], options["atol"], options["dtol"], options["max_iter"]
+            options["rtol"], options["atol"], options["dtol"], options["max_iter"]
         )
         ksp.setConvergenceHistory()
 
-        b = self.problem.rhs
-        A = self.problem.lhs
+        b = problem.rhs
+        A = problem.lhs
 
         # CHeck Nan in matrix
     #     LOGGER.info('check if A contains a NaN')
@@ -291,22 +272,6 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
             pc.setType(prec_type)
             pc.setUp()
 
-#         # Allow for solver choice to be set from command line with -ksp_type <solver>.
-#         # Recommended option: -ksp_type preonly -pc_type lu
-#         if options["set_from_options"]:
-#             ksp.setFromOptions()
-#
-#         ksp_pre_processor = options.get("ksp_pre_processor")
-#         if ksp_pre_processor is not None:
-#             ksp_pre_processor(ksp, options)
-#
-#         self.problem.residuals_history = []
-#         if options["monitor_residuals"]:
-#             LOGGER.warning(
-#                 "Petsc option monitor_residuals slows the process and"
-#                 " should be used only for testing or convergence studies."
-#             )
-#             ksp.setMonitor(self.__monitor)
 
         # transform the b array in petsc vector
         b_mat = _convert_ndarray_to_mat_or_vec(b)
@@ -321,12 +286,9 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
             ksp.view()
         # Solve the ksp petsc solver
         ksp.solve(b_mat, solution)
-        sol = solution.getArray().copy()  # added a copy() like in GEMSEO
-        convergence_info = ksp.reason
+        problem.solution = solution.getArray().copy()  # added a copy() like in GEMSEO
+        problem.convergence_info = ksp.reason
 
-        # update of problem attributes
-        self.problem.solution = sol
-        self.problem.convergence_info = ksp.reason
 
     #         method_list = [func for func in dir(ksp) if callable(getattr(ksp, func))]
     #         print(method_list)
@@ -337,30 +299,30 @@ class PetscKSPAlgos(BaseLinearSolverLibrary):
 
         # reason to positive for convergence, 0 for no convergence, and negative
         # for failure to converge
-        if convergence_info > 0:
+        if problem.convergence_info > 0:
             info = 0
 
-            if convergence_info == 2 or convergence_info == 1:
+            if problem.convergence_info == 2 or problem.convergence_info == 1:
                 LOGGER.warning(
                     f'The PETSc linear solver has converged with relative tolerance {options["tol"]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
-            elif convergence_info == 4:
+            elif problem.convergence_info == 4:
                 LOGGER.warning(
                     f'The PETSc linear solver has converged after max iterations {options["max_iter"]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
-            elif convergence_info == 3 or convergence_info == 9:
+            elif problem.convergence_info == 3 or problem.convergence_info == 9:
                 pass
             else:
                 LOGGER.warning(
-                    f'The PETSc linear solver has converged with {KSP_CONVERGED_REASON[convergence_info]}, the tolerance is {options["atol"]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
-        elif convergence_info == 0:
+                    f'The PETSc linear solver has converged with {KSP_CONVERGED_REASON[problem.convergence_info]}, the tolerance is {options["atol"]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
+        elif problem.convergence_info == 0:
             info = 1
         else:
-            info = convergence_info
+            info = problem.convergence_info
             LOGGER.warning(
-                f'The PETSc linear solver has not converged with error {KSP_CONVERGED_REASON[convergence_info]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
+                f'The PETSc linear solver has not converged with error {KSP_CONVERGED_REASON[problem.convergence_info]}, the final residual norm is {ksp.getResidualNorm()} check your linear problem')
             LOGGER.warning(
                 f' The convergence_history of length {len(ksp.getConvergenceHistory())} is {ksp.getConvergenceHistory()}')
         petsc4py.PETSc.garbage_cleanup()
-        return sol, info, ksp
+        return problem.solution, info, ksp
 
 
 # KSP example here
