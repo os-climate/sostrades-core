@@ -15,3 +15,4 @@ limitations under the License.
 '''
 
 VERSION_V0 = "V0"
+VERSION_V1 = "V1"

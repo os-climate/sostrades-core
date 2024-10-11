@@ -223,7 +223,7 @@ class DatasetsMapping:
             dataset_ids = self.namespace_datasets_mapping[DatasetsMapping.WILDCARD]
             for dataset_id in dataset_ids:
                 if self.WILDCARD in dataset_id:
-                    # if there is still wildcard in dataset info, create a new one and replace the ns
+                    # if there is still wildcard in dataset info (potentialy wildcard for V1 group), create a new one and replace the ns
                     dataset_info = self.datasets_infos[dataset_id].copy_with_new_ns(anonimized_ns)
                 else:
                     dataset_info = self.datasets_infos[dataset_id]
@@ -244,11 +244,16 @@ class DatasetsMapping:
         """
         datasets_mapping = {}
         duplicates = {}
+        dataset_info_list = {}
+        for namespace in namespaces_dict.keys():
+            study_namespace = namespace.replace(self.STUDY_PLACEHOLDER, study_name)
+            dataset_info_list.update({dataset_id:{study_namespace:mapping_data} for dataset_id, mapping_data in self.get_datasets_info_from_namespace(namespace, study_name).items()})
 
-        for dataset, namespaces_mapping_dict in self.parameters_mapping.items():
+        for dataset, namespaces_mapping_dict in dataset_info_list.items():
             try:
                 # create the dict that will contain all data to write in the dataset for all associated namespaces
                 all_data_in_dataset = {DatasetsMapping.VALUE: {}, DatasetsMapping.TYPE: {}, DatasetsMapping.KEY: {}}
+
 
                 # iterate for all namespace associated to the dataset, parameters_mapping_dict contains the association param_name -> dataset_param_name
                 for namespace, parameters_mapping_dict in namespaces_mapping_dict.items():
@@ -293,6 +298,7 @@ class DatasetsMapping:
                                         all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data: namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
             except Exception as error:
                 raise DatasetsMappingException(f'Error retrieving data from dataset {dataset}]: \n{str(error)}')
+
 
             datasets_mapping[dataset] = all_data_in_dataset
 

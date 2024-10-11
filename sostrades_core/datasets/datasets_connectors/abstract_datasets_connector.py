@@ -70,6 +70,17 @@ class AbstractDatasetsConnector(abc.ABC):
         if dataset_identifier.version_id not in self.compatible_dataset_info_version:
             raise DatasetDeserializeException(dataset_identifier.dataset_id, f'the version {dataset_identifier.version_id} is not compatible with the dataset connector {dataset_identifier.connector_id}')
 
+    def check_connector_compatible_version(self, connector:AbstractDatasetsConnector)-> bool:
+        """
+        Check that the associated connector is compatible with the current connector version
+        raise an error in case of incompatibility
+        :param: connector: connector to check
+        :type connector: AbstractDatasetsConnector
+        :return: true if the connectors have at least one version in common
+        """
+        return set(self.compatible_dataset_info_version) & set(connector.compatible_dataset_info_version)
+
+
 
     def get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
@@ -229,6 +240,10 @@ class AbstractDatasetsConnector(abc.ABC):
         :type override: bool
         """
         self.check_dataset_info_version(dataset_identifier)
+        # raise an error if the connectors have no version in common
+        if not self.check_connector_compatible_version(connector_from):
+            raise DatasetGenericException("Connectors have incompatible versions, for now it is not possible to copy data V0 <-> V1")
+
         self.__logger.debug(f"Copying dataset {dataset_identifier.dataset_id} from {connector_from} to {self}")
         dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier, data_types_dict=data_types_dict)
         self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, data_types_dict=data_types_dict, create_if_not_exists=create_if_not_exists, override=override)
@@ -245,6 +260,8 @@ class AbstractDatasetsConnector(abc.ABC):
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
         """
+        if not self.check_connector_compatible_version(connector_from):
+            raise DatasetGenericException("Connectors have incompatible versions, for now it is not possible to copy data V0 <-> V1")
 
         self.__logger.debug(f"Copying all datasets from {connector_from} to {self}")
         datasets = connector_from.get_datasets_available()

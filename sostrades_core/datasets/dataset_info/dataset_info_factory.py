@@ -19,6 +19,7 @@ import re
 from enum import Enum
 
 from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
+from sostrades_core.datasets.dataset_info.dataset_info_v1 import DatasetInfoV1
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
@@ -28,12 +29,13 @@ class DatasetInfoSerializerVersion(Enum):
     """
 
     V0 = DatasetInfoV0
+    V1 = DatasetInfoV1
 
     @classmethod
     def get_enum_value(cls, value_str):
         try:
             # Iterate through the enum members and find the one with a matching value
-            return next(member for member in cls if member.name == value_str)
+            return next(member for member in cls if member.name == value_str.upper())
         except StopIteration:
             raise ValueError(f"No matching enum value found for '{value_str}'")
 

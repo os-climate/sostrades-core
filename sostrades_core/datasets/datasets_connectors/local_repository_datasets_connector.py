@@ -19,12 +19,12 @@ from os.path import dirname, join
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     DatasetGenericException,
 )
-from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector import (
-    LocalFileSystemDatasetsConnector,
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connectorV0 import (
+    LocalFileSystemDatasetsConnectorV0,
 )
 
 
-class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):
+class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorV0):
     """
     Local file system connector for default repository connector
     """
