@@ -14,27 +14,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+from __future__ import annotations
+
 import logging
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import petsc4py
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     BaseLinearSolverLibrary,
     LinearSolverDescription,
 )
-from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo_petsc.linear_solvers.ksp_library import (
     _convert_ndarray_to_mat_or_vec,
 )
 from numpy import isnan, ndarray
 
-# Must be done before from petsc4py import PETSc
+# Must be done before from petsc4py import PETSc, this loads the options from
+# command args in the options database.
 petsc4py.init([])
 from petsc4py import PETSc  # noqa: E402
 
-"""A PETSC KSP linear solvers library wrapper."""
+if TYPE_CHECKING:
+    from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
-LOGGER = logging.getLogger("gemseo.addons.linear_solvers.ksp_library")
+LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 KSP_CONVERGED_REASON = {1: 'KSP_CONVERGED_RTOL_NORMAL',
                         9: 'KSP_CONVERGED_ATOL_NORMAL',
