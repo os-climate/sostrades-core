@@ -17,7 +17,7 @@ import logging
 from typing import Any
 
 from sostrades_core.datasets.dataset import Dataset
-from sostrades_core.datasets.dataset_info import DatasetInfo
+from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     DatasetGenericException,
 )
@@ -38,7 +38,7 @@ class DatasetsManager:
         self.datasets = {}
         self.__logger = logger
 
-    def fetch_data_from_datasets(self, datasets_info: dict[DatasetInfo:dict[str:str]],
+    def fetch_data_from_datasets(self, datasets_info: dict[AbstractDatasetInfo:dict[str:str]],
                                  data_dict: dict[str:str]) -> dict[str:dict[str:Any]]:
         """
         get data from datasets and fill data_dict
@@ -66,7 +66,7 @@ class DatasetsManager:
                 # it is done in a loop so that it respect the order of appearance
                 # (ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
                 for data_key, data_dataset_key in mapping_parameters.items():
-                    if data_dataset_key == DatasetInfo.WILDCARD:
+                    if data_dataset_key == AbstractDatasetInfo.WILDCARD:
                         dataset_data_reverse_mapping.update({key: key for key in data_dict.keys()})
                         data_to_fetch.update(data_dict)
                     elif data_key in data_dict.keys():
@@ -83,7 +83,7 @@ class DatasetsManager:
                 raise DatasetGenericException(f'Error fetching dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return data_retrieved
 
-    def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
+    def get_dataset(self, dataset_info: AbstractDatasetInfo) -> Dataset:
         """
         Gets a dataset, creates it if it does not exist
 
@@ -96,7 +96,7 @@ class DatasetsManager:
             self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
         return self.datasets[dataset_info]
 
-    def write_data_in_dataset(self, dataset_info: DatasetInfo,
+    def write_data_in_dataset(self, dataset_info: AbstractDatasetInfo,
                                     data_dict: dict[str:str],
                                     data_type_dict: dict[str:str]) -> dict:
         """
@@ -120,7 +120,7 @@ class DatasetsManager:
             dataset = self.get_dataset(dataset_info=dataset_info)
 
             # Write values
-            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info.dataset_id,
+            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info,
                                                                 values_to_write=data_dict,
                                                                 data_types_dict=data_type_dict,
                                                                 create_if_not_exists=True,
@@ -129,7 +129,7 @@ class DatasetsManager:
             raise DatasetGenericException(f'Error exporting dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return dataset_values
 
-    def get_path_to_dataset_data(self, dataset_info: DatasetInfo, data_name:str, data_type:str)-> str:
+    def get_path_to_dataset_data(self, dataset_info: AbstractDatasetInfo, data_name:str, data_type:str)-> str:
         """
         get path/link/uri to retrieve the dataset data
 
@@ -150,7 +150,7 @@ class DatasetsManager:
             dataset = self.get_dataset(dataset_info=dataset_info)
 
             # get path
-            path_to_dataset_data = dataset.connector.build_path_to_data(dataset_identifier=dataset_info.dataset_id,
+            path_to_dataset_data = dataset.connector.build_path_to_data(dataset_identifier=dataset_info,
                                                                         data_name=data_name,
                                                                         data_type=data_type)
         except DatasetGenericException as exception:
@@ -158,7 +158,7 @@ class DatasetsManager:
         return path_to_dataset_data
 
 
-    def __create_dataset(self, dataset_info: DatasetInfo) -> Dataset:
+    def __create_dataset(self, dataset_info: AbstractDatasetInfo) -> Dataset:
         """
         Private method
         Get the connector associated to the dataset and create a Dataset object

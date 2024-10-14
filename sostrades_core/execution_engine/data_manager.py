@@ -468,7 +468,7 @@ class DataManager:
                     key = data_dict[KEY][data_name]
                     new_value = new_data[DatasetsManager.VALUE]
                     connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
-                    dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_id
+                    dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_info_id
                     dataset_data_name = datasets_info[new_data[DatasetsManager.DATASET_INFO]].get(data_name,data_name)
                     dataset_data_path = self.dataset_manager.get_path_to_dataset_data(new_data[DatasetsManager.DATASET_INFO],
                                                                                  dataset_data_name,
@@ -565,7 +565,7 @@ class DataManager:
             if len(mapping_dict[DatasetsMapping.VALUE].keys()) > 0:
                 # write data values into the dataset into the right format
                 updated_data = self.dataset_manager.write_data_in_dataset(
-                    dataset_info=datasets_mapping.datasets_infos[dataset],
+                    dataset_info=dataset,
                     data_dict=mapping_dict[DatasetsMapping.VALUE],
                     data_type_dict=mapping_dict[DatasetsMapping.TYPE]
                 )
@@ -574,9 +574,9 @@ class DataManager:
                 for data_dataset_name in updated_data.keys():
                     key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
                     type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
-                    connector_id = datasets_mapping.datasets_infos[dataset].connector_id
-                    dataset_id = datasets_mapping.datasets_infos[dataset].dataset_id
-                    dataset_data_path = self.dataset_manager.get_path_to_dataset_data(datasets_mapping.datasets_infos[dataset],
+                    connector_id = dataset.connector_id
+                    dataset_id = dataset.dataset_info_id
+                    dataset_data_path = self.dataset_manager.get_path_to_dataset_data(dataset,
                                                                                  data_dataset_name,
                                                                                  type)
                     #build ontology key

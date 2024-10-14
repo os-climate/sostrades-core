@@ -83,7 +83,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         if connector_identifier in cls.__registered_connectors.keys():
             cls.__logger.debug(f'Existing connector \"{connector_identifier}\" is updated')
 
-        connector = DatasetsConnectorFactory.get_connector(connector_type=connector_type, **connector_instanciation_fields)
+        connector = DatasetsConnectorFactory.get_connector(connector_identifier, connector_type=connector_type, **connector_instanciation_fields)
         cls.__registered_connectors[connector_identifier] = connector
         return connector
 

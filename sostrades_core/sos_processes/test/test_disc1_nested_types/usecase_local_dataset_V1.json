@@ -1,0 +1,6 @@
+{
+    "process_module_path": "sostrades_core.sos_processes.test.test_disc1_nested_types",
+    "namespace_datasets_mapping": {
+        "v0|*|*": ["V1|local_datasets_V1|nested_type|*|*"]
+    }
+}

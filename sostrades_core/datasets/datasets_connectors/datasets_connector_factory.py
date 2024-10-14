@@ -26,11 +26,17 @@ from sostrades_core.datasets.datasets_connectors.arango_datasets_connector impor
 from sostrades_core.datasets.datasets_connectors.bigquery_datasets_connector import (
     BigqueryDatasetsConnector,
 )
-from sostrades_core.datasets.datasets_connectors.json_datasets_connector import (
-    JSONDatasetsConnector,
+from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_datasets_connectorV0 import (
+    JSONDatasetsConnectorV0,
 )
-from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector import (
-    LocalFileSystemDatasetsConnector,
+from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_datasets_connectorV1 import (
+    JSONDatasetsConnectorV1,
+)
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connectorV0 import (
+    LocalFileSystemDatasetsConnectorV0,
+)
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connectorV1 import (
+    LocalFileSystemDatasetsConnectorV1,
 )
 from sostrades_core.datasets.datasets_connectors.local_repository_datasets_connector import (
     LocalRepositoryDatasetsConnector,
@@ -46,8 +52,10 @@ class DatasetConnectorType(Enum):
     Dataset connector types anum
     """
 
-    JSON = JSONDatasetsConnector
-    Local = LocalFileSystemDatasetsConnector
+    JSON = JSONDatasetsConnectorV0
+    JSON_V1 = JSONDatasetsConnectorV1
+    Local = LocalFileSystemDatasetsConnectorV0
+    Local_V1 = LocalFileSystemDatasetsConnectorV1
     Arango = ArangoDatasetsConnector
     SoSpickle = SoSPickleDatasetsConnector
     Local_repository = LocalRepositoryDatasetsConnector
@@ -69,7 +77,7 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
     __logger = logging.getLogger(__name__)
 
     @classmethod
-    def get_connector(cls,
+    def get_connector(cls, connector_identifier:str,
         connector_type: DatasetConnectorType, **connector_instanciation_fields
     ) -> AbstractDatasetsConnector:
         """
@@ -85,6 +93,6 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
         ):
             raise DatasetUnableToInitializeConnectorException(f"Unexpected connector type {connector_type}")
         try:
-            return connector_type.value(**connector_instanciation_fields)
+            return connector_type.value(connector_identifier, **connector_instanciation_fields)
         except TypeError as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type) from exc
