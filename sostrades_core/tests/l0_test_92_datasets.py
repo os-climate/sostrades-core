@@ -958,7 +958,7 @@ class TestDatasets(unittest.TestCase):
                                        dataset_identifier=DatasetInfoV1(connector_from,"dataset_all_types","test"),
                                        data_types_dict={},
                                        create_if_not_exists=True)
-            
+
         connector_to.clear(True)
 
 
