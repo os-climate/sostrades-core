@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 from gemseo import get_available_doe_algorithms
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
 from gemseo.algos.doe.factory import DOELibraryFactory
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import (
@@ -152,7 +152,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         algo_lib = self.doe_factory.create(sampling_algo_name)
         all_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].settings.model_fields
         # Keep only the DOE-related options
-        algo_options = algo_lib._filter_settings(all_options, BaseDOELibrarySettings)
+        algo_options = algo_lib._filter_settings(all_options, BaseDriverLibrarySettings)
         algo_options_default = {option_name: option.default for option_name, option in algo_options.items()}
         algo_options_descr_dict = {
             option_name: option.description for option_name, option in algo_options.items()
