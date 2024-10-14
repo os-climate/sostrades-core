@@ -273,17 +273,12 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
         openturns_algo_options_desc_in = {  # default options
             'eval_jac': False,
-            'n_samples': None,
+            'n_samples': 10,
             'n_processes': 1,
             'wait_time_between_samples': 0.0,
             'seed': 1,
             'max_time': 0,
         }
-
-        # update only default n_samples in default options
-        n_samples = 10
-        user_openturns_algo_options = openturns_algo_options_desc_in
-        user_openturns_algo_options['n_samples'] = n_samples
 
         for sampling_algo_name in list_of_algo_names:
             # print('\n')
@@ -330,12 +325,6 @@ class TestSampleGeneratorTool(unittest.TestCase):
             # print(samples_df)
 
             # assert_frame_equal(samples_df, self.target_samples_df)
-
-            #################################################################
-            if sampling_algo_name in ['OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL']:
-                algo_options['levels'] = None
-                algo_options['centers'] = None
-            #################################################################
 
     def test_5_doe_check_Custom_Diagonal_DOE_not_possible(self):
         """
