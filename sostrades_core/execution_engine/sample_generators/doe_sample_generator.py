@@ -198,9 +198,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Returns:
             samples_df (dataframe) : generated samples
         """
-        normalized_samples = self._generate_normalized_samples(sampling_algo_name, algo_options, design_space)
-        unnormalized_samples = self._unnormalize_samples_from_design_space(normalized_samples, design_space)
-        samples = self._reformat_samples_from_design_space(unnormalized_samples, design_space)
+        algo = self.doe_factory.create(sampling_algo_name)
+        samples = algo.compute_doe(design_space, **algo_options)
+        samples = self._reformat_samples_from_design_space(samples, design_space)
         return self._put_samples_in_df_format(samples, design_space)
 
     def _generate_normalized_samples(self, sampling_algo_name, algo_options, design_space):
