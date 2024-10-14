@@ -306,6 +306,8 @@ class TestSampleGeneratorTool(unittest.TestCase):
                 algo_options["annealing"] = True
                 algo_options["criterion"] = "C2"
                 algo_options["temperature"] = "Geometric"
+            if sampling_algo_name == "OT_SOBOL_INDICES":
+                algo_options["eval_second_order"] = False
                 # Problem in SoSTrades !
                 # Levels must belong to [0, 1] has we have a normalized sample !!
                 # We create a normalized samples in SoSTrades that we unnormalized but what if user provide unnormalized input options !!!
