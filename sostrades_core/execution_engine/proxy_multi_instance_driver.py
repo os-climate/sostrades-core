@@ -497,7 +497,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         # values
         ref_dict = {}
         for ref_discipline in self.get_reference_scenario_disciplines():
-            for key in ref_discipline.get_input_data_names():
+            for key in ref_discipline.io.input_grammar.names:
                 if all(key.split(self.REFERENCE_SCENARIO_NAME + '.')[-1] != trade_var for trade_var in trade_vars):
                     ref_dict[key] = ref_discipline.ee.dm.get_value(key)
 

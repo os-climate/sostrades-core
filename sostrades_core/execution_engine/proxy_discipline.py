@@ -19,8 +19,8 @@ import logging
 from copy import deepcopy
 from typing import List, Union
 
-from gemseo.core.chain import MDOChain
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.chains.chain import MDOChain
+from gemseo.core.discipline.discipline import Discipline
 from numpy import bool_ as np_bool
 from numpy import complex128 as np_complex128
 from numpy import float32 as np_float32
@@ -220,12 +220,12 @@ class ProxyDiscipline:
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,
-                             POSSIBLE_VALUES: list(MDODiscipline.LinearizationMode),
+        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: Discipline.ApproximationMode.FINITE_DIFFERENCES,
+                             POSSIBLE_VALUES: list(Discipline.LinearizationMode),
 
                              NUMERICAL: True, STRUCTURING: True},
-        CACHE_TYPE: {TYPE: 'string', DEFAULT: MDODiscipline.CacheType.NONE,
-                     POSSIBLE_VALUES: [MDODiscipline.CacheType.NONE, MDODiscipline.CacheType.SIMPLE],
+        CACHE_TYPE: {TYPE: 'string', DEFAULT: Discipline.CacheType.NONE,
+                     POSSIBLE_VALUES: [Discipline.CacheType.NONE, Discipline.CacheType.SIMPLE],
                      # [MDOChain.CacheType.NONE, MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
                      NUMERICAL: True,
                      STRUCTURING: True},
@@ -241,13 +241,13 @@ class ProxyDiscipline:
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
     # -- status
-    STATUS_VIRTUAL = MDODiscipline.ExecutionStatus.VIRTUAL
-    STATUS_PENDING = MDODiscipline.ExecutionStatus.PENDING
-    STATUS_DONE = MDODiscipline.ExecutionStatus.DONE
-    STATUS_RUNNING = MDODiscipline.ExecutionStatus.RUNNING
-    STATUS_FAILED = MDODiscipline.ExecutionStatus.FAILED
+    STATUS_VIRTUAL = Discipline.ExecutionStatus.VIRTUAL
+    STATUS_PENDING = Discipline.ExecutionStatus.PENDING
+    STATUS_DONE = Discipline.ExecutionStatus.DONE
+    STATUS_RUNNING = Discipline.ExecutionStatus.RUNNING
+    STATUS_FAILED = Discipline.ExecutionStatus.FAILED
     STATUS_CONFIGURE = 'CONFIGURE'
-    STATUS_LINEARIZE = MDODiscipline.ExecutionStatus.LINEARIZE
+    STATUS_LINEARIZE = Discipline.ExecutionStatus.LINEARIZE
 
     EE_PATH = 'sostrades_core.execution_engine'
 
@@ -480,7 +480,7 @@ class ProxyDiscipline:
             # init gemseo discipline if it has not been created yet
             cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
             if cache_type == '':
-                cache_type = MDODiscipline.CacheType.NONE
+                cache_type = Discipline.CacheType.NONE
             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
                                                                cache_type=cache_type,
@@ -499,7 +499,7 @@ class ProxyDiscipline:
             self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
                            self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
             if self.get_sosdisc_inputs(
-                self.CACHE_TYPE) == MDODiscipline.CacheType.NONE and self.dm.cache_map is not None:
+                self.CACHE_TYPE) == Discipline.CacheType.NONE and self.dm.cache_map is not None:
                 self.delete_cache_in_cache_map()
         else:
             if self.stored_cache is not None:
@@ -547,7 +547,7 @@ class ProxyDiscipline:
                 self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
                     observer)
 
-    def set_cache(self, disc: MDODiscipline, cache_type: str, cache_hdf_file: str):
+    def set_cache(self, disc: Discipline, cache_type: str, cache_hdf_file: str):
         '''
         Instanciate and set cache for disc if cache_type is not MDODiscipline.CacheType.NONE
 
@@ -562,7 +562,7 @@ class ProxyDiscipline:
         else:
             disc.cache = None
             if cache_type != MDOChain.CacheType.NONE:
-                disc.set_cache_policy(
+                disc.set_cache(
                     cache_type=cache_type, cache_hdf_file=cache_hdf_file)
 
     def delete_cache_in_cache_map(self):
@@ -1608,7 +1608,7 @@ class ProxyDiscipline:
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
                 # a variable is in the local_data if the variable is not numerical, do not need of numerical variables in the run phase
                 if not self.variable_is_numerical(self.dm.get_data(q_key)):
-                    values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
+                    values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.io.data[q_key]
             # get data in data manager during configure step
             else:
                 values_dict[key] = self.dm.get_value(q_key)
@@ -1811,10 +1811,10 @@ class ProxyDiscipline:
         '''
 
         input_list_anonimated = [key.split(
-            self.ee.study_name, 1)[-1] for key in disc.get_input_data_names()]
+            self.ee.study_name, 1)[-1] for key in disc.io.input_grammar.names]
         input_list_anonimated.sort()
         output_list_anonimated = [key.split(
-            self.ee.study_name, 1)[-1] for key in disc.get_output_data_names()]
+            self.ee.study_name, 1)[-1] for key in disc.io.output_grammar.names]
         output_list_anonimated.sort()
         input_list_anonimated.extend(output_list_anonimated)
 

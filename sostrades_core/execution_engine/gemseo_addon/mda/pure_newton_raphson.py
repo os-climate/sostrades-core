@@ -29,10 +29,10 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
     convert_array_into_new_type,
     convert_new_type_into_array,
 )
+from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
-    from gemseo.core.discipline import MDODiscipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 
@@ -42,7 +42,7 @@ class PureNewtonRaphson(BaseMDARoot):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],  # type: Sequence[MDODiscipline]
+        disciplines: Sequence[Discipline],  # type: Sequence[MDODiscipline]
         max_mda_iter: int = 10,  # type: int
         over_relaxation_factor: float = 0.99,  # type: float
         name: str | None = None,  # type: Optional[str]
@@ -139,10 +139,10 @@ class PureNewtonRaphson(BaseMDARoot):
             )
 
             # Compute all discipline gradients df(x)/dx with x
-            self.linearize_all_disciplines(self.local_data, execute=False)
+            self.linearize_all_disciplines(self.io.data, execute=False)
 
             # compute coupling_variables(x+k) for the residuals
-            self.execute_all_disciplines(self.local_data)
+            self.execute_all_disciplines(self.io.data)
 
             # build new_couplings after execution: concatenated strong couplings, converted into arrays
             new_couplings = self._current_strong_couplings()
@@ -175,7 +175,7 @@ class PureNewtonRaphson(BaseMDARoot):
                 old_x_array[c_var] += c_step.real  # SoSTrades fix (.real)
 
             # convert old_x_array into SoSTrades types and store it into local_data for next execution
-            self.local_data.update(convert_array_into_new_type(old_x_array, self._disciplines[0].reduced_dm))
+            self.io.data.update(convert_array_into_new_type(old_x_array, self._disciplines[0].reduced_dm))
 
             # store current_couplings for residual computation of next iteration
             current_couplings = np.hstack(list(old_x_array.values()))
@@ -189,7 +189,7 @@ class PureNewtonRaphson(BaseMDARoot):
         # build a dictionary of strong_couplings values
         for input_key in self.strong_couplings:
             strong_couplings_array[input_key], new_dm = convert_new_type_into_array(
-                input_key, self.local_data[input_key], self.disciplines[0].reduced_dm
+                input_key, self.io.data[input_key], self.disciplines[0].reduced_dm
             )
         # concatenate strong_couplings values
         concat_strong_couplings = np.hstack(list(strong_couplings_array.values()))

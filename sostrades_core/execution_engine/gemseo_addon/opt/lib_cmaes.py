@@ -52,7 +52,7 @@ class CMAESOpt(BaseOptimizationLibrary):
 
     LIB_COMPUTE_GRAD = True
 
-    OPTIONS_MAP = {BaseOptimizationLibrary.MAX_ITER: "maxiter",
+    OPTIONS_MAP = {BaseOptimizationLibrary._MAX_ITER: "maxiter",
                    BaseOptimizationLibrary.F_TOL_REL: "ftol_rel",
                    BaseOptimizationLibrary.MAX_FUN_EVAL: "maxfun"
                    }
@@ -121,7 +121,7 @@ class CMAESOpt(BaseOptimizationLibrary):
         :param options: the options dict for the algorithm
         """
         # remove normalization from options for algo
-        normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        normalize_ds = options.pop(self._NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the normalized bounds:
         x_0, l_b, u_b = self.get_x0_and_bounds_vects(normalize_ds=normalize_ds)
 
@@ -135,7 +135,7 @@ class CMAESOpt(BaseOptimizationLibrary):
         # GEMSEO is in charge of ensuring max iterations, since it may
         # have a different definition of iterations, such as for SLSQP
         # for instance which counts duplicate calls to x as a new iteration
-        options[self.OPTIONS_MAP[self.MAX_ITER]] = 10000
+        options[self.OPTIONS_MAP[self._MAX_ITER]] = 10000
         sigma = options['sigma']
         ftol = options['ftol_rel']
         popsize = options['population_size']

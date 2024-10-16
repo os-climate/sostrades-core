@@ -274,7 +274,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # check that the root process knows all the numerical inputs of the
         # entire subprocess
-        root_inputs = exec_eng.root_process.get_input_data_names()
+        root_inputs = exec_eng.root_process.io.input_grammar.names
         self.assertIn('root.linearization_mode', root_inputs)
         self.assertIn('root.Driver1.linearization_mode', root_inputs)
         self.assertIn('root.Driver1.Disc1.linearization_mode', root_inputs)
@@ -571,7 +571,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.execute()
 
-        root_outputs = exec_eng.root_process.get_output_data_names()
+        root_outputs = exec_eng.root_process.io.output_grammar.names
         self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(
@@ -722,7 +722,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.execute()
 
-        root_outputs = exec_eng.root_process.get_output_data_names()
+        root_outputs = exec_eng.root_process.io.output_grammar.names
         self.assertIn('root.Eval.Disc1.indicator_dict', root_outputs)
 
         eval_disc = exec_eng.dm.get_disciplines_with_name(
@@ -1848,11 +1848,11 @@ class TestSoSDOEScenario(unittest.TestCase):
         # check that the DriverEvaluator has no i/o of the subprocess:
         driver_disc = study_dump.ee.dm.get_disciplines_with_name(
             f'{usecase_name}.Eval')[0]
-        for var_name in driver_disc.get_input_data_names():
+        for var_name in driver_disc.io.input_grammar.names:
             self.assertFalse('ReferenceScenario' in var_name)
             self.assertFalse('scenario_1' in var_name)
             self.assertFalse('scenario_2' in var_name)
-        self.assertEqual(driver_disc.get_output_data_names(), [])
+        self.assertEqual(driver_disc.io.output_grammar.names, [])
 
         # check that the namespace treeview is proper
         exp_ns_tv = 'Nodes representation for Treeview usecase1_cp_multi_with_ref\n' \

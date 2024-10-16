@@ -54,7 +54,7 @@ class OuterApproximationOpt(BaseOptimizationLibrary):
 
     LIB_COMPUTE_GRAD = False
 
-    OPTIONS_MAP = {BaseOptimizationLibrary.MAX_ITER: "max_iter",
+    OPTIONS_MAP = {BaseOptimizationLibrary._MAX_ITER: "max_iter",
                    BaseOptimizationLibrary.F_TOL_REL: "ftol_rel",
                    BaseOptimizationLibrary.MAX_FUN_EVAL: "maxfun"
                    }
@@ -123,7 +123,7 @@ class OuterApproximationOpt(BaseOptimizationLibrary):
 
         :param options: the options dict for the algorithm
         """
-        normalize_ds = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        normalize_ds = options.get(self._NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the normalized bounds:
         x_0, l_b, u_b = self.get_x0_and_bounds_vects(normalize_ds)
         # Replace infinite values with None:

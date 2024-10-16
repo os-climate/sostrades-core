@@ -721,9 +721,9 @@ class ExecutionEngine:
 
         self.logger.info("Storing local data in datamanager.")
         # -- store local data in datamanager
-        ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data.pop("MDA residuals norm", None)
+        ex_proc.mdo_discipline_wrapp.mdo_discipline.io.data.pop("MDA residuals norm", None)
         self.update_dm_with_local_data(
-            ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
+            ex_proc.mdo_discipline_wrapp.mdo_discipline.io.data)
 
         # -- update all proxy statuses
         ex_proc.set_status_from_mdo_discipline()

@@ -263,7 +263,7 @@ class DataManager:
                     fname, TYPE_METADATA)
             # local data update
             data["local_data"].update(
-                d.mdo_discipline_wrapp.mdo_discipline.local_data)
+                d.mdo_discipline_wrapp.mdo_discipline.io.data)
         return data
 
     def get_value(self, var_f_name):

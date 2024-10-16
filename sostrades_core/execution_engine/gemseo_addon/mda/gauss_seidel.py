@@ -29,10 +29,10 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from numpy import array
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
-    from gemseo.core.discipline import MDODiscipline
 
 
 class SoSMDAGaussSeidel(MDAGaussSeidel):
@@ -42,7 +42,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         name: str | None = None,
         max_mda_iter: int = 10,
         grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
@@ -99,21 +99,21 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         current_iter = 0
         while not self._termination(current_iter) or current_iter == 0:
             for discipline in self._disciplines:
-                discipline.execute(self.local_data)
+                discipline.execute(self.io.data)
                 outs = discipline.get_output_data()
                 if use_relax:
                     # First time this output is computed, update directly local
                     # data
-                    self.local_data.update({k: v for k, v in outs.items() if k not in self.local_data})
+                    self.io.data.update({k: v for k, v in outs.items() if k not in self.io.data})
                     # The couplings already exist in the local data,
                     # so the over relaxation can be applied
-                    self.local_data.update({
-                        k: relax * v + (1.0 - relax) * self.local_data[k]
+                    self.io.data.update({
+                        k: relax * v + (1.0 - relax) * self.io.data[k]
                         for k, v in outs.items()
-                        if k in self.local_data
+                        if k in self.io.data
                     })
                 else:
-                    self.local_data.update(outs)
+                    self.io.data.update(outs)
 
             # build new_couplings: concatenated strong couplings, converted into arrays
             new_couplings = self._current_strong_couplings()
@@ -137,4 +137,4 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
             # -- end of SoSTrades modif
 
         for discipline in self._disciplines:  # Update all outputs without relax
-            self.local_data.update(discipline.get_output_data())
+            self.io.data.update(discipline.get_output_data())

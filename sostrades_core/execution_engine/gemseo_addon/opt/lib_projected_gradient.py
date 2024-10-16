@@ -158,9 +158,9 @@ class ProjectedGradientOpt(BaseOptimizationLibrary):
             """
             return self.problem.objective.jac(x).real.astype(float64)
 
-        options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION)
-        maxfun = options[self.MAX_ITER]
-        options.pop(self.MAX_ITER)
+        options.pop(self._NORMALIZE_DESIGN_SPACE_OPTION)
+        maxfun = options[self._MAX_ITER]
+        options.pop(self._MAX_ITER)
         options.pop("maxfun")
 
         options.pop("max_fun_eval")

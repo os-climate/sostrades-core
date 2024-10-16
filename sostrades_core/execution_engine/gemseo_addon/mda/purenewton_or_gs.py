@@ -28,9 +28,10 @@ from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
     SoSMDAGaussSeidel,
 )
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
+    pass
 
 LOGGER = logging.getLogger("gemseo.addons.mda.purenewton_or_gs")
 
@@ -40,7 +41,7 @@ class GSPureNewtonorGSMDA(MDASequential):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         name: str | None = None,
         grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
         tolerance: float = 1e-6,
@@ -143,7 +144,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             mda_i = self.mda_sequence[1]
             mda_i.reset_statuses_for_run()
             dm_values = deepcopy(self._disciplines[0].dm.get_data_dict_values())
-            self.local_data = mda_i.execute(self.local_data)
+            self.io.data = mda_i.execute(self.io.data)
         except:
             LOGGER.warning('The GSPureNewtonMDA has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
@@ -152,6 +153,6 @@ class GSPureNewtonorGSMDA(MDASequential):
             # set values directrly in dm to avoid reconfigure of disciplines
             dm.set_values_from_dict(dm_values)
             # self.disciplines[0].ee.load_study_from_input_dict(dm_values)
-            self.local_data = mda_i.execute(self.local_data)
+            self.io.data = mda_i.execute(self.io.data)
 
         self.residual_history += mda_i.residual_history

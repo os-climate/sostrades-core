@@ -343,9 +343,9 @@ class Sellar3(SoSWrapp):
         error_string = self.get_sosdisc_inputs('error_string')
 
         if error_string == 'linearize_data_change':
-            y_1_fullname = [full_name for full_name in self.local_data.keys() if
+            y_1_fullname = [full_name for full_name in self.io.data.keys() if
                             'y_1' == full_name.split('.')[-1]][0]
-            y_1 = self.local_data[y_1_fullname]
+            y_1 = self.io.data[y_1_fullname]
             y_1[0] += 0.5
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
