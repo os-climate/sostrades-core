@@ -230,8 +230,8 @@ class TestMDALoop(unittest.TestCase):
         residual_history = exec_eng.root_process.discipline_wrapp.discipline.inner_mdas[
             0].residual_history
         residual_history_output = \
-            exec_eng.dm.get_disciplines_with_name('EE')[0].discipline_wrapp.discipline.get_inputs_by_name(
-                'EE.residuals_history')[
+            exec_eng.dm.get_disciplines_with_name('EE')[0].discipline_wrapp.discipline.io.data[
+                'EE.residuals_history'][
                 exec_eng.root_process.discipline_wrapp.discipline.inner_mdas[0].name].values.tolist()
         assert residual_history == residual_history_output
 

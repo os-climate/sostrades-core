@@ -717,7 +717,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         the list of data_to_check is defined in SoSDiscipline
         """
         # TODO: probably better if moved into proxy discipline
-
+        self._build_coupling_structure()
         if self.logger.level <= logging.DEBUG:
             coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
             for from_disc, to_disc, c_vars in coupling_vars:

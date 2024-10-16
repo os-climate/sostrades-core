@@ -267,7 +267,7 @@ class SoSDiscipline(Discipline):
 
 
         if auto_set_step:
-            approx.auto_set_step(outputs, inputs)
+            approx.auto_set_step(output_names, input_names)
 
         # Linearize performs execute() if needed
         self.linearize(input_data)
@@ -275,7 +275,7 @@ class SoSDiscipline(Discipline):
         if input_column is None and output_column is None:
             indices = None
         else:
-            indices = self._get_columns_indices(inputs, outputs, input_column, output_column)
+            indices = self._get_columns_indices(input_names, output_names, input_column, output_column)
 
         jac_arrays = {
             key_out: {
@@ -285,8 +285,8 @@ class SoSDiscipline(Discipline):
             for key_out, subdict in self.jac.items()
         }
         return approx.check_jacobian(
-            outputs,
-            inputs,
+            output_names,
+            input_names,
             analytic_jacobian=jac_arrays,
             threshold=threshold,
             plot_result=plot_result,
@@ -299,7 +299,11 @@ class SoSDiscipline(Discipline):
             indices=indices,
         )
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
         """Over load of the GEMS function
         Compute the analytic jacobian of a discipline/model
         Check if the jacobian in compute_sos_jacobian is OK

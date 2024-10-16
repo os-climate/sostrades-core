@@ -951,6 +951,7 @@ class DataManager:
         # loop on sosc and append couplings data
         if sosc_list != []:
             sosc = sosc_list.pop()
+            sosc._build_coupling_structure()
             df = sosc.export_couplings()
             for sosc in sosc_list:
                 df_sosc = sosc.export_couplings()

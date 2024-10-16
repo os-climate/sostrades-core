@@ -1807,12 +1807,18 @@ class ProxyDiscipline:
         '''
         Return: (List[string]) of anonimated input and output keys for serialisation purpose
         '''
+        if isinstance(disc, ProxyDiscipline):
+            input_list_anonimated = [key.split(
+                self.ee.study_name, 1)[-1] for key in disc.get_input_data_names()]
+            output_list_anonimated = [key.split(
+                self.ee.study_name, 1)[-1] for key in disc.get_output_data_names()]
+        else:
+            input_list_anonimated = [key.split(
+                self.ee.study_name, 1)[-1] for key in disc.io.input_grammar.names]
+            output_list_anonimated = [key.split(
+                self.ee.study_name, 1)[-1] for key in disc.io.output_grammar.names]
 
-        input_list_anonimated = [key.split(
-            self.ee.study_name, 1)[-1] for key in disc.get_input_data_names()]
         input_list_anonimated.sort()
-        output_list_anonimated = [key.split(
-            self.ee.study_name, 1)[-1] for key in disc.get_output_data_names()]
         output_list_anonimated.sort()
         input_list_anonimated.extend(output_list_anonimated)
 
