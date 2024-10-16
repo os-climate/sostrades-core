@@ -21,16 +21,16 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
-from gemseo.mda.sequential_mda import MDAGSNewton, MDASequential
 from gemseo.core.execution_status import ExecutionStatus
+from gemseo.mda.sequential_mda import MDAGSNewton, MDASequential
+
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
     SoSMDAGaussSeidel,
 )
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
-    pass
+    from gemseo.core.discipline.discipline import Discipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 

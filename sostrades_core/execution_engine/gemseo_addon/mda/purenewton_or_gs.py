@@ -28,10 +28,9 @@ from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
     SoSMDAGaussSeidel,
 )
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
-    pass
+    from gemseo.core.discipline.discipline import Discipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.purenewton_or_gs")
 

@@ -29,10 +29,10 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from numpy import array
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
+    from gemseo.core.discipline.discipline import Discipline
 
 
 class SoSMDAGaussSeidel(MDAGaussSeidel):

@@ -29,10 +29,10 @@ from sostrades_core.execution_engine.gemseo_addon.mda.pure_newton_raphson import
     PureNewtonRaphson,
 )
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
+    from gemseo.core.discipline.discipline import Discipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_purenewton_mda")
 

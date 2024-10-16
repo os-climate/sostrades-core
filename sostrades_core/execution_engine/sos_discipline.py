@@ -18,8 +18,9 @@ from __future__ import annotations
 
 # debug mode
 from copy import deepcopy
-from typing import TYPE_CHECKING
 from multiprocessing import cpu_count
+from typing import TYPE_CHECKING
+
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
@@ -32,16 +33,9 @@ from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 if TYPE_CHECKING:
     import logging
-    from collections.abc import Iterable
-    from collections.abc import Mapping
-    from collections.abc import Sequence
-    from enum import EnumType
+    from collections.abc import Iterable, Mapping
     from pathlib import Path
 
-    from gemseo import StrKeyMapping
-    from gemseo.caches.cache_entry import CacheEntry
-    from gemseo.core.discipline.discipline_data import DisciplineData
-    from gemseo.typing import JacobianData
     from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 """
@@ -319,9 +313,10 @@ class SoSDiscipline(Discipline):
         #     disc_data_before_linearize = self.local_data
 
         if self.jac is None:
-            self._init_jacobian(inputs, outputs, init_type=self.InitJacobianType.SPARSE)
+            self._init_jacobian(input_names, output_names, init_type=self.InitJacobianType.SPARSE)
         else:
-            self._init_jacobian(inputs, outputs, init_type=self.InitJacobianType.SPARSE, fill_missing_keys=True)
+            self._init_jacobian(input_names, output_names, init_type=self.InitJacobianType.SPARSE,
+                                fill_missing_keys=True)
 
         self.compute_sos_jacobian()
         # if self.check_linearize_data_changes:

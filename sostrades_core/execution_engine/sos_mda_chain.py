@@ -20,8 +20,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, ClassVar, Mapping, Sequence
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.chains.chain import MDOChain
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.utils.constants import N_CPUS
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode

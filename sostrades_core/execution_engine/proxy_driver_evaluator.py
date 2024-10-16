@@ -17,13 +17,13 @@ limitations under the License.
 import copy
 import logging
 
+from sostrades_core.execution_engine.discipline_driver_wrapp import (
+    DisciplineDriverWrapp,
+)
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
     DriverEvaluatorWrapper,
 )
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
-from sostrades_core.execution_engine.discipline_driver_wrapp import (
-    DisciplineDriverWrapp,
-)
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import (

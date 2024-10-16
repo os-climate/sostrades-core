@@ -29,10 +29,10 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
     convert_array_into_new_type,
     convert_new_type_into_array,
 )
-from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
+    from gemseo.core.discipline.discipline import Discipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 

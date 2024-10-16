@@ -25,10 +25,9 @@ from gemseo import create_discipline, create_mda
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from numpy import array, ndarray
-from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
-    pass
+    from gemseo.core.discipline.discipline import Discipline
 
 
 def disc_1_expr(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> tuple[float, float, float]:
