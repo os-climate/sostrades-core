@@ -135,9 +135,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         self.scenarios = [disc for disc in self.scenarios if disc not in list_children]
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
+    def create_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
         """
-        No need to create a MDODisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
+        No need to create a DisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
         """
         pass
 
@@ -497,7 +497,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         # values
         ref_dict = {}
         for ref_discipline in self.get_reference_scenario_disciplines():
-            for key in ref_discipline.io.input_grammar.names:
+            for key in ref_discipline.get_input_data_names():
                 if all(key.split(self.REFERENCE_SCENARIO_NAME + '.')[-1] != trade_var for trade_var in trade_vars):
                     ref_dict[key] = ref_discipline.ee.dm.get_value(key)
 

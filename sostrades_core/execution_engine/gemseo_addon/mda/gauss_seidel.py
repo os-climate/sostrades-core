@@ -66,11 +66,11 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         """
         # Not possible to parallelize MDAGaussSeidel execution
         self.n_processes = 1
+        self.default_grammar_type = grammar_type
         super().__init__(
             disciplines,
             name=name,
             max_mda_iter=max_mda_iter,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,

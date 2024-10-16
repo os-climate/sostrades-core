@@ -152,8 +152,8 @@ class MultipliersWrapper(SoSWrapp):
         eval_disc_in = self.eval_disc.get_data_in()
         # self.add_disc_to_config_dependency_disciplines(self.eval_disc) # creates a cycle...
         # for disc in self.get_father_executor().proxy_disciplines:
-        #     if not hasattr(disc.mdo_discipline_wrapp, 'wrapper') \
-        #        or not isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
+        #     if not hasattr(disc.discipline_wrapp, 'wrapper') \
+        #        or not isinstance(disc.discipline_wrapp.wrapper, MultipliersWrapper):
         #         self.add_disc_to_config_dependency_disciplines(disc)
 
         dynamic_inputs.update({self.EVAL_INPUTS: {self.TYPE: 'dataframe',
@@ -212,8 +212,8 @@ class MultipliersWrapper(SoSWrapp):
         '''
         poss_in_values_full = []
         poss_out_values_full = []
-        if hasattr(disc.mdo_discipline_wrapp, 'wrapper') and \
-                isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
+        if hasattr(disc.discipline_wrapp, 'wrapper') and \
+            isinstance(disc.discipline_wrapp.wrapper, MultipliersWrapper):
             pass
         else:
             disc_in = disc.get_data_in()

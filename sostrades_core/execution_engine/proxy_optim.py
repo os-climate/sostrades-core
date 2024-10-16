@@ -29,7 +29,7 @@ from gemseo.scenarios.scenario import Scenario
 from numpy import inf, ndarray
 
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
-from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
 from sostrades_core.execution_engine.optim_manager_disc import OptimManagerDisc
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.tools.design_space import design_space as dspace_tool
@@ -54,14 +54,14 @@ class ProxyOptim(ProxyDriverEvaluator):
     Leaves of the process tree are direct instances of ProxyDiscipline. Other nodes are instances that inherit from
     ProxyDiscipline (e.g. ProxyCoupling).
 
-    An instance of ProxyDiscipline is in one-to-one aggregation with an instance of MDODisciplineWrapp, which allows the
+    An instance of ProxyDiscipline is in one-to-one aggregation with an instance of DisciplineWrapp, which allows the
     use of different wrapping modes to provide the model run.
 
     During the prepare_execution step, the ProxyDiscipline coordinates the instantiation of the GEMSEO objects that
     manage the model run.
 
     Attributes:
-        mdo_discipline_wrapp (MDODisciplineWrapp): aggregated object that references the wrapper and GEMSEO discipline
+        discipline_wrapp (DisciplineWrapp): aggregated object that references the wrapper and GEMSEO discipline
 
         proxy_disciplines (List[ProxyDiscipline]): children in the process tree
         status (property,<<associated with string _status>>): status in the current process,either CONFIGURATION or
@@ -348,7 +348,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         if cls_builder is None:
             cls_builder = []
         self.cls_builder = cls_builder
-        self.mdo_discipline_wrapp = None
+        self.discipline_wrapp = None
 
         self.with_data_io = with_data_io
         self.formulation = None
@@ -369,7 +369,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.is_optim_scenario = True
         self.functions_before_run = []
 
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, logger=self.logger.getChild("MDODisciplineWrapp"))
+        self.discipline_wrapp = DisciplineWrapp(name=sos_name, logger=self.logger.getChild("DisciplineWrapp"))
 
         self.check_integrity_msg_list = []
         self.opt_data_integrity = True
@@ -452,38 +452,38 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
         # prepare_execution of proxy_disciplines and extract GEMSEO objects
-        sub_mdo_disciplines = []
+        sub_disciplines = []
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
             # Exclude non executable proxy Disciplines
-            if disc.mdo_discipline_wrapp is not None:
-                sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
+            if disc.discipline_wrapp is not None:
+                sub_disciplines.append(disc.discipline_wrapp.discipline)
 
-        # create_mdo_scenario from MDODisciplineWrapp
-        self.mdo_discipline_wrapp.create_mdo_scenario(sub_mdo_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
+        # create_mdo_scenario from DisciplineWrapp
+        self.discipline_wrapp.create_mdo_scenario(sub_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
         self.set_constraints()
         self.set_diff_method()
         self.set_design_space_for_complex_step()
         self.set_parallel_options()
 
-        self.set_formulation_for_func_manager(sub_mdo_disciplines)
+        self.set_formulation_for_func_manager(sub_disciplines)
 
         # update MDA flag to flush residuals between each mda run
         self._set_flush_submdas_to_true()
 
-    def set_formulation_for_func_manager(self, sub_mdo_disciplines):
+    def set_formulation_for_func_manager(self, sub_disciplines):
         """
 
         If a func manager exists in the coupling then
         we associate the formulation of the optim in order to retrieve current iter in the func_manager
 
         """
-        # formulation can be found in the GEMSEO mdo_discipline
-        formulation = self.mdo_discipline_wrapp.mdo_discipline.formulation
+        # formulation can be found in the GEMSEO discipline
+        formulation = self.discipline_wrapp.discipline.formulation
 
         # Check that only 1 discipline is below the proxy optim
-        if len(sub_mdo_disciplines) == 1:
-            coupling = sub_mdo_disciplines[0]
+        if len(sub_disciplines) == 1:
+            coupling = sub_disciplines[0]
             # gather all disciplines under the coupling that are FunctionManagerDisc disicpline
             func_manager_list = [
                 disc.sos_wrapp for disc in coupling.disciplines if isinstance(disc.sos_wrapp, OptimManagerDisc)
@@ -623,11 +623,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         """Set design space values to complex if the differentiation method is complex_step"""
         diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
         if diff_method == self.COMPLEX_STEP:
-            dspace = deepcopy(self.mdo_discipline_wrapp.mdo_discipline.formulation.optimization_problem.design_space)
+            dspace = deepcopy(self.discipline_wrapp.discipline.formulation.optimization_problem.design_space)
             curr_x = dspace._current_x
             for var in curr_x:
                 curr_x[var] = curr_x[var].astype('complex128')
-            self.mdo_discipline_wrapp.mdo_discipline.formulation.optimization_problem.design_space = dspace
+            self.discipline_wrapp.discipline.formulation.optimization_problem.design_space = dspace
 
     def get_algo_options(self, algo_name: str):
         """Create default dict for algo options.
@@ -713,7 +713,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     )
 
         fd_step = self.get_sosdisc_inputs(self.FD_STEP)
-        self.mdo_discipline_wrapp.mdo_discipline.set_differentiation_method(diff_method, fd_step)
+        self.discipline_wrapp.discipline.set_differentiation_method(diff_method, fd_step)
 
     def set_parallel_options(self):
         """Sets parallel options for jacobian approximation"""
@@ -725,8 +725,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         options.update(user_options)
         parallel = options.pop("parallel")
         # update problem options
-        self.mdo_discipline_wrapp.mdo_discipline.formulation.optimization_problem.parallel_differentiation = parallel
-        self.mdo_discipline_wrapp.mdo_discipline.formulation.optimization_problem.parallel_differentiation_options = (
+        self.discipline_wrapp.discipline.formulation.optimization_problem.parallel_differentiation = parallel
+        self.discipline_wrapp.discipline.formulation.optimization_problem.parallel_differentiation_options = (
             options
         )
 
@@ -737,7 +737,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         is_positive = [False for _ in ineq_names]
         ineq_full_names = self._update_names(ineq_names, self.IO_TYPE_OUT)
         for ineq, is_pos in zip(ineq_full_names, is_positive):
-            self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
+            self.discipline_wrapp.discipline.add_constraint(
                 ineq, MDOFunction.ConstraintType.INEQ, ineq, positive=is_pos
             )
 
@@ -745,15 +745,15 @@ class ProxyOptim(ProxyDriverEvaluator):
         eq_names = self.get_sosdisc_inputs(self.EQ_CONSTRAINTS)
         eq_full_names = self._update_names(eq_names, self.IO_TYPE_OUT)
         for eq in eq_full_names:
-            self.mdo_discipline_wrapp.mdo_discipline.add_constraint(
+            self.discipline_wrapp.discipline.add_constraint(
                 eq, MDOFunction.ConstraintType.EQ, eq, positive=False
             )
 
     def _set_flush_submdas_to_true(self):
         # update MDA flag to flush residuals between each mda run
         for disc in self.proxy_disciplines:
-            if disc.is_sos_coupling and len(disc.mdo_discipline_wrapp.mdo_discipline.inner_mdas) > 0:
-                for sub_mda in disc.mdo_discipline_wrapp.mdo_discipline.inner_mdas:
+            if disc.is_sos_coupling and len(disc.discipline_wrapp.discipline.inner_mdas) > 0:
+                for sub_mda in disc.discipline_wrapp.discipline.inner_mdas:
                     sub_mda.reset_history_each_run = True
 
     def __str__(self):

@@ -20,20 +20,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, ClassVar, Mapping, Sequence
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.core.chain import MDOChain
+from gemseo.core.execution_status import ExecutionStatus
+from gemseo.core.chains.chain import MDOChain
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.utils.constants import N_CPUS
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from numpy import floating, ndarray
 from pandas import DataFrame
 
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 if TYPE_CHECKING:
     from logging import Logger
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline.discipline import Discipline
 
 
 def get_available_linear_solvers():
@@ -52,7 +53,7 @@ class SoSMDAChain(MDAChain):
     """
 
     # TODO: remove this NUM_DESC_IN (that should be at least in
-    # SoSMDODiscipline)
+    # SoSDiscipline)
     TYPE: str = 'type'
     DEFAULT: str = 'default'
     STRUCTURING: str = 'structuring'
@@ -66,7 +67,7 @@ class SoSMDAChain(MDAChain):
     AVAILABLE_DEBUG_MODE: tuple[str] = ("", "nan", "input_change", "min_max_couplings", "all")
     RESIDUALS_HISTORY = "residuals_history"
     NUM_DESC_IN: ClassVar[dict] = {
-        SoSMDODiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto', NUMERICAL: True},
+        SoSDiscipline.LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: 'auto', NUMERICAL: True},
         CACHE_TYPE: {TYPE: 'string', DEFAULT: MDOChain.CacheType.NONE, NUMERICAL: True, STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {
@@ -81,7 +82,7 @@ class SoSMDAChain(MDAChain):
     NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         logger: Logger,
         reduced_dm: dict | None = None,
         inner_mda_name: str = "MDAJacobi",
@@ -119,7 +120,7 @@ class SoSMDAChain(MDAChain):
             mdachain_parallel_options: The options of the MDOParallelChain instances, if
                 any.
             initialize_defaults: Whether to create a :class:`.MDOInitializationChain`
-                to compute the eventually missing :attr:`.default_inputs` at the first
+                to compute the eventually missing :attr:`.default_input_data` at the first
                 execution.
             **inner_mda_options: The options of the inner-MDAs.
         """
@@ -135,7 +136,7 @@ class SoSMDAChain(MDAChain):
         elif inner_mda_name in self.NEWTON_ALGO_LIST:
             inner_mda_options['newton_linear_solver_name'] = linear_solver
             inner_mda_options['newton_linear_solver_options'] = linear_solver_options
-
+        self.default_grammar_type = grammar_type
         super().__init__(
             disciplines,
             inner_mda_name=inner_mda_name,
@@ -145,7 +146,6 @@ class SoSMDAChain(MDAChain):
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             use_lu_fact=use_lu_fact,
-            grammar_type=grammar_type,
             coupling_structure=coupling_structure,
             sub_coupling_structures=sub_coupling_structures,
             log_convergence=log_convergence,
@@ -166,7 +166,7 @@ class SoSMDAChain(MDAChain):
                 mda.mda_sequence[0].tolerance = tolerance_gs
 
     def clear_jacobian(self):
-        return SoSMDODiscipline.clear_jacobian(self)  # should rather be double inheritance
+        return SoSDiscipline.clear_jacobian(self)  # should rather be double inheritance
 
     def _run(self):
         """Call the _run method of MDAChain in case of SoSCoupling."""
@@ -186,8 +186,8 @@ class SoSMDAChain(MDAChain):
         except Exception as error:
             # Update data manager status (status 'FAILED' is not propagate correctly due to exception
             # so we have to force data manager status update in this case
-            self.status = self.ExecutionStatus.FAILED
-            self.mdo_chain.status = self.ExecutionStatus.FAILED
+            self.execution_status.value = ExecutionStatus.Status.FAILED
+            self.mdo_chain.execution_status.value = ExecutionStatus.Status.FAILED
             raise
 
         # save residual history
@@ -197,7 +197,7 @@ class SoSMDAChain(MDAChain):
         # del self.local_data[self.NORMALIZED_RESIDUAL_NORM]
         # TODO: use a method to get the full name
         out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
-        self.store_local_data(**out)
+        self.io.update_output_data(out)
 
     def check_jacobian(
         self,
@@ -227,7 +227,7 @@ class SoSMDAChain(MDAChain):
         for disc in self.disciplines:
             disc.sos_wrapp.init_execution()
 
-        indices = SoSMDODiscipline._get_columns_indices(self, inputs, outputs, input_column, output_column)
+        indices = SoSDiscipline._get_columns_indices(self, inputs, outputs, input_column, output_column)
 
         # if dump_jac_path is provided, we trigger GEMSEO dump
         if dump_jac_path is not None:
@@ -348,7 +348,7 @@ class SoSMDAChain(MDAChain):
             # their derivatives wrt design variables may be needed
             # outputs = outputs - (strong_cpl & outputs)
         else:
-            inputs, outputs = SoSMDODiscipline._retrieve_diff_inouts(self)
+            inputs, outputs = SoSDiscipline._retrieve_diff_inouts(self)
 
         return inputs, outputs
 

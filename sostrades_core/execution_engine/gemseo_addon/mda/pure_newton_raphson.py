@@ -42,7 +42,7 @@ class PureNewtonRaphson(BaseMDARoot):
 
     def __init__(
         self,
-        disciplines: Sequence[Discipline],  # type: Sequence[MDODiscipline]
+        disciplines: Sequence[Discipline],  # type: Sequence[Discipline]
         max_mda_iter: int = 10,  # type: int
         over_relaxation_factor: float = 0.99,  # type: float
         name: str | None = None,  # type: Optional[str]
@@ -63,12 +63,11 @@ class PureNewtonRaphson(BaseMDARoot):
             relax_factor: The relaxation factor in the Newton step.
         """
         self.n_processes = n_processes
-
+        self.default_grammar_type = grammar_type
         super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
-            grammar_type=grammar_type,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,

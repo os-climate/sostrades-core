@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class SoSMDOScenario(MDOScenario):
@@ -53,7 +53,6 @@ class SoSMDOScenario(MDOScenario):
                  objective_name,
                  design_space,
                  logger: logging.Logger,
-                 grammar_type=None,
                  reduced_dm=None):
         """
         Constructor
@@ -66,8 +65,7 @@ class SoSMDOScenario(MDOScenario):
                          self.formulation,
                          self.objective_name,
                          design_space,
-                         name=self.name,
-                         grammar_type=grammar_type)
+                         name=self.name)
         self.maximize_objective = None
         self.algo_name = None
         self.algo_options = None
@@ -90,7 +88,7 @@ class SoSMDOScenario(MDOScenario):
         '''
 
         '''
-        self.status = self.ExecutionStatus.RUNNING
+        self.execution_status.value = self.ExecutionStatus.Status.RUNNING
 
         if self.eval_mode:
             self.run_eval_mode()
@@ -177,7 +175,7 @@ class SoSMDOScenario(MDOScenario):
         return self.optimization_result
 
     def clear_jacobian(self):
-        return SoSMDODiscipline.clear_jacobian(self)  # should rather be double inheritance
+        return SoSDiscipline.clear_jacobian(self)  # should rather be double inheritance
 
     def run_scenario(self):
         '''
@@ -203,7 +201,7 @@ class SoSMDOScenario(MDOScenario):
         self.formulation.optimization_problem.evaluate_functions(output_functions=output_functions,
                                                                  jacobian_functions=jacobian_functions)
 
-        # self.store_local_data(**local_data)
+        # self.io.update_output_data(**local_data)
         # if eval mode design space was not modified
         # self.store_sos_outputs_values(
         #     {'design_space_out': self.formulation.design_space}, update_dm=True)

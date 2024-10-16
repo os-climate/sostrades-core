@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 from gemseo import get_available_doe_algorithms
-from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
+from gemseo.algos._base_driver_library_settings import BaseDriverLibrarySettings
 from gemseo.algos.doe.factory import DOELibraryFactory
 from pydantic_core import PydanticUndefined
 
@@ -151,7 +151,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         # create the algo library
         algo_lib = self.doe_factory.create(sampling_algo_name)
-        all_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].settings.model_fields
+        all_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].Settings.model_fields
         # Keep only the DOE-related options
         algo_options = algo_lib._filter_settings(all_options, BaseDriverLibrarySettings)
         algo_options_default = {

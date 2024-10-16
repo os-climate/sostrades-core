@@ -61,8 +61,8 @@ class TestProxyDiscipline(unittest.TestCase):
         self.ee.configure()
 
         disc1 = self.ee.root_process.proxy_disciplines[0]
-        data_names_in = disc1.io.input_grammar.names
-        data_names_out = disc1.io.output_grammar.names
+        data_names_in = disc1.get_input_data_names()
+        data_names_out = disc1.get_output_data_names()
         for full_input_name in [f'{self.ee.study_name}.Disc1.{input_name}' for input_name in Disc1.DESC_IN.keys()]:
             self.assertIn(full_input_name, data_names_in)
         for full_output_name in [f'{self.ee.study_name}.Disc1.{output_name}' for output_name in Disc1.DESC_OUT.keys()]:
@@ -393,7 +393,7 @@ class TestProxyDiscipline(unittest.TestCase):
 
     def test_12_execution_success_of_discipline_alone(self):
         '''
-        check discipline execution only of the SoSMDODiscipline i.e. without executing the root process
+        check discipline execution only of the SoSDiscipline i.e. without executing the root process
         useful test for devs that need to start at (proxy) discipline level and propagate to all other (proxy) classes
         '''
         self.name = 'Test'
@@ -417,8 +417,8 @@ class TestProxyDiscipline(unittest.TestCase):
         self.ee.display_treeview_nodes()
 
         self.ee.prepare_execution()
-        self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.validate_input_data = False
-        local_data = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.execute(values_dict)
+        self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.validate_input_data = False
+        local_data = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.execute(values_dict)
         ref_local_data = {'Test.x': 1.0, 'Test.Disc1.a': 1.0, 'Test.Disc1.b': 2.0,
                           'Test.Disc1.indicator': 2.0, 'Test.y': 3.0, 'Test.Disc1.debug_mode': '',
                           'Test.Disc1.residual_variables': {}}

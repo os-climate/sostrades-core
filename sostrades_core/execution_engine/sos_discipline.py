@@ -19,9 +19,9 @@ from __future__ import annotations
 # debug mode
 from copy import deepcopy
 from typing import TYPE_CHECKING
-
-from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.constants import N_CPUS
+from multiprocessing import cpu_count
+from gemseo.core.discipline.discipline import Discipline
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from numpy import floating, ndarray
@@ -32,7 +32,16 @@ from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 if TYPE_CHECKING:
     import logging
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+    from enum import EnumType
+    from pathlib import Path
 
+    from gemseo import StrKeyMapping
+    from gemseo.caches.cache_entry import CacheEntry
+    from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.typing import JacobianData
     from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 """
@@ -40,18 +49,18 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 """
 
 
-class SoSMDODisciplineException(Exception):
+class SoSDisciplineException(Exception):
     pass
 
 
-class SoSMDODiscipline(MDODiscipline):
-    """**SoSMDODiscipline** is the class that overloads MDODiscipline when using SoSTrades wrapping mode. It handles the
+class SoSDiscipline(Discipline):
+    """**SoSDiscipline** is the class that overloads Discipline when using SoSTrades wrapping mode. It handles the
     execution of the user-provided wrapper of the discipline (on the GEMSEO side)
 
-    It is instantiated by the MDODisciplineWrapp during the prepare_execution step, and it is in one-to-one aggregation
+    It is instantiated by the DisciplineWrapp during the prepare_execution step, and it is in one-to-one aggregation
     with the user-defined wrapper (Specialization of SoSWrapp). The _run() method is overloaded by the user-defined wrapper.
 
-    NB: overloading of MDODiscipline has been limited in EEV4 namely wrt EEV3's SoSDiscipline implementation
+    NB: overloading of Discipline has been limited in EEV4 namely wrt EEV3's SoSDiscipline implementation
 
     Attributes:
         sos_wrapp (SoSWrapp): the user-defined wrapper of the discipline
@@ -83,7 +92,7 @@ class SoSMDODiscipline(MDODiscipline):
         Args:
             full_name (string): full name of the discipline
             grammar_type (string): type of GEMSEO grammar
-            cache_type (string): type of cache to be passed to the MDODiscipline
+            cache_type (string): type of cache to be passed to the Discipline
             cache_file_path (string): file path for the cache pickle
             sos_wrapp (SoSWrapp): user-defined wrapper of the discipline
             reduced_dm (Dict[Dict]): reduced version of datamanager for i/o handling
@@ -94,9 +103,13 @@ class SoSMDODiscipline(MDODiscipline):
         self.input_full_name_map = None
         self.output_full_name_map = None
         self.logger = logger
-        super().__init__(
-            name=full_name, grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path
-        )
+        # grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path
+
+        self.default_grammar_type = grammar_type
+
+        super().__init__(name=full_name)
+        self.set_cache(self.CacheType(cache_type))
+
         self.is_sos_coupling = False
 
         # pass the reduced_dm to the data_converter
@@ -116,18 +129,18 @@ class SoSMDODiscipline(MDODiscipline):
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_before_execution = {
                 key: {'value': value}
-                for key, value in deepcopy(self._local_data).items()
+                for key, value in deepcopy(self.io.get_input_data()).items()
                 if key in self.input_grammar
             }
 
         # SoSWrapp run
         local_data = self.sos_wrapp._run()
         # local data update
-        self.store_local_data(**local_data)
+        self.io.update_output_data(local_data)
 
         # debug modes
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
-            self._check_nan_in_data(self._local_data)
+            self._check_nan_in_data(self.io.data)
 
         # if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['linearize_data_change']:
         #     self.check_linearize_data_changes = True
@@ -135,7 +148,7 @@ class SoSMDODiscipline(MDODiscipline):
         if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
             disc_inputs_after_execution = {
                 key: {'value': value}
-                for key, value in deepcopy(self._local_data).items()
+                for key, value in deepcopy(self.io.get_input_data()).items()
                 if key in self.input_grammar
             }
             output_error = self.check_discipline_data_integrity(
@@ -160,7 +173,7 @@ class SoSMDODiscipline(MDODiscipline):
         except Exception as error:
             # Update data manager status (status 'FAILED' is not propagate correctly due to exception
             # so we have to force data manager status update in this case
-            self.status = self.ExecutionStatus.FAILED
+            self.execution_status.value = self.execution_status.Status.FAILED
             raise
         return self._local_data
 
@@ -187,23 +200,23 @@ class SoSMDODiscipline(MDODiscipline):
 
     def check_jacobian(
         self,
-        input_data=None,
-        derr_approx=ApproximationMode.FINITE_DIFFERENCES,
-        step=1e-7,
-        threshold=1e-8,
-        linearization_mode=MDODiscipline.LinearizationMode.AUTO,
-        inputs=None,
-        outputs=None,
-        parallel=False,
-        n_processes=N_CPUS,
-        use_threading=False,
-        wait_time_between_fork=0,
-        auto_set_step=False,
-        plot_result=False,
-        file_path="jacobian_errors.pdf",
-        show=False,
-        figsize_x=10,
-        figsize_y=10,
+        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        derr_approx: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
+        step: float = 1e-7,
+        threshold: float = 1e-8,
+        linearization_mode: Discipline.LinearizationMode = Discipline.LinearizationMode.AUTO,
+        inputs: Iterable[str] = (),
+        outputs: Iterable[str] = (),
+        parallel: bool = False,
+        n_processes: int = cpu_count(),
+        use_threading: bool = False,
+        wait_time_between_fork: float = 0,
+        auto_set_step: bool = False,
+        plot_result: bool = False,
+        file_path: str | Path = "jacobian_errors.pdf",
+        show: bool = False,
+        figsize_x: float = 10,
+        figsize_y: float = 10,
         input_column=None,
         output_column=None,
         dump_jac_path=None,
@@ -214,7 +227,7 @@ class SoSMDODiscipline(MDODiscipline):
         # however if an execute was done, we do not want to restart the model
         # and potentially loose informations to compute gradients (some
         # gradients are computed with the model)
-        if self.status != self.ExecutionStatus.DONE:
+        if self.execution_status.value != self.execution_status.Status.DONE:
             self.sos_wrapp.init_execution()
 
         # if dump_jac_path is provided, we trigger GEMSEO dump
@@ -229,6 +242,19 @@ class SoSMDODiscipline(MDODiscipline):
             reference_jacobian_path = None
             save_reference_jacobian = False
 
+        # if inputs is None:
+        #     inputs = self.get_input_data_names(filtered_inputs=True)
+        # if outputs is None:
+        #     outputs = self.get_output_data_names(filtered_outputs=True)
+        input_names, output_names = self._prepare_io_for_check_jacobian(
+            inputs, outputs
+        )
+
+        # Differentiate analytically
+        self.add_differentiated_inputs(input_names)
+        self.add_differentiated_outputs(output_names)
+        self.linearization_mode = linearization_mode
+
         approx = DisciplineJacApprox(
             self,
             derr_approx,
@@ -238,19 +264,11 @@ class SoSMDODiscipline(MDODiscipline):
             use_threading,
             wait_time_between_fork,
         )
-        if inputs is None:
-            inputs = self.get_input_data_names(filtered_inputs=True)
-        if outputs is None:
-            outputs = self.get_output_data_names(filtered_outputs=True)
+
 
         if auto_set_step:
-            approx.auto_set_step(outputs, inputs, print_errors=True)
+            approx.auto_set_step(outputs, inputs)
 
-        # Differentiate analytically
-        self.add_differentiated_inputs(inputs)
-        self.add_differentiated_outputs(outputs)
-        self.linearization_mode = linearization_mode
-        self.reset_statuses_for_run()
         # Linearize performs execute() if needed
         self.linearize(input_data)
 
@@ -267,11 +285,10 @@ class SoSMDODiscipline(MDODiscipline):
             for key_out, subdict in self.jac.items()
         }
         return approx.check_jacobian(
-            jac_arrays,
             outputs,
             inputs,
-            self,
-            threshold,
+            analytic_jacobian=jac_arrays,
+            threshold=threshold,
             plot_result=plot_result,
             file_path=file_path,
             show=show,
@@ -315,7 +332,7 @@ class SoSMDODiscipline(MDODiscipline):
 
     def compute_sos_jacobian(self):
         """
-        Overload compute_sos_jacobian of MDODiscipline to call the function in the discipline wrapp
+        Overload compute_sos_jacobian of Discipline to call the function in the discipline wrapp
         Then retrieves the 'jac_dict' attribute of the wrapp to update the self.jac
         """
         self.sos_wrapp.compute_sos_jacobian()
@@ -493,7 +510,7 @@ class SoSMDODiscipline(MDODiscipline):
     def display_min_max_couplings(self):
         """Method to display the minimum and maximum values among a discipline's couplings"""
         min_coupling_dict, max_coupling_dict = {}, {}
-        for key, value in self._local_data.items():
+        for key, value in self.io.data.items():
             is_coupling = self.reduced_dm[key]['coupling']
             if is_coupling:
                 min_coupling_dict[key] = min(abs(value))

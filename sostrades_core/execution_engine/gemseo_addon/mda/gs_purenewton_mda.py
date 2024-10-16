@@ -96,7 +96,6 @@ class GSPureNewtonMDA(MDASequential):
             disciplines,
             sequence,
             name=name,
-            grammar_type=grammar_type,
             max_mda_iter=max_mda_iter,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,

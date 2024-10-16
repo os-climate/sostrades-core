@@ -131,7 +131,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         """
 
         values_dict = x
-        local_data = self.attributes['sub_mdo_disciplines'][0].execute(self._get_input_data(values_dict))
+        local_data = self.attributes['sub_disciplines'][0].execute(self._get_input_data(values_dict))
         out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'])
 
         # needed for gradient computation
@@ -190,7 +190,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         Overloads the SoSEval method.
         """
         # upadte default inputs of children with dm values -> should not be necessary in EEV4
-        # self.update_default_inputs(self.attributes['sub_mdo_disciplines'])
+        # self.update_default_inputs(self.attributes['sub_disciplines'])
 
         dict_output = {}
 
@@ -270,8 +270,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 global_dict_output[full_name_out][scenario] = scenario_output[full_name_out]
 
         # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
-        subprocess_ref_outputs = {key: self.attributes['sub_mdo_disciplines'][0].io.data[key]
-                                  for key in self.attributes['sub_mdo_disciplines'][0].output_grammar.names if
+        subprocess_ref_outputs = {key: self.attributes['sub_disciplines'][0].io.data[key]
+                                  for key in self.attributes['sub_disciplines'][0].output_grammar.names if
                                   not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM)}
         self.store_sos_outputs_values(
             subprocess_ref_outputs, full_name_keys=True)

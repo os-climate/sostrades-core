@@ -60,7 +60,7 @@ class TestExtendDict(unittest.TestCase):
         exec_eng.load_study_from_input_dict(values_dict)
 
         disc5 = exec_eng.root_process.proxy_disciplines[0]
-        disc5_inputs = {input: exec_eng.dm.get_value(input) for input in disc5.io.input_grammar.names}
+        disc5_inputs = {input: exec_eng.dm.get_value(input) for input in disc5.get_input_names()}
 
         target = {
             'EE.z': [3.0, 0.0],

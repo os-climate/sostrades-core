@@ -483,7 +483,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.exec_eng.display_treeview_nodes(display_variables=True)
 
         # check the mono-instance dynamic outputs are created
-        output_data_names = self.exec_eng.root_process.io.output_grammar.names
+        output_data_names = self.exec_eng.root_process.get_output_data_names()
         self.assertIn('MyCase.multi_scenarios.samples_inputs_df', output_data_names)
         self.assertIn('MyCase.multi_scenarios.y_dict', output_data_names)
         self.assertIn('MyCase.multi_scenarios.subprocess.Disc1.indicator_dict', output_data_names)
@@ -529,7 +529,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
         # check that the mono-instance dynamic inputs have been cleared
-        output_data_names = self.exec_eng.root_process.io.output_grammar.names
+        output_data_names = self.exec_eng.root_process.get_output_data_names()
         self.assertNotIn('MyCase.multi_scenarios.samples_inputs_df', output_data_names)
         self.assertNotIn('MyCase.y_dict', output_data_names)
         self.assertNotIn('MyCase.multi_scenarios.subprocess.Disc1.indicator_dict', output_data_names)
@@ -556,8 +556,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         # check sosmdachain of execution and sosmdachain under proxycouplings
         proxy_coupling1 = study.execution_engine.root_process.proxy_disciplines[
             0].proxy_disciplines[1]
-        mdachain_under_proxy_coupling = proxy_coupling1.mdo_discipline_wrapp.mdo_discipline
-        mdodisciplinedriver = study.execution_engine.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
+        mdachain_under_proxy_coupling = proxy_coupling1.discipline_wrapp.discipline
+        mdodisciplinedriver = study.execution_engine.root_process.discipline_wrapp.discipline.disciplines[
             0]
         mdachain_under_mdodisciplinedriver = mdodisciplinedriver.disciplines[0]
         self.assertEqual(mdachain_under_proxy_coupling.__hash__,
@@ -569,8 +569,8 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         # check sosmdachain of execution and sosmdachain under proxycouplings
         proxy_coupling1 = study.execution_engine.root_process.proxy_disciplines[
             0].proxy_disciplines[1]
-        mdachain_under_proxy_coupling = proxy_coupling1.mdo_discipline_wrapp.mdo_discipline
-        mdodisciplinedriver = study.execution_engine.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
+        mdachain_under_proxy_coupling = proxy_coupling1.discipline_wrapp.discipline
+        mdodisciplinedriver = study.execution_engine.root_process.discipline_wrapp.discipline.disciplines[
             0]
         mdachain_under_mdodisciplinedriver = mdodisciplinedriver.disciplines[0]
         self.assertEqual(mdachain_under_proxy_coupling.__hash__,

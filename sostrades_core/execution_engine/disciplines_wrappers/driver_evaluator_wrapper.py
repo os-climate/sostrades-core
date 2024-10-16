@@ -23,7 +23,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
     """
     DriverEvaluatorWrapper is a type of SoSWrapp that can evaluate one or several subprocesses either with their
     reference inputs or by applying modifications to some of the subprocess variables. It is assumed to have references
-    to the GEMSEO objects at the root of each of the subprocesses, stored in self.attributes['sub_mdo_disciplines'].
+    to the GEMSEO objects at the root of each of the subprocesses, stored in self.attributes['sub_disciplines'].
 
     1) Structure of Desc_in/Desc_out:
         |_ DESC_IN
@@ -78,12 +78,12 @@ class DriverEvaluatorWrapper(SoSWrapp):
         """
         Initialise the attribute that stores the input data of every subprocess for this run.
         """
-        self.n_subprocs = len(self.attributes['sub_mdo_disciplines'])
+        self.n_subprocs = len(self.attributes['sub_disciplines'])
         self.input_data_for_disc = [{}] * self.n_subprocs
         # TODO: deepcopy option? [discuss]
         for i_subprocess in self.subprocesses_to_eval or range(self.n_subprocs):
             self.input_data_for_disc[i_subprocess] = self.get_input_data_for_gemseo(
-                self.attributes['sub_mdo_disciplines'][i_subprocess])
+                self.attributes['sub_disciplines'][i_subprocess])
 
     def _get_input_data(self, var_delta_dict, i_subprocess=0):
         """
@@ -123,7 +123,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
         Get reference inputs for a subprocess by querying for the data names in its input grammar.
 
         Arguments:
-            disc (MDODiscipline): discipline at the root of the subprocess.
+            disc (Discipline): discipline at the root of the subprocess.
 
         Returns:
             input_data (dict): full names and reference values for the subprocess inputs

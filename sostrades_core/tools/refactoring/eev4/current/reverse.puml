@@ -173,6 +173,6 @@ sos_trades_core.execution_engine.sos_builder.SoSBuilder --* sos_trades_core.exec
 sos_trades_core.execution_engine.sos_factory.SosFactory --* sos_trades_core.execution_engine.execution_engine.ExecutionEngine : __factory
 
 MDAChain <|- sos_trades_core.execution_engine.sos_coupling.SoSCoupling
-MDODiscipline <|- sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
-MDODiscipline  <|- MDAChain
+Discipline <|- sos_trades_core.execution_engine.sos_discipline.SoSDiscipline
+Discipline  <|- MDAChain
 @enduml

@@ -30,8 +30,8 @@ class SoSWrappException(Exception):
 class SoSWrapp(object):
     '''**SoSWrapp** is the class from which inherits our model wrapper when using 'SoSTrades' wrapping mode.
 
-    It contains necessary information for the discipline configuration. It is owned by both the MDODisciplineWrapp and
-    the SoSMDODiscipline.
+    It contains necessary information for the discipline configuration. It is owned by both the DisciplineWrapp and
+    the SoSDiscipline.
 
     Its methods setup_sos_disciplines, run,... are overloaded by the user-provided Wrapper.
 
@@ -97,7 +97,7 @@ class SoSWrapp(object):
         self.input_data_names = []
         self.output_data_names = []
         self.attributes = {}
-        self.io.data = {}
+        self.local_data = {}
         self.jac_dict = {}
         self.jac_boundaries = {}
         self.inst_desc_in = {}
@@ -427,7 +427,7 @@ class SoSWrapp(object):
                 raise ValueError("Unknown io_type :" +
                                  str(io_type))
 
-        values_dict = dict(zip(keys, map(self.io.data.get, query_keys)))
+        values_dict = dict(zip(keys, map(self.local_data.get, query_keys)))
         return values_dict
 
     def _run(self):
@@ -438,7 +438,7 @@ class SoSWrapp(object):
             local_data (Dict): outputs of the model run
         """
         self.run()
-        return self.io.data
+        return self.local_data
 
     def store_sos_outputs_values(self, dict_values, full_name_keys=False):
         """"
@@ -450,11 +450,11 @@ class SoSWrapp(object):
             dict_values (Dict): variables' values to store
         """
         if full_name_keys:
-            self.io.data.update(dict_values)
+            self.local_data.update(dict_values)
         else:
             outputs = dict(zip(map(
                 self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
-            self.io.data.update(outputs)
+            self.local_data.update(outputs)
 
     def get_chart_filter_list(self):
         """ Return a list of ChartFilter instance base on the inherited

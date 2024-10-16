@@ -14,74 +14,74 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-from sostrades_core.execution_engine.sos_mdo_discipline_driver import (
-    SoSMDODisciplineDriver,
+from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
+from sostrades_core.execution_engine.sos_discipline_driver import (
+    SoSDisciplineDriver,
 )
 
 
-class MDODisciplineDriverWrappException(Exception):
+class DisciplineDriverWrappException(Exception):
     pass
 
 
-class MDODisciplineDriverWrapp(MDODisciplineWrapp):
-    '''**MDODisciplineWrapp** is the interface to create MDODiscipline from SoSTrades wrappers, GEMSEO objects, etc.
+class DisciplineDriverWrapp(DisciplineWrapp):
+    '''**DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
 
-    An instance of MDODisciplineWrapp is in one-to-one aggregation with an instance inheriting from MDODiscipline and
+    An instance of DisciplineWrapp is in one-to-one aggregation with an instance inheriting from Discipline and
     might or might not have a SoSWrapp to supply the user-defined model run. All GEMSEO objects are instantiated during
     the prepare_execution phase.
 
     Attributes:
         name (string): name of the discipline/node
         wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
-        mdo_discipline (MDODiscipline): aggregated GEMSEO object used for execution eventually with model run
-        wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the MDODiscipline (or None)
+        discipline (Discipline): aggregated GEMSEO object used for execution eventually with model run
+        wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the Discipline (or None)
     '''
 
     def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None,
                                  cache_file_path=None):  # type: (...) -> None
         """
-        SoSMDODiscipline instanciation.
+        SoSDiscipline instanciation.
 
         Arguments:
             proxy (ProxyDiscipline): proxy discipline grammar initialisation
-            input_data (dict): input values to update default values of the MDODiscipline with
+            input_data (dict): input values to update default values of the Discipline with
             reduced_dm (Dict[Dict]): reduced data manager without values for i/o configuration
-            cache_type (string): type of cache to be passed to the MDODiscipline
+            cache_type (string): type of cache to be passed to the Discipline
             cache_file_path (string): file path of the pickle file to dump/load the cache [???]
         """
         # get all executable sub disciplines
-        sub_mdo_disciplines = self.get_sub_mdo_disciplines(proxy)
+        sub_disciplines = self.get_sub_disciplines(proxy)
 
-        # create the SoSMDODisciplineDriver
+        # create the SoSDisciplineDriver
         if self.wrapping_mode == 'SoSTrades':
-            self.mdo_discipline = SoSMDODisciplineDriver(full_name=proxy.get_disc_full_name(),
+            self.discipline = SoSDisciplineDriver(full_name=proxy.get_disc_full_name(),
                                                          grammar_type=proxy.SOS_GRAMMAR_TYPE,
                                                          cache_type=cache_type,
                                                          cache_file_path=cache_file_path,
                                                          sos_wrapp=self.wrapper,
                                                          reduced_dm=reduced_dm,
-                                                         disciplines=sub_mdo_disciplines,
-                                                         logger=self.logger.getChild("SoSMDODisciplineDriver"),
+                                                  disciplines=sub_disciplines,
+                                                  logger=self.logger.getChild("SoSDisciplineDriver"),
                                                          )
             self._init_grammar_with_keys(proxy)
             # self._update_all_default_values(input_data) #TODO: numerical inputs etc?
             self._set_wrapper_attributes(proxy, self.wrapper)
-            # self._set_discipline_attributes(proxy, self.mdo_discipline)
+            # self._set_discipline_attributes(proxy, self.discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
             pass
 
-    def get_sub_mdo_disciplines(self, proxy):
+    def get_sub_disciplines(self, proxy):
 
-        sub_mdo_disciplines = [pdisc.mdo_discipline_wrapp.mdo_discipline
+        sub_disciplines = [pdisc.discipline_wrapp.discipline
                                for pdisc in proxy.proxy_disciplines
-                               if pdisc.mdo_discipline_wrapp is not None]
-        return sub_mdo_disciplines
+                           if pdisc.discipline_wrapp is not None]
+        return sub_disciplines
 
     def reset_subdisciplines(self, proxy):
 
-        sub_mdo_disciplines = self.get_sub_mdo_disciplines(proxy)
+        sub_disciplines = self.get_sub_disciplines(proxy)
 
-        if self.mdo_discipline is not None:
-            self.mdo_discipline._disciplines = sub_mdo_disciplines
+        if self.discipline is not None:
+            self.discipline._disciplines = sub_disciplines

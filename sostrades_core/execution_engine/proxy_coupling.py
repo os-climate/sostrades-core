@@ -32,7 +32,7 @@ from gemseo.mda.sequential_mda import MDASequential
 from numpy import ndarray
 from pandas import DataFrame, concat
 
-from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
+from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import (
@@ -66,13 +66,13 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     """
     **ProxyCoupling** is a ProxyDiscipline that represents a coupling and has children sub proxies on the process tree.
 
-    An instance of ProxyCoupling is in one to one aggregation with an instance of MDODisciplineWrapp that has no wrapper,
+    An instance of ProxyCoupling is in one to one aggregation with an instance of DisciplineWrapp that has no wrapper,
     but has a GEMSEO MDAChain instantiated at the prepare_execution step.
 
     Attributes:
         cls_builder (List[SoSBuilder]): list of the sub proxy builders
 
-        mdo_discipline_wrapp (MDODisciplineWrapp): aggregated object that references a GEMSEO MDAChain
+        discipline_wrapp (DisciplineWrapp): aggregated object that references a GEMSEO MDAChain
     """
 
     # ontology information
@@ -311,7 +311,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         if cls_builder is None:
             cls_builder = []
         self.cls_builder = cls_builder  # TODO: Move to ProxyDisciplineBuilder?
-        self.mdo_discipline_wrapp = None
+        self.discipline_wrapp = None
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = self.ee.logger.getChild(self.__class__.__name__)
 
@@ -327,7 +327,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         self._set_dm_disc_info()
 
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=sos_name, logger=self.logger.getChild("MDODisciplineWrapp"))
+        self.discipline_wrapp = DisciplineWrapp(name=sos_name, logger=self.logger.getChild("DisciplineWrapp"))
 
     def _reload(self, sos_name, ee, associated_namespaces=None):
         """
@@ -341,11 +341,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = ee.logger.getChild(self.__class__.__name__)
 
-    # TODO: [and TODISCUSS] move it to mdo_discipline_wrapp, if we want to
+    # TODO: [and TODISCUSS] move it to discipline_wrapp, if we want to
     # reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         """Update cache_map dict in DM with cache, mdo_chain cache, inner_mdas caches and its children recursively"""
-        mda_chain = self.mdo_discipline_wrapp.mdo_discipline
+        mda_chain = self.discipline_wrapp.discipline
 
         if mda_chain is not None:
             # store SoSCoupling cache in DM
@@ -519,9 +519,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             if isinstance(group, list):
                 # if MDA, i.e. group of disciplines (e.g. [Sellar1, Sellar2])
                 # we gather all the i/o of the sub-disciplines (MDA-like i/o grammar)
-                list_of_data_in = [d.get_data_io_with_full_name(d.IO_TYPE_IN, as_namespaced_tuple=True) for d in group]
+                list_of_data_in = [
+                    self.gemseo_to_sos_disciplines[d].get_data_io_with_full_name(self.IO_TYPE_IN,
+                                                                                 as_namespaced_tuple=True)
+                    for d in group]
                 list_of_data_out = [
-                    d.get_data_io_with_full_name(d.IO_TYPE_OUT, as_namespaced_tuple=True) for d in group
+                    self.gemseo_to_sos_disciplines[d].get_data_io_with_full_name(self.IO_TYPE_OUT,
+                                                                                 as_namespaced_tuple=True) for d in
+                    group
                 ]
 
                 mda_inputs, mda_outputs = self.__get_MDA_io(list_of_data_in, list_of_data_out)
@@ -530,8 +535,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             else:
                 # if the group is composed of single discipline (e.g. SellarProblem])
                 # we add the i/o to the chain i/o
-                disc_inputs = group.get_data_io_with_full_name(group.IO_TYPE_IN, as_namespaced_tuple=True)
-                disc_outputs = group.get_data_io_with_full_name(group.IO_TYPE_OUT, as_namespaced_tuple=True)
+                disc_inputs = self.gemseo_to_sos_disciplines[group].get_data_io_with_full_name(self.IO_TYPE_IN,
+                                                                                               as_namespaced_tuple=True)
+                disc_outputs = self.gemseo_to_sos_disciplines[group].get_data_io_with_full_name(self.IO_TYPE_OUT,
+                                                                                                as_namespaced_tuple=True)
                 chain_inputs.append(disc_inputs)
                 chain_outputs.append(disc_outputs)
 
@@ -540,7 +547,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def _build_coupling_structure(self):
         """Build CouplingStructure"""
-        self.coupling_structure = CouplingStructure(self.proxy_disciplines)
+        # the idea was not to crreate gemseo disciplines in configuration but no other choice for coupling sturcture right now
+        gemseo_disciplines = self.create_gemseo_disciplines()
+        self.coupling_structure = CouplingStructure(gemseo_disciplines)
         self.strong_couplings = filter_variables_to_convert(
             self.ee.dm.convert_data_dict_with_full_name(),
             self.coupling_structure.strong_couplings,
@@ -620,8 +629,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         header = ["disc_1", "disc_2", "var_name"]
         for disc1, disc2, c_vars in coupl_tuples:
             for var in c_vars:
-                disc1_id = disc1.get_disc_full_name()
-                disc2_id = disc2.get_disc_full_name()
+                disc1_id = self.gemseo_to_sos_disciplines[disc1].get_disc_full_name()
+                disc2_id = self.gemseo_to_sos_disciplines[disc2].get_disc_full_name()
                 row = [disc1_id, disc2_id, var]
                 data.append(row)
         df = DataFrame(data, columns=header)
@@ -651,46 +660,53 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def prepare_execution(self):
         """Preparation of the GEMSEO process, including GEMSEO objects instanciation"""
         # prepare_execution of proxy_disciplines
-        sub_mdo_disciplines = []
-        for disc in self.proxy_disciplines:
-            disc.prepare_execution()
-            # Exclude non executable proxy Disciplines
-            if disc.mdo_discipline_wrapp is not None and disc.mdo_discipline_wrapp.mdo_discipline is not None:
-                sub_mdo_disciplines.append(disc.mdo_discipline_wrapp.mdo_discipline)
 
+        gemseo_disciplines = self.create_gemseo_disciplines()
         # store cache and n_calls before MDAChain reset, if prepare_execution
         # has already been called
-        if self.mdo_discipline_wrapp.mdo_discipline is not None:
-            mda_chain_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
+        if self.discipline_wrapp.discipline is not None:
+            mda_chain_cache = self.discipline_wrapp.discipline.cache
         else:
             mda_chain_cache = None
 
-        # create_mda_chain from MDODisciplineWrapp
-        self.mdo_discipline_wrapp.create_mda_chain(sub_mdo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)
+        # create_mda_chain from DisciplineWrapp
+        self.discipline_wrapp.create_mda_chain(gemseo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)
 
         # set cache cache of gemseo object
         self.set_gemseo_disciplines_caches(mda_chain_cache)
 
+    def create_gemseo_disciplines(self):
+
+        gemseo_disciplines = []
+        self.gemseo_to_sos_disciplines = {}
+        for disc in self.proxy_disciplines:
+            disc.prepare_execution()
+
+            # Exclude non executable proxy Disciplines
+            if disc.discipline_wrapp is not None and disc.discipline_wrapp.discipline is not None:
+                gemseo_disc = disc.discipline_wrapp.discipline
+                gemseo_disciplines.append(gemseo_disc)
+                self.gemseo_to_sos_disciplines[gemseo_disc] = disc
+        return gemseo_disciplines
     def set_gemseo_disciplines_caches(self, mda_chain_cache):
         """Set cache of MDAChain, MDOChain and sub MDAs"""
         cache_type = self.get_sosdisc_inputs('cache_type')
-        cache_file_path = self.get_sosdisc_inputs('cache_file_path')
         # set MDAChain cache
         if self._reset_cache:
             # set new cache when cache_type have changed (self._reset_cache == True)
             # TODO: pass cache to MDAChain init to avoid reset cache
-            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, cache_type, cache_file_path)
+            self.set_cache(self.discipline_wrapp.discipline, cache_type)
             self._reset_cache = False
         else:
             # reset stored cache and n_calls of MDAChain
-            self.mdo_discipline_wrapp.mdo_discipline.cache = mda_chain_cache
+            self.discipline_wrapp.discipline.cache = mda_chain_cache
 
         # set cache of MDOChain with cache_type and cache_file_path inputs of
         # ProxyCoupling
-        self.set_cache(self.mdo_discipline_wrapp.mdo_discipline.mdo_chain, cache_type, cache_file_path)
+        self.set_cache(self.discipline_wrapp.discipline.mdo_chain, cache_type)
 
         # set epsilon0 and cache of inner_mdas
-        for sub_mda in self.mdo_discipline_wrapp.mdo_discipline.inner_mdas:
+        for sub_mda in self.discipline_wrapp.discipline.inner_mdas:
             self.set_epsilon0_and_cache(sub_mda)
 
     def check_var_data_mismatch(self):
@@ -707,23 +723,24 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             for from_disc, to_disc, c_vars in coupling_vars:
                 for var in c_vars:
                     # from disc is in output
-                    from_disc_data = from_disc.get_data_with_full_name(from_disc.IO_TYPE_OUT, var)
+                    from_disc_data = self.gemseo_to_sos_disciplines[from_disc].get_data_with_full_name(self.IO_TYPE_OUT,
+                                                                                                       var)
                     # to_disc is in input
-                    to_disc_data = to_disc.get_data_with_full_name(to_disc.IO_TYPE_IN, var)
-                    for data_name in to_disc.DATA_TO_CHECK:
+                    to_disc_data = self.gemseo_to_sos_disciplines[to_disc].get_data_with_full_name(self.IO_TYPE_IN, var)
+                    for data_name in self.DATA_TO_CHECK:
                         # Check if data_names are different
                         if from_disc_data[data_name] != to_disc_data[data_name]:
                             self.logger.debug(
                                 f'The {data_name} of the coupling variable {var} is not the same in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}'
                             )
                         # Check if unit is not None
-                        elif from_disc_data[data_name] is None and data_name == to_disc.UNIT:
+                        elif from_disc_data[data_name] is None and data_name == self.UNIT:
                             # if unit is None in a dataframe check if there is a
                             # dataframe descriptor with unit in it
-                            if from_disc_data[to_disc.TYPE] == 'dataframe':
+                            if from_disc_data[self.TYPE] == 'dataframe':
                                 # if no dataframe descriptor and no unit
                                 # warning
-                                if from_disc_data[to_disc.DATAFRAME_DESCRIPTOR] is None:
+                                if from_disc_data[self.DATAFRAME_DESCRIPTOR] is None:
                                     self.logger.debug(
                                         f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe'
                                     )
@@ -741,7 +758,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             for sub_mda in mda.mda_sequence:
                 self.set_epsilon0_and_cache(sub_mda)
         mda.epsilon0 = copy(self.get_sosdisc_inputs('epsilon0'))
-        self.set_cache(mda, self.get_sosdisc_inputs('cache_type'), self.get_sosdisc_inputs('cache_file_path'))
+        self.set_cache(mda, self.get_sosdisc_inputs('cache_type'))
 
     def _get_numerical_inputs(self):
         """Get numerical parameters input values for MDAChain init"""
@@ -846,7 +863,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     @property
     def is_prepared(self):
-        return self.mdo_discipline_wrapp.mdo_discipline is not None
+        return self.discipline_wrapp.discipline is not None
 
     def ordered_disc_list_rec(self, disc, ordered_list):
         """Recursive function to obtain the ordered list of disciplines configured by the MDAChain"""

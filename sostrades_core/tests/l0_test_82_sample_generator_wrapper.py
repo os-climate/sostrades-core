@@ -237,7 +237,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes()
         # doe_disc = exec_eng.dm.get_disciplines_with_name(
-        #     'doe.DoE')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        #     'doe.DoE')[0].discipline_wrapp.discipline.sos_wrapp
         doe_disc = exec_eng.root_process.proxy_disciplines[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs('samples_df')
@@ -592,7 +592,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         exec_eng.execute()
 
         # disc = exec_eng.dm.get_disciplines_with_name(
-        #     'cp.CP')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        #     'cp.CP')[0].discipline_wrapp.discipline.sos_wrapp
         disc = exec_eng.root_process.proxy_disciplines[0]
 
         if self.sampling_generation_mode_cp == 'at_run_time':
@@ -647,7 +647,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
 
         # disc = exec_eng.dm.get_disciplines_with_name(
-        #     'cp.CP')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        #     'cp.CP')[0].discipline_wrapp.discipline.sos_wrapp
         disc = exec_eng.root_process.proxy_disciplines[0]
 
         disc_sampling_method = disc.get_sosdisc_inputs('sampling_method')

@@ -135,7 +135,7 @@ class TestExtendDataframe(unittest.TestCase):
         assert_frame_equal(df, df_target, check_exact=False, rtol=1e-5)
 
         max_mda_iter = exec_eng.dm.get_value('EE.max_mda_iter')
-        residual_history = exec_eng.root_process.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].residual_history
+        residual_history = exec_eng.root_process.discipline_wrapp.discipline.inner_mdas[0].residual_history
 
         # Check residual history
         self.assertLessEqual(len(residual_history), max_mda_iter)

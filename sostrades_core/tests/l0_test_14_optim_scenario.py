@@ -315,11 +315,11 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4,
+            sellar_obj_opt, opt_disc.discipline_wrapp.discipline.optimization_result.f_opt, places=4,
             msg="Wrong objective value")
         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
         assert_array_almost_equal(
-            exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
+            exp_x, opt_disc.discipline_wrapp.discipline.optimization_result.x_opt, decimal=4,
             err_msg="Wrong optimal x solution")
 
     def _test_05_optim_scenario_execution_disciplinaryopt_complex_step(self):
@@ -396,11 +396,11 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4,
+            sellar_obj_opt, opt_disc.discipline_wrapp.discipline.optimization_result.f_opt, places=4,
             msg="Wrong objective value")
         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
         assert_array_almost_equal(
-            exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
+            exp_x, opt_disc.discipline_wrapp.discipline.optimization_result.x_opt, decimal=4,
             err_msg="Wrongoptimal x solution")
 
     def test_05b_optim_scenario_execution_disciplinaryopt_analyticgrad(self):
@@ -475,11 +475,11 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check optimal x and f
         sellar_obj_opt = 3.18339 + local_dv
         self.assertAlmostEqual(
-            sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4,
+            sellar_obj_opt, opt_disc.discipline_wrapp.discipline.optimization_result.f_opt, places=4,
             msg="Wrong objective value")
         exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
         assert_array_almost_equal(
-            exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
+            exp_x, opt_disc.discipline_wrapp.discipline.optimization_result.x_opt, decimal=4,
             err_msg="Wrongoptimal x solution")
 
     def _test_06_optim_scenario_execution_fd_parallel(self):
@@ -565,11 +565,11 @@ class TestSoSOptimScenario(unittest.TestCase):
             # check optimal x and f
             sellar_obj_opt = 3.18339 + local_dv
             self.assertAlmostEqual(
-                sellar_obj_opt, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.f_opt, places=4,
+                sellar_obj_opt, opt_disc.discipline_wrapp.discipline.optimization_result.f_opt, places=4,
                 msg="Wrong objective value")
             exp_x = array([8.3109e-15, 1.9776e+00, 3.2586e-13])
             assert_array_almost_equal(
-                exp_x, opt_disc.mdo_discipline_wrapp.mdo_discipline.optimization_result.x_opt, decimal=4,
+                exp_x, opt_disc.discipline_wrapp.discipline.optimization_result.x_opt, decimal=4,
                 err_msg="Wrong optimal x solution")
 
     def test_07_test_options(self):
@@ -706,7 +706,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # Check that the jacobian has not been executed
         self.assertEqual(
-            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.jac,
+            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].discipline_wrapp.discipline.jac,
             {})
         # Exec_eng with only the coupling
         exec_eng2 = ExecutionEngine(self.study_name)
@@ -878,7 +878,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # Get the jacobian of each functions (constraints + objective)
         computed_jac = exec_eng.root_process.proxy_disciplines[
-            0].proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.jac
+            0].proxy_disciplines[0].discipline_wrapp.discipline.jac
 
         self.assertListEqual(sorted(list(computed_jac.keys())), sorted([
             f'{self.ns}.{self.sc_name}.{self.c_name}.{var}' for var in ['obj', 'c_1', 'c_2']]))
@@ -1039,7 +1039,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # retrieve discipline to check the result...
         opt_disc = exec_eng.dm.get_disciplines_with_name(
-            "optim." + self.sc_name)[0].mdo_discipline_wrapp.mdo_discipline
+            "optim." + self.sc_name)[0].discipline_wrapp.discipline
         opt_array = array([1., 5., 2.])
         # check that design space in GEMS contains the optimal value (not last
         # iteration)
@@ -1192,7 +1192,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert isinstance(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"), dict)
 
         # get sosoptimscenario discipline
-        disc = exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc = exec_eng.root_process.proxy_disciplines[0].discipline_wrapp.discipline
         disc.formulation.optimization_problem.nonproc_constraints = []
         disc.formulation.optimization_problem.nonproc_objective = None
 
@@ -1370,7 +1370,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # retrieve discipline to get information to check
         opt_disc = exec_eng.dm.get_disciplines_with_name(
-            "optim." + self.sc_name)[0].mdo_discipline_wrapp.mdo_discipline
+            "optim." + self.sc_name)[0].discipline_wrapp.discipline
 
         assert opt_disc.formulation.optimization_problem.fd_step == fd_step
 
@@ -1451,7 +1451,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         assert isinstance(exec_eng.dm.get_value("optim.SellarOptimScenario.post_processing_mdo_data"), dict)
 
         # get sosoptimscenario discipline
-        disc = exec_eng.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc = exec_eng.root_process.proxy_disciplines[0].discipline_wrapp.discipline
         disc.formulation.optimization_problem.nonproc_constraints = []
         disc.formulation.optimization_problem.nonproc_objective = None
 

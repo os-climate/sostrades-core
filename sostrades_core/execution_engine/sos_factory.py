@@ -104,8 +104,8 @@ class SosFactory:
         init_execution delegated to the wrapper using the proxy for i/o configuration.
         """
         for proxy in self.__proxy_disciplines:
-            if proxy.mdo_discipline_wrapp is not None:
-                factory = proxy.mdo_discipline_wrapp
+            if proxy.discipline_wrapp is not None:
+                factory = proxy.discipline_wrapp
                 if factory.wrapper is not None:
                     factory.wrapper.init_execution()
 
@@ -198,8 +198,8 @@ class SosFactory:
 
     @property
     def contains_mdo(self) -> bool:
-        mdo_disciplines = list(filter(lambda disc: isinstance(disc, ProxyOptim), self.proxy_disciplines))
-        return len(mdo_disciplines) > 0
+        disciplines = list(filter(lambda disc: isinstance(disc, ProxyOptim), self.proxy_disciplines))
+        return len(disciplines) > 0
 
     @property
     def contains_mda_with_strong_couplings(self) -> bool:

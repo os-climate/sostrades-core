@@ -17,18 +17,18 @@ limitations under the License.
 
 import logging
 
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
 
-class SoSMDODriverException(Exception):
+class SoSDriverException(Exception):
     pass
 
 
-class SoSMDODisciplineDriver(SoSMDODiscipline):
+class SoSDisciplineDriver(SoSDiscipline):
     def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, disciplines,
                  logger: logging.Logger):
         super().__init__(full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, logger=logger)

@@ -61,7 +61,7 @@ class GSPureNewtonorGSMDA(MDASequential):
         Constructor
 
         :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
+        :type disciplines: list(Discipline)
         :param name: name
         :type name: str
         :param grammar_type: the type of grammar to use for IO declaration
@@ -104,7 +104,6 @@ class GSPureNewtonorGSMDA(MDASequential):
             disciplines,
             max_mda_iter=max_mda_iter,
             name=None,
-            grammar_type=grammar_type,
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
             tolerance_gs=tolerance_gs,
@@ -120,7 +119,6 @@ class GSPureNewtonorGSMDA(MDASequential):
             disciplines,
             sequence,
             name=name,
-            grammar_type=grammar_type,
             max_mda_iter=max_mda_iter,
             tolerance=tolerance,
             linear_solver_options=linear_solver_options,

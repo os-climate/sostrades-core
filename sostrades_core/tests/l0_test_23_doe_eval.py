@@ -194,7 +194,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         doe_disc = exec_eng.dm.get_disciplines_with_name(
-            'doe.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+            'doe.Eval')[0].discipline_wrapp.discipline.sos_wrapp
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
             'samples_inputs_df')
@@ -275,7 +275,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertIn('root.Eval.y_1_dict', root_outputs)
         self.assertIn('root.Eval.y_2_dict', root_outputs)
 
-        # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].discipline_wrapp.discipline.sos_wrapp
         doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
@@ -374,7 +374,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         exec_eng.display_treeview_nodes(True)
         assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
         eval_disc = exec_eng.dm.get_disciplines_with_name(
-            'doe.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+            'doe.Eval')[0].discipline_wrapp.discipline.sos_wrapp
 
         eval_disc_samples = eval_disc.get_sosdisc_outputs(
             'samples_inputs_df')
@@ -938,12 +938,12 @@ class TestSoSDOEScenario(unittest.TestCase):
         # Check coherence between ProxyCoupling of Eval and SoSMDAChain:
         self.assertEqual(set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_output_data_names()),
                          set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[
-                                 0].mdo_discipline_wrapp.mdo_discipline.get_output_data_names()))
+                                 0].discipline_wrapp.discipline.get_output_data_names()))
 
         self.assertEqual(set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_input_data_names(
             numerical_inputs=False)),
                          set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[
-                                 0].mdo_discipline_wrapp.mdo_discipline.get_input_data_names()))
+                                 0].discipline_wrapp.discipline.get_input_data_names()))
         # Test that the lower-level coupling does not crush inputs nor
         # numerical variables of its subprocess:
         self.assertIn('doe.Eval.subprocess.Disc2.cache_file_path',
@@ -1111,7 +1111,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertIn('root.Eval.y_1_dict', root_outputs)
         self.assertIn('root.Eval.y_2_dict', root_outputs)
 
-        # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].discipline_wrapp.discipline.sos_wrapp
         doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
@@ -1454,7 +1454,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         self.assertIn('root.Eval.y_1_d', root_outputs)
         self.assertIn('root.Eval.y_2_dict', root_outputs)
 
-        # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp
+        # doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0].discipline_wrapp.discipline.sos_wrapp
         doe_disc = exec_eng.dm.get_disciplines_with_name(f'{ns}.Eval')[0]
 
         doe_disc_samples = doe_disc.get_sosdisc_outputs(
