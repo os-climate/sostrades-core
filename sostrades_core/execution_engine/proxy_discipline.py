@@ -483,7 +483,7 @@ class ProxyDiscipline:
 
             if not cache_type:
                 cache_type = Discipline.CacheType.NONE
-            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
+            self.discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
                                                                cache_type=cache_type,
                                                                cache_file_path=self.get_sosdisc_inputs(
