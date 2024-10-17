@@ -641,8 +641,8 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         algo_options = opt_disc.get_sosdisc_inputs('algo_options')
 
-        assert ("maxcor" in algo_options.keys())
-        assert ("max_ls_step_nb" in algo_options.keys())
+        assert "maxcor" in algo_options
+        assert "maxls" in algo_options
 
     def test_08_optim_scenario_eval_mode(self):
         print("\n Test 8 : Sellar optim with eval_mode")
