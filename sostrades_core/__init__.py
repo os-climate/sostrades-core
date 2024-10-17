@@ -18,7 +18,7 @@ import logging
 import os
 from os.path import dirname, join
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers,
 # grammars etc)
 logging.getLogger('gemseo').setLevel('DEBUG')
