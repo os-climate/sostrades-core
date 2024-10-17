@@ -143,7 +143,7 @@ class ProxyDiscipline:
     IS_EVAL = 'is_eval'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     VARIABLE_KEY = 'variable_key'  # key for ontology
-    SIZE_MO = 'size_mo' #size of a data
+    SIZE_MO = 'size_mo'  # size of a data
     DISPLAY_NAME = 'display_name'
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -479,7 +479,7 @@ class ProxyDiscipline:
                 self.stored_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
             # init gemseo discipline if it has not been created yet
             cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
-            if cache_type == '':
+            if not cache_type:
                 cache_type = MDODiscipline.CacheType.NONE
             self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
@@ -537,6 +537,7 @@ class ProxyDiscipline:
             self.RESIDUAL_VARIABLES).copy()
         self.mdo_discipline_wrapp.mdo_discipline.run_solves_residuals = self.get_sosdisc_inputs(
             self.RUN_SOLVE_RESIDUALS)
+
     def add_status_observers_to_gemseo_disc(self):
         '''
         Add all observers that have been addes when gemseo discipline was not instanciated
@@ -640,6 +641,7 @@ class ProxyDiscipline:
         '''
 
         return definition_input_dict[self.NUMERICAL] and not definition_input_dict[self.RUN_NEEDED]
+
     def get_run_needed_input(self, as_namespaced_tuple: bool = False):
 
         data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
@@ -1152,7 +1154,7 @@ class ProxyDiscipline:
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
                     var_data_dict, self.ee.check_data_integrity)
-                if check_integrity_msg != '':
+                if check_integrity_msg:
                     data_integrity = False
                 self.dm.set_data(
                     var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
@@ -1189,12 +1191,12 @@ class ProxyDiscipline:
         '''
         # Debug mode logging and recursive setting (priority to the parent)
         debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
-        if debug_mode != self._structuring_variables[self.DEBUG_MODE] \
-                and not (debug_mode == "" and self._structuring_variables[
-            self.DEBUG_MODE] is None):  # not necessary on first config
+        if (debug_mode or self._structuring_variables[self.DEBUG_MODE]) and (
+            debug_mode != self._structuring_variables[self.DEBUG_MODE]
+        ):  # not necessary on first config
             self._reset_debug_mode = True
             # logging
-            if debug_mode != "":
+            if debug_mode:
                 if debug_mode == "all":
                     for mode in self.AVAILABLE_DEBUG_MODE:
                         if mode not in ["", "all"]:
@@ -1832,12 +1834,12 @@ class ProxyDiscipline:
             variables (list[string]): the list of varaible namespace name
         """
         # Refactor  variables keys with namespace
-        if isinstance(keys, list):
-            variables = [self._convert_to_namespace_name(
-                key, io_type) for key in keys]
-        else:
+        if isinstance(keys, str):
             variables = [self._convert_to_namespace_name(
                 keys, io_type)]
+        else:
+            variables = [self._convert_to_namespace_name(
+                key, io_type) for key in keys]
         return variables
 
     def _convert_to_namespace_name(self, key, io_type):
