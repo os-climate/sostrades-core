@@ -140,7 +140,6 @@ class SoSMDOScenario(MDOScenario):
         }
         return post_processing_mdo_data
 
-
     def execute_at_xopt(self):
         '''
         trigger post run if execute at optimum is activated
@@ -170,7 +169,7 @@ class SoSMDOScenario(MDOScenario):
 
         self.preprocess_functions()
 
-        self.optimization_result = lib.execute(problem, algo_name=algo_name,
+        self.optimization_result = lib.execute(problem,
                                                max_iter=max_iter,
                                                **options)
         self.clear_jacobian()
