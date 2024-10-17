@@ -55,6 +55,7 @@ class ProxyOptim(ProxyDriverEvaluator):
     ProxyDiscipline (e.g. ProxyCoupling).
 
     An instance of ProxyDiscipline is in one-to-one aggregation with an instance of DisciplineWrapp, which allows the
+
     use of different wrapping modes to provide the model run.
 
     During the prepare_execution step, the ProxyDiscipline coordinates the instantiation of the GEMSEO objects that
@@ -118,7 +119,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         "maxcor": 50,
         "pg_tol": 1.0e-8,
         "max_iter": 500,
-        "disp": 30,
+        "disp": False,
     }
     default_parallel_options = {
         'parallel': False,
@@ -168,10 +169,12 @@ class ProxyOptim(ProxyDriverEvaluator):
     FORMULATION_OPTIONS = 'formulation_options'
 
     #        self.SEARCH_PATHS = 'search_paths'
-    SCENARIO_MANDATORY_FIELDS = [DESIGN_SPACE, FORMULATION, MAXIMIZE_OBJECTIVE, OBJECTIVE_NAME]
+
+    SCENARIO_MANDATORY_FIELDS = (DESIGN_SPACE, FORMULATION, MAXIMIZE_OBJECTIVE, OBJECTIVE_NAME)
+
     #            self.SEARCH_PATHS]
     OPTIMAL_OBJNAME_SUFFIX = "opt"
-    ALGO_MANDATORY_FIELDS = [ALGO, MAX_ITER]
+    ALGO_MANDATORY_FIELDS = (ALGO, MAX_ITER)
 
     DIFFERENTIATION_METHOD = 'differentiation_method'
     EVAL_JAC = 'eval_jac'
@@ -187,7 +190,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         'xtol_rel': 1e-9,
         'xtol_abs': 1e-9,
         'max_ls_step_size': 0.0,
-        'max_ls_step_nb': 20,
+        'maxls': 20,
         'max_fun_eval': 999999,
         'max_time': 0,
         'pg_tol': 1e-5,
@@ -642,13 +645,12 @@ class ProxyOptim(ProxyDriverEvaluator):
         # TODO : add warning and log algo options
         default_dict = {}
         driver_lib = OptimizationLibraryFactory().create(algo_name)
-        driver_lib._init_options_grammar()
-        schema_dict = driver_lib._option_grammar.schema
-        properties = schema_dict.get('properties')
-        algo_options_keys = list(properties.keys())
+        algo_options = driver_lib.ALGORITHM_INFOS[algo_name].settings.model_fields
+        algo_options_keys = list(algo_options.keys())
 
         found_algo_names = [key for key in self.algo_dict if key in algo_name]
-        if len(found_algo_names) == 1:
+
+        if found_algo_names:
             key = found_algo_names[0]
             for algo_option in algo_options_keys:
                 default_val = self.algo_dict[key].get(algo_option)
