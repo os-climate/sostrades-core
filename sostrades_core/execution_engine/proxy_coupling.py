@@ -18,8 +18,7 @@ limitations under the License.
 from __future__ import annotations
 
 import logging
-from collections import ChainMap
-from collections import defaultdict
+from collections import ChainMap, defaultdict
 from copy import copy, deepcopy
 from multiprocessing import cpu_count
 from os import getenv
@@ -34,7 +33,6 @@ from numpy import ndarray
 from pandas import DataFrame, concat
 
 from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
-from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import (

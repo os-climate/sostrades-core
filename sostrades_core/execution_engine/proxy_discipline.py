@@ -20,9 +20,9 @@ from copy import deepcopy
 from typing import List, Union
 
 from gemseo.core.chains.chain import MDOChain
-from gemseo.core.process_discipline import ProcessDiscipline
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
+from gemseo.core.process_discipline import ProcessDiscipline
 from numpy import bool_ as np_bool
 from numpy import complex128 as np_complex128
 from numpy import float32 as np_float32
