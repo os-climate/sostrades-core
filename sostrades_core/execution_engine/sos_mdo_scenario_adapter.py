@@ -18,7 +18,8 @@ import logging
 
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.scenarios.mdo_scenario import MDOScenario
-
+from gemseo.utils.logging_tools import LOGGING_SETTINGS
+from gemseo.utils.logging_tools import LoggingContext
 
 class SoSMDOScenarioAdapter(MDOScenarioAdapter):
     """
@@ -76,9 +77,14 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         self.scenario.input_design_space = mdo_options.pop('input_design_space')
         self.scenario.desactivate_optim_out_storage = mdo_options.pop('desactivate_optim_out_storage')
 
-        self.scenario.mdo_options = mdo_options
+        self.mdo_options = mdo_options
 
         self.reduced_dm = reduced_dm
         self.activated_variables = self.scenario.formulation.design_space.variable_names
         self.is_sos_coupling = False
 
+    def _run(self) -> None:
+        self._pre_run()
+        # with LoggingContext(LOGGING_SETTINGS.logger, level=self.__scenario_log_level):
+        self.scenario.execute(**self.mdo_options)
+        self._post_run()

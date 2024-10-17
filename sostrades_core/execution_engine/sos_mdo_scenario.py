@@ -86,14 +86,6 @@ class SoSMDOScenario(MDOScenario):
         # desactivate designspace outputs for post processings
         self.desactivate_optim_out_storage = False
 
-    def execute(self, **settings: Any) -> None:
-        """Execute a scenario.
-
-        Args:
-            **settings: The settings of the scenario.
-        """
-        settings.update(self.mdo_options)
-        super().execute(**settings)
     def _run(self):
         '''
 
