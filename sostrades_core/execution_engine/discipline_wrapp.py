@@ -196,7 +196,6 @@ class DisciplineWrapp(object):
                 reduced_dm=reduced_dm,
                 name=proxy.get_disc_full_name(),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                coupling_structure=proxy.coupling_structure,
                 **proxy._get_numerical_inputs(),
                 # authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs(proxy.AUTHORIZE_SELF_COUPLED_DISCIPLINES),
                 logger=self.logger.getChild("SoSMDAChain"),
