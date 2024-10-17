@@ -280,7 +280,7 @@ class ProxyOptim(ProxyDriverEvaluator):
     }
 
     DESC_IN = {
-        ALGO: {'type': 'string', 'structuring': True},
+        ALGO: {'type': 'string', 'structuring': True, 'default': 'SLSQP'},
         DESIGN_SPACE: {
             'type': 'dataframe',
             'structuring': True,
@@ -645,7 +645,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         # TODO : add warning and log algo options
         default_dict = {}
         driver_lib = OptimizationLibraryFactory().create(algo_name)
-        algo_options = driver_lib.ALGORITHM_INFOS[algo_name].settings.model_fields
+        algo_options = driver_lib.ALGORITHM_INFOS[algo_name].Settings.model_fields
         algo_options_keys = list(algo_options.keys())
 
         found_algo_names = [key for key in self.algo_dict if key in algo_name]
