@@ -20,6 +20,7 @@ from copy import deepcopy
 from typing import List, Union
 
 from gemseo.core.chains.chain import MDOChain
+from gemseo.core.process_discipline import ProcessDiscipline
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from numpy import bool_ as np_bool
@@ -240,7 +241,7 @@ class ProxyDiscipline:
 
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
-
+    ProcessDiscipline.default_grammar_type = SOS_GRAMMAR_TYPE
     # -- status
     STATUS_PENDING = ExecutionStatus.Status.PENDING
     STATUS_DONE = ExecutionStatus.Status.DONE

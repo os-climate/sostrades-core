@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Union
 
 from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
-from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
+from sostrades_core.execution_engine.sos_mdo_scenario_adapter import SoSMDOScenarioAdapter
 
 if TYPE_CHECKING:
     import logging
@@ -59,7 +59,7 @@ class DisciplineWrapp(object):
         self.logger = logger
         self.name = name
         self.wrapping_mode = wrapping_mode
-        self.discipline: Union[SoSDiscipline, SoSMDOScenario, SoSMDAChain] = None
+        self.discipline: Union[SoSDiscipline, SoSMDOScenarioAdapter, SoSMDAChain] = None
         if wrapper is not None:
             self.wrapper = wrapper(name, self.logger.getChild(wrapper.__name__))
         else:
@@ -180,7 +180,7 @@ class DisciplineWrapp(object):
             self.discipline.default_input_data.update(to_update)
 
     def create_mda_chain(
-        self, sub_disciplines, proxy: ProxyCoupling | None = None, input_data=None, reduced_dm=None
+        self, sub_disciplines, proxy: ProxyCoupling | None = None, input_data=None, reduced_dm={}
     ):  # type: (...) -> None
         """
         MDAChain instantiation when owned by a ProxyCoupling.
@@ -196,6 +196,7 @@ class DisciplineWrapp(object):
                 reduced_dm=reduced_dm,
                 name=proxy.get_disc_full_name(),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                coupling_structure=proxy.coupling_structure,
                 **proxy._get_numerical_inputs(),
                 # authorize_self_coupled_disciplines=proxy.get_sosdisc_inputs(proxy.AUTHORIZE_SELF_COUPLED_DISCIPLINES),
                 logger=self.logger.getChild("SoSMDAChain"),
@@ -238,29 +239,33 @@ class DisciplineWrapp(object):
         if self.wrapping_mode == 'SoSTrades':
             # Pass as arguments to __init__ parameters needed for MDOScenario
             # creation
-            discipline = SoSMDOScenario(
+
+            mdo_options = {
+                'algo': proxy.algo_name,
+                'algo_options': proxy.algo_options,
+                'max_iter': proxy.max_iter,
+                'eval_mode': proxy.eval_mode,
+                'eval_jac': proxy.eval_jac,
+                'dict_desactivated_elem': proxy.dict_desactivated_elem,
+                'input_design_space': proxy.get_sosdisc_inputs('design_space'),
+                # retrieve the option to desactivate the storage of the design space outputs for post processings
+                'desactivate_optim_out_storage': proxy.get_sosdisc_inputs(
+                    proxy.DESACTIVATE_OPTIM_OUT_STORAGE)}
+
+            discipline = SoSMDOScenarioAdapter(
                 sub_disciplines,
                 proxy.sos_name,
                 proxy.formulation,
                 proxy.objective_name,
                 proxy.design_space,
-                logger=self.logger.getChild("SoSMDOScenario"),
+                proxy.maximize_objective,
+                logger=self.logger.getChild("SoSMDOScenarioAdapter"),
                 reduced_dm=reduced_dm,
+                mdo_options=mdo_options
             )
-            # Set parameters for SoSMDOScenario
-            discipline.eval_mode = proxy.eval_mode
-            discipline.maximize_objective = proxy.maximize_objective
-            discipline.algo_name = proxy.algo_name
-            discipline.algo_options = proxy.algo_options
-            discipline.max_iter = proxy.max_iter
-            discipline.eval_mode = proxy.eval_mode
-            discipline.eval_jac = proxy.eval_jac
-            discipline.dict_desactivated_elem = proxy.dict_desactivated_elem
-            discipline.input_design_space = proxy.get_sosdisc_inputs('design_space')
-            # retrieve the option to desactivate the storage of the design space outputs for post processings
-            discipline.desactivate_optim_out_storage = proxy.get_sosdisc_inputs([
-                proxy.DESACTIVATE_OPTIM_OUT_STORAGE
-            ])
+            # Set parameters for SoSMDOScenarioAdapter
+
+
 
             self.discipline = discipline
 
@@ -278,7 +283,7 @@ class DisciplineWrapp(object):
                 full_key = proxy.get_var_full_name(key, proxy.get_data_in())
                 self.discipline.default_input_data.update({full_key: value[proxy.VALUE]})
 
-    def __update_gemseo_grammar(self, proxy, mdachain, mdoscenario=False):
+    def __update_gemseo_grammar(self, proxy, coupling, mdoscenario=False):
         '''
         update GEMSEO grammar with sostrades
         # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
@@ -287,42 +292,37 @@ class DisciplineWrapp(object):
         # (e.g., numerical inputs mainly)
         # TODO: [to discuss] ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
         #       -> need to check that outputs can be numerical (to cover the case of residuals for example, that is an output)
+
         soscoupling_inputs_and_defaults = proxy.get_run_needed_input()
         soscoupling_inputs = set(soscoupling_inputs_and_defaults.keys())
-        mdachain_inputs = set(mdachain.get_input_data_names())
-        missing_inputs = soscoupling_inputs | mdachain_inputs
-        # var_type_map = {
-        #     key: (value[0] if isinstance(value, tuple) else value)
-        #     for key, value in proxy.VAR_TYPE_MAP.items()
-        # }
-        # missing_inputs_names_to_types = {key: var_type_map[proxy.dm.get_data(key, proxy.TYPE)] for key in
-        #                                  missing_inputs}
+
+        coupling_inputs = set(coupling.io.input_grammar.names)
+
+        missing_inputs = soscoupling_inputs | coupling_inputs
 
         soscoupling_outputs = set(proxy.get_output_data_names())
-        mdachain_outputs = set(mdachain.get_output_data_names())
-        missing_outputs = soscoupling_outputs | mdachain_outputs
-        # missing_outputs_names_to_types = {key: var_type_map[proxy.dm.get_data(key, proxy.TYPE)] for key in
-        #                                   missing_outputs}
+        coupling_outputs = set(coupling.io.output_grammar.names)
+        missing_outputs = soscoupling_outputs | coupling_outputs
 
         # if this a mdoscenario then we add design space inputs to the outputs :
         if mdoscenario:
-            design_space_inputs = self.discipline.design_space.variable_names
+            design_space_inputs = coupling.scenario.design_space.variable_names
             missing_outputs.update(design_space_inputs)
 
         # i/o grammars update with SoSTrades i/o
-        old_defaults = mdachain.input_grammar.defaults
-        mdachain.input_grammar.clear()
-        mdachain.input_grammar.update_from_names(missing_inputs)
+        old_defaults = coupling.input_grammar.defaults
+        coupling.input_grammar.clear()
+        coupling.input_grammar.update_from_names(missing_inputs)
         missing_inputs_defaults = {
             key: value
             for key, value in soscoupling_inputs_and_defaults.items()
             if value is not None and key in missing_inputs
         }
         missing_inputs_defaults.update({key: value for key, value in old_defaults.items() if key in missing_inputs})
-        mdachain.input_grammar.update_defaults(missing_inputs_defaults)
+        coupling.input_grammar.update_defaults(missing_inputs_defaults)
 
-        mdachain.output_grammar.clear()
-        mdachain.output_grammar.update_from_names(missing_outputs)
+        coupling.output_grammar.clear()
+        coupling.output_grammar.update_from_names(missing_outputs)
 
     def execute(self, input_data):
         """

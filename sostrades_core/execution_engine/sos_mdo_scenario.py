@@ -16,6 +16,7 @@ limitations under the License.
 '''
 import logging
 from copy import deepcopy
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -77,6 +78,7 @@ class SoSMDOScenario(MDOScenario):
         self.reduced_dm = reduced_dm
         self.activated_variables = self.formulation.design_space.variable_names
         self.is_sos_coupling = False
+        self.mdo_options = {}
 
     def _update_input_grammar(self) -> None:
         pass
@@ -84,11 +86,19 @@ class SoSMDOScenario(MDOScenario):
         # desactivate designspace outputs for post processings
         self.desactivate_optim_out_storage = False
 
+    def execute(self, **settings: Any) -> None:
+        """Execute a scenario.
+
+        Args:
+            **settings: The settings of the scenario.
+        """
+        settings.update(self.mdo_options)
+        super().execute(**settings)
     def _run(self):
         '''
 
         '''
-        self.execution_status.value = self.ExecutionStatus.Status.RUNNING
+        self.execution_status.value = self.execution_status.Status.RUNNING
 
         if self.eval_mode:
             self.run_eval_mode()

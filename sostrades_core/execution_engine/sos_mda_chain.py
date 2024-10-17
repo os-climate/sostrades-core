@@ -84,7 +84,7 @@ class SoSMDAChain(MDAChain):
         self,
         disciplines: Sequence[Discipline],
         logger: Logger,
-        reduced_dm: dict | None = None,
+        reduced_dm: dict = {},
         inner_mda_name: str = "MDAJacobi",
         max_mda_iter: int = 20,
         name: str | None = None,

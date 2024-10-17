@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 from collections import ChainMap
+from collections import defaultdict
 from copy import copy, deepcopy
 from multiprocessing import cpu_count
 from os import getenv
@@ -33,6 +34,7 @@ from numpy import ndarray
 from pandas import DataFrame, concat
 
 from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
+from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import (
@@ -488,6 +490,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             # - all chidren are configured thus proxyCoupling can be configured
             self.set_configure_status(True)
             # - build the coupling structure
+
             self._build_coupling_structure()
             # - builds data_in/out according to the coupling structure
             self._build_data_io()
@@ -549,6 +552,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         """Build CouplingStructure"""
         # the idea was not to crreate gemseo disciplines in configuration but no other choice for coupling sturcture right now
         gemseo_disciplines = self.create_gemseo_disciplines()
+        # filter MDOScenario for coupling structure
+        # gemseo_disciplines_filtered = [d.disciplines[0] if isinstance(d, SoSMDOScenario) else d for d in
+        #                                gemseo_disciplines]
+        # self.gemseo_to_sos_disciplines = {d if not isinstance(d, SoSMDOScenario) else d.disciplines[0]: d_g for d, d_g
+        #                                   in
+        #                                   self.gemseo_to_sos_disciplines.items()}
         self.coupling_structure = CouplingStructure(gemseo_disciplines)
         self.strong_couplings = filter_variables_to_convert(
             self.ee.dm.convert_data_dict_with_full_name(),
@@ -669,8 +678,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         else:
             mda_chain_cache = None
 
+        if self.ee.dm.reduced_dm is None:
+            reduced_dm = defaultdict(dict)
+        else:
+            reduced_dm = self.ee.dm.reduced_dm
         # create_mda_chain from DisciplineWrapp
-        self.discipline_wrapp.create_mda_chain(gemseo_disciplines, self, reduced_dm=self.ee.dm.reduced_dm)
+        self.discipline_wrapp.create_mda_chain(gemseo_disciplines, self, reduced_dm=reduced_dm)
 
         # set cache cache of gemseo object
         self.set_gemseo_disciplines_caches(mda_chain_cache)

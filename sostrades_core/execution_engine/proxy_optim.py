@@ -461,6 +461,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         # create_mdo_scenario from DisciplineWrapp
         self.discipline_wrapp.create_mdo_scenario(sub_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
+        self.scenario = self.discipline_wrapp.discipline.scenario
         self.set_constraints()
         self.set_diff_method()
         self.set_design_space_for_complex_step()
@@ -479,7 +480,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         """
         # formulation can be found in the GEMSEO discipline
-        formulation = self.discipline_wrapp.discipline.formulation
+        formulation = self.scenario.formulation
 
         # Check that only 1 discipline is below the proxy optim
         if len(sub_disciplines) == 1:
@@ -623,11 +624,11 @@ class ProxyOptim(ProxyDriverEvaluator):
         """Set design space values to complex if the differentiation method is complex_step"""
         diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
         if diff_method == self.COMPLEX_STEP:
-            dspace = deepcopy(self.discipline_wrapp.discipline.formulation.optimization_problem.design_space)
+            dspace = deepcopy(self.scenario.formulation.optimization_problem.design_space)
             curr_x = dspace._current_x
             for var in curr_x:
                 curr_x[var] = curr_x[var].astype('complex128')
-            self.discipline_wrapp.discipline.formulation.optimization_problem.design_space = dspace
+            self.scenario.formulation.optimization_problem.design_space = dspace
 
     def get_algo_options(self, algo_name: str):
         """Create default dict for algo options.
@@ -713,7 +714,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     )
 
         fd_step = self.get_sosdisc_inputs(self.FD_STEP)
-        self.discipline_wrapp.discipline.set_differentiation_method(diff_method, fd_step)
+        self.scenario.set_differentiation_method(diff_method, fd_step)
 
     def set_parallel_options(self):
         """Sets parallel options for jacobian approximation"""
@@ -725,8 +726,8 @@ class ProxyOptim(ProxyDriverEvaluator):
         options.update(user_options)
         parallel = options.pop("parallel")
         # update problem options
-        self.discipline_wrapp.discipline.formulation.optimization_problem.parallel_differentiation = parallel
-        self.discipline_wrapp.discipline.formulation.optimization_problem.parallel_differentiation_options = (
+        self.scenario.formulation.optimization_problem.parallel_differentiation = parallel
+        self.scenario.formulation.optimization_problem.parallel_differentiation_options = (
             options
         )
 
@@ -737,7 +738,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         is_positive = [False for _ in ineq_names]
         ineq_full_names = self._update_names(ineq_names, self.IO_TYPE_OUT)
         for ineq, is_pos in zip(ineq_full_names, is_positive):
-            self.discipline_wrapp.discipline.add_constraint(
+            self.scenario.add_constraint(
                 ineq, MDOFunction.ConstraintType.INEQ, ineq, positive=is_pos
             )
 
@@ -745,7 +746,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         eq_names = self.get_sosdisc_inputs(self.EQ_CONSTRAINTS)
         eq_full_names = self._update_names(eq_names, self.IO_TYPE_OUT)
         for eq in eq_full_names:
-            self.discipline_wrapp.discipline.add_constraint(
+            self.scenario.add_constraint(
                 eq, MDOFunction.ConstraintType.EQ, eq, positive=False
             )
 
