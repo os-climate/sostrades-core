@@ -25,7 +25,6 @@ import pandas as pd
 from gemseo import get_available_doe_algorithms
 from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
 from gemseo.algos.doe.factory import DOELibraryFactory
-from pydantic_core import PydanticUndefined
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import (
     AbstractSampleGenerator,
@@ -154,11 +153,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         all_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].settings.model_fields
         # Keep only the DOE-related options
         algo_options = algo_lib._filter_settings(all_options, BaseDriverLibrarySettings)
-        algo_options_default = {
-            option_name: option.default
-            for option_name, option in algo_options.items()
-            if option.default != PydanticUndefined
-        }
+        algo_options_default = {option_name: option.default for option_name, option in algo_options.items()}
         algo_options_descr_dict = {option_name: option.description for option_name, option in algo_options.items()}
 
         return algo_options_default, algo_options_descr_dict
