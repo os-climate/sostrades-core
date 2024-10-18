@@ -322,7 +322,11 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     def _deserialize_dataframe(self, data_value: str, data_name: str = None) -> pd.DataFrame:
         # NB: dataframe csv deserialization as in webapi
-        return self.__deserialize_from_filesystem(_load_dataframe, data_value)
+        try:
+            return self.__deserialize_from_filesystem(_load_dataframe, data_value)
+        except Exception as error:
+            self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type dataframe: {error}")
+            return pd.DataFrame()
 
     def _deserialize_array(self, data_value: str) -> np.ndarray:
         # NB: to be improved with astype(subtype) along subtype management

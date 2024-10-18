@@ -53,15 +53,16 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         converted_data = ""
         try:
-            if data_type in ['string', 'int', 'float', 'bool', 'list', 'dict']:
-                converted_data = data_value
-            elif data_type == 'dataframe':
-                converted_data = self._deserialize_dataframe(data_value, data_name)
-            elif data_type == 'array':
-                converted_data = self._deserialize_array(data_value)
-            else:
-                converted_data = data_value
-                self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
+            if data_type in self.SOSTRADES_TYPES:
+                if data_value is None:
+                    converted_data = data_value
+                elif data_type == 'dataframe':
+                    converted_data = self._deserialize_dataframe(data_value, data_name)
+                elif data_type == 'array':
+                    converted_data = self._deserialize_array(data_value)
+                else:
+                    converted_data = data_value
+                    self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
         except Exception as error:
             converted_data = data_value
             self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
@@ -86,16 +87,17 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         converted_data = ""
         try:
-            if data_type in ['string', 'int', 'float', 'bool', 'list', 'dict']:
-                converted_data = self._serialize_jsonifiable(data_value, data_name)
-            elif data_type == 'dataframe':
-                # convert dataframe into dict with orient='list' to have {column:values}
-                converted_data = self._serialize_dataframe(data_value, data_name)
-            elif data_type == 'array':
-                converted_data = self._serialize_array(data_value, data_name)
-            else:
-                converted_data = data_value
-                self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
+            if data_type in self.SOSTRADES_TYPES:
+                if data_value is None:
+                    converted_data = data_value
+                elif data_type == 'dataframe':
+                    # convert dataframe into dict with orient='list' to have {column:values}
+                    converted_data = self._serialize_dataframe(data_value, data_name)
+                elif data_type == 'array':
+                    converted_data = self._serialize_array(data_value, data_name)
+                else:
+                    converted_data = self._serialize_jsonifiable(data_value, data_name)
+                    self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
         except Exception as error:
             converted_data = data_value
             self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
