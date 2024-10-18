@@ -47,7 +47,7 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
     from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import (
-        PetscKSPAlgos as ksp_lib_petsc,
+        SoSPetscKSPAlgos as ksp_lib_petsc,
     )
 
 N_CPUS = cpu_count()
