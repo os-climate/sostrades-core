@@ -28,4 +28,6 @@ EXEC_ENGINE = "execution_engine"
 os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
 
 # Attempt to import gemseo BaseAlgorithm to resolve circular import
+# TODO : take time to check where the circular import comes from and try to resolve it 
+# Using a from future import annotation, or if TYPE_CHECKING
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary # noqa
