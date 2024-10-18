@@ -19,15 +19,21 @@ import os
 from os.path import dirname, join
 
 logging.basicConfig(level=logging.INFO)
-# set-up the folder where GEMSEO will look-up for new wrapps (solvers,
-# grammars etc)
+
+# set-up the folder where GEMSEO will look-up for new wrapps (solvers, grammars etc)
 logging.getLogger('gemseo').setLevel('DEBUG')
 parent_dir = dirname(__file__)
 GEMSEO_ADDON_DIR = "gemseo_addon"
 EXEC_ENGINE = "execution_engine"
+
+# TODO hotfix for the gemseo circular import : first import gemseo to resolve base gemseo classes, then force refresh of factories
+# Should not be needed after a fix in gemseo code for factories
+import gemseo
+
 os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
 
-# Attempt to import gemseo BaseAlgorithm to resolve circular import
-# TODO : take time to check where the circular import comes from and try to resolve it 
-# Using a from future import annotation, or if TYPE_CHECKING
-from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary # noqa
+from gemseo.datasets.factory import DatasetFactory
+from gemseo.core.data_converters.factory import DataConverterFactory
+
+DataConverterFactory().update()
+DatasetFactory().update()
