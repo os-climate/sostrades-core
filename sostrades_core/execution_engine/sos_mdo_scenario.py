@@ -81,11 +81,6 @@ class SoSMDOScenario(MDOScenario):
         self.is_sos_coupling = False
         self.mdo_options = {}
 
-    def _update_input_grammar(self) -> None:
-        pass
-
-        # desactivate designspace outputs for post processings
-        self.desactivate_optim_out_storage = False
 
     def _run(self):
         '''
@@ -269,31 +264,7 @@ class SoSMDOScenario(MDOScenario):
     #         self.scenario_outputs.update({k: x[current_idx:current_idx + k_size]})
     #         current_idx += k_size
     #
-    # def update_design_space_out(self):
-    #     """
-    #     Method to update design space with opt value
-    #     """
-    #     design_space = deepcopy(self.input_design_space)
-    #     l_variables = design_space['variable']
-    #
-    #     for var_name in l_variables:
-    #         var_name = var_name.split('.')[-1]
-    #         full_name_var = self.get_namespace_from_var_name(var_name)
-    #         if full_name_var in self.activated_variables:
-    #             value_x_opt = list([self.formulation.design_space.get_current_value(
-    #                 [full_name_var])])
-    #             if self.dict_desactivated_elem[full_name_var] != {}:
-    #                 # insert a desactivated element
-    #                 for _pos, _val in zip(self.dict_desactivated_elem[full_name_var]['position'],
-    #                                       self.dict_desactivated_elem[full_name_var]['value']):
-    #                     value_x_opt.insert(_pos, _val)
-    #
-    #             design_space.loc[design_space['variable'] == var_name, 'value'] = pd.Series(
-    #                 [value_x_opt] * len(design_space))
-    #     self.local_data.update({
-    #         [key for key in self.get_output_data_names() if 'design_space_out' in key][
-    #             0]: design_space})
-    #
+
     # def get_namespace_from_var_name(self, var_name):
     #     subcoupling = self.disciplines[0]
     #     namespace_list = [full_name for full_name in subcoupling.get_input_data_names() if

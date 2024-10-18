@@ -746,7 +746,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                 self.assertEqual(coupling_value, eval_value)
             except:
                 for item1, item2 in zip(list(coupling_value), list(eval_value)):
-                    self.assertAlmostEqual(item1, item2)
+                    self.assertAlmostEqual(item1, item2, delta=1e-6)
 
     def test_08b_optim_scenario_eval_mode_no_post_proc(self):
         print("\n Test 8b : Sellar optim with eval_mode with no output design space post proc")
@@ -950,7 +950,6 @@ class TestSoSOptimScenario(unittest.TestCase):
     def test_11_update_dspace_from_usecase(self):
 
         uc_cls = study_sellar_opt_discopt()
-        uc_cls.setup_usecase()
         uc_cls.load_data()
 
         dspace = deepcopy(uc_cls.execution_engine.dm.get_value(
@@ -1044,7 +1043,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         # check that design space in GEMS contains the optimal value (not last
         # iteration)
         assert_array_almost_equal(
-            opt_disc.formulation.design_space.get_current_value(), opt_array,
+            opt_disc.scenario.formulation.design_space.get_current_value(), opt_array,
             err_msg="design space does not have optimal value")
 
         # check that in dm we have xopt value

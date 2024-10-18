@@ -462,25 +462,26 @@ class ProxyOptim(ProxyDriverEvaluator):
         self.formulation, self.objective_name, self.design_space, self.maximize_objective = self.pre_set_scenario()
 
         # prepare_execution of proxy_disciplines and extract GEMSEO objects
-        sub_disciplines = []
-        for disc in self.proxy_disciplines:
-            disc.prepare_execution()
-            # Exclude non executable proxy Disciplines
-            if disc.discipline_wrapp is not None:
-                sub_disciplines.append(disc.discipline_wrapp.discipline)
+        if self.formulation:
+            sub_disciplines = []
+            for disc in self.proxy_disciplines:
+                disc.prepare_execution()
+                # Exclude non executable proxy Disciplines
+                if disc.discipline_wrapp is not None:
+                    sub_disciplines.append(disc.discipline_wrapp.discipline)
 
-        # create_mdo_scenario from DisciplineWrapp
-        self.discipline_wrapp.create_mdo_scenario(sub_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
-        self.scenario = self.discipline_wrapp.discipline.scenario
-        self.set_constraints()
-        self.set_diff_method()
-        self.set_design_space_for_complex_step()
-        self.set_parallel_options()
+            # create_mdo_scenario from DisciplineWrapp
+            self.discipline_wrapp.create_mdo_scenario(sub_disciplines, proxy=self, reduced_dm=self.ee.dm.reduced_dm)
+            self.scenario = self.discipline_wrapp.discipline.scenario
+            self.set_constraints()
+            self.set_diff_method()
+            self.set_design_space_for_complex_step()
+            self.set_parallel_options()
 
-        self.set_formulation_for_func_manager(sub_disciplines)
+            self.set_formulation_for_func_manager(sub_disciplines)
 
-        # update MDA flag to flush residuals between each mda run
-        self._set_flush_submdas_to_true()
+            # update MDA flag to flush residuals between each mda run
+            self._set_flush_submdas_to_true()
 
     def set_formulation_for_func_manager(self, sub_disciplines):
         """
