@@ -25,7 +25,7 @@ logging.getLogger('gemseo').setLevel('DEBUG')
 parent_dir = dirname(__file__)
 GEMSEO_ADDON_DIR = "gemseo_addon"
 EXEC_ENGINE = "execution_engine"
-#os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
+os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
 
 # Attempt to import gemseo BaseAlgorithm to resolve circular import
 # TODO : take time to check where the circular import comes from and try to resolve it 
