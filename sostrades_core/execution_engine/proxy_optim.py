@@ -280,10 +280,11 @@ class ProxyOptim(ProxyDriverEvaluator):
     }
 
     DESC_IN = {
-        ALGO: {'type': 'string', 'structuring': True, 'default': 'SLSQP'},
+        ALGO: {'type': 'string', 'structuring': True, 'numerical': True, 'default': 'SLSQP'},
         DESIGN_SPACE: {
             'type': 'dataframe',
             'structuring': True,
+            'numerical': True,
             'dataframe_descriptor': {
                 VARIABLES: ('string', None, True),
                 VALUES: ('multiple', None, True),
@@ -293,12 +294,13 @@ class ProxyOptim(ProxyDriverEvaluator):
                 LIST_ACTIVATED_ELEM: ('list', None, True),
             },
         },
-        FORMULATION: {'type': 'string', 'structuring': True},
-        MAXIMIZE_OBJECTIVE: {'type': 'bool', 'structuring': True, 'default': False},
-        OBJECTIVE_NAME: {'type': 'string', 'structuring': True},
+        FORMULATION: {'type': 'string', 'numerical': True, 'structuring': True},
+        MAXIMIZE_OBJECTIVE: {'type': 'bool', 'structuring': True, 'numerical': True, 'default': False},
+        OBJECTIVE_NAME: {'type': 'string', 'numerical': True, 'structuring': True},
         DIFFERENTIATION_METHOD: {
             'type': 'string',
             'default': Scenario.DifferentiationMethod.FINITE_DIFFERENCES,
+            'numerical': True,
             'possible_values': [
                 USER_GRAD,
                 Scenario.DifferentiationMethod.FINITE_DIFFERENCES,
@@ -306,7 +308,7 @@ class ProxyOptim(ProxyDriverEvaluator):
             ],
             'structuring': True,
         },
-        FD_STEP: {'type': 'float', 'structuring': True, 'default': 1e-6},
+        FD_STEP: {'type': 'float', 'structuring': True, 'numerical': True, 'default': 1e-6},
         ALGO_OPTIONS: {
             'type': 'dict',
             'dataframe_descriptor': {VARIABLES: ('string', None, False), VALUES: ('string', None, True)},
@@ -328,19 +330,24 @@ class ProxyOptim(ProxyDriverEvaluator):
             'dataframe_edition_locked': False,
             'default': default_parallel_options,
             'structuring': True,
+            'numerical': True,
         },
-        EVAL_MODE: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False], 'structuring': True},
-        EVAL_JAC: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
-        EXECUTE_AT_XOPT: {'type': 'bool', 'default': True},
-        MAX_ITER: {'type': 'float'},
+        EVAL_MODE: {'type': 'bool', 'numerical': True, 'default': False, POSSIBLE_VALUES: [True, False],
+                    'structuring': True},
+        EVAL_JAC: {'type': 'bool', 'numerical': True, 'default': False, POSSIBLE_VALUES: [True, False]},
+        EXECUTE_AT_XOPT: {'type': 'bool', 'numerical': True, 'default': True},
+        MAX_ITER: {'type': 'float', 'numerical': True},
         INEQ_CONSTRAINTS: {
             'type': 'list',
             'subtype_descriptor': {'list': 'string'},
             'default': [],
             'structuring': True,
+            'numerical': True,
         },
-        EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'structuring': True},
-        DESACTIVATE_OPTIM_OUT_STORAGE: {'type': 'bool', 'default': False, POSSIBLE_VALUES: [True, False]},
+        EQ_CONSTRAINTS: {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [], 'numerical': True,
+                         'structuring': True},
+        DESACTIVATE_OPTIM_OUT_STORAGE: {'type': 'bool', 'default': True, 'numerical': True,
+                                        POSSIBLE_VALUES: [True, False]},
     }
 
     DESC_OUT = {}

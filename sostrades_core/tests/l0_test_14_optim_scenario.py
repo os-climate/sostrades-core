@@ -706,7 +706,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # Check that the jacobian has not been executed
         self.assertEqual(
-            exec_eng.root_process.proxy_disciplines[0].proxy_disciplines[0].discipline_wrapp.discipline.jac,
+            exec_eng.root_process.proxy_disciplines[0].discipline_wrapp.discipline.jac,
             {})
         # Exec_eng with only the coupling
         exec_eng2 = ExecutionEngine(self.study_name)
@@ -878,7 +878,7 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # Get the jacobian of each functions (constraints + objective)
         computed_jac = exec_eng.root_process.proxy_disciplines[
-            0].proxy_disciplines[0].discipline_wrapp.discipline.jac
+            0].discipline_wrapp.discipline.jac
 
         self.assertListEqual(sorted(list(computed_jac.keys())), sorted([
             f'{self.ns}.{self.sc_name}.{self.c_name}.{var}' for var in ['obj', 'c_1', 'c_2']]))

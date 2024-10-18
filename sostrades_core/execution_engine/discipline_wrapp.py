@@ -258,6 +258,8 @@ class DisciplineWrapp(object):
                 proxy.objective_name,
                 proxy.design_space,
                 proxy.maximize_objective,
+                proxy.get_input_data_names(numerical_inputs=False),
+                proxy.get_output_data_names(),
                 logger=self.logger.getChild("SoSMDOScenarioAdapter"),
                 reduced_dm=reduced_dm,
                 mdo_options=mdo_options
@@ -268,7 +270,7 @@ class DisciplineWrapp(object):
 
             self.discipline = discipline
 
-            self.__update_gemseo_grammar(proxy, discipline, mdoscenario=True)
+            # self.__update_gemseo_grammar(proxy, discipline, mdoscenario=True)
             proxy.status = self.discipline.execution_status.value
 
         elif self.wrapping_mode == 'GEMSEO':
