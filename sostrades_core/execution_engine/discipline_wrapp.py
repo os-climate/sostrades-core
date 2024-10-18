@@ -240,8 +240,7 @@ class DisciplineWrapp(object):
             # creation
 
             mdo_options = {
-                'algo': proxy.algo_name,
-                'algo_options': proxy.algo_options,
+                'algo_name': proxy.algo_name,
                 'max_iter': proxy.max_iter,
                 'eval_mode': proxy.eval_mode,
                 'eval_jac': proxy.eval_jac,

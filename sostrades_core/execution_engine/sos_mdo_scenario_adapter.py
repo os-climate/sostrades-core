@@ -15,6 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
+import numpy as np
+import pandas as pd
+from copy import deepcopy
 
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
@@ -167,3 +170,34 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
                             constraints_names}
         }
         return post_processing_mdo_data
+
+    def add_design_space_inputs_to_local_data(self):
+        '''
+
+        Add Design space inputs values to the local_data to store it in the dm
+
+        '''
+
+        problem = self.formulation.optimization_problem
+
+        if problem.solution is not None:
+            x = problem.solution.x_opt
+        else:
+            x = problem.design_space.get_current_value()
+        current_idx = 0
+        for k, v in problem.design_space._variables.items():
+            k_size = v.size
+            # WARNING we fill input in local_data that will be deleted by GEMSEO because they are not outputs ...
+            # Only solution is to specify design space inputs as outputs of the mdoscenario
+            self.scenario_outputs.update({k: x[current_idx:current_idx + k_size]})
+            current_idx += k_size
+
+    def get_namespace_from_var_name(self, var_name):
+        subcoupling = self.disciplines[0]
+        namespace_list = [full_name for full_name in subcoupling.get_input_data_names() if
+                          (var_name == full_name.split('.')[-1] or var_name == full_name)]
+        if len(namespace_list) == 1:
+            return namespace_list[0]
+        else:
+            raise Exception(
+                f'Cannot find the variable {var_name} in the sub-coupling input grammar of the optim scenario {self.name}')

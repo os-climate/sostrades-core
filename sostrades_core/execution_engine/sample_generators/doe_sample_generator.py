@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 from gemseo import get_available_doe_algorithms
-from gemseo.algos._base_driver_library_settings import BaseDriverLibrarySettings
+from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
 from gemseo.algos.doe.factory import DOELibraryFactory
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import (

@@ -25,7 +25,7 @@ from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.formulations.factory import MDOFormulationFactory
-from gemseo.scenarios.scenario import Scenario
+from gemseo.scenarios.base_scenario import BaseScenario
 from numpy import inf, ndarray
 
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
@@ -299,12 +299,12 @@ class ProxyOptim(ProxyDriverEvaluator):
         OBJECTIVE_NAME: {'type': 'string', 'numerical': True, 'structuring': True},
         DIFFERENTIATION_METHOD: {
             'type': 'string',
-            'default': Scenario.DifferentiationMethod.FINITE_DIFFERENCES,
+            'default': BaseScenario.DifferentiationMethod.FINITE_DIFFERENCES,
             'numerical': True,
             'possible_values': [
                 USER_GRAD,
-                Scenario.DifferentiationMethod.FINITE_DIFFERENCES,
-                Scenario.DifferentiationMethod.COMPLEX_STEP,
+                BaseScenario.DifferentiationMethod.FINITE_DIFFERENCES,
+                BaseScenario.DifferentiationMethod.COMPLEX_STEP,
             ],
             'structuring': True,
         },
