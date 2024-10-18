@@ -138,7 +138,6 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.Disc1.cache_type': init_dict('string'),
                     ns_2 + '.Disc1.cache_file_path': init_dict('string'),
                     ns_2 + '.Disc1.debug_mode': init_dict('string'),
-                    ns_2 + '.Disc1.residual_variables': init_dict('dict'),
                     ns_2 + '.Disc1.run_solves_residuals': init_dict('bool'),
                     ns_2 + '.linearization_mode': init_dict('string'),
                     ns_2 + '.linear_solver_MDA': init_dict('string'),

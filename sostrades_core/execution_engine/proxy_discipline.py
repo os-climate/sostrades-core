@@ -234,7 +234,7 @@ class ProxyDiscipline:
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
                      NUMERICAL: True, STRUCTURING: True, RUN_NEEDED: True},
-        RESIDUAL_VARIABLES: {TYPE: 'dict', DEFAULT: {}, SUBTYPE: {'dict': 'string'}, NUMERICAL: True, RUN_NEEDED: True},
+        RESIDUAL_VARIABLES: {TYPE: 'dict', DEFAULT: {}, SUBTYPE: {'dict': 'string'}, NUMERICAL: True},
         RUN_SOLVE_RESIDUALS: {TYPE: 'bool', DEFAULT: False, NUMERICAL: True}
 
     }
