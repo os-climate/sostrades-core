@@ -29,7 +29,7 @@ class SoSDriverException(Exception):
 
 
 class SoSDisciplineDriver(SoSDiscipline):
-    def __init__(self, full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, disciplines,
+    def __init__(self, full_name, grammar_type, cache_type, sos_wrapp, reduced_dm, disciplines,
                  logger: logging.Logger):
-        super().__init__(full_name, grammar_type, cache_type, cache_file_path, sos_wrapp, reduced_dm, logger=logger)
+        super().__init__(full_name, grammar_type, cache_type, sos_wrapp, reduced_dm, logger=logger)
         self._disciplines = disciplines

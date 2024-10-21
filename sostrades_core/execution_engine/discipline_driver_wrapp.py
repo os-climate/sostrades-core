@@ -58,7 +58,6 @@ class DisciplineDriverWrapp(DisciplineWrapp):
             self.discipline = SoSDisciplineDriver(full_name=proxy.get_disc_full_name(),
                                                          grammar_type=proxy.SOS_GRAMMAR_TYPE,
                                                          cache_type=cache_type,
-                                                         cache_file_path=cache_file_path,
                                                          sos_wrapp=self.wrapper,
                                                          reduced_dm=reduced_dm,
                                                   disciplines=sub_disciplines,
