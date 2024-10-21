@@ -230,8 +230,8 @@ class TestMDALoop(unittest.TestCase):
         residual_history = exec_eng.root_process.discipline_wrapp.discipline.inner_mdas[
             0].residual_history
         residual_history_output = \
-            exec_eng.dm.get_disciplines_with_name('EE')[0].discipline_wrapp.discipline.io.data[
-                'EE.residuals_history'][
+            exec_eng.dm.get_value(
+                'EE.residuals_history')[
                 exec_eng.root_process.discipline_wrapp.discipline.inner_mdas[0].name].values.tolist()
         assert residual_history == residual_history_output
 
@@ -1182,7 +1182,7 @@ class TestMDALoop(unittest.TestCase):
         assert len(proxy_in_names) == len(disc_in_names)
         self.assertListEqual(proxy_in_names, disc_in_names)
 
-        proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
+        proxy_out_names = sorted(exec_eng.root_process.get_output_data_names(numerical_inputs=False))
         disc_out_names = sorted(exec_eng.root_process.discipline_wrapp.discipline.get_output_data_names())
         # MDA residuals norm is now in local_data of the mda but not retrieved by the proxy (already last value of residuals_history) so we deete it from gemseo local_data before check length
         disc_out_names.remove(BaseMDA.NORMALIZED_RESIDUAL_NORM)
@@ -1264,7 +1264,7 @@ class TestMDALoop(unittest.TestCase):
         assert len(proxy_in_names) == len(disc_in_names)
         self.assertListEqual(proxy_in_names, disc_in_names)
 
-        proxy_out_names = sorted(exec_eng.root_process.get_output_data_names())
+        proxy_out_names = sorted(exec_eng.root_process.get_output_data_names(numerical_inputs=False))
         disc_out_names = sorted(exec_eng.root_process.discipline_wrapp.discipline.get_output_data_names())
         # MDA residuals norm is now in local_data of the mda but not retrieved by the proxy (already last value of residuals_history) so we deete it from gemseo local_data before check length
         disc_out_names.remove(BaseMDA.NORMALIZED_RESIDUAL_NORM)

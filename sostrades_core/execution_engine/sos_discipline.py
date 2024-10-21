@@ -68,17 +68,17 @@ class SoSDiscipline(Discipline):
     RESIDUAL_VARIABLES = 'residual_variables'
     RUN_SOLVE_RESIDUALS = 'run_solves_residuals'
 
-    NUM_DESC_IN = {LINEARIZATION_MODE, 'cache_type', 'cache_file_path', 'debug_mode'}
+    NUM_DESC_IN = {LINEARIZATION_MODE, 'cache_type', 'cache_file_path', DEBUG_MODE}
 
     def __init__(
         self,
         full_name: str,
         grammar_type: str,
         cache_type: str,
-        cache_file_path: str,
         sos_wrapp: SoSWrapp,
         reduced_dm: dict,
         logger: logging.Logger,
+        debug_mode=''
     ):
         """
         Constructor
@@ -98,7 +98,7 @@ class SoSDiscipline(Discipline):
         self.output_full_name_map = None
         self.logger = logger
         # grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path
-
+        self.debug_mode = debug_mode
         self.default_grammar_type = grammar_type
 
         super().__init__(name=full_name)
@@ -120,7 +120,7 @@ class SoSDiscipline(Discipline):
         # self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
 
         # debug mode: input change
-        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
+        if self.debug_mode in ['input_change', 'all']:
             disc_inputs_before_execution = {
                 key: {'value': value}
                 for key, value in deepcopy(self.io.get_input_data()).items()
@@ -133,13 +133,13 @@ class SoSDiscipline(Discipline):
         self.io.update_output_data(local_data)
 
         # debug modes
-        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['nan', 'all']:
+        if self.debug_mode in ['nan', 'all']:
             self._check_nan_in_data(self.io.data)
 
-        # if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['linearize_data_change']:
+        # if self.debug_mode in ['linearize_data_change']:
         #     self.check_linearize_data_changes = True
 
-        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['input_change', 'all']:
+        if self.debug_mode in ['input_change', 'all']:
             disc_inputs_after_execution = {
                 key: {'value': value}
                 for key, value in deepcopy(self.io.get_input_data()).items()
@@ -154,7 +154,7 @@ class SoSDiscipline(Discipline):
             if output_error != '':
                 raise ValueError(output_error)
 
-        if self.sos_wrapp.get_sosdisc_inputs(self.DEBUG_MODE) in ['min_max_couplings', 'all']:
+        if self.debug_mode in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
 
     def execute(

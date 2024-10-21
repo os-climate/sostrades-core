@@ -124,10 +124,10 @@ class DisciplineWrapp(object):
                 full_name=proxy.get_disc_full_name(),
                 grammar_type=proxy.SOS_GRAMMAR_TYPE,
                 cache_type=cache_type,
-                cache_file_path=cache_file_path,
                 sos_wrapp=self.wrapper,
                 reduced_dm=reduced_dm,
                 logger=self.logger.getChild("SoSDiscipline"),
+                debug_mode=proxy.get_sosdisc_inputs(SoSDiscipline.DEBUG_MODE)
             )
             self._init_grammar_with_keys(proxy)
             self._set_wrapper_attributes(proxy, self.wrapper)
@@ -157,7 +157,7 @@ class DisciplineWrapp(object):
         grammar.update_from_names(list(input_names_and_defaults.keys()))
         grammar.update_defaults({key: value for key, value in input_names_and_defaults.items() if value is not None})
 
-        output_names = proxy.get_output_data_names()
+        output_names = proxy.get_output_data_names(numerical_inputs=False)
         grammar = self.discipline.output_grammar
         grammar.clear()
         grammar.update_from_names(output_names)
@@ -258,7 +258,7 @@ class DisciplineWrapp(object):
                 proxy.design_space,
                 proxy.maximize_objective,
                 proxy.get_input_data_names(numerical_inputs=False),
-                proxy.get_output_data_names(),
+                proxy.get_output_data_names(numerical_inputs=False),
                 logger=self.logger.getChild("SoSMDOScenarioAdapter"),
                 reduced_dm=reduced_dm,
                 mdo_options=mdo_options
@@ -300,7 +300,7 @@ class DisciplineWrapp(object):
 
         missing_inputs = soscoupling_inputs | coupling_inputs
 
-        soscoupling_outputs = set(proxy.get_output_data_names())
+        soscoupling_outputs = set(proxy.get_output_data_names(numerical_inputs=False))
         coupling_outputs = set(coupling.io.output_grammar.names)
         missing_outputs = soscoupling_outputs | coupling_outputs
 

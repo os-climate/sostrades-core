@@ -159,7 +159,7 @@ class SoSMDAChain(MDAChain):
         # pass the reduced_dm to the data_converter
         self.input_grammar.data_converter.reduced_dm = self.reduced_dm
         self.output_grammar.data_converter.reduced_dm = self.reduced_dm
-
+        self.residuals_history = DataFrame({})
         self.scaling = scaling_method
         if inner_mda_name == "MDAGSNewton" and tolerance_gs is not None:
             for mda in self.inner_mdas:
@@ -196,8 +196,8 @@ class SoSMDAChain(MDAChain):
 
         # del self.local_data[self.NORMALIZED_RESIDUAL_NORM]
         # TODO: use a method to get the full name
-        out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
-        self.io.update_output_data(out)
+        # out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
+        # self.io.update_output_data(out)
 
     def check_jacobian(
         self,
@@ -254,8 +254,8 @@ class SoSMDAChain(MDAChain):
             step=step,
             threshold=threshold,
             linearization_mode=linearization_mode,
-            inputs=inputs,
-            outputs=outputs,
+            input_names=inputs,
+            output_names=outputs,
             parallel=parallel,
             n_processes=n_processes,
             use_threading=use_threading,

@@ -420,7 +420,7 @@ class TestProxyDiscipline(unittest.TestCase):
         self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.validate_input_data = False
         local_data = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.execute(values_dict)
         ref_local_data = {'Test.x': 1.0, 'Test.Disc1.a': 1.0, 'Test.Disc1.b': 2.0,
-                          'Test.Disc1.indicator': 2.0, 'Test.y': 3.0, 'Test.Disc1.debug_mode': ''}
+                          'Test.Disc1.indicator': 2.0, 'Test.y': 3.0}
         self.assertTrue(dict_are_equal(local_data, ref_local_data))
         pass
 
