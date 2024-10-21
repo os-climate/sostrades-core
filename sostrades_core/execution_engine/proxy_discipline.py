@@ -19,7 +19,6 @@ import logging
 from copy import deepcopy
 from typing import List, Union
 
-from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.process_discipline import ProcessDiscipline
@@ -479,7 +478,7 @@ class ProxyDiscipline:
             # init gemseo discipline if it has not been created yet
             cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
 
-            if not cache_type:
+            if not cache_type or cache_type.lower() == "none":  # required for compatibility with old studies
                 cache_type = Discipline.CacheType.NONE
             self.discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
@@ -548,21 +547,19 @@ class ProxyDiscipline:
                     observer)
 
     def set_cache(self, disc: Discipline, cache_type: str):
-        '''
-        Instanciate and set cache for disc if cache_type is not Discipline.CacheType.NONE
+        """Instanciate and set cache for disc.
 
         Arguments:
             disc (Discipline): GEMSEO object to set cache
             cache_type (string): type of cache
-        '''
-        if cache_type == MDOChain.CacheType.HDF5:
-            raise Exception(
-                'if the cache type is set to HDF5Cache, the cache_file path must be set')
-        else:
-            disc.cache = None
-            if cache_type != MDOChain.CacheType.NONE:
-                disc.set_cache(
-                    cache_type=cache_type)
+        """
+        if cache_type == Discipline.CacheType.HDF5:
+            msg = "If the cache type is set to HDF5Cache, the cache_file path must be set"
+            raise ValueError(msg)
+        cache_type = (
+            Discipline.CacheType.NONE if cache_type.lower() == "none" else cache_type
+        )  # required for compatibility with old studies
+        disc.set_cache(cache_type=cache_type)
 
     def delete_cache_in_cache_map(self):
         '''
@@ -659,7 +656,6 @@ class ProxyDiscipline:
         else:
             return [key for key, value in data_out.items() if
                     not value[self.NUMERICAL]]
-
 
     def get_data_io_dict(self, io_type: str) -> dict:
         '''
