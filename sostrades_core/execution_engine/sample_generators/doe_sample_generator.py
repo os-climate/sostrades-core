@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 from collections import ChainMap
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import pandas as pd
 from gemseo import get_available_doe_algorithms
@@ -31,13 +31,6 @@ from sostrades_core.execution_engine.sample_generators.abstract_sample_generator
     SampleTypeError,
 )
 from sostrades_core.tools.design_space import design_space as dspace_tool
-
-if TYPE_CHECKING:
-    from gemseo.algos.design_space import DesignSpace
-
-
-class DoeSampleTypeError(SampleTypeError):
-    pass
 
 
 class DoeSampleGenerator(AbstractSampleGenerator):
@@ -202,118 +195,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         samples = algo.compute_doe(design_space, **algo_options)
         samples = self._reformat_samples_from_design_space(samples, design_space)
         return self._put_samples_in_df_format(samples, design_space)
-
-    def _generate_normalized_samples(self, sampling_algo_name, algo_options, design_space):
-        """
-        Method that generate normalized samples
-
-        Arguments:
-            sampling_algo_name (string): name of the numerical algorithm
-            algo_options (dict): provides the selected value of each option of the algorithm
-            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
-
-        Returns:
-            normalized_samples (numpy matrix) :   matrix of n raws  (each raw is an input point to be evaluated)
-                                                  any variable of dim m will be in m columns of the matrix
-        """
-        gemseo_options = self._generate_gemseo_options(algo_options, design_space)
-
-        return self._generate_normalized_samples_from_doe_factory(
-            design_space, sampling_algo_name, **gemseo_options
-        )  # call to gemseo
-
-    def _generate_gemseo_options(self, algo_options, design_space):
-        """
-        Providing algorithm's option in format needed for the _generate_samples method of the Doe Factory.
-        Those options comes:
-        - from algo_options dict
-        - from design space: dimension, variables_names, variables_sizes
-                  - dimension is not in algo options in gemseo because it is in the design space and it is needed in the doe selected algorithm
-                  - variables_names, variables_sizes: only needed for DiagonalDOE algo and provided by design space
-
-
-        Arguments:
-            algo_options (dict): provides the selected value of each option of the algorithm
-                                 each option can be either 'default' or with a user's selected value
-            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
-
-        Returns:
-             gemseo_options (dict): the gemseo options dict for _generate_samples method of the Doe Factory.
-                                    It has options of the algorithm and the dimension of the design space.
-                                    It has also variables_names, and variables_sizes (for DiagonalDOE algo)
-
-        """
-        gemseo_options = {}
-        for algo_option in algo_options:
-            if algo_options[algo_option] != 'default':  # to be depreciated
-                gemseo_options[algo_option] = algo_options[algo_option]
-
-        self.logger.info(gemseo_options)
-        # TODO : logging from module ?
-
-        # The following 3 lines come from compute_doe in doe_lib.py of gemseo
-        # gemseo_options[self.DIMENSION] = design_space.dimension
-        # Remark: those two following lines _VARIABLES_NAMES and _VARIABLES_SIZES are only used in gemseo
-        # lib_scalable.py for DiagonalDOE algorithm and associated reverse
-        # algo option.
-        gemseo_options[self._VARIABLES_NAMES] = design_space.variable_names
-        gemseo_options[self._VARIABLES_SIZES] = design_space.variable_sizes
-
-        return gemseo_options
-
-    def _generate_normalized_samples_from_doe_factory(
-        self, design_space: DesignSpace, sampling_algo_name: str, **gemseo_options
-    ):
-        """Generating samples for the Doe using the _generate_samples method of the Doe Factory.
-
-        Arguments:
-            design_space: The design space used for the sampling.
-            sampling_algo_name: The name of the sampling algo.
-            gemseo_options: The gemseo options dict for _generate_samples method of the Doe Factory.
-                It has options of the algorithm and dimension of the design space.
-                It has also variables_names, and variables_sizes (for DiagonalDOE algo)
-
-        Returns:
-            normalized_samples:  normalized_samples matrix of n raws (each raw is an input point to be evaluated).
-                Any variable of dim m will be in m columns of the matrix.
-
-        """
-        algo = self.doe_factory.create(sampling_algo_name)
-        return algo._generate_unit_samples(design_space, **gemseo_options)
-
-    def _unnormalize_samples_from_design_space(self, normalized_samples, design_space):
-        """
-        Un-normalize sample from design space lower and upper bound
-        Check whether the variables satisfy the design space requirements
-        It uses methods from gemseo Design Space
-
-        Arguments:
-            normalized_samples (numpy matrix of floats) :  matrix of n raws  (each raw is an input point to be evaluated)
-                                                  any variable of dim m will be in m columns of the matrix
-            design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
-
-        Returns:
-            samples (numpy matrix of floats) : unnormalized samples
-                                     matrix of n raws  (each raw is an input point to be evaluated)
-                                     any variable of dim m will be in m columns of the matrix
-
-
-        Raises:
-            ValueError: Either if the dimension of the values vector is wrong,
-                if the values are not specified as an array or a dictionary,
-                if the values are outside the bounds of the variables or
-                if the component of an integer variable is an integer.
-        """
-        # the provided samples are normalized as bounds of design space where not
-        # used yet
-        unnormalize_vect = design_space.unnormalize_vect
-        round_vect = design_space.round_vect
-        samples = []
-        for sample in normalized_samples:  # To be vectorized
-            x_sample = round_vect(unnormalize_vect(sample))
-            design_space.check_membership(x_sample)
-            samples.append(x_sample)
-        return samples
 
     def _reformat_samples_from_design_space(self, samples, design_space):
         """
