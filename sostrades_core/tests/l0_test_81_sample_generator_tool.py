@@ -445,9 +445,6 @@ class TestSampleGeneratorTool(unittest.TestCase):
         # columns in the sampling are generated and that they are within design
         # space range.
 
-    def test_08_check_big_n_samples(self):
-        """Test to check big values of n_samples and associated performances"""
-
     def test_10_check_generate_samples_cartesian_product(self):
         """Test to check the cartesian product algorithm"""
         dict_of_list_values = {'x': [0.0, 3.0, 4.0, 5.0, 7.0], 'z': [[-10.0, 0.0], [-5.0, 4.0], [10, 10]]}
