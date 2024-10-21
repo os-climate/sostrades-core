@@ -233,7 +233,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ProxyDiscipline.TYPE: 'string',
             # ProxyDiscipline.DEFAULT: 'None',
             ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
-            #ProxyDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
+            # ProxyDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
             ProxyDiscipline.NUMERICAL: True,
             ProxyDiscipline.STRUCTURING: True,
         },
@@ -257,7 +257,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ProxyDiscipline.TYPE: 'string',
             # ProxyDiscipline.DEFAULT: 'None',
             ProxyDiscipline.DEFAULT: DEFAULT_LINEAR_SOLVER_PRECONFITIONER,
-            #ProxyDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
+            # ProxyDiscipline.POSSIBLE_VALUES: POSSIBLE_VALUES_PRECONDITIONER,
             ProxyDiscipline.NUMERICAL: True,
             ProxyDiscipline.STRUCTURING: True,
         },
@@ -548,7 +548,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def _build_coupling_structure(self):
         """Build CouplingStructure"""
-        # the idea was not to crreate gemseo disciplines in configuration but no other choice for coupling sturcture right now
+        # the idea was not to create gemseo disciplines in configuration but no other choice for coupling structure right now
         gemseo_disciplines = self.create_gemseo_disciplines()
         # filter MDOScenario for coupling structure
         # gemseo_disciplines_filtered = [d.disciplines[0] if isinstance(d, SoSMDOScenario) else d for d in
@@ -699,6 +699,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 gemseo_disciplines.append(gemseo_disc)
                 self.gemseo_to_sos_disciplines[gemseo_disc] = disc
         return gemseo_disciplines
+
     def set_gemseo_disciplines_caches(self, mda_chain_cache):
         """Set cache of MDAChain, MDOChain and sub MDAs"""
         cache_type = self.get_sosdisc_inputs('cache_type')
