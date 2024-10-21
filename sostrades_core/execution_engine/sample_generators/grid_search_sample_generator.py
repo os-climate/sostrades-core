@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
 
 import logging
 
@@ -23,30 +24,22 @@ from sostrades_core.execution_engine.sample_generators.cartesian_product_sample_
 )
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import (
     DoeSampleGenerator,
-    DoeSampleTypeError,
 )
 
 LOGGER = logging.getLogger(__name__)
 
-'''
+"""
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
-
-
-class GridSearchSampleGeneratorTypeError(DoeSampleTypeError):
-    pass
+"""
 
 
 class GridSearchSampleGenerator(DoeSampleGenerator):
-    '''
-    Caresian Product class that generates sampling
-    '''
+    """Caresian Product class that generates sampling"""
+
     GENERATOR_NAME = "GRID_SEARCH_GENERATOR"
 
     def __init__(self, logger: logging.Logger):
-        '''
-        Constructor
-        '''
+        """Constructor"""
         super().__init__(logger=logger)
         # TODO: currently it is a doesamplegenerator using cartesianproductsamplegenerator in composition,
         #  design might be improved as only need to setup a design space so it could be detached from DoE setup
@@ -73,12 +66,13 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
         Arguments:
             eval_inputs(dataframe): Doe-like eval_inputs.
             design_space(dataframe): GridSearch design space with nb_points.
+
         Returns:
             eval_inputs_cp(dataframe): with extra column with the values for CartesianProduct SampleGenerator.
         """
         if eval_inputs is not None and design_space is not None:
             lists_of_values = []
-            for idx, var_row in eval_inputs.iterrows():
+            for _idx, var_row in eval_inputs.iterrows():
                 if var_row['selected_input'] is True and var_row['full_name'] in design_space['variable'].tolist():
                     dspace_row = design_space[design_space['variable'] == var_row['full_name']].iloc[0]
                     lb = dspace_row['lower_bnd']
@@ -88,8 +82,8 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
                 else:
                     lists_of_values.append([])
 
-            eval_inputs_cp = eval_inputs.assign(list_of_values=lists_of_values)
-            return eval_inputs_cp
+            return eval_inputs.assign(list_of_values=lists_of_values)
+        return None
 
     def is_ready_to_sample(self, proxy):
         disc_in = proxy.get_data_in()
@@ -97,6 +91,5 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
             # avoid empty sampling
             _args, _kwargs = self.get_arguments(proxy)
             return bool(_kwargs["dict_of_list_values"])
-        else:
-            # otherwise it is intermediate config. stage
-            return False
+        # otherwise it is intermediate config. stage
+        return False
