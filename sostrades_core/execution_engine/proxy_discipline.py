@@ -653,9 +653,8 @@ class ProxyDiscipline:
 
         if numerical_inputs:
             return list(data_out.keys())
-        else:
-            return [key for key, value in data_out.items() if
-                    not value[self.NUMERICAL]]
+        return [key for key, value in data_out.items() if
+                not value[self.NUMERICAL]]
 
     def get_data_io_dict(self, io_type: str) -> dict:
         '''
