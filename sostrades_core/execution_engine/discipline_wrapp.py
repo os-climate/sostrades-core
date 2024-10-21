@@ -19,6 +19,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from gemseo.core.discipline import Discipline
+
 from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 from sostrades_core.execution_engine.sos_mdo_scenario_adapter import SoSMDOScenarioAdapter
@@ -108,7 +110,7 @@ class DisciplineWrapp:
         if self.wrapper is not None:
             self.wrapper.check_data_integrity()
 
-    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):
+    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=Discipline.CacheType.NONE, cache_file_path=None):
         """
         SoSDiscipline instanciation.
 
