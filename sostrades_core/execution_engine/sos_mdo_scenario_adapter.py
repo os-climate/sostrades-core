@@ -97,6 +97,10 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         self._pre_run()
         # with LoggingContext(LOGGING_SETTINGS.logger, level=self.__scenario_log_level):
         self.scenario.execute(**self.mdo_options)
+        if self.scenario.eval_jac:
+            mda_chain = self.scenario.disciplines[0]
+            mda_chain.linearize(mda_chain.io.data, execute=False)
+            self.jac = mda_chain.jac
         if self.scenario.eval_mode:
             self._retrieve_top_level_outputs()
         else:
