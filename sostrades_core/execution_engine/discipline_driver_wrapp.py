@@ -14,7 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from __future__ import annotations
+
+from gemseo.core.discipline import Discipline
 
 from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
 from sostrades_core.execution_engine.sos_discipline_driver import (
@@ -40,7 +43,9 @@ class DisciplineDriverWrapp(DisciplineWrapp):
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the Discipline (or None)
     """
 
-    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):  # type: (...) -> None
+    def create_gemseo_discipline(
+        self, proxy=None, reduced_dm=None, cache_type=Discipline.CacheType.NONE, cache_file_path=None
+    ):  # type: (...) -> None
         """
         SoSDiscipline instanciation.
 
