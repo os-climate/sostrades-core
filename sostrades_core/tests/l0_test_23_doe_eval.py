@@ -990,11 +990,12 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         # Check coherence between ProxyCoupling of Eval and SoSMDAChain:
 
-        assert set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_output_data_names()) == set(
+        assert sorted(set(exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_output_data_names(
+            numerical_inputs=False))) == sorted(set(
             exec_eng.root_process.proxy_disciplines[1]
             .proxy_disciplines[0]
             .discipline_wrapp.discipline.get_output_data_names()
-        )
+        ))
 
         assert set(
             exec_eng.root_process.proxy_disciplines[1].proxy_disciplines[0].get_input_data_names(numerical_inputs=False)
