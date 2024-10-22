@@ -880,7 +880,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         computed_jac = exec_eng.root_process.proxy_disciplines[
             0].discipline_wrapp.discipline.jac
 
-        self.assertListEqual(sorted(list(computed_jac.keys())), sorted([
+        self.assertListEqual(sorted(computed_jac.keys()), sorted([
             f'{self.ns}.{self.sc_name}.{self.c_name}.{var}' for var in ['obj', 'c_1', 'c_2']]))
 
     def _test_10_update_dspace(self):
@@ -1160,6 +1160,7 @@ class TestSoSOptimScenario(unittest.TestCase):
                                                                     "ineq_tolerance": 1e-6,
                                                                     "normalize_design_space": True}
         disc_dict[f'{self.ns}.SellarOptimScenario.execute_at_xopt'] = False
+        disc_dict[f'{self.ns}.SellarOptimScenario.desactivate_optim_out_storage'] = False
         exec_eng.dm.set_values_from_dict(disc_dict)
 
         # Sellar inputs
