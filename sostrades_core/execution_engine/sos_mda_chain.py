@@ -17,8 +17,9 @@ limitations under the License.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, Mapping, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Mapping, Sequence
 
+import pandas as pd
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.execution_status import ExecutionStatus
@@ -80,6 +81,7 @@ class SoSMDAChain(MDAChain):
         },
     }
     NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']
+
     def __init__(
         self,
         disciplines: Sequence[Discipline],
@@ -199,6 +201,12 @@ class SoSMDAChain(MDAChain):
         # out = {f'{self.name}.{self.RESIDUALS_HISTORY}': self.residuals_history}
         # self.io.update_output_data(out)
 
+    def add_differentiated_inputs(self, input_names: Iterable[str] = ()) -> None:  # noqa: D102
+        SoSDiscipline.add_differentiated_inputs(self, input_names)
+
+    def add_differentiated_outputs(self, output_names: Iterable[str] = ()) -> None:  # noqa: D102
+        SoSDiscipline.add_differentiated_outputs(self, output_names)
+
     def check_jacobian(
         self,
         input_data=None,
@@ -308,7 +316,6 @@ class SoSMDAChain(MDAChain):
 
         """
         has_nan = False
-        import pandas as pd
 
         for data_key, data_value in data.items():
             nan_found = False

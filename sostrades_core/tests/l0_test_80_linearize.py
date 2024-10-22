@@ -73,9 +73,14 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         for proxy_disc in exec_eng.root_process.proxy_disciplines:
             mdo_disc = proxy_disc.discipline_wrapp.discipline
-            mdo_disc.linearize(values_dict, compute_all_jacobians=True)
+            mdo_disc.add_differentiated_inputs()
+            mdo_disc.add_differentiated_outputs()
+            mdo_disc.linearize(values_dict)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
-        exec_eng.root_process.discipline_wrapp.discipline.linearize(values_dict, compute_all_jacobians=True)
+        mda_chain = exec_eng.root_process.discipline_wrapp.discipline
+        mda_chain.add_differentiated_inputs()
+        mda_chain.add_differentiated_outputs()
+        mda_chain.linearize(values_dict)
         print('LINEARIZE performed for root coupling')
 
     def test_02_linearize_on_sellar_coupling(self):
