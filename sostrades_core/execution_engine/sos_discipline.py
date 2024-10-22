@@ -17,10 +17,12 @@ limitations under the License.
 from __future__ import annotations
 
 # debug mode
+from collections.abc import Iterable
 from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
 
+import pandas as pd
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
@@ -29,6 +31,7 @@ from numpy import floating, ndarray
 from pandas import DataFrame
 from scipy.sparse import lil_matrix
 
+from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 if TYPE_CHECKING:
@@ -151,7 +154,7 @@ class SoSDiscipline(Discipline):
                 'Discipline inputs integrity through run',
                 is_output_error=True,
             )
-            if output_error != '':
+            if output_error:
                 raise ValueError(output_error)
 
         if self.debug_mode in ['min_max_couplings', 'all']:
@@ -170,6 +173,20 @@ class SoSDiscipline(Discipline):
             self.execution_status.value = self.execution_status.Status.FAILED
             raise
         return self._local_data
+
+    def add_differentiated_inputs(self, input_names: Iterable[str] = ()) -> None:  # noqa: D102
+        input_names = input_names or self.io.input_grammar.keys()
+        filtered_inputs = filter_variables_to_convert(self.reduced_dm, input_names, write_logs=True, logger=self.logger)
+        if filtered_inputs:
+            Discipline.add_differentiated_inputs(self, filtered_inputs)
+
+    def add_differentiated_outputs(self, output_names: Iterable[str] = ()) -> None:  # noqa: D102
+        output_names = output_names or self.io.output_grammar.keys()
+        filtered_outputs = filter_variables_to_convert(
+            self.reduced_dm, output_names, write_logs=True, logger=self.logger
+        )
+        if filtered_outputs:
+            Discipline.add_differentiated_outputs(self, filtered_outputs)
 
     def _retrieve_diff_inouts(
         self,
@@ -258,7 +275,6 @@ class SoSDiscipline(Discipline):
             use_threading,
             wait_time_between_fork,
         )
-
 
         if auto_set_step:
             approx.auto_set_step(output_names, input_names)
@@ -448,7 +464,6 @@ class SoSDiscipline(Discipline):
 
         """
         has_nan = False
-        import pandas as pd
 
         for data_key, data_value in data.items():
             nan_found = False
@@ -490,8 +505,6 @@ class SoSDiscipline(Discipline):
         Return:
             output_error (dict): dict with mismatches spotted in comparison
         """
-        from sostrades_core.tools.compare_data_manager_tooling import compare_dict
-
         dict_error = {}
         compare_dict(left_dict, right_dict, '', dict_error)
         output_error = ''
