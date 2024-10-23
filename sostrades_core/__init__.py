@@ -29,4 +29,4 @@ EXEC_ENGINE = "execution_engine"
 os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
 # TODO hotfix for the gemseo circular import : first import gemseo to resolve base gemseo classes, then force refresh of factories
 # Should not be needed after a fix in gemseo code for factories
-import gemseo
+import gemseo  # noqa: E402, F401
