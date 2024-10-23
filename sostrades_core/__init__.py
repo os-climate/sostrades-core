@@ -26,9 +26,7 @@ parent_dir = dirname(__file__)
 GEMSEO_ADDON_DIR = "gemseo_addon"
 EXEC_ENGINE = "execution_engine"
 
+os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
 # TODO hotfix for the gemseo circular import : first import gemseo to resolve base gemseo classes, then force refresh of factories
 # Should not be needed after a fix in gemseo code for factories
-# import gemseo
-
-os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
-
+import gemseo
