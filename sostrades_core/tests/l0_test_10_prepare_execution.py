@@ -19,7 +19,7 @@ import unittest
 from gemseo.mda.mda_chain import MDAChain
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -63,15 +63,14 @@ class TestPrepareExecution(unittest.TestCase):
 
         ee.prepare_execution()
 
-        self.assertTrue(isinstance(ee.root_process.mdo_discipline_wrapp.mdo_discipline, MDAChain))
+        self.assertTrue(isinstance(ee.root_process.discipline_wrapp.discipline, MDAChain))
 
         for proxy_disc in ee.root_process.proxy_disciplines:
-            self.assertTrue(isinstance(proxy_disc.mdo_discipline_wrapp.mdo_discipline, SoSMDODiscipline))
-            self.assertIn(proxy_disc.mdo_discipline_wrapp.mdo_discipline,
-                          ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines)
+            self.assertTrue(isinstance(proxy_disc.discipline_wrapp.discipline, SoSDiscipline))
+            self.assertIn(proxy_disc.discipline_wrapp.discipline,
+                          ee.root_process.discipline_wrapp.discipline.disciplines)
             self.assertIn(proxy_disc, ee.root_process.proxy_disciplines)
             self.assertListEqual(proxy_disc.get_input_data_names(numerical_inputs=False),
-                                 list(proxy_disc.mdo_discipline_wrapp.mdo_discipline.input_grammar.names))
+                                 list(proxy_disc.discipline_wrapp.discipline.input_grammar.names))
             self.assertListEqual(proxy_disc.get_output_data_names(),
-                                 list(proxy_disc.mdo_discipline_wrapp.mdo_discipline.output_grammar.names))
-
+                                 list(proxy_disc.discipline_wrapp.discipline.output_grammar.names))

@@ -134,7 +134,7 @@ class TestMDALoop(unittest.TestCase):
         """
 
         exec_eng = ExecutionEngine(self.name)
-        LOGGER = exec_eng.logger.getChild("ProxyDiscipline.MDODisciplineWrapp.SoSMDODiscipline")
+        LOGGER = exec_eng.logger.getChild("ProxyDiscipline.DisciplineWrapp.SoSDiscipline")
         LOGGER.setLevel(DEBUG)
         LOGGER.addHandler(self.my_handler)
 
@@ -246,13 +246,13 @@ class TestMDALoop(unittest.TestCase):
         # exec_eng.execute()
         #
         # self.assertEqual(
-        #     proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+        #     proxy_discs[0].discipline_wrapp.discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
         #     'linearize_data_change')
         # self.assertEqual(
-        #     proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+        #     proxy_discs[1].discipline_wrapp.discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
         #     'linearize_data_change')
         # self.assertEqual(
-        #     proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+        #     proxy_discs[2].discipline_wrapp.discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
         #     'linearize_data_change')
 
         # upon activation of another debug mode for the higher coupling
@@ -279,13 +279,13 @@ class TestMDALoop(unittest.TestCase):
         # sos_wrapps
         exec_eng.execute()
         self.assertEqual(
-            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+            proxy_discs[0].discipline_wrapp.discipline.debug_mode,
             'input_change')
         self.assertEqual(
-            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+            proxy_discs[1].discipline_wrapp.discipline.debug_mode,
             'input_change')
         self.assertEqual(
-            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+            proxy_discs[2].discipline_wrapp.discipline.debug_mode,
             'input_change')
 
         # check that if I deactivate the debug mode of the lower coupling then all the children get deactivated
@@ -297,11 +297,11 @@ class TestMDALoop(unittest.TestCase):
         self.assertEqual(exec_eng.dm.get_value(f'{self.name}.{coupling_name}.Sellar_3.debug_mode'), '')
         exec_eng.execute()
         self.assertEqual(
-            proxy_discs[0].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+            proxy_discs[0].discipline_wrapp.discipline.debug_mode,
             '')
         self.assertEqual(
-            proxy_discs[1].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+            proxy_discs[1].discipline_wrapp.discipline.debug_mode,
             '')
         self.assertEqual(
-            proxy_discs[2].mdo_discipline_wrapp.mdo_discipline.sos_wrapp.get_sosdisc_inputs('debug_mode'),
+            proxy_discs[2].discipline_wrapp.discipline.debug_mode,
             '')

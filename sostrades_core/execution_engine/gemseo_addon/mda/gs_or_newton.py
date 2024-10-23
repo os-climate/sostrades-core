@@ -21,6 +21,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.sequential_mda import MDAGSNewton, MDASequential
 
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
@@ -29,7 +30,7 @@ from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline.discipline import Discipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 
@@ -43,7 +44,7 @@ class GSorNewtonMDA(MDASequential):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         name: str | None = None,
         grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
         tolerance: float = 1e-6,
@@ -63,7 +64,7 @@ class GSorNewtonMDA(MDASequential):
         Constructor
 
         :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
+        :type disciplines: list(Discipline)
         :param name: name
         :type name: str
         :param grammar_type: the type of grammar to use for IO declaration
@@ -96,13 +97,14 @@ class GSorNewtonMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs, name=None, grammar_type=grammar_type, tolerance=tolerance)
+        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs, name=f'{name}_MDAGS',
+                                   grammar_type=grammar_type,
+                                   tolerance=tolerance)
 
         mda_newton = MDAGSNewton(
             disciplines,
             max_mda_iter=max_mda_iter,
-            name=None,
-            grammar_type=grammar_type,
+            name=f'{name}_MDAGSNewton',
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
             use_lu_fact=use_lu_fact,
@@ -118,7 +120,6 @@ class GSorNewtonMDA(MDASequential):
             disciplines,
             sequence,
             name=name,
-            grammar_type=grammar_type,
             max_mda_iter=max_mda_iter,
             tolerance=tolerance,
             linear_solver_options=linear_solver_options,
@@ -142,21 +143,21 @@ class GSorNewtonMDA(MDASequential):
         dm_values = {}
         try:
             mda_i = self.mda_sequence[1]
-            mda_i.reset_statuses_for_run()
+            mda_i.execution_status.value = ExecutionStatus.Status.PENDING
             # TODO: [discuss limitations] mechanism not possible in EEV4 --> remove
             # dm_values = deepcopy(self.disciplines[0].dm.get_data_dict_values())
 
-            self.local_data = mda_i.execute(self.local_data)
+            self.io.data = mda_i.execute(self.io.data)
         except:
             LOGGER.warning('The MDAGSNewton has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
-            mda_i.reset_statuses_for_run()
+            mda_i.execution_status.value = ExecutionStatus.Status.PENDING
 
             # TODO: [discuss limitations] mechanism not possible in EEV4 --> remove
             # dm = self.disciplines[0].ee.dm
             # # set values directrly in dm to avoid reconfigure of disciplines
             # dm.set_values_from_dict(dm_values)
             # self.disciplines[0].ee.load_study_from_input_dict(dm_values)
-            self.local_data = mda_i.execute(self.local_data)
+            self.io.data = mda_i.execute(self.io.data)
 
         self.residual_history += mda_i.residual_history

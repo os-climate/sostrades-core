@@ -253,20 +253,9 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
 
             var_new_type = convert_array_into_df(
                 var_array, metadata, excluded_columns)
-        # elif _type == 'string':
-        #     metadata = metadata_list[0]
-        #
-        #     local_data_updt[key] = next((strg for strg, int_to_convert in metadata['known_values'].items(
-        #     ) if int_to_convert == to_convert), None)
-        # elif _type == 'string_list':
-        #     local_data_updt[key] = []
-        #     for i, val in enumerate(to_convert):
-        #         metadata = metadata_list[i]
-        #         local_data_updt[key].append(
-        #             next((strg for strg, int_to_convert in metadata['known_values'].items(
-        #             ) if int_to_convert == val), None))
-        # elif _type in ['float', 'int']:
 
+        elif _type == 'string':
+            var_new_type = var_array[0]
         else:
             var_new_type = var_array
     return var_new_type
@@ -610,7 +599,8 @@ def convert_new_type_into_array(
                     var_converted, metadata = var, None
 
                 var_converted = array(var_converted)
-
+            elif var_type is str:
+                var_converted = array(var)
             else:
                 var_converted = var
     else:

@@ -19,8 +19,10 @@ import logging
 from copy import deepcopy
 from typing import List, Union
 
-from gemseo.core.chain import MDOChain
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.chains.chain import MDOChain
+from gemseo.core.discipline.discipline import Discipline
+from gemseo.core.execution_status import ExecutionStatus
+from gemseo.core.process_discipline import ProcessDiscipline
 from numpy import bool_ as np_bool
 from numpy import complex128 as np_complex128
 from numpy import float32 as np_float32
@@ -30,8 +32,8 @@ from numpy import int64 as np_int64
 from numpy import ndarray
 from pandas import DataFrame
 
-from sostrades_core.execution_engine.mdo_discipline_wrapp import MDODisciplineWrapp
-from sostrades_core.execution_engine.sos_mdo_discipline import SoSMDODiscipline
+from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
+from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
@@ -54,14 +56,14 @@ class ProxyDiscipline:
     Leaves of the process tree are direct instances of ProxyDiscipline. Other nodes are instances that inherit from
     ProxyDiscipline (e.g. ProxyCoupling).
 
-    An instance of ProxyDiscipline is in one-to-one aggregation with an instance of MDODisciplineWrapp, which allows the
+    An instance of ProxyDiscipline is in one-to-one aggregation with an instance of DisciplineWrapp, which allows the
     use of different wrapping modes to provide the model run.
 
     During the prepare_execution step, the ProxyDiscipline coordinates the instantiation of the GEMSEO objects that
     manage the model run.
 
     Attributes:
-        mdo_discipline_wrapp (MDODisciplineWrapp): aggregated object that references the wrapper and GEMSEO discipline
+        discipline_wrapp (DisciplineWrapp): aggregated object that references the wrapper and GEMSEO discipline
 
         proxy_disciplines (List[ProxyDiscipline]): children in the process tree
         status (property,<<associated with string _status>>): status in the current process,either CONFIGURATION or
@@ -143,7 +145,7 @@ class ProxyDiscipline:
     IS_EVAL = 'is_eval'
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     VARIABLE_KEY = 'variable_key'  # key for ontology
-    SIZE_MO = 'size_mo' #size of a data
+    SIZE_MO = 'size_mo'  # size of a data
     DISPLAY_NAME = 'display_name'
     DATA_TO_CHECK = [TYPE, UNIT, RANGE,
                      POSSIBLE_VALUES, USER_LEVEL]
@@ -202,10 +204,10 @@ class ProxyDiscipline:
     DEFAULT = 'default'
     POS_IN_MODE = ['value', 'list', 'dict']
 
-    DEBUG_MODE = SoSMDODiscipline.DEBUG_MODE
-    LINEARIZATION_MODE = SoSMDODiscipline.LINEARIZATION_MODE
-    RESIDUAL_VARIABLES = SoSMDODiscipline.RESIDUAL_VARIABLES
-    RUN_SOLVE_RESIDUALS = SoSMDODiscipline.RUN_SOLVE_RESIDUALS
+    DEBUG_MODE = SoSDiscipline.DEBUG_MODE
+    LINEARIZATION_MODE = SoSDiscipline.LINEARIZATION_MODE
+    RESIDUAL_VARIABLES = SoSDiscipline.RESIDUAL_VARIABLES
+    RUN_SOLVE_RESIDUALS = SoSDiscipline.RUN_SOLVE_RESIDUALS
     AVAILABLE_DEBUG_MODE = ["", "nan", "input_change", "min_max_couplings", "all"]
 
     # -- status section
@@ -220,34 +222,33 @@ class ProxyDiscipline:
                                  [0] * len(possible_maturities)))
 
     NUM_DESC_IN = {
-        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: MDODiscipline.ApproximationMode.FINITE_DIFFERENCES,
-                             POSSIBLE_VALUES: list(MDODiscipline.LinearizationMode),
+        LINEARIZATION_MODE: {TYPE: 'string', DEFAULT: Discipline.ApproximationMode.FINITE_DIFFERENCES,
+                             POSSIBLE_VALUES: list(Discipline.LinearizationMode),
 
                              NUMERICAL: True, STRUCTURING: True},
-        CACHE_TYPE: {TYPE: 'string', DEFAULT: MDODiscipline.CacheType.NONE,
-                     POSSIBLE_VALUES: [MDODiscipline.CacheType.NONE, MDODiscipline.CacheType.SIMPLE],
-                     # [MDOChain.CacheType.NONE, MDODiscipline.SIMPLE_CACHE, MDODiscipline.HDF5_CACHE, MDODiscipline.MEMORY_FULL_CACHE]
+        CACHE_TYPE: {TYPE: 'string', DEFAULT: Discipline.CacheType.NONE,
+                     POSSIBLE_VALUES: [Discipline.CacheType.NONE, Discipline.CacheType.SIMPLE],
+                     # [MDOChain.CacheType.NONE, Discipline.SIMPLE_CACHE, Discipline.HDF5_CACHE, Discipline.MEMORY_FULL_CACHE]
                      NUMERICAL: True,
                      STRUCTURING: True},
         CACHE_FILE_PATH: {TYPE: 'string', DEFAULT: '', NUMERICAL: True, OPTIONAL: True, STRUCTURING: True},
         DEBUG_MODE: {TYPE: 'string', DEFAULT: '', POSSIBLE_VALUES: list(AVAILABLE_DEBUG_MODE),
-                     NUMERICAL: True, STRUCTURING: True, RUN_NEEDED: True},
-        RESIDUAL_VARIABLES: {TYPE: 'dict', DEFAULT: {}, SUBTYPE: {'dict': 'string'}, NUMERICAL: True, RUN_NEEDED: True},
+                     NUMERICAL: True, STRUCTURING: True},
+        RESIDUAL_VARIABLES: {TYPE: 'dict', DEFAULT: {}, SUBTYPE: {'dict': 'string'}, NUMERICAL: True},
         RUN_SOLVE_RESIDUALS: {TYPE: 'bool', DEFAULT: False, NUMERICAL: True}
 
     }
 
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
-
+    ProcessDiscipline.default_grammar_type = SOS_GRAMMAR_TYPE
     # -- status
-    STATUS_VIRTUAL = MDODiscipline.ExecutionStatus.VIRTUAL
-    STATUS_PENDING = MDODiscipline.ExecutionStatus.PENDING
-    STATUS_DONE = MDODiscipline.ExecutionStatus.DONE
-    STATUS_RUNNING = MDODiscipline.ExecutionStatus.RUNNING
-    STATUS_FAILED = MDODiscipline.ExecutionStatus.FAILED
+    STATUS_PENDING = ExecutionStatus.Status.PENDING
+    STATUS_DONE = ExecutionStatus.Status.DONE
+    STATUS_RUNNING = ExecutionStatus.Status.RUNNING
+    STATUS_FAILED = ExecutionStatus.Status.FAILED
     STATUS_CONFIGURE = 'CONFIGURE'
-    STATUS_LINEARIZE = MDODiscipline.ExecutionStatus.LINEARIZE
+    STATUS_LINEARIZE = ExecutionStatus.Status.LINEARIZING
 
     EE_PATH = 'sostrades_core.execution_engine'
 
@@ -261,13 +262,13 @@ class ProxyDiscipline:
             cls_builder (Class): class constructor of the user-defined wrapper (or None)
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
         '''
-        # Must assign logger before calling create_mdo_discipline_wrap
+        # Must assign logger before calling create_discipline_wrap
         self.logger = ee.logger.getChild(self.__class__.__name__)
         # Enable not a number check in execution result and jacobian result
         # Be carreful that impact greatly calculation performances
-        self.mdo_discipline_wrapp = None
+        self.discipline_wrapp = None
         self.stored_cache = None
-        self.create_mdo_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades',
+        self.create_discipline_wrap(name=sos_name, wrapper=cls_builder, wrapping_mode='SoSTrades',
                                         logger=self.logger)
         self._reload(sos_name, ee, associated_namespaces=associated_namespaces)
 
@@ -383,12 +384,12 @@ class ProxyDiscipline:
         self._update_status_dm(self.STATUS_CONFIGURE)
         self.__configurator: Union["ProxyDiscipline", None] = None
 
-    def create_mdo_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger: logging.Logger):
+    def create_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger: logging.Logger):
         """
-        creation of mdo_discipline_wrapp by the proxy
-        To be overloaded by proxy without MDODisciplineWrapp (eg scatter...)
+        creation of discipline_wrapp by the proxy
+        To be overloaded by proxy without DisciplineWrapp (eg scatter...)
         """
-        self.mdo_discipline_wrapp = MDODisciplineWrapp(name=name, logger=logger.getChild("MDODisciplineWrapp"),
+        self.discipline_wrapp = DisciplineWrapp(name=name, logger=logger.getChild("DisciplineWrapp"),
                                                        wrapper=wrapper, wrapping_mode=wrapping_mode)
         # self.assign_proxy_to_wrapper()
         # NB: this above is is problematic because made before dm assignation in ProxyDiscipline._reload, but it is also
@@ -473,15 +474,16 @@ class ProxyDiscipline:
         '''
         GEMSEO objects instanciation
         '''
-        if self.mdo_discipline_wrapp is not None:
+        if self.discipline_wrapp is not None:
 
-            if self.mdo_discipline_wrapp.mdo_discipline is not None:
-                self.stored_cache = self.mdo_discipline_wrapp.mdo_discipline.cache
+            if self.discipline_wrapp.discipline is not None:
+                self.stored_cache = self.discipline_wrapp.discipline.cache
             # init gemseo discipline if it has not been created yet
             cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
-            if cache_type == '':
-                cache_type = MDODiscipline.CacheType.NONE
-            self.mdo_discipline_wrapp.create_gemseo_discipline(proxy=self,
+
+            if not cache_type:
+                cache_type = Discipline.CacheType.NONE
+            self.discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
                                                                cache_type=cache_type,
                                                                cache_file_path=self.get_sosdisc_inputs(
@@ -491,34 +493,33 @@ class ProxyDiscipline:
         # else:
         #     # TODO : this should only be necessary when changes in structuring
         #     # variables happened?
-        #     self.set_wrapper_attributes(self.mdo_discipline_wrapp.wrapper)
+        #     self.set_wrapper_attributes(self.discipline_wrapp.wrapper)
         #
         if self._reset_cache:
             # set new cache when cache_type have changed (self._reset_cache
             # == True)
-            self.set_cache(self.mdo_discipline_wrapp.mdo_discipline, self.get_sosdisc_inputs(self.CACHE_TYPE),
-                           self.get_sosdisc_inputs(self.CACHE_FILE_PATH))
+            self.set_cache(self.discipline_wrapp.discipline, self.get_sosdisc_inputs(self.CACHE_TYPE))
             if self.get_sosdisc_inputs(
-                self.CACHE_TYPE) == MDODiscipline.CacheType.NONE and self.dm.cache_map is not None:
+                self.CACHE_TYPE) == Discipline.CacheType.NONE and self.dm.cache_map is not None:
                 self.delete_cache_in_cache_map()
         else:
             if self.stored_cache is not None:
-                self.mdo_discipline_wrapp.mdo_discipline.cache = self.stored_cache
+                self.discipline_wrapp.discipline.cache = self.stored_cache
         if self._reset_linearization_mode:
-            self.mdo_discipline_wrapp.mdo_discipline.linearization_mode = self.get_sosdisc_inputs(
+            self.discipline_wrapp.discipline.linearization_mode = self.get_sosdisc_inputs(
                 self.LINEARIZATION_MODE)
         #             if self._reset_debug_mode:
         #                 # update default values when changing debug modes between executions
         #                 to_update_debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE, in_dict=True, full_name=True)
-        #                 self.mdo_discipline_wrapp.update_default_from_dict(to_update_debug_mode)
+        #                 self.discipline_wrapp.update_default_from_dict(to_update_debug_mode)
         #     # set the status to pending on GEMSEO side (so that it does not
         #     # stay on DONE from last execution)
-        #     self.mdo_discipline_wrapp.mdo_discipline.status = MDODiscipline.ExecutionStatus.PENDING
+        #     self.discipline_wrapp.discipline.status = Discipline.ExecutionStatus.Status.PENDING
 
         # clear the proxy from the wrapper before execution
         self.clear_proxy_from_wrapper()
         # status and flags
-        self.status = self.mdo_discipline_wrapp.mdo_discipline.status
+        self.status = self.discipline_wrapp.discipline.execution_status.value
         self._reset_cache = False
         self._reset_debug_mode = False
         self._reset_linearization_mode = False
@@ -533,37 +534,37 @@ class ProxyDiscipline:
 
         '''
 
-        self.mdo_discipline_wrapp.mdo_discipline.residual_variables = self.get_sosdisc_inputs(
+        self.discipline_wrapp.discipline.residual_variables = self.get_sosdisc_inputs(
             self.RESIDUAL_VARIABLES).copy()
-        self.mdo_discipline_wrapp.mdo_discipline.run_solves_residuals = self.get_sosdisc_inputs(
+        self.discipline_wrapp.discipline.run_solves_residuals = self.get_sosdisc_inputs(
             self.RUN_SOLVE_RESIDUALS)
+
     def add_status_observers_to_gemseo_disc(self):
         '''
         Add all observers that have been addes when gemseo discipline was not instanciated
         '''
 
         for observer in self.status_observers:
-            if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
-                self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
+            if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
+                self.discipline_wrapp.discipline.add_status_observer(
                     observer)
 
-    def set_cache(self, disc: MDODiscipline, cache_type: str, cache_hdf_file: str):
+    def set_cache(self, disc: Discipline, cache_type: str):
         '''
-        Instanciate and set cache for disc if cache_type is not MDODiscipline.CacheType.NONE
+        Instanciate and set cache for disc if cache_type is not Discipline.CacheType.NONE
 
         Arguments:
-            disc (MDODiscipline): GEMSEO object to set cache
+            disc (Discipline): GEMSEO object to set cache
             cache_type (string): type of cache
-            cache_hdf_file (string): cache hdf file path
         '''
-        if cache_type == MDOChain.CacheType.HDF5 and cache_hdf_file is None:
+        if cache_type == MDOChain.CacheType.HDF5:
             raise Exception(
                 'if the cache type is set to HDF5Cache, the cache_file path must be set')
         else:
             disc.cache = None
             if cache_type != MDOChain.CacheType.NONE:
-                disc.set_cache_policy(
-                    cache_type=cache_type, cache_hdf_file=cache_hdf_file)
+                disc.set_cache(
+                    cache_type=cache_type)
 
     def delete_cache_in_cache_map(self):
         '''
@@ -640,6 +641,7 @@ class ProxyDiscipline:
         '''
 
         return definition_input_dict[self.NUMERICAL] and not definition_input_dict[self.RUN_NEEDED]
+
     def get_run_needed_input(self, as_namespaced_tuple: bool = False):
 
         data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
@@ -647,12 +649,19 @@ class ProxyDiscipline:
         return {key: value[self.DEFAULT] for key, value in data_in.items() if
                 value[self.NUMERICAL] and value[self.RUN_NEEDED]}
 
-    def get_output_data_names(self, as_namespaced_tuple: bool = False) -> list[str]:
+    def get_output_data_names(self, as_namespaced_tuple: bool = False, numerical_inputs=True) -> list[str]:
         '''
         Returns:
             (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
         '''
-        return list(self.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple).keys())
+        data_out = self.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple)
+
+        if numerical_inputs:
+            return list(data_out.keys())
+        else:
+            return [key for key, value in data_out.items() if
+                    not value[self.NUMERICAL]]
+
 
     def get_data_io_dict(self, io_type: str) -> dict:
         '''
@@ -785,13 +794,13 @@ class ProxyDiscipline:
         """
         if io_type == self.IO_TYPE_IN:
             _desc = deepcopy(self.DESC_IN) if self.DESC_IN else {}
-            if self.mdo_discipline_wrapp and self.mdo_discipline_wrapp.wrapper and self.mdo_discipline_wrapp.wrapper.DESC_IN:
-                _desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_IN))
+            if self.discipline_wrapp and self.discipline_wrapp.wrapper and self.discipline_wrapp.wrapper.DESC_IN:
+                _desc.update(deepcopy(self.discipline_wrapp.wrapper.DESC_IN))
             return _desc
         elif io_type == self.IO_TYPE_OUT:
             _desc = deepcopy(self.DESC_OUT) if self.DESC_OUT else {}
-            if self.mdo_discipline_wrapp and self.mdo_discipline_wrapp.wrapper and self.mdo_discipline_wrapp.wrapper.DESC_OUT:
-                _desc.update(deepcopy(self.mdo_discipline_wrapp.wrapper.DESC_OUT))
+            if self.discipline_wrapp and self.discipline_wrapp.wrapper and self.discipline_wrapp.wrapper.DESC_OUT:
+                _desc.update(deepcopy(self.discipline_wrapp.wrapper.DESC_OUT))
             return _desc
         else:
             raise Exception(
@@ -1082,15 +1091,15 @@ class ProxyDiscipline:
         """
         Assign the proxy (self) to the SoSWrapp for configuration actions.
         """
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
-            self.mdo_discipline_wrapp.wrapper.assign_proxy(self)
+        if self.discipline_wrapp is not None and self.discipline_wrapp.wrapper is not None:
+            self.discipline_wrapp.wrapper.assign_proxy(self)
 
     def clear_proxy_from_wrapper(self):
         """
         Clears the proxy (self) from the SoSWrapp object for serialization and execution.
         """
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
-            self.mdo_discipline_wrapp.wrapper.clear_proxy()
+        if self.discipline_wrapp is not None and self.discipline_wrapp.wrapper is not None:
+            self.discipline_wrapp.wrapper.clear_proxy()
 
     # -- Configure handling
     def configure(self):
@@ -1136,8 +1145,8 @@ class ProxyDiscipline:
 
     def check_data_integrity(self):
 
-        if self.mdo_discipline_wrapp is not None:
-            self.mdo_discipline_wrapp.check_data_integrity()
+        if self.discipline_wrapp is not None:
+            self.discipline_wrapp.check_data_integrity()
 
     def __generic_check_data_integrity(self):
         '''
@@ -1152,7 +1161,7 @@ class ProxyDiscipline:
                 #                 check_integrity_msg = check_data_integrity_cls.check_variable_type_and_unit(var_data_dict)
                 check_integrity_msg = self.check_data_integrity_cls.check_variable_value(
                     var_data_dict, self.ee.check_data_integrity)
-                if check_integrity_msg != '':
+                if check_integrity_msg:
                     data_integrity = False
                 self.dm.set_data(
                     var_fullname, self.CHECK_INTEGRITY_MSG, check_integrity_msg)
@@ -1189,12 +1198,12 @@ class ProxyDiscipline:
         '''
         # Debug mode logging and recursive setting (priority to the parent)
         debug_mode = self.get_sosdisc_inputs(self.DEBUG_MODE)
-        if debug_mode != self._structuring_variables[self.DEBUG_MODE] \
-                and not (debug_mode == "" and self._structuring_variables[
-            self.DEBUG_MODE] is None):  # not necessary on first config
+        if (debug_mode or self._structuring_variables[self.DEBUG_MODE]) and (
+            debug_mode != self._structuring_variables[self.DEBUG_MODE]
+        ):  # not necessary on first config
             self._reset_debug_mode = True
             # logging
-            if debug_mode != "":
+            if debug_mode:
                 if debug_mode == "all":
                     for mode in self.AVAILABLE_DEBUG_MODE:
                         if mode not in ["", "all"]:
@@ -1241,7 +1250,7 @@ class ProxyDiscipline:
         If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
         DESC_IN = {'X': {'structuring':True}}
         """
-        self.mdo_discipline_wrapp.setup_sos_disciplines()
+        self.discipline_wrapp.setup_sos_disciplines()
 
     def set_dynamic_default_values(self, default_values_dict):
         """
@@ -1608,7 +1617,7 @@ class ProxyDiscipline:
             elif self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
                 # a variable is in the local_data if the variable is not numerical, do not need of numerical variables in the run phase
                 if not self.variable_is_numerical(self.dm.get_data(q_key)):
-                    values_dict[key] = self.mdo_discipline_wrapp.mdo_discipline.local_data[q_key]
+                    values_dict[key] = self.discipline_wrapp.discipline.io.data[q_key]
             # get data in data manager during configure step
             else:
                 values_dict[key] = self.dm.get_value(q_key)
@@ -1682,9 +1691,9 @@ class ProxyDiscipline:
         Update cache_map dict in DM with cache and its children recursively
         '''
 
-        mdo_discipline = self.mdo_discipline_wrapp.mdo_discipline if self.mdo_discipline_wrapp is not None else None
-        if mdo_discipline is not None:
-            self._store_cache_with_hashed_uid(mdo_discipline)
+        discipline = self.discipline_wrapp.discipline if self.discipline_wrapp is not None else None
+        if discipline is not None:
+            self._store_cache_with_hashed_uid(discipline)
         # store children cache recursively
         for disc in self.proxy_disciplines:
             disc._set_dm_cache_map()
@@ -1809,12 +1818,18 @@ class ProxyDiscipline:
         '''
         Return: (List[string]) of anonimated input and output keys for serialisation purpose
         '''
+        if isinstance(disc, ProxyDiscipline):
+            input_list_anonimated = [key.split(
+                self.ee.study_name, 1)[-1] for key in disc.get_input_data_names()]
+            output_list_anonimated = [key.split(
+                self.ee.study_name, 1)[-1] for key in disc.get_output_data_names()]
+        else:
+            input_list_anonimated = [key.split(
+                self.ee.study_name, 1)[-1] for key in disc.io.input_grammar.names]
+            output_list_anonimated = [key.split(
+                self.ee.study_name, 1)[-1] for key in disc.io.output_grammar.names]
 
-        input_list_anonimated = [key.split(
-            self.ee.study_name, 1)[-1] for key in disc.get_input_data_names()]
         input_list_anonimated.sort()
-        output_list_anonimated = [key.split(
-            self.ee.study_name, 1)[-1] for key in disc.get_output_data_names()]
         output_list_anonimated.sort()
         input_list_anonimated.extend(output_list_anonimated)
 
@@ -1832,12 +1847,12 @@ class ProxyDiscipline:
             variables (list[string]): the list of varaible namespace name
         """
         # Refactor  variables keys with namespace
-        if isinstance(keys, list):
-            variables = [self._convert_to_namespace_name(
-                key, io_type) for key in keys]
-        else:
+        if isinstance(keys, str):
             variables = [self._convert_to_namespace_name(
                 keys, io_type)]
+        else:
+            variables = [self._convert_to_namespace_name(
+                key, io_type) for key in keys]
         return variables
 
     def _convert_to_namespace_name(self, key, io_type):
@@ -1870,8 +1885,9 @@ class ProxyDiscipline:
         # case of change)
         if self._status != status:
             self._status = status
-            if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
-                self.mdo_discipline_wrapp.mdo_discipline.status = status
+            # no more configure status in gemseo !!
+            # if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
+            #     self.discipline_wrapp.discipline.execution_status.value = status
 
         # Force update into discipline_dict (GEMS can change status but cannot update the
         # discipline_dict
@@ -1890,28 +1906,28 @@ class ProxyDiscipline:
         for disc in self.proxy_disciplines:
             disc._update_status_recursive(status)
 
-    def set_status_from_mdo_discipline(self):
+    def set_status_from_discipline(self):
         """
         Update status of self and children sub proxies by retreiving the status of the GEMSEO objects.
 
         """
         for proxy_discipline in self.proxy_disciplines:
-            proxy_discipline.set_status_from_mdo_discipline()
+            proxy_discipline.set_status_from_discipline()
         self.status = self.get_status_after_configure()
 
     def get_status_after_configure(self):
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
-            return self.mdo_discipline_wrapp.mdo_discipline.status
+        if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
+            return self.discipline_wrapp.discipline.execution_status.value
         else:
             return self._status
 
     def add_status_observer(self, observer):
         '''
-        Observer has to be set before execution (and prepare_execution) and the mdo_discipline does not exist.
+        Observer has to be set before execution (and prepare_execution) and the discipline does not exist.
         We store observers in self.status_observers and add it to the mdodiscipline when it ies instanciated in prepare_execution
         '''
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
-            self.mdo_discipline_wrapp.mdo_discipline.add_status_observer(
+        if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
+            self.discipline_wrapp.discipline.add_status_observer(
                 observer)
 
         if observer not in self.status_observers:
@@ -1925,8 +1941,8 @@ class ProxyDiscipline:
         '''
         if observer in self.status_observers:
             self.status_observers.remove(observer)
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.mdo_discipline is not None:
-            self.mdo_discipline_wrapp.mdo_discipline.remove_status_observer(
+        if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
+            self.discipline_wrapp.discipline.remove_status_observer(
                 observer)
 
     # -- Maturity handling section
@@ -1950,9 +1966,9 @@ class ProxyDiscipline:
         '''
         if hasattr(self, '_maturity'):
             return self._maturity
-        elif hasattr(self.mdo_discipline_wrapp, 'wrapper'):
-            if hasattr(self.mdo_discipline_wrapp.wrapper, '_maturity'):
-                return self.mdo_discipline_wrapp.wrapper._maturity
+        elif hasattr(self.discipline_wrapp, 'wrapper'):
+            if hasattr(self.discipline_wrapp.wrapper, '_maturity'):
+                return self.discipline_wrapp.wrapper._maturity
             else:
                 return ''
         return ''
@@ -1966,9 +1982,9 @@ class ProxyDiscipline:
 
         Returns: List[ChartFilter]
         """
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
+        if self.discipline_wrapp is not None and self.discipline_wrapp.wrapper is not None:
             self.assign_proxy_to_wrapper()  # to allow for direct calls after run, without reconfiguration
-            return self.mdo_discipline_wrapp.wrapper.get_chart_filter_list()
+            return self.discipline_wrapp.wrapper.get_chart_filter_list()
         else:
             return []
 
@@ -1982,9 +1998,9 @@ class ProxyDiscipline:
         Returns:
             post processing instance list
         """
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
+        if self.discipline_wrapp is not None and self.discipline_wrapp.wrapper is not None:
             self.assign_proxy_to_wrapper()  # to allow for direct calls after run, without reconfiguration
-            return self.mdo_discipline_wrapp.wrapper.get_post_processing_list(filters)
+            return self.discipline_wrapp.wrapper.get_post_processing_list(filters)
         else:
             return []
 
@@ -2014,9 +2030,9 @@ class ProxyDiscipline:
         is_proxy_configured = self.get_configure_status() and not self.check_structuring_variables_changes() and self.check_configured_dependency_disciplines()
 
         # condition of wrapper configuration allows to redefine is_configured method for simple discs at wrapper level
-        if hasattr(self.mdo_discipline_wrapp, 'wrapper') and hasattr(self.mdo_discipline_wrapp.wrapper,
+        if hasattr(self.discipline_wrapp, 'wrapper') and hasattr(self.discipline_wrapp.wrapper,
                                                                      'is_configured'):
-            is_wrapper_configured = self.mdo_discipline_wrapp.wrapper.is_configured()
+            is_wrapper_configured = self.discipline_wrapp.wrapper.is_configured()
         else:
             is_wrapper_configured = True
 
@@ -2143,10 +2159,10 @@ class ProxyDiscipline:
     # ----------------------------------------------------
     # ----------------------------------------------------
 
-    #     def check_jacobian(self, input_data=None, derr_approx=MDODiscipline.FINITE_DIFFERENCES,
+    #     def check_jacobian(self, input_data=None, derr_approx=Discipline.FINITE_DIFFERENCES,
     #                        step=1e-7, threshold=1e-8, linearization_mode='auto',
     #                        inputs=None, outputs=None, parallel=False,
-    #                        n_processes=MDODiscipline.N_CPUS,
+    #                        n_processes=Discipline.N_CPUS,
     #                        use_threading=False, wait_time_between_fork=0,
     #                        auto_set_step=False, plot_result=False,
     #                        file_path="jacobian_errors.pdf",
@@ -2256,7 +2272,7 @@ class ProxyDiscipline:
         wrapper.inst_desc_out = self.inst_desc_out
 
     # def set_discipline_attributes(self, discipline):
-    #     """ set the attribute attributes of mdo_discipline --> not needed if using SoSMDODisciplineDriver
+    #     """ set the attribute attributes of discipline --> not needed if using SoSDisciplineDriver
     #     """
     #     pass
 
@@ -2278,8 +2294,8 @@ class ProxyDiscipline:
         '''
         Obtain the module of the wrapper if it exists. useful for postprocessing factory and treenode
         '''
-        if self.mdo_discipline_wrapp is not None and self.mdo_discipline_wrapp.wrapper is not None:
-            disc_module = self.mdo_discipline_wrapp.wrapper.__module__
+        if self.discipline_wrapp is not None and self.discipline_wrapp.wrapper is not None:
+            disc_module = self.discipline_wrapp.wrapper.__module__
 
         else:
             # for discipline not associated to wrapper (proxycoupling for

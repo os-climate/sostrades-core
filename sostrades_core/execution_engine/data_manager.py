@@ -263,7 +263,7 @@ class DataManager:
                     fname, TYPE_METADATA)
             # local data update
             data["local_data"].update(
-                d.mdo_discipline_wrapp.mdo_discipline.local_data)
+                d.discipline_wrapp.discipline.io.data)
         return data
 
     def get_value(self, var_f_name):
@@ -951,6 +951,7 @@ class DataManager:
         # loop on sosc and append couplings data
         if sosc_list != []:
             sosc = sosc_list.pop()
+            sosc._build_coupling_structure()
             df = sosc.export_couplings()
             for sosc in sosc_list:
                 df_sosc = sosc.export_couplings()

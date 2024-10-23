@@ -40,8 +40,8 @@ class TestSetupSoSDiscipline(unittest.TestCase):
         self.mod4_path = f'{base_path}.disc1_setup_sos_discipline.Disc1RecursiveObjectDictCheck'
 
     def check_proxy_and_dm_assigned(self, proxy, expected=True):
-        proxy_assigned = proxy.mdo_discipline_wrapp.wrapper._SoSWrapp__proxy is proxy
-        dm_assigned = proxy.mdo_discipline_wrapp.wrapper.dm._AccessOnlyProxy__obj is self.ee.dm
+        proxy_assigned = proxy.discipline_wrapp.wrapper._SoSWrapp__proxy is proxy
+        dm_assigned = proxy.discipline_wrapp.wrapper.dm._AccessOnlyProxy__obj is self.ee.dm
         self.assertTrue(proxy_assigned == expected)
         self.assertTrue(dm_assigned == expected)
 
@@ -285,7 +285,7 @@ class TestSetupSoSDiscipline(unittest.TestCase):
         '''
         Perform during the run a recursive check in the SoSWrapp instance __dict__ attribute to identify any reference
         leaks to objects of the classes DataManager or ProxyDiscipline, no crash means none was found. Strictly this
-        test should actually be performed at SoSMDODiscipline level but it is much less straightforward to implement.
+        test should actually be performed at SoSDiscipline level but it is much less straightforward to implement.
         '''
         self.name = 'Test'
         self.ee = ExecutionEngine(self.name)

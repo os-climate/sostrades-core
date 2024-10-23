@@ -26,7 +26,7 @@ from importlib import import_module
 from multiprocessing import Process
 from os.path import basename, dirname, join
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline.discipline import Discipline
 from gemseo.utils.constants import N_CPUS
 
 PROCESS_IN_PARALLEL = 5
@@ -109,7 +109,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
         threshold=1e-8,
         parallel=False,
         n_processes=5,
-        linearization_mode=MDODiscipline.LinearizationMode.AUTO,
+        linearization_mode=Discipline.LinearizationMode.AUTO,
         directory=PICKLE_DIRECTORY,
     ):
         """Method that encapsulate check_jacobian call in order to witch between loading and dumping mode"""

@@ -305,26 +305,26 @@ class TestStructuringInputs(unittest.TestCase):
             'MyCase.SellarOptimScenario.SellarCoupling')[0]
 
         self.exec_eng.prepare_execution()
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver, 'LGMRES')
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.tolerance, 1e-3)
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].tolerance, 1e-03)
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver_tolerance, 1e-10)
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver_options, {
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver, 'LGMRES')
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.tolerance, 1e-3)
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.inner_mdas[0].tolerance, 1e-03)
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_tolerance, 1e-10)
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_options, {
             'max_iter': 600, 'use_ilu_precond': True})
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.max_mda_iter, 20)
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.use_lu_fact, True)
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.max_mda_iter, 20)
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.use_lu_fact, True)
 
         self.assertEqual(
-            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].mda_sequence[0].epsilon0, 1e-04)
+            coupling_sellar.discipline_wrapp.discipline.inner_mdas[0].mda_sequence[0].epsilon0, 1e-04)
         self.assertEqual(
-            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
+            coupling_sellar.discipline_wrapp.discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
                 0].epsilon0, 1e-04)
         self.assertEqual(
-            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
+            coupling_sellar.discipline_wrapp.discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
                 1].epsilon0, 1e-04)
 
         self.assertEqual(
-            coupling_sellar.mdo_discipline_wrapp.mdo_discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
+            coupling_sellar.discipline_wrapp.discipline.inner_mdas[0].mda_sequence[1].mda_sequence[
                 1].over_relaxation_factor, 0.85)
 
         self.exec_eng.execute()
@@ -332,12 +332,12 @@ class TestStructuringInputs(unittest.TestCase):
         # run check_jac to test MDO numerical parameters
         dump_jac_path = join(dirname(__file__), 'jac_sellar_test_51.pkl')
         self.file_to_del.append(dump_jac_path)
-        coupling_sellar.mdo_discipline_wrapp.mdo_discipline.check_jacobian(
+        coupling_sellar.discipline_wrapp.discipline.check_jacobian(
             threshold=1.0e-7, dump_jac_path=dump_jac_path)
 
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver, 'LGMRES')
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver_tolerance, 1e-10)
-        self.assertEqual(coupling_sellar.mdo_discipline_wrapp.mdo_discipline.linear_solver_options, {
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver, 'LGMRES')
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_tolerance, 1e-10)
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_options, {
             'max_iter': 600, 'use_ilu_precond': True})
 
 

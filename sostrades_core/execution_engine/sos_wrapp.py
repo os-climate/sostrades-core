@@ -30,8 +30,8 @@ class SoSWrappException(Exception):
 class SoSWrapp(object):
     '''**SoSWrapp** is the class from which inherits our model wrapper when using 'SoSTrades' wrapping mode.
 
-    It contains necessary information for the discipline configuration. It is owned by both the MDODisciplineWrapp and
-    the SoSMDODiscipline.
+    It contains necessary information for the discipline configuration. It is owned by both the DisciplineWrapp and
+    the SoSDiscipline.
 
     Its methods setup_sos_disciplines, run,... are overloaded by the user-provided Wrapper.
 

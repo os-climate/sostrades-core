@@ -32,7 +32,7 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline.discipline import Discipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_purenewton_mda")
 
@@ -42,7 +42,7 @@ class GSPureNewtonMDA(MDASequential):
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
+        disciplines: Sequence[Discipline],
         name: str | None = None,
         grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
         tolerance: float = 1e-6,
@@ -96,7 +96,6 @@ class GSPureNewtonMDA(MDASequential):
             disciplines,
             sequence,
             name=name,
-            grammar_type=grammar_type,
             max_mda_iter=max_mda_iter,
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
@@ -120,9 +119,9 @@ class GSPureNewtonMDA(MDASequential):
         for mda_i in self.mda_sequence:
             mda_i.reset_statuses_for_run()
             if mda_i.name == 'PureNewtonRaphson':
-                mda_i.local_data = self.mda_sequence[0].local_data
+                mda_i.io.data = self.mda_sequence[0].io.data
                 mda_i.normed_residual = self.mda_sequence[0].normed_residual
-            self.local_data = mda_i.execute(self.local_data)
+            self.io.data = mda_i.execute(self.io.data)
             self.residual_history += mda_i.residual_history
             if mda_i.normed_residual < self.tolerance:
                 break

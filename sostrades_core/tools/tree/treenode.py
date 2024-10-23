@@ -438,8 +438,6 @@ class TreeNode:
 
         if status == TreeNode.STATUS_INPUT_DATA:
             return -1
-        elif status == ProxyDiscipline.STATUS_VIRTUAL:
-            return 0
         elif status == ProxyDiscipline.STATUS_CONFIGURE:
             return 10
         elif status == ProxyDiscipline.STATUS_DONE:
@@ -448,5 +446,5 @@ class TreeNode:
             return 30
         elif status == ProxyDiscipline.STATUS_RUNNING:
             return 40
-        else:  # status = ProxyDiscipline.ExecutionStatus.FAILED
+        else:  # status = ProxyDiscipline.ExecutionStatus.Status.FAILED
             return 50

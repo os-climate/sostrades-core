@@ -135,9 +135,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         self.scenarios = [disc for disc in self.scenarios if disc not in list_children]
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
+    def create_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
         """
-        No need to create a MDODisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
+        No need to create a DisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
         """
         pass
 

@@ -670,10 +670,10 @@ class ExecutionEngine:
 
     def get_input_data_for_gemseo(self, proxy_coupling):
         '''
-        Get values of mdo_discipline input_grammar from data manager
+        Get values of discipline input_grammar from data manager
         '''
         input_data = {}
-        input_data_names = proxy_coupling.mdo_discipline_wrapp.mdo_discipline.input_grammar.names
+        input_data_names = proxy_coupling.discipline_wrapp.discipline.input_grammar.names
         if len(input_data_names) > 0:
             for data_name in input_data_names:
                 input_data[data_name] = self.dm.get_value(data_name)
@@ -710,10 +710,10 @@ class ExecutionEngine:
         self.logger.info("Executing.")
         input_data_wo_none = {key: value for key, value in input_data.items() if value is not None}
         try:
-            ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
+            ex_proc.discipline_wrapp.discipline.execute(
                 input_data=input_data_wo_none)
         except:
-            ex_proc.set_status_from_mdo_discipline()
+            ex_proc.set_status_from_discipline()
             raise
 
         self.status = self.root_process.status
@@ -721,11 +721,13 @@ class ExecutionEngine:
 
         self.logger.info("Storing local data in datamanager.")
         # -- store local data in datamanager
-        ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data.pop("MDA residuals norm", None)
+        ex_proc.discipline_wrapp.discipline.io.data.pop("MDA residuals norm", None)
         self.update_dm_with_local_data(
-            ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
-
+            ex_proc.discipline_wrapp.discipline.io.data)
+        # Add residuals_history to the dm
+        self.update_dm_with_local_data({
+            f'{ex_proc.discipline_wrapp.discipline.name}.{ex_proc.discipline_wrapp.discipline.RESIDUALS_HISTORY}': ex_proc.discipline_wrapp.discipline.residuals_history})
         # -- update all proxy statuses
-        ex_proc.set_status_from_mdo_discipline()
+        ex_proc.set_status_from_discipline()
 
         return ex_proc

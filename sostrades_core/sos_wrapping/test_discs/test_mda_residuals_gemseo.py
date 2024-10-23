@@ -27,7 +27,7 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from numpy import array, ndarray
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline.discipline import Discipline
 
 
 def disc_1_expr(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> tuple[float, float, float]:
@@ -134,7 +134,7 @@ def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray
 
 
 @pytest.fixture
-def res_disciplines() -> list[MDODiscipline]:
+def res_disciplines() -> list[Discipline]:
     """Create the three disciplines required to make a MDA with residual variables.
 
     Returns:

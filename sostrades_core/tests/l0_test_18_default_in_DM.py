@@ -92,10 +92,10 @@ class TestDefaultInDM(unittest.TestCase):
         # Check that res2 equals res1 : Disc1.a was loaded from default value
         # in DESC_IN
         # NOTE: since residuals_history is a dataframe, need to pop it out of local_data to use specific assert
-        local_data = copy(res.mdo_discipline_wrapp.mdo_discipline.local_data)
-        residuals = local_data.pop('EETests.' + SoSMDAChain.RESIDUALS_HISTORY, None)
-        local_data2 = copy(res2.mdo_discipline_wrapp.mdo_discipline.local_data)
-        residuals2 = local_data2.pop('EETests.' + SoSMDAChain.RESIDUALS_HISTORY, None)
+        local_data = copy(res.discipline_wrapp.discipline.io.data)
+        residuals = copy(res.discipline_wrapp.discipline.residual_history)
+        local_data2 = copy(res2.discipline_wrapp.discipline.io.data)
+        residuals2 = copy(res2.discipline_wrapp.discipline.residual_history)
         self.assertTrue(local_data == local_data2, "results are not equal")
 
-        assert_frame_equal(residuals, residuals2)
+        assert (residuals == residuals2)

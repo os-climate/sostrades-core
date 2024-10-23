@@ -330,7 +330,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.sampling_generation_mode = self.configure_generation_mode(disc_in)
             self.instantiate_sampling_tool()
             self.update_eval_inputs(disc_in)
-            dynamic_inputs, dynamic_outputs = self.mdo_discipline_wrapp.wrapper.sample_generator.setup(self)
+            dynamic_inputs, dynamic_outputs = self.discipline_wrapp.wrapper.sample_generator.setup(self)
 
             self.check_data_integrity()
             if self.sampling_generation_mode == self.AT_RUN_TIME:
@@ -357,8 +357,8 @@ class ProxySampleGenerator(ProxyDiscipline):
         if self.sampling_method is not None:
             if self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
                 sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
-                if self.mdo_discipline_wrapp.wrapper.sample_generator.__class__ != sample_generator_cls:
-                    self.mdo_discipline_wrapp.wrapper.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
+                if self.discipline_wrapp.wrapper.sample_generator.__class__ != sample_generator_cls:
+                    self.discipline_wrapp.wrapper.sample_generator = sample_generator_cls(logger=self.logger.getChild(sample_generator_cls.__name__))
                     self.configure_analysis_tool()
 
     def configure_analysis_tool(self):
@@ -437,7 +437,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             if self.configurator:
                 _df_desc[self.FULL_NAME] = ('string', None, False)
             self._update_eval_inputs_columns(_df_desc, disc_in)
-        self.mdo_discipline_wrapp.wrapper.sample_generator.filter_inputs(self)
+        self.discipline_wrapp.wrapper.sample_generator.filter_inputs(self)
         self._update_eval_inputs_with_possible_values(disc_in)
 
     def _update_eval_inputs_columns(self, eval_inputs_df_desc, disc_in=None):
@@ -509,8 +509,8 @@ class ProxySampleGenerator(ProxyDiscipline):
         if self.sampling_generation_mode == self.AT_RUN_TIME:
             super().prepare_execution()
         else:
-            # Here self.mdo_discipline_wrapp.wrapper exists during configuration, but it is not associated to any gemseo
-            # object during execution (self.mdo_discipline_wrapp.mdo_discipline is None).
+            # Here self.discipline_wrapp.wrapper exists during configuration, but it is not associated to any gemseo
+            # object during execution (self.discipline_wrapp.discipline is None).
             self._update_status_dm(self.STATUS_DONE)
 
     def _get_non_structuring_variables_keys(self):
@@ -525,7 +525,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         at configuration time is performed.
         """
         # is_ready_to_sample is similar to data_integrity except that no error is logged (mainly for incomplete config.)
-        if self.sg_data_integrity and self.mdo_discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
+        if self.sg_data_integrity and self.discipline_wrapp.wrapper.sample_generator.is_ready_to_sample(self):
             if self.OVERWRITE_SAMPLES_DF in disc_in:
                 # if self.samples_df_f_name:
                 samples_df_dm = self.dm.get_value(self.samples_df_f_name)
@@ -537,7 +537,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                     self.get_sosdisc_inputs(self.OVERWRITE_SAMPLES_DF)
                 if overwrite_samples_df:
                     try:
-                        self.samples_gene_df = self.mdo_discipline_wrapp.wrapper.sample()
+                        self.samples_gene_df = self.discipline_wrapp.wrapper.sample()
                     except ValueError as cm:  # TODO: larger clause ?
                         self.samples_gene_df = None
                         self.logger.error('Failed to sample due to ' + str(cm))

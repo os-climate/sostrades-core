@@ -17,15 +17,14 @@ limitations under the License.
 
 from __future__ import annotations
 
-import inspect
 import logging
 from collections import ChainMap
 from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 from gemseo import get_available_doe_algorithms
+from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.utils.source_parsing import get_options_doc
 
 from sostrades_core.execution_engine.sample_generators.abstract_sample_generator import (
     AbstractSampleGenerator,
@@ -152,35 +151,14 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         # create the algo library
         algo_lib = self.doe_factory.create(sampling_algo_name)
 
-        # Remark: The following lines of code should be in gemseo
-        # We should use only one line or two provided by gemseo
-        #         default_opt = algo_lib._get_options()
-        #        # provided options and not providing default options
+        all_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].Settings.model_fields
+        # Keep only the DOE-related options
+        algo_options = algo_lib._filter_settings(all_options, BaseDriverLibrarySettings)
+        algo_options_default = {option_name: option.default for option_name, option in algo_options.items()}
 
-        fn = algo_lib.__class__._get_options
+        algo_options_descr_dict = {option_name: option.description for option_name, option in algo_options.items()}
 
-        # retrieve description of options provided in docstrings
-        algo_options_descr_dict = get_options_doc(fn)
-
-        # retrieve default algo options and values
-        def get_default_args(func):
-            signature = inspect.signature(func)
-            return {k: v.default for k, v in signature.parameters.items() if v.default is not inspect.Parameter.empty}
-
-        algo_options = get_default_args(fn)
-
-        # get option keys dedicated to algo
-        opts_gram = algo_lib._init_options_grammar()
-        opt_to_keep = opts_gram.names
-
-        # remove options that are not in the grammar of the algo
-        all_options = list(algo_options.keys())
-        for k in all_options:
-            if k not in opt_to_keep:
-                algo_options.pop(k, None)
-                algo_options_descr_dict.pop(k, None)
-
-        return algo_options, algo_options_descr_dict
+        return algo_options_default, algo_options_descr_dict
 
     def _check_options(self, sampling_algo_name, algo_options, design_space):
         """
@@ -220,9 +198,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Returns:
             samples_df (dataframe) : generated samples
         """
-        normalized_samples = self._generate_normalized_samples(sampling_algo_name, algo_options, design_space)
-        unnormalized_samples = self._unnormalize_samples_from_design_space(normalized_samples, design_space)
-        samples = self._reformat_samples_from_design_space(unnormalized_samples, design_space)
+        algo = self.doe_factory.create(sampling_algo_name)
+        samples = algo.compute_doe(design_space, **algo_options)
+        samples = self._reformat_samples_from_design_space(samples, design_space)
         return self._put_samples_in_df_format(samples, design_space)
 
     def _generate_normalized_samples(self, sampling_algo_name, algo_options, design_space):
@@ -443,7 +421,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             dynamic_inputs (dict): the dynamic input dict to be updated
         """
         # TODO: might want to refactor to simplify GridSearch
-        selected_inputs_has_changed = False
         disc_in = proxy.get_data_in()
         # Dynamic input of default design space
         if proxy.EVAL_INPUTS in disc_in:
