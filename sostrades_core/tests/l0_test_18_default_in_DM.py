@@ -18,10 +18,7 @@ import unittest
 from copy import copy
 from logging import Handler
 
-from pandas._testing.asserters import assert_frame_equal
-
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
 
 
 class UnitTestHandler(Handler):

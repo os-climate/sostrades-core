@@ -15,12 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-import numpy as np
-import pandas as pd
 from copy import deepcopy
 
+import numpy as np
+import pandas as pd
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+
 from sostrades_core.execution_engine.sos_mdo_scenario import SoSMDOScenario
+
 
 class SoSMDOScenarioAdapter(MDOScenarioAdapter):
     """

@@ -32,8 +32,3 @@ EXEC_ENGINE = "execution_engine"
 
 os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
 
-from gemseo.datasets.factory import DatasetFactory
-from gemseo.core.data_converters.factory import DataConverterFactory
-
-DataConverterFactory().update()
-DatasetFactory().update()
