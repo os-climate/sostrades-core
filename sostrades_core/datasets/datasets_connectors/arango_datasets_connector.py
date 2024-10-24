@@ -22,6 +22,8 @@ from typing import Any
 from arango import ArangoClient, CollectionListError
 from arango.collection import StandardCollection
 
+from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetGenericException,
@@ -45,7 +47,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
     DATASET_NAME_STR = "dataset_name"
     MAX_KEY_SIZE = 254
 
-    def __init__(self, host: str, db_name: str, username: str, password: str,
+    def __init__(self, connector_id: str, host: str, db_name: str, username: str, password: str,
                  serializer_type: DatasetSerializerType = DatasetSerializerType.JSON,
                  datasets_descriptor_collection_name: str = "datasets"):
         """
@@ -73,6 +75,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug("Initializing Arango connector")
         self.__datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
+        self.connector_id = connector_id
 
         # Connect to database
         try:
@@ -140,18 +143,18 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         except KeyError as exc:
             raise DatasetNotFoundException(dataset_name=name) from exc
 
-    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> None:
+    def _get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> None:
         """
         Method to retrieve data from JSON and fill a data_dict
 
         :param dataset_identifier: identifier of the dataset
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
 
         :param data_to_get: data to retrieve, dict of names and types
         :type data_to_get: dict[str:str]
         """
-        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
-        dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
+        self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier.dataset_id} for connector {self}")
+        dataset_collection = self.__get_dataset_collection(name=dataset_identifier.dataset_id)
 
         # Retrieve the data
         cursor = dataset_collection.get_many(data_to_get.keys())
@@ -163,23 +166,23 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
                                                         data_to_get)
                         for doc in cursor}
         self.__logger.debug(
-            f"Values obtained {list(result_data.keys())} for dataset {dataset_identifier} for connector {self}"
+            f"Values obtained {list(result_data.keys())} for dataset {dataset_identifier.dataset_id} for connector {self}"
         )
         return result_data
 
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
+    def _write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
         """
         Method to write data
 
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: Dict[str:Any]
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         """
-        self.__logger.debug(f"Writing values in dataset {dataset_identifier} for connector {self}")
-        dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
+        self.__logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
+        dataset_collection = self.__get_dataset_collection(name=dataset_identifier.dataset_id)
         # prepare query to write
         data_for_arango = [{ArangoDatasetsConnector.KEY_STR: tag,
                             ArangoDatasetsConnector.VALUE_STR: self.__datasets_serializer.convert_to_dataset_data(tag, value, data_types_dict)}
@@ -189,16 +192,16 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         dataset_collection.insert_many(data_for_arango, overwrite=True)
         return values_to_write
 
-    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
+    def _get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Get all values from a dataset for Arango
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
         :param data_types_dict: dict of data type {name: type}
         :type data_types_dict: dict[str:str]
         """
-        self.__logger.debug(f"Getting all values for dataset {dataset_identifier} for connector {self}")
-        dataset_collection = self.__get_dataset_collection(name=dataset_identifier)
+        self.__logger.debug(f"Getting all values for dataset {dataset_identifier.dataset_id} for connector {self}")
+        dataset_collection = self.__get_dataset_collection(name=dataset_identifier.dataset_id)
 
         # Process all data
         result_data = {doc[ArangoDatasetsConnector.KEY_STR]: self.__datasets_serializer.convert_from_dataset_data(doc[ArangoDatasetsConnector.KEY_STR],
@@ -207,17 +210,17 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
                         for doc in dataset_collection}
         return result_data
 
-    def get_datasets_available(self) -> list[str]:
+    def get_datasets_available(self) -> list[AbstractDatasetInfo]:
         """
         Get all available datasets for a specific API
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
         mapping = self.__parse_datasets_mapping()
-        return list(mapping.keys())
+        return [DatasetInfoV0(self.connector_id, dataset_id) for dataset_id in list(mapping.keys())]
 
-    def write_dataset(
+    def _write_dataset(
         self,
-        dataset_identifier: str,
+        dataset_identifier: AbstractDatasetInfo,
         values_to_write: dict[str:Any],
         data_types_dict: dict[str:str],
         create_if_not_exists: bool = True,
@@ -226,7 +229,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         """
         Write a dataset from Arango
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data types {name: type}
@@ -237,27 +240,27 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
         :type override: bool
         """
         self.__logger.debug(
-            f"Writing dataset {dataset_identifier} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})"
+            f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})"
         )
         # Check if dataset exists
         mapping = self.__parse_datasets_mapping()
-        if dataset_identifier not in mapping:
+        if dataset_identifier.dataset_id not in mapping:
             # Handle dataset creation
             if create_if_not_exists:
                 # Generate a dataset uid
-                dataset_uid = self.__name_to_valid_arango_collection_name(dataset_identifier)
+                dataset_uid = self.__name_to_valid_arango_collection_name(dataset_identifier.dataset_id)
 
                 # Create matching collection
                 collection = self.db.collection(name=self.datasets_descriptor_collection_name)
                 collection.insert({ArangoDatasetsConnector.KEY_STR: dataset_uid, ArangoDatasetsConnector.DATASET_NAME_STR: dataset_identifier}, overwrite=True)
                 self.db.create_collection(name=dataset_uid)
             else:
-                raise DatasetNotFoundException(dataset_identifier)
+                raise DatasetNotFoundException(dataset_identifier.dataset_id)
         else:
             # Handle override
             if not override:
-                raise DatasetGenericException(f"Dataset {dataset_identifier} would be overriden")
-            if not self.db.has_collection(name=mapping[dataset_identifier]):
-                self.db.create_collection(name=mapping[dataset_identifier])
+                raise DatasetGenericException(f"Dataset {dataset_identifier.dataset_id} would be overriden")
+            if not self.db.has_collection(name=mapping[dataset_identifier.dataset_id]):
+                self.db.create_collection(name=mapping[dataset_identifier.dataset_id])
 
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)

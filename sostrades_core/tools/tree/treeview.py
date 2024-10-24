@@ -17,6 +17,7 @@ limitations under the License.
 from sostrades_core.execution_engine.ns_manager import NS_SEP, NamespaceManager
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.base_functions.compute_size import compute_data_size_in_Mo
+from sostrades_core.tools.ontology_variables.ontology_variable_key import create_data_key
 from sostrades_core.tools.tree.data_management_discipline import (
     DataManagementDiscipline,
 )
@@ -156,7 +157,7 @@ class TreeView:
                     and var_name in discipline_info['reference']._data_out.keys():
                     io_type = 'out'
 
-            treenode.data[key][ProxyDiscipline.VARIABLE_KEY] = treenode.create_data_key(model_name_full_path, io_type, val['var_name'])
+            treenode.data[key][ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type, val['var_name'])
 
             if key in treenode.disc_data:
                 treenode.data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = \
@@ -187,7 +188,7 @@ class TreeView:
                     and var_name in discipline_info['reference']._data_out.keys():
                     io_type = 'out'
 
-            temp_data[ProxyDiscipline.VARIABLE_KEY] = treenode.create_data_key(model_name_full_path, io_type, val['var_name'])
+            temp_data[ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type, val['var_name'])
 
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False
