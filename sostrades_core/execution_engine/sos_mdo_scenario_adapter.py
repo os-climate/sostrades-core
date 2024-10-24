@@ -77,6 +77,8 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         self.scenario.dict_desactivated_elem =  mdo_options.pop('dict_desactivated_elem')
         self.scenario.input_design_space = mdo_options.pop('input_design_space')
         self.desactivate_optim_out_storage = mdo_options.pop('desactivate_optim_out_storage')
+        self.design_space_out = None
+        self.post_processing_mdo_data = None
 
         self.mdo_options = mdo_options
 
@@ -113,41 +115,42 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         if not self.desactivate_optim_out_storage:
             self.update_design_space_out()
             post_processing_mdo_data = {}
-            if not self.eval_mode:
-                post_processing_mdo_data = self.update_post_processing_df()
-            self.io.data.update({
-                [key for key in self.get_output_data_names() if self.POST_PROC_MDO_DATA in key][
-                    0]: post_processing_mdo_data})
+            if not self.scenario.eval_mode:
+                self.post_processing_mdo_data = self.update_post_processing_df()
+            # self.io.data.update({
+            #     [key for key in self.get_output_data_names() if self.POST_PROC_MDO_DATA in key][
+            #         0]: post_processing_mdo_data})
 
     def update_design_space_out(self):
         """
         Method to update design space with opt value
         """
-        design_space = deepcopy(self.input_design_space)
+        design_space = deepcopy(self.scenario.input_design_space)
         l_variables = design_space['variable']
 
         for var_name in l_variables:
             var_name = var_name.split('.')[-1]
             full_name_var = self.get_namespace_from_var_name(var_name)
             if full_name_var in self.activated_variables:
-                value_x_opt = list([self.formulation.design_space.get_current_value(
+                value_x_opt = list([self.scenario.formulation.design_space.get_current_value(
                     [full_name_var])])
-                if self.dict_desactivated_elem[full_name_var] != {}:
+                if self.scenario.dict_desactivated_elem[full_name_var] != {}:
                     # insert a desactivated element
-                    for _pos, _val in zip(self.dict_desactivated_elem[full_name_var]['position'],
-                                          self.dict_desactivated_elem[full_name_var]['value']):
+                    for _pos, _val in zip(self.scenario.dict_desactivated_elem[full_name_var]['position'],
+                                          self.scenario.dict_desactivated_elem[full_name_var]['value']):
                         value_x_opt.insert(_pos, _val)
 
                 design_space.loc[design_space['variable'] == var_name, 'value'] = pd.Series(
                     [value_x_opt] * len(design_space))
-        self.local_data.update({
-            [key for key in self.get_output_data_names() if 'design_space_out' in key][
-                0]: design_space})
+        self.design_space_out = design_space
+        # self.local_data.update({
+        #     [key for key in self.get_output_data_names() if 'design_space_out' in key][
+        #         0]: design_space})
 
 
     def update_post_processing_df(self):
         """Gathers the data for plotting the MDO graphs"""
-        dataset = self.to_dataset()
+        dataset = self.scenario.to_dataset()
         dataframe = dataset.copy()
         # quick fix to avoind NaN in the resulting dataframe
         # context : empty fields due to several calls to the same design space lead to NaN in dataframes
@@ -156,8 +159,8 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         # dataframe = dataframe.rename(columns=rename_func)
 
         constraints_names = [constraint.name for constraint in
-                             self.formulation.optimization_problem.constraints]
-        objective_name = self.formulation.optimization_problem.objective.name
+                             self.scenario.formulation.optimization_problem.constraints]
+        objective_name = self.scenario.formulation.optimization_problem.objective.name
 
         def correct_var_name(varname: str) -> str:
             """removes study name from variable name"""
@@ -167,7 +170,7 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         post_processing_mdo_data = {
             "objective": np.array(dataframe[dataframe.FUNCTION_GROUP][objective_name].values),
             "variables": {correct_var_name(var): np.array(dataframe[dataframe.DESIGN_GROUP][var].values) for var in
-                          self.design_space.variable_names},
+                          self.scenario.design_space.variable_names},
             "constraints": {correct_var_name(var): np.array(dataframe[dataframe.FUNCTION_GROUP][var].values) for var in
                             constraints_names}
         }
@@ -195,7 +198,7 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
             current_idx += k_size
 
     def get_namespace_from_var_name(self, var_name):
-        subcoupling = self.disciplines[0]
+        subcoupling = self.scenario.disciplines[0]
         namespace_list = [full_name for full_name in subcoupling.get_input_data_names() if
                           (var_name == full_name.split('.')[-1] or var_name == full_name)]
         if len(namespace_list) == 1:

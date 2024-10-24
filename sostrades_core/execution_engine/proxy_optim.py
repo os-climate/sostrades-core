@@ -405,8 +405,10 @@ class ProxyOptim(ProxyDriverEvaluator):
         if self.DESACTIVATE_OPTIM_OUT_STORAGE in data_in:
             desactivate_optim_storage = self.get_sosdisc_inputs(self.DESACTIVATE_OPTIM_OUT_STORAGE)
             if not desactivate_optim_storage:
-                dynamic_outputs[self.POST_PROC_MDO_DATA] = {'type': 'dict'}
-                dynamic_outputs[self.DESIGN_SPACE_OUT] = {'type': 'dataframe'}
+                dynamic_outputs[self.POST_PROC_MDO_DATA] = {self.TYPE: 'dict',
+                                                            self.NUMERICAL: True}
+                dynamic_outputs[self.DESIGN_SPACE_OUT] = {self.TYPE: 'dataframe',
+                                                          self.NUMERICAL: True}
 
         self.add_outputs(dynamic_outputs)
 
