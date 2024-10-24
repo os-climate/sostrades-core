@@ -38,14 +38,12 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
-
 class ProxyDisciplineException(Exception):
     pass
 
 
 # to avoid circular redundancy with nsmanager
 NS_SEP = '.'
-
 
 class ProxyDiscipline:
     """
@@ -2356,3 +2354,27 @@ class ProxyDiscipline:
 
     def get_father_executor(self):
         return self.father_executor
+
+    def get_numerical_outputs_for_discipline(self) -> dict:
+        """
+        Method that returns the numerical outputs in the discipline data out if there is an attribute in the GEMSEO
+        discipline object that has the same name, filling with None otherwise.
+            Returns: numerical outputs of the discipline
+        """
+
+        disc_out = self.get_data_out()
+        numerical_outputs = {
+            self.get_var_full_name(key, disc_out): getattr(self.discipline_wrapp.discipline, key, None)
+            for key in disc_out if disc_out[key][self.NUMERICAL] is True
+        }
+        return numerical_outputs
+
+    def get_numerical_outputs_subprocess(self) -> dict:
+        """
+        Method that returns the numerical outputs recursively in the subprocess proxy disciplines.
+            Returns: numerical outputs of the discipline and subprocess
+        """
+        numerical_outputs_subprocess = self.get_numerical_outputs_for_discipline()
+        for disc in self.proxy_disciplines:
+            numerical_outputs_subprocess.update(disc.get_numerical_outputs_subprocess())
+        return numerical_outputs_subprocess

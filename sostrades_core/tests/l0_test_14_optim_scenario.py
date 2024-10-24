@@ -1152,6 +1152,7 @@ class TestSoSOptimScenario(unittest.TestCase):
         disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "L-BFGS-B"
         disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
         disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
+        disc_dict[f'{self.ns}.SellarOptimScenario.desactivate_optim_out_storage'] = False
         disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
         disc_dict[f'{self.ns}.SellarOptimScenario.ineq_constraints'] = []
 
@@ -1192,8 +1193,8 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # get sosoptimscenario discipline
         disc = exec_eng.root_process.proxy_disciplines[0].discipline_wrapp.discipline
-        disc.formulation.optimization_problem.nonproc_constraints = []
-        disc.formulation.optimization_problem.nonproc_objective = None
+        disc.scenario.formulation.optimization_problem.nonproc_constraints = []
+        disc.scenario.formulation.optimization_problem.nonproc_objective = None
 
         # execute postrun to trigger exception
         disc._post_run()
@@ -1452,8 +1453,8 @@ class TestSoSOptimScenario(unittest.TestCase):
 
         # get sosoptimscenario discipline
         disc = exec_eng.root_process.proxy_disciplines[0].discipline_wrapp.discipline
-        disc.formulation.optimization_problem.nonproc_constraints = []
-        disc.formulation.optimization_problem.nonproc_objective = None
+        disc.scenario.formulation.optimization_problem.nonproc_constraints = []
+        disc.scenario.formulation.optimization_problem.nonproc_objective = None
 
         # execute postrun to trigger exception
         disc._post_run()
