@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from __future__ import annotations
 
 # debug mode
@@ -81,7 +82,7 @@ class SoSDiscipline(Discipline):
         sos_wrapp: SoSWrapp,
         reduced_dm: dict,
         logger: logging.Logger,
-        debug_mode=''
+        debug_mode='',
     ):
         """
         Constructor
@@ -188,6 +189,30 @@ class SoSDiscipline(Discipline):
         if filtered_outputs:
             Discipline.add_differentiated_outputs(self, filtered_outputs)
 
+    def _prepare_io_for_check_jacobian(
+        self, input_names: Iterable[str], output_names: Iterable[str]
+    ) -> tuple[Iterable[str], Iterable[str]]:
+        """Filter the inputs and outputs to keep only the one that can be used for linearization.
+
+        Overrides the method from GEMSEO.
+
+        Args:
+            input_names: The names of the inputs to filter.
+            output_names: The names of the outputs to filter.
+
+        Returns:
+            A tuple containing:
+              - the filtered input names.
+              - the filtered outputs names.
+        """
+        input_names = input_names or self.io.input_grammar.keys()
+        output_names = output_names or self.io.output_grammar.keys()
+        filtered_inputs = filter_variables_to_convert(self.reduced_dm, input_names, write_logs=True, logger=self.logger)
+        filtered_outputs = filter_variables_to_convert(
+            self.reduced_dm, output_names, write_logs=True, logger=self.logger
+        )
+        return filtered_inputs, filtered_outputs
+
     def _retrieve_diff_inouts(
         self,
         compute_all_jacobians: bool = False,
@@ -257,9 +282,7 @@ class SoSDiscipline(Discipline):
         #     inputs = self.get_input_data_names(filtered_inputs=True)
         # if outputs is None:
         #     outputs = self.get_output_data_names(filtered_outputs=True)
-        input_names, output_names = self._prepare_io_for_check_jacobian(
-            inputs, outputs
-        )
+        input_names, output_names = self._prepare_io_for_check_jacobian(inputs, outputs)
 
         # Differentiate analytically
         self.add_differentiated_inputs(input_names)
@@ -331,8 +354,9 @@ class SoSDiscipline(Discipline):
         if self.jac is None:
             self._init_jacobian(input_names, output_names, init_type=self.InitJacobianType.SPARSE)
         else:
-            self._init_jacobian(input_names, output_names, init_type=self.InitJacobianType.SPARSE,
-                                fill_missing_keys=True)
+            self._init_jacobian(
+                input_names, output_names, init_type=self.InitJacobianType.SPARSE, fill_missing_keys=True
+            )
 
         self.compute_sos_jacobian()
         # if self.check_linearize_data_changes:
@@ -424,13 +448,9 @@ class SoSDiscipline(Discipline):
                     indices[inputs[0]] = list(range(*tup))
 
             else:
-                msg = (
-                    'Not possible to use input_column and output_column options when \
+                msg = 'Not possible to use input_column and output_column options when \
                     there is more than one input and output'
-                )
-                raise Exception(
-                    msg
-                )
+                raise Exception(msg)
 
         return indices
 
