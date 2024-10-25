@@ -14,6 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+from __future__ import annotations
+
+from gemseo.core.discipline import Discipline
+
 from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
 from sostrades_core.execution_engine.sos_discipline_driver import (
     SoSDisciplineDriver,
@@ -25,7 +30,7 @@ class DisciplineDriverWrappException(Exception):
 
 
 class DisciplineDriverWrapp(DisciplineWrapp):
-    '''**DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
+    """**DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
 
     An instance of DisciplineWrapp is in one-to-one aggregation with an instance inheriting from Discipline and
     might or might not have a SoSWrapp to supply the user-defined model run. All GEMSEO objects are instantiated during
@@ -36,10 +41,11 @@ class DisciplineDriverWrapp(DisciplineWrapp):
         wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
         discipline (Discipline): aggregated GEMSEO object used for execution eventually with model run
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the Discipline (or None)
-    '''
+    """
 
-    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None,
-                                 cache_file_path=None):  # type: (...) -> None
+    def create_gemseo_discipline(
+        self, proxy=None, reduced_dm=None, cache_type=Discipline.CacheType.NONE, cache_file_path=None
+    ):  # type: (...) -> None
         """
         SoSDiscipline instanciation.
 
@@ -55,14 +61,15 @@ class DisciplineDriverWrapp(DisciplineWrapp):
 
         # create the SoSDisciplineDriver
         if self.wrapping_mode == 'SoSTrades':
-            self.discipline = SoSDisciplineDriver(full_name=proxy.get_disc_full_name(),
-                                                         grammar_type=proxy.SOS_GRAMMAR_TYPE,
-                                                         cache_type=cache_type,
-                                                         sos_wrapp=self.wrapper,
-                                                         reduced_dm=reduced_dm,
-                                                  disciplines=sub_disciplines,
-                                                  logger=self.logger.getChild("SoSDisciplineDriver"),
-                                                         )
+            self.discipline = SoSDisciplineDriver(
+                full_name=proxy.get_disc_full_name(),
+                grammar_type=proxy.SOS_GRAMMAR_TYPE,
+                cache_type=cache_type,
+                sos_wrapp=self.wrapper,
+                reduced_dm=reduced_dm,
+                disciplines=sub_disciplines,
+                logger=self.logger.getChild("SoSDisciplineDriver"),
+            )
             self._init_grammar_with_keys(proxy)
             # self._update_all_default_values(input_data) #TODO: numerical inputs etc?
             self._set_wrapper_attributes(proxy, self.wrapper)
@@ -72,14 +79,11 @@ class DisciplineDriverWrapp(DisciplineWrapp):
             pass
 
     def get_sub_disciplines(self, proxy):
-
-        sub_disciplines = [pdisc.discipline_wrapp.discipline
-                               for pdisc in proxy.proxy_disciplines
-                           if pdisc.discipline_wrapp is not None]
-        return sub_disciplines
+        return [
+            pdisc.discipline_wrapp.discipline for pdisc in proxy.proxy_disciplines if pdisc.discipline_wrapp is not None
+        ]
 
     def reset_subdisciplines(self, proxy):
-
         sub_disciplines = self.get_sub_disciplines(proxy)
 
         if self.discipline is not None:

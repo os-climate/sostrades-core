@@ -14,13 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from __future__ import annotations
 
 # debug mode
+from collections.abc import Iterable
 from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
 
+import pandas as pd
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
@@ -29,6 +32,7 @@ from numpy import floating, ndarray
 from pandas import DataFrame
 from scipy.sparse import lil_matrix
 
+from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 if TYPE_CHECKING:
@@ -78,7 +82,7 @@ class SoSDiscipline(Discipline):
         sos_wrapp: SoSWrapp,
         reduced_dm: dict,
         logger: logging.Logger,
-        debug_mode=''
+        debug_mode='',
     ):
         """
         Constructor
@@ -151,7 +155,7 @@ class SoSDiscipline(Discipline):
                 'Discipline inputs integrity through run',
                 is_output_error=True,
             )
-            if output_error != '':
+            if output_error:
                 raise ValueError(output_error)
 
         if self.debug_mode in ['min_max_couplings', 'all']:
@@ -170,6 +174,44 @@ class SoSDiscipline(Discipline):
             self.execution_status.value = self.execution_status.Status.FAILED
             raise
         return self._local_data
+
+    def add_differentiated_inputs(self, input_names: Iterable[str] = ()) -> None:  # noqa: D102
+        input_names = input_names or self.io.input_grammar.keys()
+        filtered_inputs = filter_variables_to_convert(self.reduced_dm, input_names, write_logs=True, logger=self.logger)
+        if filtered_inputs:
+            Discipline.add_differentiated_inputs(self, filtered_inputs)
+
+    def add_differentiated_outputs(self, output_names: Iterable[str] = ()) -> None:  # noqa: D102
+        output_names = output_names or self.io.output_grammar.keys()
+        filtered_outputs = filter_variables_to_convert(
+            self.reduced_dm, output_names, write_logs=True, logger=self.logger
+        )
+        if filtered_outputs:
+            Discipline.add_differentiated_outputs(self, filtered_outputs)
+
+    def _prepare_io_for_check_jacobian(
+        self, input_names: Iterable[str], output_names: Iterable[str]
+    ) -> tuple[Iterable[str], Iterable[str]]:
+        """Filter the inputs and outputs to keep only the one that can be used for linearization.
+
+        Overrides the method from GEMSEO.
+
+        Args:
+            input_names: The names of the inputs to filter.
+            output_names: The names of the outputs to filter.
+
+        Returns:
+            A tuple containing:
+              - the filtered input names.
+              - the filtered outputs names.
+        """
+        input_names = input_names or self.io.input_grammar.keys()
+        output_names = output_names or self.io.output_grammar.keys()
+        filtered_inputs = filter_variables_to_convert(self.reduced_dm, input_names, write_logs=True, logger=self.logger)
+        filtered_outputs = filter_variables_to_convert(
+            self.reduced_dm, output_names, write_logs=True, logger=self.logger
+        )
+        return filtered_inputs, filtered_outputs
 
     def _retrieve_diff_inouts(
         self,
@@ -240,9 +282,7 @@ class SoSDiscipline(Discipline):
         #     inputs = self.get_input_data_names(filtered_inputs=True)
         # if outputs is None:
         #     outputs = self.get_output_data_names(filtered_outputs=True)
-        input_names, output_names = self._prepare_io_for_check_jacobian(
-            inputs, outputs
-        )
+        input_names, output_names = self._prepare_io_for_check_jacobian(inputs, outputs)
 
         # Differentiate analytically
         self.add_differentiated_inputs(input_names)
@@ -258,7 +298,6 @@ class SoSDiscipline(Discipline):
             use_threading,
             wait_time_between_fork,
         )
-
 
         if auto_set_step:
             approx.auto_set_step(output_names, input_names)
@@ -315,8 +354,9 @@ class SoSDiscipline(Discipline):
         if self.jac is None:
             self._init_jacobian(input_names, output_names, init_type=self.InitJacobianType.SPARSE)
         else:
-            self._init_jacobian(input_names, output_names, init_type=self.InitJacobianType.SPARSE,
-                                fill_missing_keys=True)
+            self._init_jacobian(
+                input_names, output_names, init_type=self.InitJacobianType.SPARSE, fill_missing_keys=True
+            )
 
         self.compute_sos_jacobian()
         # if self.check_linearize_data_changes:
@@ -408,13 +448,9 @@ class SoSDiscipline(Discipline):
                     indices[inputs[0]] = list(range(*tup))
 
             else:
-                msg = (
-                    'Not possible to use input_column and output_column options when \
+                msg = 'Not possible to use input_column and output_column options when \
                     there is more than one input and output'
-                )
-                raise Exception(
-                    msg
-                )
+                raise Exception(msg)
 
         return indices
 
@@ -448,7 +484,6 @@ class SoSDiscipline(Discipline):
 
         """
         has_nan = False
-        import pandas as pd
 
         for data_key, data_value in data.items():
             nan_found = False
@@ -490,8 +525,6 @@ class SoSDiscipline(Discipline):
         Return:
             output_error (dict): dict with mismatches spotted in comparison
         """
-        from sostrades_core.tools.compare_data_manager_tooling import compare_dict
-
         dict_error = {}
         compare_dict(left_dict, right_dict, '', dict_error)
         output_error = ''

@@ -19,7 +19,6 @@ import logging
 from copy import deepcopy
 from typing import List, Union
 
-from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.process_discipline import ProcessDiscipline
@@ -38,14 +37,12 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.check_data_integrity.check_data_integrity import CheckDataIntegrity
 from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
-
 class ProxyDisciplineException(Exception):
     pass
 
 
 # to avoid circular redundancy with nsmanager
 NS_SEP = '.'
-
 
 class ProxyDiscipline:
     """
@@ -481,7 +478,7 @@ class ProxyDiscipline:
             # init gemseo discipline if it has not been created yet
             cache_type = self.get_sosdisc_inputs(self.CACHE_TYPE)
 
-            if not cache_type:
+            if not cache_type or cache_type.lower() == "none":  # required for compatibility with old studies
                 cache_type = Discipline.CacheType.NONE
             self.discipline_wrapp.create_gemseo_discipline(proxy=self,
                                                                reduced_dm=self.ee.dm.reduced_dm,
@@ -550,21 +547,19 @@ class ProxyDiscipline:
                     observer)
 
     def set_cache(self, disc: Discipline, cache_type: str):
-        '''
-        Instanciate and set cache for disc if cache_type is not Discipline.CacheType.NONE
+        """Instanciate and set cache for disc.
 
         Arguments:
             disc (Discipline): GEMSEO object to set cache
             cache_type (string): type of cache
-        '''
-        if cache_type == MDOChain.CacheType.HDF5:
-            raise Exception(
-                'if the cache type is set to HDF5Cache, the cache_file path must be set')
-        else:
-            disc.cache = None
-            if cache_type != MDOChain.CacheType.NONE:
-                disc.set_cache(
-                    cache_type=cache_type)
+        """
+        if cache_type == Discipline.CacheType.HDF5:
+            msg = "If the cache type is set to HDF5Cache, the cache_file path must be set"
+            raise ValueError(msg)
+        cache_type = (
+            Discipline.CacheType.NONE if cache_type.lower() == "none" else cache_type
+        )  # required for compatibility with old studies
+        disc.set_cache(cache_type=cache_type)
 
     def delete_cache_in_cache_map(self):
         '''
@@ -658,10 +653,8 @@ class ProxyDiscipline:
 
         if numerical_inputs:
             return list(data_out.keys())
-        else:
-            return [key for key, value in data_out.items() if
-                    not value[self.NUMERICAL]]
-
+        return [key for key, value in data_out.items() if
+                not value[self.NUMERICAL]]
 
     def get_data_io_dict(self, io_type: str) -> dict:
         '''
@@ -2356,3 +2349,27 @@ class ProxyDiscipline:
 
     def get_father_executor(self):
         return self.father_executor
+
+    def get_numerical_outputs_for_discipline(self) -> dict:
+        """
+        Method that returns the numerical outputs in the discipline data out if there is an attribute in the GEMSEO
+        discipline object that has the same name, filling with None otherwise.
+            Returns: numerical outputs of the discipline
+        """
+
+        disc_out = self.get_data_out()
+        numerical_outputs = {
+            self.get_var_full_name(key, disc_out): getattr(self.discipline_wrapp.discipline, key, None)
+            for key in disc_out if disc_out[key][self.NUMERICAL] is True
+        }
+        return numerical_outputs
+
+    def get_numerical_outputs_subprocess(self) -> dict:
+        """
+        Method that returns the numerical outputs recursively in the subprocess proxy disciplines.
+            Returns: numerical outputs of the discipline and subprocess
+        """
+        numerical_outputs_subprocess = self.get_numerical_outputs_for_discipline()
+        for disc in self.proxy_disciplines:
+            numerical_outputs_subprocess.update(disc.get_numerical_outputs_subprocess())
+        return numerical_outputs_subprocess

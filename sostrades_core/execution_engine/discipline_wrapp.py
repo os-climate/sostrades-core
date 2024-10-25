@@ -17,7 +17,9 @@ limitations under the License.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
+
+from gemseo.core.discipline import Discipline
 
 from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 from sostrades_core.execution_engine.sos_mda_chain import SoSMDAChain
@@ -33,8 +35,8 @@ class DisciplineWrappException(Exception):
     pass
 
 
-class DisciplineWrapp(object):
-    '''**DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
+class DisciplineWrapp:
+    """**DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
 
     An instance of DisciplineWrapp is in one-to-one aggregation with an instance inheriting from Discipline and
     might or might not have a SoSWrapp to supply the user-defined model run. All GEMSEO objects are instantiated during
@@ -45,21 +47,21 @@ class DisciplineWrapp(object):
         wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
         discipline (Discipline): aggregated GEMSEO object used for execution eventually with model run
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the Discipline (or None)
-    '''
+    """
 
     def __init__(self, name: str, logger: logging.Logger, wrapper=None, wrapping_mode: str = 'SoSTrades'):
-        '''
+        """
         Constructor.
 
         Arguments:
             name (string): name of the discipline/node
             wrapper (Class): class constructor of the user-defined wrapper (or None)
             wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
-        '''
+        """
         self.logger = logger
         self.name = name
         self.wrapping_mode = wrapping_mode
-        self.discipline: Union[SoSDiscipline, SoSMDOScenarioAdapter, SoSMDAChain] = None
+        self.discipline: SoSDiscipline | SoSMDOScenarioAdapter | SoSMDAChain = None
         if wrapper is not None:
             self.wrapper = wrapper(name, self.logger.getChild(wrapper.__name__))
         else:
@@ -108,7 +110,7 @@ class DisciplineWrapp(object):
         if self.wrapper is not None:
             self.wrapper.check_data_integrity()
 
-    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=None, cache_file_path=None):
+    def create_gemseo_discipline(self, proxy=None, reduced_dm=None, cache_type=Discipline.CacheType.NONE, cache_file_path=None):
         """
         SoSDiscipline instanciation.
 
@@ -127,7 +129,7 @@ class DisciplineWrapp(object):
                 sos_wrapp=self.wrapper,
                 reduced_dm=reduced_dm,
                 logger=self.logger.getChild("SoSDiscipline"),
-                debug_mode=proxy.get_sosdisc_inputs(SoSDiscipline.DEBUG_MODE)
+                debug_mode=proxy.get_sosdisc_inputs(SoSDiscipline.DEBUG_MODE),
             )
             self._init_grammar_with_keys(proxy)
             self._set_wrapper_attributes(proxy, self.wrapper)
@@ -145,12 +147,12 @@ class DisciplineWrapp(object):
     #     proxy.set_discipline_attributes(discipline)
 
     def _init_grammar_with_keys(self, proxy):
-        '''
+        """
         initialize GEMS grammar with names and type None
 
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
-        '''
+        """
         input_names_and_defaults = proxy.get_input_data_names_and_defaults(numerical_inputs=False)
         grammar = self.discipline.input_grammar
         grammar.clear()
@@ -163,14 +165,14 @@ class DisciplineWrapp(object):
         grammar.update_from_names(output_names)
 
     def update_default_from_dict(self, input_dict, check_input=True):
-        '''
+        """
         Store values from input_dict in default values of discipline (when keys are present in input grammar data
         names or input is not checked)
 
         Arguments:
             input_dict (dict): values to store
             check_input (bool): flag to specify if inputs are checked or not to exist in input grammar
-        '''
+        """
         if input_dict is not None:
             to_update = [
                 (key, value)
@@ -179,9 +181,7 @@ class DisciplineWrapp(object):
             ]
             self.discipline.default_input_data.update(to_update)
 
-    def create_mda_chain(
-        self, sub_disciplines, proxy: ProxyCoupling | None = None, input_data=None, reduced_dm={}
-    ):  # type: (...) -> None
+    def create_mda_chain(self, sub_disciplines, proxy: ProxyCoupling | None = None, input_data=None, reduced_dm=None):  # type: (...) -> None
         """
         MDAChain instantiation when owned by a ProxyCoupling.
 
@@ -190,6 +190,8 @@ class DisciplineWrapp(object):
             proxy: proxy coupling for grammar initialisation and numericla inputs.
             input_data (dict): input data to update default values of the MDAChain with
         """
+        if reduced_dm is None:
+            reduced_dm = {}
         if self.wrapping_mode == 'SoSTrades':
             discipline = SoSMDAChain(
                 disciplines=sub_disciplines,
@@ -247,8 +249,8 @@ class DisciplineWrapp(object):
                 'dict_desactivated_elem': proxy.dict_desactivated_elem,
                 'input_design_space': proxy.get_sosdisc_inputs('design_space'),
                 # retrieve the option to desactivate the storage of the design space outputs for post processings
-                'desactivate_optim_out_storage': proxy.get_sosdisc_inputs(
-                    proxy.DESACTIVATE_OPTIM_OUT_STORAGE)}
+                'desactivate_optim_out_storage': proxy.get_sosdisc_inputs(proxy.DESACTIVATE_OPTIM_OUT_STORAGE),
+            }
 
             discipline = SoSMDOScenarioAdapter(
                 sub_disciplines,
@@ -261,11 +263,9 @@ class DisciplineWrapp(object):
                 proxy.get_output_data_names(numerical_inputs=False),
                 logger=self.logger.getChild("SoSMDOScenarioAdapter"),
                 reduced_dm=reduced_dm,
-                mdo_options=mdo_options
+                mdo_options=mdo_options,
             )
             # Set parameters for SoSMDOScenarioAdapter
-
-
 
             self.discipline = discipline
 
@@ -276,18 +276,17 @@ class DisciplineWrapp(object):
             pass
 
     def _update_all_default_values(self, proxy):
-        '''Store all input grammar data names' values from input data in default values of discipline'''
-
+        """Store all input grammar data names' values from input data in default values of discipline"""
         for key, value in proxy.get_data_in().items():
             if value[proxy.VALUE] is not None and not value[proxy.NUMERICAL]:
                 full_key = proxy.get_var_full_name(key, proxy.get_data_in())
                 self.discipline.default_input_data.update({full_key: value[proxy.VALUE]})
 
     def __update_gemseo_grammar(self, proxy, coupling, mdoscenario=False):
-        '''
+        """
         update GEMSEO grammar with sostrades
         # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
-        '''
+        """
         # - retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain
         # (e.g., numerical inputs mainly)
         # TODO: [to discuss] ensure that/if all the SoSTrades added i/o ProxyCoupling are flagged as numerical, we can use this flag instead of performing set operations.
@@ -325,8 +324,5 @@ class DisciplineWrapp(object):
         coupling.output_grammar.update_from_names(missing_outputs)
 
     def execute(self, input_data):
-        """
-        Discipline execution delegated to the GEMSEO objects.
-        """
-
+        """Discipline execution delegated to the GEMSEO objects."""
         return self.discipline.execute(input_data)

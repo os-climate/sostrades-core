@@ -724,9 +724,8 @@ class ExecutionEngine:
         ex_proc.discipline_wrapp.discipline.io.data.pop("MDA residuals norm", None)
         self.update_dm_with_local_data(
             ex_proc.discipline_wrapp.discipline.io.data)
-        # Add residuals_history to the dm
-        self.update_dm_with_local_data({
-            f'{ex_proc.discipline_wrapp.discipline.name}.{ex_proc.discipline_wrapp.discipline.RESIDUALS_HISTORY}': ex_proc.discipline_wrapp.discipline.residuals_history})
+        # Add residuals_history and other numerical outputs that are not in GEMSEO grammar to the data manager
+        self.update_dm_with_local_data(ex_proc.get_numerical_outputs_subprocess())
         # -- update all proxy statuses
         ex_proc.set_status_from_discipline()
 
