@@ -23,12 +23,11 @@ from typing import TYPE_CHECKING, Any, Mapping, Sequence
 from gemseo.mda.sequential_mda import MDASequential
 
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
-    SoSMDAGaussSeidel,
+    SoSMDAGaussSeidel, SOS_GRAMMAR_TYPE
 )
 from sostrades_core.execution_engine.gemseo_addon.mda.pure_newton_raphson import (
     PureNewtonRaphson,
 )
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
@@ -44,7 +43,7 @@ class GSPureNewtonMDA(MDASequential):
         self,
         disciplines: Sequence[Discipline],
         name: str | None = None,
-        grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
+        grammar_type: str = SOS_GRAMMAR_TYPE,
         tolerance: float = 1e-6,
         max_mda_iter: int = 10,
         over_relaxation_factor: float = 0.99,

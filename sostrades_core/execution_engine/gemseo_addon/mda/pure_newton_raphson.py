@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING, Any, Mapping, Sequence
 import numpy as np
 from gemseo.mda.base_mda_root import BaseMDARoot
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
     convert_array_into_new_type,
     convert_new_type_into_array,
@@ -35,7 +34,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
-
+SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
 class PureNewtonRaphson(BaseMDARoot):
     """Pure NewtonRaphson solver based on Taylor's theorem."""
@@ -46,7 +45,7 @@ class PureNewtonRaphson(BaseMDARoot):
         max_mda_iter: int = 10,  # type: int
         over_relaxation_factor: float = 0.99,  # type: float
         name: str | None = None,  # type: Optional[str]
-        grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,  # type: str
+        grammar_type: str = SOS_GRAMMAR_TYPE,  # type: str
         linear_solver: str = "DEFAULT",  # type: str
         tolerance: float = 1e-6,  # type: float
         linear_solver_tolerance: float = 1e-12,  # type: float

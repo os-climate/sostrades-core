@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline.discipline import Discipline
 
-
+SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 class SoSMDAGaussSeidel(MDAGaussSeidel):
     """Overload of GEMSEO's MDA GaussSeidel
     (overload introduces warm_start_threshold option)
@@ -45,7 +45,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
         disciplines: Sequence[Discipline],
         name: str | None = None,
         max_mda_iter: int = 10,
-        grammar_type: str = ProxyDiscipline.SOS_GRAMMAR_TYPE,
+        grammar_type: str = SOS_GRAMMAR_TYPE,
         tolerance: float = 1e-6,
         linear_solver_tolerance: float = 1e-12,
         scaling_method: BaseMDA.ResidualScaling = BaseMDA.ResidualScaling.N_COUPLING_VARIABLES,
