@@ -45,10 +45,6 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     TwoAxesInstanciatedChart,
 )
 
-if getenv("USE_PETSC", "").lower() in ("true", "1"):
-    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import (
-        SoSPetscKSPAlgos as ksp_lib_petsc,
-    )
 
 N_CPUS = cpu_count()
 
@@ -61,6 +57,10 @@ def get_available_linear_solvers():
 
     return algos
 
+
+PETSC_AVAILABLE_LINEAR_SOLVER = ['GMRES_PETSC',
+                                 'LGMRES_PETSC', 'BICG_PETSC', 'BCGS_PETSC']
+PETSC_AVAILABLE_PRECONDITIONER = ['jacobi', 'ilu', 'gasm']
 
 class ProxyCoupling(ProxyDisciplineBuilder):
     """
@@ -100,8 +100,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     if getenv("USE_PETSC", "").lower() in ("true", "1"):
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
-        POSSIBLE_VALUES_PRECONDITIONER = ["None", *ksp_lib_petsc.AVAILABLE_PRECONDITIONER]
-        AVAILABLE_LINEAR_SOLVERS += ksp_lib_petsc.AVAILABLE_LINEAR_SOLVER
+        POSSIBLE_VALUES_PRECONDITIONER = ["None", *PETSC_AVAILABLE_PRECONDITIONER]
+        AVAILABLE_LINEAR_SOLVERS += PETSC_AVAILABLE_LINEAR_SOLVER
     else:
         DEFAULT_LINEAR_SOLVER = 'GMRES'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
@@ -415,7 +415,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     raise ValueError(msg)
                 disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = [
                     "None",
-                    *ksp_lib_petsc.AVAILABLE_PRECONDITIONER,
+                    *PETSC_AVAILABLE_PRECONDITIONER,
                 ]
                 if (
                     self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')
@@ -443,7 +443,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     raise ValueError(msg)
                 disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = [
                     "None",
-                    *ksp_lib_petsc.AVAILABLE_PRECONDITIONER,
+                    *PETSC_AVAILABLE_PRECONDITIONER,
                 ]
                 if (
                     self.get_sosdisc_inputs('linear_solver_MDO_preconditioner')
