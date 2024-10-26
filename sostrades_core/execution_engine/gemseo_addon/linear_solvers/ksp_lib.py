@@ -76,7 +76,7 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
     AVAILABLE_LINEAR_SOLVER = ['GMRES_PETSC',
                                'LGMRES_PETSC', 'BICG_PETSC', 'BCGS_PETSC']
     AVAILABLE_PRECONDITIONER = ['jacobi', 'ilu', 'gasm']
-
+    OPTIONS_MAP: ClassVar[dict[str, str]] = {}
     ALGORITHM_INFOS: ClassVar[dict[str, LinearSolverDescription]] = {
         algo_name: LinearSolverDescription(
             algorithm_name=algo_name,
@@ -86,7 +86,7 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
             library_name="PETSC_KSP",
             website="https://petsc.org/release/docs/manualpages/KSP/KSP.html#KSP",
         ) for algo_name in AVAILABLE_LINEAR_SOLVER}
-
+    print('algos infos', ALGORITHM_INFOS)
     def __init__(self, algo_name):
         super().__init__(algo_name)
 
