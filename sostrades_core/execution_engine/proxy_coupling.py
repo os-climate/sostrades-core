@@ -45,7 +45,6 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     TwoAxesInstanciatedChart,
 )
 
-
 N_CPUS = cpu_count()
 
 
@@ -61,6 +60,7 @@ def get_available_linear_solvers():
 PETSC_AVAILABLE_LINEAR_SOLVER = ['GMRES_PETSC',
                                  'LGMRES_PETSC', 'BICG_PETSC', 'BCGS_PETSC']
 PETSC_AVAILABLE_PRECONDITIONER = ['jacobi', 'ilu', 'gasm']
+
 
 class ProxyCoupling(ProxyDisciplineBuilder):
     """
@@ -520,14 +520,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             if isinstance(group, list):
                 # if MDA, i.e. group of disciplines (e.g. [Sellar1, Sellar2])
                 # we gather all the i/o of the sub-disciplines (MDA-like i/o grammar)
-                list_of_data_in = [
-                    self.gemseo_to_sos_disciplines[d].get_data_io_with_full_name(self.IO_TYPE_IN,
-                                                                                 as_namespaced_tuple=True)
-                    for d in group]
+                list_of_data_in = [d.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True) for d in group]
                 list_of_data_out = [
-                    self.gemseo_to_sos_disciplines[d].get_data_io_with_full_name(self.IO_TYPE_OUT,
-                                                                                 as_namespaced_tuple=True) for d in
-                    group
+                    d.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple=True) for d in group
                 ]
 
                 mda_inputs, mda_outputs = self.__get_MDA_io(list_of_data_in, list_of_data_out)
@@ -536,10 +531,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             else:
                 # if the group is composed of single discipline (e.g. SellarProblem])
                 # we add the i/o to the chain i/o
-                disc_inputs = self.gemseo_to_sos_disciplines[group].get_data_io_with_full_name(self.IO_TYPE_IN,
-                                                                                               as_namespaced_tuple=True)
-                disc_outputs = self.gemseo_to_sos_disciplines[group].get_data_io_with_full_name(self.IO_TYPE_OUT,
-                                                                                                as_namespaced_tuple=True)
+                disc_inputs = group.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True)
+                disc_outputs = group.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple=True)
                 chain_inputs.append(disc_inputs)
                 chain_outputs.append(disc_outputs)
 
@@ -548,15 +541,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     def _build_coupling_structure(self):
         """Build CouplingStructure"""
-        # the idea was not to create gemseo disciplines in configuration but no other choice for coupling structure right now
-        gemseo_disciplines = self.create_gemseo_disciplines()
-        # filter MDOScenario for coupling structure
-        # gemseo_disciplines_filtered = [d.disciplines[0] if isinstance(d, SoSMDOScenario) else d for d in
-        #                                gemseo_disciplines]
-        # self.gemseo_to_sos_disciplines = {d if not isinstance(d, SoSMDOScenario) else d.disciplines[0]: d_g for d, d_g
-        #                                   in
-        #                                   self.gemseo_to_sos_disciplines.items()}
-        self.coupling_structure = CouplingStructure(gemseo_disciplines)
+        for proxy_disc in self.proxy_disciplines:
+            proxy_disc.initialize_gemseo_io()
+        self.coupling_structure = CouplingStructure(self.proxy_disciplines)
         self.strong_couplings = filter_variables_to_convert(
             self.ee.dm.convert_data_dict_with_full_name(),
             self.coupling_structure.strong_couplings,
@@ -636,8 +623,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         header = ["disc_1", "disc_2", "var_name"]
         for disc1, disc2, c_vars in coupl_tuples:
             for var in c_vars:
-                disc1_id = self.gemseo_to_sos_disciplines[disc1].get_disc_full_name()
-                disc2_id = self.gemseo_to_sos_disciplines[disc2].get_disc_full_name()
+                disc1_id = disc1.get_disc_full_name()
+                disc2_id = disc2.get_disc_full_name()
                 row = [disc1_id, disc2_id, var]
                 data.append(row)
         df = DataFrame(data, columns=header)
@@ -676,10 +663,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         else:
             mda_chain_cache = None
 
-        if self.ee.dm.reduced_dm is None:
-            reduced_dm = defaultdict(dict)
-        else:
-            reduced_dm = self.ee.dm.reduced_dm
+        reduced_dm = defaultdict(dict) if self.ee.dm.reduced_dm is None else self.ee.dm.reduced_dm
         # create_mda_chain from DisciplineWrapp
         self.discipline_wrapp.create_mda_chain(gemseo_disciplines, self, reduced_dm=reduced_dm)
 
@@ -687,9 +671,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.set_gemseo_disciplines_caches(mda_chain_cache)
 
     def create_gemseo_disciplines(self):
-
         gemseo_disciplines = []
-        self.gemseo_to_sos_disciplines = {}
         for disc in self.proxy_disciplines:
             disc.prepare_execution()
 
@@ -697,7 +679,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             if disc.discipline_wrapp is not None and disc.discipline_wrapp.discipline is not None:
                 gemseo_disc = disc.discipline_wrapp.discipline
                 gemseo_disciplines.append(gemseo_disc)
-                self.gemseo_to_sos_disciplines[gemseo_disc] = disc
         return gemseo_disciplines
 
     def set_gemseo_disciplines_caches(self, mda_chain_cache):
@@ -735,10 +716,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             for from_disc, to_disc, c_vars in coupling_vars:
                 for var in c_vars:
                     # from disc is in output
-                    from_disc_data = self.gemseo_to_sos_disciplines[from_disc].get_data_with_full_name(self.IO_TYPE_OUT,
-                                                                                                       var)
+                    from_disc_data = from_disc.get_data_with_full_name(self.IO_TYPE_OUT, var)
                     # to_disc is in input
-                    to_disc_data = self.gemseo_to_sos_disciplines[to_disc].get_data_with_full_name(self.IO_TYPE_IN, var)
+                    to_disc_data = to_disc.get_data_with_full_name(self.IO_TYPE_IN, var)
                     for data_name in self.DATA_TO_CHECK:
                         # Check if data_names are different
                         if from_disc_data[data_name] != to_disc_data[data_name]:
