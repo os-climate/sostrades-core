@@ -40,6 +40,7 @@ class TestProxyDiscipline(unittest.TestCase):
         base_path = 'sostrades_core.sos_wrapping.test_discs'
         self.mod1_path = f'{base_path}.disc1_all_types.Disc1'
         self.mod1_ns_path = f'{base_path}.disc1.Disc1'
+        self.mod1_initexec_path = f'{base_path}.disc1_init_execution.Disc1InitExec'
         self.mod2_path = f'{base_path}.disc2.Disc2'
         self.mod8_path = f'{base_path}.disc8.Disc8'
 
@@ -424,6 +425,32 @@ class TestProxyDiscipline(unittest.TestCase):
         self.assertTrue(dict_are_equal(local_data, ref_local_data))
         pass
 
+    def test_13_retrieve_inputs_at_init_execution(self):
+
+        self.name = 'Test'
+        self.ee = ExecutionEngine(self.name)
+
+        disc1_builder = self.ee.factory.get_builder_from_module(
+            'Disc1InitExec', self.mod1_initexec_path)
+        self.ee.factory.set_builders_to_coupling_builder(disc1_builder)
+
+        self.ee.ns_manager.add_ns('ns_ac', self.name)
+        self.ee.configure()
+        a = 1.0
+        b = 2.0
+        x = 1.0
+        values_dict = {self.name + '.x': x,
+                       self.name + '.Disc1.a': a,
+                       self.name + '.Disc1.b': b}
+
+        self.ee.load_study_from_input_dict(values_dict)
+
+        self.ee.display_treeview_nodes()
+
+        self.ee.prepare_execution()
+
+        aplus_b = self.ee.proxy_disciplines[0].discipline_wrapp.discipline.aplusb
+        assert a + b == aplus_b
 
 if '__main__' == __name__:
     testcls = TestProxyDiscipline()
