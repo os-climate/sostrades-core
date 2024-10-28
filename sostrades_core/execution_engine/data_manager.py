@@ -526,9 +526,7 @@ class DataManager:
                                                          date=datetime.now(),
                                                          dataset_data_path=dataset_data_path,
                                                          variable_key=variable_key))
-        if not dict_are_equal({VALUE: dm_data[VALUE]}, {VALUE: new_value}):
-            del dm_data[VALUE]
-            gc.collect()
+        
         dm_data[VALUE] = new_value
 
     def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> None:
