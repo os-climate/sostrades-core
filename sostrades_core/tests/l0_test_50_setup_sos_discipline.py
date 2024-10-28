@@ -210,8 +210,7 @@ class TestSetupSoSDiscipline(unittest.TestCase):
             'Test.Disc1.dyn_input_2').to_dict(), default_df.to_dict())
 
         # during configuration the proxy should be assigned
-        # FIXME : reactivate check after fixing coupling_structure (GEMSEO objects created during ProxyCoupling config.)
-        # self.check_proxy_and_dm_assigned(proxy_disc_1, expected=True)
+        self.check_proxy_and_dm_assigned(proxy_disc_1, expected=True)
 
         # during execution the lack of crash assures that the proxy and dm are not assigned
         self.ee.execute()
