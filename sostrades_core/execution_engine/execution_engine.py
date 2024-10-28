@@ -547,7 +547,7 @@ class ExecutionEngine:
         # configured
 
         checked_keys = set()
-        parameter_changes = list()
+        parameter_changes = []
 
         while not loop_stop:
             self.logger.info("Configuring loop iteration %i.", iteration)
@@ -649,7 +649,7 @@ class ExecutionEngine:
             disc.nan_check = True
         elif mode == "input_change":
             disc.check_if_input_change_after_run = True
-        ###we deactivate these debug mode for gemseo convergence to start, need to overload some methods if needed
+        # we deactivate these debug mode for gemseo convergence to start, need to overload some methods if needed
         # elif mode == "linearize_data_change":
         #     disc.check_linearize_data_changes = True
         # elif mode == "min_max_grad":
