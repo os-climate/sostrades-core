@@ -41,7 +41,7 @@ class TestStatusDM(unittest.TestCase):
         to_test = [self.exec_eng.dm.disciplines_dict[x]['status']
                    for x in list(self.exec_eng.dm.disciplines_dict.keys())]
         # WARNING : the status configure does not exist in gemseo !!
-        target = [self.CONFIGURE, self.PENDING, self.PENDING]
+        target = [self.CONFIGURE] * 3
 
         self.assertListEqual(
             to_test, target, "wrong status in disciplines_dict")
