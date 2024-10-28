@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from __future__ import annotations
 
 import contextlib
@@ -21,6 +22,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline.discipline import Discipline
+from gemseo.core.discipline.io import IO
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.process_discipline import ProcessDiscipline
 from numpy import bool_ as np_bool
@@ -255,6 +257,12 @@ class ProxyDiscipline:
 
     EE_PATH = 'sostrades_core.execution_engine'
 
+    _io: IO
+    """The GEMSEO object that contains the inputs/outputs of a discipline.
+
+    Used by GEMSEO to create the coupling structure.
+    """
+
     def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
         """
         Constructor
@@ -278,6 +286,7 @@ class ProxyDiscipline:
         self.__father_builder = None
         self.father_executor: ProxyDiscipline | None = None
         self.cls = cls_builder
+        self.io = None
 
     @property
     def configurator(self):
@@ -379,6 +388,13 @@ class ProxyDiscipline:
         # update discipline status to CONFIGURE
         self._update_status_dm(self.STATUS_CONFIGURE)
         self.__configurator: ProxyDiscipline | None = None
+
+    def name(self) -> str:
+        """Return the full proxy name.
+
+        Used by GEMSEO.
+        """
+        return self.get_disc_full_name()
 
     def create_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger: logging.Logger):
         """
@@ -1280,6 +1296,19 @@ class ProxyDiscipline:
             return data_io_full_name[full_name]
         return data_io_full_name[full_name][data_name]
 
+    def initialize_gemseo_io(self) -> None:
+        """Create the GEMSEO IO object and fills the grammars.
+
+        This method must be call before creating the coupling structure.
+        """
+        self.io = IO(
+            discipline_class=None,
+            discipline_name=self.sos_name,
+            grammar_type=self.SOS_GRAMMAR_TYPE,
+        )
+        self.io.input_grammar.update_from_names(self.get_input_data_names())
+        self.io.output_grammar.update_from_names(self.get_output_data_names())
+
     def get_ns_reference(self, visibility, namespace=None):
         """
         Get namespace reference by consulting the namespace_manager
@@ -1360,9 +1389,7 @@ class ProxyDiscipline:
             if self.DEFAULT not in data_keys:
                 if new_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
                     msg = f'The variable {key} in discipline {self.sos_name} must have a default value because its visibility is Internal'
-                    raise Exception(
-                        msg
-                    )
+                    raise ValueError(msg)
                 new_data[self.DEFAULT] = None
             else:
                 new_data[self.VALUE] = new_data[self.DEFAULT]
@@ -1511,9 +1538,7 @@ class ProxyDiscipline:
         for key, q_key in zip(keys, query_keys):
             if q_key not in self.dm.data_id_map:
                 msg = f'The key {q_key} for the discipline {self.get_disc_full_name()} is missing in the data manager'
-                raise Exception(
-                    msg
-                )
+                raise ValueError(msg)
             # get data in local_data during run or linearize steps
             # #TODO: this should not be possible in command line mode, is it possible in the GUI?
             if self.status in [self.STATUS_RUNNING, self.STATUS_LINEARIZE]:
