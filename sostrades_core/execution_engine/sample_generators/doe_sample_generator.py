@@ -146,7 +146,9 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         all_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].Settings.model_fields
         # Keep only the DOE-related options
-        algo_options = algo_lib._filter_settings(all_options, BaseDriverLibrarySettings)
+        algo_options = {
+            key: value for key, value in all_options.items() if key not in BaseDriverLibrarySettings.model_fields
+        }
         algo_options_default = {option_name: option.default for option_name, option in algo_options.items()}
 
         algo_options_descr_dict = {option_name: option.description for option_name, option in algo_options.items()}
