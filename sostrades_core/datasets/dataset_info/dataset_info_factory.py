@@ -65,5 +65,5 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
         else:
             warn("No version in dataset info is tolerated for now but will be deprecated in future versions", UserWarning)  # noqa: B028
 
-        
+
         return version

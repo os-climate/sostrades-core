@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import gc
 import logging
 from copy import copy, deepcopy
 from dataclasses import dataclass
@@ -526,7 +525,7 @@ class DataManager:
                                                          date=datetime.now(),
                                                          dataset_data_path=dataset_data_path,
                                                          variable_key=variable_key))
-        
+
         dm_data[VALUE] = new_value
 
     def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> None:
