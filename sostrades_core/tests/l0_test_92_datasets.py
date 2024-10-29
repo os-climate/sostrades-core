@@ -23,6 +23,7 @@ from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
+from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import Study as StudyDisc1Disc2
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset
 from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
@@ -275,6 +276,72 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
         self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
+
+    def test_07b_datasets_local_connector_with_several_namespace(self):
+        """
+        Check correctness of loaded values after loading a handcrafted local directories' dataset,  testing usage of
+        LocalDatasetsConnector and FileSystemDatasetsSerializer. and more than one namespace
+        """
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test.__file__
+        process_path = os.path.dirname(usecase_file_path)
+        study = StudyDisc1Disc2()
+        study.load_data()
+        study.run()
+        dm = study.execution_engine.dm
+
+        data_types_dict = {'a' :'float',
+            'x' :'float',
+            'b' :'float',                
+            'y' :'float',
+            'z' :'float',
+            'constant' :'float',
+            'power' :'int',
+            'indicator' :'float'
+            }
+        
+        # export study in another folder
+        # create connector test for export
+        connector_args = {
+            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_export_test/",
+            "create_if_not_exists": True
+        }
+
+        export_connector = DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_export_test",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    **connector_args)
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+        export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_disc1_disc2.json")
+
+        # test export
+        mapping = DatasetsMapping.from_json_file(export_mapping_repo_file_path)
+        study.export_data_from_dataset_mapping(mapping)
+        exported_data = export_connector.get_values_all(DatasetInfoV0("MVP0_local_datasets_connector_export_test",
+                                                                      "test_dataset_disc1_disc2"),data_types_dict)
+        self.assertEqual(dm.get_value("usecase_coupling_2_disc_test.Disc1.a"), exported_data.get("a"))
+        self.assertEqual(dm.get_value("usecase_coupling_2_disc_test.x"), exported_data.get("x"))
+        self.assertEqual(dm.get_value("usecase_coupling_2_disc_test.Disc1.b"), exported_data.get("b"))
+        self.assertEqual(dm.get_value("usecase_coupling_2_disc_test.Disc1.indicator"), exported_data.get("indicator"))
+        self.assertEqual(dm.get_value("usecase_coupling_2_disc_test.y"), exported_data.get("y"))
+        self.assertEqual(dm.get_value("usecase_coupling_2_disc_test.Disc2.constant"), exported_data.get("constant"))
+        self.assertEqual(dm.get_value("usecase_coupling_2_disc_test.Disc2.power"), exported_data.get("power"))
+        self.assertEqual(dm.get_value("usecase_coupling_2_disc_test.z"), exported_data.get("z"))
+
+        # test import
+        study2 = StudyManager(file_path=usecase_file_path)
+        study2.update_data_from_dataset_mapping(mapping)
+        dm2 = study2.execution_engine.dm
+        self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.Disc1.a"), exported_data.get("a"))
+        self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.x"), exported_data.get("x"))
+        self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.Disc1.b"), exported_data.get("b"))
+        self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.Disc1.indicator"), exported_data.get("indicator"))
+        self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.y"), exported_data.get("y"))
+        self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.Disc2.constant"), exported_data.get("constant"))
+        self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.Disc2.power"), exported_data.get("power"))
+        self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.z"), exported_data.get("z"))
+
+
+        export_connector.clear(remove_root_directory=True)
+
 
     def test_08_json_to_local_connector_conversion_and_loading(self):
         """
@@ -968,4 +1035,4 @@ class TestDatasets(unittest.TestCase):
 if __name__ == "__main__":
     cls = TestDatasets()
     cls.setUp()
-    cls.test_22_compatibility_V0_V1()
+    cls.test_07b_datasets_local_connector_with_several_namespace()
