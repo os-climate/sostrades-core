@@ -23,7 +23,6 @@ from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_and_dict_sellar_coupling as uc_dataset_dict
 import sostrades_core.sos_processes.test.sellar.test_sellar_coupling.usecase_dataset_sellar_coupling
-from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import Study as StudyDisc1Disc2
 import sostrades_core.sos_processes.test.test_disc1_disc2_dataset.usecase_dataset
 import sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset
 from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
@@ -38,6 +37,9 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
 from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset import Study
+from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import (
+    Study as StudyDisc1Disc2,
+)
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
@@ -291,14 +293,14 @@ class TestDatasets(unittest.TestCase):
 
         data_types_dict = {'a' :'float',
             'x' :'float',
-            'b' :'float',                
+            'b' :'float',
             'y' :'float',
             'z' :'float',
             'constant' :'float',
             'power' :'int',
             'indicator' :'float'
             }
-        
+
         # export study in another folder
         # create connector test for export
         connector_args = {
