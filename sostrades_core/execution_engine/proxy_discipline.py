@@ -257,7 +257,7 @@ class ProxyDiscipline:
 
     EE_PATH = 'sostrades_core.execution_engine'
 
-    _io: IO
+    io: IO
     """The GEMSEO object that contains the inputs/outputs of a discipline.
 
     Used by GEMSEO to create the coupling structure.
@@ -1304,7 +1304,7 @@ class ProxyDiscipline:
         """
         self.io = IO(
             discipline_class=None,
-            discipline_name=self.sos_name,
+            discipline_name=self.name,
             grammar_type=self.SOS_GRAMMAR_TYPE,
         )
         self.io.input_grammar.update_from_names(self.get_input_data_names())
