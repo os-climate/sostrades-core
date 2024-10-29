@@ -389,6 +389,7 @@ class ProxyDiscipline:
         self._update_status_dm(self.STATUS_CONFIGURE)
         self.__configurator: ProxyDiscipline | None = None
 
+    @property
     def name(self) -> str:
         """Return the full proxy name.
 
