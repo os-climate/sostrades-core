@@ -381,7 +381,11 @@ class TestProxyDiscipline(unittest.TestCase):
         a = 1.0
         b = 2.0
         x = 1.0
-        values_dict = {self.name + '.x': x, self.name + '.Disc1.a': a, self.name + '.Disc1.b': b}
+        values_dict = {
+            self.name + '.x': x,
+            self.name + '.Disc1InitExec.a': a,
+            self.name + '.Disc1InitExec.b': b,
+        }
 
         self.ee.load_study_from_input_dict(values_dict)
 
@@ -389,7 +393,7 @@ class TestProxyDiscipline(unittest.TestCase):
 
         self.ee.prepare_execution()
 
-        aplus_b = self.ee.proxy_disciplines[0].discipline_wrapp.discipline.aplusb
+        aplus_b = self.ee.factory.proxy_disciplines[0].discipline_wrapp.discipline.sos_wrapp.aplusb
         assert a + b == aplus_b
 
 
