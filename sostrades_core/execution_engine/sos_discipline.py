@@ -175,13 +175,29 @@ class SoSDiscipline(Discipline):
             raise
         return self._local_data
 
-    def add_differentiated_inputs(self, input_names: Iterable[str] = ()) -> None:  # noqa: D102
+    def add_differentiated_inputs(self, input_names: Iterable[str] = ()) -> None:
+        """Add the inputs against which to differentiate the outputs.
+
+        Filters out the non-numerical (strings, booleans...) inputs before passing the list to GEMSEO.
+
+        Args:
+            input_names: The input variables against which to differentiate the outputs.
+                If empty, use all the inputs.
+        """
         input_names = input_names or self.io.input_grammar.keys()
         filtered_inputs = filter_variables_to_convert(self.reduced_dm, input_names, write_logs=True, logger=self.logger)
         if filtered_inputs:
             Discipline.add_differentiated_inputs(self, filtered_inputs)
 
-    def add_differentiated_outputs(self, output_names: Iterable[str] = ()) -> None:  # noqa: D102
+    def add_differentiated_outputs(self, output_names: Iterable[str] = ()) -> None:
+        """Add the outputs to be differentiated.
+
+        Filters out the non-numerical (strings, booleans...) inputs before passing the list to GEMSEO.
+
+        Args:
+            output_names: The outputs to be differentiated.
+                If empty, use all the outputs.
+        """
         output_names = output_names or self.io.output_grammar.keys()
         filtered_outputs = filter_variables_to_convert(
             self.reduced_dm, output_names, write_logs=True, logger=self.logger
