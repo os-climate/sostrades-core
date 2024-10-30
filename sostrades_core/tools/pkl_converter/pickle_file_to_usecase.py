@@ -333,7 +333,7 @@ if '__main__' == __name__:
         same_value_ns_list = []
         compare_value = self.dm_dict_to_write[key]
         for ns, value in self.dm_dict_to_write.items():
-            if ns != key and type(value) == type(compare_value):
+            if ns != key and type(value) is type(compare_value):
                 if self.isEqual(compare_value, value):
                     same_value_ns_list.append(ns)
         return same_value_ns_list
@@ -533,7 +533,7 @@ if '__main__' == __name__:
                         if len(new_matches) == 1:
                             self.dm_dict_to_write[abstracted_key] = self.dm_data_dict[new_matches[0]]['value']
                         elif len(new_matches) == 0:
-                            if type(value) == pd.DataFrame:
+                            if type(value) is pd.DataFrame:
                                 self.dm_dict_to_write[abstracted_key] = value.map(str)
                             elif type(value) in [dict, list]:
                                 self.dm_dict_to_write[abstracted_key] = [str(val) for val in value]
