@@ -802,7 +802,7 @@ class TestDatasets(unittest.TestCase):
 
         data_types_dict_disc1 = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars_disc1}
 
-        dataset_vars = ["sub_mda_class", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
+        dataset_vars = ["inner_mda_name", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
         data_types_dict = {_k: dm.get_data(f"usecase_dataset.{_k}", "type") for _k in dataset_vars}
 
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_datasets_mapping_v1.json")
@@ -871,7 +871,7 @@ class TestDatasets(unittest.TestCase):
 
         data_types_dict_disc1 = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars_disc1}
 
-        dataset_vars = ["sub_mda_class", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
+        dataset_vars = ["inner_mda_name", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
         data_types_dict = {_k: dm.get_data(f"usecase_dataset.{_k}", "type") for _k in dataset_vars}
 
         # export data with the file system V1 connector
