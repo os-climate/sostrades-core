@@ -1,6 +1,6 @@
 '''
-Copyright 2022 Airbus SAS
-Modifications on 02/01/2024-2024/06/28 Copyright 2024 Capgemini
+Copyright 2024 Capgemini
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -638,3 +638,37 @@ class TestChartTemplate(unittest.TestCase):
 
         # plotly_native_chart.to_plotly().show()
         plotly_native_chart.to_plotly()
+
+    def test_21_create_indicator_chart(self):
+
+        import plotly.graph_objects as go
+
+        from sostrades_core.tools.post_processing.indicator_charts.instanciated_indicator_gauge_chart import (
+            InstantiatedIndicatorChart,
+        )
+
+        fig = go.Figure()
+        fig.add_trace(go.Indicator())
+        value = 50.85
+        indicator_chart = InstantiatedIndicatorChart(
+            value=value,
+            mode="gauge+number",
+            title={'text': ' Plotly Indicator chart'},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'steps': [
+                    {'range': [0, 33], 'color': "red"},
+                    {'range': [33, 66], 'color': "orange"},
+                    {'range': [66, 100], 'color': "green"},
+
+                ],
+                'threshold': {
+                    'line': {'color': 'black', 'width': 4},
+                    'thickness': 0.8,
+                    'value': value,
+                },
+                "bar": {"color": "black"}
+            }
+        )
+        # indicator_chart.to_plotly().show()
+        indicator_chart.to_plotly()
