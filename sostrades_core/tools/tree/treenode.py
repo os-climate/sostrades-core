@@ -24,6 +24,7 @@ from os.path import dirname, isdir, isfile, join
 
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.base_functions.compute_size import compute_data_size_in_Mo
+from sostrades_core.tools.ontology_variables.ontology_variable_key import create_data_key
 from sostrades_core.tools.tree.data_management_discipline import (
     DataManagementDiscipline,
 )
@@ -185,8 +186,8 @@ class TreeNode:
                     new_disc_data[ProxyDiscipline.EDITABLE] = False
                 new_disc_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(new_disc_data[ProxyDiscipline.VALUE])
 
-                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path,
-                                                                                   ProxyDiscipline.IO_TYPE_IN, key)
+                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = create_data_key(self.model_name_full_path,
+                                                                              ProxyDiscipline.IO_TYPE_IN, key)
 
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
@@ -223,8 +224,8 @@ class TreeNode:
 
                 new_disc_data[ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(new_disc_data[ProxyDiscipline.VALUE])
 
-                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = self.create_data_key(self.model_name_full_path,
-                                                                                   ProxyDiscipline.IO_TYPE_OUT, key)
+                new_disc_data[ProxyDiscipline.VARIABLE_KEY] = create_data_key(self.model_name_full_path,
+                                                                              ProxyDiscipline.IO_TYPE_OUT, key)
 
                 self.update_disc_data(
                     new_disc_data, namespaced_key, discipline)
@@ -277,11 +278,6 @@ class TreeNode:
         filepath = inspect.getfile(discipline.__class__)
         # markdown_data = TreeNode.get_markdown_documentation(filepath)
         # self.add_markdown_documentation(markdown_data, self.model_name_full_path)
-
-
-    def create_data_key(self, disc_name, io_type, variable_name):
-        io_type = io_type.lower()
-        return f'{disc_name}_{io_type}put_{variable_name}'
 
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data

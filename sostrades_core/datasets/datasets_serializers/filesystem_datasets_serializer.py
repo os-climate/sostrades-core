@@ -17,15 +17,21 @@ import json
 import logging
 import os
 import pickle
+import re
 from os.path import join
 from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
 
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    DatasetDeserializeException,
+    DatasetGenericException,
+)
 from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
     JSONDatasetsSerializer,
 )
+from sostrades_core.tools.folder_operations import makedirs_safe
 from sostrades_core.tools.tree.deserialization import isevaluatable
 from sostrades_core.tools.tree.serializer import CSV_SEP
 
@@ -53,6 +59,15 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     EXTENSION_SEP = '.'
     TYPES_IN_FILESYSTEM = {TYPE_DATAFRAME, TYPE_ARRAY}
 
+    # forbidden characters
+    FORBIDDEN_CHARS_REGEX = r'[<>:\\/"\|\?\*]'
+    FORBIDDEN_CHARS_END_OF_NAME = {" ", "."}
+    FORBIDDEN_FS_NAMES = { "CON", "PRN", "AUX", "NUL",
+                           "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+                           "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+    PREFFIX_FORBIDDEN_FS_NAMES = "__"
+    SUFFIX_END_OF_NAME = "_"
+
     # for the pickled data
     NON_SERIALIZABLE_PKL = 'non_serializable.pkl'
     TYPE_OBJECT = 'object'
@@ -64,11 +79,73 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         self.__current_dataset_directory = None
         self.__pickle_data = {}
 
+    @classmethod
+    def format_filesystem_name(cls, fs_name):
+        """
+        Format a filesystem name so that it is compatible with Windows, Ubuntu and MacOS. Used here to format variable
+        names for types that are serialized into the filesystem, as well as at connector level to format data group
+        identifiers and to check the compliance of dataset identifiers.
+        :param fs_name: filesystem name as defined by the user or namespace in case of wildcards.
+        :return: formatted filesystem name filesystem-compatible using utf-8 encoding of forbidden characters.
+        """
+        # utf-8 replacement
+        def replace_special_char(c):
+            return f"_U{ord(c.group(0))}_"
+
+        # replace forbidden characters by their replacement characters
+        new_fs_name = re.sub(cls.FORBIDDEN_CHARS_REGEX, replace_special_char, fs_name)
+
+        # replace end of name forbidden
+        if new_fs_name and new_fs_name[-1] in cls.FORBIDDEN_CHARS_END_OF_NAME:
+            new_fs_name = new_fs_name[:-1] + cls.SUFFIX_END_OF_NAME
+
+        # replace forbidden names
+        if new_fs_name in cls.FORBIDDEN_FS_NAMES:
+            new_fs_name = cls.PREFFIX_FORBIDDEN_FS_NAMES + new_fs_name
+        return new_fs_name
+
     def set_dataset_directory(self, dataset_directory):
         """
         Define the current dataset directory where specific data types will be serialized.
         """
         self.__current_dataset_directory = dataset_directory
+
+    def read_descriptor_file(self, dataset_id:str, dataset_descriptor_path:str)-> dict[str:Any]:
+        # Load the descriptor, the serializer loads the pickle if it exists
+        self.check_path_exists("Dataset descriptor file", dataset_descriptor_path)
+        dataset_descriptor = None
+        try:
+            with open(dataset_descriptor_path, "r", encoding="utf-8") as file:
+                dataset_descriptor = json.load(fp=file)
+        except TypeError as exception:
+            raise DatasetDeserializeException(dataset_id, f'type error exception in dataset descriptor, {str(exception)}')
+        except json.JSONDecodeError as exception:
+            raise DatasetDeserializeException(dataset_id, f'dataset descriptor does not have a valid json format, {str(exception.msg)}')
+
+        return dataset_descriptor
+
+    def write_descriptor_file(self, dataset_descriptor_path:str, dataset_descriptor: dict[str:Any]):
+        # read the already existing values
+        # write in dataset descriptor
+        self.check_path_exists("Dataset descriptor file", dataset_descriptor_path)
+        with open(dataset_descriptor_path, "w", encoding="utf-8") as file:
+                json.dump(obj=dataset_descriptor, fp=file, indent=4)
+
+    def check_path_exists(self, directory_info:str,dataset_path:str)->bool:
+        """
+        check that the dataset directory exists if not raise an error
+        :param directory_info: info of what directory it is (dataset db, dataset...)
+        :type directory_info: str
+        """
+        if not os.path.exists(dataset_path):
+            raise DatasetGenericException(f"{directory_info} not found at {dataset_path}.")
+
+    def check_folder_name(self, folder_name:str):
+        filesystem_dataset_identifier = self.__format_filesystem_name(folder_name)
+        if filesystem_dataset_identifier != folder_name:
+            return False
+        return True
+
 
     def load_pickle_data(self) -> None:
         """
@@ -78,6 +155,8 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         if self.__current_dataset_directory is None:
             self.__logger.error("Error while trying to load pickled data because dataset directory is undefined")
         else:
+            if not os.path.exists(self.__current_dataset_directory):
+                makedirs_safe(self.__current_dataset_directory, exist_ok=True)
             non_serializable_pkl_path = os.path.join(self.__current_dataset_directory, self.NON_SERIALIZABLE_PKL)
             if os.path.exists(non_serializable_pkl_path):
                 try:
@@ -227,7 +306,8 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
                                 f"is undefined")
             return data_value
         else:
-            # TODO: may need updating when datasets down to parameter level as assuming that the filename is linked to data name.
+            if not os.path.exists(self.__current_dataset_directory):
+                makedirs_safe(self.__current_dataset_directory, exist_ok=True)
             _fname = self.__get_data_path(descriptor_value)
             data_path = join(self.__current_dataset_directory, _fname)
             try:
@@ -242,7 +322,11 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     def _deserialize_dataframe(self, data_value: str, data_name: str = None) -> pd.DataFrame:
         # NB: dataframe csv deserialization as in webapi
-        return self.__deserialize_from_filesystem(_load_dataframe, data_value)
+        try:
+            return self.__deserialize_from_filesystem(_load_dataframe, data_value)
+        except Exception as error:
+            self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type dataframe: {error}")
+            return pd.DataFrame()
 
     def _deserialize_array(self, data_value: str) -> np.ndarray:
         # NB: to be improved with astype(subtype) along subtype management
@@ -250,14 +334,14 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
     def _serialize_dataframe(self, data_value: pd.DataFrame, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
-            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, data_name)),
+            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, self.format_filesystem_name(data_name))),
             self.CSV_EXTENSION))
         # NB: dataframe csv serialization as in webapi
         return self.__serialize_into_filesystem(_save_dataframe, data_value, data_name, descriptor_value)
 
     def _serialize_array(self, data_value: np.ndarray, data_name: str) -> str:
         descriptor_value = self.EXTENSION_SEP.join((
-            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, data_name)),
+            self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, self.format_filesystem_name(data_name))),
             self.CSV_EXTENSION))
         # NB: converting ints to floats etc. to be improved along subtype management
         return self.__serialize_into_filesystem(np.savetxt, data_value, data_name, descriptor_value)

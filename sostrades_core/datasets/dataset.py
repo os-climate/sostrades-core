@@ -16,7 +16,7 @@ limitations under the License.
 from dataclasses import dataclass
 from typing import Any
 
-from sostrades_core.datasets.dataset_info import DatasetInfo
+from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
 )
@@ -27,7 +27,7 @@ class Dataset:
     """
     Dataset class
     """
-    dataset_info: DatasetInfo
+    dataset_info: AbstractDatasetInfo
     connector: AbstractDatasetsConnector
 
     def get_values(self, data_dict: dict[str:str]) -> dict[str:Any]:
@@ -37,4 +37,4 @@ class Dataset:
         :param data_names: dict of names and types of data to retrieve
         :type data_names: dict[str:str] name: type
         """
-        return self.connector.get_values(dataset_identifier=self.dataset_info.dataset_id, data_to_get=data_dict)
+        return self.connector.get_values(dataset_identifier=self.dataset_info, data_to_get=data_dict)

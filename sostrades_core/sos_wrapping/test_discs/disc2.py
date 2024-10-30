@@ -16,6 +16,7 @@ limitations under the License.
 '''
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
 
 class Disc2(SoSWrapp):
@@ -52,3 +53,17 @@ class Disc2(SoSWrapp):
         dict_values = {'z': constant + y ** power}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
+
+    def get_chart_filter_list(self):
+        chart_filters = []
+
+        chart_list = ['y vs x']
+
+        chart_filters.append(ChartFilter(
+            'Charts', chart_list, chart_list, 'graphs'))
+
+        return chart_filters
+
+    def get_post_processing_list(self, filters=None):
+        instanciated_charts = []
+        return instanciated_charts

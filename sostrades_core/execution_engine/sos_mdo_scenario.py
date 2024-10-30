@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/06/07 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2024/10/17 Copyright 2023 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -64,11 +64,11 @@ class SoSMDOScenario(MDOScenario):
 
         self.logger = logger
         self.algo_name = None
-        self.algo_options = None
+        self.algo_options = {}
         self.max_iter = None
         self.eval_mode = False
         self.eval_jac = False
-        self.dict_desactivated_elem = None
+        self.dict_desactivated_elem = {}
         self.input_design_space = None
         self.reduced_dm = reduced_dm
         self.activated_variables = self.formulation.design_space.variable_names

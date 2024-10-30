@@ -17,7 +17,12 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V0
+
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 
 
 class AbstractDatasetsConnector(abc.ABC):
@@ -52,22 +57,73 @@ class AbstractDatasetsConnector(abc.ABC):
     BOOL_VALUE = "parameter_bool_value"
     VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, PARAMETER_NAME})
 
+    # list of compatible version of dataset info (V0, V1...)
+    compatible_dataset_info_version = [VERSION_V0]
+
+    def check_dataset_info_version(self, dataset_identifier: AbstractDatasetInfo):
+        """
+        Check that the version of the dataset info is compatible with the version of the dataset Connector
+        raise an error in case of incompatibility
+        :param: dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: DatasetInfo
+        """
+        if dataset_identifier.version_id not in self.compatible_dataset_info_version:
+            raise DatasetDeserializeException(dataset_identifier.dataset_id, f'the version {dataset_identifier.version_id} is not compatible with the dataset connector {dataset_identifier.connector_id}')
+
+    def check_connector_compatible_version(self, connector:AbstractDatasetsConnector)-> bool:
+        """
+        Check that the associated connector is compatible with the current connector version
+        raise an error in case of incompatibility
+        :param: connector: connector to check
+        :type connector: AbstractDatasetsConnector
+        :return: true if the connectors have at least one version in common
+        """
+        return set(self.compatible_dataset_info_version) & set(connector.compatible_dataset_info_version)
+
+
+
+    def get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:Any]:
+        """
+        get a list of data from a specific API
+        :param: dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: DatasetInfo
+        :param data_to_get: dict of data name and type of data to get {name: type}
+        :type data_to_get: dict[str:str]
+        """
+        self.check_dataset_info_version(dataset_identifier)
+
+        return self._get_values(dataset_identifier=dataset_identifier,data_to_get=data_to_get)
+
     @abc.abstractmethod
-    def get_values(self, dataset_identifier: str, data_to_get: dict[str:str]) -> dict[str:Any]:
+    def _get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to get a list of data from a specific API
         :param: dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
         :param data_to_get: dict of data name and type of data to get {name: type}
         :type data_to_get: dict[str:str]
         """
 
-    @abc.abstractmethod
-    def write_values(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
+
+    def write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a data from a specific API
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: dict[str:Any]
+        :param data_types_dict: dict of data type {name: type}
+        :type data_types_dict: dict[str:str]
+        """
+        self.check_dataset_info_version(dataset_identifier)
+        return self._write_values( dataset_identifier, values_to_write, data_types_dict)
+
+    @abc.abstractmethod
+    def _write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str:Any]:
+        """
+        Protected Abstract method to overload in order to write a data from a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data type {name: type}
@@ -75,28 +131,59 @@ class AbstractDatasetsConnector(abc.ABC):
         """
         return values_to_write
 
-    @abc.abstractmethod
-    def get_values_all(self, dataset_identifier: str, data_types_dict: dict[str:str]) -> dict[str:Any]:
+
+    def get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:Any]:
         """
-        Abstract method to get all values from a dataset for a specific API
+        get all values from a dataset for a specific API
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
+        :param data_types_dict: dict of data types {name: type}
+        :type data_types_dict: dict[str:str]
+        """
+        self.check_dataset_info_version(dataset_identifier)
+        return self._get_values_all( dataset_identifier, data_types_dict)
+
+    @abc.abstractmethod
+    def _get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:Any]:
+        """
+        Protected Abstract method to get all values from a dataset for a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: DatasetInfo
         :param data_types_dict: dict of data types {name: type}
         :type data_types_dict: dict[str:str]
         """
 
     @abc.abstractmethod
-    def get_datasets_available(self) -> list[str]:
+    def get_datasets_available(self) -> list[AbstractDatasetInfo]:
         """
         Abstract method to get all available datasets for a specific API
         """
 
-    @abc.abstractmethod
-    def write_dataset(self, dataset_identifier: str, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str:Any]:
+
+    def write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str:Any]:
         """
-        Abstract method to overload in order to write a dataset from a specific API
+        write a dataset from a specific API
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
+        :param values_to_write: dict of data to write {name: value}
+        :type values_to_write: dict[str:Any]
+        :param data_types_dict: dict of data types {name: type}
+        :type data_types_dict: dict[str:str]
+        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
+        :type create_if_not_exists: bool
+        :param override: override dataset if it exists (raises otherwise)
+        :type override: bool
+        :return: values_to_write: dict[str: Any]
+        """
+        self.check_dataset_info_version(dataset_identifier)
+        return self._write_dataset(dataset_identifier, values_to_write, data_types_dict, create_if_not_exists, override)
+
+    @abc.abstractmethod
+    def _write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str:Any]:
+        """
+        Protected Abstract method to overload in order to write a dataset from a specific API
+        :param dataset_identifier: dataset identifier for connector
+        :type dataset_identifier: DatasetInfo
         :param values_to_write: dict of data to write {name: value}
         :type values_to_write: dict[str:Any]
         :param data_types_dict: dict of data types {name: type}
@@ -109,13 +196,42 @@ class AbstractDatasetsConnector(abc.ABC):
         """
         return values_to_write
 
-    def copy_dataset_from(self, connector_from: AbstractDatasetsConnector, dataset_identifier: str, data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False):
+
+    def build_path_to_data(self, dataset_identifier:AbstractDatasetInfo, data_name:str, data_type:str)->str:
+        """
+        build the path to a dataset data for a specific API
+        :param dataset_identifier: dataset identifier into connector
+        :type dataset_identifier: DatasetInfo
+        :param data_name: data in dataset
+        :type data_name: str
+        :param data_type: type of the data in dataset
+        :type data_type: str
+        :return: path/url/uri to find the dataset data
+        """
+        self.check_dataset_info_version(dataset_identifier)
+        return self._build_path_to_data(dataset_identifier, data_name, data_type)
+
+
+    def _build_path_to_data(self, dataset_identifier:AbstractDatasetInfo, data_name:str, data_type:str)->str:
+        """
+        Method that can be overloaded in order to build the path to a dataset data for a specific API
+        :param dataset_identifier: dataset identifier into connector
+        :type dataset_identifier: DatasetInfo
+        :param data_name: data in dataset
+        :type data_name: str
+        :param data_type: type of the data in dataset
+        :type data_type: str
+        :return: path/url/uri to find the dataset data
+        """
+        return ""
+
+    def copy_dataset_from(self, connector_from: AbstractDatasetsConnector, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False):
         """
         Copies a dataset from another AbstractDatasetsConnector
         :param connector_from: Connector to copy dataset from
         :type connector_from: AbstractDatasetsConnector
         :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: str
+        :type dataset_identifier: DatasetInfo
         :param data_types_dict: dict of data types {name: type}
         :type data_types_dict: dict[str:str]
         :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
@@ -123,7 +239,12 @@ class AbstractDatasetsConnector(abc.ABC):
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
         """
-        self.__logger.debug(f"Copying dataset {dataset_identifier} from {connector_from} to {self}")
+        self.check_dataset_info_version(dataset_identifier)
+        # raise an error if the connectors have no version in common
+        if not self.check_connector_compatible_version(connector_from):
+            raise DatasetGenericException("Connectors have incompatible versions, for now it is not possible to copy data V0 <-> V1")
+
+        self.__logger.debug(f"Copying dataset {dataset_identifier.dataset_id} from {connector_from} to {self}")
         dataset_data = connector_from.get_values_all(dataset_identifier=dataset_identifier, data_types_dict=data_types_dict)
         self.write_dataset(dataset_identifier=dataset_identifier, values_to_write=dataset_data, data_types_dict=data_types_dict, create_if_not_exists=create_if_not_exists, override=override)
 
@@ -139,6 +260,9 @@ class AbstractDatasetsConnector(abc.ABC):
         :param override: override dataset if it exists (raises otherwise)
         :type override: bool
         """
+        if not self.check_connector_compatible_version(connector_from):
+            raise DatasetGenericException("Connectors have incompatible versions, for now it is not possible to copy data V0 <-> V1")
+
         self.__logger.debug(f"Copying all datasets from {connector_from} to {self}")
         datasets = connector_from.get_datasets_available()
         for dataset_identifier in datasets:
