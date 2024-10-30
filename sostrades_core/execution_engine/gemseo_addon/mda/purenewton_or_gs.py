@@ -24,9 +24,7 @@ from typing import TYPE_CHECKING, Any, Mapping, Sequence
 from gemseo import create_mda
 from gemseo.mda.sequential_mda import MDASequential
 
-from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
-    SoSMDAGaussSeidel, SOS_GRAMMAR_TYPE
-)
+from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SOS_GRAMMAR_TYPE, SoSMDAGaussSeidel
 
 if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline

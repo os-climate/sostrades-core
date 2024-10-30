@@ -28,8 +28,6 @@ from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from numpy import array
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
-
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline.discipline import Discipline
