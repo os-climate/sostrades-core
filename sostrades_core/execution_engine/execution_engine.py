@@ -706,7 +706,7 @@ class ExecutionEngine:
 
         # -- execution with input data from DM
         ex_proc = self.root_process
-        input_data = self.dm.get_data_dict_values()
+        input_data = self.dm.get_data_dict_values(excepted=['numerical'])
         self.logger.info("Executing.")
         input_data_wo_none = {key: value for key, value in input_data.items() if value is not None}
         try:
