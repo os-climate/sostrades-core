@@ -60,7 +60,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
     def setUp(self):
         self.study_name = 'doe'
         self.generator_name = 'doe_generator'
-        self.sampling_algo = 'fullfact'
+        self.sampling_algo = 'PYDOE_FULLFACT'
 
         self.ns = f'{self.study_name}'
         self.ref_dir = join(dirname(__file__), 'data')
@@ -150,7 +150,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
         algo_names_list = sample_generator.get_available_algo_names()
         # print(algo_names_list)
 
-        sampling_algo_name = 'fullfact'
+        sampling_algo_name = 'PYDOE_FULLFACT'
         algo_options_desc_in, algo_options_descr_dict = sample_generator.get_options_and_default_values(
             sampling_algo_name
         )
@@ -200,7 +200,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
             assert str(cm.exception) == error_message
 
     def test_02_check_generate_samples_fullfact(self):
-        """Test that checks generate_samples for DoeSampleGenerator: it is tested on sampling_algo = 'fullfact'"""
+        """Test that checks generate_samples for DoeSampleGenerator: it is tested on sampling_algo = 'PYDOE_FULLFACT'"""
         sampling_algo_name = self.sampling_algo
         algo_options = {
             "n_samples": 10,
@@ -223,7 +223,8 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
     def test_03_check_generate_samples_pydoe_algo_names(self):
         """Test that checks generate_samples for DoeSampleGenerator: it is tested on pyDOE algo names"""
-        pydoe_list_of_algo_names = ['fullfact', 'ff2n', 'pbdesign', 'bbdesign', 'ccdesign', 'lhs']
+        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_OBDESIGN', 'PYDOE_BBDESIGN',
+                                    'PYDOE_CCDESIGN', 'PYDOE_LHS']
 
         pydoe_algo_options_desc_in = {  # default options
             'eval_jac': False,
@@ -234,12 +235,12 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
         for sampling_algo_name in pydoe_list_of_algo_names:
             algo_options = dict(pydoe_algo_options_desc_in)
-            if sampling_algo_name in ["fullfact", "lhs"]:
+            if sampling_algo_name in ["PYDOE_FULLFACT", "PYDOE_LHS"]:
                 algo_options["n_samples"] = 10
             if sampling_algo_name == "ccdesign":
                 algo_options["alpha"] = "orthogonal"
                 algo_options["face"] = "faced"
-            elif sampling_algo_name == "lhs":
+            elif sampling_algo_name == "PYDOE_LHS":
                 algo_options["iterations"] = 5
             dspace_df = self.dspace_eval  # data_manager design space in df format
 
@@ -353,7 +354,8 @@ class TestSampleGeneratorTool(unittest.TestCase):
         sampling to test the different DoE algorithms aimed by this test.
         TBD : check if overlaps or not with previous tests
         """
-        pydoe_list_of_algo_names = ['fullfact', 'ff2n', 'pbdesign', 'bbdesign', 'ccdesign', 'lhs']
+        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_OBDESIGN', 'PYDOE_BBDESIGN',
+                                    'PYDOE_CCDESIGN', 'PYDOE_LHS']
         pydoe_algo_default_options = {
             'alpha': 'orthogonal',
             'face': 'faced',

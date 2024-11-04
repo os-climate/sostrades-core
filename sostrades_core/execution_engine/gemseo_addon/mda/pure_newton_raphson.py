@@ -54,7 +54,7 @@ class PureNewtonRaphson(BaseMDARoot):
         use_lu_fact: bool = False,  # type: bool
         coupling_structure: CouplingStructure | None = None,  # type: Optional[MDOCouplingStructure]
         log_convergence: bool = False,  # type:bool
-        linear_solver_options: Mapping[str, Any] | None = None,  # type: Mapping[str,Any]
+        linear_solver_settings: Mapping[str, Any] | None = None,  # type: Mapping[str,Any]
         n_processes=1,
     ) -> None:
         """
@@ -72,7 +72,7 @@ class PureNewtonRaphson(BaseMDARoot):
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
             linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
+            linear_solver_settings=linear_solver_settings,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
         )
@@ -81,8 +81,8 @@ class PureNewtonRaphson(BaseMDARoot):
         self.scaling = scaling_method
 
         # break the object link before update the dict object
-        self.linear_solver_options = copy(self.linear_solver_options)
-        self.linear_solver_options.update({'tol': self.linear_solver_tolerance})
+        self.linear_solver_settings = copy(self.linear_solver_settings)
+        self.linear_solver_settings.update({'tol': self.linear_solver_tolerance})
 
         # self.parallel_execution = SoSDiscParallelExecution(
         #     disciplines, n_processes=self.n_processes, use_threading=True
@@ -163,7 +163,7 @@ class PureNewtonRaphson(BaseMDARoot):
                 self.over_relaxation_factor,
                 self.linear_solver,
                 matrix_type=self.matrix_type,
-                **self.linear_solver_options,
+                **self.linear_solver_settings,
             )
 
             # ynew = yk+1 + step

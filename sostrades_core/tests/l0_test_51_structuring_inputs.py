@@ -309,7 +309,7 @@ class TestStructuringInputs(unittest.TestCase):
         self.assertEqual(coupling_sellar.discipline_wrapp.discipline.tolerance, 1e-3)
         self.assertEqual(coupling_sellar.discipline_wrapp.discipline.inner_mdas[0].tolerance, 1e-03)
         self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_tolerance, 1e-10)
-        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_options, {
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_settings, {
             'max_iter': 600, 'use_ilu_precond': True})
         self.assertEqual(coupling_sellar.discipline_wrapp.discipline.max_mda_iter, 20)
         self.assertEqual(coupling_sellar.discipline_wrapp.discipline.use_lu_fact, True)
@@ -337,7 +337,7 @@ class TestStructuringInputs(unittest.TestCase):
 
         self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver, 'LGMRES')
         self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_tolerance, 1e-10)
-        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_options, {
+        self.assertEqual(coupling_sellar.discipline_wrapp.discipline.linear_solver_settings, {
             'max_iter': 600, 'use_ilu_precond': True})
 
 

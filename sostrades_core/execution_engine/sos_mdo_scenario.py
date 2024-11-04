@@ -56,11 +56,12 @@ class SoSMDOScenario(MDOScenario):
         """
 
         super().__init__(disciplines,
-                         formulation,
                          objective_name,
                          design_space,
                          name=name,
-                         maximize_objective=maximize_objective)
+                         maximize_objective=maximize_objective,
+                         formulation_name=formulation
+                         )
 
         self.logger = logger
         self.algo_name = None

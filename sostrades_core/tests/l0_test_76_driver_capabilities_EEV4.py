@@ -169,7 +169,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = "at_run_time"
-        disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "PYDOE_LHS"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples,
@@ -355,10 +355,10 @@ class TestSoSDOEScenario(unittest.TestCase):
         z = exec_eng.dm.get_value('doe.z')
         if z[0] > 0.5:
             self.assertEqual(exec_eng.dm.get_value(
-                'doe.SampleGenerator.sampling_algo'), "lhs")
+                'doe.SampleGenerator.sampling_algo'), "PYDOE_LHS")
         else:
             self.assertEqual(exec_eng.dm.get_value(
-                'doe.SampleGenerator.sampling_algo'), "fullfact")
+                'doe.SampleGenerator.sampling_algo'), "PYDOE_FULLFACT")
 
         # eval_disc_samples = eval_disc.get_sosdisc_outputs(
         #    'samples_inputs_df')
@@ -434,7 +434,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = "at_run_time"
-        disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "lhs"
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "PYDOE_LHS"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = dspace_x
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}

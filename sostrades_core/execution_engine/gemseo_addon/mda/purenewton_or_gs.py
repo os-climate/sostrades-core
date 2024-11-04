@@ -50,7 +50,7 @@ class GSPureNewtonorGSMDA(MDASequential):
         scaling_method: MDASequential.ResidualScaling = MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
         warm_start: bool = False,
         use_lu_fact: bool = False,
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_settings: Mapping[str, Any] | None = None,
         **newton_mda_options,
     ) -> None:
         """
@@ -101,7 +101,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             max_mda_iter=max_mda_iter,
             name=None,
             linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
+            linear_solver_settings=linear_solver_settings,
             tolerance_gs=tolerance_gs,
             max_mda_iter_gs=max_mda_iter_gs,
             use_lu_fact=use_lu_fact,
@@ -117,7 +117,7 @@ class GSPureNewtonorGSMDA(MDASequential):
             name=name,
             max_mda_iter=max_mda_iter,
             tolerance=tolerance,
-            linear_solver_options=linear_solver_options,
+            linear_solver_settings=linear_solver_settings,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
         )

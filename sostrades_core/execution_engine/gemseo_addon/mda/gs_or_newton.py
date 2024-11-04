@@ -21,13 +21,20 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
+from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.core.execution_status import ExecutionStatus
-from gemseo.mda.sequential_mda import MDAGSNewton, MDASequential
+from gemseo.mda.sequential_mda import MDASequential
+from gemseo.mda.gs_newton import MDAGSNewton
+from gemseo.utils.pydantic import create_model
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
+from gemseo.mda.gs_newton_settings import MDAGSNewtonSettings
 
 from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SOS_GRAMMAR_TYPE, SoSMDAGaussSeidel
 
 if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline
+    from gemseo.mda.sequential_mda_settings import MDASequentialSettings
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 
@@ -42,20 +49,8 @@ class GSorNewtonMDA(MDASequential):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        name: str | None = None,
-        grammar_type: str = SOS_GRAMMAR_TYPE,
-        tolerance: float = 1e-6,
-        max_mda_iter: int = 10,
-        over_relaxation_factor: float = 0.99,
-        linear_solver: str = "lgmres",
-        tolerance_gs: float = 10.0,
-        max_mda_iter_gs: int = 10,
-        linear_solver_tolerance: float = 1e-12,
-        scaling_method: MDASequential.ResidualScaling = MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
-        linear_solver_options: Mapping[str, Any] | None = None,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        **newton_mda_options,
+        settings_model: MDASequentialSettings | None = None,
+        **settings,
     ) -> None:
         """
         Constructor
@@ -94,38 +89,27 @@ class GSorNewtonMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs, name=f'{name}_MDAGS',
-                                   grammar_type=grammar_type,
-                                   tolerance=tolerance)
-
-        mda_newton = MDAGSNewton(
-            disciplines,
-            max_mda_iter=max_mda_iter,
-            name=f'{name}_MDAGSNewton',
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-            use_lu_fact=use_lu_fact,
-            tolerance=tolerance,
-            over_relaxation_factor=over_relaxation_factor,
-            **newton_mda_options,
-        )
-        # set the tolerance for the GS MDA
-        mda_newton.mda_sequence[0].tolerance = tolerance_gs
-
-        sequence = [mda_gs, mda_newton]
         super().__init__(
             disciplines,
-            sequence,
-            name=name,
-            max_mda_iter=max_mda_iter,
-            tolerance=tolerance,
-            linear_solver_options=linear_solver_options,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
+            mda_sequence=[],
+            settings_model=settings_model,
+            **settings,
+        )
+        gauss_seidel_settings = create_model(
+            MDAGaussSeidelSettings,
+            **self.__update_inner_mda_settings(settings),
+        )
+        gsnewton_settings = create_model(
+            MDAGSNewtonSettings,
+            **self.__update_inner_mda_settings(settings),
         )
 
-        # set the residual scaling method
-        self.scaling = scaling_method
+        mda_gs = SoSMDAGaussSeidel(disciplines, settings_model=gauss_seidel_settings)
+
+        mda_newton = MDAGSNewton(disciplines, settings_model=gsnewton_settings)
+
+        sequence = [mda_gs, mda_newton]
+        self._init_mda_sequence(sequence)
 
     def _run(self):
         """Runs the MDAs in a sequential way
@@ -158,3 +142,13 @@ class GSorNewtonMDA(MDASequential):
             self.io.data = mda_i.execute(self.io.data)
 
         self.residual_history += mda_i.residual_history
+
+    def __update_inner_mda_settings(
+        self, settings_model: BaseMDASettings | StrKeyMapping
+    ) -> StrKeyMapping:
+        """Update the inner MDA settings model."""
+        return dict(settings_model) | {
+            name: setting
+            for name, setting in self.settings
+            if name in BaseMDASettings.model_fields
+        }

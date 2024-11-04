@@ -210,10 +210,10 @@ class DisciplineWrapp:
             # set linear solver options (todo after call to _get_numerical_inputs() )
             # TODO: check with IRT how to handle it
             discipline.linear_solver_MDA = proxy.linear_solver_MDA
-            discipline.linear_solver_options_MDA = proxy.linear_solver_options_MDA
+            discipline.linear_solver_settings_MDA = proxy.linear_solver_settings_MDA
             discipline.linear_solver_tolerance_MDA = proxy.linear_solver_tolerance_MDA
             discipline.linear_solver_MDO = proxy.linear_solver_MDO
-            discipline.linear_solver_options_MDO = proxy.linear_solver_options_MDO
+            discipline.linear_solver_settings_MDO = proxy.linear_solver_settings_MDO
             discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
             discipline.linearization_mode = proxy.get_sosdisc_inputs(SoSDiscipline.LINEARIZATION_MODE)
 

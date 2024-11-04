@@ -318,11 +318,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.residuals_dict = {}
 
         self.linear_solver_MDA = None
-        self.linear_solver_options_MDA = None
+        self.linear_solver_settings_MDA = None
         self.linear_solver_tolerance_MDA = None
 
         self.linear_solver_MDO = None
-        self.linear_solver_options_MDO = None
+        self.linear_solver_settings_MDO = None
         self.linear_solver_tolerance_MDO = None
 
         self._set_dm_disc_info()
@@ -779,41 +779,41 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         # linear solver options MDA
         num_data['linear_solver'] = copy(self.get_sosdisc_inputs('linear_solver_MDA'))
-        linear_solver_options_MDA = deepcopy(self.get_sosdisc_inputs('linear_solver_MDA_options'))
+        linear_solver_settings_MDA = deepcopy(self.get_sosdisc_inputs('linear_solver_MDA_options'))
 
         if num_data['linear_solver'].endswith('_PETSC'):
             # PETSc case
-            linear_solver_options_MDA['solver_type'] = num_data['linear_solver'].split('_PETSC')[0].lower()
+            linear_solver_settings_MDA['solver_type'] = num_data['linear_solver'].split('_PETSC')[0].lower()
             preconditioner = copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner'))
-            linear_solver_options_MDA['preconditioner_type'] = (preconditioner != 'None') * preconditioner or None
+            linear_solver_settings_MDA['preconditioner_type'] = (preconditioner != 'None') * preconditioner or None
         else:
             # Scipy case / gmres
-            linear_solver_options_MDA['use_ilu_precond'] = (
+            linear_solver_settings_MDA['use_ilu_precond'] = (
                 copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu'
             )
 
-        num_data['linear_solver_tolerance'] = linear_solver_options_MDA.pop('tol')
-        num_data['linear_solver_options'] = linear_solver_options_MDA
+        num_data['linear_solver_tolerance'] = linear_solver_settings_MDA.pop('tol')
+        num_data['linear_solver_settings'] = linear_solver_settings_MDA
 
         self.linear_solver_MDA = num_data['linear_solver']
         self.linear_solver_tolerance_MDA = num_data['linear_solver_tolerance']
-        self.linear_solver_options_MDA = deepcopy(num_data['linear_solver_options'])
+        self.linear_solver_settings_MDA = deepcopy(num_data['linear_solver_settings'])
 
         # linear solver options MDO
         self.linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
-        linear_solver_options_MDO = deepcopy(self.get_sosdisc_inputs('linear_solver_MDO_options'))
+        linear_solver_settings_MDO = deepcopy(self.get_sosdisc_inputs('linear_solver_MDO_options'))
 
         if self.linear_solver_MDO.endswith('_PETSC'):
-            linear_solver_options_MDO['solver_type'] = self.linear_solver_MDO.split('_PETSC')[0].lower()
+            linear_solver_settings_MDO['solver_type'] = self.linear_solver_MDO.split('_PETSC')[0].lower()
             preconditioner = self.get_sosdisc_inputs('linear_solver_MDO_preconditioner')
-            linear_solver_options_MDO['preconditioner_type'] = (preconditioner != 'None') * preconditioner or None
+            linear_solver_settings_MDO['preconditioner_type'] = (preconditioner != 'None') * preconditioner or None
         else:
-            linear_solver_options_MDO['use_ilu_precond'] = (
+            linear_solver_settings_MDO['use_ilu_precond'] = (
                 self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu'
             )
 
-        self.linear_solver_tolerance_MDO = linear_solver_options_MDO.pop('tol')
-        self.linear_solver_options_MDO = linear_solver_options_MDO
+        self.linear_solver_tolerance_MDO = linear_solver_settings_MDO.pop('tol')
+        self.linear_solver_settings_MDO = linear_solver_settings_MDO
 
         return num_data
 

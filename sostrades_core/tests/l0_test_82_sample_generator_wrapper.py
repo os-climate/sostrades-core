@@ -182,7 +182,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
     - OT algo family: ['OT_SOBOL', 'OT_RANDOM', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'OT_FAURE',
                        'OT_MONTE_CARLO', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL', 'OT_OPT_LHS', 'OT_LHS',
                        'OT_LHSC', 'OT_FULLFACT', 'OT_SOBOL_INDICES']
-    - pydoe family: ['fullfact', 'ff2n', 'pbdesign', 'bbdesign', 'ccdesign', 'lhs']
+    - pydoe family: ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_OBDESIGN', 'PYDOE_BBDESIGN', 'PYDOE_CCDESIGN', 'PYDOE_LHS']
     2) In case of cartesian product method
 
     """
@@ -223,7 +223,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         n_samples = 10
         disc_dict[f'{self.ns}.SampleGenerator.sampling_method'] = self.sampling_method_doe
         disc_dict[f'{self.ns}.SampleGenerator.sampling_generation_mode'] = self.sampling_generation_mode_doe
-        disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "fullfact"
+        disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = "PYDOE_FULLFACT"
         disc_dict[f'{self.ns}.SampleGenerator.design_space'] = self.dspace_eval
         disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = {'n_samples': n_samples, 'fake_option': 'fake_option'}
         disc_dict[f'{self.ns}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
@@ -281,7 +281,8 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         sampling to test the different DoE algorithms aimed by this test.
         """
         self.ns = f'{self.study_name_doe}'
-        pydoe_list_of_algo_names = ['fullfact', 'ff2n', 'pbdesign', 'bbdesign', 'ccdesign', 'lhs']
+        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_OBDESIGN', 'PYDOE_BBDESIGN',
+                                    'PYDOE_CCDESIGN', 'PYDOE_LHS']
 
         pydoe_algo_used_options = {
             'eval_jac': False,
@@ -343,22 +344,22 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
             disc_dict[f'{self.ns}.SampleGenerator.sampling_algo'] = sampling_algo_name
 
             algo_options = dict(pydoe_algo_used_options)
-            if sampling_algo_name in ["fullfact", "lhs"]:
+            if sampling_algo_name in ["PYDOE_FULLFACT", "PYDOE_LHS"]:
                 algo_options["n_samples"] = 5
-            if sampling_algo_name == "ccdesign":
+            if sampling_algo_name == "PYDOE_CCDESIGN":
                 algo_options["alpha"] = "orthogonal"
                 algo_options["face"] = "faced"
                 algo_options["center"] = (2, 2)
-            elif sampling_algo_name == "lhs":
+            elif sampling_algo_name == "PYDOE_LHS":
                 algo_options["iterations"] = 5
             disc_dict[f'{self.ns}.SampleGenerator.algo_options'] = algo_options
 
             # To check what it is indispensable for each algo.
-            # if sampling_algo_name == 'fullfact':
+            # if sampling_algo_name == 'PYDOE_FULLFACT':
             #     disc_dict[f'{self.ns}.Sample_Generator.algo_options']['n_samples'] = 5
             # else:
             #     disc_dict[f'{self.ns}.Sample_Generator.algo_options']['n_samples'] = None
-            # if sampling_algo_name == 'ccdesign':
+            # if sampling_algo_name == 'PYDOE_CCDESIGN':
             #     disc_dict[f'{self.ns}.Sample_Generator.algo_options']['center_cc'] = (2, 2)
 
             exec_eng.load_study_from_input_dict(disc_dict)

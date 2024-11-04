@@ -31,56 +31,13 @@ from numpy import array
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline.discipline import Discipline
+    from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
 
 SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 class SoSMDAGaussSeidel(MDAGaussSeidel):
     """Overload of GEMSEO's MDA GaussSeidel
     (overload introduces warm_start_threshold option)
     """
-
-    def __init__(
-        self,
-        disciplines: Sequence[Discipline],
-        name: str | None = None,
-        max_mda_iter: int = 10,
-        grammar_type: str = SOS_GRAMMAR_TYPE,
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        scaling_method: BaseMDA.ResidualScaling = BaseMDA.ResidualScaling.N_COUPLING_VARIABLES,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        over_relaxation_factor: float = 1.0,
-        coupling_structure: CouplingStructure | None = None,
-        log_convergence: bool = False,
-        linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
-    ) -> None:
-        """
-        Args:
-            over_relax_factor: The relaxation coefficient,
-                used to make the method more robust,
-                if ``0<over_relax_factor<1`` or faster if ``1<over_relax_factor<=2``.
-                If ``over_relax_factor =1.``, it is deactivated.
-        """
-        # Not possible to parallelize MDAGaussSeidel execution
-        self.n_processes = 1
-        self.default_grammar_type = grammar_type
-        super().__init__(
-            disciplines,
-            name=name,
-            max_mda_iter=max_mda_iter,
-            tolerance=tolerance,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
-            use_lu_fact=use_lu_fact,
-            over_relaxation_factor=over_relaxation_factor,
-            coupling_structure=coupling_structure,
-            log_convergence=log_convergence,
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-        )
-        # set the residual scaling method
-        self.scaling = scaling_method
 
     def _run(self):
         # Run the disciplines in a sequential way

@@ -53,7 +53,7 @@ class GSPureNewtonMDA(MDASequential):
         warm_start: bool = False,
         use_lu_fact: bool = False,
         coupling_structure: CouplingStructure = None,
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_settings: Mapping[str, Any] | None = None,
         log_convergence: bool = False,
         **newton_mda_options,
     ):
@@ -83,7 +83,7 @@ class GSPureNewtonMDA(MDASequential):
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
-            linear_solver_options=linear_solver_options,
+            linear_solver_settings=linear_solver_settings,
             linear_solver_tolerance=linear_solver_tolerance,
             **newton_mda_options,
         )
@@ -98,7 +98,7 @@ class GSPureNewtonMDA(MDASequential):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
+            linear_solver_settings=linear_solver_settings,
             coupling_structure=coupling_structure,
         )
         self.scaling = scaling_method

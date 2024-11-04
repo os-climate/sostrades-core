@@ -24,6 +24,7 @@ from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.mda_chain import MDAChain
+from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.utils.constants import N_CPUS
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from numpy import floating, ndarray
@@ -96,12 +97,11 @@ class SoSMDAChain(MDAChain):
         use_lu_fact: bool = False,
         grammar_type: str = MDAChain.GrammarType.JSON,
         coupling_structure=None,
-        sub_coupling_structures=None,
         log_convergence: bool = True,
         linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        linear_solver_settings: Mapping[str, Any] | None = None,
         mdachain_parallelize_tasks: bool = False,
-        mdachain_parallel_options=None,
+        mdachain_parallel_settings={},
         initialize_defaults: bool = True,
         scaling_method: MDAChain.ResidualScaling = MDAChain.ResidualScaling.N_COUPLING_VARIABLES,
         **inner_mda_options,
@@ -115,11 +115,9 @@ class SoSMDAChain(MDAChain):
                 linearize the overall MDA with base class method. This last option is
                 preferred to minimize computations in adjoint mode, while in direct
                 mode, linearizing the chain may be cheaper.
-            sub_coupling_structures: The coupling structures to be used by the
-                inner-MDAs. If ``None``, they are created from the sub-disciplines.
             mdachain_parallelize_tasks: Whether to parallelize the parallel tasks, if
                 any.
-            mdachain_parallel_options: The options of the MDOParallelChain instances, if
+            mdachain_parallel_settings: The options of the MDOParallelChain instances, if
                 any.
             initialize_defaults: Whether to create a :class:`.MDOInitializationChain`
                 to compute the eventually missing :attr:`.default_input_data` at the first
@@ -132,12 +130,13 @@ class SoSMDAChain(MDAChain):
 
         # tolerance_gs is set after instanciation of the MDA by GEMSEO
         tolerance_gs = inner_mda_options.pop("tolerance_gs", None)
+        max_mda_iter_gs = inner_mda_options.pop("max_mda_iter_gs", None)
         # Gauss seidel cannot be launched in parallel by construction (one discipline is launched with the results of the last one)
+
+        mdachain_parallel_settings['n_processes'] = inner_mda_options['n_processes']
+        # mdachain_parallel_settings['use_threading'] = inner_mda_options.pop('use_threading', True)
         if inner_mda_name == 'MDAGaussSeidel':
             inner_mda_options.pop('n_processes')
-        elif inner_mda_name in self.NEWTON_ALGO_LIST:
-            inner_mda_options['newton_linear_solver_name'] = linear_solver
-            inner_mda_options['newton_linear_solver_options'] = linear_solver_options
         self.default_grammar_type = grammar_type
         super().__init__(
             disciplines,
@@ -149,12 +148,11 @@ class SoSMDAChain(MDAChain):
             linear_solver_tolerance=linear_solver_tolerance,
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
-            sub_coupling_structures=sub_coupling_structures,
             log_convergence=log_convergence,
             linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
+            linear_solver_settings=linear_solver_settings,
             mdachain_parallelize_tasks=mdachain_parallelize_tasks,
-            mdachain_parallel_options=mdachain_parallel_options,
+            mdachain_parallel_settings=mdachain_parallel_settings,
             initialize_defaults=initialize_defaults,
             **inner_mda_options,
         )
@@ -165,7 +163,14 @@ class SoSMDAChain(MDAChain):
         self.scaling = scaling_method
         if inner_mda_name == "MDAGSNewton" and tolerance_gs is not None:
             for mda in self.inner_mdas:
-                mda.mda_sequence[0].tolerance = tolerance_gs
+                mda.mda_sequence[0].settings.tolerance = tolerance_gs
+                mda.mda_sequence[0].settings.max_mda_iter = max_mda_iter_gs
+
+        if inner_mda_name in self.NEWTON_ALGO_LIST:
+            for mda in self.inner_mdas:
+                if isinstance(mda, MDANewtonRaphson):
+                    mda.settings.newton_linear_solver_name = linear_solver
+                    mda.settings.newton_linear_solver_settings = linear_solver_settings
 
     def clear_jacobian(self):
         return SoSDiscipline.clear_jacobian(self)  # should rather be double inheritance
@@ -174,7 +179,7 @@ class SoSMDAChain(MDAChain):
         """Call the _run method of MDAChain in case of SoSCoupling."""
         # set linear solver options for MDA
         self.linear_solver = self.linear_solver_MDA
-        self.linear_solver_options = self.linear_solver_options_MDA
+        self.linear_solver_settings = self.linear_solver_settings_MDA
         self.linear_solver_tolerance = self.linear_solver_tolerance_MDA
 
         # self.pre_run_mda()
@@ -283,7 +288,7 @@ class SoSMDAChain(MDAChain):
         """Overload of the GEMSEO function"""
         # set linear solver options for MDO
         self.linear_solver = self.linear_solver_MDO
-        self.linear_solver_options = self.linear_solver_options_MDO
+        self.linear_solver_settings = self.linear_solver_settings_MDO
         self.linear_solver_tolerance = self.linear_solver_tolerance_MDO
 
         MDAChain._compute_jacobian(self, inputs, outputs)

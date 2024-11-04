@@ -64,9 +64,9 @@ class SimpleDisc1(SoSWrapp):
         """
 
         if z[0] > 0.5:
-            sampling_algo = "lhs"
+            sampling_algo = "PYDOE_LHS"
         else:
-            sampling_algo = "fullfact"
+            sampling_algo = "PYDOE_FULLFACT"
 
         return sampling_algo
 
