@@ -19,17 +19,17 @@ limitations under the License.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Mapping, Sequence
+from typing import TYPE_CHECKING, Sequence
 
-from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.core.execution_status import ExecutionStatus
-from gemseo.mda.sequential_mda import MDASequential
-from gemseo.mda.gs_newton import MDAGSNewton
-from gemseo.utils.pydantic import create_model
+from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
+from gemseo.mda.gs_newton import MDAGSNewton
 from gemseo.mda.gs_newton_settings import MDAGSNewtonSettings
+from gemseo.mda.sequential_mda import MDASequential
+from gemseo.utils.pydantic import create_model
 
-from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SOS_GRAMMAR_TYPE, SoSMDAGaussSeidel
+from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
 
 if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline

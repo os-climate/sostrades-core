@@ -22,16 +22,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Mapping, Sequence
-
-from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from numpy import array
-
-if TYPE_CHECKING:
-    from gemseo.core.coupling_structure import CouplingStructure
-    from gemseo.core.discipline.discipline import Discipline
-    from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
 
 SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 class SoSMDAGaussSeidel(MDAGaussSeidel):
