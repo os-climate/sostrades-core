@@ -25,7 +25,7 @@ from gemseo.algos.linear_solvers.base_linear_solver_library import (
     BaseLinearSolverLibrary,
     LinearSolverDescription,
 )
-from gemseo_petsc.linear_solvers.ksp_library import (
+from gemseo_petsc.linear_solvers.petsc_ksp import (
     _convert_ndarray_to_mat_or_vec,
 )
 from gemseo_petsc.linear_solvers.settings.petsc_ksp_settings import BaseSoSPetscKSPSettings
