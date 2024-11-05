@@ -28,8 +28,11 @@ from gemseo.algos.linear_solvers.base_linear_solver_library import (
 from gemseo_petsc.linear_solvers.petsc_ksp import (
     _convert_ndarray_to_mat_or_vec,
 )
-from gemseo_petsc.linear_solvers.settings.petsc_ksp_settings import BaseSoSPetscKSPSettings
 from numpy import isnan, ndarray
+
+from sostrades_core.execution_engine.gemseo_addon.linear_solvers.settings.petsc_ksp_settings import (
+    BaseSoSPetscKSPSettings,
+)
 
 # Must be done before from petsc4py import PETSc, this loads the options from command args in the options database.
 petsc4py.init([])
