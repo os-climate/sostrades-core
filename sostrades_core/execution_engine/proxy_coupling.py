@@ -22,6 +22,7 @@ from collections import ChainMap, defaultdict
 from copy import copy, deepcopy
 from multiprocessing import cpu_count
 from os import getenv
+from typing import Any, ClassVar
 
 import numpy as np
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
@@ -57,11 +58,6 @@ def get_available_linear_solvers():
     return algos
 
 
-PETSC_AVAILABLE_LINEAR_SOLVER = ['GMRES_PETSC',
-                                 'LGMRES_PETSC', 'BICG_PETSC', 'BCGS_PETSC']
-PETSC_AVAILABLE_PRECONDITIONER = ['jacobi', 'ilu', 'gasm']
-
-
 class ProxyCoupling(ProxyDisciplineBuilder):
     """
     **ProxyCoupling** is a ProxyDiscipline that represents a coupling and has children sub proxies on the process tree.
@@ -94,10 +90,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     # get list of available linear solvers from LinearSolversFactory
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
-    NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']
+    NEWTON_ALGO_LIST = ('MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA')
 
     # set default value of linear solver according to the operating system
     if getenv("USE_PETSC", "").lower() in ("true", "1"):
+        from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import SoSPetscKSPAlgos
+
+        PETSC_AVAILABLE_LINEAR_SOLVER = SoSPetscKSPAlgos.AVAILABLE_LINEAR_SOLVERS
+        PETSC_AVAILABLE_PRECONDITIONER = SoSPetscKSPAlgos.AVAILABLE_PRECONDITIONERS
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
         POSSIBLE_VALUES_PRECONDITIONER = ["None", *PETSC_AVAILABLE_PRECONDITIONER]
@@ -106,7 +106,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         DEFAULT_LINEAR_SOLVER = 'GMRES'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'None'
         POSSIBLE_VALUES_PRECONDITIONER = ['None', 'ilu']
-    DEFAULT_LINEAR_SOLVER_OPTIONS = {'max_iter': 1000, 'tol': 1.0e-8}
+    DEFAULT_LINEAR_SOLVER_OPTIONS: ClassVar[dict[str, Any]] = {'max_iter': 1000, 'tol': 1.0e-8}
 
     DESC_IN = {
         # NUMERICAL PARAMETERS
@@ -413,10 +413,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                         f'USE_PETSC'
                     )
                     raise ValueError(msg)
-                disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = [
-                    "None",
-                    *PETSC_AVAILABLE_PRECONDITIONER,
-                ]
+                disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES] = self.POSSIBLE_VALUES_PRECONDITIONER
                 if (
                     self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')
                     not in disc_in['linear_solver_MDA_preconditioner'][self.POSSIBLE_VALUES]
@@ -441,10 +438,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                         f'USE_PETSC'
                     )
                     raise ValueError(msg)
-                disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = [
-                    "None",
-                    *PETSC_AVAILABLE_PRECONDITIONER,
-                ]
+                disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES] = self.POSSIBLE_VALUES_PRECONDITIONER
                 if (
                     self.get_sosdisc_inputs('linear_solver_MDO_preconditioner')
                     not in disc_in['linear_solver_MDO_preconditioner'][self.POSSIBLE_VALUES]
@@ -459,12 +453,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                     disc_in['linear_solver_MDO_preconditioner'][self.VALUE] = 'None'
 
             # set default value of max_mda_iter_gs
-            if 'max_mda_iter_gs' in disc_in:
-                if self.get_sosdisc_inputs('inner_mda_name') == 'GSorNewtonMDA':
-                    self.update_default_value('max_mda_iter_gs', self.IO_TYPE_IN, 200)
-                # else:
-                #     self.update_default_value(
-                #         'max_mda_iter_gs', self.IO_TYPE_IN, 30)
+            if 'max_mda_iter_gs' in disc_in and self.get_sosdisc_inputs('inner_mda_name') == 'GSorNewtonMDA':
+                self.update_default_value('max_mda_iter_gs', self.IO_TYPE_IN, 200)
 
     def configure_io(self):
         """
@@ -520,7 +510,9 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             if isinstance(group, list):
                 # if MDA, i.e. group of disciplines (e.g. [Sellar1, Sellar2])
                 # we gather all the i/o of the sub-disciplines (MDA-like i/o grammar)
-                list_of_data_in = [d.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True) for d in group]
+                list_of_data_in = [
+                    d.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True) for d in group
+                ]
                 list_of_data_out = [
                     d.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple=True) for d in group
                 ]
