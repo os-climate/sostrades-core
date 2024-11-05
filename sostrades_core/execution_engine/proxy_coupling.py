@@ -96,7 +96,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     if getenv("USE_PETSC", "").lower() in ("true", "1"):
         from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import SoSPetscKSPAlgos
 
-        PETSC_AVAILABLE_LINEAR_SOLVER = SoSPetscKSPAlgos.AVAILABLE_LINEAR_SOLVERS
+        PETSC_AVAILABLE_LINEAR_SOLVER = (algo for algo in SoSPetscKSPAlgos.ALGORITHM_INFOS)
         PETSC_AVAILABLE_PRECONDITIONER = SoSPetscKSPAlgos.AVAILABLE_PRECONDITIONERS
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'
         DEFAULT_LINEAR_SOLVER_PRECONFITIONER = 'gasm'
@@ -775,7 +775,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         if num_data['linear_solver'].endswith('_PETSC'):
             # PETSc case
-            linear_solver_settings_MDA['solver_type'] = num_data['linear_solver'].split('_PETSC')[0].lower()
             preconditioner = copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner'))
             linear_solver_settings_MDA['preconditioner_type'] = (preconditioner != 'None') * preconditioner or None
         else:
@@ -796,7 +795,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         linear_solver_settings_MDO = deepcopy(self.get_sosdisc_inputs('linear_solver_MDO_options'))
 
         if self.linear_solver_MDO.endswith('_PETSC'):
-            linear_solver_settings_MDO['solver_type'] = self.linear_solver_MDO.split('_PETSC')[0].lower()
             preconditioner = self.get_sosdisc_inputs('linear_solver_MDO_preconditioner')
             linear_solver_settings_MDO['preconditioner_type'] = (preconditioner != 'None') * preconditioner or None
         else:

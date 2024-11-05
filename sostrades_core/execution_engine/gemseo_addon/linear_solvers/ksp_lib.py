@@ -40,6 +40,7 @@ from petsc4py import PETSc  # noqa: E402
 
 if TYPE_CHECKING:
     from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+    from gemseo.typing import NumberArray
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
@@ -79,17 +80,17 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
     https://fossies.org/linux/petsc/src/binding/petsc4py/demo/petsc-examples/ksp/ex2.py
     """
 
-    AVAILABLE_LINEAR_SOLVERS: tuple[str] = ('GMRES_PETSC', 'LGMRES_PETSC', 'BICG_PETSC', 'BCGS_PETSC')
+    AVAILABLE_LINEAR_SOLVERS: tuple[str] = ('GMRES', 'LGMRES', 'BICG', 'BCGS')
     """The available linear solvers."""
 
     AVAILABLE_PRECONDITIONERS: tuple[str] = ('jacobi', 'ilu', 'gasm')
     """The available preconditioners."""
 
     ALGORITHM_INFOS: ClassVar[dict[str, LinearSolverDescription]] = {
-        solver_name: LinearSolverDescription(
+        f"{solver_name}_PETSC": LinearSolverDescription(
             algorithm_name=solver_name,
-            description="Linear solver " + solver_name,
-            internal_algorithm_name=solver_name,
+            description=f"Linear solver {solver_name}",
+            internal_algorithm_name=solver_name.lower(),
             lhs_must_be_linear_operator=True,
             library_name="PETSC_KSP",
             website="https://petsc.org/release/docs/manualpages/KSP/KSP.html#KSP",
@@ -114,9 +115,9 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
         Returns:
             The solution of the problem.
         """
-        # set default settings
-        # TODO: move to main linear solver classes so that all solvers benefit
-        # from these default inputs definition
+        # Set default settings
+        # TODO: move to main linear solver classes so that all solvers benefit from these default inputs definition
+        solver = self.ALGORITHM_INFOS[self.algo_name].internal_algorithm_name
         b = problem.rhs
         a = problem.lhs
         if 'maxiter' not in settings:
@@ -127,15 +128,14 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
         # first run
         settings["old_sol"] = None
 
-        sol, info, ksp = self._run_petsc_strategy(problem, **settings)
+        sol, info, ksp = self._run_petsc_strategy(problem, solver, **settings)
 
         if info < 0:
-            settings['solver_type'] = 'bcgs'
             settings['preconditioner_type'] = 'gasm'
             settings['old_sol'] = sol
 
-            # second run
-            sol, info, ksp = self._run_petsc_strategy(problem, **settings)
+            # second run with bcgs
+            sol, info, ksp = self._run_petsc_strategy(problem, "bcgs" ** settings)
             if info >= 0:
                 LOGGER.warning(
                     "The second try with GASM preconditioner and bi CG stabilized linear solver has converged at %s",
@@ -144,21 +144,35 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
             elif info == -3:
                 # DIVERGED_ITS
                 LOGGER.warning(
-                    "DIVERGED_ITS error : the number of iterations of the solver is %s with a max iter of %s, running again with 10*max_iter",
+                    "DIVERGED_ITS error : the number of iterations of the solver is %s with a max iter of %s, running again with 10*maxiter",
                     len(ksp.getConvergenceHistory()),
                     settings['maxiter'],
                 )
                 settings['maxiter'] = 10 * settings['maxiter']
-                settings['solver_type'] = 'bcgs'
                 settings['preconditioner_type'] = 'gasm'
                 settings['old_sol'] = sol
 
-                # third run
-                sol, info, ksp = self._run_petsc_strategy(problem, **settings)
+                # third run with bcgs and larger maxiter
+                sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", **settings)
 
         return problem.solution
 
-    def _run_petsc_strategy(self, problem, **settings):
+    def _run_petsc_strategy(
+        self, problem: LinearProblem, solver: str, **settings
+    ) -> tuple[NumberArray | None, int, Any]:
+        """Runs the solver.
+
+        Args:
+            problem: The linear algebra problem to solve.
+            solver: The solver name.
+            **settings: The solver settings.
+
+        Returns:
+            A tuple containing:
+              - the solution of the problem.
+              - the return code.
+              - the KSP problem.
+        """
         # Initialize the KSP solver.
         options_cmd = settings.get("options_cmd")
         if options_cmd is not None:
@@ -169,7 +183,7 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
         # Create the solver
         ksp = PETSc.KSP().create()
         # Set all solver settings
-        ksp.setType(settings["solver_type"])
+        ksp.setType(solver)
         ksp.setTolerances(settings["rtol"], settings["atol"], settings["dtol"], settings["maxiter"])
         ksp.setConvergenceHistory()
 
