@@ -23,9 +23,9 @@ from typing import TYPE_CHECKING, Sequence
 
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.base_mda_settings import BaseMDASettings
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.gs_newton import MDAGSNewton
-from gemseo.mda.gs_newton_settings import MDAGSNewtonSettings
+from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
 from gemseo.mda.sequential_mda import MDASequential
 from gemseo.utils.pydantic import create_model
 
@@ -33,7 +33,7 @@ from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDA
 
 if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline
-    from gemseo.mda.sequential_mda_settings import MDASequentialSettings
+    from gemseo.mda.sequential_mda_settings import MDASequential_Settings
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
@@ -49,7 +49,7 @@ class GSorNewtonMDA(MDASequential):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDASequentialSettings | None = None,
+        settings_model: MDASequential_Settings | None = None,
         **settings,
     ) -> None:
         """
@@ -96,11 +96,11 @@ class GSorNewtonMDA(MDASequential):
             **settings,
         )
         gauss_seidel_settings = create_model(
-            MDAGaussSeidelSettings,
+            MDAGaussSeidel_Settings,
             **self.__update_inner_mda_settings(settings),
         )
         gsnewton_settings = create_model(
-            MDAGSNewtonSettings,
+            MDAGSNewton_Settings,
             **self.__update_inner_mda_settings(settings),
         )
 
@@ -111,7 +111,7 @@ class GSorNewtonMDA(MDASequential):
         sequence = [mda_gs, mda_newton]
         self._init_mda_sequence(sequence)
 
-    def _run(self):
+    def _execute(self):
         """Runs the MDAs in a sequential way
 
         :returns: the local data

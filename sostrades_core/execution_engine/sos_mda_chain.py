@@ -175,7 +175,7 @@ class SoSMDAChain(MDAChain):
     def clear_jacobian(self):
         return SoSDiscipline.clear_jacobian(self)  # should rather be double inheritance
 
-    def _run(self):
+    def _execute(self):
         """Call the _run method of MDAChain in case of SoSCoupling."""
         # set linear solver options for MDA
         self.linear_solver = self.linear_solver_MDA
@@ -189,7 +189,7 @@ class SoSMDAChain(MDAChain):
             self.logger.info('\tIt.\tRes. norm')
 
         try:
-            MDAChain._run(self)
+            MDAChain._execute(self)
         except Exception as error:
             # Update data manager status (status 'FAILED' is not propagate correctly due to exception
             # so we have to force data manager status update in this case

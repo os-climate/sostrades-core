@@ -248,7 +248,7 @@ class ProxyDiscipline:
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
     ProcessDiscipline.default_grammar_type = SOS_GRAMMAR_TYPE
     # -- status
-    STATUS_PENDING = ExecutionStatus.Status.PENDING
+    STATUS_PENDING = "PENDING"
     STATUS_DONE = ExecutionStatus.Status.DONE
     STATUS_RUNNING = ExecutionStatus.Status.RUNNING
     STATUS_FAILED = ExecutionStatus.Status.FAILED

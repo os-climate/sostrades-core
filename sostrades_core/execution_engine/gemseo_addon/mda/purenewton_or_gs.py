@@ -123,7 +123,7 @@ class GSPureNewtonorGSMDA(MDASequential):
         )
         self.scaling = scaling_method
 
-    def _run(self):
+    def _execute(self):
         """Runs the MDAs in a sequential way
 
         :returns: the local data

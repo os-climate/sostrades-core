@@ -76,7 +76,7 @@ class SoSMDOScenario(MDOScenario):
         self.is_sos_coupling = False
         self.mdo_options = {}
 
-    def _run(self):
+    def _execute(self):
         '''
 
         '''
@@ -129,7 +129,7 @@ class SoSMDOScenario(MDOScenario):
         Call to the GEMSEO MDOScenario run and update design_space_out
         Post run is possible if execute_at_xopt is activated
         '''
-        super()._run()
+        super()._execute()
         # I think it is already in GEMSEO
         # self.execute_at_xopt()
 

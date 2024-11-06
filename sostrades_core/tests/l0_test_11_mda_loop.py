@@ -1427,7 +1427,7 @@ class TestMDALoop(unittest.TestCase):
             rh_p = exec_eng2.root_process.get_sosdisc_outputs('residuals_history')
 
             # Test results equivalence
-            for _r0, _rp in zip(rh_0['MDAJacobi'], rh_p['MDAJacobi']):
+            for _r0, _rp in zip(rh_0['EE.SellarCoupling'], rh_p['EE.SellarCoupling']):
                 self.assertAlmostEqual(_r0, _rp)
             for _k, _v in out_0.items():
                 self.assertAlmostEqual(_v, out_p[_k])

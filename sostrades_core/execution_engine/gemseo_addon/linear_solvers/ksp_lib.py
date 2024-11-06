@@ -135,7 +135,7 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
             settings['old_sol'] = sol
 
             # second run with bcgs
-            sol, info, ksp = self._run_petsc_strategy(problem, "bcgs" ** settings)
+            sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", **settings)
             if info >= 0:
                 LOGGER.warning(
                     "The second try with GASM preconditioner and bi CG stabilized linear solver has converged at %s",
@@ -226,7 +226,7 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
             if problem.convergence_info in (1, 2):
                 LOGGER.warning(
                     'The PETSc linear solver has converged with relative tolerance %s, the final residual norm is %s ; check your linear problem',
-                    settings["tol"],
+                    settings["rtol"],
                     ksp.getResidualNorm(),
                 )
             elif problem.convergence_info == 4:

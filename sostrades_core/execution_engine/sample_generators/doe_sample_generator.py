@@ -62,7 +62,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     # The DiagonalDOE algorithm is special: it has parameters "reverse" that can have name of variable
     # Do we want it in SoSTrades. Does it works also or not ?
 
-    TYPE_PERMISSIVE_ALGORITHMS: tuple[str] = ("PYDOE_FULLFACT", "OT_FULLFACT", "PYDOE_OBDESIGN", "PYDOE_FF2N")
+    TYPE_PERMISSIVE_ALGORITHMS: tuple[str] = ("PYDOE_FULLFACT", "OT_FULLFACT", "PYDOE_PBDESIGN", "PYDOE_FF2N")
     """The list of algorithms that accept inputs other than floats or arrays.
 
     Algorithms not listed below will have input constrained to floats and arrays.

@@ -31,7 +31,7 @@ class SoSMDAGaussSeidel(MDAGaussSeidel):
     (overload introduces warm_start_threshold option)
     """
 
-    def _run(self):
+    def _execute(self):
         # Run the disciplines in a sequential way
         # until the difference between outputs is under tolerance.
         if self.warm_start:

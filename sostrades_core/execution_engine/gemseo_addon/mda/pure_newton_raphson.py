@@ -105,7 +105,7 @@ class PureNewtonRaphson(BaseMDARoot):
             raise ValueError(msg)
         return relax_factor
 
-    def _run(self):  # type: (...) -> None
+    def _execute(self):  # type: (...) -> None
         """
         R = self.__R(self.__W)
         if self.__dRdW is None:

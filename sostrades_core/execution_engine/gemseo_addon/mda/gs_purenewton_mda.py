@@ -103,7 +103,7 @@ class GSPureNewtonMDA(MDASequential):
         )
         self.scaling = scaling_method
 
-    def _run(self):
+    def _execute(self):
         """
         Override _run of sequential MDA to update PureNR MDA local data and normed residual
         with the values from GS MDA, to avoid an early termination flag before residual

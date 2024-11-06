@@ -40,6 +40,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
     from pathlib import Path
 
+    from gemseo.typing import StrKeyMapping
+
     from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 """
@@ -114,11 +116,11 @@ class SoSDiscipline(Discipline):
         self.input_grammar.data_converter.reduced_dm = self.reduced_dm
         self.output_grammar.data_converter.reduced_dm = self.reduced_dm
 
-    def _run(self):
+    def _run(self, input_data: StrKeyMapping):
         """Call user-defined wrapper run."""
         # TODO: [discuss] is this to be done at the prepare execution? (with set_wrapper_attributes)?
         # send local data to the wrapper for i/o
-        self.sos_wrapp.local_data = self.local_data
+        self.sos_wrapp.local_data = input_data
         self.sos_wrapp.input_data_names = self.get_input_data_names()
         self.sos_wrapp.output_data_names = self.get_output_data_names()
         # self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
@@ -127,14 +129,14 @@ class SoSDiscipline(Discipline):
         if self.debug_mode in ['input_change', 'all']:
             disc_inputs_before_execution = {
                 key: {'value': value}
-                for key, value in deepcopy(self.io.get_input_data()).items()
+                for key, value in deepcopy(input_data).items()
                 if key in self.input_grammar
             }
 
         # SoSWrapp run
         local_data = self.sos_wrapp._run()
         # local data update
-        self.io.update_output_data(local_data)
+        # self.io.update_output_data(local_data)
 
         # debug modes
         if self.debug_mode in ['nan', 'all']:
@@ -160,7 +162,7 @@ class SoSDiscipline(Discipline):
 
         if self.debug_mode in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
-
+        return local_data
     def execute(
         self,
         input_data,  # type:Optional[Dict[str, Any]]
