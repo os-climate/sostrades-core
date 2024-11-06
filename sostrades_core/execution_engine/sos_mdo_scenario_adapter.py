@@ -96,7 +96,7 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         # desactivate designspace outputs for post processings
         self.desactivate_optim_out_storage = False
 
-    def _run(self) -> None:
+    def _execute(self) -> None:
         self._pre_run()
         # with LoggingContext(LOGGING_SETTINGS.logger, level=self.__scenario_log_level):
         self.scenario.execute(**self.mdo_options)
