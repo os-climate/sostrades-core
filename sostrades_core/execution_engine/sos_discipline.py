@@ -39,7 +39,9 @@ if TYPE_CHECKING:
     import logging
     from collections.abc import Iterable, Mapping
     from pathlib import Path
+
     from gemseo.typing import StrKeyMapping
+
     from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 """
