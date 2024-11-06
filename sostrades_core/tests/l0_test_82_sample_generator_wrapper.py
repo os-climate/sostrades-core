@@ -182,7 +182,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
     - OT algo family: ['OT_SOBOL', 'OT_RANDOM', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'OT_FAURE',
                        'OT_MONTE_CARLO', 'OT_FACTORIAL', 'OT_COMPOSITE', 'OT_AXIAL', 'OT_OPT_LHS', 'OT_LHS',
                        'OT_LHSC', 'OT_FULLFACT', 'OT_SOBOL_INDICES']
-    - pydoe family: ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_OBDESIGN', 'PYDOE_BBDESIGN', 'PYDOE_CCDESIGN', 'PYDOE_LHS']
+    - pydoe family: ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_PBDESIGN', 'PYDOE_BBDESIGN', 'PYDOE_CCDESIGN', 'PYDOE_LHS']
     2) In case of cartesian product method
 
     """
@@ -281,7 +281,7 @@ class TestSampleGeneratorWrapper(unittest.TestCase):
         sampling to test the different DoE algorithms aimed by this test.
         """
         self.ns = f'{self.study_name_doe}'
-        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_OBDESIGN', 'PYDOE_BBDESIGN',
+        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_PBDESIGN', 'PYDOE_BBDESIGN',
                                     'PYDOE_CCDESIGN', 'PYDOE_LHS']
 
         pydoe_algo_used_options = {

@@ -129,7 +129,6 @@ class SoSMDOScenario(MDOScenario):
         Call to the GEMSEO MDOScenario run and update design_space_out
         Post run is possible if execute_at_xopt is activated
         '''
-        super()._run()
         # I think it is already in GEMSEO
         # self.execute_at_xopt()
 

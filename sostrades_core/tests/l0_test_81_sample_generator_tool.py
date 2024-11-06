@@ -223,7 +223,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
 
     def test_03_check_generate_samples_pydoe_algo_names(self):
         """Test that checks generate_samples for DoeSampleGenerator: it is tested on pyDOE algo names"""
-        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_OBDESIGN', 'PYDOE_BBDESIGN',
+        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_PBDESIGN', 'PYDOE_BBDESIGN',
                                     'PYDOE_CCDESIGN', 'PYDOE_LHS']
 
         pydoe_algo_options_desc_in = {  # default options
@@ -354,7 +354,7 @@ class TestSampleGeneratorTool(unittest.TestCase):
         sampling to test the different DoE algorithms aimed by this test.
         TBD : check if overlaps or not with previous tests
         """
-        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_OBDESIGN', 'PYDOE_BBDESIGN',
+        pydoe_list_of_algo_names = ['PYDOE_FULLFACT', 'PYDOE_FF2N', 'PYDOE_PBDESIGN', 'PYDOE_BBDESIGN',
                                     'PYDOE_CCDESIGN', 'PYDOE_LHS']
         pydoe_algo_default_options = {
             'alpha': 'orthogonal',
