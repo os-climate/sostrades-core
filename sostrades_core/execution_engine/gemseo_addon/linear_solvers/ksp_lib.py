@@ -226,7 +226,7 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
             if problem.convergence_info in (1, 2):
                 LOGGER.warning(
                     'The PETSc linear solver has converged with relative tolerance %s, the final residual norm is %s ; check your linear problem',
-                    settings["tol"],
+                    settings["rtol"],
                     ksp.getResidualNorm(),
                 )
             elif problem.convergence_info == 4:
