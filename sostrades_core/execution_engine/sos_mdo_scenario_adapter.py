@@ -76,8 +76,10 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         self.scenario = SoSMDOScenario(
             disciplines, self.formulation, self.objective_name, design_space, self.name, maximize_objective, logger
         )
-
-        super().__init__(self.scenario, input_names=[], output_names=output_names, name=f'{self.name}_adapter')
+        # NOTE: adding the design variables as output names of the scenario adapter, so that the upper mda can retrieve
+        # the inputs that are design variables in order to push them into the dm after the optimisation
+        _output_names = list(set(output_names + self.scenario.formulation.optimization_problem.design_space.variable_names))
+        super().__init__(self.scenario, input_names=[], output_names=_output_names, name=f'{self.name}_adapter')
         self.scenario.eval_mode = mdo_options.pop('eval_mode')
         self.scenario.eval_jac = mdo_options.pop('eval_jac')
         self.scenario.dict_desactivated_elem = mdo_options.pop('dict_desactivated_elem')
@@ -117,7 +119,7 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         # for data in outputs:
         #     self.io.data.update(data)
         #
-        # self.add_design_space_inputs_to_local_data()
+        self.add_design_space_inputs_to_local_data()
         # # save or not the output of design space for post processings
         if not self.desactivate_optim_out_storage:
             self.update_design_space_out()
@@ -187,7 +189,7 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
 
     def add_design_space_inputs_to_local_data(self):
         """Add Design space inputs values to the local_data to store it in the dm"""
-        problem = self.formulation.optimization_problem
+        problem = self.scenario.formulation.optimization_problem
 
         x = problem.solution.x_opt if problem.solution is not None else problem.design_space.get_current_value()
         current_idx = 0
@@ -195,7 +197,7 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
             k_size = v.size
             # WARNING we fill input in local_data that will be deleted by GEMSEO because they are not outputs ...
             # Only solution is to specify design space inputs as outputs of the mdoscenario
-            self.scenario_outputs.update({k: x[current_idx : current_idx + k_size]})
+            self.io.data.update({k: x[current_idx : current_idx + k_size]})
             current_idx += k_size
 
     def get_namespace_from_var_name(self, var_name):
