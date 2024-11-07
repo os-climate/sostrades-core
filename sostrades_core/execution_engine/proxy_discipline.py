@@ -535,7 +535,7 @@ class ProxyDiscipline:
         """Add all observers that have been addes when gemseo discipline was not instanciated"""
         for observer in self.status_observers:
             if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
-                self.discipline_wrapp.discipline.add_status_observer(observer)
+                self.discipline_wrapp.discipline.execution_status.add_observer(observer)
 
     def set_cache(self, disc: Discipline, cache_type: str):
         """Instanciate and set cache for disc.
@@ -1799,7 +1799,7 @@ class ProxyDiscipline:
         We store observers in self.status_observers and add it to the mdodiscipline when it ies instanciated in prepare_execution
         """
         if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
-            self.discipline_wrapp.discipline.add_status_observer(observer)
+            self.discipline_wrapp.discipline.execution_status.add_observer(observer)
 
         if observer not in self.status_observers:
             self.status_observers.append(observer)
