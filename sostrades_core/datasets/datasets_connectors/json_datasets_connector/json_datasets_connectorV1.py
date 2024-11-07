@@ -42,11 +42,11 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
         """
         Constructor for JSON data connector
 
-
-        :param file_path: file_path for this dataset connector
-        :type file_path: str
-        :param serializer_type: type of serializer to deserialize data from connector
-        :type serializer_type: DatasetSerializerType (JSON for jsonDatasetSerializer)
+        Args:
+            connector_id (str): Connector identifier
+            file_path (str): File path for this dataset connector
+            create_if_not_exists (bool, optional): Create file if not exists. Defaults to False.
+            serializer_type (DatasetSerializerType, optional): Type of serializer to deserialize data from connector. Defaults to DatasetSerializerType.JSON.
         """
         super().__init__()
         self.__json_tooling = JSONDatasetsConnectorTools(file_path=file_path, create_if_not_exists=create_if_not_exists)
@@ -62,24 +62,30 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
     def get_datasets_available(self) -> list[AbstractDatasetInfo]:
         """
         Get all available datasets for a specific API
+
+        Returns:
+            list[AbstractDatasetInfo]: List of available datasets
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
         # Read JSON if not read already
         if self.__json_data is None:
             self.__json_data = self.__json_tooling.load_json_data()
 
-        return [DatasetInfoV1(self.connector_id, dataset_id, group_id) for dataset_id, groups in list(self.__json_data.items()) for group_id in list(groups.keys()())]
+        return [DatasetInfoV1(self.connector_id, dataset_id, group_id) for dataset_id, groups in list(self.__json_data.items()) for group_id in list(groups.keys())]
 
-
-    def _get_values(self, dataset_identifier: DatasetInfoV1, data_to_get: dict[str:str]) -> None:
+    def _get_values(self, dataset_identifier: DatasetInfoV1, data_to_get: dict[str, str]) -> dict[str, Any]:
         """
         Method to retrieve data from JSON and fill a data_dict
 
-        :param dataset_identifier: identifier of the dataset
-        :type dataset_identifier: DatasetInfo
+        Args:
+            dataset_identifier (DatasetInfoV1): Identifier of the dataset
+            data_to_get (dict[str, str]): Data to retrieve, dict of names and types
 
-        :param data_to_get: data to retrieve, dict of names and types
-        :type data_to_get: dict[str:str]
+        Returns:
+            dict[str, Any]: Retrieved data
+
+        Raises:
+            DatasetNotFoundException: If dataset or group is not found
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
         # Read JSON if not read already
@@ -89,11 +95,10 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
         if dataset_identifier.dataset_id not in self.__json_data:
             raise DatasetNotFoundException(dataset_identifier.dataset_id)
 
-
         # Filter dataset
         dataset_data = self.__json_data[dataset_identifier.dataset_id]
 
-        #check group exists
+        # Check group exists
         if dataset_identifier.group_id not in dataset_data:
             raise DatasetNotFoundException(f'group {dataset_identifier.group_id} in dataset {dataset_identifier.dataset_id}')
 
@@ -105,16 +110,20 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
         self.__logger.debug(f"Values obtained {list(filtered_values.keys())} for dataset {dataset_identifier.dataset_id}, group {dataset_identifier.group_id} for connector {self}")
         return filtered_values
 
-
-    def _write_values(self, dataset_identifier: DatasetInfoV1, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
+    def _write_values(self, dataset_identifier: DatasetInfoV1, values_to_write: dict[str, Any], data_types_dict: dict[str, str]) -> dict[str, Any]:
         """
         Method to write data
-        :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: DatasetInfo
-        :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str], name, value
-        :param data_types_dict: dict of data type {name: type}
-        :type data_types_dict: dict[str:str]
+
+        Args:
+            dataset_identifier (DatasetInfoV1): Dataset identifier for connector
+            values_to_write (dict[str, Any]): Dict of data to write {name: value}
+            data_types_dict (dict[str, str]): Dict of data type {name: type}
+
+        Returns:
+            dict[str, Any]: Written values
+
+        Raises:
+            DatasetNotFoundException: If dataset is not found
         """
         # Read JSON if not read already
         self.__logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
@@ -134,13 +143,19 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
         self.__json_tooling.save_json_data(self.__json_data)
         return values_to_write
 
-    def _get_values_all(self, dataset_identifier: DatasetInfoV1, data_types_dict: dict[str:str]) -> dict[str:Any]:
+    def _get_values_all(self, dataset_identifier: DatasetInfoV1, data_types_dict: dict[str, str]) -> dict[str, Any]:
         """
         Abstract method to get all values from a dataset for a specific API
-        :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: DatasetInfo
-        :param data_types_dict: dict of data type {name: type}
-        :type data_types_dict: dict[str:str]
+
+        Args:
+            dataset_identifier (DatasetInfoV1): Dataset identifier for connector
+            data_types_dict (dict[str, str]): Dict of data type {name: type}
+
+        Returns:
+            dict[str, Any]: All values from the dataset
+
+        Raises:
+            DatasetNotFoundException: If dataset or group is not found
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier.dataset_id} for connector {self}")
         # Read JSON if not read already
@@ -150,7 +165,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
         if dataset_identifier.dataset_id not in self.__json_data:
             raise DatasetNotFoundException(dataset_identifier.dataset_id)
 
-        #check group exists
+        # Check group exists
         if dataset_identifier.group_id not in self.__json_data[dataset_identifier.dataset_id]:
             raise DatasetNotFoundException(f'group {dataset_identifier.group_id} in dataset {dataset_identifier.dataset_id}')
 
@@ -162,19 +177,23 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
                           for key, datum in dataset_group.items()}
         return dataset_values
 
-    def _write_dataset(self, dataset_identifier: DatasetInfoV1, values_to_write: dict[str:Any], data_types_dict: dict[str:str], create_if_not_exists: bool = True, override: bool = False) -> dict[str: Any]:
+    def _write_dataset(self, dataset_identifier: DatasetInfoV1, values_to_write: dict[str, Any], data_types_dict: dict[str, str], create_if_not_exists: bool = True, override: bool = False) -> dict[str, Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
-        :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: DatasetInfo
-        :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:Any]
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
-        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
-        :type create_if_not_exists: bool
-        :param override: override dataset if it exists (raises otherwise)
-        :type override: bool
+
+        Args:
+            dataset_identifier (DatasetInfoV1): Dataset identifier for connector
+            values_to_write (dict[str, Any]): Dict of data to write {name: value}
+            data_types_dict (dict[str, str]): Dict of data types {name: type}
+            create_if_not_exists (bool, optional): Create the dataset if it does not exists (raises otherwise). Defaults to True.
+            override (bool, optional): Override dataset if it exists (raises otherwise). Defaults to False.
+
+        Returns:
+            dict[str, Any]: Written values
+
+        Raises:
+            DatasetNotFoundException: If dataset or group is not found
+            DatasetGenericException: If dataset would be overridden
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         if self.__json_data is None:
@@ -189,10 +208,9 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
         else:
             # Handle override
             if not override:
-                raise DatasetGenericException(f"Dataset {dataset_identifier.dataset_id} would be overriden")
+                raise DatasetGenericException(f"Dataset {dataset_identifier.dataset_id} would be overridden")
 
-
-        #handle group creation
+        # Handle group creation
         if dataset_identifier.group_id not in self.__json_data[dataset_identifier.dataset_id]:
             if create_if_not_exists:
                 self.__json_data[dataset_identifier.dataset_id][dataset_identifier.group_id] = {}
@@ -204,9 +222,9 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
     def clear_dataset(self, dataset_id: str) -> None:
         """
         Utility method to remove the directory corresponding to a given dataset_id within the JSON database.
-        :param dataset_id: identifier of the dataset to be removed
-        :type dataset_id: str
-        :return: None
+
+        Args:
+            dataset_id (str): Identifier of the dataset to be removed
         """
         if self.__json_data is None:
             self.__json_data = self.__json_tooling.load_json_data()
