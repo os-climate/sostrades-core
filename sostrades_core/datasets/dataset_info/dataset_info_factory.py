@@ -17,6 +17,7 @@ limitations under the License.
 import logging
 import re
 from enum import Enum
+from warnings import warn
 
 from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 from sostrades_core.datasets.dataset_info.dataset_info_v1 import DatasetInfoV1
@@ -61,5 +62,8 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
         version = DatasetInfoSerializerVersion.V0
         if match:
             version = DatasetInfoSerializerVersion.get_enum_value(match.group(1))
+        else:
+            warn("No version in dataset info is tolerated for now but will be deprecated in future versions", UserWarning)  # noqa: B028
+
 
         return version

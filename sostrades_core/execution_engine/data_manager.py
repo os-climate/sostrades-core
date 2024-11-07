@@ -525,6 +525,7 @@ class DataManager:
                                                          date=datetime.now(),
                                                          dataset_data_path=dataset_data_path,
                                                          variable_key=variable_key))
+
         dm_data[VALUE] = new_value
 
     def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> None:

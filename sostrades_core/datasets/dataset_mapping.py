@@ -247,7 +247,10 @@ class DatasetsMapping:
         dataset_info_list = {}
         for namespace in namespaces_dict.keys():
             study_namespace = namespace.replace(self.STUDY_PLACEHOLDER, study_name)
-            dataset_info_list.update({dataset_id:{study_namespace:mapping_data} for dataset_id, mapping_data in self.get_datasets_info_from_namespace(namespace, study_name).items()})
+            for dataset, mapping_data in self.get_datasets_info_from_namespace(namespace, study_name).items():
+                dataset_info_list[dataset] = dataset_info_list.get(dataset, {})
+                dataset_info_list[dataset][study_namespace] = dataset_info_list[dataset].get(study_namespace, {})
+                dataset_info_list[dataset][study_namespace].update(mapping_data)
 
         for dataset, namespaces_mapping_dict in dataset_info_list.items():
             try:
