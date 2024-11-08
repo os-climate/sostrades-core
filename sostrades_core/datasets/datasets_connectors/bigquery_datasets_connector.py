@@ -69,15 +69,16 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         except Exception as exc:
             raise DatasetUnableToInitializeConnectorException(connector_type=BigqueryDatasetsConnector) from exc
 
-    def _get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str:str]) -> dict[str:Any]:
+    def _get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: dict[str, str]) -> dict[str, Any]:
         """
         Method to retrieve data from dataset and fill a data_dict
 
-        :param dataset_identifier: identifier of the dataset
-        :type dataset_identifier: DatasetInfo
+        Args:
+            dataset_identifier (AbstractDatasetInfo): identifier of the dataset
+            data_to_get (dict[str, str]): data to retrieve, dict of names and types
 
-        :param data_to_get: data to retrieve, dict of names and types
-        :type data_to_get: dict[str:str]
+        Returns:
+            dict[str, Any]: dict of retrieved data
         """
 
         dataset_id = "{}.{}".format(self.client.project, dataset_identifier.dataset_id)
@@ -112,16 +113,17 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         )
         return parameters_data
 
-    def _write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str:Any], data_types_dict: dict[str:str]) -> dict[str: Any]:
+    def _write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: dict[str, Any], data_types_dict: dict[str, str]) -> dict[str, Any]:
         """
         Method to write data
 
-        :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: DatasetInfo
-        :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: Dict[str:Any]
-        :param data_types_dict: dict of data type {name: type}
-        :type data_types_dict: dict[str:str]
+        Args:
+            dataset_identifier (AbstractDatasetInfo): dataset identifier for connector
+            values_to_write (dict[str, Any]): dict of data to write {name: value}
+            data_types_dict (dict[str, str]): dict of data type {name: type}
+
+        Returns:
+            dict[str, Any]: dict of written values
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
 
@@ -185,13 +187,16 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         return values_to_write
 
-    def _get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str:str]) -> dict[str:Any]:
+    def _get_values_all(self, dataset_identifier: AbstractDatasetInfo, data_types_dict: dict[str, str]) -> dict[str, Any]:
         """
         Get all values from a dataset
-        :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: DatasetInfo
-        :param data_types_dict: dict of data type {name: type}
-        :type data_types_dict: dict[str:str]
+
+        Args:
+            dataset_identifier (AbstractDatasetInfo): dataset identifier for connector
+            data_types_dict (dict[str, str]): dict of data type {name: type}
+
+        Returns:
+            dict[str, Any]: dict of all values
         """
 
         return self.get_values(dataset_identifier, data_types_dict)
@@ -199,6 +204,9 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     def get_datasets_available(self) -> list[AbstractDatasetInfo]:
         """
         Get all available datasets for a specific API
+
+        Returns:
+            list[AbstractDatasetInfo]: list of available datasets
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
         datasets = list(self.client.list_datasets())
@@ -208,23 +216,23 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     def _write_dataset(
         self,
         dataset_identifier: AbstractDatasetInfo,
-        values_to_write: dict[str:Any],
-        data_types_dict: dict[str:str],
+        values_to_write: dict[str, Any],
+        data_types_dict: dict[str, str],
         create_if_not_exists: bool = True,
         override: bool = False,
-    ) -> dict[str: Any]:
+    ) -> dict[str, Any]:
         """
         Write a dataset from Arango
-        :param dataset_identifier: dataset identifier for connector
-        :type dataset_identifier: DatasetInfo
-        :param values_to_write: dict of data to write {name: value}
-        :type values_to_write: dict[str:Any]
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
-        :param create_if_not_exists: create the dataset if it does not exists (raises otherwise)
-        :type create_if_not_exists: bool
-        :param override: override dataset if it exists (raises otherwise)
-        :type override: bool
+
+        Args:
+            dataset_identifier (AbstractDatasetInfo): dataset identifier for connector
+            values_to_write (dict[str, Any]): dict of data to write {name: value}
+            data_types_dict (dict[str, str]): dict of data types {name: type}
+            create_if_not_exists (bool, optional): create the dataset if it does not exists (raises otherwise). Defaults to True.
+            override (bool, optional): override dataset if it exists (raises otherwise). Defaults to False.
+
+        Returns:
+            dict[str, Any]: dict of written values
         """
         self.__logger.debug(
             f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})"
@@ -249,16 +257,17 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
-    def _build_path_to_data(self, dataset_identifier:AbstractDatasetInfo, data_name:str, data_type:str)->str:
+    def _build_path_to_data(self, dataset_identifier: AbstractDatasetInfo, data_name: str, data_type: str) -> str:
         """
         Overloaded method in order to build the url to the bigquery data
-        :param dataset_identifier: dataset identifier into connector
-        :type dataset_identifier: DatasetInfo
-        :param data_name: data in dataset
-        :type data_name: str
-        :param data_type: type of the data in dataset
-        :type data_type: str
-        :return: path/url/uri to find the dataset data
+
+        Args:
+            dataset_identifier (AbstractDatasetInfo): dataset identifier into connector
+            data_name (str): data in dataset
+            data_type (str): type of the data in dataset
+
+        Returns:
+            str: path/url/uri to find the dataset data
         """
         path_to_data = ""
 
@@ -277,9 +286,9 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
     def _insert_value_into_datum(self,
                                  value: Any,
-                                 datum: dict[str:Any],
+                                 datum: dict[str, Any],
                                  parameter_name: str,
-                                 parameter_type: str) -> dict[str:Any]:
+                                 parameter_type: str) -> dict[str, Any]:
 
         new_datum = self._new_datum(datum)
         new_datum[self.PARAMETER_NAME] = parameter_name
@@ -303,10 +312,20 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
             return new_datum
 
     def __update_json_descriptor_and_parameters(self,
-                                                values_to_write: dict[str:Any],
-                                                old_json_descriptor: dict[str:dict[str:Any]],
-                                                data_types_dict: dict[str:str]) -> tuple[dict, dict]:
+                                                values_to_write: dict[str, Any],
+                                                old_json_descriptor: dict[str, dict[str, Any]],
+                                                data_types_dict: dict[str, str]) -> tuple[dict, dict]:
+        """
+        Update the JSON descriptor and parameters
 
+        Args:
+            values_to_write (dict[str, Any]): values to write
+            old_json_descriptor (dict[str, dict[str, Any]]): old JSON descriptor
+            data_types_dict (dict[str, str]): data types dictionary
+
+        Returns:
+            tuple[dict, dict]: updated JSON descriptor and complex type parameters values
+        """
         json_descriptor_parameters = old_json_descriptor or {}
         json_values = {parameter: self.__datasets_serializer.convert_to_dataset_data(parameter, parameter_value,
                                                                                      {parameter: data_types_dict[parameter]})
@@ -323,9 +342,15 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         return json_descriptor_parameters, complex_type_parameters_values
 
     def __get_col_name_from_type(self, parameter_type: str) -> str:
-        '''
-        retrieve column name from parameter type
-        '''
+        """
+        Retrieve column name from parameter type
+
+        Args:
+            parameter_type (str): type of the parameter
+
+        Returns:
+            str: column name
+        """
         column_name = self.STRING_VALUE
         if parameter_type == "int":
             column_name = self.INT_VALUE
@@ -336,7 +361,16 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         return column_name
 
-    def __load_descriptor_index_tables(self, dataset_id):
+    def __load_descriptor_index_tables(self, dataset_id: str) -> tuple[dict, dict, str, str]:
+        """
+        Load descriptor and index tables
+
+        Args:
+            dataset_id (str): id of the dataset
+
+        Returns:
+            tuple[dict, dict, str, str]: tuple of descriptor, index, descriptor table id, and index table id
+        """
         # load dataset descriptor table
         table_descriptor_id = "{}.{}".format(dataset_id, self.DESCRIPTOR_TABLE_NAME)
         table_descriptor_exists = True
@@ -372,33 +406,42 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         return json_descriptor_read, index_read, table_descriptor_id, table_index_id
 
     def __read_descriptor_or_index_table(self, table_id: str) -> dict:
-        '''
-        read the descriptor parameter table
-        :param descriptor_table_id: descriptor_parameter table id
-        :type descriptor_table_id:str
-        :return: dict[param_name: dict[metadata]]
-        '''
+        """
+        Read the descriptor parameter table
+
+        Args:
+            table_id (str): descriptor_parameter table id
+
+        Returns:
+            dict: dict of parameters and their metadata
+        """
         QUERY = (f'SELECT * FROM `{table_id}` ')
         query_job = self.client.query(QUERY)  # API request
         return {row.parameter_name: {key: values for key, values in row.items()} for row in query_job.result()}
 
     def __read_dataframe_table(self, table_id: str) -> pd.DataFrame:
-        '''
-        read a dataframe parameter table
-        :param table_id:  table id
-        :type table_id:str
-        :return: dataframe
-        '''
+        """
+        Read a dataframe parameter table
+
+        Args:
+            table_id (str): table id
+
+        Returns:
+            pd.DataFrame: dataframe
+        """
         QUERY = (f'SELECT * FROM `{table_id}` ')
         return self.client.query(QUERY).result().to_dataframe()
 
     def __read_dict_table(self, table_id: str) -> dict:
-        '''
-        read a dict parameter table
-        :param table_id:  table id
-        :type table_id:str
-        :return: dict
-        '''
+        """
+        Read a dict parameter table
+
+        Args:
+            table_id (str): table id
+
+        Returns:
+            dict: dict
+        """
         QUERY = (f'SELECT * FROM `{table_id}` ')
         query_job = self.client.query(QUERY)
         result = [{key: values for key, values in row.items()} for row in query_job.result()]
