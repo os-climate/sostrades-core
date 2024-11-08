@@ -27,28 +27,32 @@ class AbstractDatasetsSerializer(abc.ABC):
     __logger = logging.getLogger(__name__)
 
     @abc.abstractmethod
-    def convert_from_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
-        '''
-        Convert data_value into data_type from the dataset connector
-        To be override for specific conversion.
-        This function convert dataframe into dict and arrays into list, other types doesn't move.
+    def convert_from_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str, str]) -> Any:
+        """
+        Convert data_value into data_type from the dataset connector.
+        To be overridden for specific conversion.
+        This function converts dataframe into dict and arrays into list, other types don't move.
         Can be used for json mapping for example.
-        :param data_name: name of the data that is converted
-        :type data_name: str
-        :param data_value: value of the data that is converted
-        :type data_value: Any
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
-        '''
+
+        Args:
+            data_name (str): Name of the data that is converted.
+            data_value (Any): Value of the data that is converted.
+            data_types_dict (dict[str, str]): Dict of data types {name: type}.
+
+        Returns:
+            Any: Converted data value.
+        """
 
     @abc.abstractmethod
-    def convert_to_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
-        '''
-        Convert data_value into dataset connector format
-        :param data_name: name of the data that is converted
-        :type data_name: str
-        :param data_value: value of the data that is converted
-        :type data_value: Any
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
-        '''
+    def convert_to_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str, str]) -> Any:
+        """
+        Convert data_value into dataset connector format.
+
+        Args:
+            data_name (str): Name of the data that is converted.
+            data_value (Any): Value of the data that is converted.
+            data_types_dict (dict[str, str]): Dict of data types {name: type}.
+
+        Returns:
+            Any: Converted data value.
+        """
