@@ -15,6 +15,7 @@ limitations under the License.
 '''
 import logging
 from enum import Enum
+from typing import Type
 
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
@@ -49,7 +50,7 @@ from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 class DatasetConnectorType(Enum):
     """
-    Dataset connector types anum
+    Dataset connector types enum
     """
 
     JSON = JSONDatasetsConnectorV0
@@ -62,7 +63,19 @@ class DatasetConnectorType(Enum):
     Bigquery = BigqueryDatasetsConnector
 
     @classmethod
-    def get_enum_value(cls, value_str):
+    def get_enum_value(cls, value_str: str) -> DatasetConnectorType:
+        """
+        Get the enum value corresponding to the given string.
+
+        Args:
+            value_str (str): The string representation of the enum value.
+
+        Returns:
+            DatasetConnectorType: The corresponding enum value.
+
+        Raises:
+            DatasetUnableToInitializeConnectorException: If no matching enum value is found.
+        """
         try:
             # Iterate through the enum members and find the one with a matching value
             return next(member for member in cls if member.name == value_str)
@@ -77,17 +90,24 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
     __logger = logging.getLogger(__name__)
 
     @classmethod
-    def get_connector(cls, connector_identifier:str,
-        connector_type: DatasetConnectorType, **connector_instanciation_fields
-    ) -> AbstractDatasetsConnector:
+    def get_connector(cls, connector_identifier: str,
+                      connector_type: DatasetConnectorType, **connector_instanciation_fields: dict) -> AbstractDatasetsConnector:
         """
-        Instanciate a connector of type connector_type with provided arguments
-        Raises DatasetUnableToInitializeConnectorException if type is invalid
+        Instantiate a connector of type connector_type with provided arguments.
+        Raises DatasetUnableToInitializeConnectorException if type is invalid.
 
-        :param connector_type: connector type to instanciate
-        :type connector_type: DatasetConnectorType
+        Args:
+            connector_identifier (str): The identifier for the connector.
+            connector_type (DatasetConnectorType): The type of connector to instantiate.
+            **connector_instanciation_fields (dict): Additional fields for connector instantiation.
+
+        Returns:
+            AbstractDatasetsConnector: The instantiated connector.
+
+        Raises:
+            DatasetUnableToInitializeConnectorException: If the connector type is invalid.
         """
-        cls.__logger.debug(f"Instanciating connector of type {connector_type}")
+        cls.__logger.debug(f"Instantiating connector of type {connector_type}")
         if not isinstance(connector_type, DatasetConnectorType) or not issubclass(
             connector_type.value, AbstractDatasetsConnector
         ):
