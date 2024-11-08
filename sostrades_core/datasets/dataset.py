@@ -25,16 +25,24 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
 @dataclass()
 class Dataset:
     """
-    Dataset class
+    Dataset class representing a dataset and its associated connector.
+
+    Attributes:
+        dataset_info (AbstractDatasetInfo): Information about the dataset.
+        connector (AbstractDatasetsConnector): Connector to interact with the dataset.
     """
+
     dataset_info: AbstractDatasetInfo
     connector: AbstractDatasetsConnector
 
-    def get_values(self, data_dict: dict[str:str]) -> dict[str:Any]:
+    def get_values(self, data_dict: dict[str, str]) -> dict[str, Any]:
         """
-        Get dataset data and return a data dict with values
+        Get dataset data and return a data dict with values.
 
-        :param data_names: dict of names and types of data to retrieve
-        :type data_names: dict[str:str] name: type
+        Args:
+            data_dict (dict[str, str]): Dictionary of names and types of data to retrieve.
+
+        Returns:
+            dict[str, Any]: Dictionary with the retrieved data values.
         """
         return self.connector.get_values(dataset_identifier=self.dataset_info, data_to_get=data_dict)
