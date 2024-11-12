@@ -431,10 +431,14 @@ class SoSMDAChain(MDAChain):
         # return super(MDAChain, self).execute(input_data=input_data)
         # FIXME: from here below this is a quick-fix for many test errors. In fine the code commented out above should
         ## be reactivated and actually solve the size mismatches between input data and MDA pre-run causing the crashes
+            pre_run_data = init_chain.execute(input_data)
             self.default_input_data.update({
                 key: value
-                for key, value in init_chain.execute(input_data).items()
+                for key, value in pre_run_data.items()
                 if key in self.input_grammar.names
             })
-        return super(MDAChain, self).execute(input_data=self.default_input_data)
+            __input_data = {k: pre_run_data.get(k, v) for k, v in input_data.items()}
+        else:
+            __input_data = input_data
+        return super(MDAChain, self).execute(input_data=__input_data)
 
