@@ -23,13 +23,12 @@ import pandas as pd
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.initialization_chain import MDOInitializationChain
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.utils.constants import N_CPUS
+from gemseo.utils.constants import N_CPUS, READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from numpy import floating, ndarray, size
+from numpy import floating, ndarray
 from pandas import DataFrame
 
 from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
