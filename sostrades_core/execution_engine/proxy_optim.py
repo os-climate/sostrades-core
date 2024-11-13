@@ -26,7 +26,7 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.scenarios.base_scenario import BaseScenario
-from numpy import inf, ndarray
+from numpy import inf, ndarray, size
 
 from sostrades_core.execution_engine.data_manager import POSSIBLE_VALUES
 from sostrades_core.execution_engine.discipline_wrapp import DisciplineWrapp
@@ -810,7 +810,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     design_space[self.LOWER_BOUND].tolist(),
                     design_space[self.UPPER_BOUND].tolist(),
                 ):
-                    if not (var_value and var_lb and var_ub):
+                    if not (size(var_value) > 0 and size(var_lb) > 0 and size(var_ub) > 0):
                         design_space_integrity_msg.append(
                             f"Please fill columns {self.VALUE}, {self.LOWER_BOUND} and {self.UPPER_BOUND} "
                             f"for variable {var_name}."
