@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import ClassVar, Dict, List
 
 
 class DatasetsInfoMappingException(Exception):
@@ -33,13 +33,13 @@ class AbstractDatasetInfo(abc.ABC):
     Stores the information of a dataset
     """
     # Keys for parsing json
-    VERSION_ID_KEY: str = "version_id"
-    CONNECTOR_ID_KEY: str = "connector_id"
-    DATASET_ID_KEY: str = "dataset_id"
-    PARAMETER_ID_KEY: str = "parameter_name"
+    VERSION_ID_KEY: ClassVar[str] = "version_id"
+    CONNECTOR_ID_KEY: ClassVar[str] = "connector_id"
+    DATASET_ID_KEY: ClassVar[str] = "dataset_id"
+    PARAMETER_ID_KEY: ClassVar[str] = "parameter_name"
 
-    WILDCARD: str = "*"
-    SEPARATOR: str = '|'
+    WILDCARD: ClassVar[str] = "*"
+    SEPARATOR: ClassVar[str] = '|'
 
     # Id of the connector
     connector_id: str
