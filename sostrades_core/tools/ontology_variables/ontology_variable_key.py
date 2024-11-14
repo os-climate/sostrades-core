@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-def create_data_key(disc_model_name:str, io_type:str, variable_name:str)->str:
+
+def create_data_key(disc_model_name: str, io_type: str, variable_name: str) -> str:
     '''
     Create ontology key to identify a variable
     :param disc_name: discipline model name full path in witch is the variable

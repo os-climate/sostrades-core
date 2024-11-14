@@ -38,9 +38,7 @@ class InstantiatedIndicatorChart(AbstractPostProcessingPlotlyTooling):
     CHART_NAME = 'chart_name'
     VALUE = 'value'
 
-
-
-    def __init__(self, chart_name='', value = [], mode = '', title ={}, gauge = {}):
+    def __init__(self, chart_name='', value=[], mode='', title={}, gauge={}):
         """ Create a new table
 
         @param pie_chart_name : string that contains pie chart name
@@ -60,7 +58,6 @@ class InstantiatedIndicatorChart(AbstractPostProcessingPlotlyTooling):
         self.title = title
         self.gauge = gauge
         self.mode = mode
-
 
     def to_plotly(self, logger=None):
         """ Convert current instance into a plotly object

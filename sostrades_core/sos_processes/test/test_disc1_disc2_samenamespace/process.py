@@ -34,9 +34,9 @@ class ProcessBuilder(BaseProcessBuilder):
         mods_dict = {'Disc1': disc_dir + 'disc1.Disc1',
                      'Disc2': disc_dir + 'disc2.Disc2', }
         builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': f'{self.ee.study_name}.DiscSameNamespace',
-                                                                    'ns_2':f'{self.ee.study_name}.DiscSameNamespace'})
+                                                                    'ns_2': f'{self.ee.study_name}.DiscSameNamespace'})
 
-        for builder in builder_list :
+        for builder in builder_list:
             self.ee.ns_manager.add_display_ns_to_builder(
             builder, f'{self.ee.study_name}.DiscSameNamespace')
         self.ee.post_processing_manager.add_post_processing_functions_to_namespace(
@@ -45,6 +45,7 @@ class ProcessBuilder(BaseProcessBuilder):
             'ns_2', 'sostrades_core.sos_processes.test.test_disc1_disc2_coupling.post_processing_libraries')
 
         return builder_list
+
 
 def post_processing_filters(execution_engine, namespace):
     """ post processing function designed to build a rc vs saleprice 2D chart

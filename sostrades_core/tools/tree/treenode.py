@@ -270,10 +270,8 @@ class TreeNode:
 
         # Manage markdown documentation
         filepath = inspect.getfile(discipline.__class__)
-        #markdown_data = TreeNode.get_markdown_documentation(filepath)
-        #self.add_markdown_documentation(markdown_data, self.model_name_full_path)
-
-
+        # markdown_data = TreeNode.get_markdown_documentation(filepath)
+        # self.add_markdown_documentation(markdown_data, self.model_name_full_path)
 
     def update_disc_data(self, new_disc_data, namespace, discipline):
         """ Set variable from discipline into treenode disc_data
@@ -438,5 +436,3 @@ class TreeNode:
             return 40
         else:  # status = ProxyDiscipline.STATUS_FAILED
             return 50
-
-

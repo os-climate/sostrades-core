@@ -36,10 +36,12 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorV0):
         """
         Constructor for Local Repository Datasets Connector
 
+        Args:
+            connector_id (str): An unique name to identify clearly this connector
+            module_name (str): Name of the module root of the repository
 
-        :param module_name: name of the module root of the repository
-        :type module_name: str
-
+        Raises:
+            DatasetGenericException: If the module cannot be imported
         """
         try:
             # import the module
@@ -53,10 +55,19 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorV0):
         super().__init__(connector_id, root_directory_path=dataset_database_path, create_if_not_exists=False)
 
     @staticmethod
-    def get_datasets_database_mappings_folder_path(module_name, file_name):
+    def get_datasets_database_mappings_folder_path(module_name: str, file_name: str) -> str:
         """
-            Method to find the datasets_database/mappings folder path for the given repository module name
-            ('sostrades_core' for example of the sostrades-core module name)
+        Method to find the datasets_database/mappings folder path for the given repository module name
+
+        Args:
+            module_name (str): Name of the module root of the repository
+            file_name (str): Name of the file in the mappings folder
+
+        Returns:
+            str: The path to the mappings folder
+
+        Raises:
+            DatasetGenericException: If the module cannot be imported
         """
         try:
             # import the module

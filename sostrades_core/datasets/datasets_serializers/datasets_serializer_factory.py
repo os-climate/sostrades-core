@@ -41,7 +41,19 @@ class DatasetSerializerType(Enum):
     BigQuery = BigQueryDatasetsSerializer
 
     @classmethod
-    def get_enum_value(cls, value_str):
+    def get_enum_value(cls, value_str: str) -> DatasetSerializerType:
+        """
+        Get the enum value corresponding to the given string.
+
+        Args:
+            value_str (str): The string representation of the enum value.
+
+        Returns:
+            DatasetSerializerType: The corresponding enum value.
+
+        Raises:
+            ValueError: If no matching enum value is found.
+        """
         try:
             # Iterate through the enum members and find the one with a matching value
             return next(member for member in cls if member.name == value_str)
@@ -56,17 +68,22 @@ class DatasetsSerializerFactory(metaclass=NoInstanceMeta):
     __logger = logging.getLogger(__name__)
 
     @classmethod
-    def get_serializer(cls,
-        serializer_type: DatasetSerializerType
-    ) -> AbstractDatasetsSerializer:
+    def get_serializer(cls, serializer_type: DatasetSerializerType) -> AbstractDatasetsSerializer:
         """
-        Instanciate a serializer of type serializer_type with provided arguments
-        Raises ValueError if type is invalid
+        Instantiate a serializer of type serializer_type with provided arguments.
+        Raises ValueError if type is invalid.
 
-        :param serializer_type: serializer type to instanciate
-        :type serializer_type: DatasetserializerType
+        Args:
+            serializer_type (DatasetSerializerType): The serializer type to instantiate.
+
+        Returns:
+            AbstractDatasetsSerializer: The instantiated serializer.
+
+        Raises:
+            ValueError: If the serializer type is unexpected.
+            Exception: If there is an error during instantiation.
         """
-        cls.__logger.debug(f"Instanciating serializer of type {serializer_type}")
+        cls.__logger.debug(f"Instantiating serializer of type {serializer_type}")
         if not isinstance(serializer_type, DatasetSerializerType) or not issubclass(
             serializer_type.value, AbstractDatasetsSerializer
         ):

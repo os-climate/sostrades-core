@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass
+from typing import Dict, List
 
 
 class DatasetsInfoMappingException(Exception):
@@ -25,19 +26,20 @@ class DatasetsInfoMappingException(Exception):
     """
     pass
 
+
 @dataclass(frozen=True)
 class AbstractDatasetInfo(abc.ABC):
     """
-    Stores the informations of a dataset
+    Stores the information of a dataset
     """
     # Keys for parsing json
-    VERSION_ID_KEY = "version_id"
-    CONNECTOR_ID_KEY = "connector_id"
-    DATASET_ID_KEY = "dataset_id"
-    PARAMETER_ID_KEY = "parameter_name"
+    VERSION_ID_KEY: str = "version_id"
+    CONNECTOR_ID_KEY: str = "connector_id"
+    DATASET_ID_KEY: str = "dataset_id"
+    PARAMETER_ID_KEY: str = "parameter_name"
 
-    WILDCARD = "*"
-    SEPARATOR = '|'
+    WILDCARD: str = "*"
+    SEPARATOR: str = '|'
 
     # Id of the connector
     connector_id: str
@@ -46,57 +48,87 @@ class AbstractDatasetInfo(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def version_id(self)-> str:
-        '''
-        version to be override in each subclass
-        '''
+    def version_id(self) -> str:
+        """
+        Abstract property to be overridden in each subclass to return the version id.
+        """
 
     @property
     def dataset_info_id(self) -> str:
+        """
+        Returns the dataset info id by joining version_id, connector_id, and dataset_id with a separator.
+
+        Returns:
+            str: The dataset info id.
+        """
         return self.get_mapping_id([self.version_id, self.connector_id, self.dataset_id])
 
     @staticmethod
-    def get_mapping_id(ids: list[str]) -> str:
+    def get_mapping_id(ids: List[str]) -> str:
+        """
+        Joins the given list of ids with a separator to form a mapping id.
+
+        Args:
+            ids (List[str]): List of ids to join.
+
+        Returns:
+            str: The joined mapping id.
+        """
         return AbstractDatasetInfo.SEPARATOR.join(ids)
 
+    @staticmethod
+    @abc.abstractmethod
+    def deserialize(dataset_mapping_key: str) -> Dict[str, str]:
+        """
+        Abstract method to deserialize a dataset mapping key.
+
+        Args:
+            dataset_mapping_key (str): The dataset mapping key to deserialize.
+
+        Returns:
+            Dict[str, str]: The deserialized dataset information.
+        """
 
     @staticmethod
     @abc.abstractmethod
-    def deserialize(dataset_mapping_key:str) -> dict[str:str]:
+    def create(input_dict: Dict[str, str]) -> AbstractDatasetInfo:
         """
-        Method to deserialize
-        expected
-        <connector_id>|<dataset_id>|<parameter_id> (for V0)
-        :param dataset_mapping_key: datasets informations of mapping dataset
-        :type dataset_mapping_key: str
-        """
+        Abstract method to create an instance of AbstractDatasetInfo.
 
-    @staticmethod
-    @abc.abstractmethod
-    def create(input_dict:dict[str:str]) -> AbstractDatasetInfo:
-        """
-        Method to create the instance of datasetInfo
-        expected
-        {
-        "version_id":<version_id>,
-        "connector_id": <connector_id>,
-        "dataset_id": <dataset_id>
-        ...
-         } (for V0)
-        :param input_dict: datasets informations of mapping dataset
-        :type input_dict: dict
+        Args:
+            input_dict (Dict[str, str]): The input dictionary containing dataset information.
+
+        Returns:
+            AbstractDatasetInfo: The created instance of AbstractDatasetInfo.
         """
 
     @abc.abstractmethod
-    def copy_with_new_ns(self, associated_namespace:str)-> AbstractDatasetInfo:
-        '''
-        create a new DatasetInfo instance from self
-        Check if there is wilcard in the dataset info and update it with namespace info if needed
-        '''
+    def copy_with_new_ns(self, associated_namespace: str) -> AbstractDatasetInfo:
+        """
+        Abstract method to create a new instance of AbstractDatasetInfo with a new namespace.
+
+        Args:
+            associated_namespace (str): The new namespace to associate with the dataset info.
+
+        Returns:
+            AbstractDatasetInfo: The new instance of AbstractDatasetInfo with the updated namespace.
+        """
 
     @classmethod
-    def extract_mapping_key_field(cls, dataset_mapping_key: str, dataset_mapping_fields: list[str])-> dict[str: str]:
+    def extract_mapping_key_field(cls, dataset_mapping_key: str, dataset_mapping_fields: List[str]) -> Dict[str, str]:
+        """
+        Extracts the fields from a dataset mapping key and returns them as a dictionary.
 
+        Args:
+            dataset_mapping_key (str): The dataset mapping key to extract fields from.
+            dataset_mapping_fields (List[str]): The list of fields to extract.
+
+        Returns:
+            Dict[str, str]: The extracted fields as a dictionary.
+
+        Raises:
+            ValueError: If the number of fields in the mapping key does not match the expected number of fields.
+        """
         fields = dataset_mapping_key.split(cls.SEPARATOR)
 
         if len(fields) != len(dataset_mapping_fields):

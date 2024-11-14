@@ -8,7 +8,7 @@
       "type": "integer",
       "minimum": 1
     },
-   "tol": {
+    "tol": {
       "type": "number",
       "minimum": 0
     },
@@ -19,17 +19,20 @@
     "view_config": {
       "type": "boolean"
     },
-   "dtol": {
+    "dtol": {
       "type": "number",
       "minimum": 0
     },
     "options_cmd": {
-      "type": ["null","object"]
+      "type": [
+        "null",
+        "object"
+      ]
     },
     "set_from_options": {
       "type": "boolean"
     },
-   "ksp_pre_processor":{},
+    "ksp_pre_processor": {},
     "monitor_residuals": {
       "type": "boolean"
     },
@@ -85,9 +88,12 @@
       ]
     },
     "preconditioner_type": {
-      "type": ["null","string"],
+      "type": [
+        "null",
+        "string"
+      ],
       "enum": [
-      	null,
+        null,
         "jacobi",
         "bjacobi",
         "sor",

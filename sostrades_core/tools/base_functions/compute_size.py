@@ -16,7 +16,7 @@ limitations under the License.
 import sys
 
 
-def compute_data_size_in_Mo(data_value)-> float:
+def compute_data_size_in_Mo(data_value) -> float:
         '''
         Compute the size of an object and convert it in Mo
         :param data_value: value of the data to be checked
@@ -28,4 +28,4 @@ def compute_data_size_in_Mo(data_value)-> float:
 
             # test deep size of the object
             data_size = sys.getsizeof(data_value)
-        return data_size/1024/1024
+        return data_size / 1024 / 1024
