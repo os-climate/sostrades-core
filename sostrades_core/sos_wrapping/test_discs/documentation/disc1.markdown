@@ -99,7 +99,7 @@ This method allows for estimating worker productivity loss due to heat, taking i
 - Champion of the world
 ##### Key:
 
-Basic future of production[^14]  
+Basic future of production[^14]
 
 #### 2.1 Myke
 
@@ -127,12 +127,12 @@ Where:
 
 $$\text{Livestock Loss} = 0.2 * \text{Milk Loss} + 0.8 * \text{Meat Loss}$$
 
-This model provides a comprehensive estimate of agricultural losses by combining impacts on crops and livestock, weighted according to 
+This model provides a comprehensive estimate of agricultural losses by combining impacts on crops and livestock, weighted according to
 their respective contributions to overall agricultural production.
 
 ## Energy Sector Productivity Loss Model
 
-This model estimates the productivity loss in the energy sector due to temperature increases, focusing primarily on the impact on 
+This model estimates the productivity loss in the energy sector due to temperature increases, focusing primarily on the impact on
 nuclear power plants.
 
 ### 1. Temperature Change Calculation
@@ -168,34 +168,34 @@ $$\text{Mass Loss (}\text{\%}\text{)} = \max\left(0, 0.1 \times (P - 9.81) \time
 END.
 
 ## Sources
-[^1]: "Rain-free France experiences record-equalling 31-day dry spell", Le Monde, 21 February 2023, 
+[^1]: "Rain-free France experiences record-equalling 31-day dry spell", Le Monde, 21 February 2023,
 https://www.lemonde.fr/en/france
 
-[^2]: "Exceptional winter drought puts French authorities on alert", Le Monde, 23 February 2023, 
+[^2]: "Exceptional winter drought puts French authorities on alert", Le Monde, 23 February 2023,
 https://www.lemonde.fr/en/environment
 
-[^3]: "Global warming, a growing challenge for the availability of nuclear power plants", Le Monde, 13 May 2022, 
+[^3]: "Global warming, a growing challenge for the availability of nuclear power plants", Le Monde, 13 May 2022,
 https://www.lemonde.fr/en/economy/article
 
-[^4]: Linnerud, K., Mideksa, T., & Eskeland, G. (2011). The Impact of Climate Change on Nuclear Power Supply. The Energy Journal, 32(1), 149-168. 
+[^4]: Linnerud, K., Mideksa, T., & Eskeland, G. (2011). The Impact of Climate Change on Nuclear Power Supply. The Energy Journal, 32(1), 149-168.
 https://www.jstor.org/
 
-[^5]: "With droughts, will we still be able to produce electricity with dams?", University of Montpellier, 
+[^5]: "With droughts, will we still be able to produce electricity with dams?", University of Montpellier,
 https://www.umontpellier.fr/en/
 
-[^6]: Plumer, B. (2024, June 4). "Global hydropower is declining", The New York Times, 
+[^6]: Plumer, B. (2024, June 4). "Global hydropower is declining", The New York Times,
 https://www.nytimes.com/2024/06/04/
 
-[^7]: "Drought to curb hydropower output in S Europe - scientists", Montel News, 
+[^7]: "Drought to curb hydropower output in S Europe - scientists", Montel News,
 https://montelnews.com/news/1489213/
 
-[^8]: Parajuli, R., Thoma, G., & Matlock, M. D. (2022). Climate Change and Food Security. Frontiers in Sustainable Food Systems, 6. 
+[^8]: Parajuli, R., Thoma, G., & Matlock, M. D. (2022). Climate Change and Food Security. Frontiers in Sustainable Food Systems, 6.
 https://www.frontiersin.org/journals/
 
-[^9]: Cho, R. (2018, July 25). "How Climate Change Will Alter Our Food", Columbia Climate School, 
+[^9]: Cho, R. (2018, July 25). "How Climate Change Will Alter Our Food", Columbia Climate School,
 https://news.climate.columbia.edu/
 
-[^10]: Creamer Media Reporter. (2023, August 11). "Water-mining interdependence poses operational challenges, risks to miners", Mining Weekly, 
+[^10]: Creamer Media Reporter. (2023, August 11). "Water-mining interdependence poses operational challenges, risks to miners", Mining Weekly,
 https://www.miningweekly.com/article/
 
 [^11]: Our world in data, Energy mix
@@ -206,11 +206,11 @@ Volume 32,2020,100609,ISSN 2212-0955,https://doi.org/. (https://www.sciencedirec
 
 [^13]: García-León, D., Casanueva, A., Standardi, G. et al. Current and projected regional economic impacts of heatwaves in Europe. Nat Commun 12, 5807 (2021). https://doi.org/10.1038/s41467-021-26050-z
 
-[^14]: Kumar, L., Chhogyel, N., Gopalakrishnan, T., Hasan, M. K., Jayasinghe, S. L.. 
+[^14]: Kumar, L., Chhogyel, N., Gopalakrishnan, T., Hasan, M. K., Jayasinghe, S. L..
 https://www.sciencedirect.com/science/
 
 [^15]: Das R, Sailo L, Verma N, Bharti P, Saikia J, Imtiwati, Kumar R. Impact of heat stress on health and performance of dairy animals: A review. Vet World. 2016 Mar;9(3):260-8
 https://www.ncbi.nlm.nih.gov/pmc/
 
-[^16]: Duboc, M. (2019, February 27). The Effect of Rising Ambient Temperature on Nuclear Power Plants. Stanford University. 
+[^16]: Duboc, M. (2019, February 27). The Effect of Rising Ambient Temperature on Nuclear Power Plants. Stanford University.
 http://large.stanford.edu/

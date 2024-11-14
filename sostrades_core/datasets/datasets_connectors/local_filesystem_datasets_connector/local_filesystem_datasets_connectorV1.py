@@ -91,7 +91,6 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
         # Load the descriptor, the serializer loads the pickle if it exists
         return self._datasets_serializer.read_descriptor_file(dataset_id, dataset_descriptor_path)
 
-
     def _get_values(self, dataset_identifier: DatasetInfoV1, data_to_get: dict[str, str]) -> dict[str, Any]:
         """
         Method to retrieve data from local dataset and fill a data_dict
@@ -110,7 +109,6 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
         filesystem_data_group_id = self.__get_data_group_directory(dataset_descriptor, dataset_identifier.dataset_id, dataset_identifier.group_id)
         self._datasets_serializer.set_dataset_directory(self.__build_group_path(dataset_identifier.dataset_id,
                                                                       filesystem_data_group_id))
-
 
         self._datasets_serializer.load_pickle_data()
 
@@ -159,7 +157,6 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
         self._datasets_serializer.set_dataset_directory(data_group_dir)
 
         self._datasets_serializer.load_pickle_data()
-
 
         # Write data, serializer buffers the data to pickle and already pickled
         descriptor_values = {key: self._datasets_serializer.convert_to_dataset_data(key,
@@ -239,8 +236,6 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
-
-
     def clear(self, remove_root_directory: bool = False) -> None:
         """
         Utility method to remove all datasets in the connector root directory.
@@ -261,7 +256,6 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
             dataset_id (str): Identifier of the dataset to be removed.
         """
         rmtree_safe(os.path.join(self._root_directory_path, dataset_id))
-
 
     def __index_data_group_directory(self,
                                      dataset_descriptor: dict[str, dict[str, Any]],

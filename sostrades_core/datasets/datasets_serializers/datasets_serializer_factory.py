@@ -15,7 +15,6 @@ limitations under the License.
 '''
 import logging
 from enum import Enum
-from typing import Type
 
 from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer import (
     AbstractDatasetsSerializer,

@@ -157,7 +157,6 @@ class DatasetsManager:
             raise DatasetGenericException(f'Error finding path of data {data_name} into dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return path_to_dataset_data
 
-
     def __create_dataset(self, dataset_info: AbstractDatasetInfo) -> Dataset:
         """
         Private method to get the connector associated to the dataset and create a Dataset object.

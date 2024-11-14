@@ -43,7 +43,6 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
     COL_NAME_INDEX_TABLE_NAME = "__col_name_index_table__"  # reserved table for bigquery characters compatibility
     URL_BQ_FORMAT = "https://console.cloud.google.com/bigquery?project={}&p={}&d={}&t={}&page=table"
 
-
     def __init__(self, connector_id: str, project_id: str,
                  serializer_type: DatasetSerializerType = DatasetSerializerType.BigQuery):
         """
@@ -275,7 +274,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         if data_type in ["int", "float", "bool", "string"]:
             table_id = self.DESCRIPTOR_TABLE_NAME
         else:
-            #if data is a dataframe or other, the data has its own table
+            # if data is a dataframe or other, the data has its own table
             table_id = data_name
         path_to_data = self.URL_BQ_FORMAT.format(self.client.project,
                                                  self.client.project,

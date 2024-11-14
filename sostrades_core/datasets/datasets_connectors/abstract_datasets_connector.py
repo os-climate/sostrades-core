@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V0
 

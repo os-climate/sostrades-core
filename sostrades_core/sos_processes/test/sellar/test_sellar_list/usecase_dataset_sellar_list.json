@@ -1,9 +1,19 @@
 {
-    "process_module_path": "sostrades_core.sos_processes.test.sellar.test_sellar_list",
-    "namespace_datasets_mapping": {
-        "v0|<study_ph>|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_sellar|*"],
-        "v0|<study_ph>.Sellar_1|*": ["MVP0_datasets_connector|default_numerical_parameters|*"],
-        "v0|<study_ph>.Sellar_2|*": ["MVP0_datasets_connector|default_numerical_parameters|*"],
-        "v0|<study_ph>.Sellar_Problem|*": ["MVP0_datasets_connector|default_numerical_parameters|*","MVP0_datasets_connector|dataset_sellar|*"]
-    }
+  "process_module_path": "sostrades_core.sos_processes.test.sellar.test_sellar_list",
+  "namespace_datasets_mapping": {
+    "v0|<study_ph>|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*",
+      "MVP0_datasets_connector|dataset_sellar|*"
+    ],
+    "v0|<study_ph>.Sellar_1|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*"
+    ],
+    "v0|<study_ph>.Sellar_2|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*"
+    ],
+    "v0|<study_ph>.Sellar_Problem|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*",
+      "MVP0_datasets_connector|dataset_sellar|*"
+    ]
+  }
 }

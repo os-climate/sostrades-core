@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import json
+
 from sostrades_core.tools.check_headers import HeaderTools
+
 
 def main() -> None:
     """
@@ -34,6 +36,7 @@ def main() -> None:
     except FileNotFoundError as ex:
         print("headers_ignore_config.json must be available where this command is launched")
         raise ex
+
 
 if __name__ == "__main__":
     main()

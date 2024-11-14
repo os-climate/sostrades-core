@@ -26,6 +26,7 @@ class DatasetsInfoMappingException(Exception):
     """
     pass
 
+
 @dataclass(frozen=True)
 class AbstractDatasetInfo(abc.ABC):
     """

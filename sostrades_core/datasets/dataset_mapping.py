@@ -84,7 +84,7 @@ class DatasetsMapping:
         }
         Args:
             input_dict (dict): dict like input json object
-        
+
         Returns
             DatasetsMapping object
         """
@@ -124,14 +124,14 @@ class DatasetsMapping:
                     namespace_datasets_mapping[namespace] = namespace_datasets_mapping.get(namespace, [])
 
                     for dataset_mapping_key in datasets:
-                        #first extract the version
+                        # first extract the version
                         dataset_info_version = DatasetInfoFactory.get_dataset_info_version(dataset_mapping_key)
 
                         # extract the fields of the dataset info key
                         dataset_fields = dataset_info_version.value.deserialize(dataset_mapping_key)
                         parameter_id = dataset_fields[DatasetsMapping.PARAMETER_NAME]
 
-                        #create the dataset info then Check if there is wildcard in dataset info id and replace by ns if needed
+                        # create the dataset info then Check if there is wildcard in dataset info id and replace by ns if needed
                         dataset_info = dataset_info_version.value.create(dataset_fields).copy_with_new_ns(namespace)
 
                         # build just the id with connector and dataset
@@ -176,7 +176,6 @@ class DatasetsMapping:
             dict[str, str]: A dictionary containing the extracted fields.
         """
         return cls.__extract_mapping_fields(mapping_key, cls.MAPPING_KEY_FIELDS, "mapping key")
-
 
     @classmethod
     def __extract_mapping_fields(cls, mapping_key_or_value: str, format_fields: List[str],
@@ -250,7 +249,7 @@ class DatasetsMapping:
                     dataset_info = self.datasets_infos[dataset_id].copy_with_new_ns(anonimized_ns)
                 else:
                     dataset_info = self.datasets_infos[dataset_id]
-                datasets_mapping[dataset_info] = datasets_mapping.get(dataset_info,{})
+                datasets_mapping[dataset_info] = datasets_mapping.get(dataset_info, {})
                 datasets_mapping[dataset_info].update(self.parameters_mapping[dataset_id].get(DatasetsMapping.WILDCARD, {}))
 
         return datasets_mapping
@@ -281,7 +280,6 @@ class DatasetsMapping:
             try:
                 # create the dict that will contain all data to write in the dataset for all associated namespaces
                 all_data_in_dataset = {DatasetsMapping.VALUE: {}, DatasetsMapping.TYPE: {}, DatasetsMapping.KEY: {}}
-
 
                 # iterate for all namespace associated to the dataset, parameters_mapping_dict contains the association param_name -> dataset_param_name
                 for namespace, parameters_mapping_dict in namespaces_mapping_dict.items():
@@ -326,7 +324,6 @@ class DatasetsMapping:
                                         all_data_in_dataset[DatasetsMapping.KEY].update({dataset_data: namespaces_dict[last_ns][DatasetsMapping.KEY][data]})
             except Exception as error:
                 raise DatasetsMappingException(f'Error retrieving data from dataset {dataset}]: \n{str(error)}')
-
 
             datasets_mapping[dataset] = all_data_in_dataset
 

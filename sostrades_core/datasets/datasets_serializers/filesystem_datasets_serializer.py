@@ -78,7 +78,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     # forbidden characters
     FORBIDDEN_CHARS_REGEX = r'[<>:\\/"\|\?\*]'
     FORBIDDEN_CHARS_END_OF_NAME = {" ", "."}
-    FORBIDDEN_FS_NAMES = { "CON", "PRN", "AUX", "NUL",
+    FORBIDDEN_FS_NAMES = {"CON", "PRN", "AUX", "NUL",
                            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
                            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
     PREFFIX_FORBIDDEN_FS_NAMES = "__"
