@@ -436,8 +436,10 @@ class SoSMDAChain(MDAChain):
                 for key, value in pre_run_data.items()
                 if key in self.input_grammar.names
             })
-            __input_data = {k: pre_run_data.get(k, v) for k, v in input_data.items()}
+            self.settings.initialize_defaults = False
+            _input_data = {k: pre_run_data.get(k, v) for k, v in input_data.items()}
+            # self.io.data.update(pre_run_data)
         else:
-            __input_data = input_data
-        return super(MDAChain, self).execute(input_data=__input_data)
+            _input_data = input_data
+        return super(MDAChain, self).execute(input_data=_input_data)
 
