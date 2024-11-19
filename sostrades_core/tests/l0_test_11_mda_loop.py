@@ -24,7 +24,8 @@ from tempfile import gettempdir
 
 import numpy as np
 from gemseo.mda.base_mda import BaseMDA
-from numpy import array
+from numpy import array, ndarray
+from numpy.testing import assert_allclose
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
@@ -396,14 +397,13 @@ class TestMDALoop(unittest.TestCase):
         exec_eng.configure()
         # additional test to verify that values_in are used
         values_dict = {}
-        values_dict['EE.h'] = array([8., 9.])
         values_dict['EE.x'] = array([5., 3.])
         values_dict['EE.n_processes'] = 1
         exec_eng.load_study_from_input_dict(values_dict)
 
         target = {'EE.h': array([0.70710678,
                                  0.70710678]),
-                  'EE.x': array([0., 0.707107, 0.707107])}
+                  'EE.x': array([0.707107, 0.707107])}
 
         exec_eng.execute()
 
@@ -411,11 +411,10 @@ class TestMDALoop(unittest.TestCase):
         res = {}
         for key in target:
             res[key] = exec_eng.dm.get_value(key)
-            if target[key] is dict:
+            if isinstance(target[key], dict):
                 self.assertDictEqual(res[key], target[key])
-            elif target[key] is array:
-                self.assertListEqual(
-                    list(target[key]), list(res[key]))
+            elif isinstance(target[key], ndarray):
+                assert_allclose(target[key], res[key], rtol=1e-6)
         residual_history = exec_eng.root_process.discipline_wrapp.discipline.inner_mdas[
             0].residual_history
 
@@ -442,11 +441,10 @@ class TestMDALoop(unittest.TestCase):
         res = {}
         for key in target:
             res[key] = exec_eng2.dm.get_value(key)
-            if target[key] is dict:
+            if isinstance(target[key], dict):
                 self.assertDictEqual(res[key], target[key])
-            elif target[key] is array:
-                self.assertListEqual(
-                    list(target[key]), list(res[key]))
+            elif isinstance(target[key], ndarray):
+                assert_allclose(target[key], res[key], rtol=1e-6)
 
         residual_history2 = exec_eng2.root_process.discipline_wrapp.discipline.inner_mdas[
             0].residual_history
