@@ -41,7 +41,6 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import StrKeyMapping
 
-
 def get_available_linear_solvers():
     """Get available linear solvers list."""
     lsf = LinearSolverLibraryFactory()
@@ -430,7 +429,7 @@ class SoSMDAChain(MDAChain):
         #     self.settings.initialize_defaults = False
         # return super(MDAChain, self).execute(input_data=input_data)
         # FIXME: from here below this is a quick-fix for many test errors. In fine the code commented out above should
-        # be reactivated and actually solve the size mismatches between input data and MDA pre-run causing the crashes
+        ## be reactivated and actually solve the size mismatches between input data and MDA pre-run causing the crashes
             pre_run_data = init_chain.execute(input_data)
             self.default_input_data.update({
                 key: value
@@ -438,8 +437,9 @@ class SoSMDAChain(MDAChain):
                 if key in self.input_grammar.names
             })
             self.settings.initialize_defaults = False
-            # Fill the missing values in input_data with those from pre_run_data
-            _input_data = dict(list(pre_run_data.items()) + list(input_data.items()))
+            _input_data = {k: pre_run_data.get(k, v) for k, v in input_data.items()}
+            # self.io.data.update(pre_run_data)
         else:
             _input_data = input_data
         return super(MDAChain, self).execute(input_data=_input_data)
+
