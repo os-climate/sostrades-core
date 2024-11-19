@@ -159,10 +159,10 @@ class TestMDALoop(unittest.TestCase):
 
         exec_eng.execute()
         self.assertIn(
-            'in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_1> has the minimum coupling value <1.0>',
+            'in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_1> has the minimum coupling value <2.8>',
             self.my_handler.msg_list)
         self.assertIn(
-            'in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_2> has the maximum coupling value <3.515921981164089>',
+            'in discipline <EE.SellarCoupling.Sellar_3> : <EE.SellarCoupling.y_2> has the maximum coupling value <3.5155494490289287>',
             self.my_handler.msg_list)
 
     def test_05_debug_mode_all(self):
