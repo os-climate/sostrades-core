@@ -145,6 +145,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                 fig.add_trace(go.Bar(x=abscissa, y=cumulated_values, name=serie.series_name,
                                      orientation=self.bar_orientation,
                                      visible=True if serie.visible else 'legendonly', yaxis=serie.y_axis,
+                                     marker=serie.marker if serie.marker is not None else {},
                                      text=serie.text))
             elif serie.display_type == InstanciatedSeries.LINES_DISPLAY:
                 fig.add_trace(go.Scatter(x=abscissa, y=cumulated_values, name=serie.series_name,
