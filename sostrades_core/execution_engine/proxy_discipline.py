@@ -21,6 +21,7 @@ import contextlib
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.discipline.io import IO
 from gemseo.core.execution_status import ExecutionStatus
@@ -244,9 +245,13 @@ class ProxyDiscipline:
         RUN_SOLVE_RESIDUALS: {TYPE: 'bool', DEFAULT: False, NUMERICAL: True},
     }
 
+    ## GLOBAL GEMSEO SETTINGS
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
     ProcessDiscipline.default_grammar_type = SOS_GRAMMAR_TYPE
+    # -- cache comparison
+    SOS_SIMPLE_CACHE = "SoSSimpleCache"
+    BaseDiscipline.default_cache_type = SOS_SIMPLE_CACHE
     # -- status
     STATUS_PENDING = "PENDING"
     STATUS_DONE = ExecutionStatus.Status.DONE
@@ -547,9 +552,11 @@ class ProxyDiscipline:
         if cache_type == Discipline.CacheType.HDF5:
             msg = "If the cache type is set to HDF5Cache, the cache_file path must be set"
             raise ValueError(msg)
-        cache_type = (
-            Discipline.CacheType.NONE if cache_type.lower() == "none" else cache_type
-        )  # required for compatibility with old studies
+
+        if cache_type.lower() == "none":
+            cache_type = Discipline.CacheType.NONE
+        elif cache_type.lower() == "simplecache":
+            cache_type = self.SOS_SIMPLE_CACHE
         disc.set_cache(cache_type=cache_type)
 
     def delete_cache_in_cache_map(self):
