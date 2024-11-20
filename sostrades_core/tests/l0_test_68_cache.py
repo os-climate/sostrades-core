@@ -127,13 +127,14 @@ class TestCache(unittest.TestCase):
 
         self.assertEqual(self.ee.dm.get_value(
             'SoSDisc.Disc1.cache_type'), 'SimpleCache')
+        # FIXME: SoSSimpleCache --> SimpleCache when DATA_COMPARATOR issue is fixed
         self.assertEqual(
-            self.ee.root_process.discipline_wrapp.discipline.cache.__class__.__name__, 'SimpleCache')
+            self.ee.root_process.discipline_wrapp.discipline.cache.__class__.__name__, 'SoSSimpleCache')
         self.assertEqual(
-            self.ee.root_process.discipline_wrapp.discipline.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+            self.ee.root_process.discipline_wrapp.discipline.mdo_chain.cache.__class__.__name__, 'SoSSimpleCache')
         self.assertEqual(
             self.ee.root_process.discipline_wrapp.discipline.disciplines[0].cache.__class__.__name__,
-            'SimpleCache')
+            'SoSSimpleCache')
         # get number of calls after first call
         n_call_root_1 = self.ee.root_process.discipline_wrapp.discipline.execution_statistics.n_calls
         n_call_1 = self.ee.root_process.discipline_wrapp.discipline.disciplines[
@@ -181,7 +182,7 @@ class TestCache(unittest.TestCase):
             self.ee.root_process.discipline_wrapp.discipline.mdo_chain.cache, None)
         self.assertEqual(
             self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.cache.__class__.__name__,
-            'SimpleCache')
+            'SoSSimpleCache')
 
         # first execute
         res_1 = self.ee.execute()
