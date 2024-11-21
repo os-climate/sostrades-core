@@ -150,6 +150,21 @@ Where:
 - $r$ [^16]
 - $\Delta T$ is the world
 
+### 3. text in formula
+Therefore the variables $\text{My new variable}_{t}$ and $\text{My other variable}_{t}$ are updated for all years $t \geq t$.
+
+$\text{function fn (called f)} = \text{big F function }\text{\%} \times \text{function G}$
+
+$\text{Delta X}_{t} = \text{result}_{t} - \text{y}_{t} + a^{\text{b}}_{t} + a^{\text{variable c}}_{t}$
+
+$$\text{F1 function (X,\$)} = \frac{\text{ab, M\$}}{\text{number of data}} \times 10^6$$
+$$\text{F2 function (Y, \%)} = \frac{\text{cd}}{\text{number}} \times 100$$
+$$\text{F3 function for another F1 (\%)} = \frac{\text{function G}}{\text{temp test}} \times 100$$
+$$\text{function F4 (Z, \%)} = \frac{\text{yz}}{\text{reset x}} \times 100$$
+$$\text{Total of all functions, M\$} = \text{ruslt of summ}$$
+
+$$\text{Mass Loss (}\text{\%}\text{)} = \max\left(0, 0.1 \times (P - 9.81) \times 100\right)$$
+
 END.
 
 ## Sources
