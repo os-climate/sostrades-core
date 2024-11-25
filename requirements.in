@@ -15,7 +15,7 @@ matplotlib==3.9.2
 numpy==1.24.4
 openturns==1.23
 pandas==2.2.2
-plotly==5.24.0
+plotly==5.24.1
 pyarrow==16.1.0
 pycryptodome==3.20.0
 python-arango==8.0.0
