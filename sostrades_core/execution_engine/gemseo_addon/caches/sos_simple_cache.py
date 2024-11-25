@@ -1,26 +1,24 @@
 from __future__ import annotations
-from gemseo.caches.simple_cache import SimpleCache
+
 from typing import TYPE_CHECKING
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
+
 # if TYPE_CHECKING:
 # from gemseo.typing import StrKeyMapping
 from gemseo.caches.cache_entry import CacheEntry
+from gemseo.caches.simple_cache import SimpleCache
+from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
+
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 SOS_DATA_COMPARATOR = dict_are_equal
 """Caching module to store only one entry."""
 
-from typing import TYPE_CHECKING
 
-from gemseo.caches.base_cache import DATA_COMPARATOR
-from gemseo.caches.base_cache import BaseCache
-from gemseo.caches.cache_entry import CacheEntry
-from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from gemseo.typing import JacobianData
-    from gemseo.typing import StrKeyMapping
+    from gemseo.typing import JacobianData, StrKeyMapping
 
 
 class SoSSimpleCache(SimpleCache):
