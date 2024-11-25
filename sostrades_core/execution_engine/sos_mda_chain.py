@@ -436,10 +436,13 @@ class SoSMDAChain(MDAChain):
                 for key, value in pre_run_data.items()
                 if key in self.input_grammar.names
             })
+
             self.settings.initialize_defaults = False
-            _input_data = {k: pre_run_data.get(k, v) for k, v in input_data.items()}
+            from collections import ChainMap
+            _input_data = dict(ChainMap(pre_run_data, input_data))
             # self.io.data.update(pre_run_data)
         else:
             _input_data = input_data
         return super(MDAChain, self).execute(input_data=_input_data)
 
+# Test.CCUS.carbon_capture.energy_consumption
