@@ -16,6 +16,7 @@ limitations under the License.
 
 from collections.abc import MutableMapping
 from contextlib import suppress
+from typing import Any
 
 from numpy import ndarray
 from pandas.core.frame import DataFrame
@@ -25,10 +26,17 @@ from pandas.testing import assert_frame_equal
 from sostrades_core.execution_engine.namespace import Namespace
 
 
-def dict_are_equal(d1, d2):
-    '''
-    Use compare_dict method to return True/False if d1 and d2 are/aren't equals
-    '''
+def dict_are_equal(d1: dict[str, Any], d2: dict[str, Any], tolerance: float = 0.) -> bool:
+    """Use compare_dict method to return True/False if d1 and d2 are/aren't equals.
+
+    Args:
+        d1: The first dictionary to compare.
+        d2: The second dictionary to compare.
+        tolerance: The equality tolerance. Unused here but sometimes passed by GEMSEO.
+
+    Returns:
+        Whether the dictionaries are equal.
+    """
     return compare_dict(d1, d2, tree='', error=None, df_equals=True)
 
 

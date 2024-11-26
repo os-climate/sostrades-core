@@ -538,20 +538,22 @@ class ProxyDiscipline:
             if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
                 self.discipline_wrapp.discipline.execution_status.add_observer(observer)
 
-    def set_cache(self, disc: Discipline, cache_type: str):
+    def set_cache(self, disc: Discipline, cache_type: str) -> None:
         """Instanciate and set cache for disc.
 
         Arguments:
             disc (Discipline): GEMSEO object to set cache
             cache_type (string): type of cache
         """
-        if cache_type == Discipline.CacheType.HDF5:
-            msg = "If the cache type is set to HDF5Cache, the cache_file path must be set"
-            raise ValueError(msg)
         cache_type = (
             Discipline.CacheType.NONE if cache_type.lower() == "none" else cache_type
         )  # required for compatibility with old studies
+        if cache_type == Discipline.CacheType.HDF5:
+            msg = "If the cache type is set to HDF5Cache, the cache_file path must be set"
+            raise ValueError(msg)
         disc.set_cache(cache_type=cache_type)
+        if cache_type == Discipline.CacheType.SIMPLE:
+            disc.cache.compare_dict_of_arrays = dict_are_equal
 
     def delete_cache_in_cache_map(self):
         """If a cache has been written"""
