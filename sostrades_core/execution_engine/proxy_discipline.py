@@ -245,7 +245,7 @@ class ProxyDiscipline:
         RUN_SOLVE_RESIDUALS: {TYPE: 'bool', DEFAULT: False, NUMERICAL: True},
     }
 
-    ## GLOBAL GEMSEO SETTINGS
+    # GLOBAL GEMSEO SETTINGS
     # -- grammars
     SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
     ProcessDiscipline.default_grammar_type = SOS_GRAMMAR_TYPE
@@ -1820,7 +1820,7 @@ class ProxyDiscipline:
         if observer in self.status_observers:
             self.status_observers.remove(observer)
         if self.discipline_wrapp is not None and self.discipline_wrapp.discipline is not None:
-            self.discipline_wrapp.discipline.remove_status_observer(observer)
+            self.discipline_wrapp.discipline.execution_status.remove_observer(observer)
 
     # -- Maturity handling section
     def set_maturity(self, maturity, maturity_dict=False):
