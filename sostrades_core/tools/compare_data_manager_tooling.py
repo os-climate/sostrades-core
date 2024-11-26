@@ -25,7 +25,7 @@ from pandas.testing import assert_frame_equal
 from sostrades_core.execution_engine.namespace import Namespace
 
 
-def dict_are_equal(d1, d2, tolerance: float = 0.0,):
+def dict_are_equal(d1, d2):
     '''
     Use compare_dict method to return True/False if d1 and d2 are/aren't equals
     '''
