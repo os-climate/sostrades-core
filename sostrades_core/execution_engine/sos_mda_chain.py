@@ -428,7 +428,7 @@ class SoSMDAChain(MDAChain):
         #     self.default_input_data.update(default_input_data)
         #     self.settings.initialize_defaults = False
         # return super(MDAChain, self).execute(input_data=input_data)
-        # FIXME: from here below this is a quick-fix for many test errors. Eventually code commented out above should
+        # FIXME: from here below this is a quick-fix for many test errors. In fine the code commented out above should
         ## be reactivated and actually solve the size mismatches between input data and MDA pre-run causing the crashes
             pre_run_data = init_chain.execute(input_data)
             self.default_input_data.update({
