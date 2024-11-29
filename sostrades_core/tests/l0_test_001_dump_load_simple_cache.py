@@ -92,7 +92,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study_load.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.discipline_wrapp.discipline.execution_statistics.n_calls, 1)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         self.dir_to_del.append(self.dump_dir)
 
@@ -238,8 +238,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         for disc_id in study_dump.ee.dm.gemseo_disciplines_id_map.keys():
             disc_dump = study_dump.ee.dm.gemseo_disciplines_id_map[disc_id]
             disc_load = study_load.ee.dm.gemseo_disciplines_id_map[disc_id]
-            self.assertEqual(disc_load.execution_statistics.n_calls, 0)
-            self.assertEqual(disc_dump.execution_statistics.n_calls, 1)
+            self.assertEqual(disc_load.execution_statistics.n_executions, 0)
+            self.assertEqual(disc_dump.execution_statistics.n_executions, 1)
 
         disc_cache_dump = list(cache_map_from_pkl.values())[0]
         disc_cache_load = list(study_load.ee.dm.cache_map.values())[0]
@@ -299,10 +299,10 @@ class TestLoadSimpleCache(unittest.TestCase):
         for disc in study_2.ee.factory.proxy_disciplines:
             if disc.get_disc_full_name() == f'{study_2.study_name}.Disc1':
                 self.assertEqual(
-                    disc.discipline_wrapp.discipline.execution_statistics.n_calls, 0)
+                    disc.discipline_wrapp.discipline.execution_statistics.n_executions, 0)
             else:
                 self.assertEqual(
-                    disc.discipline_wrapp.discipline.execution_statistics.n_calls, 1)
+                    disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         self.dir_to_del.append(self.dump_dir)
 
@@ -325,7 +325,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.discipline_wrapp.discipline.execution_statistics.n_calls, 1)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         self.assertEqual(len(study.ee.dm.cache_map), 4)
         study.read_cache_pickle(dump_dir)
@@ -333,7 +333,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.discipline_wrapp.discipline.execution_statistics.n_calls, 0)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 0)
 
         # check dumped cache pickle existence
         cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
@@ -355,7 +355,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.discipline_wrapp.discipline.execution_statistics.n_calls, 1)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         study.run()
         self.assertEqual(len(study.ee.dm.cache_map), 0)
@@ -398,7 +398,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
             self.assertEqual(
-                disc.execution_statistics.n_calls, 0)
+                disc.execution_statistics.n_executions, 0)
 
         # run again
         study_2.run()
@@ -406,7 +406,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
             self.assertEqual(
-                disc.execution_statistics.n_calls, 0)
+                disc.execution_statistics.n_executions, 0)
 
         self.dir_to_del.append(self.dump_dir)
 
@@ -468,7 +468,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
             self.assertEqual(
-                disc.execution_statistics.n_calls, 0)
+                disc.execution_statistics.n_executions, 0)
 
         self.dir_to_del.append(dump_dir)
         self.dir_to_del.append(new_dump_dir)
@@ -529,17 +529,17 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.execution_statistics.n_calls, 0)
+            self.assertEqual(disc.execution_statistics.n_executions, 0)
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.execution_statistics.n_calls_linearize, 0)
+            self.assertEqual(disc.execution_statistics.n_linearizations, 0)
         # run again
         study_2.run()
 
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.execution_statistics.n_calls, 0)
+            self.assertEqual(disc.execution_statistics.n_executions, 0)
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.execution_statistics.n_calls_linearize, 0)
+            self.assertEqual(disc.execution_statistics.n_linearizations, 0)
         self.dir_to_del.append(self.dump_dir)
 
     def test_10_set_different_cache_type_verify_after_run(self):
@@ -561,7 +561,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.discipline_wrapp.discipline.execution_statistics.n_calls, 1)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         self.assertEqual(len(study.ee.dm.cache_map), 4)
 
