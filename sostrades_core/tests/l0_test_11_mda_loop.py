@@ -790,7 +790,27 @@ class TestMDALoop(unittest.TestCase):
 
         exec_eng.prepare_execution()
         mda = exec_eng.root_process.discipline_wrapp.discipline
+        inner_mda = mda.inner_mdas[0]
+        assert values_dict['EE.tolerance'] == inner_mda.settings.tolerance
+        assert values_dict['EE.max_mda_iter'] == inner_mda.settings.max_mda_iter
+        assert values_dict['EE.max_mda_iter_gs'] == inner_mda.mda_sequence[0].settings.max_mda_iter
+        assert values_dict['EE.tolerance_gs'] == inner_mda.mda_sequence[0].settings.tolerance
+        assert values_dict['EE.tolerance'] == inner_mda.mda_sequence[1].settings.tolerance
 
+        assert values_dict['EE.max_mda_iter'] == inner_mda.mda_sequence[1].settings.max_mda_iter
+
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.settings.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.settings.linear_solver_settings[
+            'max_iter']
+
+        NR = inner_mda.mda_sequence[1]
+
+        assert values_dict['EE.linear_solver_MDA_options']['tol'] == NR.settings.linear_solver_tolerance
+        assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.settings.linear_solver_settings['max_iter']
+
+        # Execute and redo the checks, to ensure that GEMSEO receveived the right options
+        exec_eng.execute()
+        mda = exec_eng.root_process.discipline_wrapp.discipline
         inner_mda = mda.inner_mdas[0]
         assert values_dict['EE.tolerance'] == inner_mda.settings.tolerance
         assert values_dict['EE.max_mda_iter'] == inner_mda.settings.max_mda_iter
