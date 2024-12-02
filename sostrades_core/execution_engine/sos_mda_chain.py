@@ -17,6 +17,7 @@ limitations under the License.
 
 from __future__ import annotations
 
+from collections import ChainMap
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Mapping, Sequence
 
 import pandas as pd
@@ -40,6 +41,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import StrKeyMapping
+
 
 def get_available_linear_solvers():
     """Get available linear solvers list."""
@@ -429,7 +431,7 @@ class SoSMDAChain(MDAChain):
         #     self.settings.initialize_defaults = False
         # return super(MDAChain, self).execute(input_data=input_data)
         # FIXME: from here below this is a quick-fix for many test errors. In fine the code commented out above should
-        ## be reactivated and actually solve the size mismatches between input data and MDA pre-run causing the crashes
+        # be reactivated and actually solve the size mismatches between input data and MDA pre-run causing the crashes
             pre_run_data = init_chain.execute(input_data)
             self.default_input_data.update({
                 key: value
@@ -437,8 +439,7 @@ class SoSMDAChain(MDAChain):
                 if key in self.input_grammar.names
             })
 
-            self.settings.initialize_defaults = False
-            from collections import ChainMap
+            self.settings = self.settings.model_copy(update={"initialize_defaults": False})
             _input_data = dict(ChainMap(pre_run_data, input_data))
             # self.io.data.update(pre_run_data)
         else:
