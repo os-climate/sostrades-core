@@ -17,7 +17,6 @@ limitations under the License.
 
 from __future__ import annotations
 
-from collections import ChainMap
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Mapping, Sequence
 
 import pandas as pd
@@ -440,7 +439,7 @@ class SoSMDAChain(MDAChain):
             })
 
             self.settings = self.settings.model_copy(update={"initialize_defaults": False})
-            _input_data = dict(ChainMap(pre_run_data, input_data))
+            _input_data = input_data | pre_run_data
             # self.io.data.update(pre_run_data)
         else:
             _input_data = input_data
