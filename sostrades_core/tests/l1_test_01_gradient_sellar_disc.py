@@ -64,7 +64,7 @@ class GradientSellar(AbstractJacobianUnittest):
 
         self.ee.update_from_dm()
         self.ee.prepare_execution()
-        disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline
         self.check_jacobian(location=dirname(__file__),
                             filename='jacobian_sellar_1.pkl',
                             discipline=disc,
@@ -94,7 +94,7 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.configure()
         self.ee.update_from_dm()
         self.ee.prepare_execution()
-        disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline
         self.check_jacobian(location=dirname(__file__),
                             filename='jacobian_sellar_2.pkl',
                             discipline=disc,
@@ -127,7 +127,7 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.configure()
         self.ee.update_from_dm()
         self.ee.prepare_execution()
-        disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline
         self.check_jacobian(location=dirname(__file__),
                             filename='jacobian_sellar_problem.pkl',
                             discipline=disc,

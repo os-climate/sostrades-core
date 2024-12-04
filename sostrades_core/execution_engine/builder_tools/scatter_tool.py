@@ -149,26 +149,28 @@ class ScatterTool(SosTool):
             # we should take ns_to_update of the shared_ns_dict to be consistent with father_executor name and driver_name
             self.ns_to_update[ns_name] = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
 
-    def get_dynamic_output_from_tool(self):
+    def get_dynamic_input_from_tool(self):
         '''
-        Add the scatter list output name into dynamic desc_out in the behalf of the driver
+        Add the scatter list input name into dynamic desc_in in the behalf of the driver
         this scatter_list is depending on samples_df configuration
         Add then all scenario_name for each scenario
         '''
-        dynamic_outputs = {}
+        dynamic_inputs = {}
         if self.sc_map is not None and self.sc_map.get_scatter_list_name_and_namespace() is not None:
             scatter_list_name, scatter_list_ns = self.sc_map.get_scatter_list_name_and_namespace()
-            dynamic_outputs = {scatter_list_name: {'type': 'list',
+            dynamic_inputs = {scatter_list_name: {'type': 'list',
                                                    'visibility': 'Shared',
+                                                  'editable': False,
                                                    'namespace': scatter_list_ns,
                                                    'value': self.__scatter_list}}
         if self.sc_map is not None and self.sc_map.get_scatter_name() is not None:
             scatter_name = self.sc_map.get_scatter_name()
             for scatter_value in self.__scatter_list:
-                dynamic_outputs.update({f'{scatter_value}.{scatter_name}':
+                dynamic_inputs.update({f'{scatter_value}.{scatter_name}':
                                             {'type': 'string',
+                                             'editable': False,
                                              'value': scatter_value}})
-        return dynamic_outputs
+        return dynamic_inputs
 
     def get_ns_to_update_name_list(self):
         '''
@@ -193,9 +195,9 @@ class ScatterTool(SosTool):
         self.__scatter_list = scatter_list
         if self.sc_map is not None and self.sc_map.get_scatter_list_name_and_namespace() is not None:
             scatter_list_name, scatter_list_namespace = self.sc_map.get_scatter_list_name_and_namespace()
-            if scatter_list_name in self.driver.get_data_out():
+            if scatter_list_name in self.driver.get_data_in():
                 self.ee.dm.set_data(self.driver.get_var_full_name(
-                    scatter_list_name, self.driver.get_data_out()), 'value', self.__scatter_list)
+                    scatter_list_name, self.driver.get_data_in()), 'value', self.__scatter_list)
 
     def build(self):
         '''

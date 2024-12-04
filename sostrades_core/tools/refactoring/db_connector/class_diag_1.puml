@@ -8,7 +8,7 @@ class TrinoDataConnector
 WIP
 
 ExecutionEngine *-- Proxydiscipline
-DisciplineProxy *-- MDODisciplineWrapp
+DisciplineProxy *-- DisciplineWrapp
 DisciplineProxy --* SoSDisciplineBuilder
 
 Configuration -> MDOCouplingStructure

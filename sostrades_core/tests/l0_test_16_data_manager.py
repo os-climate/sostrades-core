@@ -138,6 +138,8 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.Disc1.cache_type': init_dict('string'),
                     ns_2 + '.Disc1.cache_file_path': init_dict('string'),
                     ns_2 + '.Disc1.debug_mode': init_dict('string'),
+                    ns_2 + '.Disc1.residual_variables': init_dict('dict'),
+                    ns_2 + '.Disc1.run_solves_residuals': init_dict('bool'),
                     ns_2 + '.linearization_mode': init_dict('string'),
                     ns_2 + '.linear_solver_MDA': init_dict('string'),
                     ns_2 + '.linear_solver_MDA_preconditioner': init_dict('string'),
@@ -149,25 +151,27 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.cache_file_path': init_dict('string'),
                     ns_2 + '.debug_mode': init_dict('string'),
                     ns_2 + '.warm_start': init_dict('string'),
-                    ns_2 + '.acceleration': init_dict('string'),
-                    ns_2 + '.sub_mda_class': init_dict('string'),
+                    ns_2 + '.acceleration_method': init_dict('string'),
+                    ns_2 + '.inner_mda_name': init_dict('string'),
                     ns_2 + '.max_mda_iter': init_dict('int'),
+                    ns_2 + '.max_mda_iter_gs': init_dict('int'),
                     ns_2 + '.epsilon0': init_dict('float'),
-                    ns_2 + '.warm_start_threshold': init_dict('float'),
                     ns_2 + '.residuals_history': init_dict('dataframe'),
                     ns_2 + '.n_subcouplings_parallel': init_dict('int'),
                     ns_2 + '.group_mda_disciplines': init_dict('bool'),
                     ns_2 + '.propagate_cache_to_children': init_dict('bool'),
                     ns_2 + '.tolerance_gs': init_dict('float'),
-                    ns_2 + '.relax_factor': init_dict('float'), }
+                    ns_2 + '.over_relaxation_factor': init_dict('float'),
+                    ns_2 + '.residual_variables': init_dict('dict'),
+                    ns_2 + '.run_solves_residuals': init_dict('bool'), }
 
         val_dict = {'default': None, 'type': 'string', 'unit': None,
                     'possible_values': None, 'range': None, 'user_level': 1,
                     'visibility': 'Private', 'editable': True, IO_TYPE: 'IN',
                     'model_origin': 'NPS.CH19_Kero.Disc1', 'value': None}
-        for var_id in ['n_processes', 'warm_start_threshold',
+        for var_id in ['n_processes',
                        'chain_linearize', 'tolerance', 'use_lu_fact',
-                       'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode']:
+                       'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode', "scaling_method"]:
             var_n = ns_2 + '.' + var_id
             ref_dict[var_n] = copy(val_dict)
         data_id_map_2 = {}
@@ -225,9 +229,9 @@ class TestDataManagerGenerator(unittest.TestCase):
             ns_pv_disc2 + '.power': 2}
 
         # check outputs
-        for key in res_target:
+        for key, value in res_target.items():
             key_id = exec_engine.dm.get_data_id(key)
-            self.assertEqual(res[key_id]['value'], res_target[key])
+            self.assertEqual(res[key_id]['value'], value)
 
         # check data with data manager methods
         self.assertEqual(

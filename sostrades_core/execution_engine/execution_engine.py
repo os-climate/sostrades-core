@@ -199,52 +199,107 @@ class ExecutionEngine:
         self.root_process._set_dm_cache_map()
 
     def anonymize_caches_in_cache_map(self):
-        '''
-        Anonymize each cache of the cache map by anonymizing each variable key inside the cache
-        The returned cache is a dict already serialized and anonymized
-        None values are not serialized
-        '''
-        anonymized_cache_map = {}
-        if self.dm.cache_map != {}:
-            for key, cache in self.dm.cache_map.items():
-                if cache is not None and cache.get_length() > 0:
-                    serialized_new_cache = cache.get_all_data()
-                    anonymized_cache = {}
-                    for index, index_dict in serialized_new_cache.items():
-                        anonymized_cache[index] = {
-                            data_types: {self.anonymize_key(key_to_anonymize): value for key_to_anonymize, value in
-                                         values_dict.items()}
-                            for data_types, values_dict in index_dict.items() if
-                            values_dict is not None and data_types in ['inputs', 'outputs']}
-                        if index_dict['jacobian'] is not None:
-                            anonymized_cache[index]['jacobian'] = {self.anonymize_key(key_out): {self.anonymize_key(
-                                key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
-                                                                   index_dict['jacobian'].items()}
+        """
+        Anonymize each cache in the cache map by converting each variable key inside the cache
+        to its anonymized form. The returned cache map is a dictionary with the same structure,
+        but with anonymized keys.
 
-                    anonymized_cache_map[key] = anonymized_cache
+        Returns:
+        - dict: A dictionary with the same structure as cache_map, but with anonymized keys.
+        """
+
+        def anonymize_dict(dict_to_anonymize):
+            """
+            Convert each key in the dictionary to its anonymized form.
+
+            Parameters:
+            - dict_to_anonymize (dict): A dictionary with original keys.
+
+            Returns:
+            - dict: A dictionary with anonymized keys.
+            """
+            return {self.anonymize_key(key): value for key, value in dict_to_anonymize.items()}
+
+        def anonymize_dict_of_dict(dict_to_anonymize):
+            """
+            Convert each key in a dictionary of dictionary to its anonymized form.
+
+            Parameters:
+            - dict_to_anonymize (dict): A dictionary with original keys.
+
+            Returns:
+            - dict: A dictionary with anonymized keys.
+            """
+            return {self.anonymize_key(key): anonymize_dict(value) for key, value in dict_to_anonymize.items()}
+
+        # Initialize an empty dictionary to store the anonymized cache map
+        anonymized_cache_map = {}
+
+        # If the cache map is not empty, process each entry
+        if self.dm.cache_map:
+            for key, serialized_new_cache in self.dm.cache_map.items():
+                anonymized_cache = {}
+                for index, cache in enumerate(serialized_new_cache, start=1):
+                    # Anonymize the keys for inputs, outputs, and jacobian of each cache
+                    anonymized_cache[index] = {
+                        'inputs': anonymize_dict(cache.inputs),
+                        'outputs': anonymize_dict(cache.outputs),
+                        'jacobian': anonymize_dict_of_dict(cache.jacobian)
+                    }
+                # Add the anonymized cache to the result dictionary
+                anonymized_cache_map[key] = anonymized_cache
 
         return anonymized_cache_map
 
     def unanonymize_caches_in_cache_map(self, cache_map):
-        '''
-        Unanonymize each cache of the cache map by anonymizing each variable key inside the cache
-        The returned cache is a dict already serialized and anonymized
-        None values are not serialized
-        '''
+        """
+        Unanonymize each cache in the cache map by converting each key inside the cache
+        to its original form. The returned cache map is a dictionary with the same structure,
+        but with unanonymized keys.
+
+        Parameters:
+        - cache_map (dict): A dictionary where each value is a list of cache objects.
+
+        Returns:
+        - dict: A dictionary with the same structure as cache_map, but with unanonymized keys.
+        """
+
+        def un_anonymize_dict(dict_to_anonymize):
+            """
+            Convert each key in the dictionary to its original form.
+
+            Parameters:
+            - dict_to_anonymize (dict): A dictionary with anonymized keys.
+
+            Returns:
+            - dict: A dictionary with the original keys.
+            """
+            return {self.__unanonimize_key(key): value for key, value in dict_to_anonymize.items()}
+
+        def un_anonymize_dict_of_dict(dict_to_anonymize):
+            """
+            Convert each key in the dictionary to its original form.
+
+            Parameters:
+            - dict_to_anonymize (dict): A dictionary with anonymized keys.
+
+            Returns:
+            - dict: A dictionary with the original keys.
+            """
+            return {self.__unanonimize_key(key): un_anonymize_dict(value) for key, value in dict_to_anonymize.items()}
+
+        # Initialize an empty dictionary to store the unanonymized cache map
+
         unanonymized_cache_map = {}
-        if cache_map != {}:
-            for key, serialized_cache in cache_map.items():
-                unanonymized_cache = {}
-                for index, index_dict in serialized_cache.items():
-                    unanonymized_cache[index] = {
-                        data_types: {self.__unanonimize_key(key): value for key, value in values_dict.items()}
-                        for data_types, values_dict in index_dict.items() if data_types in ['inputs', 'outputs']}
-                    if 'jacobian' in index_dict:
-                        unanonymized_cache[index]['jacobian'] = {
-                            self.__unanonimize_key(key_out): {self.__unanonimize_key(
-                                key_in): value for key_in, value in in_dict.items()} for key_out, in_dict in
-                            index_dict['jacobian'].items()}
-                unanonymized_cache_map[key] = unanonymized_cache
+        cache_unanonymize_func = {'inputs': un_anonymize_dict, 'outputs': un_anonymize_dict,
+                                  'jacobian': un_anonymize_dict_of_dict}
+        # If the cache map is not empty, process each entry
+        if cache_map:
+            # Unanonymize the keys for inputs, outputs, and jacobian of each cache
+            unanonymized_cache_map = {
+                key: {index: {cache_type: cache_func(cache[cache_type]) for cache_type, cache_func in
+                              cache_unanonymize_func.items()} for index, cache in serialized_cache.items()} for
+                key, serialized_cache in cache_map.items()}
 
         return unanonymized_cache_map
 
@@ -408,7 +463,8 @@ class ExecutionEngine:
         :type update_status_configure: bool
         '''
         # call the configure function with the set dm data from datasets
-        return self.configure_study_with_data(datasets_mapping, self.dm.fill_data_dict_from_datasets, update_status_configure)
+        return self.configure_study_with_data(datasets_mapping, self.dm.fill_data_dict_from_datasets,
+                                              update_status_configure)
 
     def load_study_from_input_dict(self, input_dict_to_load, update_status_configure=True):
         '''
@@ -416,7 +472,8 @@ class ExecutionEngine:
         and compute the function load_study_from_dict
         '''
         dict_to_load = self.convert_input_dict_into_dict(input_dict_to_load)
-        return self.load_study_from_dict(dict_to_load, self.__unanonimize_key, update_status_configure=update_status_configure)
+        return self.load_study_from_dict(dict_to_load, self.__unanonimize_key,
+                                         update_status_configure=update_status_configure)
 
     def get_anonimated_data_dict(self):
         '''
@@ -438,7 +495,7 @@ class ExecutionEngine:
         return dm_dict
 
     def load_study_from_dict(
-        self, dict_to_load: dict[str:Any], anonymize_function=None, update_status_configure: bool = True
+            self, dict_to_load: dict[str:Any], anonymize_function=None, update_status_configure: bool = True
     ):
         '''
         method that imports data from dictionary to discipline tree
@@ -467,10 +524,12 @@ class ExecutionEngine:
         return self.configure_study_with_data(data_cache, self.dm.fill_data_dict_from_dict, update_status_configure)
 
     def configure_study_with_data(
-        self,
-        dict_or_datasets_to_load: Union[dict, DatasetsMapping],
-        set_data_in_dm_function: Callable[[Union[dict, DatasetsMapping], set[str], list[ParameterChange], bool, bool, bool], None],
-        update_status_configure: bool,
+            self,
+            dict_or_datasets_to_load: Union[dict, DatasetsMapping],
+            set_data_in_dm_function: Callable[
+                [Union[dict, DatasetsMapping], set[str], list[ParameterChange], bool, bool, bool], None],
+            update_status_configure: bool,
+
     ):
         '''
         method that insert data into dm and configure the process
@@ -488,7 +547,7 @@ class ExecutionEngine:
         # configured
 
         checked_keys = set()
-        parameter_changes = list()
+        parameter_changes = []
 
         while not loop_stop:
             self.logger.info("Configuring loop iteration %i.", iteration)
@@ -497,7 +556,8 @@ class ExecutionEngine:
 
             self.dm.no_change = True
             # call the function that will set data in dm
-            set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, parameter_changes, in_vars=True, init_coupling_vars=False, out_vars=False)
+            set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, parameter_changes, in_vars=True,
+                                    init_coupling_vars=False, out_vars=False)
 
             self.__configure_io()
 
@@ -514,7 +574,9 @@ class ExecutionEngine:
 
         # Convergence is ended
         # Set all output variables and strong couplings
-        set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, parameter_changes, in_vars=False, init_coupling_vars=True, out_vars=True)
+
+        set_data_in_dm_function(dict_or_datasets_to_load, checked_keys, parameter_changes, in_vars=False,
+                                init_coupling_vars=True, out_vars=True)
 
         if self.__yield_method is not None:
             self.__yield_method()
@@ -580,27 +642,27 @@ class ExecutionEngine:
         if mode is None:
             disc.nan_check = True
             disc.check_if_input_change_after_run = True
-            disc.check_linearize_data_changes = True
-            disc.check_min_max_gradients = True
+            # disc.check_linearize_data_changes = True
+            # disc.check_min_max_gradients = True
             disc.check_min_max_couplings = True
         elif mode == "nan":
             disc.nan_check = True
         elif mode == "input_change":
             disc.check_if_input_change_after_run = True
-        elif mode == "linearize_data_change":
-            disc.check_linearize_data_changes = True
-        elif mode == "min_max_grad":
-            disc.check_min_max_gradients = True
+        # we deactivate these debug mode for gemseo convergence to start, need to overload some methods if needed
+        # elif mode == "linearize_data_change":
+        #     disc.check_linearize_data_changes = True
+        # elif mode == "min_max_grad":
+        #     disc.check_min_max_gradients = True
         elif mode == "min_max_couplings":
             if isinstance(disc, ProxyCoupling):
-                for sub_mda in disc.sub_mda_list:
+                for sub_mda in disc.inner_mdas:
                     sub_mda.debug_mode_couplings = True
         elif mode == 'data_check_integrity':
             self.check_data_integrity = True
 
         else:
-            avail_debug = ["nan", "input_change",
-                           "linearize_data_change", "min_max_grad", "min_max_couplings", 'data_check_integrity']
+            avail_debug = ["nan", "input_change", "min_max_couplings", 'data_check_integrity']
             raise ValueError("Debug mode %s is not among %s" % (mode, str(avail_debug)))
         # set debug modes of subdisciplines
         for disc in disc.proxy_disciplines:
@@ -608,10 +670,10 @@ class ExecutionEngine:
 
     def get_input_data_for_gemseo(self, proxy_coupling):
         '''
-        Get values of mdo_discipline input_grammar from data manager
+        Get values of discipline input_grammar from data manager
         '''
         input_data = {}
-        input_data_names = proxy_coupling.mdo_discipline_wrapp.mdo_discipline.input_grammar.get_data_names()
+        input_data_names = proxy_coupling.discipline_wrapp.discipline.input_grammar.names
         if len(input_data_names) > 0:
             for data_name in input_data_names:
                 input_data[data_name] = self.dm.get_value(data_name)
@@ -644,13 +706,14 @@ class ExecutionEngine:
 
         # -- execution with input data from DM
         ex_proc = self.root_process
-        input_data = self.dm.get_data_dict_values()
+        input_data = self.dm.get_data_dict_values(excepted=['numerical'])
         self.logger.info("Executing.")
+        input_data_wo_none = {key: value for key, value in input_data.items() if value is not None}
         try:
-            ex_proc.mdo_discipline_wrapp.mdo_discipline.execute(
-                input_data=input_data)
+            ex_proc.discipline_wrapp.discipline.execute(
+                input_data=input_data_wo_none)
         except:
-            ex_proc.set_status_from_mdo_discipline()
+            ex_proc.set_status_from_discipline()
             raise
 
         self.status = self.root_process.status
@@ -658,10 +721,12 @@ class ExecutionEngine:
 
         self.logger.info("Storing local data in datamanager.")
         # -- store local data in datamanager
+        ex_proc.discipline_wrapp.discipline.io.data.pop("MDA residuals norm", None)
         self.update_dm_with_local_data(
-            ex_proc.mdo_discipline_wrapp.mdo_discipline.local_data)
-
+            ex_proc.discipline_wrapp.discipline.io.data)
+        # Add residuals_history and other numerical outputs that are not in GEMSEO grammar to the data manager
+        self.update_dm_with_local_data(ex_proc.get_numerical_outputs_subprocess())
         # -- update all proxy statuses
-        ex_proc.set_status_from_mdo_discipline()
+        ex_proc.set_status_from_discipline()
 
         return ex_proc

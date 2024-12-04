@@ -198,13 +198,13 @@ class TestBuildScatter(unittest.TestCase):
         self.exec_eng.load_study_from_input_dict(dict_values)
         # change this test because now we have only one gather
         # self.assertTrue(isinstance(
-        #     self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter.Disc1')[0].mdo_discipline_wrapp.wrapper,
+        #     self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter.Disc1')[0].discipline_wrapp.wrapper,
         #     GatherDiscipline))
         # self.assertTrue(isinstance(
-        #     self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter.Disc2')[0].mdo_discipline_wrapp.wrapper,
+        #     self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter.Disc2')[0].discipline_wrapp.wrapper,
         #     GatherDiscipline))
         self.assertTrue(isinstance(
-            self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter_gather')[0].mdo_discipline_wrapp.wrapper,
+            self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter_gather')[0].discipline_wrapp.wrapper,
             GatherDiscipline))
 
         # exec treeview
@@ -291,7 +291,7 @@ class TestBuildScatter(unittest.TestCase):
 
         self.assertTrue(isinstance(
             self.exec_eng.dm.get_disciplines_with_name('MyCase.coupling_scatter_gather')[
-                0].mdo_discipline_wrapp.wrapper,
+                0].discipline_wrapp.wrapper,
             GatherDiscipline))
 
         self.exec_eng.display_treeview_nodes()

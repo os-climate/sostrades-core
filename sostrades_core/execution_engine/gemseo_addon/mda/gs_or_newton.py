@@ -14,20 +14,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING, Sequence
 
-from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.sequential_mda import GSNewtonMDA, MDASequential
+from gemseo.core.execution_status import ExecutionStatus
+from gemseo.mda.base_mda_settings import BaseMDASettings
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.mda.gs_newton import MDAGSNewton
+from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
+from gemseo.mda.sequential_mda import MDASequential
+from gemseo.utils.pydantic import create_model
 
-from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
-    SoSMDAGaussSeidel,
-)
+from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SoSMDAGaussSeidel
 
-"""
-A chain of MDAs to build hybrids of MDA algorithms sequentially
-***************************************************************
-"""
+if TYPE_CHECKING:
+    from gemseo.core.discipline.discipline import Discipline
+    from gemseo.mda.sequential_mda_settings import MDASequential_Settings
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 
@@ -35,20 +42,21 @@ LOGGER = logging.getLogger("gemseo.addons.mda.gs_or_newton")
 class GSorNewtonMDA(MDASequential):
     """
     Perform some GaussSeidel iterations and then NewtonRaphson iterations.
+    A chain of MDAs to build hybrids of MDA algorithms sequentially
+
     """
 
-    def __init__(self, disciplines, name=None,
-                 grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-                 tolerance=1e-6, max_mda_iter=10, relax_factor=0.99,
-                 linear_solver="lgmres", tolerance_gs=10.0,
-                 linear_solver_tolerance=1e-12,  # type: str
-                 linear_solver_options=None, warm_start=False,
-                 use_lu_fact=False, **newton_mda_options):
+    def __init__(
+        self,
+        disciplines: Sequence[Discipline],
+        settings_model: MDASequential_Settings | None = None,
+        **settings,
+    ) -> None:
         """
         Constructor
 
         :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
+        :type disciplines: list(Discipline)
         :param name: name
         :type name: str
         :param grammar_type: the type of grammar to use for IO declaration
@@ -81,30 +89,29 @@ class GSorNewtonMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter,
-                                   name=None, grammar_type=grammar_type)
-        mda_gs.tolerance = tolerance
+        super().__init__(
+            disciplines,
+            mda_sequence=[],
+            settings_model=settings_model,
+            **settings,
+        )
+        gauss_seidel_settings = create_model(
+            MDAGaussSeidel_Settings,
+            **self.__update_inner_mda_settings(settings),
+        )
+        gsnewton_settings = create_model(
+            MDAGSNewton_Settings,
+            **self.__update_inner_mda_settings(settings),
+        )
 
-        mda_newton = GSNewtonMDA(disciplines, max_mda_iter=max_mda_iter,
-                                 name=None, grammar_type=grammar_type,
-                                 linear_solver=linear_solver,
-                                 linear_solver_options=linear_solver_options,
-                                 tolerance_gs=tolerance_gs,
-                                 use_lu_fact=use_lu_fact, tolerance=tolerance,
-                                 relax_factor=relax_factor,
-                                 ** newton_mda_options)
+        mda_gs = SoSMDAGaussSeidel(disciplines, settings_model=gauss_seidel_settings)
+
+        mda_newton = MDAGSNewton(disciplines, settings_model=gsnewton_settings)
 
         sequence = [mda_gs, mda_newton]
-        super(GSorNewtonMDA,
-              self).__init__(disciplines, sequence, name=name,
-                             grammar_type=grammar_type,
-                             max_mda_iter=max_mda_iter,
-                             tolerance=tolerance,
-                             linear_solver_options=linear_solver_options,
-                             linear_solver_tolerance=linear_solver_tolerance,
-                             warm_start=warm_start)
+        self._init_mda_sequence(sequence)
 
-    def _run(self):
+    def _execute(self):
         """Runs the MDAs in a sequential way
 
         :returns: the local data
@@ -117,20 +124,31 @@ class GSorNewtonMDA(MDASequential):
         dm_values = {}
         try:
             mda_i = self.mda_sequence[1]
-            mda_i.reset_statuses_for_run()
+            mda_i.execution_status.value = ExecutionStatus.Status.PENDING
             # TODO: [discuss limitations] mechanism not possible in EEV4 --> remove
             # dm_values = deepcopy(self.disciplines[0].dm.get_data_dict_values())
-            self.local_data = mda_i.execute(self.local_data)
+
+            self.io.data = mda_i.execute(self.io.data)
         except:
-            LOGGER.warning(
-                'The GSNewtonMDA has not converged try with MDAGaussSeidel')
+            LOGGER.warning('The MDAGSNewton has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
-            mda_i.reset_statuses_for_run()
+            mda_i.execution_status.value = ExecutionStatus.Status.PENDING
+
             # TODO: [discuss limitations] mechanism not possible in EEV4 --> remove
             # dm = self.disciplines[0].ee.dm
             # # set values directrly in dm to avoid reconfigure of disciplines
             # dm.set_values_from_dict(dm_values)
             # self.disciplines[0].ee.load_study_from_input_dict(dm_values)
-            self.local_data = mda_i.execute(self.local_data)
+            self.io.data = mda_i.execute(self.io.data)
 
         self.residual_history += mda_i.residual_history
+
+    def __update_inner_mda_settings(
+        self, settings_model: BaseMDASettings | StrKeyMapping
+    ) -> StrKeyMapping:
+        """Update the inner MDA settings model."""
+        return dict(settings_model) | {
+            name: setting
+            for name, setting in self.settings
+            if name in BaseMDASettings.model_fields
+        }

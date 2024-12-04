@@ -17,13 +17,13 @@ limitations under the License.
 import copy
 import logging
 
+from sostrades_core.execution_engine.discipline_driver_wrapp import (
+    DisciplineDriverWrapp,
+)
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
     DriverEvaluatorWrapper,
 )
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
-from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import (
-    MDODisciplineDriverWrapp,
-)
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import (
@@ -142,18 +142,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
     USECASE_DATA = 'usecase_data'
     if with_modal:
-        DESC_IN[SUB_PROCESS_INPUTS] = {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
-                                       'structuring': True,
-                                       'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                                       'user_level': 1,
-                                       'optional': False}
+        DESC_IN[SUB_PROCESS_INPUTS] = {ProxyDisciplineBuilder.TYPE: ProxyDiscipline.PROC_BUILDER_MODAL,
+                                       ProxyDisciplineBuilder.STRUCTURING: True,
+                                       ProxyDisciplineBuilder.DEFAULT: default_process_builder_parameter_type.to_data_manager_dict(),
+                                       ProxyDisciplineBuilder.USER_LEVEL: 1,
+                                       ProxyDisciplineBuilder.OPTIONAL: False,
+                                       ProxyDisciplineBuilder.NUMERICAL: True}
     else:
 
-        DESC_IN[USECASE_DATA] = {'type': 'dict',
-                                 'structuring': True,
-                                 'default': {},
-                                 'user_level': 1,
-                                 'optional': False}
+        DESC_IN[USECASE_DATA] = {ProxyDisciplineBuilder.TYPE: 'dict',
+                                 ProxyDisciplineBuilder.STRUCTURING: True,
+                                 ProxyDisciplineBuilder.DEFAULT: {},
+                                 ProxyDisciplineBuilder.USER_LEVEL: 1,
+                                 ProxyDisciplineBuilder.OPTIONAL: False, }
 
     ##
     # End to refactor
@@ -224,13 +225,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.gather_names = None
         self.driver_eval_mode = None
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
+    def create_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
-        creation of mdo_discipline_wrapp by the proxy which in this case is a MDODisciplineDriverWrapp that will create
-        a SoSMDODisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
+        creation of discipline_wrapp by the proxy which in this case is a DisciplineDriverWrapp that will create
+        a SoSDisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
         them in a different way than a coupling.
         """
-        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, logger.getChild("MDODisciplineDriverWrapp"), wrapper,
+        self.discipline_wrapp = DisciplineDriverWrapp(name, logger.getChild("DisciplineDriverWrapp"), wrapper,
                                                              wrapping_mode)
 
     def configure(self):
@@ -367,8 +368,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # prepare_execution of proxy_disciplines as in coupling
         for disc in self.scenarios:
             disc.prepare_execution()
-        # TODO : cache mgmt of children necessary ? here or in  SoSMDODisciplineDriver ?
-        if self.mdo_discipline_wrapp is not None:
+        # TODO : cache mgmt of children necessary ? here or in  SoSDisciplineDriver ?
+        if self.discipline_wrapp is not None:
             super().prepare_execution()
             self.reset_subdisciplines_of_wrapper()
         else:
@@ -380,7 +381,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Reset subdisciplines of the wrapper
 
         '''
-        self.mdo_discipline_wrapp.reset_subdisciplines(self)
+        self.discipline_wrapp.reset_subdisciplines(self)
 
     def set_wrapper_attributes(self, wrapper):
         """
@@ -392,9 +393,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         super().set_wrapper_attributes(wrapper)
 
         # driverevaluator subprocess # TODO: actually no longer necessary in multi-instance (gather capabilities)
-        wrapper.attributes.update({'sub_mdo_disciplines': [
-            proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
-            if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scenarios
+        wrapper.attributes.update({'sub_disciplines': [
+            proxy.discipline_wrapp.discipline for proxy in self.proxy_disciplines
+            if proxy.discipline_wrapp is not None]})  # discs and couplings but not scenarios
 
     def is_configured(self):
         """

@@ -14,54 +14,50 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
-from gemseo.api import create_mda
-from gemseo.core.discipline import MDODiscipline
+from gemseo import create_mda
 from gemseo.mda.sequential_mda import MDASequential
 
-from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import (
-    SoSMDAGaussSeidel,
-)
+from sostrades_core.execution_engine.gemseo_addon.mda.gauss_seidel import SOS_GRAMMAR_TYPE, SoSMDAGaussSeidel
 
-"""
-A chain of MDAs to build hybrids of MDA algorithms sequentially
-***************************************************************
-"""
+if TYPE_CHECKING:
+    from gemseo.core.discipline.discipline import Discipline
 
 LOGGER = logging.getLogger("gemseo.addons.mda.purenewton_or_gs")
 
 
 class GSPureNewtonorGSMDA(MDASequential):
-    """
-    Perform some GaussSeidel iterations and then NewtonRaphson iterations.
-    """
+    """Perform some GaussSeidel iterations and then NewtonRaphson iterations."""
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        tolerance=1e-6,  # type: float
-        max_mda_iter=10,  # type: int
-        relax_factor=0.99,  # type: float
-        linear_solver="DEFAULT",  # type: str
-        tolerance_gs=10.0,
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        linear_solver_options=None,  # type: Mapping[str,Any]
-        log_convergence=False,  # type: bool
-        **newton_mda_options  # type: float,  # type: Mapping[str,Any]
-):
+        disciplines: Sequence[Discipline],
+        name: str | None = None,
+        grammar_type: str = SOS_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        max_mda_iter: int = 10,
+        relax_factor: float = 0.99,
+        linear_solver: str = "DEFAULT",
+        tolerance_gs: float = 10.0,
+        max_mda_iter_gs: int = 10,
+        linear_solver_tolerance: float = 1e-12,
+        scaling_method: MDASequential.ResidualScaling = MDASequential.ResidualScaling.N_COUPLING_VARIABLES,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        linear_solver_settings: Mapping[str, Any] | None = None,
+        **newton_mda_options,
+    ) -> None:
         """
         Constructor
 
         :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
+        :type disciplines: list(Discipline)
         :param name: name
         :type name: str
         :param grammar_type: the type of grammar to use for IO declaration
@@ -94,41 +90,40 @@ class GSPureNewtonorGSMDA(MDASequential):
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
         """
-        mda_gs = SoSMDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter,
-                                   name=None, grammar_type=grammar_type)
+        mda_gs = SoSMDAGaussSeidel(
+            disciplines, max_mda_iter=max_mda_iter_gs, tolerance=tolerance_gs, name=None, grammar_type=grammar_type
+        )
         mda_gs.tolerance = tolerance
 
         mda_newton = create_mda(
-            'GSPureNewtonMDA', disciplines, max_mda_iter=max_mda_iter,
-                                 name=None, grammar_type=grammar_type,
-                                 linear_solver=linear_solver,
-                                 linear_solver_options=linear_solver_options,
-                                 tolerance_gs=tolerance_gs,
-                                 use_lu_fact=use_lu_fact, tolerance=tolerance,
-                                 relax_factor=relax_factor,
-                                 ** newton_mda_options
+            'GSPureNewtonMDA',
+            disciplines,
+            max_mda_iter=max_mda_iter,
+            name=None,
+            linear_solver=linear_solver,
+            linear_solver_settings=linear_solver_settings,
+            tolerance_gs=tolerance_gs,
+            max_mda_iter_gs=max_mda_iter_gs,
+            use_lu_fact=use_lu_fact,
+            tolerance=tolerance,
+            relax_factor=relax_factor,
+            **newton_mda_options,
         )
 
-        # mda_newton = GSPureNewtonMDA(disciplines,  max_mda_iter=max_mda_iter,
-        #                          name=None, grammar_type=grammar_type,
-        #                          linear_solver=linear_solver,
-        #                          linear_solver_options=linear_solver_options,
-        #                          tolerance_gs=tolerance_gs,
-        #                          use_lu_fact=use_lu_fact, tolerance=tolerance,
-        #                          relax_factor=relax_factor,
-        #                          ** newton_mda_options)
-
         sequence = [mda_gs, mda_newton]
-        super(GSPureNewtonorGSMDA,
-              self).__init__(disciplines, sequence, name=name,
-                             grammar_type=grammar_type,
-                             max_mda_iter=max_mda_iter,
-                             tolerance=tolerance,
-                             linear_solver_options=linear_solver_options,
-                             linear_solver_tolerance=linear_solver_tolerance,
-                             warm_start=warm_start)
+        super().__init__(
+            disciplines,
+            sequence,
+            name=name,
+            max_mda_iter=max_mda_iter,
+            tolerance=tolerance,
+            linear_solver_settings=linear_solver_settings,
+            linear_solver_tolerance=linear_solver_tolerance,
+            warm_start=warm_start,
+        )
+        self.scaling = scaling_method
 
-    def _run(self):
+    def _execute(self):
         """Runs the MDAs in a sequential way
 
         :returns: the local data
@@ -142,17 +137,16 @@ class GSPureNewtonorGSMDA(MDASequential):
         try:
             mda_i = self.mda_sequence[1]
             mda_i.reset_statuses_for_run()
-            dm_values = deepcopy(self.disciplines[0].dm.get_data_dict_values())
-            self.local_data = mda_i.execute(self.local_data)
+            dm_values = deepcopy(self._disciplines[0].dm.get_data_dict_values())
+            self.io.data = mda_i.execute(self.io.data)
         except:
-            LOGGER.warning(
-                'The GSPureNewtonMDA has not converged try with MDAGaussSeidel')
+            LOGGER.warning('The GSPureNewtonMDA has not converged try with MDAGaussSeidel')
             mda_i = self.mda_sequence[0]
             mda_i.reset_statuses_for_run()
-            dm = self.disciplines[0].ee.dm
+            dm = self._disciplines[0].ee.dm
             # set values directrly in dm to avoid reconfigure of disciplines
             dm.set_values_from_dict(dm_values)
             # self.disciplines[0].ee.load_study_from_input_dict(dm_values)
-            self.local_data = mda_i.execute(self.local_data)
+            self.io.data = mda_i.execute(self.io.data)
 
         self.residual_history += mda_i.residual_history

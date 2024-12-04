@@ -36,7 +36,7 @@ class Study(StudyManager):
         # coupling_name = 'subprocess'
         coupling_name = 'D1_D3_Coupling'
 
-        dspace_dict = {'variable': [f'Eval.{coupling_name}.Disc1.b', 'Eval.{coupling_name}.z', ],
+        dspace_dict = {'variable': [f'{coupling_name}.Disc1.b', f'{coupling_name}.z', ],
                        'lower_bnd': [0., 0.],
                        'upper_bnd': [10., 10.],
                        }
@@ -60,7 +60,7 @@ class Study(StudyManager):
         n_samples = 20
         disc_dict[f'{ns}.SampleGenerator.sampling_method'] = 'doe_algo'
         disc_dict[f'{ns}.SampleGenerator.sampling_generation_mode'] = 'at_run_time'
-        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "lhs"
+        disc_dict[f'{ns}.SampleGenerator.sampling_algo'] = "PYDOE_LHS"
         disc_dict[f'{ns}.SampleGenerator.design_space'] = dspace
         disc_dict[f'{ns}.SampleGenerator.algo_options'] = {
             'n_samples': n_samples}

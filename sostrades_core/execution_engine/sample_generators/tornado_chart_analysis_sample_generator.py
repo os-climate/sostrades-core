@@ -145,7 +145,7 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
             # set samples_df not editable
             proxy.ee.dm.set_data(samples_df_full_path, proxy.EDITABLE, False, check_value=False)
 
-    def _generate_samples(self, variation_list, dict_of_value, proxy):
+    def generate_samples(self, variation_list, dict_of_value, proxy):
         """
         generate samples: each scenario is a percentage applied to one of the variables.
         First scenario is the reference scenario (0% of variation)

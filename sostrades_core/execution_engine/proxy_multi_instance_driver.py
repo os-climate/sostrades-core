@@ -98,9 +98,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
-        self.add_reference_mode(disc_in)
-        self.add_gather_outputs()
-
+        dynamic_inputs_ref_mode = self.add_reference_mode(disc_in)
+        dynamic_inputs_scatter_map = self.add_scatter_map_inputs()
+        self.add_inputs(dynamic_inputs_ref_mode | dynamic_inputs_scatter_map)
     def configure_sample_generator(self):
         """
         Configuration of the associated sample generator discipline for multi-instance driver is as in the general case
@@ -135,9 +135,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         self.scenarios = [disc for disc in self.scenarios if disc not in list_children]
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
+    def create_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
         """
-        No need to create a MDODisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
+        No need to create a DisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
         """
         pass
 
@@ -181,21 +181,20 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                                             self.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
                                             self.STRUCTURING: True}})
 
-        self.add_inputs(dynamic_inputs)
+        return dynamic_inputs
 
-    def add_gather_outputs(self):
+    def add_scatter_map_inputs(self):
         '''
 
-        Add gather output variables to dynamic desc_out to deal with gather option (autogather and gather_outputs)
+        Add scatter map input variables to dynamic desc_in
 
         '''
-        dynamic_outputs = {}
+        dynamic_inputs = {}
         # so that eventual mono-instance outputs get clear
         if self.builder_tool is not None:
-            dynamic_output_from_tool = self.builder_tool.get_dynamic_output_from_tool()
-            dynamic_outputs.update(dynamic_output_from_tool)
+            dynamic_inputs = self.builder_tool.get_dynamic_input_from_tool()
 
-        self.add_outputs(dynamic_outputs)
+        return dynamic_inputs
 
     def configure_tool(self):
         '''

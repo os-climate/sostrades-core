@@ -16,5 +16,19 @@ limitations under the License.
 '''
 
 import logging
+import os
+from os.path import dirname, join
 
 logging.basicConfig(level=logging.INFO)
+
+# set-up the folder where GEMSEO will look-up for new wrapps (solvers, grammars etc)
+logging.getLogger('gemseo').setLevel('DEBUG')
+parent_dir = dirname(__file__)
+GEMSEO_ADDON_DIR = "gemseo_addon"
+EXEC_ENGINE = "execution_engine"
+
+os.environ["GEMSEO_PATH"] = join(parent_dir, EXEC_ENGINE, GEMSEO_ADDON_DIR)
+# TODO hotfix for the gemseo circular import : first import gemseo to resolve base gemseo classes, then force refresh of factories
+# Should not be needed after a fix in gemseo code for factories
+import gemseo  # noqa: E402, F401
+

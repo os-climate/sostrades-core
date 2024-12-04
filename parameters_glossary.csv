@@ -1,6 +1,6 @@
 id,label,unit,definition,definitionSource,ACLTag
 algo,Optimization Algorithm,,Optimization algorithm from GEMSEO library among the available list,,
-acceleration,MDA Acceleration Method,,Acceleration method for MDA algorithms,,
+acceleration_method,MDA Acceleration Method,,Acceleration method for MDA algorithms,,
 algo_options,Algorithm options,,Options for the chosen optimization algorithm ,,
 builder_mode,Builder Model,-,,,
 approximate_jacobian,approximate_jacobian,[-],,,
@@ -66,7 +66,7 @@ parallel_options,Parallel Options,,Parallel options of the optimization problem 
 power,Power,,,,
 Product_list,List of Products,,List of Products,,
 propagate_cache_to_children,Propagate Cache,,Propagate Cache to children disciplines,,
-relax_factor,Relaxation Factor,,,,
+over_relaxation_factor,Relaxation Factor,,,,
 repo_of_sub_processes,Repository of subprocesses,,Folder root of the sub processes to be nested inside the DoE. If 'None' then it uses the sos_processes python for doe creation.,,
 resource_list,Resource List,,"coal, gas, oil, uranium",,
 sale_price_dict,Sale price per program,,Sale price of an aircraft per program,,CC - Costs
@@ -89,7 +89,7 @@ scenario_name,Scenario Name,,,,
 scenario_name_dict,Scenarii Dict,,,,
 scenario_name_trade,Scenario Name Trade,,,,
 sensitivity_outputs,Sensitivity Outputs,,,,D - Nominal property
-sub_mda_class,Sub MDA Class,,The class to instantiate for sub Multi-disciplinary Design Analysis,,D - Nominal property
+inner_mda_name,Sub MDA Class,,The class to instantiate for sub Multi-disciplinary Design Analysis,,D - Nominal property
 sub_process_folder_name,Folder name of the subprocess,,Selected process folder name to be nested inside the DoE.If 'None' then it uses the sos_processes python for doe creation.,,
 subsystems_list,SubSystems List,,,,
 tolerance,Tolerance,,"Tolerance of the iterative direct coupling solver, norm of the current residuals divided by initial residuals norm shall be lower than the tolerance to stop iterating",,

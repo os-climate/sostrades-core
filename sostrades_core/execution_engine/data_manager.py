@@ -24,12 +24,12 @@ from uuid import uuid4
 
 import pandas as pd
 from gemseo.caches.simple_cache import SimpleCache
-from gemseo.utils.compare_data_manager_tooling import compare_dataframes, dict_are_equal
 from pandas import concat
 
 from sostrades_core.datasets.dataset_manager import DatasetsManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.compare_data_manager_tooling import compare_dataframes, dict_are_equal
 from sostrades_core.tools.ontology_variables.ontology_variable_key import create_data_key
 from sostrades_core.tools.tree.serializer import DataSerializer
 from sostrades_core.tools.tree.treeview import TreeView
@@ -55,7 +55,7 @@ VAR_NAME = ProxyDiscipline.VAR_NAME
 DATAFRAME_DESCRIPTOR = ProxyDiscipline.DATAFRAME_DESCRIPTOR
 DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
-
+DISPLAY_NAME = ProxyDiscipline.DISPLAY_NAME
 
 @dataclass()
 class ParameterChange:
@@ -173,12 +173,12 @@ class DataManager:
             in_names = list(cached_inputs.keys())
             cached_outputs = serialized_cache[1]['outputs']
             out_names = list(cached_outputs.keys())
-            empty_cache.cache_outputs(cached_inputs, in_names,
-                                      cached_outputs, out_names)
+            empty_cache.cache_outputs(cached_inputs,
+                                      cached_outputs)
             #
             if 'jacobian' in serialized_cache[1]:
                 cached_jac = serialized_cache[1]['jacobian']
-                empty_cache.cache_jacobian(cached_inputs, in_names, cached_jac)
+                empty_cache.cache_jacobian(cached_inputs, cached_jac)
         else:
             self.logger.error(
                 f'Only simple cache dump/load is handled for now but discipline {empty_cache.name} has a cache as {empty_cache.__class__}')
@@ -266,7 +266,7 @@ class DataManager:
                     fname, TYPE_METADATA)
             # local data update
             data["local_data"].update(
-                d.mdo_discipline_wrapp.mdo_discipline.local_data)
+                d.discipline_wrapp.discipline.io.data)
         return data
 
     def get_value(self, var_f_name):
@@ -399,8 +399,10 @@ class DataManager:
                 is_output_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
                 # check if this is a strongly coupled input necessary to
                 # initialize a MDA
-                is_init_coupling_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and dm_data[ProxyDiscipline.COUPLING]
-                if ((out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
+                is_init_coupling_var = dm_data[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and dm_data[
+                    ProxyDiscipline.COUPLING]
+                if ((out_vars and is_output_var) or (
+                        init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                     new_value = convert_values_dict[key][VALUE]
                     self.apply_parameter_change(key, new_value, parameter_changes)
                     already_set_data.add(key)
@@ -408,7 +410,7 @@ class DataManager:
     def fill_data_dict_from_datasets(self, datasets_mapping: DatasetsMapping,
                                      already_set_data: set[str], parameter_changes: list[ParameterChange],
                                      in_vars: bool, init_coupling_vars: bool, out_vars: bool
-    ) -> None:
+                                     ) -> None:
         '''
         Set values in data_dict from datasets
 
@@ -440,10 +442,12 @@ class DataManager:
             is_output_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_OUT
             # check if this is a strongly coupled input necessary to
             # initialize a MDA
-            is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[ProxyDiscipline.COUPLING]
+            is_init_coupling_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN and data_value[
+                ProxyDiscipline.COUPLING]
             # get all input values not already set
             is_in_var = data_value[ProxyDiscipline.IO_TYPE] == ProxyDiscipline.IO_TYPE_IN
-            if (in_vars and is_in_var or (out_vars and is_output_var) or (init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
+            if (in_vars and is_in_var or (out_vars and is_output_var) or (
+                    init_coupling_vars and is_init_coupling_var)) and key not in already_set_data:
                 data_ns = data_value[NS_REFERENCE].value
                 data_name = data_value[VAR_NAME]
                 data_type = data_value[TYPE]
@@ -470,11 +474,13 @@ class DataManager:
                     connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
                     dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_info_id
                     dataset_data_name = datasets_info[new_data[DatasetsManager.DATASET_INFO]].get(data_name, data_name)
-                    dataset_data_path = self.dataset_manager.get_path_to_dataset_data(new_data[DatasetsManager.DATASET_INFO],
-                                                                                 dataset_data_name,
-                                                                                 data_dict[TYPE][data_name])
+                    dataset_data_path = self.dataset_manager.get_path_to_dataset_data(
+                        new_data[DatasetsManager.DATASET_INFO],
+                        dataset_data_name,
+                        data_dict[TYPE][data_name])
                     io_type = self.data_dict[key][ProxyDiscipline.IO_TYPE]
-                    discipline_name = self.disciplines_dict.get(self.data_dict[key].get('model_origin')).get('model_name_full_path')
+                    discipline_name = self.disciplines_dict.get(self.data_dict[key].get('model_origin')).get(
+                        'model_name_full_path')
                     variable_key = create_data_key(discipline_name, io_type, data_name)
                     # dataset_parameter_id = new_data[DatasetsManager.DATASET_INFO].dataset_parameter_id
                     self.apply_parameter_change(key, new_value, parameter_changes,
@@ -517,8 +523,8 @@ class DataManager:
             if not dict_are_equal({VALUE: old_value}, {VALUE: new_value}):
                 parameter_changes.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                          variable_type=dm_data[TYPE],
-                                                         old_value=deepcopy(old_value),     # FIXME: deepcopies avoidable ?
-                                                         new_value=deepcopy(new_value),     # FIXME: deepcopies avoidable ?
+                                                         old_value=deepcopy(old_value),  # FIXME: deepcopies avoidable ?
+                                                         new_value=deepcopy(new_value),  # FIXME: deepcopies avoidable ?
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
                                                          dataset_parameter_id=dataset_parameter_id,
@@ -550,7 +556,9 @@ class DataManager:
             data_value = data_value[VALUE]
 
             # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
-            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY: {}, DatasetsMapping.TYPE: {}, DatasetsMapping.VALUE: {}})
+            namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns,
+                                                                     {DatasetsMapping.KEY: {}, DatasetsMapping.TYPE: {},
+                                                                      DatasetsMapping.VALUE: {}})
             namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
             namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
             namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value
@@ -578,11 +586,12 @@ class DataManager:
                     connector_id = dataset.connector_id
                     dataset_id = dataset.dataset_info_id
                     dataset_data_path = self.dataset_manager.get_path_to_dataset_data(dataset,
-                                                                                 data_dataset_name,
-                                                                                 type)
+                                                                                      data_dataset_name,
+                                                                                      type)
                     # build ontology key
                     io_type = self.data_dict[key][ProxyDiscipline.IO_TYPE]
-                    discipline_name = self.disciplines_dict.get(self.data_dict[key].get('model_origin')).get('model_name_full_path')
+                    discipline_name = self.disciplines_dict.get(self.data_dict[key].get('model_origin')).get(
+                        'model_name_full_path')
                     variable_key = create_data_key(discipline_name, io_type, self.data_dict[key].get('var_name'))
 
                     exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
@@ -592,9 +601,9 @@ class DataManager:
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
                                                          dataset_parameter_id=key,
-                                                         date=datetime.now(),
-                                                         dataset_data_path=dataset_data_path,
-                                                         variable_key=variable_key))
+                                                               date=datetime.now(),
+                                                               dataset_data_path=dataset_data_path,
+                                                               variable_key=variable_key))
 
         return exported_parameters
 
@@ -615,7 +624,7 @@ class DataManager:
             else:
                 display_name = self.get_var_display_name(data_id)
 
-            data_info['display_name'] = display_name
+            data_info[DISPLAY_NAME] = display_name
             display_data_dict[self.get_var_full_name(data_id)] = data_info
 
         return display_data_dict
@@ -635,7 +644,8 @@ class DataManager:
         if 'numerical' in excepted:
             exception_list = list(ProxyDiscipline.NUM_DESC_IN.keys())
 
-        data_dict_values = {key: value.get(attr, None) for key, value in data_dict.items() if key.split('.')[-1] not in exception_list}
+        data_dict_values = {key: value.get(attr, None) for key, value in data_dict.items() if
+                            key.split('.')[-1] not in exception_list}
 
         return data_dict_values
 
@@ -973,6 +983,7 @@ class DataManager:
         # loop on sosc and append couplings data
         if sosc_list != []:
             sosc = sosc_list.pop()
+            sosc._build_coupling_structure()
             df = sosc.export_couplings()
             for sosc in sosc_list:
                 df_sosc = sosc.export_couplings()
@@ -1067,7 +1078,8 @@ class DataManager:
                 elif var_f_name in self.no_check_default_variables:
                     return False
                 elif isinstance(data1[data_name], pd.DataFrame) and isinstance(data2[data_name], pd.DataFrame):
-                    return compare_dataframes(data1[data_name], data2[data_name], tree=None, error=None, df_equals=False)
+                    return compare_dataframes(data1[data_name], data2[data_name], tree=None, error=None,
+                                              df_equals=False)
                 else:
                     return str(data1[data_name]) != str(data2[data_name])
 

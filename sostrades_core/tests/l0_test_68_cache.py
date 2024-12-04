@@ -20,6 +20,8 @@ import unittest
 from copy import deepcopy
 from os import remove
 
+from gemseo.core.discipline.discipline import Discipline
+
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
@@ -88,30 +90,31 @@ class TestCache(unittest.TestCase):
         res_1 = self.ee.execute()
 
         # check cache is None
-        self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
+        self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), Discipline.CacheType.NONE)
         self.assertEqual(self.ee.dm.get_value(
-            'SoSDisc.Disc1.cache_type'), 'None')
+            'SoSDisc.Disc1.cache_type'), Discipline.CacheType.NONE)
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
+            self.ee.root_process.discipline_wrapp.discipline.cache, None)
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
+            self.ee.root_process.discipline_wrapp.discipline.mdo_chain.cache, None)
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache, None)
+            self.ee.root_process.discipline_wrapp.discipline.disciplines[0].cache, None)
         # get number of calls after first call
-        n_call_root_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
-            0].n_calls
+        n_call_root_1 = self.ee.root_process.discipline_wrapp.discipline.execution_statistics.n_executions
+        n_call_1 = self.ee.root_process.discipline_wrapp.discipline.disciplines[
+            0].execution_statistics.n_executions
 
         # second execute without change of parameters
         res_2 = self.ee.execute()
 
         # get number of calls after second call
-        n_call_root_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
-            0].n_calls
+        n_call_root_2 = self.ee.root_process.discipline_wrapp.discipline.execution_statistics.n_executions
+        n_call_2 = self.ee.root_process.discipline_wrapp.discipline.disciplines[
+            0].execution_statistics.n_executions
 
-        self.assertEqual(n_call_root_2, n_call_root_1 + 1)
-        self.assertEqual(n_call_2, n_call_1 + 1)
+        self.assertEqual(n_call_root_2, n_call_root_1)
+        # same number of calls because no cache
+        self.assertEqual(n_call_2, n_call_1)
 
         # ACTIVATE SIMPLE CACHE ROOT PROCESS
 
@@ -125,44 +128,45 @@ class TestCache(unittest.TestCase):
         self.assertEqual(self.ee.dm.get_value(
             'SoSDisc.Disc1.cache_type'), 'SimpleCache')
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__, 'SimpleCache')
+            self.ee.root_process.discipline_wrapp.discipline.cache.__class__.__name__, 'SimpleCache')
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache.__class__.__name__, 'SimpleCache')
+            self.ee.root_process.discipline_wrapp.discipline.mdo_chain.cache.__class__.__name__, 'SimpleCache')
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[0].cache.__class__.__name__,
+            self.ee.root_process.discipline_wrapp.discipline.disciplines[0].cache.__class__.__name__,
             'SimpleCache')
         # get number of calls after first call
-        n_call_root_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines[
-            0].n_calls
+        n_call_root_1 = self.ee.root_process.discipline_wrapp.discipline.execution_statistics.n_executions
+        n_call_1 = self.ee.root_process.discipline_wrapp.discipline.disciplines[
+            0].execution_statistics.n_executions
 
         # second execute without change of parameters
         res_2 = self.ee.execute()
 
         # get number of calls after second call
-        n_call_root_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_2 = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.n_calls
+        n_call_root_2 = self.ee.root_process.discipline_wrapp.discipline.execution_statistics.n_executions
+        n_call_2 = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.execution_statistics.n_executions
 
-        self.assertEqual(n_call_root_2, n_call_root_1)
-        self.assertEqual(n_call_2, n_call_1)
+        self.assertEqual(n_call_root_2, 0)
+        # No call because cache is active
+        self.assertEqual(n_call_2, 0)
 
         # DESACTIVATE CACHE
 
-        values_dict[f'{self.name}.cache_type'] = 'None'
+        values_dict[f'{self.name}.cache_type'] = Discipline.CacheType.NONE
         self.ee.load_study_from_input_dict(values_dict)
 
         self.ee.prepare_execution()
 
         # check cache is None
-        self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), 'None')
+        self.assertEqual(self.ee.dm.get_value('SoSDisc.cache_type'), Discipline.CacheType.NONE)
         self.assertEqual(self.ee.dm.get_value(
-            'SoSDisc.Disc1.cache_type'), 'None')
+            'SoSDisc.Disc1.cache_type'), Discipline.CacheType.NONE)
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
+            self.ee.root_process.discipline_wrapp.discipline.cache, None)
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
+            self.ee.root_process.discipline_wrapp.discipline.mdo_chain.cache, None)
         self.assertEqual(
-            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache, None)
+            self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.cache, None)
 
         # ACTIVATE CACHE FOR DISC1 ONLY
 
@@ -172,29 +176,29 @@ class TestCache(unittest.TestCase):
         self.ee.prepare_execution()
 
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.cache, None)
+            self.ee.root_process.discipline_wrapp.discipline.cache, None)
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.mdo_chain.cache, None)
+            self.ee.root_process.discipline_wrapp.discipline.mdo_chain.cache, None)
         self.assertEqual(
-            self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.cache.__class__.__name__,
+            self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.cache.__class__.__name__,
             'SimpleCache')
 
         # first execute
         res_1 = self.ee.execute()
         # get number of calls after first call
-        n_call_root_1 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_1 = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.n_calls
+        n_call_root_1 = self.ee.root_process.discipline_wrapp.discipline.execution_statistics.n_executions
+        n_call_1 = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.execution_statistics.n_executions
 
         # second execute without change of parameters
         res_2 = self.ee.execute()
 
         # get number of calls after second call
-        n_call_root_2 = self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls
-        n_call_2 = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.n_calls
+        n_call_root_2 = self.ee.root_process.discipline_wrapp.discipline.execution_statistics.n_executions
+        n_call_2 = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.execution_statistics.n_executions
 
-        # 2 calls for root process, 1 call for Disc1
-        self.assertEqual(n_call_root_2, n_call_root_1 + 1)
-        self.assertEqual(n_call_2, n_call_1)
+        # 2 calls for root process (not restarted at prepare execution), 0 call for Disc1 (new disc with cache created, no calls)
+        self.assertEqual(n_call_root_2, 1)
+        self.assertEqual(n_call_2, 0)
 
     def test_2_test_cache_discipline_with_input_change(self):
         '''
@@ -213,23 +217,23 @@ class TestCache(unittest.TestCase):
         # first execute
         self.ee.execute()
         # get number of calls after first call
-        n_call_1 = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.n_calls
+        n_call_1 = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.execution_statistics.n_executions
 
         # second execute with change of a private parameter
         values_dict[f'{self.name}.Disc1.a'] = 1.
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # get number of calls after second call
-        n_call_2 = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.n_calls
-        self.assertEqual(n_call_2, n_call_1 + 1)
+        n_call_2 = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.execution_statistics.n_executions
+        self.assertEqual(n_call_2, n_call_1)
 
         # third execute with change of a protected parameter
         values_dict[f'{self.name}.x'] = 1.
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # get number of calls after third call
-        n_call_2 = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.n_calls
-        self.assertEqual(n_call_2, n_call_1 + 2)
+        n_call_2 = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.execution_statistics.n_executions
+        self.assertEqual(n_call_2, n_call_1)
 
     def test_3_test_cache_coupling_without_input_change(self):
         '''
@@ -254,10 +258,10 @@ class TestCache(unittest.TestCase):
         self.ee.execute()
         # check nb of calls of sos_coupling
         self.assertEqual(
-            self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+            self.ee.root_process.discipline_wrapp.discipline.execution_statistics.n_executions, 0)
         # check nb of calls of subdisciplines
-        for disc in self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.disciplines:
-            self.assertEqual(disc.n_calls, 1)
+        for disc in self.ee.root_process.discipline_wrapp.discipline.disciplines:
+            self.assertEqual(disc.execution_statistics.n_executions, 0)
 
     def test_4_test_cache_coupling_with_input_change(self):
         '''
@@ -281,21 +285,21 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-        n_calls_sosc = n_calls_disc1 = n_calls_disc2 = 0
+
 
         # first execute
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 1
         # check
         self.assertEqual(
-            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+            sos_coupl.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -303,15 +307,15 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # second execute with modif on privates on second discipline
         # so that all disciplines are executed twice
@@ -319,30 +323,30 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 0
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 0
+        n_calls_disc2 = 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # third execute with modif on a protected variable
         values_dict[f'{self.name}.x'] = 2.
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 1
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_5_cache_coupling_wo_change_of_strings(self):
         '''
@@ -389,35 +393,34 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-        n_calls_sosc = n_calls_disc1 = n_calls_disc2 = 0
 
         # first execution
         self.ee.execute()
         # ref update
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 1
 
         # check
         self.assertEqual(
-            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+            sos_coupl.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # second execution w/o change
         self.ee.execute()
         # ref update
-        n_calls_sosc += 0
-        n_calls_disc1 += 0
-        n_calls_disc2 += 0
+        n_calls_sosc = 0
+        n_calls_disc1 = 0
+        n_calls_disc2 = 0
         # check
         # self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_6_test_cache_coupling_with_string_change(self):
         '''
@@ -462,21 +465,20 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-        n_calls_sosc = n_calls_disc1 = n_calls_disc2 = 0
 
         # first execute
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 1
         # check
         self.assertEqual(
-            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+            sos_coupl.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -484,15 +486,13 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
-        # check
-        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # third execute with modif on privates on second discipline
         # so that all disciplines are executed twice
@@ -501,15 +501,14 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 0
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 0
+        n_calls_disc2 = 1
         # check
-        #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # fourth execute with second modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -517,15 +516,15 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -534,15 +533,15 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_7_test_cache_coupling_with_string_of_dict_change(self):
         '''
@@ -584,21 +583,20 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-        n_calls_sosc = n_calls_disc1 = n_calls_disc2 = 0
 
         # first execute
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 1
         # check
         self.assertEqual(
-            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+            sos_coupl.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -607,15 +605,15 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -626,15 +624,14 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_8_test_cache_coupling_with_string_list_change(self):
         '''
@@ -673,21 +670,20 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-        n_calls_sosc = n_calls_disc1 = n_calls_disc2 = 0
 
         # first execute
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 1
         # check
         self.assertEqual(
-            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+            sos_coupl.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -695,15 +691,14 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -712,38 +707,39 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         values_dict[f'{self.name}.Disc1.an_input_2'] = ['AC1', 'AC2']
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
 
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # last execute without changes
         self.ee.execute()
+
+        n_calls_disc1 = 0
+        n_calls_disc2 = 0
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_9_test_cache_coupling_with_string_list_of_dict_change(self):
         '''
@@ -784,21 +780,21 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-        n_calls_sosc = n_calls_disc1 = n_calls_disc2 = 0
+
 
         # first execute
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 1
         # check
         self.assertEqual(
-            sos_coupl.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+            sos_coupl.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # second execute with modif on privates on first discipline
         # so that all disciplines are executed twice
@@ -807,15 +803,15 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        n_calls_disc2 = 0
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # fifth execute with second modif on privates on first discipline
         # but the same as the first execute : all disciplines must be
@@ -825,28 +821,32 @@ class TestCache(unittest.TestCase):
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
         # ref
-        n_calls_sosc += 1
-        n_calls_disc1 += 1
-        # n_calls_disc2 += 1
+        n_calls_sosc = 1
+        n_calls_disc1 = 1
+        # n_calls_disc2 = 1
 
         # check
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
         # last execute without changes
         self.ee.execute()
+
+        n_calls_disc1 = 0
+        n_calls_disc2 = 0
+
         #         self.assertEqual(sos_coupl.n_calls, n_calls_sosc)
         self.assertEqual(
-            disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+            disc1.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc1)
         self.assertEqual(
-            disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+            disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     # def _test_10_cache_on_sellar_optim_gemseo_scenario(self):
     #     '''
-    #     Test commented because it builds the process with MDODiscipline objects without using Execution Engine,
+    #     Test commented because it builds the process with Discipline objects without using Execution Engine,
     #     so that can't call SoSDiscipline method (_convert_new_type_into_array in MDA)
     #     '''
     #
@@ -861,7 +861,7 @@ class TestCache(unittest.TestCase):
     #                            objective_name='obj',
     #                            design_space=design_space,
     #                            tolerance=1e-8,
-    #                            sub_mda_class='MDAGaussSeidel')  # 'MDAJacobi'
+    #                            inner_mda_name='MDAGaussSeidel')  # 'MDAJacobi'
     #     scenario.set_differentiation_method("user")  # user
     #
     #     # add constraints
@@ -907,7 +907,7 @@ class TestCache(unittest.TestCase):
     #
     #     # run evaluate_function
     #     print("\n ***** Evaluate functions\n")
-    #     scenario.formulation.opt_problem.evaluate_functions()
+    #     scenario.formulation.optimization_problem.evaluate_functions()
     #
     #     for disc in scenario.formulation.disciplines:
     #         print("\n \t " + str(disc.name))
@@ -947,7 +947,7 @@ class TestCache(unittest.TestCase):
     #     dspace = pd.DataFrame(dspace_dict)
     #
     #     disc_dict = {}
-    #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.sub_mda_class'] = 'MDAGaussSeidel'
+    #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.inner_mda_name'] = 'MDAGaussSeidel'
     #     disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
     #     disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
     #     disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
@@ -974,7 +974,7 @@ class TestCache(unittest.TestCase):
     #             check_cache_name(sub_disc, cache_name)
     #         if isinstance(disc, ProxyCoupling):
     #             check_cache_name(disc.mdo_chain, cache_name)
-    #             for sub_mda in disc.sub_mda_list:
+    #             for sub_mda in disc.inner_mdas:
     #                 check_cache_name(sub_mda, cache_name)
     #
     #     check_cache_name(self.ee.root_process, 'NoneType')
@@ -1013,7 +1013,7 @@ class TestCache(unittest.TestCase):
     #     dspace = pd.DataFrame(dspace_dict)
     #
     #     disc_dict = {}
-    #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.sub_mda_class'] = 'MDAGaussSeidel'
+    #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.inner_mda_name'] = 'MDAGaussSeidel'
     #     disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
     #     disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
     #     disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
@@ -1462,7 +1462,7 @@ class TestCache(unittest.TestCase):
     #     Checks that both SoSTrades and GEMSEO objects have status PENDING after a second prepare_execution and go DONE
     #     when the coupling loads cache.
     #     '''
-    #     from gemseo.core.discipline import MDODiscipline
+    #     from gemseo.core.discipline import Discipline
     #
     #     ns_dict = {'ns_ac': self.name}
     #
@@ -1501,14 +1501,14 @@ class TestCache(unittest.TestCase):
     #     disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
     #     disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
     #     sos_coupl = self.ee.root_process
-    #     n_calls_sosc = n_calls_disc1 = n_calls_disc2 = 0
+    #
     #
     #     # first execution
     #     self.ee.execute()
     #     # ref update
-    #     n_calls_sosc += 1
-    #     n_calls_disc1 += 1
-    #     n_calls_disc2 += 1
+    #     n_calls_sosc = 1
+    #     n_calls_disc1 = 1
+    #     n_calls_disc2 = 1
     #
     #     # check that status are DONE after the first execution both on
     #     # SOSTRADES and GEMSEO side
@@ -1519,11 +1519,11 @@ class TestCache(unittest.TestCase):
     #     self.assertEqual(
     #         self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.proxy_disciplines[1].discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
     #
     #     # check that status are PENDING after the second prepare execution
     #     self.ee.prepare_execution()
@@ -1534,26 +1534,26 @@ class TestCache(unittest.TestCase):
     #     self.assertEqual(
     #         self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_PENDING)
     #     self.assertEqual(
-    #         self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+    #         self.ee.root_process.discipline_wrapp.discipline.status, Discipline.STATUS_PENDING)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+    #         self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.status, Discipline.STATUS_PENDING)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+    #         self.ee.root_process.proxy_disciplines[1].discipline_wrapp.discipline.status, Discipline.STATUS_PENDING)
     #
     #     # second execution w/o change
     #     self.ee.execute()
     #     # ref update
-    #     n_calls_sosc += 0
-    #     n_calls_disc1 += 0
-    #     n_calls_disc2 += 0
+    #     n_calls_sosc = 0
+    #     n_calls_disc1 = 0
+    #     n_calls_disc2 = 0
     #
     #     # check that no discipline ran
     #     self.assertEqual(
-    #         self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+    #         self.ee.root_process.discipline_wrapp.discipline.n_calls, n_calls_sosc)
     #     self.assertEqual(
-    #         disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+    #         disc1.discipline_wrapp.discipline.n_calls, n_calls_disc1)
     #     self.assertEqual(
-    #         disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+    #         disc2.discipline_wrapp.discipline.n_calls, n_calls_disc2)
     #
     #     # check that the status are done after non-execution
     #     self.assertEqual(self.ee.root_process.status,
@@ -1563,11 +1563,11 @@ class TestCache(unittest.TestCase):
     #     self.assertEqual(
     #         self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.proxy_disciplines[1].discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
     #
     #     # third execute with change of a private parameter of the second
     #     # discipline
@@ -1583,26 +1583,26 @@ class TestCache(unittest.TestCase):
     #     self.assertEqual(
     #         self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_PENDING)
     #     self.assertEqual(
-    #         self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+    #         self.ee.root_process.discipline_wrapp.discipline.status, Discipline.STATUS_PENDING)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+    #         self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.status, Discipline.STATUS_PENDING)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_PENDING)
+    #         self.ee.root_process.proxy_disciplines[1].discipline_wrapp.discipline.status, Discipline.STATUS_PENDING)
     #
     #     self.ee.execute()
     #
     #     # ref update
-    #     n_calls_sosc += 1
-    #     n_calls_disc1 += 0
-    #     n_calls_disc2 += 1
+    #     n_calls_sosc = 1
+    #     n_calls_disc1 = 0
+    #     n_calls_disc2 = 1
     #
     #     # check that disc1 did not run
     #     self.assertEqual(
-    #         self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_sosc)
+    #         self.ee.root_process.discipline_wrapp.discipline.n_calls, n_calls_sosc)
     #     self.assertEqual(
-    #         disc1.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc1)
+    #         disc1.discipline_wrapp.discipline.n_calls, n_calls_disc1)
     #     self.assertEqual(
-    #         disc2.mdo_discipline_wrapp.mdo_discipline.n_calls, n_calls_disc2)
+    #         disc2.discipline_wrapp.discipline.n_calls, n_calls_disc2)
     #
     #     # check that the status are DONE after some disciplines executed and
     #     # some did not
@@ -1613,11 +1613,11 @@ class TestCache(unittest.TestCase):
     #     self.assertEqual(
     #         self.ee.root_process.proxy_disciplines[1].status, ProxyDiscipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
     #     self.assertEqual(
-    #         self.ee.root_process.proxy_disciplines[1].mdo_discipline_wrapp.mdo_discipline.status, MDODiscipline.STATUS_DONE)
+    #         self.ee.root_process.proxy_disciplines[1].discipline_wrapp.discipline.status, Discipline.STATUS_DONE)
 
 
 if __name__ == "__main__":

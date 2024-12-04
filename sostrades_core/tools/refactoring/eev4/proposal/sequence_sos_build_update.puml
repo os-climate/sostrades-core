@@ -23,10 +23,10 @@ User -> ExecEngine: prepare_exec
 ExecEngine -> ProxyCoupling: prepare_exec
 ProxyCoupling -> ProxyDiscipline: prepare_exec
 ProxyDiscipline -> ProxyDiscipline : prepare_exec
-ProxyDiscipline -> MDODiscipline : init
+ProxyDiscipline -> Discipline : init
 
 User -> ExecEngine: execute(data)
 ExecEngine -> DataManager: load_values(data)
 ExecEngine -> MDAChain: execute
-MDAChain -> MDODiscipline : execute
+MDAChain -> Discipline : execute
 @enduml

@@ -19,7 +19,6 @@ import logging
 import re
 
 import pandas as pd
-from gemseo.utils.compare_data_manager_tooling import dict_are_equal
 
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
     SampleGeneratorWrapper,
@@ -27,6 +26,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
+from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 
 class MultipliersWrapper(SoSWrapp):
@@ -152,8 +152,8 @@ class MultipliersWrapper(SoSWrapp):
         eval_disc_in = self.eval_disc.get_data_in()
         # self.add_disc_to_config_dependency_disciplines(self.eval_disc) # creates a cycle...
         # for disc in self.get_father_executor().proxy_disciplines:
-        #     if not hasattr(disc.mdo_discipline_wrapp, 'wrapper') \
-        #        or not isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
+        #     if not hasattr(disc.discipline_wrapp, 'wrapper') \
+        #        or not isinstance(disc.discipline_wrapp.wrapper, MultipliersWrapper):
         #         self.add_disc_to_config_dependency_disciplines(disc)
 
         dynamic_inputs.update({self.EVAL_INPUTS: {self.TYPE: 'dataframe',
@@ -212,8 +212,8 @@ class MultipliersWrapper(SoSWrapp):
         '''
         poss_in_values_full = []
         poss_out_values_full = []
-        if hasattr(disc.mdo_discipline_wrapp, 'wrapper') and \
-                isinstance(disc.mdo_discipline_wrapp.wrapper, MultipliersWrapper):
+        if hasattr(disc.discipline_wrapp, 'wrapper') and \
+            isinstance(disc.discipline_wrapp.wrapper, MultipliersWrapper):
             pass
         else:
             disc_in = disc.get_data_in()

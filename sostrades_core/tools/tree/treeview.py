@@ -99,7 +99,7 @@ class TreeView:
 
         # Now populate each node with their process parameter
         for key, val in data_dict.items():
-            display_key = val['display_name']
+            display_key = val[ProxyDiscipline.DISPLAY_NAME]
             # Each key contains variable namespace followed by its name
             # ns1.ns1.variable_name
             # Special case for public variables which are associated to the upper node level
@@ -114,9 +114,9 @@ class TreeView:
 
             else:
                 try:  # Todo review this code because access on exec engine attribute is not correct
-                        # Also do not forget this is here to hide misplaced
-                        # output variables in treeview (ns_ac related)
-                    if val['io_type'] == 'in':
+                    # Also do not forget this is here to hide misplaced
+                    # output variables in treeview (ns_ac related)
+                    if val[IO_TYPE] == TYPE_IN and val[ProxyDiscipline.EDITABLE]:
                         treenode = self.add_treenode(
                             None, namespace.split(NS_SEP))
                         self.set_treenode_data(treenode, key, val, disc_dict)
@@ -146,18 +146,21 @@ class TreeView:
             treenode.data[key] = {k: v for k, v in val.items()}
 
             # retrieve model name full path for variable key
-            model_name_full_path = val['model_origin']
-            io_type = val['io_type']
-            if val['model_origin'] in disc_dict.keys():
-                discipline_info = disc_dict[val['model_origin']]
-                model_name_full_path = discipline_info["model_name_full_path"]
-                var_name = val['var_name']
-                # Check if the data is a stron,g coupling (the ee set it to input but it is an output)
-                if val['io_type'] == 'in' and var_name not in discipline_info['reference']._data_in.keys() \
-                    and var_name in discipline_info['reference']._data_out.keys():
-                    io_type = 'out'
+            model_name_full_path = val[ProxyDiscipline.ORIGIN]
+            io_type = val[IO_TYPE]
+            if val[ProxyDiscipline.ORIGIN] in disc_dict.keys():
+                discipline_info = disc_dict[val[ProxyDiscipline.ORIGIN]]
+                model_name_full_path = discipline_info[ProxyDiscipline.MODEL_NAME_FULL_PATH]
+                var_name = val[ProxyDiscipline.VAR_NAME]
+                # Check if the data is a strong coupling (the ee set it to input but it is an output)
+                if val[IO_TYPE] == TYPE_IN and var_name not in discipline_info[
+                    ProxyDiscipline.REFERENCE]._data_in.keys() \
+                    and var_name in discipline_info[ProxyDiscipline.REFERENCE]._data_out.keys():
+                    io_type = TYPE_OUT
 
-            treenode.data[key][ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type, val['var_name'])
+            treenode.data[key][ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type,
+                                                                               val[ProxyDiscipline.VAR_NAME])
+
 
             if key in treenode.disc_data:
                 treenode.data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = \
@@ -174,18 +177,21 @@ class TreeView:
             temp_data = {k: v for k, v in val.items()}
 
             # retrieve model name full path for variable key
-            model_name_full_path = val['model_origin']
-            io_type = val['io_type']
-            if val['model_origin'] in disc_dict.keys():
-                discipline_info = disc_dict[val['model_origin']]
+            model_name_full_path = val[ProxyDiscipline.ORIGIN]
+            io_type = val[IO_TYPE]
+            if val[ProxyDiscipline.ORIGIN] in disc_dict.keys():
+                discipline_info = disc_dict[val[ProxyDiscipline.ORIGIN]]
                 model_name_full_path = discipline_info["model_name_full_path"]
-                var_name = val['var_name']
+                var_name = val[ProxyDiscipline.VAR_NAME]
                 # Check if the data is a stron,g coupling (the ee set it to input but it is an output)
-                if val['io_type'] == 'in' and var_name not in discipline_info['reference']._data_in.keys() \
-                    and var_name in discipline_info['reference']._data_out.keys():
-                    io_type = 'out'
+                if val[IO_TYPE] == TYPE_IN and var_name not in discipline_info[
+                    ProxyDiscipline.REFERENCE]._data_in.keys() \
+                    and var_name in discipline_info[ProxyDiscipline.REFERENCE]._data_out.keys():
+                    io_type = TYPE_OUT
 
-            temp_data[ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type, val['var_name'])
+            temp_data[ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type,
+                                                                      val[ProxyDiscipline.VAR_NAME])
+
 
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False
@@ -204,9 +210,9 @@ class TreeView:
 
                 if temp_data[ProxyDiscipline.NUMERICAL]:
                     treenode.data_management_disciplines[data_manamement_data_key].numerical_parameters[key] = temp_data
-                elif temp_data[ProxyDiscipline.IO_TYPE] == 'in':
+                elif temp_data[ProxyDiscipline.IO_TYPE] == TYPE_IN:
                     treenode.data_management_disciplines[data_manamement_data_key].disciplinary_inputs[key] = temp_data
-                elif temp_data[ProxyDiscipline.IO_TYPE] == 'out':
+                elif temp_data[ProxyDiscipline.IO_TYPE] == TYPE_OUT:
                     treenode.data_management_disciplines[data_manamement_data_key].disciplinary_outputs[key] = temp_data
                 else:
                     temp_data[ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = treenode.disciplines_by_variable[key]
@@ -215,9 +221,9 @@ class TreeView:
                 for discipline_key in treenode.disciplines_by_variable[key]:
                     if temp_data[ProxyDiscipline.NUMERICAL]:
                         treenode.data_management_disciplines[discipline_key].numerical_parameters[key] = temp_data
-                    elif temp_data[ProxyDiscipline.IO_TYPE] == 'in':
+                    elif temp_data[ProxyDiscipline.IO_TYPE] == TYPE_IN:
                         treenode.data_management_disciplines[discipline_key].disciplinary_inputs[key] = temp_data
-                    elif temp_data[ProxyDiscipline.IO_TYPE] == 'out':
+                    elif temp_data[ProxyDiscipline.IO_TYPE] == TYPE_OUT:
                         treenode.data_management_disciplines[discipline_key].disciplinary_outputs[key] = temp_data
 
     def add_treenode(self, discipline, namespace=None):
@@ -300,7 +306,7 @@ class TreeView:
         # Retireve current tree node discipline
         if current_treenode.identifier in disc_dict:
             # Retrieve the list of sub disciplines to map as Treenode
-            current_discipline = disc_dict[current_treenode.identifier]['reference']
+            current_discipline = disc_dict[current_treenode.identifier][ProxyDiscipline.REFERENCE]
 
             if current_discipline is not None:
                 sub_disciplines = current_discipline.ordered_disc_list
@@ -332,7 +338,7 @@ class TreeView:
             if display_variables is not None:
                 tabs = '\t' * level
 
-                def get_variables_info(str_nodes, node_data, io_type, disp_detail='var_name'):
+                def get_variables_info(str_nodes, node_data, io_type, disp_detail=ProxyDiscipline.VAR_NAME):
                     if io_type == TYPE_IN:
                         io_t = '->'
                     else:
