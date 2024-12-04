@@ -9,155 +9,8 @@
     "c": {
       "value": "string_3"
     },
-    "dataset_ax": {
-        "a": {
-            "value": 10
-        },
-        "x": {
-            "value": 20
-        }
-    },
-    "dataset_bc": {
-        "b": {
-            "value": "string_1"
-        },
-        "c": {
-            "value": "string_2"
-        }
-    },
-    "dataset_a": {
-        "a": {
-            "value": 15
-        }
-    },
-    "dataset_bcx_1": {
-        "x": {
-            "value": 30
-        },
-        "b": {
-            "value": "string_40"
-        },
-        "c": {
-            "value": "string_50"
-        }
-    },
-    "dataset_bcx_2": {
-        "x": {
-            "value": 4
-        },
-        "b": {
-            "value": "string_5"
-        },
-        "c": {
-            "value": "string_6"
-        }
-    },
-    "dataset_bw": {
-        "b": {
-            "value": "string_5"
-        },
-        "w": {
-            "value": "dumb_value"
-        }
-    },
-    "dataset_c_1": {
-        "c": {
-            "value": "string_11"
-        }
-    },
-    "dataset_c_2": {
-        "c": {
-            "value": "string_12"
-        }
-    },
-    "dataset_b": {
-        "b": {
-            "value": "string_42"
-        }
-    },
-    "default_numerical_parameters": {
-        "linearization_mode": {
-            "value": "auto"
-        },
-        "debug_mode": {
-            "value": ""
-        },
-        "cache_type": {
-            "value": ""
-        },
-        "cache_file_path": {
-            "value": ""
-        },
-        "inner_mda_name": {
-            "value": "MDAJacobi"
-        },
-        "max_mda_iter": {
-            "value": 30
-        },
-        "n_processes": {
-            "value": 1
-        },
-        "chain_linearize": {
-            "value": false
-        },
-        "tolerance": {
-            "value": 1.0e-6
-        },
-        "use_lu_fact": {
-            "value": false
-        },
-        "warm_start": {
-            "value": false
-        },
-        "acceleration": {
-            "value": "m2d"
-        },
-        "warm_start_threshold": {
-            "value": -1
-        },
-        "n_subcouplings_parallel": {
-            "value": 1
-        },
-        "tolerance_gs": {
-            "value": 10.0
-        },
-        "relax_factor": {
-            "value": 0.99
-        },
-        "epsilon0": {
-            "value": 1.0e-6
-        },
-        "linear_solver_MDO": {
-            "value": "GMRES"
-        },
-        "linear_solver_MDO_preconditioner": {
-            "value": "None"
-        },
-        "linear_solver_MDO_options": {
-            "value": {
-                "max_iter": 1000,
-                "tol": 1.0e-8
-            }
-        },
-        "linear_solver_MDA": {
-            "value": "GMRES"
-        },
-        "linear_solver_MDA_preconditioner": {
-            "value": "None"
-        },
-        "linear_solver_MDA_options": {
-            "value": {
-                "max_iter": 1000,
-                "tol":  1.0e-8
-            }
-        },
-
-        "group_mda_disciplines": {
-            "value": false
-        },
-        "propagate_cache_to_children": {
-            "value": false
-        }
+    "x": {
+      "value": 4
     }
   },
   "dataset_all_types": {
@@ -309,7 +162,7 @@
       "value": ""
     },
     "cache_type": {
-      "value": "None"
+      "value": ""
     },
     "cache_file_path": {
       "value": ""
