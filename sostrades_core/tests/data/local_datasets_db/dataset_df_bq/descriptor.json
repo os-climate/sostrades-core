@@ -1,9 +1,11 @@
 {
-    "WITNESS_gdp": {"value":   "@dataframe@WITNESS_gdp.csv"},
-    "dict_strange_keys": {
-        "value": {
-            "key1 (?)": "whatever",
-            "key2 #^/": "whatever"
-        }
+  "WITNESS_gdp": {
+    "value": "@dataframe@WITNESS_gdp.csv"
+  },
+  "dict_strange_keys": {
+    "value": {
+      "key1 (?)": "whatever",
+      "key2 #^/": "whatever"
     }
+  }
 }

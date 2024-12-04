@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
 
 import logging
 import re
@@ -33,7 +34,19 @@ class DatasetInfoSerializerVersion(Enum):
     V1 = DatasetInfoV1
 
     @classmethod
-    def get_enum_value(cls, value_str):
+    def get_enum_value(cls, value_str: str) -> DatasetInfoSerializerVersion:
+        """
+        Get the enum value corresponding to the given string.
+
+        Args:
+            value_str (str): The string representation of the enum value.
+
+        Returns:
+            DatasetInfoSerializerVersion: The corresponding enum value.
+
+        Raises:
+            ValueError: If no matching enum value is found.
+        """
         try:
             # Iterate through the enum members and find the one with a matching value
             return next(member for member in cls if member.name == value_str.upper())
@@ -50,11 +63,14 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
     @classmethod
     def get_dataset_info_version(cls, dataset_mapping_key: str) -> DatasetInfoSerializerVersion:
         """
-        Instanciate a DatasetInfo from the version of dataset_mapping_key
-        Raises VersionNotKnownException if type is invalid
+        Instantiate a DatasetInfo from the version of dataset_mapping_key.
+        Raises VersionNotKnownException if type is invalid.
 
-        :param dataset_mapping_key: key in datasetMapping: version|connector_id|dataset_id...
-        :type dataset_mapping_key: str
+        Args:
+            dataset_mapping_key (str): Key in datasetMapping: version|connector_id|dataset_id...
+
+        Returns:
+            DatasetInfoSerializerVersion: The corresponding DatasetInfoSerializerVersion enum value.
         """
         # check if the key starts with V0 or V1 (or v0 or v1)
         version_pattern = r"^([Vv][0-9])\|"
@@ -64,6 +80,5 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
             version = DatasetInfoSerializerVersion.get_enum_value(match.group(1))
         else:
             warn("No version in dataset info is tolerated for now but will be deprecated in future versions", UserWarning)  # noqa: B028
-
 
         return version

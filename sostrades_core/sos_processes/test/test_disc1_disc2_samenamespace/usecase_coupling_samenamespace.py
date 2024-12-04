@@ -28,7 +28,7 @@ class Study(StudyManager):
         self.display_name = 'DiscSameNamespace'
         # private values AC model
         private_values = {
-            self.study_name +'.'+self.display_name+ '.x': 10.,
+            self.study_name + '.' + self.display_name + '.x': 10.,
             self.study_name + '.Disc1.a': 5.,
             self.study_name + '.Disc1.b': 25431.,
             self.study_name + '.y': 4.,
@@ -42,4 +42,3 @@ if '__main__' == __name__:
     uc_cls = Study()
     uc_cls.load_data()
     uc_cls.run()
-

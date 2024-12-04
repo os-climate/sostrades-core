@@ -23,7 +23,14 @@ from sostrades_core.tools.folder_operations import makedirs_safe
 
 class JSONDatasetsConnectorTools():
 
-    def __init__(self, file_path:str, create_if_not_exists:bool):
+    def __init__(self, file_path: str, create_if_not_exists: bool):
+        """
+        Initialize the JSONDatasetsConnectorTools.
+
+        Args:
+            file_path (str): The path to the JSON file.
+            create_if_not_exists (bool): Whether to create the file if it does not exist.
+        """
         self.__file_path = file_path
         # create file if not exist
         if create_if_not_exists and not os.path.exists(file_path):
@@ -31,11 +38,15 @@ class JSONDatasetsConnectorTools():
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump({}, f)
 
-
-    def load_json_data(self)-> dict:
+    def load_json_data(self) -> dict:
         """
-        Method to load data from json file
-        Populates self.__json_data
+        Load data from the JSON file.
+
+        Returns:
+            dict: The loaded JSON data.
+
+        Raises:
+            DatasetGenericException: If the JSON file is not found.
         """
         json_data = {}
         db_path = self.__file_path
@@ -47,9 +58,15 @@ class JSONDatasetsConnectorTools():
 
         return json_data
 
-    def save_json_data(self, json_data):
+    def save_json_data(self, json_data: dict) -> None:
         """
-        Method to save data to json file
+        Save data to the JSON file.
+
+        Args:
+            json_data (dict): The data to save.
+
+        Raises:
+            DatasetGenericException: If the JSON file is not found.
         """
         db_path = self.__file_path
         if not os.path.exists(db_path):

@@ -35,25 +35,47 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
     COL_INDEX = "__index__"
 
     def __init__(self):
+        """
+        Initialize the BigQueryDatasetsSerializer.
+        """
         super().__init__()
         self.__logger = logging.getLogger(__name__)
         self.__col_name_index = None
 
-    def set_col_name_index(self, col_name_index):
+    def set_col_name_index(self, col_name_index: dict[str, dict[str, str]]) -> None:
+        """
+        Set the column name index.
+
+        Args:
+            col_name_index (dict[str, dict[str, str]]): The column name index.
+        """
         self.__col_name_index = col_name_index
 
-    def clear_col_name_index(self):
+    def clear_col_name_index(self) -> None:
+        """
+        Clear the column name index.
+        """
         self.__col_name_index = None
 
     @property
-    def col_name_index(self):
+    def col_name_index(self) -> dict[str, dict[str, str]]:
+        """
+        Get the column name index.
+
+        Returns:
+            dict[str, dict[str, str]]: The column name index.
+        """
         return self.__col_name_index
 
-    def __format_bigquery_col_name(self, col_name: str) -> (str, str):
+    def __format_bigquery_col_name(self, col_name: str) -> str:
         """
-        Returns a column name that is compatible with bigquery as well as the old colum name to index or None if no change
-        :param col_name: original column name in the variable
-        :return: bigquery compatible col_name, old name to index or None
+        Format a column name to be compatible with BigQuery.
+
+        Args:
+            col_name (str): The original column name.
+
+        Returns:
+            str: The formatted column name.
         """
         bq_col_name = ""
         for i, _char in enumerate(col_name):
@@ -63,24 +85,19 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
                 bq_col_name += self.REPLACEMENT_FORBIDDEN_CHAR
         return bq_col_name
 
-    def convert_from_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
-        '''
-        Convert data_value into data_type from the connector
-        To be override for specific conversion.
-        This function convert dataframe into dict and arrays into list, other types doesn't move.
-        Can be used for json mapping for example.
-        :param data_name: name of the data that is converted
-        :type data_name: str
-        :param data_value: value of the data that is converted
-        :type data_value: Any
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
-        '''
-        # retreive the type of the data into the data_type_dict.
-        # If the data type os not found, the data value is not converted
-        data_type = None
-        if data_name in data_types_dict.keys():
-            data_type = data_types_dict[data_name]
+    def convert_from_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str, str]) -> Any:
+        """
+        Convert data_value into data_type from the connector.
+
+        Args:
+            data_name (str): The name of the data that is converted.
+            data_value (Any): The value of the data that is converted.
+            data_types_dict (dict[str, str]): A dictionary of data types {name: type}.
+
+        Returns:
+            Any: The converted data.
+        """
+        data_type = data_types_dict.get(data_name)
 
         try:
             if data_type == "list":
@@ -95,23 +112,20 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
                 f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
         return converted_data
 
-    def convert_to_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str:str]) -> Any:
-        '''
-        Convert data_value into connector format
-        :param data_name: name of the data that is converted
-        :type data_name: str
-        :param data_value: value of the data that is converted
-        :type data_value: Any
-        :param data_types_dict: dict of data types {name: type}
-        :type data_types_dict: dict[str:str]
-        '''
-        # retreive the type of the data into the data_type_dict.
-        # If the data type os not found, the data value is not converted
-        data_type = None
-        if data_name in data_types_dict.keys():
-            data_type = data_types_dict[data_name]
+    def convert_to_dataset_data(self, data_name: str, data_value: Any, data_types_dict: dict[str, str]) -> Any:
+        """
+        Convert data_value into connector format.
 
-        converted_data = ""
+        Args:
+            data_name (str): The name of the data that is converted.
+            data_value (Any): The value of the data that is converted.
+            data_types_dict (dict[str, str]): A dictionary of data types {name: type}.
+
+        Returns:
+            Any: The converted data.
+        """
+        data_type = data_types_dict.get(data_name)
+
         try:
             if data_type == 'list':
                 converted_data = self.__serialize_list(data_value)
@@ -125,7 +139,17 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
                 f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
         return converted_data
 
-    def _serialize_dataframe(self, data_value, data_name):
+    def _serialize_dataframe(self, data_value: Any, data_name: str) -> Any:
+        """
+        Serialize a dataframe.
+
+        Args:
+            data_value (Any): The value of the data that is converted.
+            data_name (str): The name of the data that is converted.
+
+        Returns:
+            Any: The serialized data.
+        """
         _renamer = dict()
         _all_new_cols = set()
 
@@ -146,7 +170,17 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
             _all_new_cols.add(new_col_name)
         return data_value.rename(columns=_renamer, copy=True)
 
-    def _deserialize_dataframe(self, data_value, data_name):
+    def _deserialize_dataframe(self, data_value: Any, data_name: str) -> Any:
+        """
+        Deserialize a dataframe.
+
+        Args:
+            data_value (Any): The value of the data that is converted.
+            data_name (str): The name of the data that is converted.
+
+        Returns:
+            Any: The deserialized data.
+        """
         converted_df = data_value.rename(columns=self.__col_name_index[data_name])
 
         # reorder rows with index column
@@ -159,19 +193,66 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         return converted_df
 
-    def _serialize_array(self, data_value, data_name):
+    def _serialize_array(self, data_value: Any, data_name: str) -> dict[str, list]:
+        """
+        Serialize an array.
+
+        Args:
+            data_value (Any): The value of the data that is converted.
+            data_name (str): The name of the data that is converted.
+
+        Returns:
+            dict[str, list]: The serialized data.
+        """
         return {self.LIST_VALUE: self._serialize_sub_element_jsonifiable(data_value.tolist())}
 
-    def _deserialize_array(self, data_value: dict[str:list]) -> np.ndarray:
+    def _deserialize_array(self, data_value: dict[str, list]) -> np.ndarray:
+        """
+        Deserialize an array.
+
+        Args:
+            data_value (dict[str, list]): The value of the data that is converted.
+
+        Returns:
+            np.ndarray: The deserialized data.
+        """
         return np.array(data_value[self.LIST_VALUE])
 
-    def __serialize_list(self, data_value):
+    def __serialize_list(self, data_value: list) -> dict[str, list]:
+        """
+        Serialize a list.
+
+        Args:
+            data_value (list): The value of the data that is converted.
+
+        Returns:
+            dict[str, list]: The serialized data.
+        """
         return {self.LIST_VALUE: self._serialize_sub_element_jsonifiable(data_value)}
 
-    def __deserialize_list(self, data_value: dict[str:list]) -> np.ndarray:
+    def __deserialize_list(self, data_value: dict[str, list]) -> list:
+        """
+        Deserialize a list.
+
+        Args:
+            data_value (dict[str, list]): The value of the data that is converted.
+
+        Returns:
+            list: The deserialized data.
+        """
         return list(data_value[self.LIST_VALUE])
 
-    def __serialize_dict(self, data_value, data_name):
+    def __serialize_dict(self, data_value: dict, data_name: str) -> dict:
+        """
+        Serialize a dictionary.
+
+        Args:
+            data_value (dict): The value of the data that is converted.
+            data_name (str): The name of the data that is converted.
+
+        Returns:
+            dict: The serialized data.
+        """
         _renamer = dict()
         _all_new_cols = set()
         for old_key in data_value.keys():
@@ -186,25 +267,49 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
             _all_new_cols.add(new_key)
         return self.__rename_dict_keys(data_value, _renamer)
 
-    def __deserialize_dict(self, data_value, data_name):
+    def __deserialize_dict(self, data_value: dict, data_name: str) -> dict:
+        """
+        Deserialize a dictionary.
+
+        Args:
+            data_value (dict): The value of the data that is converted.
+            data_name (str): The name of the data that is converted.
+
+        Returns:
+            dict: The deserialized data.
+        """
         return self.__rename_dict_keys(data_value, self.__col_name_index[data_name])
 
-    def __rename_dict_keys(self, dict_to_rename_keys, key_name_map):
+    def __rename_dict_keys(self, dict_to_rename_keys: dict, key_name_map: dict) -> dict:
+        """
+        Rename the keys of a dictionary.
+
+        Args:
+            dict_to_rename_keys (dict): The dictionary to rename keys.
+            key_name_map (dict): The key name map.
+
+        Returns:
+            dict: The dictionary with renamed keys.
+        """
         return {(key_name_map[key] if key in key_name_map else key): value
                 for key, value in dict_to_rename_keys.items()}
 
-    def _serialize_sub_element_jsonifiable(self, data_value: list):
-        '''
-        convert sub element of a list into non numpy format
-        '''
+    def _serialize_sub_element_jsonifiable(self, data_value: list) -> list:
+        """
+        Convert sub elements of a list into non-numpy format.
+
+        Args:
+            data_value (list): The value of the data that is converted.
+
+        Returns:
+            list: The converted data.
+        """
         json_value = []
         for element in data_value:
             if isinstance(element, (np.int_, np.intc, np.intp, np.int8,
-                                np.int16, np.int32, np.int64, np.uint8,
-                                np.uint16, np.uint32, np.uint64)):
-
+                                    np.int16, np.int32, np.int64, np.uint8,
+                                    np.uint16, np.uint32, np.uint64)):
                 json_value.append(int(element))
-
             elif isinstance(element, (np.float_, np.float16, np.float32, np.float64)):
                 json_value.append(float(element))
             else:

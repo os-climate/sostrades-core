@@ -71,7 +71,7 @@ class ParameterChange:
     dataset_parameter_id: Union[str, None]
     date: datetime
     dataset_data_path: str
-    variable_key:str
+    variable_key: str
 
 
 class DataManager:
@@ -469,7 +469,7 @@ class DataManager:
                     new_value = new_data[DatasetsManager.VALUE]
                     connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
                     dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_info_id
-                    dataset_data_name = datasets_info[new_data[DatasetsManager.DATASET_INFO]].get(data_name,data_name)
+                    dataset_data_name = datasets_info[new_data[DatasetsManager.DATASET_INFO]].get(data_name, data_name)
                     dataset_data_path = self.dataset_manager.get_path_to_dataset_data(new_data[DatasetsManager.DATASET_INFO],
                                                                                  dataset_data_name,
                                                                                  data_dict[TYPE][data_name])
@@ -494,8 +494,8 @@ class DataManager:
                                connector_id: (str, None) = None,
                                dataset_id: (str, None) = None,
                                dataset_parameter_id: (str, None) = None,
-                               dataset_data_path:(str, None) = None,
-                               variable_key:str = None,
+                               dataset_data_path: (str, None) = None,
+                               variable_key: str = None,
                                update_parameter_changes: bool = True) -> None:
         """
         Applies and logs an input value change on variable with uuid key. It appends to parameter_changes a
@@ -580,7 +580,7 @@ class DataManager:
                     dataset_data_path = self.dataset_manager.get_path_to_dataset_data(dataset,
                                                                                  data_dataset_name,
                                                                                  type)
-                    #build ontology key
+                    # build ontology key
                     io_type = self.data_dict[key][ProxyDiscipline.IO_TYPE]
                     discipline_name = self.disciplines_dict.get(self.data_dict[key].get('model_origin')).get('model_name_full_path')
                     variable_key = create_data_key(discipline_name, io_type, self.data_dict[key].get('var_name'))
