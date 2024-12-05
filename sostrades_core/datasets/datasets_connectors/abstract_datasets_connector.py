@@ -57,8 +57,10 @@ class AbstractDatasetsConnector(abc.ABC):
     BOOL_VALUE = "parameter_bool_value"
     VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, PARAMETER_NAME})
 
+    DATASET_FOLDER = "Dataset folder"
     # list of compatible version of dataset info (V0, V1...)
     compatible_dataset_info_version = [VERSION_V0]
+
 
     def check_dataset_info_version(self, dataset_identifier: AbstractDatasetInfo) -> None:
         """

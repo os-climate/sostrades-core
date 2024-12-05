@@ -180,12 +180,6 @@ class ExecutionEngine:
         self.factory.build()
         self.root_process.configure_io()
 
-    def __configure_execution(self):
-        self.root_process.configure_execution()
-
-        # create DM treenode to be able to populate it from GUI
-        self.dm.treeview = None
-
     def update_from_dm(self):
         self.logger.info("Updating from DM.")
         self.root_process.update_from_dm()
@@ -570,7 +564,7 @@ class ExecutionEngine:
                 loop_stop = True
             elif iteration >= 100:
                 self.logger.warning('CONFIGURE WARNING: root process is not configured after 100 iterations')
-                raise Exception('Too many iterations')
+                raise ExecutionEngineException('Too many iterations')
 
         # Convergence is ended
         # Set all output variables and strong couplings
@@ -581,7 +575,6 @@ class ExecutionEngine:
         if self.__yield_method is not None:
             self.__yield_method()
 
-        #         self.__configure_execution()
         # -- Init execute, to fully initialize models in discipline
         if len(parameter_changes) > 0:
             self.update_from_dm()
@@ -642,8 +635,6 @@ class ExecutionEngine:
         if mode is None:
             disc.nan_check = True
             disc.check_if_input_change_after_run = True
-            # disc.check_linearize_data_changes = True
-            # disc.check_min_max_gradients = True
             disc.check_min_max_couplings = True
         elif mode == "nan":
             disc.nan_check = True

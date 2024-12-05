@@ -134,54 +134,18 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         local_data = self.attributes['sub_disciplines'][0].execute(self._get_input_data(values_dict))
         out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'])
 
-        # needed for gradient computation
-        # TODO: manage data flow for gradient computation ?
-        # self.attributes['dm'].set_values_from_dict(local_data)
-
         if convert_to_array:
             out_local_data_converted = convert_new_type_into_array(out_local_data, self.attributes['reduced_dm'])
             out_values = np.concatenate(list(out_local_data_converted.values())).ravel()
         else:
-            # out_values = list(out_local_data.values())
             out_values = []
             # EEV3 comment: get back out_local_data is not enough because some variables
-            # could be filtered for unsupported type for gemseo TODO: is this case relevant in EEV4?
+            # could be filtered for unsupported type for gemseo
             for y_id in self.attributes['eval_out_list']:
                 y_val = out_local_data[y_id]
                 out_values.append(y_val)
 
         return out_values
-
-    # def take_samples(self):
-    #     """
-    #     Generating samples for the Eval
-    #     """
-    #     self.custom_samples = self.get_sosdisc_inputs('samples_df').copy()
-    #     # self.check_custom_samples()
-    #     return self.custom_samples
-
-    # TODO: transfert to sample generaor
-    # def check_custom_samples(self):
-    #     """ We that the columns of the dataframe are the same  that  the selected inputs
-    #     We also check that they are of the same type
-    #     """
-    #     if not set(self.attributes['selected_inputs']).issubset(set(self.custom_samples.columns.to_list())):
-    #         missing_eval_in_variables = set.union(set(self.attributes['selected_inputs']), set(
-    #             self.custom_samples.columns.to_list())) - set(self.custom_samples.columns.to_list())
-    #         msg = f'the columns of the custom samples dataframe must include all the the eval_in selected list of variables. Here the following selected eval_in variables {missing_eval_in_variables} are not in the provided sample.'
-    #         # To do: provide also the list of missing eval_in variables:
-    #         self.logger.error(msg)
-    #         raise ValueError(msg)
-    #     else:
-    #         not_relevant_columns = set(
-    #             self.custom_samples.columns.to_list()) - set(self.attributes['selected_inputs'])
-    #         msg = f'the following columns {not_relevant_columns} of the custom samples dataframe are filtered because they are not in eval_in.'
-    #         self.logger.warning(msg)
-    #         # if len(not_relevant_columns) != 0:
-    #         #     self.custom_samples.drop(
-    #         #         not_relevant_columns, axis=1, inplace=True)
-    #         # drop irrelevant + reorder
-    #         self.custom_samples = self.custom_samples[self.attributes['selected_inputs']]
 
     def run(self) -> None:
         """

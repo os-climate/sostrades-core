@@ -73,7 +73,7 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
             DatasetInfoSerializerVersion: The corresponding DatasetInfoSerializerVersion enum value.
         """
         # check if the key starts with V0 or V1 (or v0 or v1)
-        version_pattern = r"^([Vv][0-9])\|"
+        version_pattern = r"^([Vv][\d])\|"
         match = re.match(version_pattern, dataset_mapping_key)
         version = DatasetInfoSerializerVersion.V0
         if match:

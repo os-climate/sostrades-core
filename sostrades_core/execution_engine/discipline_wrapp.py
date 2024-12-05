@@ -135,16 +135,12 @@ class DisciplineWrapp:
             self._set_wrapper_attributes(proxy, self.wrapper)
             self._update_all_default_values(proxy)
             self.discipline.linearization_mode = proxy.get_sosdisc_inputs(SoSDiscipline.LINEARIZATION_MODE)
-            # self._set_discipline_attributes(proxy, self.discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
-            pass
+            raise NotImplementedError("GEMSEO native wrapping mode not yet available.")
 
     def _set_wrapper_attributes(self, proxy, wrapper):
         proxy.set_wrapper_attributes(wrapper)
-
-    # def _set_discipline_attributes(self, proxy, discipline):
-    #     proxy.set_discipline_attributes(discipline)
 
     def _init_grammar_with_keys(self, proxy):
         """
@@ -226,7 +222,7 @@ class DisciplineWrapp:
             proxy.status = self.discipline.execution_status.value
 
         elif self.wrapping_mode == 'GEMSEO':
-            pass
+            raise NotImplementedError("GEMSEO native wrapping mode not yet available.")
 
     def create_mdo_scenario(self, sub_disciplines, proxy=None, reduced_dm=None):  # type: (...) -> None
         """
@@ -273,7 +269,7 @@ class DisciplineWrapp:
             proxy.status = self.discipline.execution_status.value
 
         elif self.wrapping_mode == 'GEMSEO':
-            pass
+            raise NotImplementedError("GEMSEO native wrapping mode not yet available.")
 
     def _update_all_default_values(self, proxy):
         """Store all input grammar data names' values from input data in default values of discipline"""

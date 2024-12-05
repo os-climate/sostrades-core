@@ -35,9 +35,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         scatter, archibuilder,...)
 
     """
-
     # -- Disciplinary attributes
-
     # ontology information
     _ontology_data = {
         'label': 'Core Discipline Builder Model',
@@ -52,10 +50,6 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         'version': '',
     }
 
-    # def __init__(self):
-    #
-    #     self.proxy_discipline = None
-    #     self.built_sos_disciplines = None
     PROPAGATE_CACHE = 'propagate_cache_to_children'
     NUM_DESC_IN = {PROPAGATE_CACHE: {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
                                      ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,

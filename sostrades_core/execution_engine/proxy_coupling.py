@@ -85,6 +85,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'version': '',
     }
     RESIDUALS_HISTORY = "residuals_history"
+    RESIDUALS_HISTORY_PRETTY = "Residuals History"
     NORMALIZED_RESIDUAL_NORM = 'MDA residuals norm'
     # AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
 
@@ -341,8 +342,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = ee.logger.getChild(self.__class__.__name__)
 
-    # TODO: [and TODISCUSS] move it to discipline_wrapp, if we want to
-    # reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         """Update cache_map dict in DM with cache, mdo_chain cache, inner_mdas caches and its children recursively"""
         mda_chain = self.discipline_wrapp.discipline
@@ -373,28 +372,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             for sub_mda in mda.mda_sequence:
                 self._set_sub_mda_dm_cache_map(sub_mda)
 
-    # def build(self):
-    #     """
-    #     Instanciate sub proxies managed by the coupling
-    #     """
-    #     old_current_discipline = self.ee.factory.current_discipline
-    #     self.ee.factory.current_discipline = self
-    #     for builder in self.cls_builder:
-    #         proxy_disc = builder.build()
-    #         if proxy_disc not in self.proxy_disciplines:
-    #             self.ee.factory.add_discipline(proxy_disc)
-    #     # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
-    #     # high level coupling and we do not have to restore the
-    #     # current_discipline
-    #     if old_current_discipline is not None:
-    #         self.ee.factory.current_discipline = old_current_discipline
-    #
-    # #     def clear_cache(self):
-    # #         self.mdo_chain.cache.clear()
-    # #         ProxyDisciplineBuilder.clear_cache(self)
-
     # -- Public methods
-
     def setup_sos_disciplines(self):
         """
         Set possible values of preconditioner in data manager, according to liner solver MDA/MDO value
@@ -404,12 +382,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         disc_in = self.get_data_in()
         # set possible values of linear solver MDA preconditioner
         if 'linear_solver_MDA' in disc_in:
-            linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
-            if linear_solver_MDA.endswith('_PETSC'):
+            linear_solver_mda = self.get_sosdisc_inputs('linear_solver_MDA')
+            if linear_solver_mda.endswith('_PETSC'):
                 if getenv("USE_PETSC", "").lower() not in ("true", "1"):
                     msg = (
                         f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
-                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
+                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_mda} or activate '
                         f'USE_PETSC'
                     )
                     raise ValueError(msg)
@@ -429,12 +407,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         # set possible values of linear solver MDO preconditioner
         if 'linear_solver_MDO' in disc_in:
-            linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
-            if linear_solver_MDO.endswith('_PETSC'):
+            linear_solver_mdo = self.get_sosdisc_inputs('linear_solver_MDO')
+            if linear_solver_mdo.endswith('_PETSC'):
                 if getenv("USE_PETSC", "").lower() not in ("true", "1"):
                     msg = (
                         f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
-                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
+                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_mda} or activate '
                         f'USE_PETSC'
                     )
                     raise ValueError(msg)
@@ -701,7 +679,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
         the list of data_to_check is defined in SoSDiscipline
         """
-        # TODO: probably better if moved into proxy discipline
         self._build_coupling_structure()
         if self.logger.level <= logging.DEBUG:
             coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
@@ -728,9 +705,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                     self.logger.debug(
                                         f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe'
                                     )
-                            # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
-                            #                             else :
-                            #                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
                             else:
                                 self.logger.debug(
                                     f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}'
@@ -925,7 +899,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def get_chart_filter_list(self):
         chart_filters = []
 
-        chart_list = ['Residuals History']
+        chart_list = [self.RESIDUALS_HISTORY_PRETTY]
 
         chart_filters.append(ChartFilter('Charts', chart_list, chart_list, 'charts'))
 
@@ -955,12 +929,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 series.append(new_series)
             return series
 
-        if select_all or 'Residuals History' in chart_list:
+        if select_all or self.RESIDUALS_HISTORY_PRETTY in chart_list:
             inner_mda_name = self.get_sosdisc_inputs('inner_mda_name')
             if post_processing_mda_data is not None and inner_mda_name in post_processing_mda_data.columns:
                 residuals_through_iterations = np.asarray([[x[0]] for x in post_processing_mda_data[inner_mda_name]])
                 iterations = list(range(len(residuals_through_iterations)))
-                chart_name = 'Residuals History'
+                chart_name = self.RESIDUALS_HISTORY_PRETTY
 
                 new_chart = TwoAxesInstanciatedChart('Iterations', 'Residuals', chart_name=chart_name, y_axis_log=True)
 

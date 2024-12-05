@@ -74,7 +74,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             self.db = client.db(name=db_name, username=username, password=password)
 
             if not self.db.has_collection(name=datasets_descriptor_collection_name):
-                raise Exception(f"Expected to find collection {datasets_descriptor_collection_name} describing datasets")
+                raise DatasetGenericException(f"Expected to find collection {datasets_descriptor_collection_name} describing datasets")
             self.datasets_descriptor_collection_name = datasets_descriptor_collection_name
 
         except Exception as exc:

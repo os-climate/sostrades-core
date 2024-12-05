@@ -66,7 +66,6 @@ class MultipliersWrapper(SoSWrapp):
         Overload of setup_sos_disciplines to specify the specific dynamic inputs of multipliers disc
         '''
         disc_in = self.get_data_in()
-        # TODO: dm calls or dynamic inputs ?
 
         dynamic_inputs = {}
         dynamic_outputs = {}

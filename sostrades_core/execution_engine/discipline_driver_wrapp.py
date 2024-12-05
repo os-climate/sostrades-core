@@ -73,10 +73,9 @@ class DisciplineDriverWrapp(DisciplineWrapp):
             self._init_grammar_with_keys(proxy)
             # self._update_all_default_values(input_data) #TODO: numerical inputs etc?
             self._set_wrapper_attributes(proxy, self.wrapper)
-            # self._set_discipline_attributes(proxy, self.discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
-            pass
+            raise NotImplementedError("GEMSEO native wrapping mode not yet available.")
 
     def get_sub_disciplines(self, proxy):
         return [

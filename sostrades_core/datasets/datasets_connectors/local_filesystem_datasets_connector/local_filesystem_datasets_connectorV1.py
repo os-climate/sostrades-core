@@ -86,7 +86,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
         dataset_directory = self.__build_dataset_path(dataset_id)
         dataset_descriptor_path = self.__build_descriptor_file_path(dataset_id)
 
-        self._datasets_serializer.check_path_exists("Dataset folder", dataset_directory)
+        self._datasets_serializer.check_path_exists(self.DATASET_FOLDER, dataset_directory)
 
         # Load the descriptor, the serializer loads the pickle if it exists
         return self._datasets_serializer.read_descriptor_file(dataset_id, dataset_descriptor_path)

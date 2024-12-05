@@ -45,7 +45,6 @@ class ToolFactory:
 
         self.__sos_name = sos_name
         self.__execution_engine = execution_engine
-        self.__ns_manager = execution_engine.ns_manager
 
         self.__builder_tools = []
 
@@ -106,7 +105,7 @@ class ToolFactory:
         mod_path = self.get_module_class_path(mod_name, folder_list)
 
         if mod_path is None:
-            raise Exception(
+            raise ToolFactoryException(
                 f'The builder {mod_name} has not been found in the folder list {folder_list}'
             )
         return self.get_builder_from_module(sos_name, mod_path)
@@ -139,12 +138,7 @@ class ToolFactory:
         """
         module_struct_list = module_path.split('.')
         import_name = '.'.join(module_struct_list[:-1])
-        # print('import_name = ',import_name)
-        try:
-            m = import_module(import_name)
-
-        except Exception as e:
-            raise (e)
+        m = import_module(import_name)
         return getattr(m, module_struct_list[-1])
 
     def get_module_class_path(self, class_name, folder_list):
@@ -159,7 +153,7 @@ class ToolFactory:
             try:
                 module = import_module(folder)
                 folder_path = os.path.dirname(module.__file__)
-            except:
+            except ImportError:
                 raise Warning(f'The folder {folder} is not a module')
 
             # Get all files in the folder_path

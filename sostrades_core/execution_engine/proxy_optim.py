@@ -168,11 +168,8 @@ class ProxyOptim(ProxyDriverEvaluator):
     OBJECTIVE_NAME = 'objective_name'
     FORMULATION_OPTIONS = 'formulation_options'
 
-    #        self.SEARCH_PATHS = 'search_paths'
-
     SCENARIO_MANDATORY_FIELDS = (DESIGN_SPACE, FORMULATION, MAXIMIZE_OBJECTIVE, OBJECTIVE_NAME)
 
-    #            self.SEARCH_PATHS]
     OPTIMAL_OBJNAME_SUFFIX = "opt"
     ALGO_MANDATORY_FIELDS = (ALGO, MAX_ITER)
 
