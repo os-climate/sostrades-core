@@ -37,6 +37,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
     """
     Specific dataset connector for dataset in json format
     """
+    compatible_dataset_info_version = [VERSION_V1]
 
     def __init__(self, connector_id: str, file_path: str, create_if_not_exists: bool = False, serializer_type: DatasetSerializerType = DatasetSerializerType.JSON):
         """
@@ -54,7 +55,6 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
         self.__logger.debug("Initializing JSON connector")
         self._datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
         self.connector_id = connector_id
-        self.compatible_dataset_info_version = [VERSION_V1]
 
         # In json, we have to load the full file to retrieve values, so cache it
         self.__json_data = None
