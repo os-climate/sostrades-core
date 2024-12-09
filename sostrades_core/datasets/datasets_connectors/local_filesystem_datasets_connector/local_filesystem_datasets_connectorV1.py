@@ -38,7 +38,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
     """
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
     DATA_GROUP_DIRECTORY_KEY = '__data_group_filesystem_directory__'
-    compatible_dataset_info_version = [VERSION_V1]
+    COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V1]
 
     def __init__(self, connector_id: str, root_directory_path: str,
                  create_if_not_exists: bool = False,

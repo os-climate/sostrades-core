@@ -59,8 +59,11 @@ class AbstractDatasetsConnector(abc.ABC):
 
     DATASET_FOLDER = "Dataset folder"
     # list of compatible version of dataset info (V0, V1...)
-    compatible_dataset_info_version = [VERSION_V0]
+    COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V0]
 
+    @property
+    def compatible_dataset_info_version(self):
+        return set(self.COMPATIBLE_DATASET_INFO_VERSION)
 
     def check_dataset_info_version(self, dataset_identifier: AbstractDatasetInfo) -> None:
         """

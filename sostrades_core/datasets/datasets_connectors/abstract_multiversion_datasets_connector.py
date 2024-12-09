@@ -31,7 +31,9 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
     Abstract class to inherit in order to build specific datasets connector
     """
     __logger = logging.getLogger(__name__)
-    # version to connector class mapping, to be overloaded in subclasses
+
+    COMPATIBLE_DATASET_INFO_VERSION = None  # sanity to assure variable is not used in multi-version classes
+    # version to connector class mapping, overloaded in subclasses
     VERSION_TO_CLASS: dict[str:Type[AbstractDatasetsConnector]] = {}
 
     @abc.abstractmethod
@@ -44,13 +46,17 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
             **connector_instantiation_fields: keyword arguments that allow to instantiate the different mono-version
                 connectors. They are assumed to be the same for all mono-version classes of a same type of connector.
         """
-        self.compatible_dataset_info_version = {}
+        self.__version_connectors = {}
         for _version, _version_class in self.VERSION_TO_CLASS.items():
-            if _version in _version_class.compatible_dataset_info_version:
-                self.compatible_dataset_info_version[_version] = _version_class(connector_id=connector_id,
+            if _version in _version_class.__version_connectors:
+                self.__version_connectors[_version] = _version_class(connector_id=connector_id,
                                                                                 **connector_instantiation_fields)
             else:
                 raise DatasetGenericException(f"The class defined for version {_version} is not compatible.")
+
+    @property
+    def compatible_dataset_info_version(self):
+        return set(self.__version_connectors.keys())
 
     def version_connector(self, dataset_identifier: AbstractDatasetInfo) -> AbstractDatasetsConnector:
         """
@@ -60,7 +66,7 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
         Returns:
             version_connector (AbstractDatasetsConnector): connector of the appropriate version
         """
-        return self.compatible_dataset_info_version[dataset_identifier.version_id]
+        return self.__version_connectors[dataset_identifier.version_id]
 
     def _get_values(self, dataset_identifier: AbstractDatasetInfo, data_to_get: Dict[str, str]) -> Dict[str, Any]:
         """
@@ -113,14 +119,13 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
     def get_datasets_available(self) -> List[AbstractDatasetInfo]:
         """
         Abstract method to get all available datasets for a specific API. Maps the call to all instantiated compatible
-        version connectors and chains the output in a single list. Delegates to public method of corresponding version
-        connector.
+        version connectors and chains the output in a single list, removing duplicates.
 
         Returns:
             List[AbstractDatasetInfo]: List of available datasets
         """
-        return list(chain.from_iterable(map(lambda _c: _c.get_datasets_available(),
-                                            self.compatible_dataset_info_version.values())))
+        return list(set(chain.from_iterable(map(lambda _c: _c.get_datasets_available(),
+                                                self.__version_connectors.values()))))
 
     def _write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: Dict[str, Any],
                        data_types_dict: Dict[str, str], create_if_not_exists: bool = True, override: bool = False

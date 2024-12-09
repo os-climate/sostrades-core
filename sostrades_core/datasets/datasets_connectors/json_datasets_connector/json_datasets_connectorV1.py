@@ -37,7 +37,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
     """
     Specific dataset connector for dataset in json format
     """
-    compatible_dataset_info_version = [VERSION_V1]
+    COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V1]
 
     def __init__(self, connector_id: str, file_path: str, create_if_not_exists: bool = False, serializer_type: DatasetSerializerType = DatasetSerializerType.JSON):
         """
