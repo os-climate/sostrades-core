@@ -20,6 +20,8 @@ from typing import Any
 
 from sostrades_core.datasets.dataset_info.dataset_info_v1 import DatasetInfoV1
 from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V1
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
+local_filesystem_datasets_connector_base import LocalFileSystemDatasetsConnectorBase
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetGenericException,
@@ -32,7 +34,7 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
 from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 
 
-class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
+class LocalFileSystemDatasetsConnectorV1(LocalFileSystemDatasetsConnectorBase):
     """
     Specific dataset connector for dataset in local filesystem
     """
@@ -47,26 +49,17 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
         Constructor for Local Filesystem data connector
 
         Args:
-            connector_id (str): Identifier for the connector.
+            connector_id (str): The identifier for the connector.
             root_directory_path (str): Root directory path for this dataset connector using filesystem.
-            create_if_not_exists (bool): Whether to create the root directory if it does not exist.
-            serializer_type (DatasetSerializerType): Type of serializer to deserialize data from connector.
+            create_if_not_exists (bool, optional): Whether to create the root directory if it does not exist. Defaults to False.
+            serializer_type (DatasetSerializerType, optional): Type of serializer to deserialize data from connector. Defaults to DatasetSerializerType.FileSystem.
         """
-        super().__init__()
-        self._root_directory_path = os.path.abspath(root_directory_path)
-        self._create_if_not_exists = create_if_not_exists
-
-        # create dataset folder if it does not exists
-        if self._create_if_not_exists and not os.path.isdir(self._root_directory_path):
-            makedirs_safe(self._root_directory_path, exist_ok=True)
-
+        super().__init__(connector_id=connector_id,
+                         root_directory_path=root_directory_path,
+                         create_if_not_exists=create_if_not_exists,
+                         serializer_type=serializer_type)
         self._logger = logging.getLogger(__name__)
-        self._logger.debug(f"Initializing local connector on {root_directory_path}")
-
-        # configure dataset serializer
-        self._datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
-
-        self.connector_id = connector_id
+        self._logger.debug(f"Initializing local connector V1 on {root_directory_path}")
 
     def __load_dataset_descriptor(self, dataset_id: str) -> dict[str, dict[str, Any]]:
         """
@@ -173,7 +166,9 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
                                                                filesystem_data_group_identifier)
 
         # write in dataset descriptor
-        dataset_descriptor_path = os.path.join(self._root_directory_path, dataset_identifier.dataset_id, self.DESCRIPTOR_FILE_NAME)
+        dataset_descriptor_path = os.path.join(self._root_directory_path,
+                                               dataset_identifier.dataset_id,
+                                               self.DESCRIPTOR_FILE_NAME)
         self._datasets_serializer.write_descriptor_file(dataset_descriptor_path, dataset_descriptor)
 
         self._datasets_serializer.dump_pickle_data()
@@ -192,7 +187,9 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
         """
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier.dataset_id)
         dataset_values = dict()
-        filesystem_data_group_id = self.__get_data_group_directory(dataset_descriptor, dataset_identifier.dataset_id, dataset_identifier.group_id)
+        filesystem_data_group_id = self.__get_data_group_directory(dataset_descriptor,
+                                                                   dataset_identifier.dataset_id,
+                                                                   dataset_identifier.group_id)
         self._datasets_serializer.set_dataset_directory(
                 self.__build_group_path(dataset_identifier.dataset_id, filesystem_data_group_id))
         self._datasets_serializer.load_pickle_data()
@@ -205,7 +202,9 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
         self._datasets_serializer.clear_pickle_data()
         return dataset_values
 
-    def _write_dataset(self, dataset_identifier: DatasetInfoV1, values_to_write: dict[str, Any], data_types_dict: dict[str, str], create_if_not_exists: bool = True, override: bool = False) -> None:
+    def _write_dataset(self, dataset_identifier: DatasetInfoV1, values_to_write: dict[str, Any],
+                       data_types_dict: dict[str, str], create_if_not_exists: bool = True, override: bool = False
+                       ) -> dict[str:Any]:
         """
         Abstract method to overload in order to write a dataset from a specific API
 
@@ -236,26 +235,26 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
-    def clear(self, remove_root_directory: bool = False) -> None:
-        """
-        Utility method to remove all datasets in the connector root directory.
-
-        Args:
-            remove_root_directory (bool): Whether to delete the root directory itself too.
-        """
-        if remove_root_directory:
-            rmtree_safe(self._root_directory_path)
-        else:
-            map(self.clear_dataset, self.get_datasets_available())
-
-    def clear_dataset(self, dataset_id: str) -> None:
-        """
-        Utility method to remove the directory corresponding to a given dataset_id within the root directory.
-
-        Args:
-            dataset_id (str): Identifier of the dataset to be removed.
-        """
-        rmtree_safe(os.path.join(self._root_directory_path, dataset_id))
+    # def clear(self, remove_root_directory: bool = False) -> None:
+    #     """
+    #     Utility method to remove all datasets in the connector root directory.
+    #
+    #     Args:
+    #         remove_root_directory (bool): Whether to delete the root directory itself too.
+    #     """
+    #     if remove_root_directory:
+    #         rmtree_safe(self._root_directory_path)
+    #     else:
+    #         map(self.clear_dataset, self.get_datasets_available())
+    #
+    # def clear_dataset(self, dataset_id: str) -> None:
+    #     """
+    #     Utility method to remove the directory corresponding to a given dataset_id within the root directory.
+    #
+    #     Args:
+    #         dataset_id (str): Identifier of the dataset to be removed.
+    #     """
+    #     rmtree_safe(os.path.join(self._root_directory_path, dataset_id))
 
     def __index_data_group_directory(self,
                                      dataset_descriptor: dict[str, dict[str, Any]],

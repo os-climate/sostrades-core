@@ -56,3 +56,16 @@ class JSONDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):  # FIXME: 
                          file_path=file_path,
                          create_if_not_exists=create_if_not_exists,
                          serializer_type=serializer_type)
+
+    def clear_dataset(self, dataset_id: str) -> None:
+        """
+        Utility method to remove the directory corresponding to a given dataset_id within the JSON database.
+
+        Args:
+            dataset_id (str): Identifier of the dataset to be removed
+        """
+        if self.__json_data is None:
+            self.__json_data = self.__json_tooling.load_json_data()
+        if dataset_id in self.__json_data:
+            del self.__json_data[dataset_id]
+        self.__json_tooling.save_json_data(self.__json_data)

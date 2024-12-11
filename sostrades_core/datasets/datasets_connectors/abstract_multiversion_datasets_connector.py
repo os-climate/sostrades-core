@@ -39,18 +39,20 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
     @abc.abstractmethod
     def __init__(self, connector_id: str, **connector_instantiation_fields):
         """
-        Abstract init method forcing to create a dedicated subclass for every type of multi-version connector, declaring
-        in them the VERSION_TO_CLASS with the mono-version connector classes associated to each compatible version
-        handled by the multi-version connector.
+        Abstract init method forcing to create a dedicated subclass for every type of multi-version connector (JSON,
+        LocalFileSystem, etc.). These multi-version subclasses must overload the VERSION_TO_CLASS dict, specifying the
+        mono-version connector class associated to each compatible version handled by the multi-version connector. Only
+        the versions thus declared will be considered compatible with the multi-version connector. Note that, when a
+        multi-version connector is registered, its associated mono-version components are not registered independently.
             connector_id (str): Connector identifier for the multiversion connector
             **connector_instantiation_fields: keyword arguments that allow to instantiate the different mono-version
                 connectors. They are assumed to be the same for all mono-version classes of a same type of connector.
         """
         self.__version_connectors = {}
         for _version, _version_class in self.VERSION_TO_CLASS.items():
-            if _version in _version_class.__version_connectors:
+            if _version in _version_class.COMPATIBLE_DATASET_INFO_VERSION:
                 self.__version_connectors[_version] = _version_class(connector_id=connector_id,
-                                                                                **connector_instantiation_fields)
+                                                                     **connector_instantiation_fields)
             else:
                 raise DatasetGenericException(f"The class defined for version {_version} is not compatible.")
 

@@ -14,8 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from sostrades_core.datasets.dataset_info.dataset_info_versions import (VERSION_V0, VERSION_V1)
+import os.path
+from sostrades_core.tools.folder_operations import rmtree_safe
 
+from sostrades_core.datasets.dataset_info.dataset_info_versions import (VERSION_V0, VERSION_V1)
+from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 from sostrades_core.datasets.datasets_connectors.abstract_multiversion_datasets_connector import (
     AbstractMultiVersionDatasetsConnector,
 )
@@ -23,12 +26,14 @@ from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_conne
     local_filesystem_datasets_connectorV0 import LocalFileSystemDatasetsConnectorV0
 from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
     local_filesystem_datasets_connectorV1 import LocalFileSystemDatasetsConnectorV1
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
+    local_filesystem_datasets_connector_base import LocalFileSystemDatasetsConnectorBase
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
     DatasetSerializerType,
 )
 
 
-class LocalFileSystemDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):  # FIXME: remove the MV when all is tested
+class LocalFileSystemDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector, LocalFileSystemDatasetsConnectorBase):  # FIXME: remove the MV when all is tested
     """
     Specific multi-version dataset connector for datasets in local filesystem.
     """
@@ -56,3 +61,19 @@ class LocalFileSystemDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):
                          root_directory_path=root_directory_path,
                          create_if_not_exists=create_if_not_exists,
                          serializer_type=serializer_type)
+        self._root_directory_path = os.path.abspath(root_directory_path)
+
+
+    # TODO [discuss] double inheritance or code duplication? :D
+    # def clear_connector(self):
+    #     rmtree_safe(self._root_directory_path)
+    #
+    # def clear_dataset(self, dataset_id: str) -> None:
+    #     """
+    #     Utility method to remove the directory corresponding to a given dataset_id within the root directory.
+    #
+    #     Args:
+    #         dataset_id (str): Identifier of the dataset to be removed.
+    #     """
+    #     rmtree_safe(os.path.join(self._root_directory_path, dataset_id))
+

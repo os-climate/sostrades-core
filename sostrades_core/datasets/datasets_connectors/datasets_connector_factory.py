@@ -31,13 +31,22 @@ from sostrades_core.datasets.datasets_connectors.bigquery_datasets_connector imp
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_datasets_connectorV0 import (
     JSONDatasetsConnectorV0,
 )
+from sostrades_core.datasets.datasets_connectors.json_datasets_connector.\
+    json_datasets_connector_multiversion import (
+    JSONDatasetsConnectorMV,
+)
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_datasets_connectorV1 import (
     JSONDatasetsConnectorV1,
 )
 from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connectorV0 import (
     LocalFileSystemDatasetsConnectorV0,
 )
-from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connectorV1 import (
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
+    local_filesystem_datasets_connector_multiversion import (
+    LocalFileSystemDatasetsConnectorMV,
+)
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
+    local_filesystem_datasets_connectorV1 import (
     LocalFileSystemDatasetsConnectorV1,
 )
 from sostrades_core.datasets.datasets_connectors.local_repository_datasets_connector import (
@@ -53,11 +62,11 @@ class DatasetConnectorType(Enum):
     """
     Dataset connector types enum
     """
-
-    JSON = JSONDatasetsConnectorV0
-    JSON_V1 = JSONDatasetsConnectorV1
-    Local = LocalFileSystemDatasetsConnectorV0
-    Local_V1 = LocalFileSystemDatasetsConnectorV1
+    # FIXME: proper versioning, this is for testing
+    JSON = JSONDatasetsConnectorMV
+    JSON_V1 = JSONDatasetsConnectorMV
+    Local = LocalFileSystemDatasetsConnectorMV
+    Local_V1 = LocalFileSystemDatasetsConnectorMV
     Arango = ArangoDatasetsConnector
     SoSpickle = SoSPickleDatasetsConnector
     Local_repository = LocalRepositoryDatasetsConnector

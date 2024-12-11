@@ -295,6 +295,31 @@ class AbstractDatasetsConnector(abc.ABC):
     def __str__(self) -> str:
         return f"{type(self).__name__}"
 
+    # CLEARING
+    def clear_dataset(self, dataset_id: str) -> None:
+        """
+        Optional utility method to remove a given dataset_id within a certain connector.
+
+        Args:
+            dataset_id (str): Identifier of the dataset to be removed
+        """
+        raise NotImplementedError
+
+    def clear_all_datasets(self):
+        """
+        Optional utility method to remove all datasets in a connector.
+        """
+        map(lambda _d: self.clear_dataset(_d.dataset_id), self.get_datasets_available())
+
+    def clear_connector(self):
+        """
+        Optional utility method to completely clear a connector further than clearing all datasets, if it applies, e.g.
+        by deleting the root directory of a local connector, or by deleting the database file of a json connector. It
+        defaults to clear_all_datasets unless overloaded.
+        """
+        self.clear_all_datasets()
+
+    # METADATA HANDLING
     def _new_datum(self, old_datum: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a new datum with default metadata

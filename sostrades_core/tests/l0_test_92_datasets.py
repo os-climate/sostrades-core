@@ -352,7 +352,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.Disc2.power"), exported_data.get("power"))
         self.assertEqual(dm2.get_value("usecase_coupling_2_disc_test.z"), exported_data.get("z"))
 
-        export_connector.clear(remove_root_directory=True)
+        export_connector.clear_connector()
 
     def test_08_json_to_local_connector_conversion_and_loading(self):
         """
@@ -410,9 +410,9 @@ class TestDatasets(unittest.TestCase):
             self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
             self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame(
                 {"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
-            connector_to.clear(remove_root_directory=True)
+            connector_to.clear_connector()
         except Exception as cm:
-            connector_to.clear(remove_root_directory=True)
+            connector_to.clear_connector()
             raise cm
 
     def test_09_dataset_error(self):
@@ -528,9 +528,9 @@ class TestDatasets(unittest.TestCase):
                        self.nested_types_reference_dict}
 
             self.assertTrue(dict_are_equal(self.nested_types_reference_dict, dm_dict))
-            connector_to.clear(remove_root_directory=True)
+            connector_to.clear_connector()
         except Exception as cm:
-            connector_to.clear(remove_root_directory=True)
+            connector_to.clear_connector()
             raise cm
 
     def test_13_export_with_repository_dataset_connector(self):
@@ -594,9 +594,9 @@ class TestDatasets(unittest.TestCase):
             self.assertEqual(values["z_list"], [1.0, 2.0, 3.0])
             self.assertEqual(values["b_bool"], False)
             self.assertTrue((values["d"] == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
-            connector_export.clear(remove_root_directory=True)
+            connector_export.clear_connector()
         except Exception as cm:
-            connector_export.clear(remove_root_directory=True)
+            connector_export.clear_connector()
             raise
 
     def test_14_test_import_parameter_level(self):
@@ -683,9 +683,9 @@ class TestDatasets(unittest.TestCase):
             self.assertEqual(values["x"], 4.0)
             self.assertEqual(values["b"], 1)
             self.assertTrue((values["d"] == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
-            connector_export.clear(remove_root_directory=True)
+            connector_export.clear_connector()
         except Exception as cm:
-            connector_export.clear(remove_root_directory=True)
+            connector_export.clear_connector()
             raise
 
     def _test_16_bigquery_plain_types_export_import(self):
@@ -989,7 +989,7 @@ class TestDatasets(unittest.TestCase):
             connector_export.clear_dataset("dataset_all_types")
             raise cm
 
-        connector_export.clear(True)
+        connector_export.clear_connector()
 
     def test_21_datasets_local_connector_nested_types_V1(self):
         """
@@ -1036,7 +1036,7 @@ class TestDatasets(unittest.TestCase):
                    self.nested_types_reference_dict}
         self.assertTrue(dict_are_equal(self.nested_types_reference_dict, dm_dict))
 
-        local_connector_v1.clear(True)
+        local_connector_v1.clear_connector()
 
     def test_22_compatibility_V0_V1(self):
         """
@@ -1058,7 +1058,7 @@ class TestDatasets(unittest.TestCase):
                                                                             "test"),
                                            data_types_dict={},
                                            create_if_not_exists=True)
-        connector_to.clear(True)
+        connector_to.clear_connector()
 
 
 if __name__ == "__main__":
