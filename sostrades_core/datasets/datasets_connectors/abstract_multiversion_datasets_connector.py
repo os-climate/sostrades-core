@@ -21,6 +21,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type
 from itertools import chain
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (AbstractDatasetsConnector,
                                                                                      DatasetGenericException)
+from sostrades_core.datasets.dataset_manager import DatasetsConnectorManager
+
 
 if TYPE_CHECKING:
     from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
@@ -36,25 +38,45 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
     # version to connector class mapping, overloaded in subclasses
     VERSION_TO_CLASS: dict[str:Type[AbstractDatasetsConnector]] = {}
 
+    VERSION_SUFFIX: str = "__@"
+
     @abc.abstractmethod
-    def __init__(self, connector_id: str, **connector_instantiation_fields):
+    def __init__(self,
+                 connector_id: str,
+                 mono_version_connectors_instantiation_fields: dict[str:dict[str:Any]]):
         """
         Abstract init method forcing to create a dedicated subclass for every type of multi-version connector (JSON,
         LocalFileSystem, etc.). These multi-version subclasses must overload the VERSION_TO_CLASS dict, specifying the
         mono-version connector class associated to each compatible version handled by the multi-version connector. Only
         the versions thus declared will be considered compatible with the multi-version connector. Note that, when a
         multi-version connector is registered, its associated mono-version components are not registered independently.
-            connector_id (str): Connector identifier for the multiversion connector
-            **connector_instantiation_fields: keyword arguments that allow to instantiate the different mono-version
-                connectors. They are assumed to be the same for all mono-version classes of a same type of connector.
+
+        Args:
+            connector_id: Connector identifier for the multiversion connector
+            mono_version_connectors_instantiation_fields: keyword arguments that allow to instantiate the different
+                mono-version connectors.
         """
+        self.connector_id = connector_id
         self.__version_connectors = {}
-        for _version, _version_class in self.VERSION_TO_CLASS.items():
+        for _version, _version_fields in mono_version_connectors_instantiation_fields.items():
+            if _version not in self.VERSION_TO_CLASS:
+                raise DatasetGenericException(f"Multi-version connector {self} does not implement version {_version}.")
+            _version_class = self.VERSION_TO_CLASS[_version]
             if _version in _version_class.COMPATIBLE_DATASET_INFO_VERSION:
-                self.__version_connectors[_version] = _version_class(connector_id=connector_id,
-                                                                     **connector_instantiation_fields)
+                # TODO: not registering the mono version connectors independently but probably should
+                if DatasetsConnectorManager.CONNECTOR_IDENTIFIER_STR in _version_fields:
+                    self.__version_connectors[_version] = _version_class(**_version_fields)
+                else:
+                    # TODO: this custom naming for subconnectors is to review, and it is probably useless unless registered
+                    subconnector_id = self.__get_subconnector_id(_version)
+                    self.__version_connectors[_version] = _version_class(connector_id=subconnector_id,
+                                                                         **_version_fields)
             else:
-                raise DatasetGenericException(f"The class defined for version {_version} is not compatible.")
+                raise DatasetGenericException(f"The class {_version_class.__name__} defined for version {_version} in "
+                                              f"multi-version connector {self} is not compatible with {_version}.")
+
+    def __get_subconnector_id(self, version: str):
+        return self.connector_id + self.VERSION_SUFFIX + version
 
     @property
     def compatible_dataset_info_version(self):
@@ -168,3 +190,27 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
         return self.version_connector(dataset_identifier).build_path_to_data(dataset_identifier=dataset_identifier,
                                                                              data_name=data_name,
                                                                              data_type=data_type)
+        # CLEARING
+
+    def clear_dataset(self, dataset_id: str) -> None:
+        """
+        Optional utility method to remove a given dataset_id within a certain connector.
+
+        Args:
+            dataset_id (str): Identifier of the dataset to be removed
+        """
+        raise NotImplementedError
+
+    def clear_all_datasets(self):
+        """
+        Optional utility method to remove all datasets in a connector.
+        """
+        map(lambda _d: self.clear_dataset(_d.dataset_id), self.get_datasets_available())
+
+    def clear_connector(self):
+        """
+        Optional utility method to completely clear a connector further than clearing all datasets, if it applies, e.g.
+        by deleting the root directory of a local connector, or by deleting the database file of a json connector. It
+        defaults to clear_all_datasets unless overloaded.
+        """
+        self.clear_all_datasets()
