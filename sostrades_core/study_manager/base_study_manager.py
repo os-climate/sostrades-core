@@ -23,17 +23,18 @@ from importlib import import_module
 from logging import DEBUG, INFO, Logger
 from pathlib import Path
 from time import time
-from typing import TYPE_CHECKING, Callable
-
-from gemseo.utils.compare_data_manager_tooling import compare_dict
+from typing import TYPE_CHECKING
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.compare_data_manager_tooling import compare_dict
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 from sostrades_core.tools.rw.load_dump_dm_data import AbstractLoadDump, DirectLoadDump
 from sostrades_core.tools.tree.serializer import DataSerializer
 
 if TYPE_CHECKING:
+    from typing import Callable
+
     from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 
 """
@@ -71,6 +72,7 @@ class BaseStudyManager:
         test_post_procs: bool = True,
     ):
         """Constructor.
+
 
         :params: repository_name, package name that contain the target process to load
         :type: str

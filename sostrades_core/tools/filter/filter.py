@@ -34,18 +34,18 @@ def filter_variables_to_convert(reduced_dm, list_to_filter, write_logs=False, lo
     for variable in list_to_filter:
         will_be_converted = False
         variable_local_data = reduced_dm[variable]
-        is_numerical = variable_local_data[VAR_NUMERICAL]
+        is_numerical = variable_local_data.get(VAR_NUMERICAL, False)
         if not is_numerical:
-            type = variable_local_data[VAR_TYPE_ID]
-            if type in BASE_TYPE_TO_CONVERT:
+            type_ = variable_local_data.get(VAR_TYPE_ID)
+            if type_ is None or type_ in BASE_TYPE_TO_CONVERT:  # variable is considered convertible by default
                 filtered_keys.append(variable)
                 will_be_converted = True
-            elif type not in ['string', 'string_list', 'string_list_list', 'int_list', 'float_list', 'bool',
+            elif type_ not in ['string', 'string_list', 'string_list_list', 'int_list', 'float_list', 'bool',
                               'dict_list', 'df_dict']:
                 subtype = variable_local_data.get(VAR_SUBTYPE_ID)
                 if subtype is not None:
                     final_type = check_subtype(
-                        variable, subtype, type)
+                        variable, subtype, type_)
                     if final_type in BASE_TYPE_TO_CONVERT:
                         filtered_keys.append(variable)
                         will_be_converted = True

@@ -25,13 +25,12 @@ from queue import Empty
 from tempfile import gettempdir
 from typing import Optional, Union
 
-from gemseo.utils.compare_data_manager_tooling import (
+from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
+from sostrades_core.study_manager.base_study_manager import BaseStudyManager
+from sostrades_core.tools.compare_data_manager_tooling import (
     compare_dict,
     delete_keys_from_dict,
 )
-
-from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
-from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.folder_operations import makedirs_safe
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,

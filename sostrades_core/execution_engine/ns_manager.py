@@ -27,6 +27,10 @@ INTERNAL_VISIBILITY = ProxyDiscipline.INTERNAL_VISIBILITY
 NS_SEP = '.'
 
 
+class NamespaceManagerException(Exception):
+    pass
+
+
 class NamespaceManager:
     '''
     Specification: NamespaceManager allows to manage namespaces for disciplines data
@@ -210,7 +214,7 @@ class NamespaceManager:
         Get a deepcopy of the shared_ns_dict
         '''
         if ns_name not in self.shared_ns_dict:
-            raise Exception(
+            raise NamespaceManagerException(
                 f'The namespace {ns_name} is not defined in the namespace manager')
         else:
             return self.shared_ns_dict[ns_name]
@@ -222,7 +226,7 @@ class NamespaceManager:
         if ns_id in self.all_ns_dict.keys():
             return self.all_ns_dict[ns_id]
         else:
-           raise Exception(
+           raise NamespaceManagerException(
                 f'The namespace id {ns_id} is not defined in the namespace manager')
     # -- Disciplinary name space management
 
@@ -351,7 +355,7 @@ class NamespaceManager:
             get_ns_names = [
                 self.all_ns_dict[ns].name for ns in disc.associated_namespaces]
             if len(get_ns_names) != len(set(get_ns_names)):
-                raise Exception(
+                raise NamespaceManagerException(
                     f'There is two namespaces with the same name in the associated namespace list of {disc.sos_name}')
             others_ns = {
                 self.all_ns_dict[ns].name: self.all_ns_dict[ns] for ns in disc.associated_namespaces}
@@ -421,7 +425,7 @@ class NamespaceManager:
     def add_new_shared_ns_for_disc(self, disc, shared_ns):
 
         if disc not in self.disc_ns_dict:
-            raise Exception(f'The discipline {disc} has not been created')
+            raise NamespaceManagerException(f'The discipline {disc} has not been created')
         else:
             self.ns_object_map[id(shared_ns)] = shared_ns
             self.disc_ns_dict[disc]['others_ns'].update({shared_ns.name: shared_ns})
@@ -448,7 +452,7 @@ class NamespaceManager:
         Return the value of the shared_namespace linked to var_ns for the discipline disc
         '''
         if not self.check_namespace_name_in_ns_manager(disc, var_ns):
-            raise Exception(
+            raise NamespaceManagerException(
                 f'The namespace {var_ns} is missing for the discipline {disc.sos_name}')
         return self.get_disc_others_ns(disc)[var_ns].get_value()
 
@@ -457,7 +461,7 @@ class NamespaceManager:
         Return the shared_namespace linked to var_ns for the discipline disc
         '''
         if not self.check_namespace_name_in_ns_manager(disc, var_ns):
-            raise Exception(
+            raise NamespaceManagerException(
                 f'The namespace {var_ns} is missing for the discipline {disc.sos_name}')
         return self.get_disc_others_ns(disc)[var_ns]
 
@@ -698,7 +702,3 @@ class NamespaceManager:
             True if the namespace is unused, False if it is used
         '''
         return ns.name not in post_proc_ns_list and not ns.check_namespace_is_used()
-
-
-class NamespaceManagerException(Exception):
-    pass

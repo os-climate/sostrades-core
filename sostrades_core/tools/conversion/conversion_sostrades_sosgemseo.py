@@ -16,6 +16,7 @@ limitations under the License.
 '''
 from copy import deepcopy
 from functools import reduce
+from itertools import chain
 
 import numpy as np
 from numpy import append, arange, array, delete, ndarray
@@ -50,31 +51,23 @@ VAR_TYPE_MAP = {
     'dict': dict,
     'dataframe': DataFrame,
     'bool': bool,
+    'tuple': tuple
 }
+NEW_VAR_TYPE_MAP_INVERTED = {str: 'string', list: 'list', ndarray: 'array', dict: 'dict', DataFrame: 'dataframe',
+                             bool: 'bool'}
+
 VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
 STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
 #    VAR_TYPES_SINGLE_VALUES = ['int', 'float', 'string', 'bool', 'np_int32', 'np_float64', 'np_int64']
-NEW_VAR_TYPE = ['dict', 'dataframe',
-                'string_list', 'string', 'float', 'int', 'list']
+NEW_VAR_TYPE_STRING = ['dict', 'dataframe', 'string', 'list', 'bool']
+NEW_VAR_TYPE = [VAR_TYPE_MAP[typ] for typ in NEW_VAR_TYPE_STRING]
+
+NEW_VAR_TYPE = list(set(chain.from_iterable(elt if isinstance(elt, tuple) else [elt] for elt in NEW_VAR_TYPE)))
 
 
 def is_value_type_handled(val):
     return isinstance(val, tuple(VAR_TYPE_MAP.values())
-                      ) or isinstance(val, np_complex128)
-
-
-def get_dataframe_excluded_columns(key, dm_reduced_to_type_and_metadata):
-    """ returns the excluded columns of a dataframe
-        output : list of excluded columns
-    """
-    if not isinstance(dm_reduced_to_type_and_metadata, dict):
-        excluded_columns = dm_reduced_to_type_and_metadata.get_data(
-            key, DF_EXCLUDED_COLUMNS)
-    else:
-        excluded_columns = dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]
-    if excluded_columns is None:
-        return []
-    return excluded_columns
+                      ) or isinstance(val, np_complex128) or val is None
 
 
 def get_nested_val(dict_in, keys):
@@ -117,7 +110,8 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
                 arr_to_convert = delete(arr_to_convert, arange(_size))
 
             # int, float, or complex
-            elif _type in [int, float, np_int32, np_int64, np_float64, np_complex128, bool]:
+            elif _type in [int, float, np_int32, np_int64, np_float64, np_complex128, bool, tuple] or _type is type(
+                None):
                 _val = arr_to_convert[0]
                 arr_to_convert = delete(arr_to_convert, [0])
                 to_update[_key] = _type(_val)
@@ -202,108 +196,69 @@ def convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXC
     return df
 
 
-def convert_array_into_new_type(local_data, dm_reduced_to_type_and_metadata):
+def convert_array_into_new_type(name, var_array, reduced_dm={}):
     ''' convert list in local_data into correct type in data_in
         returns an updated copy of local_data
     '''
-    local_data_updt = deepcopy(local_data)
 
-    for key, to_convert in local_data_updt.items():
-        # get value in DataManager
-        if not isinstance(dm_reduced_to_type_and_metadata, dict):
-            _type = dm_reduced_to_type_and_metadata.get_data(key, VAR_TYPE_ID)
-            metadata_list = dm_reduced_to_type_and_metadata.get_data(
-                key, TYPE_METADATA)
-        else:
-            _type = dm_reduced_to_type_and_metadata[key][VAR_TYPE_ID]
-            metadata_list = dm_reduced_to_type_and_metadata[key][TYPE_METADATA]
-        if to_convert is None:
-            local_data_updt[key] = None
-        else:
-            # check dict type in data_to_update and visibility
-            if _type == 'dict':
+    _type = reduced_dm.get(VAR_TYPE_ID)
+    metadata_list = reduced_dm.get(TYPE_METADATA)
+    if array is None:
+        var_new_type = None
+    else:
+        # check dict type in data_to_update and visibility
+        if _type == 'dict':
 
-                if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                    subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
+            subtype = reduced_dm.get(VAR_SUBTYPE_ID)
 
-                else:
+            # TODO : remove this when we get rid of df_dict type
+            if metadata_list is None and subtype is None:
+                raise ValueError(
+                    f' Variable {name} cannot be converted since no metadata is available')
+            new_data = {}
+            if subtype is None:
 
-                    subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
+                var_new_type = convert_array_into_dict_old_version(
+                    var_array, new_data, deepcopy(metadata_list))
 
-                # TODO : remove this when we get rid of df_dict type
-                if metadata_list is None and subtype is None:
-                    raise ValueError(
-                        f' Variable {key} cannot be converted since no metadata is available')
-                new_data = {}
-                if subtype is None:
 
-                    local_data_updt[key] = convert_array_into_dict_old_version(
-                        to_convert, new_data, deepcopy(metadata_list))
-
-                else:
-                    check_subtype(key, subtype, 'dict')
-                    local_data_updt[key] = convert_array_into_dict(
-                        to_convert, deepcopy(metadata_list), subtype)
-            # check list type in data_to_update and visibility
-            elif _type == 'list':
-
-                if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                    subtype = dm_reduced_to_type_and_metadata.get_data(key, VAR_SUBTYPE_ID)
-
-                else:
-                    subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
-
-                if subtype is not None:
-                    if metadata_list is None and subtype['list'] not in ['int', 'string', 'float'] and check_subtype(
-                            key, subtype, 'list') not in BASE_TYPE_EXCLUDED:
-                        raise ValueError(
-                            f' Variable {key} cannot be converted since no metadata is available')
-
-                    # check_subtype(key, subtype, 'list')
-                    local_data_updt[key] = convert_array_into_list(
-                        to_convert, deepcopy(metadata_list), subtype)
-                else:
-                    local_data_updt[key] = to_convert
-
-            # check dataframe type in data_in and visibility
-            elif _type == 'dataframe':
-                if metadata_list is None:
-                    raise ValueError(
-                        f'Variable {key} cannot be converted since no metadata is available')
-                metadata = metadata_list[0]
-                excluded_columns = get_dataframe_excluded_columns(
-                    key, dm_reduced_to_type_and_metadata)
-                local_data_updt[key] = convert_array_into_df(
-                    to_convert, metadata, excluded_columns)
-            # elif _type == 'string':
-            #     metadata = metadata_list[0]
-            #
-            #     local_data_updt[key] = next((strg for strg, int_to_convert in metadata['known_values'].items(
-            #     ) if int_to_convert == to_convert), None)
-            # elif _type == 'string_list':
-            #     local_data_updt[key] = []
-            #     for i, val in enumerate(to_convert):
-            #         metadata = metadata_list[i]
-            #         local_data_updt[key].append(
-            #             next((strg for strg, int_to_convert in metadata['known_values'].items(
-            #             ) if int_to_convert == val), None))
-            # elif _type in ['float', 'int']:
-            elif _type == 'float':
-                if isinstance(to_convert, ndarray):
-                    # Check if metadata has been created
-                    # Check if the value is complex that means that we are
-                    # in a complex step method do not kill the complex part
-                    if metadata_list is not None and not isinstance(to_convert[0], complex):
-                        # if both conditions are OK reuse the float type in
-                        # the metadata for the value
-                        local_data_updt[key] = metadata_list['var_type'](
-                            to_convert[0])
-
-                    else:
-                        local_data_updt[key] = to_convert[0]
             else:
-                local_data_updt[key] = to_convert
-    return local_data_updt
+                check_subtype(name, subtype, 'dict')
+                var_new_type = convert_array_into_dict(
+                    var_array, deepcopy(metadata_list), subtype)
+        # check list type in data_to_update and visibility
+        elif _type == 'list':
+
+            subtype = reduced_dm.get(VAR_SUBTYPE_ID)
+
+            if subtype is not None:
+                if metadata_list is None and subtype['list'] not in ['int', 'string', 'float'] and check_subtype(
+                        name, subtype, 'list') not in BASE_TYPE_EXCLUDED:
+                    raise ValueError(
+                        f' Variable {name} cannot be converted since no metadata is available')
+
+                # check_subtype(key, subtype, 'list')
+                var_new_type = convert_array_into_list(
+                    var_array, deepcopy(metadata_list), subtype)
+            else:
+                var_new_type = list(var_array)
+
+        # check dataframe type in data_in and visibility
+        elif _type == 'dataframe':
+            if metadata_list is None:
+                raise ValueError(
+                    f'Variable {name} cannot be converted since no metadata is available')
+            metadata = metadata_list[0]
+            excluded_columns = reduced_dm.get(DF_EXCLUDED_COLUMNS, DEFAULT_EXCLUDED_COLUMNS)
+
+            var_new_type = convert_array_into_df(
+                var_array, metadata, excluded_columns)
+
+        elif _type == 'string':
+            var_new_type = var_array[0]
+        else:
+            var_new_type = var_array
+    return var_new_type
 
 
 def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_keys, prev_metadata):
@@ -337,7 +292,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
             # if value is a dataframe
             values_list, metadata = convert_df_into_array(
                 val, values_list, metadata, nested_keys)
-        elif _type in STANDARD_TYPES:
+        elif _type in STANDARD_TYPES or _type is type(None) or _type is tuple:
             # if value is a int or float
             values_list = append(values_list, [val])
             metadata.append(val_data)
@@ -348,6 +303,7 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
             metadata.append(val_data)
         elif _type in [list, ndarray]:
             # if val contains strings :
+            new_val = val.copy()
             if any(isinstance(elem, str) for elem in val):
                 val_data['known_values'] = {}
                 # We look for strings inside the list
@@ -366,18 +322,18 @@ def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_ke
                         int_val, val_data_ielem = convert_string_to_int(
                             elem, val_data_ielem)
 
-                        val[i_elem] = int_val
+                        new_val[i_elem] = int_val
                         val_data['known_values'][i_elem] = val_data_ielem
 
             if isinstance(val, list):
                 size = len(val)
                 val_data['__shape__'] = (size,)
                 val_data['__size__'] = size
-                values_list = append(values_list, val)
+                values_list = append(values_list, new_val)
             else:
-                val_data['__shape__'] = val.shape
-                val_data['__size__'] = val.size
-                values_list = append(values_list, val.flatten())
+                val_data['__shape__'] = new_val.shape
+                val_data['__size__'] = new_val.size
+                values_list = append(values_list, new_val.flatten())
             metadata.append(val_data)
         elif _type is str:
             # if value is a string look for is prev_metadata to find known
@@ -574,155 +530,87 @@ def convert_float_into_array(var_dict):
 
 
 def convert_new_type_into_array(
-        var_dict, dm_reduced_to_type_and_metadata):
+        key, var, reduced_dm={}):
     '''
     Check element type in var_dict, convert new type into numpy array
         and stores metadata into DM for after reconversion
     '''
-    var_dict_converted = deepcopy(var_dict)
-    prev_metadata = None
-    for key, var in var_dict_converted.items():
-        if not isinstance(dm_reduced_to_type_and_metadata, dict):
-            var_type = dm_reduced_to_type_and_metadata.get_data(
-                key, VAR_TYPE_ID)
+
+    var_type = type(var)
+    metadata = []
+    new_reduced_dm = {}
+    if var_type in NEW_VAR_TYPE:
+
+        if var is None:
+            var_converted = None
         else:
-            var_type = dm_reduced_to_type_and_metadata[key][VAR_TYPE_ID]
-        if var_type in NEW_VAR_TYPE:
-            if not isinstance(
-                    var, VAR_TYPE_MAP[var_type]) and var is not None:
-                msg = f"Variable {key} has type {type(var)}, "
-                msg += f"however type {VAR_TYPE_MAP[var_type]} was expected."
-                # msg += f'before run of discipline {self} with name {self.get_disc_full_name()} '
-                raise ValueError(msg)
-            else:
-                if var is None:
-                    var_dict_converted[key] = None
+            var_converted = []
+            prev_key = []
+            # if type needs to be converted
+            if var_type is dict:
+                # if value is a dictionary
+                all_values = list(var.values())
+                if all([is_value_type_handled(val)
+                        for val in all_values]):
+                    # convert if all values are handled by
+                    # SoSTrades
+
+                    subtype = reduced_dm.get(VAR_SUBTYPE_ID)
+
+                    if subtype is None:
+                        prev_metadata = reduced_dm.get(TYPE_METADATA, [])
+                        var_converted, metadata = convert_dict_into_array_old_version(
+                            var, var_converted, metadata, prev_key, deepcopy(prev_metadata))
+                    else:
+
+                        check_subtype(key, subtype, 'dict')
+                        var_converted, metadata = convert_dict_into_array(
+                            var, subtype)
                 else:
-                    values_list = []
-                    metadata = []
-                    prev_key = []
-                    if var_type in ['dict', 'string', 'string_list']:
-                        if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                            prev_metadata = dm_reduced_to_type_and_metadata.get_data(
-                                key, TYPE_METADATA)
-                        else:
-                            prev_metadata = dm_reduced_to_type_and_metadata[key][TYPE_METADATA]
-                    # if type needs to be converted
-                    if var_type == 'dict':
-                        # if value is a dictionary
-                        all_values = list(var.values())
-                        if all([is_value_type_handled(val)
-                                for val in all_values]):
-                            # convert if all values are handled by
-                            # SoSTrades
-                            if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                                subtype = dm_reduced_to_type_and_metadata.get_data(
-                                    key, VAR_SUBTYPE_ID)
+                    msg = f"\n Dictionary values {key} : {var} \n must be among {list(VAR_TYPE_MAP.keys())}"
+                    raise ValueError(msg)
+            elif var_type is DataFrame:
+                # if value is a DataFrame
+                # TO DO: Create a function to get the dtypes of columns without the "big" function 'convert_df_into_array'
+                init_var_converted, init_metadata = deepcopy(var_converted), deepcopy(metadata)
 
-                            else:
-                                subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
+                excluded_columns = reduced_dm.get(DF_EXCLUDED_COLUMNS, DEFAULT_EXCLUDED_COLUMNS)
+                var_converted, metadata = convert_df_into_array(
+                    var, var_converted, metadata, prev_key, excluded_columns)
+                # Define a list of dtypes to exclude and perform convert again if there are new cols to exclude
+                dtypes_to_exclude = [object, bool, str]
+                new_excluded_columns = deepcopy(excluded_columns)
+                for col, metadata_dtype in zip(metadata[0]['__columns__'], metadata[0]['__dtypes__']):
+                    if metadata_dtype in dtypes_to_exclude:
+                        new_excluded_columns += [col]
+                if new_excluded_columns != excluded_columns:
+                    var_converted, metadata = convert_df_into_array(
+                        var, init_var_converted, init_metadata, prev_key, new_excluded_columns)
+                    new_reduced_dm[DF_EXCLUDED_COLUMNS] = new_excluded_columns
 
-                            if subtype is None:
-                                values_list, metadata = convert_dict_into_array_old_version(
-                                    var, values_list, metadata, prev_key, deepcopy(prev_metadata))
-                            else:
+            elif var_type is list:
 
-                                check_subtype(key, subtype, 'dict')
-                                values_list, metadata = convert_dict_into_array(
-                                    var, subtype)
-                        else:
-                            evaluated_types = [type(val)
-                                               for val in all_values]
-                            # msg = f"\n Invalid type of parameter {key}: {var}/'{evaluated_types}' in discipline {self.sos_name}."
-                            msg = f"\n Dictionary values must be among {list(VAR_TYPE_MAP.keys())}"
-                            raise ValueError(msg)
-                    elif var_type == 'dataframe':
-                        # if value is a DataFrame
-                        # TO DO: Create a function to get the dtypes of columns without the "big" function 'convert_df_into_array'
-                        init_values_list, init_metadata = deepcopy(values_list), deepcopy(metadata)
-                        if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                            excluded_columns = dm_reduced_to_type_and_metadata.get_data(
-                                key, DF_EXCLUDED_COLUMNS)
-                        else:
-                            excluded_columns = dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS]
-                        values_list, metadata = convert_df_into_array(
-                            var, values_list, metadata, prev_key, excluded_columns)
-                        # Define a list of dtypes to exclude and perform convert again if there are new cols to exclude
-                        dtypes_to_exclude = [object, bool, str]
-                        new_excluded_columns = deepcopy(excluded_columns)
-                        for col, metadata_dtype in zip(metadata[0]['__columns__'], metadata[0]['__dtypes__']):
-                            if metadata_dtype in dtypes_to_exclude:
-                                new_excluded_columns += [col]
-                        if new_excluded_columns != excluded_columns:
-                            values_list, metadata = convert_df_into_array(
-                                var, init_values_list, init_metadata, prev_key, new_excluded_columns)
-                            if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                                dm_reduced_to_type_and_metadata.set_data(
-                                    key, {DF_EXCLUDED_COLUMNS: new_excluded_columns})
-                            else:
-                                dm_reduced_to_type_and_metadata[key][DF_EXCLUDED_COLUMNS] = new_excluded_columns
+                subtype = reduced_dm.get(VAR_SUBTYPE_ID)
 
-                    # elif var_type == 'string':
-                    #     # if value is a string
-                    #     metadata_dict = {}
-                    #     metadata_dict['known_values'] = {}
-                    #     if prev_metadata is not None and 'known_values' in prev_metadata[0]:
-                    #         metadata_dict['known_values'] = prev_metadata[0]['known_values']
-                    #
-                    #     values_list, metadata_dict = convert_string_to_int(
-                    #         var, metadata_dict)
-                    #
-                    #     metadata.append(metadata_dict)
-                    #
-                    # elif var_type == 'string_list':
-                    #     # if value is a list of strings
-                    #     for i_elem, elem in enumerate(var):
-                    #         metadata_dict_elem = {}
-                    #         metadata_dict_elem['known_values'] = {}
-                    #         if prev_metadata is not None and i_elem < len(prev_metadata) and 'known_values' in \
-                    #                 prev_metadata[i_elem]:
-                    #             metadata_dict_elem['known_values'] = prev_metadata[i_elem]['known_values']
-                    #
-                    #         value_elem, metadata_dict_elem = convert_string_to_int(
-                    #             elem, metadata_dict_elem)
-                    #         values_list.append(value_elem)
-                    #         metadata.append(metadata_dict_elem)
-                    # elif var_type in ['float', 'int']:
-                    elif var_type == 'float':
-                        # store float into array for gems
-                        metadata = {'var_type': type(var)}
-                        values_list = array([var])
-                    elif var_type == 'list':
-                        if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                            subtype = dm_reduced_to_type_and_metadata.get_data(
-                                key, VAR_SUBTYPE_ID)
+                if subtype is not None:
+                    check_subtype(key, subtype, 'list')
+                    var_converted, metadata = convert_list_into_array(var, subtype)
+                else:
+                    var_converted, metadata = var, None
 
-                        else:
-                            subtype = dm_reduced_to_type_and_metadata[key].get(VAR_SUBTYPE_ID)
-
-                        if subtype is not None:
-                            check_subtype(key, subtype, 'list')
-                            values_list, metadata = convert_list_into_array(var, subtype)
-                    else:
-                        values_list, metadata = var, None
-
-                        # update current dictionary value
-                    var_dict_converted[key] = values_list
-                    # Update metadata
-                    if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                        dm_reduced_to_type_and_metadata.set_data(key, TYPE_METADATA, metadata, check_value=False)
-                    else:
-                        dm_reduced_to_type_and_metadata[key][TYPE_METADATA] = metadata
-
-        else:
-            var_dict_converted[key] = var
-            # Update metadata
-            if not isinstance(dm_reduced_to_type_and_metadata, dict):
-                dm_reduced_to_type_and_metadata.set_data(key, TYPE_METADATA, None, check_value=False)
+                var_converted = array(var_converted)
+            elif var_type is str:
+                var_converted = array(var)
             else:
-                dm_reduced_to_type_and_metadata[key][TYPE_METADATA] = None
+                var_converted = var
+    else:
+        var_converted = var
+    # default in value_to_array of BaseDataConverter we return value
+    if VAR_TYPE_ID not in reduced_dm and var_type in NEW_VAR_TYPE_MAP_INVERTED:
+        new_reduced_dm[VAR_TYPE_ID] = NEW_VAR_TYPE_MAP_INVERTED[var_type]
+    new_reduced_dm[TYPE_METADATA] = metadata
 
-    return var_dict_converted
+    return var_converted, new_reduced_dm
 
 
 def convert_string_to_int(val, val_data):

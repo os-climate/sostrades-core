@@ -30,3 +30,10 @@ class Study(StudyManager):
         datasets_file = __file__.replace(".py", ".json")
         # Deserialize it
         return DatasetsMapping.from_json_file(datasets_file)
+
+
+if '__main__' == __name__:
+    uc_cls = Study()
+    uc_cls.load_data()
+    uc_cls.execution_engine.display_treeview_nodes(display_variables=True)
+    uc_cls.run()

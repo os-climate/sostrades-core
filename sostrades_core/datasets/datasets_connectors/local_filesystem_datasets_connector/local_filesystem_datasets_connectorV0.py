@@ -86,7 +86,7 @@ class LocalFileSystemDatasetsConnectorV0(AbstractDatasetsConnector):
         dataset_directory = os.path.join(self._root_directory_path, dataset_identifier.dataset_id)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
 
-        self._datasets_serializer.check_path_exists("Dataset folder", dataset_directory)
+        self._datasets_serializer.check_path_exists(self.DATASET_FOLDER, dataset_directory)
 
         self._datasets_serializer.set_dataset_directory(dataset_directory)
 
@@ -133,7 +133,7 @@ class LocalFileSystemDatasetsConnectorV0(AbstractDatasetsConnector):
         dataset_directory = os.path.join(self._root_directory_path, dataset_identifier.dataset_id)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
 
-        self._datasets_serializer.check_path_exists("Dataset folder", dataset_directory)
+        self._datasets_serializer.check_path_exists(self.DATASET_FOLDER, dataset_directory)
 
         self._datasets_serializer.set_dataset_directory(dataset_directory)
 
@@ -169,7 +169,7 @@ class LocalFileSystemDatasetsConnectorV0(AbstractDatasetsConnector):
         dataset_directory = os.path.join(self._root_directory_path, dataset_identifier.dataset_id)
         dataset_descriptor_path = os.path.join(dataset_directory, self.DESCRIPTOR_FILE_NAME)
 
-        self._datasets_serializer.check_path_exists("Dataset folder", dataset_directory)
+        self._datasets_serializer.check_path_exists(self.DATASET_FOLDER, dataset_directory)
 
         self._datasets_serializer.set_dataset_directory(dataset_directory)
 

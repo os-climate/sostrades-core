@@ -97,9 +97,6 @@ class SosTool():
         '''
         pass
 
-    def get_dynamic_output_from_tool(self):
-        pass
-
     def associate_namespaces_to_builder(self, builder, ns_list):
         '''
         Associate namespaces defined in the constructor + all namespaces which has been updated in update_namespaces
