@@ -1,6 +1,6 @@
 # Project libraries
 # gemseo
-gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo@07dac5f70ad7cc3ebd65d4e5e61c835f028aec59
+gemseo[all]@git+https://gitlab.com/valentinjoncquieres/gemseo-sos-convergence.git@d1174f2b34b64ff8852e6e7e4e2179f304a9e925
 # External libraries
 black==24.4.2
 chaospy==4.3.15
