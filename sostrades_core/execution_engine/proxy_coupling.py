@@ -91,7 +91,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
     # get list of available linear solvers from LinearSolversFactory
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
-    NEWTON_ALGO_LIST = ('MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA')
+    NEWTON_ALGO_LIST = ('MDANewtonRaphson', 'MDAGSNewton')
 
     # set default value of linear solver according to the operating system
     if getenv("USE_PETSC", "").lower() in ("true", "1"):
