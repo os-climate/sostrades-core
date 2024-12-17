@@ -21,8 +21,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type
 from itertools import chain
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (AbstractDatasetsConnector,
                                                                                      DatasetGenericException)
-from sostrades_core.datasets.dataset_manager import DatasetsConnectorManager
-
 
 if TYPE_CHECKING:
     from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
@@ -64,7 +62,7 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
             _version_class = self.VERSION_TO_CLASS[_version]
             if _version in _version_class.COMPATIBLE_DATASET_INFO_VERSION:
                 # TODO: not registering the mono version connectors independently but probably should
-                if DatasetsConnectorManager.CONNECTOR_IDENTIFIER_STR in _version_fields:
+                if self.CONNECTOR_ID in _version_fields:
                     self.__version_connectors[_version] = _version_class(**_version_fields)
                 else:
                     # TODO: this custom naming for subconnectors is to review, and it is probably useless unless registered

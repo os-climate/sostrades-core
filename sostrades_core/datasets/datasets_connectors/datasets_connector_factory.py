@@ -62,11 +62,12 @@ class DatasetConnectorType(Enum):
     """
     Dataset connector types enum
     """
-    # FIXME: proper versioning, this is for testing
-    JSON = JSONDatasetsConnectorMV
-    JSON_V1 = JSONDatasetsConnectorMV
-    Local = LocalFileSystemDatasetsConnectorMV
-    Local_V1 = LocalFileSystemDatasetsConnectorMV
+    JSON = JSONDatasetsConnectorV0
+    JSON_V1 = JSONDatasetsConnectorV1
+    JSON_MV = JSONDatasetsConnectorMV
+    Local = LocalFileSystemDatasetsConnectorV0
+    Local_V1 = LocalFileSystemDatasetsConnectorV1
+    Local_MV = LocalFileSystemDatasetsConnectorMV
     Arango = ArangoDatasetsConnector
     SoSpickle = SoSPickleDatasetsConnector
     Local_repository = LocalRepositoryDatasetsConnector
