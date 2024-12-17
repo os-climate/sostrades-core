@@ -84,7 +84,7 @@ class SoSMDAChain(MDAChain):
             RUN_NEEDED: True,
         },
     }
-    NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']
+    NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton']
 
     def __init__(
         self,
