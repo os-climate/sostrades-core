@@ -829,8 +829,8 @@ class TestMDALoop(unittest.TestCase):
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == NR.settings.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == NR.settings.linear_solver_settings['max_iter']
 
-    def test_11_mda_numerical_options_GSorNR(self):
-
+    def _test_11_mda_numerical_options_GSorNR(self):
+        # TODO: TEST DESACTIVATED AFTER DELETION OF GSORNEWTONMDA, RESTABLISH SOLVER OR REMOVE CODE REFS TO SOLVER
         exec_eng = ExecutionEngine(self.name)
 
         exec_eng.ns_manager.add_ns('ns_protected', self.name)
