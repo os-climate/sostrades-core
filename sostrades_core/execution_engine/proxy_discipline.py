@@ -1673,11 +1673,11 @@ class ProxyDiscipline:
 
         disc_in = self.get_data_in()
         for var_name in disc_in:
+            var_f_name = self.get_var_full_name(var_name, disc_in)
             try:
-                var_f_name = self.get_var_full_name(var_name, disc_in)
                 default_val = self.dm.data_dict[self.dm.get_data_id(var_f_name)][self.DEFAULT]
-            except:
-                var_f_name = self.get_var_full_name(var_name, disc_in)
+            except Exception:
+                default_val = None
             if self.dm.get_value(var_f_name) is None and default_val is not None:
                 disc_in[var_name][self.VALUE] = default_val
             else:
