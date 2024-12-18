@@ -183,7 +183,7 @@ def one_test_gradients_discipline(test_name: str,
             result = True
 
             self.override_dump_jacobian = True
-            disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+            disc_techno = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.mdo_discipline
             pickle_filename = f'{test_name}.{model_name}'.replace('.', '_') + '.pkl'
             if not os.path.exists(GENERATED_TEST_FOLDERNAME):
                 os.mkdir(GENERATED_TEST_FOLDERNAME)
@@ -289,7 +289,7 @@ class MyGeneratedTest(AbstractJacobianUnittest):
 
         self.ee.execute()
 
-        disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc_techno = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.mdo_discipline
 
         self.check_jacobian(location=dirname(__file__), filename='{jacobian_pkl_name}',
                             discipline=disc_techno, step=1e-15, derr_approx='complex_step', local_data = disc_techno.local_data,
