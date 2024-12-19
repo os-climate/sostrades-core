@@ -104,8 +104,8 @@ class SosFactory:
         init_execution delegated to the wrapper using the proxy for i/o configuration.
         """
         for proxy in self.__proxy_disciplines:
-            if proxy.mdo_discipline_wrapp is not None:
-                factory = proxy.mdo_discipline_wrapp
+            if proxy.discipline_wrapp is not None:
+                factory = proxy.discipline_wrapp
                 if factory.wrapper is not None:
                     factory.wrapper.init_execution()
 
@@ -133,9 +133,13 @@ class SosFactory:
             self.coupling_builder.set_builder_info(
                 'cls_builder', list(flatten(builders))
             )
-        else:
-            if builders.cls == SelectorDiscipline:
-                self.coupling_builder = builders
+        elif builders.cls == SelectorDiscipline:
+            self.coupling_builder = builders
+        elif builders.cls == ProxyCoupling :
+            new_builder_name = '.'.join([self.coupling_builder.sos_name,builders.sos_name])
+            self.coupling_builder = builders
+            self.coupling_builder.set_builder_info('sos_name', new_builder_name)
+        else :
 
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
@@ -194,8 +198,8 @@ class SosFactory:
 
     @property
     def contains_mdo(self) -> bool:
-        mdo_disciplines = list(filter(lambda disc: isinstance(disc, ProxyOptim), self.proxy_disciplines))
-        return len(mdo_disciplines) > 0
+        disciplines = list(filter(lambda disc: isinstance(disc, ProxyOptim), self.proxy_disciplines))
+        return len(disciplines) > 0
 
     @property
     def contains_mda_with_strong_couplings(self) -> bool:

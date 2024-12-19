@@ -98,9 +98,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
     def setup_sos_disciplines(self):
         disc_in = self.get_data_in()
-        self.add_reference_mode(disc_in)
-        self.add_gather_outputs()
-
+        dynamic_inputs_ref_mode = self.add_reference_mode(disc_in)
+        dynamic_inputs_scatter_map = self.add_scatter_map_inputs()
+        self.add_inputs(dynamic_inputs_ref_mode | dynamic_inputs_scatter_map)
     def configure_sample_generator(self):
         """
         Configuration of the associated sample generator discipline for multi-instance driver is as in the general case
@@ -114,7 +114,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         if self.SAMPLES_DF in disc_in:
             self.configure_tool()
             self.configure_subprocesses_with_driver_input()
-            self.set_eval_possible_values(  # io_type_in=False ,
+            self.set_eval_possible_values(
                 io_type_out=False,
                 strip_first_ns=True)
 
@@ -135,9 +135,9 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         self.scenarios = [disc for disc in self.scenarios if disc not in list_children]
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
+    def create_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
         """
-        No need to create a MDODisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
+        No need to create a DisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
         """
         pass
 
@@ -181,21 +181,20 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                                             self.POSSIBLE_VALUES: self.REFERENCE_MODE_POSSIBLE_VALUES,
                                             self.STRUCTURING: True}})
 
-        self.add_inputs(dynamic_inputs)
+        return dynamic_inputs
 
-    def add_gather_outputs(self):
+    def add_scatter_map_inputs(self):
         '''
 
-        Add gather output variables to dynamic desc_out to deal with gather option (autogather and gather_outputs)
+        Add scatter map input variables to dynamic desc_in
 
         '''
-        dynamic_outputs = {}
+        dynamic_inputs = {}
         # so that eventual mono-instance outputs get clear
         if self.builder_tool is not None:
-            dynamic_output_from_tool = self.builder_tool.get_dynamic_output_from_tool()
-            dynamic_outputs.update(dynamic_output_from_tool)
+            dynamic_inputs = self.builder_tool.get_dynamic_input_from_tool()
 
-        self.add_outputs(dynamic_outputs)
+        return dynamic_inputs
 
     def configure_tool(self):
         '''
@@ -231,7 +230,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         if self.builder_tool:
             proxies_names = self.builder_tool.get_all_built_disciplines_names()
             # return self.builder_tool.has_built and proxies_names
-            # TODO: upon overload of is_configured method can refactor quickfix below
             if self.get_sosdisc_inputs('samples_df').empty:
                 return True
             else:
@@ -249,7 +247,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         # configuration fashion is decided upon
         samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
         instance_reference = self.get_sosdisc_inputs(self.INSTANCE_REFERENCE)
-        # sce_df = copy.deepcopy(samples_df)
 
         if instance_reference:
             # Addition of Reference Scenario
@@ -300,10 +297,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                         scenarios_data_dict[var_full_name] = sc_row.loc[var]
                 if scenarios_data_dict and self.subprocess_is_configured():
                     # push to dm
-                    # TODO: should also alter associated disciplines' reconfig.
-                    # flags for structuring ? TO TEST
                     self.ee.dm.set_values_from_dict(scenarios_data_dict)
-                    # self.ee.load_study_from_input_dict(scenarios_data_dict)
 
                     # save trades variable original editable state and set them into not editable
                     self.change_editability_state_for_trade_variables(scenario_names, scenarios_data_dict.keys())
@@ -369,7 +363,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         # Update of original editability state in case modification
         # scenario df
-        if (not set(scenario_names) == set(self.old_scenario_names)):
+        if set(scenario_names) != set(self.old_scenario_names):
             new_scenarios = set(scenario_names) - set(self.old_scenario_names)
             self.there_are_new_scenarios = True
             for new_scenario in new_scenarios:
@@ -452,13 +446,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
     def save_original_editability_state(self, ref_dict, non_ref_dict):
 
         if self.save_editable_attr:
-            # self.original_editable_dict_ref = self.save_original_editable_attr_from_variables(
-            #     ref_dict)
             self.original_editable_dict_non_ref = self.save_original_editable_attr_from_variables(
                 non_ref_dict)
-            # self.original_editability_dict = self.original_editable_dict_ref | self.original_editable_dict_non_ref
-            # self.original_editability_dict = {**self.original_editable_dict_ref,
-            #                                   **self.original_editable_dict_non_ref}
             self.save_editable_attr = False
 
     def get_reference_scenario_disciplines(self):
@@ -543,8 +532,6 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         if ref_changes_dict:
             self.old_ref_dict = copy.deepcopy(ref_dict)
 
-        # ref_discipline = self.scenarios[self.get_reference_scenario_index()]
-
         # Build other scenarios variables and values dict from reference
         dict_to_propagate = {}
         # Propagate all reference
@@ -575,8 +562,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
     def search_evaluator_names_and_modify_mode_iteratively(self, disc):
 
-        list = []
-        # subdisc_to_check = disc.scenarios if hasattr(disc, 'scenarios') else disc.proxy_disciplines
+        retval = []
         for subdisc in disc.proxy_disciplines:
             if subdisc.__class__.__name__ == 'ProxyMultiInstanceDriver':
                 if subdisc.get_sosdisc_inputs(self.INSTANCE_REFERENCE):
@@ -588,17 +574,15 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                         if 'ReferenceScenario' in subdriver_full_name:
                             self.ee.dm.set_data(
                                 subdriver_full_name + '.reference_mode', 'value', self.LINKED_MODE)
-                    list = [subdisc.sos_name]
+                    retval = [subdisc.sos_name]
                 else:
-                    list = [subdisc.sos_name]
-            elif subdisc.__class__.__name__ == 'ProxyDiscipline':
-                pass
-            else:
+                    retval = [subdisc.sos_name]
+            elif subdisc.__class__.__name__ != 'ProxyDiscipline':
                 name_and_modes = self.search_evaluator_names_and_modify_mode_iteratively(
                     subdisc)
-                list.append(name_and_modes)
+                retval.append(name_and_modes)
 
-        return list
+        return retval
 
     def modify_editable_attribute_according_to_reference_mode(self, scenarios_non_trade_vars_dict):
 
@@ -614,14 +598,10 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                         if element[0] in key:  # Ignore variables from inner ProxyDriverEvaluators
                             pass
                         else:
-                            if not self.original_editable_dict_non_ref[key]:
-                                pass
-                            else:
+                            if self.original_editable_dict_non_ref[key]:
                                 self.ee.dm.set_data(key, 'editable', True)
                 else:
-                    if not self.original_editable_dict_non_ref[key]:
-                        pass
-                    else:
+                    if self.original_editable_dict_non_ref[key]:
                         self.ee.dm.set_data(key, 'editable', True)
 
     def save_original_editable_attr_from_variables(self, dict):

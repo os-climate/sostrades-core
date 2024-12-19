@@ -124,7 +124,7 @@ class Disc1RecursiveObjectDictCheck(Disc1):
 
     def run(self):
         ObjectDictCheck(self, [])
-
+        super().run()
 
 def ObjectDictCheck(obj, checked):
     objid = id(obj)

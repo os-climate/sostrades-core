@@ -22,6 +22,10 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.design_space import design_space as dspace_tool
 
 
+class SampleGeneratorWrapperException(Exception):
+    pass
+
+
 class SampleGeneratorWrapper(SoSWrapp):
     # TODO: docstring is not up to date
     '''
@@ -63,10 +67,8 @@ class SampleGeneratorWrapper(SoSWrapp):
     def run(self):
         samples_df = self.sample()
         # TODO [to discuss]: is this the place for this exception ?
-        if isinstance(samples_df, pd.DataFrame):
-            pass
-        else:
-            raise Exception("Sampling has not been made")
+        if not isinstance(samples_df, pd.DataFrame):
+            raise SampleGeneratorWrapperException("Sampling has not been made")
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def sample(self):
@@ -76,7 +78,6 @@ class SampleGeneratorWrapper(SoSWrapp):
         return self.set_scenario_columns(self.sample_generator.sample(self))
 
     def set_scenario_columns(self, samples_df, scenario_names=None):
-        # TODO: [to discuss] move to AbstractSampleGenerator ?
         '''
         Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df, by default selecting all scenarios.
         '''

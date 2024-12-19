@@ -1,7 +1,7 @@
 {
     "dataset_all_types": {
         "<study_ph>": {
-            "sub_mda_class": {
+            "inner_mda_name": {
                 "value": "MDAJacobi",
                 "name": "",
                 "unit": "",

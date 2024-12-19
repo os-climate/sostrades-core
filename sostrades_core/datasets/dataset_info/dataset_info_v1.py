@@ -24,7 +24,7 @@ from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V
 @dataclass(frozen=True)
 class DatasetInfoV1(AbstractDatasetInfo):
     """
-    Stores the informations of a dataset V0
+    Stores the informations of a dataset V1
     """
     GROUP_ID_KEY = "group_id"
     MAPPING_ITEM_FIELDS = [
@@ -34,25 +34,43 @@ class DatasetInfoV1(AbstractDatasetInfo):
                         GROUP_ID_KEY,
                         AbstractDatasetInfo.PARAMETER_ID_KEY
                         ]
-    group_id:str
+    group_id: str
 
     @property
     def dataset_info_id(self) -> str:
-        return self.get_mapping_id([self.version_id, self.connector_id, self.dataset_id, self.group_id])
+        """
+        Returns the dataset info id.
 
+        Returns:
+            str: The dataset info id.
+        """
+        return self.get_mapping_id([self.version_id, self.connector_id, self.dataset_id, self.group_id])
 
     @property
     def version_id(self) -> str:
+        """
+        Returns the version id.
+
+        Returns:
+            str: The version id.
+        """
         return VERSION_V1
 
     @staticmethod
-    def deserialize(dataset_mapping_key:str) -> dict[str,str]:
+    def deserialize(dataset_mapping_key: str) -> dict[str, str]:
         """
         Method to deserialize
         expected
         'vx(optional)|'<connector_id>|<dataset_id>|<group_id>|<parameter_id> (for V1)
-        :param dataset_mapping_key: datasets informations of mapping dataset
-        :type dataset_mapping_key: str
+
+        Args:
+            dataset_mapping_key (str): datasets informations of mapping dataset
+
+        Returns:
+            dict[str, str]: Deserialized dataset mapping key.
+
+        Raises:
+            DatasetsInfoMappingException: If the dataset name is '*'.
         """
         # check if the version is in the mapping key or not
         input_dict = DatasetInfoV1.extract_mapping_key_field(dataset_mapping_key, DatasetInfoV1.MAPPING_ITEM_FIELDS)
@@ -60,20 +78,34 @@ class DatasetInfoV1(AbstractDatasetInfo):
             raise DatasetsInfoMappingException(f"Wrong format for V1 mapping key {dataset_mapping_key}, the dataset name '*' is not authorised")
         return input_dict
 
-
     @staticmethod
-    def create(input_dict: dict) -> DatasetInfoV1:
+    def create(input_dict: dict[str, str]) -> DatasetInfoV1:
+        """
+        Method to create the instance of DatasetInfoV1.
 
+        Args:
+            input_dict (dict[str, str]): datasets informations of mapping dataset
+
+        Returns:
+            DatasetInfoV1: Instance of DatasetInfoV1.
+        """
         return DatasetInfoV1(
             connector_id=input_dict[DatasetInfoV1.CONNECTOR_ID_KEY],
             dataset_id=input_dict[DatasetInfoV1.DATASET_ID_KEY],
             group_id=input_dict[DatasetInfoV1.GROUP_ID_KEY]
         )
 
-    def copy_with_new_ns(self, associated_namespace:str)-> AbstractDatasetInfo:
-        '''
-        overrided method
-        '''
+    def copy_with_new_ns(self, associated_namespace: str) -> AbstractDatasetInfo:
+        """
+        Overrided method to create a new DatasetInfo instance from self.
+        Check if there is wildcard in the dataset info and update it with namespace info if needed.
+
+        Args:
+            associated_namespace (str): Associated namespace.
+
+        Returns:
+            AbstractDatasetInfo: New DatasetInfo instance.
+        """
         group_id = ""
         # if the group id is wildcard, the copy will have the group id as namespace
         if self.group_id == self.WILDCARD:
@@ -86,4 +118,3 @@ class DatasetInfoV1(AbstractDatasetInfo):
             dataset_id=self.dataset_id,
             group_id=group_id
         )
-

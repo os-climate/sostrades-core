@@ -64,12 +64,13 @@ class NpEncoder(json.JSONEncoder):
 
 class UsecaseCreator:
     def __init__(
-        self,
-        pkl_path: str,
-        usecase_name: str,
-        write_default_value: bool = False,
-        write_outputs: bool = False,
-        inputs_from_usecase=None,
+            self,
+            pkl_path: str,
+            usecase_name: str,
+            write_default_value: bool = False,
+            write_outputs: bool = False,
+            inputs_from_usecase=None,
+
     ) -> None:
         """Class to generate usecase.py file and related input and output data from a pickle file
 
@@ -106,11 +107,10 @@ class UsecaseCreator:
             'chain_linearize',
             'use_lu_fact',
             'warm_start',
-            'acceleration',
+            'acceleration_method',
             'linear_solver_MDA',
             'linear_solver_MDO',
             'reset_history_each_run',
-            'warm_start_threshold',
             'n_subcouplings_parallel',
             'linearization_mode',
             'residuals_history',
@@ -204,7 +204,7 @@ if '__main__' == __name__:
                 return short_name
 
     def convert_to_string(
-        self, key: str, value, dump_dir: str, short_name: str = None
+            self, key: str, value, dump_dir: str, short_name: str = None
     ) -> str:
         """function to convert any parameter value to string.
         if the value is too big as a string, it will generate a file (csv or json depending on the value type)
@@ -224,11 +224,11 @@ if '__main__' == __name__:
             result_string += "{"
             for sub_key in value:
                 result_string += (
-                    "'"
-                    + str(sub_key)
-                    + "' : "
-                    + self.convert_to_string(sub_key, value[sub_key], dump_dir)
-                    + ",\n"
+                        "'"
+                        + str(sub_key)
+                        + "' : "
+                        + self.convert_to_string(sub_key, value[sub_key], dump_dir)
+                        + ",\n"
                 )
             result_string += "}"
             if len(result_string) > 1000:
@@ -248,11 +248,11 @@ if '__main__' == __name__:
                 result_string += "pd.DataFrame({\n"
                 for col in value.columns:
                     result_string += (
-                        "'"
-                        + str(col)
-                        + "' : "
-                        + str(value[col].fillna('').values.tolist())
-                        + ",\n"
+                            "'"
+                            + str(col)
+                            + "' : "
+                            + str(value[col].fillna('').values.tolist())
+                            + ",\n"
                     )
                 result_string += "})"
             else:
@@ -333,7 +333,7 @@ if '__main__' == __name__:
         same_value_ns_list = []
         compare_value = self.dm_dict_to_write[key]
         for ns, value in self.dm_dict_to_write.items():
-            if ns != key and type(value) == type(compare_value):
+            if ns != key and type(value) is type(compare_value):
                 if self.isEqual(compare_value, value):
                     same_value_ns_list.append(ns)
         return same_value_ns_list
@@ -354,8 +354,8 @@ if '__main__' == __name__:
         already_checked = []
         for ns, value in self.dm_dict_to_write.items():
             if (
-                isinstance(value, (pd.DataFrame, dict, list))
-                and ns not in already_checked
+                    isinstance(value, (pd.DataFrame, dict, list))
+                    and ns not in already_checked
             ):
                 same_value_ns_list = self.get_same_values(ns)
                 if len(same_value_ns_list) > 0:
@@ -365,7 +365,7 @@ if '__main__' == __name__:
                         variable_name, value, self.dump_dir, short_name=variable_name
                     )
                     string_setup = (
-                        '\t\t' + variable_name + '=' + variable_value_string + '\n'
+                            '\t\t' + variable_name + '=' + variable_value_string + '\n'
                     )
 
                     self.same_value_dict[ns] = {
@@ -450,6 +450,7 @@ if '__main__' == __name__:
             for col in col_to_eval:
                 try:  # test if the eval (str -> list) is achievable
                     assert isinstance(eval(str(df[col].values[0])), list)
+
                     str_eval = str_eval + f"'{col}': eval, "
                     i_eval += 1
                 except:
@@ -468,15 +469,15 @@ if '__main__' == __name__:
         for key in sorted(self.dm_data_dict.keys()):
             data_dict = self.dm_data_dict[key]
             if (
-                key.split('.')[-1] not in self.ignore_list
-                and data_dict['io_type'] == 'in'
+                    key.split('.')[-1] not in self.ignore_list
+                    and data_dict['io_type'] == 'in'
             ):
                 write = True
                 if not self.write_default_value:
                     # check if value is different from default value:
                     if 'default' in data_dict and data_dict['default'] is not None:
                         if isinstance(data_dict['value'], pd.DataFrame) and isinstance(
-                            data_dict['default'], pd.DataFrame
+                                data_dict['default'], pd.DataFrame
                         ):
                             if data_dict['value'].equals(data_dict['default']):
                                 write = False
@@ -487,9 +488,9 @@ if '__main__' == __name__:
                     self.dm_dict_to_write[key] = data_dict['value']
 
             if (
-                key.split('.')[-1] in self.output_list
-                and data_dict['io_type'] == 'out'
-                and self.write_outputs
+                    key.split('.')[-1] in self.output_list
+                    and data_dict['io_type'] == 'out'
+                    and self.write_outputs
             ):
                 self.outputs_to_write[key] = data_dict['value']
 
@@ -532,7 +533,7 @@ if '__main__' == __name__:
                         if len(new_matches) == 1:
                             self.dm_dict_to_write[abstracted_key] = self.dm_data_dict[new_matches[0]]['value']
                         elif len(new_matches) == 0:
-                            if type(value) == pd.DataFrame:
+                            if type(value) is pd.DataFrame:
                                 self.dm_dict_to_write[abstracted_key] = value.map(str)
                             elif type(value) in [dict, list]:
                                 self.dm_dict_to_write[abstracted_key] = [str(val) for val in value]
@@ -565,15 +566,15 @@ if '__main__' == __name__:
             file.write('\n\n')
             for key, value in self.dm_dict_to_write.items():
                 key_value_as_string = (
-                    "\t\tinputs[f'{sty}." + '.'.join(key.split('.')[1:]) + "'] = "
+                        "\t\tinputs[f'{sty}." + '.'.join(key.split('.')[1:]) + "'] = "
                 )
                 if key in self.same_value_dict:
                     key_value_as_string += (
-                        self.same_value_dict[key]['variable_name'] + "\n"
+                            self.same_value_dict[key]['variable_name'] + "\n"
                     )
                 else:
                     key_value_as_string += (
-                        self.convert_to_string(key, value, self.dump_dir) + "\n"
+                            self.convert_to_string(key, value, self.dump_dir) + "\n"
                     )
                 file.write(key_value_as_string)
 

@@ -284,8 +284,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
         '''FIX: solve conflicts between commits
             709b4be "Modify the exec_engine for evaluator processes" VJ
         and fb91c7d "maturity fixing (WIP)" CG '''
-        # maturity = {}
-        # return maturity
         return ''
 
     def setup_sos_disciplines(self):
