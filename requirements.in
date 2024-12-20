@@ -1,6 +1,6 @@
 # Project libraries
 # gemseo
-
+gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo@07dac5f70ad7cc3ebd65d4e5e61c835f028aec59
 # External libraries
 black==24.4.2
 chaospy==4.3.15
@@ -15,15 +15,17 @@ matplotlib==3.9.2
 numpy==1.24.4
 openturns==1.23
 pandas==2.2.2
-plotly==5.22.0
+plotly==5.24.0
 pyarrow==16.1.0
 pycryptodome==3.20.0
 python-arango==8.0.0
 PyYAML==6.0.1
-scipy==1.10.1
+scipy==1.13.1
 six==1.16.0
-sympy==1.13.0
-tqdm==4.66.4
+sympy==1.13.2
+tqdm==4.66.5
+future==1.0.0
+numpoly==1.2.14  # last version with wheel
 
 # Development requirements
 # breaking change in 8.2.0 https://docs.pytest.org/en/stable/changelog.html#pytest-8-2-0-2024-04-27
@@ -32,4 +34,4 @@ pytest==8.1.2
 pytest-cov==5.0.0
 pytest-xdist==3.6.1
 pytest-durations==1.2.0
-ruff==0.5.0
+ruff==0.6.8

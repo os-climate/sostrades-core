@@ -5,7 +5,7 @@ SoSDisciplineBuilder <|- SOSCoupling
 MDAChain <|- SOSCoupling
 SoSDiscipline <|- SoSDisciplineBuilder
 
-MDODiscipline <|- SoSDiscipline
+Discipline <|- SoSDiscipline
 
 SoSDisciplineBuilder <|- SoSDisciplineScatter
 @enduml

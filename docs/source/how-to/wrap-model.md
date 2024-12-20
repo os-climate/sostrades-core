@@ -237,7 +237,7 @@ class GradientSellar(AbstractJacobianUnittest):
         self.ee.prepare_execution()
 
         # get the discipline where you want to check the gradients
-        disc = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.mdo_discipline
 
         # Check the jacobian using as reference the pre-computed jacobian. Note that, to force the re-computation
         # and storage of the reference jacobian (upon model change), the environment variable DUMP_JACOBIAN_UNIT_TEST

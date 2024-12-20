@@ -91,9 +91,21 @@ class GatherDiscipline(SoSWrapp):
            We add to the desc_in all the outputs of each child
            We add to the desc_out the dict which will gather all inputs by name
         '''
+        try:
+            eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, self.get_data_in())
+            if len(self.dm.get_value(eval_outputs_f_name).columns) == 0:
+                print('toto')
+        except:
+            pass
         dynamic_inputs, dynamic_outputs = self.build_dynamic_io()
         self.add_inputs(dynamic_inputs)
         self.add_outputs(dynamic_outputs)
+        try:
+            eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, self.get_data_in())
+            if len(self.dm.get_value(eval_outputs_f_name).columns) == 0:
+                print('toto')
+        except:
+            pass
 
     def build_dynamic_io(self):
         dynamic_inputs = {}
@@ -254,7 +266,6 @@ class GatherDiscipline(SoSWrapp):
             key_split = key_column_name.split('_')
             if len(key_split) == 1:
                 key_column_name = key_split[0] + "_1"
-                # key_column_name = 'key_level_1'
             else:
                 key_split[-1] = str(int(key_split[-1]) + 1)
                 key_column_name = '_'.join(key_split)
@@ -278,7 +289,6 @@ class GatherDiscipline(SoSWrapp):
     def get_post_processing_list(self, chart_filters=None):
 
         instanciated_charts = []
-        # scenario_name = self.get_sosdisc_inputs('shared_scenario_name')
 
         # Overload default value with chart filter
         if chart_filters is not None:
@@ -328,10 +338,6 @@ class GatherDiscipline(SoSWrapp):
                         new_chart.series.append(
                             serie)
                     instanciated_charts.append(new_chart)
-            elif isinstance(output_value, pd.DataFrame):
-                pass
-                # new_chart_list = self.create_chart_gather_dataframes(output_value, chart_unit, chart_name)
-                # instanciated_charts.extend(new_chart_list)
         return instanciated_charts
 
     def create_chart_gather_dataframes(self, output_value, chart_unit, chart_name):

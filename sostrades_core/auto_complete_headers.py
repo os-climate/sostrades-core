@@ -17,19 +17,16 @@ import json
 
 from sostrades_core.tools.check_headers import HeaderTools
 
-# read local headers_ignore_config.json specific to each repository
 
-if __name__ == "__main__":
+def main() -> None:
+    """
+    Main function to read the headers_ignore_config.json file and write headers if needed in the repository.
+    """
     try:
-
         with open("./headers_ignore_config.json", "r", encoding="utf-8") as f:
-
             headers_ignore_config = json.load(f)
-
             ht = HeaderTools()
-
             ht.set_verbose_mode(False)
-
             ht.write_headers_if_needed_in_repo(
                 headers_ignore_config["extension_to_ignore"],
                 headers_ignore_config["files_to_ignore"],
@@ -39,3 +36,7 @@ if __name__ == "__main__":
     except FileNotFoundError as ex:
         print("headers_ignore_config.json must be available where this command is launched")
         raise ex
+
+
+if __name__ == "__main__":
+    main()

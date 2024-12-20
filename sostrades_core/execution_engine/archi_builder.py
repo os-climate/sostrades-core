@@ -119,6 +119,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         self.get_children_list_by_vb(self.builder_dict)
 
     def prepare_execution(self):
+        """
+        Purely a configuration discipline it does not prepare execution.
+        """
         pass
 
     @property
@@ -180,7 +183,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 f'The architecture dataframe must have 5 columns named : {self.ARCHI_COLUMNS}'
             )
 
-        if not archi_df[self.ACTIVATION].dtype == 'bool':
+        if archi_df[self.ACTIVATION].dtype != 'bool':
             raise ArchiBuilderException(
                 'The architecture dataframe must contains bouleans in Activation column'
             )
@@ -284,12 +287,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             modified_activation_df.loc[
                                 ~modified_activation_df[colname], children_names
                             ] = False
-
-            # if len(rows_to_delete) > 0:
-            #     # remove rows with values not among possible_values
-            #     self.get_data_in()[self.ACTIVATION_DF][self.VALUE] = modified_activation_df.drop(
-            #         rows_to_delete
-            #     )
 
     def get_children_names(self, parent_name, architecture):
         """
@@ -548,7 +545,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     builder_name = namespace
                     if not builder.sos_name.endswith('@archi_node'):
                         old_builder_name = builder.sos_name
-                        builder.set_disc_name(f'{builder.sos_name}@archi_node')
+                        builder.set_disc_name(f'{old_builder_name}@archi_node')
                         # self.ee.ns_manager.add_display_ns_to_builder(builder, old_builder_name)
                 action, args = self.get_action_builder(namespace, archi_df)
 
@@ -608,7 +605,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
                             if isinstance(args[1], tuple):
                                 # get builder of scatter of scatter
-                                raise Exception('Nested scatters in architecture builder not implemented')
+                                raise ArchiBuilderException('Nested scatters in architecture builder not implemented')
                             else:
                                 # get builder of scatter
                                 scatter_builder = self.get_builder_from_factory(
@@ -759,8 +756,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         attribute children_list
         """
         for ns, disc_list in self.archi_disciplines.items():
-            # scatter_in_node = False
-            # scattered_disciplines = {}
             for disc in disc_list:
                 disc_children_list = [
                     child
@@ -776,10 +771,10 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         """
         Set samples_df value by reading activation_df input
         """
-        dynamic_outputs = {}
+        dynamic_inputs = {}
         for driver_name, input_name in self.driver_input_to_fill.items():
 
-            if f'{driver_name}.samples_df' in self.get_data_out():
+            if f'{driver_name}.samples_df' in self.get_data_in():
                 activation_df = deepcopy(self.get_sosdisc_inputs(self.ACTIVATION_DF))
 
                 if driver_name == 'driver':
@@ -806,20 +801,24 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 indexes = np.unique(input_value, return_index=True)[1]
                 input_value = [input_value[index] for index in sorted(indexes)]
 
-                scenario_full_name = self.get_var_full_name(f'{driver_name}.samples_df', self.get_data_out())
+                scenario_full_name = self.get_var_full_name(f'{driver_name}.samples_df', self.get_data_in())
                 self.dm.set_data(scenario_full_name, 'value', pd.DataFrame({self.SCENARIO_NAME: input_value,
                                                                             self.SELECTED_SCENARIO: True}),
                                  check_value=False)
-            dynamic_outputs.update(
+            dynamic_inputs.update(
                 {f'{driver_name}.samples_df': {'type': 'dataframe',
                                                'default': pd.DataFrame(
-                                                   columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO))},
+                                                   columns=(self.SCENARIO_NAME, self.SELECTED_SCENARIO)),
+                                               'structuring': True,
+                                               'editable': False
+                                               }
+
                  # f'{driver_name}.builder_mode': {'type': 'string',
                  #                                 'value': 'multi_instance'}
                  },
             )
 
-        self.add_outputs(dynamic_outputs)
+        self.add_inputs(dynamic_inputs, clean_inputs=False)
 
     def get_scatter_builder(
             self,
@@ -845,8 +844,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             builder_name = namespace
             driver_name = f'{builder_name}.driver'
 
-        # TODO: check it is OK to always go multi-instance
-        # FIXME: issue with the treeviews...
         if isinstance(builder, list):
             builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, builder)
         else:
@@ -863,7 +860,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], self.get_disc_full_name().replace(self.sos_name, namespace))
         else:
-            # builder_name = f"{namespace.split('.', 1)[1]}"
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], f'{self.get_disc_full_name()}.{builder_name}')
         result_builder_list.extend(builder_scatter)
@@ -1091,7 +1087,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         for disc in disc_list:
             #             if isinstance(disc, SoSDisciplineScatter):
             #                 disc.clean_scattered_disciplines([])
-            self.ee.root_process.sos_disciplines.remove(disc)
+            self.ee.root_process.proxy_disciplines.remove(disc)
             disc.clean_dm_from_disc()
             self.ee.ns_manager.remove_dependencies_after_disc_deletion(
                 disc, self.disc_id

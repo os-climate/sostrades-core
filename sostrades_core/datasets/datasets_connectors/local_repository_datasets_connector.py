@@ -19,12 +19,12 @@ from os.path import dirname, join
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     DatasetGenericException,
 )
-from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector import (
-    LocalFileSystemDatasetsConnector,
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connectorV0 import (
+    LocalFileSystemDatasetsConnectorV0,
 )
 
 
-class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):
+class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorV0):
     """
     Local file system connector for default repository connector
     """
@@ -32,14 +32,16 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):
     DATASETS_FOLDER_NAME = 'datasets'
     MAPPINGS_FOLDER_NAME = 'mappings'
 
-    def __init__(self, module_name: str):
+    def __init__(self, connector_id: str, module_name: str):
         """
         Constructor for Local Repository Datasets Connector
 
+        Args:
+            connector_id (str): An unique name to identify clearly this connector
+            module_name (str): Name of the module root of the repository
 
-        :param module_name: name of the module root of the repository
-        :type module_name: str
-
+        Raises:
+            DatasetGenericException: If the module cannot be imported
         """
         try:
             # import the module
@@ -50,13 +52,22 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnector):
         root_path = dirname(module.__file__)
         # add the datasets default database to the path
         dataset_database_path = join(root_path, self.DATASETS_DB_NAME, self.DATASETS_FOLDER_NAME)
-        super().__init__(root_directory_path=dataset_database_path, create_if_not_exists=False)
+        super().__init__(connector_id, root_directory_path=dataset_database_path, create_if_not_exists=False)
 
     @staticmethod
-    def get_datasets_database_mappings_folder_path(module_name, file_name):
+    def get_datasets_database_mappings_folder_path(module_name: str, file_name: str) -> str:
         """
-            Method to find the datasets_database/mappings folder path for the given repository module name
-            ('sostrades_core' for example of the sostrades-core module name)
+        Method to find the datasets_database/mappings folder path for the given repository module name
+
+        Args:
+            module_name (str): Name of the module root of the repository
+            file_name (str): Name of the file in the mappings folder
+
+        Returns:
+            str: The path to the mappings folder
+
+        Raises:
+            DatasetGenericException: If the module cannot be imported
         """
         try:
             # import the module

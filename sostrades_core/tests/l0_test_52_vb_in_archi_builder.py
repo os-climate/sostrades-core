@@ -77,7 +77,8 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Remy')[0]
         self.maxDiff = None
         data_in_th_list = set(['linearization_mode',
-                               'cache_type', 'cache_file_path', 'debug_mode', ('output', 'CAPEX')])
+                               'cache_type', 'cache_file_path', 'debug_mode', ('output', 'CAPEX'),
+                               'run_solves_residuals', 'residual_variables'])
         self.assertTrue(
             set(disc_Remy.get_data_in().keys()) == data_in_th_list)
 
@@ -90,7 +91,8 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Tomato')[0]
         self.maxDiff = None
         data_in_th_list = set(['linearization_mode', 'cache_type',
-                               'cache_file_path', 'debug_mode', ('output', 'CAPEX'), ('output', 'OPEX')])
+                               'cache_file_path', 'debug_mode', ('output', 'CAPEX'), ('output', 'OPEX'),
+                               'run_solves_residuals', 'residual_variables'])
         self.assertTrue(
             set(disc_Tomato.get_data_in().keys()) == data_in_th_list)
         data_out_th_list = set(['output_gather', 'output'])
@@ -140,7 +142,8 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Remy')[0]
         self.maxDiff = None
         data_in_th_list = set(['linearization_mode',
-                               'cache_type', 'cache_file_path', 'debug_mode', ('output_gather', 'CAPEX')])
+                               'cache_type', 'cache_file_path', 'debug_mode', ('output_gather', 'CAPEX'),
+                               'run_solves_residuals', 'residual_variables'])
         self.assertTrue(
             set(disc_Remy.get_data_in().keys()) == data_in_th_list)
 
@@ -153,7 +156,8 @@ class TestVBArchiBuilder(unittest.TestCase):
             'MyCase.Business.Tomato')[0]
         self.maxDiff = None
         data_in_th_list = set(['linearization_mode', 'cache_type',
-                               'cache_file_path', 'debug_mode', ('output_gather', 'OPEX'), ('output', 'OPEX')])
+                               'cache_file_path', 'debug_mode', ('output_gather', 'OPEX'), ('output', 'OPEX'),
+                               'run_solves_residuals', 'residual_variables'])
         self.assertTrue(
             set(disc_Tomato.get_data_in().keys()) == data_in_th_list)
         data_out_th_list = set(['output_gather', 'output'])

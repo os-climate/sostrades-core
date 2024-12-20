@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from gemseo.api import get_available_doe_algorithms
+from gemseo import get_available_doe_algorithms
 from numpy import std
 
 from sostrades_core.execution_engine.sample_generators.doe_sample_generator import (
@@ -64,9 +64,9 @@ class SimpleDisc1(SoSWrapp):
         """
 
         if z[0] > 0.5:
-            sampling_algo = "lhs"
+            sampling_algo = "PYDOE_LHS"
         else:
-            sampling_algo = "fullfact"
+            sampling_algo = "PYDOE_FULLFACT"
 
         return sampling_algo
 

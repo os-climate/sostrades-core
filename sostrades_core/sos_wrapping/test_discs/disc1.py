@@ -48,10 +48,9 @@ class Disc1(SoSWrapp):
     }
 
     def run(self):
-        x = self.get_sosdisc_inputs('x')
-        a = self.get_sosdisc_inputs('a')
-        b = self.get_sosdisc_inputs('b')
-        dict_values = {'indicator': a * b, 'y': a * x + b}
+
+        inputs = self.get_sosdisc_inputs()
+        dict_values = {'indicator': inputs['a'] * inputs['b'], 'y': inputs['a'] * inputs['x'] + inputs['b']}
         # put new field value in data_out
         self.store_sos_outputs_values(dict_values)
 

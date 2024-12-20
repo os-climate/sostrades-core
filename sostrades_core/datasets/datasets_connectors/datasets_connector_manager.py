@@ -54,8 +54,14 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
         """
         Gets a connector given its identifier
 
-        :param connector_identifier: identifier of the connector
-        :type connector_identifier: string
+        Args:
+            connector_identifier (str): identifier of the connector
+
+        Returns:
+            AbstractDatasetsConnector: The requested connector
+
+        Raises:
+            DatasetConnectorNotFoundException: If the connector is not found
         """
         cls.__logger.debug(f"Getting connector {connector_identifier}")
         if connector_identifier not in cls.__registered_connectors:
@@ -72,23 +78,31 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     def register_connector(cls, connector_identifier: str, connector_type: DatasetConnectorType, **connector_instanciation_fields) -> AbstractDatasetsConnector:
         """
         Register a connector with connector_instanciation_fields
-        :param connector_identifier: An unique name to identify clearly this connector
-        :type connector_identifier: str
-        :param connector_type: Name of an existing connector
-        :type connector_type: DatasetConnectorTypes
-        :param connector_instanciation_fields: dictionary of key/value needed by the connector
-        :type connector_instanciation_fields: dict
+
+        Args:
+            connector_identifier (str): An unique name to identify clearly this connector
+            connector_type (DatasetConnectorType): Name of an existing connector
+            **connector_instanciation_fields: dictionary of key/value needed by the connector
+
+        Returns:
+            AbstractDatasetsConnector: The registered connector
         """
         cls.__logger.debug(f"Registering connector {connector_identifier}")
         if connector_identifier in cls.__registered_connectors.keys():
             cls.__logger.debug(f'Existing connector \"{connector_identifier}\" is updated')
 
-        connector = DatasetsConnectorFactory.get_connector(connector_type=connector_type, **connector_instanciation_fields)
+        connector = DatasetsConnectorFactory.get_connector(connector_identifier, connector_type=connector_type, **connector_instanciation_fields)
         cls.__registered_connectors[connector_identifier] = connector
         return connector
 
     @classmethod
-    def instanciate_connectors_from_json_file(cls, file_path: str):
+    def instanciate_connectors_from_json_file(cls, file_path: str) -> None:
+        """
+        Instantiates connectors from a JSON file
+
+        Args:
+            file_path (str): Path to the JSON file
+        """
         with open(file=file_path, mode="r", encoding="utf-8") as file:
             json_data = json.load(file)
 
