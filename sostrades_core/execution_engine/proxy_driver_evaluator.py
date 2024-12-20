@@ -17,13 +17,13 @@ limitations under the License.
 import copy
 import logging
 
+from sostrades_core.execution_engine.discipline_driver_wrapp import (
+    DisciplineDriverWrapp,
+)
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
     DriverEvaluatorWrapper,
 )
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
-from sostrades_core.execution_engine.mdo_discipline_driver_wrapp import (
-    MDODisciplineDriverWrapp,
-)
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import (
@@ -142,18 +142,19 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     SUB_PROCESS_INPUTS = DriverEvaluatorWrapper.SUB_PROCESS_INPUTS
     USECASE_DATA = 'usecase_data'
     if with_modal:
-        DESC_IN[SUB_PROCESS_INPUTS] = {'type': ProxyDiscipline.PROC_BUILDER_MODAL,
-                                       'structuring': True,
-                                       'default': default_process_builder_parameter_type.to_data_manager_dict(),
-                                       'user_level': 1,
-                                       'optional': False}
+        DESC_IN[SUB_PROCESS_INPUTS] = {ProxyDisciplineBuilder.TYPE: ProxyDiscipline.PROC_BUILDER_MODAL,
+                                       ProxyDisciplineBuilder.STRUCTURING: True,
+                                       ProxyDisciplineBuilder.DEFAULT: default_process_builder_parameter_type.to_data_manager_dict(),
+                                       ProxyDisciplineBuilder.USER_LEVEL: 1,
+                                       ProxyDisciplineBuilder.OPTIONAL: False,
+                                       ProxyDisciplineBuilder.NUMERICAL: True}
     else:
 
-        DESC_IN[USECASE_DATA] = {'type': 'dict',
-                                 'structuring': True,
-                                 'default': {},
-                                 'user_level': 1,
-                                 'optional': False}
+        DESC_IN[USECASE_DATA] = {ProxyDisciplineBuilder.TYPE: 'dict',
+                                 ProxyDisciplineBuilder.STRUCTURING: True,
+                                 ProxyDisciplineBuilder.DEFAULT: {},
+                                 ProxyDisciplineBuilder.USER_LEVEL: 1,
+                                 ProxyDisciplineBuilder.OPTIONAL: False, }
 
     ##
     # End to refactor
@@ -181,7 +182,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.sub_builder_namespaces = get_ns_list_in_builder_list(
                 self.cls_builder)
         else:
-            raise Exception(
+            raise ProxyDriverEvaluatorException(
                 'The driver evaluator builder must have a cls_builder to work')
 
         self.builder_tool = None
@@ -224,13 +225,13 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.gather_names = None
         self.driver_eval_mode = None
 
-    def create_mdo_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
+    def create_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
-        creation of mdo_discipline_wrapp by the proxy which in this case is a MDODisciplineDriverWrapp that will create
-        a SoSMDODisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
+        creation of discipline_wrapp by the proxy which in this case is a DisciplineDriverWrapp that will create
+        a SoSDisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
         them in a different way than a coupling.
         """
-        self.mdo_discipline_wrapp = MDODisciplineDriverWrapp(name, logger.getChild("MDODisciplineDriverWrapp"), wrapper,
+        self.discipline_wrapp = DisciplineDriverWrapp(name, logger.getChild("DisciplineDriverWrapp"), wrapper,
                                                              wrapping_mode)
 
     def configure(self):
@@ -297,7 +298,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Update the DriverEvaluator _data_in and _data_out with subprocess i/o so that grammar of the driver can be
         exploited for couplings etc.
         """
-        # TODO: [to discuss] move to mono-instance side ? as no longer really useful in multi because flatten_subprocess
         self._restart_data_io_to_disc_io()
         for proxy_disc in self.proxy_disciplines:
             # if not isinstance(proxy_disc, ProxyDisciplineGather):
@@ -324,7 +324,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 self.sample_generator_disc = self.build_sample_generator_disc()
         elif self.sample_generator_disc is not None:
             self.clean_children([
-                self.sample_generator_disc])  # TODO: check whether sufficient for removal of shared ns NS_SAMPLING --> cleaning test or GUI test
+                self.sample_generator_disc])
             self.sample_generator_disc = None
         return []
 
@@ -352,7 +352,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         self.ee.ns_manager.add_disc_in_dependency_list_of_namespace(ns_sampling, sampling_disc.disc_id)
         self.ee.factory.add_discipline(sampling_disc)
         # perform a reference switch so that the SampleGenerator discipline shows in treeview before driver
-        # TODO: [discuss] whether there is a cleaner way
         sister_proxies = self.father_executor.proxy_disciplines
         driver_idx = sister_proxies.index(self)
         sg_idx = sister_proxies.index(sampling_disc)
@@ -367,8 +366,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # prepare_execution of proxy_disciplines as in coupling
         for disc in self.scenarios:
             disc.prepare_execution()
-        # TODO : cache mgmt of children necessary ? here or in  SoSMDODisciplineDriver ?
-        if self.mdo_discipline_wrapp is not None:
+        # TODO : cache mgmt of children necessary ? here or in  SoSDisciplineDriver ?
+        if self.discipline_wrapp is not None:
             super().prepare_execution()
             self.reset_subdisciplines_of_wrapper()
         else:
@@ -380,7 +379,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Reset subdisciplines of the wrapper
 
         '''
-        self.mdo_discipline_wrapp.reset_subdisciplines(self)
+        self.discipline_wrapp.reset_subdisciplines(self)
 
     def set_wrapper_attributes(self, wrapper):
         """
@@ -392,9 +391,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         super().set_wrapper_attributes(wrapper)
 
         # driverevaluator subprocess # TODO: actually no longer necessary in multi-instance (gather capabilities)
-        wrapper.attributes.update({'sub_mdo_disciplines': [
-            proxy.mdo_discipline_wrapp.mdo_discipline for proxy in self.proxy_disciplines
-            if proxy.mdo_discipline_wrapp is not None]})  # discs and couplings but not scenarios
+        wrapper.attributes.update({'sub_disciplines': [
+            proxy.discipline_wrapp.discipline for proxy in self.proxy_disciplines
+            if proxy.discipline_wrapp is not None]})  # discs and couplings but not scenarios
 
     def is_configured(self):
         """
@@ -478,7 +477,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
         # Check if a None is in the samples_df
         value_check = True
-        no_None_in_df = True
+        no_none_in_df = True
         if self.sample_generator_disc is not None:
             sampling_generation_mode = self.sample_generator_disc.sampling_generation_mode
             if sampling_generation_mode == ProxySampleGenerator.AT_RUN_TIME:
@@ -487,7 +486,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             columns_with_none = samples_df.columns[samples_df.isnull().any()].tolist()
             warning_msg = f'There is a None in the samples_df, check the columns {columns_with_none} '
             self.check_integrity_msg_list.append(warning_msg)
-            no_None_in_df = False
+            no_none_in_df = False
 
         # Check if column names are not coherent with subprocess
         # Check if value to describe the scenario has not the type in line with the subprocess
@@ -496,7 +495,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
             samples_df_full_name = self.get_input_var_full_name(self.SAMPLES_DF)
             samples_df_descriptor = copy.deepcopy(self.SAMPLES_DF_DESC[self.DATAFRAME_DESCRIPTOR])
-            # samples_df_descriptor = self.ee.dm.get_data(samples_df_full_name, self.DATAFRAME_DESCRIPTOR)
             for col in variables_column:
                 if col not in self.eval_in_possible_values:
                     warning_msg = f'The variable {col} is not in the subprocess eval input values: It cannot be a column of the {self.SAMPLES_DF} '
@@ -505,7 +503,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                     var_type = self.eval_in_possible_types[col]
                     df_desc_tuple = tuple([var_type, None, True])
 
-                    if no_None_in_df and not samples_df[col].apply(
+                    if no_none_in_df and not samples_df[col].apply(
                             lambda x: isinstance(x, self.VAR_TYPE_MAP[var_type])).all():
                         warning_msg = f'Some value has wrong types in column {col}, the subprocess variable is of type {var_type} and all variables in the column should be the same'
                         self.check_integrity_msg_list.append(warning_msg)
@@ -519,23 +517,17 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         Method for import usecase option which will be refactored
         """
         # Set sub_proc_import_usecase_status
-        with_modal = True
-        self.set_sub_process_usecase_status_from_user_inputs(with_modal)
+        self.set_sub_process_usecase_status_from_user_inputs(with_modal=True)
 
         # Treat the case of SP_UC_Import
         if self.sub_proc_import_usecase_status == 'SP_UC_Import':
             # Get the anonymized dict
-            if with_modal:  # TODO (when use of Modal)
-                anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
-                    self.SUB_PROCESS_INPUTS)[ProcessBuilderParameterType.USECASE_DATA]
-            else:
-                # (without use of Modal)
-                anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
-                    self.USECASE_DATA)
+            anonymize_input_dict_from_usecase = self.get_sosdisc_inputs(
+                self.SUB_PROCESS_INPUTS)[ProcessBuilderParameterType.USECASE_DATA]
             # LOAD REFERENCE
             if self.update_reference():
                 self.update_reference_from_anonymised_dict(
-                    anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal)
+                    anonymize_input_dict_from_usecase, ref_discipline_full_name, with_modal=True)
 
     def update_reference(self):
         '''
@@ -604,7 +596,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             # 3. Update parameters
             #     Set the status to 'No_SP_UC_Import'
             self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
-            if with_modal:  # TODO (when use of Modal)
+            if with_modal:
                 # Empty the anonymized dict in (when use of Modal)
                 sub_process_inputs_dict = self.get_sosdisc_inputs(
                     self.SUB_PROCESS_INPUTS)
@@ -643,7 +635,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 if self.previous_sub_process_usecase_name != sub_process_usecase_name or self.previous_sub_process_usecase_data != sub_process_usecase_data:
                     # not not sub_process_usecase_data True means it is not an
                     # empty dictionary
-                    if sub_process_usecase_name != 'Empty' and not not sub_process_usecase_data:
+                    if sub_process_usecase_name != 'Empty' and bool(sub_process_usecase_data):
                         self.sub_proc_import_usecase_status = 'SP_UC_Import'
                 else:
                     self.sub_proc_import_usecase_status = 'No_SP_UC_Import'
@@ -656,7 +648,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                 if self.previous_sub_process_usecase_data != sub_process_usecase_data:
                     # not not sub_process_usecase_data True means it is not an
                     # empty dictionary
-                    if not not sub_process_usecase_data:
+                    if bool(sub_process_usecase_data):
                         self.sub_proc_import_usecase_status = 'SP_UC_Import'
                 else:
                     self.sub_proc_import_usecase_status = 'No_SP_UC_Import'

@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from typing import Any
+from typing import Any, Dict
 
 from sostrades_core.datasets.dataset import Dataset
-from sostrades_core.datasets.dataset_info import DatasetInfo
+from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     DatasetGenericException,
 )
@@ -35,21 +35,26 @@ class DatasetsManager:
     DATASET_INFO = 'dataset_info'
 
     def __init__(self, logger: logging.Logger):
+        """
+        Initializes the DatasetsManager.
+
+        Args:
+            logger (logging.Logger): Logger instance for logging.
+        """
         self.datasets = {}
         self.__logger = logger
 
-    def fetch_data_from_datasets(self, datasets_info: dict[DatasetInfo:dict[str:str]],
-                                 data_dict: dict[str:str]) -> dict[str:dict[str:Any]]:
+    def fetch_data_from_datasets(self, datasets_info: Dict[AbstractDatasetInfo, Dict[str, str]],
+                                 data_dict: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
         """
-        get data from datasets and fill data_dict
+        Fetches data from datasets and fills the data_dict.
 
-        :param datasets_info: list of datasets associated to a namespace
-        :type datasets_info: List[DatasetInfo]
+        Args:
+            datasets_info (Dict[AbstractDatasetInfo, Dict[str, str]]): List of datasets associated to a namespace.
+            data_dict (Dict[str, str]): Dict of data to be fetched in datasets with their types.
 
-        :param data_dict: dict of data to be fetch in datasets with their types
-        :type data_dict: dict[name str: type str]
-
-        :return: data_dict of data names and retrieved values plus a DATASET_INFO field with DatasetInfo object
+        Returns:
+            Dict[str, Dict[str, Any]]: Data dict of data names and retrieved values plus a DATASET_INFO field with DatasetInfo object.
         """
         self.__logger.debug(f"Fetching data {data_dict.keys()} from datasets {datasets_info}")
         data_retrieved = {}
@@ -66,7 +71,7 @@ class DatasetsManager:
                 # it is done in a loop so that it respect the order of appearance
                 # (ie: if there is a *:* and then a:b, the a:b replace the *:* for the 'a' parameter)
                 for data_key, data_dataset_key in mapping_parameters.items():
-                    if data_dataset_key == DatasetInfo.WILDCARD:
+                    if data_dataset_key == AbstractDatasetInfo.WILDCARD:
                         dataset_data_reverse_mapping.update({key: key for key in data_dict.keys()})
                         data_to_fetch.update(data_dict)
                     elif data_key in data_dict.keys():
@@ -75,7 +80,7 @@ class DatasetsManager:
 
                 # Retrieve values
                 dataset_values = dataset.get_values(data_dict=data_to_fetch)
-                # Update internal dictionnary adding provenance (DatasetInfo object) for tracking parameter changes
+                # Update internal dictionary adding provenance (DatasetInfo object) for tracking parameter changes
                 dataset_data = {dataset_data_reverse_mapping[key]: {self.VALUE: value,
                                     self.DATASET_INFO: dataset_info} for key, value in dataset_values.items()}
                 data_retrieved.update(dataset_data)
@@ -83,35 +88,33 @@ class DatasetsManager:
                 raise DatasetGenericException(f'Error fetching dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return data_retrieved
 
-    def get_dataset(self, dataset_info: DatasetInfo) -> Dataset:
+    def get_dataset(self, dataset_info: AbstractDatasetInfo) -> Dataset:
         """
-        Gets a dataset, creates it if it does not exist
+        Gets a dataset, creates it if it does not exist.
 
-        :param dataset_info: Dataset info
-        :type dataset_info: DatasetInfo
+        Args:
+            dataset_info (AbstractDatasetInfo): Dataset info.
 
-        :return: Dataset
+        Returns:
+            Dataset: Dataset instance.
         """
         if dataset_info not in self.datasets:
             self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
         return self.datasets[dataset_info]
 
-    def write_data_in_dataset(self, dataset_info: DatasetInfo,
-                                    data_dict: dict[str:str],
-                                    data_type_dict: dict[str:str]) -> dict:
+    def write_data_in_dataset(self, dataset_info: AbstractDatasetInfo,
+                                    data_dict: Dict[str, Any],
+                                    data_type_dict: Dict[str, str]) -> Dict[str, Any]:
         """
-        get data from data_dict and fill dataset
+        Writes data from data_dict into the dataset.
 
-        :param dataset_info: dataset associated to namespaces
-        :type dataset_info: DatasetInfo
+        Args:
+            dataset_info (AbstractDatasetInfo): Dataset associated to namespaces.
+            data_dict (Dict[str, Any]): Dict of data to be written in datasets with their values.
+            data_type_dict (Dict[str, str]): Dict of data to be written in datasets with their types.
 
-        :param data_dict: dict of data to be written in datasets with their types
-        :type data_dict: dict[name str: value]
-
-        :param data_type_dict: dict of data to be written in datasets with their types
-        :type data_type_dict: dict[name str: type str]
-
-        :return: data_dict of data names plus a DATASET_INFO field with DatasetInfo object
+        Returns:
+            Dict[str, Any]: Data dict of data names plus a DATASET_INFO field with DatasetInfo object.
         """
         self.__logger.debug(f"exporting data {data_dict.keys()} into dataset {dataset_info}")
 
@@ -120,7 +123,7 @@ class DatasetsManager:
             dataset = self.get_dataset(dataset_info=dataset_info)
 
             # Write values
-            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info.dataset_id,
+            dataset_values = dataset.connector.write_dataset(dataset_identifier=dataset_info,
                                                                 values_to_write=data_dict,
                                                                 data_types_dict=data_type_dict,
                                                                 create_if_not_exists=True,
@@ -129,20 +132,17 @@ class DatasetsManager:
             raise DatasetGenericException(f'Error exporting dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return dataset_values
 
-    def get_path_to_dataset_data(self, dataset_info: DatasetInfo, data_name:str, data_type:str)-> str:
+    def get_path_to_dataset_data(self, dataset_info: AbstractDatasetInfo, data_name: str, data_type: str) -> str:
         """
-        get path/link/uri to retrieve the dataset data
+        Gets the path/link/URI to retrieve the dataset data.
 
-        :param dataset_info: dataset in witch the data is
-        :type dataset_info: DatasetInfo
+        Args:
+            dataset_info (AbstractDatasetInfo): Dataset in which the data is.
+            data_name (str): Data name to build the path.
+            data_type (str): Type of the data in dataset.
 
-        :param data_name: data name to build the path
-        :type data_name: str
-
-        :param data_type: type of the data in dataset
-        :type data_type: str
-
-        :return: path/link/uri (str) to dataset data
+        Returns:
+            str: Path/link/URI to dataset data.
         """
         path_to_dataset_data = ""
         try:
@@ -150,21 +150,22 @@ class DatasetsManager:
             dataset = self.get_dataset(dataset_info=dataset_info)
 
             # get path
-            path_to_dataset_data = dataset.connector.build_path_to_data(dataset_identifier=dataset_info.dataset_id,
+            path_to_dataset_data = dataset.connector.build_path_to_data(dataset_identifier=dataset_info,
                                                                         data_name=data_name,
                                                                         data_type=data_type)
         except DatasetGenericException as exception:
             raise DatasetGenericException(f'Error finding path of data {data_name} into dataset "{dataset_info.dataset_id}" of datasets connector "{dataset_info.connector_id}": {exception}')
         return path_to_dataset_data
 
-
-    def __create_dataset(self, dataset_info: DatasetInfo) -> Dataset:
+    def __create_dataset(self, dataset_info: AbstractDatasetInfo) -> Dataset:
         """
-        Private method
-        Get the connector associated to the dataset and create a Dataset object
+        Private method to get the connector associated to the dataset and create a Dataset object.
 
-        :param dataset_info: Dataset info
-        :type dataset_info: DatasetInfo
+        Args:
+            dataset_info (AbstractDatasetInfo): Dataset info.
+
+        Returns:
+            Dataset: Dataset instance.
         """
         # Gets connector
         connector = DatasetsConnectorManager.get_connector(connector_identifier=dataset_info.connector_id)

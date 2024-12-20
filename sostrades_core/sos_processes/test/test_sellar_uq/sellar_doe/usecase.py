@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from gemseo.api import configure_logger
+from gemseo import configure_logger
 from numpy import array
 from pandas import DataFrame
 
@@ -76,7 +76,7 @@ class Study(StudyManager):
         sampling_outputs = DataFrame(sampling_outputs)
         sampling_params = {
             "sampling_method": "doe_algo",
-            "sampling_algo": "fullfact",
+            "sampling_algo": "PYDOE_FULLFACT",
             "design_space": dspace,
             "algo_options": {"n_samples": 27},
             "eval_inputs": sampling_inputs,

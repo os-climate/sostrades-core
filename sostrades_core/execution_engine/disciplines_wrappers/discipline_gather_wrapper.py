@@ -22,12 +22,6 @@ class DisciplineGatherWrapper(SoSWrapp):
     """
     _maturity = 'Fake'
 
-    # def __init__(self):
-    #     '''
-    #     Constructor
-    #     '''
-    #     self.attributes = {}
-
     def run(self):
         '''
         Run function of the SoSGather : Collect variables to gather in a dict

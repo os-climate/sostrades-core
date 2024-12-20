@@ -15,7 +15,7 @@ limitations under the License.
 '''
 from cmath import exp, sqrt
 
-from numpy import array, atleast_2d
+from numpy import array, atleast_1d, atleast_2d
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
@@ -52,7 +52,7 @@ class SellarProblem(SoSWrapp):
         c_1 = self.c_1(y_1)
         c_2 = self.c_2(y_2)
         obj += local_dv
-        out = {'obj': array([obj]), 'c_1': array([c_1]), 'c_2': array([c_2])}
+        out = {'obj': atleast_1d(obj), 'c_1': atleast_1d(c_1), 'c_2': atleast_1d(c_2)}  # FIXME: this is workaround for data types conversion in ouptut during mda
         self.store_sos_outputs_values(out)
 
     @staticmethod

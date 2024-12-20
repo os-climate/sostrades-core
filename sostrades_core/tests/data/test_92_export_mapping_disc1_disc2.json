@@ -1,0 +1,29 @@
+{
+  "process_module_path": "sostrades_core.sos_processes.test.test_disc1_all_types",
+  "namespace_datasets_mapping": {
+    "v0|<study_ph>|x": [
+      "MVP0_local_datasets_connector_export_test|test_dataset_disc1_disc2|x"
+    ],
+    "v0|<study_ph>.Disc1|a": [
+      "MVP0_local_datasets_connector_export_test|test_dataset_disc1_disc2|a"
+    ],
+    "v0|<study_ph>.Disc1|b": [
+      "MVP0_local_datasets_connector_export_test|test_dataset_disc1_disc2|b"
+    ],
+    "v0|<study_ph>.Disc1|indicator": [
+      "MVP0_local_datasets_connector_export_test|test_dataset_disc1_disc2|indicator"
+    ],
+    "v0|<study_ph>|y": [
+      "MVP0_local_datasets_connector_export_test|test_dataset_disc1_disc2|y"
+    ],
+    "v0|<study_ph>.Disc2|constant": [
+      "MVP0_local_datasets_connector_export_test|test_dataset_disc1_disc2|constant"
+    ],
+    "v0|<study_ph>.Disc2|power": [
+      "MVP0_local_datasets_connector_export_test|test_dataset_disc1_disc2|power"
+    ],
+    "v0|<study_ph>|z": [
+      "MVP0_local_datasets_connector_export_test|test_dataset_disc1_disc2|z"
+    ]
+  }
+}

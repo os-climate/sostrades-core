@@ -17,7 +17,7 @@ limitations under the License.
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 
 import pandas as pd
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from numpy import array
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
@@ -34,11 +34,15 @@ class SobieskiMission(SoSWrapp):
     """
     _maturity = 'Fake'
     DESC_IN = {
-                'y_14': {'type': 'array', 'default': array([50606.97417114, 7306.20262124]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_24': {'type': 'array', 'default': array([4.15006276]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_34': {'type': 'array', 'default': array([1.10754577]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-               }
+        'y_14': {'type': 'array', 'default': array([50606.97417114, 7306.20262124]),
+                 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_24': {'type': 'array', 'default': array([4.15006276]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                 'namespace': 'ns_OptimSobieski'},
+        'y_34': {'type': 'array', 'default': array([1.10754577]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                 'namespace': 'ns_OptimSobieski'},
+        'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]),
+              'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+    }
 
     DESC_OUT = {'y_4': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}}
 
@@ -81,19 +85,23 @@ class SobieskiStructure(SoSWrapp):
     """
     _maturity = 'Fake'
     DESC_IN = {
-                'x_1': {'type': 'array', 'default': array([0.25, 1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_21': {'type': 'array', 'default': array([50606.9741711]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_31': {'type': 'array', 'default': array([6354.32430691]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-               }
+        'x_1': {'type': 'array', 'default': array([0.25, 1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                'namespace': 'ns_OptimSobieski'},
+        'y_21': {'type': 'array', 'default': array([50606.9741711]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                 'namespace': 'ns_OptimSobieski'},
+        'y_31': {'type': 'array', 'default': array([6354.32430691]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                 'namespace': 'ns_OptimSobieski'},
+        'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]),
+              'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+    }
 
     DESC_OUT = {
-                'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_11': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_14': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'g_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_12': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}
-                }
+        'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_11': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_14': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'g_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_12': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}
+    }
 
     def run(self):
         """ computes
@@ -104,13 +112,12 @@ class SobieskiStructure(SoSWrapp):
         sobieski_problem = SobieskiProblem(dtype=dtype)
         y_1, y_11, y_12, y_14, g_1 = sobieski_problem.blackbox_structure(z, y_21, y_31, x_1)
         out = {
-                'y_1': array(y_1),
-                'y_11': array(y_11),
-                'y_12': array(y_12),
-                'y_14': array(y_14),
-                'g_1': array(g_1)
-                }
-
+            'y_1': array(y_1),
+            'y_11': array(y_11),
+            'y_12': array(y_12),
+            'y_14': array(y_14),
+            'g_1': array(g_1)
+        }
         self.store_sos_outputs_values(out)
 
     def compute_sos_jacobian(self):
@@ -141,19 +148,23 @@ class SobieskiAerodynamics(SoSWrapp):
     """
     _maturity = 'Fake'
     DESC_IN = {
-                'x_2': {'type': 'array', 'default': array([1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_12': {'type': 'array', 'default': array([50606.9742, 0.95]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_32': {'type': 'array', 'default': array([0.50279625]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-               }
+        'x_2': {'type': 'array', 'default': array([1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                'namespace': 'ns_OptimSobieski'},
+        'y_12': {'type': 'array', 'default': array([50606.9742, 0.95]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                 'namespace': 'ns_OptimSobieski'},
+        'y_32': {'type': 'array', 'default': array([0.50279625]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                 'namespace': 'ns_OptimSobieski'},
+        'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]),
+              'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+    }
 
     DESC_OUT = {
-                'y_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_21': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_23': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_24': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'g_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}
-                }
+        'y_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_21': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_23': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_24': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'g_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}
+    }
 
     def run(self):
         """ computes
@@ -164,12 +175,12 @@ class SobieskiAerodynamics(SoSWrapp):
         sobieski_problem = SobieskiProblem(dtype=dtype)
         y_2, y_21, y_23, y_24, g_2 = sobieski_problem.blackbox_aerodynamics(z, y_12, y_32, x_2)
         out = {
-                'y_2': array(y_2),
-                'y_21': array(y_21),
-                'y_23': array(y_23),
-                'y_24': array(y_24),
-                'g_2': array(g_2)
-                }
+            'y_2': array(y_2),
+            'y_21': array(y_21),
+            'y_23': array(y_23),
+            'y_24': array(y_24),
+            'g_2': array(g_2)
+        }
 
         self.store_sos_outputs_values(out)
 
@@ -201,18 +212,21 @@ class SobieskiPropulsion(SoSWrapp):
     """
     _maturity = 'Fake'
     DESC_IN = {
-                'x_3': {'type': 'array', 'default': array([0.5]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_23': {'type': 'array', 'default': array([12562.01206488]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-               }
+        'x_3': {'type': 'array', 'default': array([0.5]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                'namespace': 'ns_OptimSobieski'},
+        'y_23': {'type': 'array', 'default': array([12562.01206488]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                 'namespace': 'ns_OptimSobieski'},
+        'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]),
+              'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+    }
 
     DESC_OUT = {
-                'y_3': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_34': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_31': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'y_32': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
-                'g_3': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}
-                }
+        'y_3': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_34': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_31': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'y_32': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'},
+        'g_3': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}
+    }
 
     def run(self):
         """ computes
@@ -223,13 +237,12 @@ class SobieskiPropulsion(SoSWrapp):
         sobieski_problem = SobieskiProblem(dtype=dtype)
         y_3, y_34, y_31, y_32, g_3 = sobieski_problem.blackbox_propulsion(z, y_23, x_3)
         out = {
-                'y_3': array(y_3),
-                'y_34': array(y_34),
-                'y_31': array(y_31),
-                'y_32': array(y_32),
-                'g_3': array(g_3)
-                }
-
+            'y_3': array(y_3),
+            'y_34': array(y_34),
+            'y_31': array(y_31),
+            'y_32': array(y_32),
+            'g_3': array(g_3)
+        }
         self.store_sos_outputs_values(out)
 
     def compute_sos_jacobian(self):

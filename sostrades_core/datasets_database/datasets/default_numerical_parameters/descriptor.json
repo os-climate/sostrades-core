@@ -6,12 +6,12 @@
     "value": ""
   },
   "cache_type": {
-    "value": "None"
+    "value": ""
   },
   "cache_file_path": {
     "value": ""
   },
-  "sub_mda_class": {
+  "inner_mda_name": {
     "value": "MDAJacobi"
   },
   "max_mda_iter": {

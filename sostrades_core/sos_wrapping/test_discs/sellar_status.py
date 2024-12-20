@@ -204,7 +204,8 @@ class Sellar2(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'debug_mode_sellar': {'type': 'bool', 'default': False, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+               'debug_mode_sellar': {'type': 'bool', 'default': False, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                     'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'float',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
@@ -280,7 +281,9 @@ class Sellar3(SoSWrapp):
     DESC_IN = {'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'error_string': {'type': 'string', 'default': '', 'possible_values': ["", "nan", "input_change",
-                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]}}
+                                                                                     "linearize_data_change",
+                                                                                     "min_max_grad",
+                                                                                     "min_max_couplings", "all"]}}
 
     DESC_OUT = {'y_2': {'type': 'float',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}

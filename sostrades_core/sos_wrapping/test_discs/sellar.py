@@ -14,9 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from cmath import exp, sqrt
+from cmath import exp as exp_cp
+from cmath import sqrt as sqrt_cp
 
-from numpy import NaN, array, atleast_2d
+from numpy import NaN, array, atleast_2d, floating
+from numpy import exp as exp_np
+from numpy import sqrt as sqrt_np
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
@@ -27,6 +30,18 @@ Adapted from GEMSEO examples
 '''
 
 
+def sqrt_complex(y):
+    if isinstance(y, floating) and y >= 0:
+        return sqrt_np(y)
+    else:
+        return sqrt_cp(y)
+
+
+def exp_complex(y):
+    if isinstance(y, floating) and y >= 0:
+        return exp_np(y)
+    else:
+        return exp_cp(y)
 class SellarProblem(SoSWrapp):
     """ Sellar Optimization Problem functions
     """
@@ -69,7 +84,7 @@ class SellarProblem(SoSWrapp):
         :returns: Objective value
         :rtype: float
         """
-        out = x[0] ** 2 + z[1] + y_1[0] + exp(-y_2[0])
+        out = x[0] ** 2 + z[1] + y_1[0] + exp_complex(-y_2[0])
 
         return out
 
@@ -121,7 +136,7 @@ class SellarProblem(SoSWrapp):
         self.set_partial_derivative('obj', 'y_1', atleast_2d(array(
             [1.0])))
         self.set_partial_derivative('obj', 'y_2', atleast_2d(array(
-            [-exp(-y_2[0])])))
+            [-exp_complex(-y_2[0])])))
 
         self.set_partial_derivative('obj', 'local_dv', atleast_2d(array(
             [1.0])))
@@ -203,7 +218,8 @@ class Sellar2(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'debug_mode_sellar': {'type': 'bool', 'default': False, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+               'debug_mode_sellar': {'type': 'bool', 'default': False, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                     'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'array',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
@@ -227,7 +243,7 @@ class Sellar2(SoSWrapp):
         :returns: coupling variable y_2
         :rtype: float
         """
-        out = z[0] + z[1] + sqrt(y_1[0])
+        out = z[0] + z[1] + sqrt_complex(y_1[0])
         return out
 
     def compute_sos_jacobian(self):
@@ -244,7 +260,7 @@ class Sellar2(SoSWrapp):
         y_1, debug_mode = self.get_sosdisc_inputs(['y_1', 'debug_mode_sellar'])
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
-            array([1.0 / (2.0 * sqrt(y_1[0]))])))
+            array([1.0 / (2.0 * sqrt_complex(y_1[0]))])))
 
         self.set_partial_derivative('y_2', 'z', atleast_2d(
             array([1.0, 1.0])))
@@ -275,7 +291,9 @@ class Sellar3(SoSWrapp):
     DESC_IN = {'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'error_string': {'type': 'string', 'default': '', 'possible_values': ["", "nan", "input_change",
-                            "linearize_data_change", "min_max_grad", "min_max_couplings", "all"]}}
+                                                                                     "linearize_data_change",
+                                                                                     "min_max_grad",
+                                                                                     "min_max_couplings", "all"]}}
 
     DESC_OUT = {'y_2': {'type': 'array',
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
@@ -307,7 +325,7 @@ class Sellar3(SoSWrapp):
         :returns: coupling variable y_2
         :rtype: float
         """
-        out = z[0] + z[1] + sqrt(y_1[0])
+        out = z[0] + z[1] + sqrt_complex(y_1[0])
         return out
 
     def compute_sos_jacobian(self):
@@ -325,13 +343,13 @@ class Sellar3(SoSWrapp):
         error_string = self.get_sosdisc_inputs('error_string')
 
         if error_string == 'linearize_data_change':
-            y_1_fullname = [full_name for full_name in self.local_data.keys() if
-                             'y_1' == full_name.split('.')[-1]][0]
-            y_1 = self.local_data[y_1_fullname]
+            y_1_fullname = [full_name for full_name in self.io.data.keys() if
+                            'y_1' == full_name.split('.')[-1]][0]
+            y_1 = self.io.data[y_1_fullname]
             y_1[0] += 0.5
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
-            array([1.0 / (2.0 * sqrt(y_1[0]))])))
+            array([1.0 / (2.0 * sqrt_complex(y_1[0]))])))
 
         self.set_partial_derivative('y_2', 'z', atleast_2d(
             array([1.0, 1.0])))
@@ -370,7 +388,7 @@ class Sellar3(SoSWrapp):
                             "in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (
                                 d_name, out, inp, maxi))
                         raise ValueError("in discipline <%s> : dr<%s> / dr<%s>: maximum gradient value is <%s>" % (
-                                d_name, out, inp, maxi))
+                            d_name, out, inp, maxi))
 
 
 if __name__ == '__main__':

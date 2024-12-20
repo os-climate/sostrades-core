@@ -19,12 +19,11 @@ from os.path import dirname, exists, join
 from pathlib import Path
 
 from gemseo.caches.simple_cache import SimpleCache
+from gemseo.core.discipline.discipline import Discipline
 
 from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import (
     Study as study_disc1_disc2,
 )
-
-# from sostrades_core.sos_processes.test.test_sellar_opt_w_design_var.usecase import Study as study_sellar_opt
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
     Study as study_sellar_mda,
 )
@@ -64,7 +63,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_dump.set_dump_directory(
             dump_dir)
         study_dump.load_data()
-        dict_values = {f'{study_dump.study_name}.cache_type': 'None'}
+        dict_values = {f'{study_dump.study_name}.cache_type': Discipline.CacheType.NONE}
         study_dump.load_data(from_input_dict=dict_values)
         # Still no call to any build map
         self.assertEqual(study_dump.ee.dm.gemseo_disciplines_id_map, None)
@@ -93,7 +92,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study_load.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         self.dir_to_del.append(self.dump_dir)
 
@@ -160,11 +159,13 @@ class TestLoadSimpleCache(unittest.TestCase):
         for disc_id, serialized_cache in anonymized_cache_map.items():
             self.assertTrue(isinstance(serialized_cache, dict))
             self.assertTrue(list(serialized_cache[1].keys()), [
-                            'inputs', 'outputs'])
+                'inputs', 'outputs'])
 
         for disc_id, disc_cache in initial_cache_map.items():
             self.assertTrue(disc_id in anonymized_cache_map)
-            disc_cache_data = disc_cache.get_all_data()[1]
+            disc_cache_entry = list(disc_cache.keys())[0]
+            disc_cache_data = {'inputs': disc_cache_entry.inputs,
+                               'outputs': disc_cache_entry.outputs}
             for var_type in ['inputs', 'outputs']:
                 for input_var, input_value in disc_cache_data[var_type].items():
                     input_var_anonymized = input_var.replace(
@@ -184,10 +185,12 @@ class TestLoadSimpleCache(unittest.TestCase):
         unanonymized_cache_map = study_dump.execution_engine.unanonymize_caches_in_cache_map(
             anonymized_cache_map)
         for disc_id, disc_cache in initial_cache_map.items():
-            for var_type in ['inputs', 'outputs']:
+            disc_cache_entry = list(disc_cache.keys())[0]
+            disc_cache_data = {'inputs': disc_cache_entry.inputs,
+                               'outputs': disc_cache_entry.outputs}
 
-                self.assertDictEqual(disc_cache.get_all_data()[
-                                     1][var_type], unanonymized_cache_map[disc_id][1][var_type])
+            for var_type in ['inputs', 'outputs']:
+                self.assertDictEqual(disc_cache_data[var_type], unanonymized_cache_map[disc_id][1][var_type])
         self.dir_to_del.append(self.dump_dir)
 
     def test_04_dump_and_load_simple_cache_on_process(self):
@@ -235,8 +238,8 @@ class TestLoadSimpleCache(unittest.TestCase):
         for disc_id in study_dump.ee.dm.gemseo_disciplines_id_map.keys():
             disc_dump = study_dump.ee.dm.gemseo_disciplines_id_map[disc_id]
             disc_load = study_load.ee.dm.gemseo_disciplines_id_map[disc_id]
-            self.assertEqual(disc_load.n_calls, 0)
-            self.assertEqual(disc_dump.n_calls, 1)
+            self.assertEqual(disc_load.execution_statistics.n_executions, 0)
+            self.assertEqual(disc_dump.execution_statistics.n_executions, 1)
 
         disc_cache_dump = list(cache_map_from_pkl.values())[0]
         disc_cache_load = list(study_load.ee.dm.cache_map.values())[0]
@@ -245,20 +248,15 @@ class TestLoadSimpleCache(unittest.TestCase):
             disc_cache_dump = cache_map_from_pkl[disc_cache_id]
             disc_cache_load = study_load.ee.dm.cache_map[disc_cache_id]
 
-            self.assertListEqual(disc_cache_dump.inputs_names,
-                                 disc_cache_load.inputs_names)
-            self.assertListEqual(disc_cache_dump.outputs_names,
-                                 disc_cache_load.outputs_names)
-            cache_dump_outputs = disc_cache_dump.get_last_cached_outputs()
-            cache_load_outputs = disc_cache_load.get_last_cached_outputs()
-            self.assertDictEqual({key: value for key, value in cache_dump_outputs.items() if not key.endswith('residuals_history')},
-                                 {key: value for key, value in cache_load_outputs.items() if not key.endswith('residuals_history')})
-            cache_dump_get_outputs = list(disc_cache_dump.get_outputs(
-                disc_cache_load.get_last_cached_inputs(), disc_cache_dump.inputs_names))[0]
-            cache_load_get_outputs = list(disc_cache_load.get_outputs(
-                disc_cache_load.get_last_cached_inputs(), disc_cache_load.inputs_names))[0]
-            self.assertDictEqual({key: value for key, value in cache_dump_get_outputs.items() if not key.endswith('residuals_history')},
-                                 {key: value for key, value in cache_load_get_outputs.items() if not key.endswith('residuals_history')})
+            self.assertListEqual(disc_cache_dump.input_names,
+                                 disc_cache_load.input_names)
+            self.assertListEqual(disc_cache_dump.output_names,
+                                 disc_cache_load.output_names)
+            cache_dump_outputs = disc_cache_dump.last_entry.outputs
+            cache_load_outputs = disc_cache_load.last_entry.outputs
+            self.assertDictEqual(
+                {key: value for key, value in cache_dump_outputs.items() if not key.endswith('residuals_history')},
+                {key: value for key, value in cache_load_outputs.items() if not key.endswith('residuals_history')})
 
         self.dir_to_del.append(self.dump_dir)
 
@@ -301,10 +299,10 @@ class TestLoadSimpleCache(unittest.TestCase):
         for disc in study_2.ee.factory.proxy_disciplines:
             if disc.get_disc_full_name() == f'{study_2.study_name}.Disc1':
                 self.assertEqual(
-                    disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 0)
+                    disc.discipline_wrapp.discipline.execution_statistics.n_executions, 0)
             else:
                 self.assertEqual(
-                    disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+                    disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         self.dir_to_del.append(self.dump_dir)
 
@@ -327,7 +325,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         self.assertEqual(len(study.ee.dm.cache_map), 4)
         study.read_cache_pickle(dump_dir)
@@ -335,14 +333,14 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 0)
 
         # check dumped cache pickle existence
         cache_pkl_path = join(dump_dir, 'sostrades_core.sos_processes.test',
                               'test_disc1_disc2_coupling', study.study_name, 'cache.pkl')
         self.assertTrue(exists(cache_pkl_path))
 
-        values_dict = {f'{study.study_name}.cache_type': 'None',
+        values_dict = {f'{study.study_name}.cache_type': Discipline.CacheType.NONE,
                        f'{study.study_name}.propagate_cache_to_children': True}
         study.load_data(from_input_dict=values_dict)
         study.read_cache_pickle(dump_dir)
@@ -357,7 +355,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 2)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         study.run()
         self.assertEqual(len(study.ee.dm.cache_map), 0)
@@ -375,7 +373,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_1.load_data()
 
         # cache activation
-        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache',
+        dict_values = {f'{study_1.study_name}.SellarCoupling.cache_type': 'SimpleCache',
                        f'{study_1.study_name}.propagate_cache_to_children': True}
         study_1.load_data(from_input_dict=dict_values)
 
@@ -384,8 +382,8 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         # check cache are filled with last cached inputs and outputs
         for cache in study_1.ee.dm.cache_map.values():
-            self.assertNotEqual(cache.get_last_cached_inputs(), None)
-            self.assertNotEqual(cache.get_last_cached_outputs(), None)
+            self.assertNotEqual(cache.last_entry.inputs, None)
+            self.assertNotEqual(cache.last_entry.outputs, None)
 
         # run study_1 with converged MDA
         study_1.run(dump_study=True)
@@ -400,7 +398,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
             self.assertEqual(
-                disc.n_calls, 0)
+                disc.execution_statistics.n_executions, 0)
 
         # run again
         study_2.run()
@@ -408,7 +406,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
             self.assertEqual(
-                disc.n_calls, 0)
+                disc.execution_statistics.n_executions, 0)
 
         self.dir_to_del.append(self.dump_dir)
 
@@ -462,14 +460,15 @@ class TestLoadSimpleCache(unittest.TestCase):
             self.assertDictEqual(
                 {key_out: value for key_out, value in cache[key][1]['outputs'].items(
                 ) if not key_out.endswith('residuals_history')},
-                {key_out: value for key_out, value in new_cache[key][1]['outputs'].items() if not key_out.endswith('residuals_history')})
+                {key_out: value for key_out, value in new_cache[key][1]['outputs'].items() if
+                 not key_out.endswith('residuals_history')})
 
         study_2.run()
 
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
             self.assertEqual(
-                disc.n_calls, 0)
+                disc.execution_statistics.n_executions, 0)
 
         self.dir_to_del.append(dump_dir)
         self.dir_to_del.append(new_dump_dir)
@@ -485,9 +484,10 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_1.load_data()
 
         # cache activation
-        dict_values = {f'{study_1.study_name}.cache_type': 'SimpleCache',
-                       f'{study_1.study_name}.propagate_cache_to_children': True,
-                       f'{study_1.study_name}.SellarCoupling.sub_mda_class': 'MDANewtonRaphson'}
+        dict_values = {f'{study_1.study_name}.SellarCoupling.cache_type': 'SimpleCache',
+                       f'{study_1.study_name}.SellarCoupling.propagate_cache_to_children': True,
+                       f'{study_1.study_name}.SellarCoupling.inner_mda_name': 'MDAGaussSeidel',
+                       f'{study_1.study_name}.SellarCoupling.tolerance': 0.0}
         study_1.load_data(from_input_dict=dict_values)
 
         # run MDA
@@ -513,7 +513,8 @@ class TestLoadSimpleCache(unittest.TestCase):
                             '<study_ph>', study_1.study_name)
                         self.assertTrue(key_in.startswith('<study_ph>'))
                         self.assertTrue(
-                            unanonymized_cache_map[disc_id][1]['jacobian'][key_out_unanonymized][key_in_unanonymized] == jac)
+                            unanonymized_cache_map[disc_id][1]['jacobian'][key_out_unanonymized][
+                                key_in_unanonymized] == jac)
         # run study_1 with converged MDA
         study_1.run(dump_study=True)
 
@@ -528,17 +529,17 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.n_calls, 0)
+            self.assertEqual(disc.execution_statistics.n_executions, 0)
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.n_calls_linearize, 0)
+            self.assertEqual(disc.execution_statistics.n_linearizations, 0)
         # run again
         study_2.run()
 
         # check n_calls == 0
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.n_calls, 0)
+            self.assertEqual(disc.execution_statistics.n_executions, 0)
         for disc in study_2.ee.dm.gemseo_disciplines_id_map.values():
-            self.assertEqual(disc.n_calls_linearize, 0)
+            self.assertEqual(disc.execution_statistics.n_linearizations, 0)
         self.dir_to_del.append(self.dump_dir)
 
     def test_10_set_different_cache_type_verify_after_run(self):
@@ -560,11 +561,11 @@ class TestLoadSimpleCache(unittest.TestCase):
 
         for disc in study.ee.factory.proxy_disciplines:
             self.assertEqual(
-                disc.mdo_discipline_wrapp.mdo_discipline.n_calls, 1)
+                disc.discipline_wrapp.discipline.execution_statistics.n_executions, 1)
 
         self.assertEqual(len(study.ee.dm.cache_map), 4)
 
-        values_dict = {f'{study.study_name}.Disc2.cache_type': 'None',
+        values_dict = {f'{study.study_name}.Disc2.cache_type': Discipline.CacheType.NONE,
                        f'{study.study_name}.propagate_cache_to_children': False, }
         study.load_data(from_input_dict=values_dict)
         study.read_cache_pickle(dump_dir)
@@ -576,9 +577,11 @@ class TestLoadSimpleCache(unittest.TestCase):
         study_2.load_disciplines_data(dump_dir)
         study_2.read_cache_pickle(dump_dir)
         self.assertEqual(study_2.ee.dm.get_value(
-            f'{study.study_name}.Disc2.cache_type'), 'None')
+            f'{study.study_name}.Disc2.cache_type'), Discipline.CacheType.NONE)
 
         self.dir_to_del.append(self.dump_dir)
+
+
 #     def _test_08_load_cache_on_sellar_opt(self):
 #
 #         dump_dir = join(self.dump_dir, 'test_08')
@@ -592,7 +595,7 @@ class TestLoadSimpleCache(unittest.TestCase):
 #         # cache activation
 #         dict_values = {f'{study_opt.study_name}.cache_type': 'SimpleCache',
 #                        f'{study_opt.study_name}.SellarOptimScenario.max_iter': 10,
-#                        f'{study_opt.study_name}.SellarOptimScenario.SellarCoupling.sub_mda_class': 'MDANewtonRaphson'}
+#                        f'{study_opt.study_name}.SellarOptimScenario.SellarCoupling.inner_mda_name': 'MDANewtonRaphson'}
 #         study_opt.load_data(from_input_dict=dict_values)
 #         study_opt.load_cache(dump_dir)
 #

@@ -5,7 +5,7 @@ class SoSDisciplineBuilder{
 status
 }
 
-class MDODiscipline{
+class Discipline{
 status
 execute()
 }
@@ -18,7 +18,7 @@ run()
 }
 
 class ExecutionEngine{
-mdo_disciplines
+disciplines
 configure()
 build()
 execute()
@@ -35,15 +35,15 @@ disciplines_proxys
 }
 
 class MDOCouplingStructure
-class MDODisciplineWrapp
+class DisciplineWrapp
 
 
 DisciplineProxy *-- Configuration
-DisciplineProxy *-- MDODisciplineWrapp
+DisciplineProxy *-- DisciplineWrapp
 DisciplineProxy --* SoSDisciplineBuilder
 
-MDODisciplineWrapp "1" *-- "0..*" SOSDiscipline
-MDODisciplineWrapp "1" *-- "1" MDODiscipline
+DisciplineWrapp "1" *-- "0..*" SOSDiscipline
+DisciplineWrapp "1" *-- "1" Discipline
 
 Configuration -> MDOCouplingStructure
 

@@ -183,8 +183,8 @@ def one_test_gradients_discipline(test_name: str,
             result = True
 
             self.override_dump_jacobian = True
-            disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
-            pickle_filename = f'{test_name}.{model_name}'.replace('.','_') +'.pkl'
+            disc_techno = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.mdo_discipline
+            pickle_filename = f'{test_name}.{model_name}'.replace('.', '_') + '.pkl'
             if not os.path.exists(GENERATED_TEST_FOLDERNAME):
                 os.mkdir(GENERATED_TEST_FOLDERNAME)
                 os.mkdir(os.path.join(GENERATED_TEST_FOLDERNAME, 'jacobian_pkls'))
@@ -235,7 +235,7 @@ def handle_discipline_with_wrong_gradients(coupling_inputs: list[str],
         'mod_path': discipline_module_path,
         'model_name': model_name
     }
-    generated_test_filename = discipline_module_path.replace('.','_')  + '.pkl'
+    generated_test_filename = discipline_module_path.replace('.', '_') + '.pkl'
     generated_test_data_folder = os.path.join(GENERATED_TEST_FOLDERNAME, 'data')
 
     if not os.path.exists(generated_test_data_folder):
@@ -289,18 +289,17 @@ class MyGeneratedTest(AbstractJacobianUnittest):
 
         self.ee.execute()
 
-        disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc_techno = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.mdo_discipline
 
         self.check_jacobian(location=dirname(__file__), filename='{jacobian_pkl_name}',
                             discipline=disc_techno, step=1e-15, derr_approx='complex_step', local_data = disc_techno.local_data,
                             inputs=coupling_inputs,
                             outputs=coupling_ouputs)
     """
-    genretated_test_file_name = discipline_module_path.replace('.','_')  + '.py'
+    genretated_test_file_name = discipline_module_path.replace('.', '_') + '.py'
     path_generated_test_file = os.path.join(GENERATED_TEST_FOLDERNAME, genretated_test_file_name)
 
     with open(path_generated_test_file, 'w') as f:
         f.write(generated_code)
 
     print(f'Dumped ready to use Jacobian test class at {path_generated_test_file}')
-

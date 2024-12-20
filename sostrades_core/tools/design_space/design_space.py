@@ -64,7 +64,7 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
 
             if not isinstance(val, (list, ndarray)):
                 size = 1
-                var_type = ['float']
+                var_type = 'float'
                 l_b = array([lb])
                 u_b = array([ub])
                 value = array([val])
@@ -80,7 +80,7 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
                     ub = delete(ub, index_false)
 
                 size = len(val)
-                var_type = ['float'] * size
+                var_type = 'float'
                 l_b = array(lb)
                 u_b = array(ub)
                 value = array(val)

@@ -16,15 +16,16 @@ limitations under the License.
 '''
 
 import logging
+from typing import ClassVar
 
-from gemseo.core.grammar import SimpleGrammar
+from gemseo.core.grammars.simpler_grammar import SimplerGrammar
 
 """Most basic grammar implementation."""
 
 LOGGER = logging.getLogger("gemseo.addons.grammars.sos_simple_grammar")
 
 
-class SoSSimpleGrammar(SimpleGrammar):
+class SoSSimpleGrammar(SimplerGrammar):
     """Store the names and types of the elements as Python lists.
 
     Attributes:
@@ -32,23 +33,9 @@ class SoSSimpleGrammar(SimpleGrammar):
         data_types (List[type]): The types of the elements,
             stored in the same order as ``data_names``.
     """
+    DATA_CONVERTER_CLASS: ClassVar[str] = "SoSTradesDataConverter"
 
-    def load_data(
-        self,
-        data,  # type: Mapping[str,Any]
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> Mapping[str,Any]
-#         self.check(data, raise_exception)
-        return data
-
-    def set_item_value(self, item_name, item_value):
-        """
-        Sets the value of an item
-
-        :param item_name: the item name to be modified
-        :param item_value: value of the item
-        """
-        if not self.is_data_name_existing(item_name):
-            raise ValueError("Item " + str(item_name) + " not in grammar " +
-                             self.name)
-        self._update_field(item_name, item_value['type'])
+    def update_defaults(self, defaults: dict):
+        self._defaults.update({
+            k: v for k, v in defaults.items() if k in self.names
+        })

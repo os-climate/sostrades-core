@@ -12,11 +12,11 @@ Builder -> DisciplineProxy: configure
 
 User -> ExecEngine: prepare_exec
 Builder -> DisciplineProxy: prepare_exec
-DisciplineProxy -> MDODisciplineWrapp : prepare_exec
+DisciplineProxy -> DisciplineWrapp : prepare_exec
 ExecEngine -> MDAChain : init
 
 User -> ExecEngine: execute(data)
 ExecEngine -> DataManager: load_values(data)
 ExecEngine -> MDAChain: execute
-MDAChain -> MDODiscipline : execute
+MDAChain -> Discipline : execute
 @enduml
