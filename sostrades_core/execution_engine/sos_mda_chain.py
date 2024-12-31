@@ -293,6 +293,9 @@ class SoSMDAChain(MDAChain):
         self.linear_solver = self.linear_solver_MDO
         self.linear_solver_settings = self.linear_solver_settings_MDO
         self.linear_solver_tolerance = self.linear_solver_tolerance_MDO
+        # use the same linearization_mode for the coupling and its children
+        for disc in self.coupling_structure.disciplines:
+            disc.linearization_mode = self.linearization_mode
 
         MDAChain._compute_jacobian(self, inputs, outputs)
 

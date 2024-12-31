@@ -219,7 +219,7 @@ class ProxyDiscipline:
     NUM_DESC_IN = {
         LINEARIZATION_MODE: {
             TYPE: 'string',
-            DEFAULT: Discipline.ApproximationMode.FINITE_DIFFERENCES,
+            DEFAULT: Discipline.LinearizationMode.AUTO,
             POSSIBLE_VALUES: list(Discipline.LinearizationMode),
             NUMERICAL: True,
             STRUCTURING: True,

@@ -21,7 +21,7 @@ from pathlib import Path
 from numpy import ComplexWarning
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-
+from gemseo.core.discipline.discipline import Discipline
 # IMPORT USECASES
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import (
     Study as Study_disc1_all_types,
@@ -73,11 +73,13 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         for proxy_disc in exec_eng.root_process.proxy_disciplines:
             mdo_disc = proxy_disc.discipline_wrapp.discipline
+            mdo_disc.linearization_mode = Discipline.LinearizationMode.FINITE_DIFFERENCES
             mdo_disc.add_differentiated_inputs()
             mdo_disc.add_differentiated_outputs()
             mdo_disc.linearize(values_dict)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
         mda_chain = exec_eng.root_process.discipline_wrapp.discipline
+        mda_chain.linearization_mode = Discipline.LinearizationMode.FINITE_DIFFERENCES
         mda_chain.add_differentiated_inputs()
         mda_chain.add_differentiated_outputs()
         mda_chain.linearize(values_dict)
@@ -104,11 +106,13 @@ class TestAnalyticGradients(unittest.TestCase):
         exec_eng.display_treeview_nodes()
         for proxy_disc in exec_eng.root_process.proxy_disciplines:
             mdo_disc = proxy_disc.discipline_wrapp.discipline
+            mdo_disc.linearization_mode = Discipline.LinearizationMode.FINITE_DIFFERENCES
             mdo_disc.linearize(values_dict, compute_all_jacobians=True)
             print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
             added_values_dict = {key: exec_eng.dm.get_value(key) for key in
                                  proxy_disc.get_input_data_names(numerical_inputs=False) if key not in values_dict}
             values_dict.update(added_values_dict)
+        exec_eng.root_process.discipline_wrapp.discipline.linearization_mode = Discipline.LinearizationMode.FINITE_DIFFERENCES
         exec_eng.root_process.discipline_wrapp.discipline.linearize(values_dict, compute_all_jacobians=True)
         print('LINEARIZE performed for ', exec_eng.root_process.get_disc_full_name())
 

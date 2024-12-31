@@ -211,7 +211,7 @@ class DisciplineWrapp:
             discipline.linear_solver_MDO = proxy.linear_solver_MDO
             discipline.linear_solver_settings_MDO = proxy.linear_solver_settings_MDO
             discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
-            discipline.linearization_mode = proxy.get_sosdisc_inputs(SoSDiscipline.LINEARIZATION_MODE)
+            discipline.linearization_mode = proxy.linearization_mode
 
             # # set other additional options (SoSTrades)
             # discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(
