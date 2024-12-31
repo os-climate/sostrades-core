@@ -654,6 +654,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def set_gemseo_disciplines_caches(self, mda_chain_cache):
         """Set cache of MDAChain, MDOChain and sub MDAs"""
         cache_type = self.get_sosdisc_inputs('cache_type')
+
+        # if warm_start then cache_type must be activated
+        if self.discipline_wrapp.discipline.settings.warm_start and cache_type == self.discipline_wrapp.discipline.CacheType.NONE:
+            cache_type = self.discipline_wrapp.discipline.CacheType.SIMPLE
         # set MDAChain cache
         if self._reset_cache:
             # set new cache when cache_type have changed (self._reset_cache == True)
