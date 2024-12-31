@@ -18,10 +18,11 @@ import unittest
 import warnings
 from pathlib import Path
 
+from gemseo.core.discipline.discipline import Discipline
 from numpy import ComplexWarning
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from gemseo.core.discipline.discipline import Discipline
+
 # IMPORT USECASES
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import (
     Study as Study_disc1_all_types,
