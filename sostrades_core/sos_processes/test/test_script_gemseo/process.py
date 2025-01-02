@@ -29,7 +29,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Disc1 Process',
+        'label': 'MDO SLSQP Sellar from Gemseo script Process',
         'description': '',
         'category': '',
         'version': '',

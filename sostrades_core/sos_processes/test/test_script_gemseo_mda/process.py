@@ -28,7 +28,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Disc1 Process',
+        'label': 'MDA Newton Raphson Sobieski from Gemseo script Process',
         'description': '',
         'category': '',
         'version': '',

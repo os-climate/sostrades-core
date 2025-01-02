@@ -451,7 +451,7 @@ class BaseStudyManager:
         except Exception:
             logger.exception('The following error occurs in "after_execute_before_dump" methods')
 
-        if dump_study and self.dump_directory is not None:
+        if dump_study and self.dump_directory is not None and self.execution_engine.wrapping_mode == 'SoSTrades':
             self.dump_study(self.dump_directory)
             logger.debug("Reference dump to %s", self.dump_directory)
 

@@ -71,10 +71,11 @@ class TestResidualVariables(unittest.TestCase):
         self.assertTrue(study.ee.wrapping_mode == 'GEMSEO')
         study.run(for_test=True)
 
-        mda.plot_residual_history(
-            n_iterations=10,
-            logscale=(1e-8, 10.0),
-            save=False,
-            show=True,
-            fig_size=(10, 2),
-        )
+    def test_03_dump_gemseo_script_study(self):
+        study = StudyGEMSEOMDA()
+
+        study.load_data()
+        mda = study.ee.root_process.cls_builder
+        self.assertTrue(isinstance(mda, BaseMDA))
+        self.assertTrue(study.ee.wrapping_mode == 'GEMSEO')
+        study.run(dump_study=True)
