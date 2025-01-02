@@ -63,23 +63,23 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         """
         old_current_discipline = self.ee.factory.current_discipline
         self.set_father_discipline()
+        if not isinstance(builder_list, ProxyDiscipline.GEMSEO_OBJECTS):
+            for builder in builder_list:
+                # A builder of disciplines should propagate its associated namespaces
+                # and has the priority over associated namespaces already set
+                self.associate_namespace_to_sub_builder(builder)
 
-        for builder in builder_list:
-            # A builder of disciplines should propagate its associated namespaces
-            # and has the priority over associated namespaces already set
-            self.associate_namespace_to_sub_builder(builder)
+                proxy_disc = builder.build()
 
-            proxy_disc = builder.build()
-
-            if self.ee.ns_manager.get_local_namespace(
+                if self.ee.ns_manager.get_local_namespace(
                     self).is_display_value() and builder not in self.ee.ns_manager.display_ns_dict:
-                father_display_value = self.get_disc_display_name()
-                display_value = f'{father_display_value}.{builder.sos_name}'
-                self.ee.ns_manager.get_local_namespace(
-                    proxy_disc).set_display_value(display_value)
+                    father_display_value = self.get_disc_display_name()
+                    display_value = f'{father_display_value}.{builder.sos_name}'
+                    self.ee.ns_manager.get_local_namespace(
+                        proxy_disc).set_display_value(display_value)
 
-            if proxy_disc not in self.proxy_disciplines:
-                self.ee.factory.add_discipline(proxy_disc)
+                if proxy_disc not in self.proxy_disciplines:
+                    self.ee.factory.add_discipline(proxy_disc)
         # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
         # high level coupling and we do not have to restore the
         # current_discipline

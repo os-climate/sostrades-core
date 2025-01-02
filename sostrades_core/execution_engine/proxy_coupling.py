@@ -624,6 +624,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def prepare_execution(self):
         """Preparation of the GEMSEO process, including GEMSEO objects instanciation"""
         # prepare_execution of proxy_disciplines
+        if isinstance(self.cls_builder, ProxyDiscipline.GEMSEO_OBJECTS):
+            self.discipline_wrapp.wrapping_mode = 'GEMSEO'
 
         gemseo_disciplines = self.create_gemseo_disciplines()
         # store cache and n_calls before MDAChain reset, if prepare_execution
@@ -638,7 +640,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.discipline_wrapp.create_mda_chain(gemseo_disciplines, self, reduced_dm=reduced_dm)
 
         # set cache cache of gemseo object
-        self.set_gemseo_disciplines_caches(mda_chain_cache)
+        if self.discipline_wrapp.wrapping_mode != 'GEMSEO':
+            self.set_gemseo_disciplines_caches(mda_chain_cache)
 
     def create_gemseo_disciplines(self):
         gemseo_disciplines = []

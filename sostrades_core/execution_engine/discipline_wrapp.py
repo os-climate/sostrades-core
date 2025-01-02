@@ -222,7 +222,7 @@ class DisciplineWrapp:
             proxy.status = self.discipline.execution_status.value
 
         elif self.wrapping_mode == 'GEMSEO':
-            raise NotImplementedError("GEMSEO native wrapping mode not yet available.")
+            self.discipline = proxy.cls_builder
 
     def create_mdo_scenario(self, sub_disciplines, proxy=None, reduced_dm=None):  # type: (...) -> None
         """

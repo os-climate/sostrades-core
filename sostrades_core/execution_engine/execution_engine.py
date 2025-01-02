@@ -87,6 +87,7 @@ class ExecutionEngine:
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.check_data_integrity: bool = True
+        self.wrapping_mode = 'SoSTrades'
 
     @property
     def factory(self) -> SosFactory:
@@ -139,8 +140,12 @@ class ExecutionEngine:
             self.root_builder_ist, self.factory.BUILDERS_FUNCTION_NAME)
         builder_list = builder_list_func()
 
-        self.factory.set_builders_to_coupling_builder(builder_list)
-        # -- We are changing what happend in root, need to reset dm
+        if isinstance(builder_list, ProxyDiscipline.GEMSEO_OBJECTS):
+            self.factory.set_gemseo_object_to_coupling_builder(builder_list)
+            self.wrapping_mode = 'GEMSEO'
+        else:
+            self.factory.set_builders_to_coupling_builder(builder_list)
+            # -- We are changing what happend in root, need to reset dm
         self.dm.reset()
         self.load_study_from_input_dict({})
 
@@ -701,8 +706,11 @@ class ExecutionEngine:
         self.logger.info("Executing.")
         input_data_wo_none = {key: value for key, value in input_data.items() if value is not None}
         try:
-            ex_proc.discipline_wrapp.discipline.execute(
+            if self.wrapping_mode == 'SoSTrades':
+                ex_proc.discipline_wrapp.discipline.execute(
                 input_data=input_data_wo_none)
+            elif self.wrapping_mode == 'GEMSEO':
+                ex_proc.discipline_wrapp.discipline.execute()
         except:
             ex_proc.set_status_from_discipline()
             raise
@@ -710,14 +718,15 @@ class ExecutionEngine:
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.', self.root_process.get_disc_full_name())
 
-        self.logger.info("Storing local data in datamanager.")
-        # -- store local data in datamanager
-        ex_proc.discipline_wrapp.discipline.io.data.pop("MDA residuals norm", None)
-        self.update_dm_with_local_data(
-            ex_proc.discipline_wrapp.discipline.io.data)
-        # Add residuals_history and other numerical outputs that are not in GEMSEO grammar to the data manager
-        self.update_dm_with_local_data(ex_proc.get_numerical_outputs_subprocess())
-        # -- update all proxy statuses
-        ex_proc.set_status_from_discipline()
+        if self.wrapping_mode == 'SoSTrades':
+            self.logger.info("Storing local data in datamanager.")
+            # -- store local data in datamanager
+            ex_proc.discipline_wrapp.discipline.io.data.pop("MDA residuals norm", None)
+            self.update_dm_with_local_data(
+                ex_proc.discipline_wrapp.discipline.io.data)
+            # Add residuals_history and other numerical outputs that are not in GEMSEO grammar to the data manager
+            self.update_dm_with_local_data(ex_proc.get_numerical_outputs_subprocess())
+            # -- update all proxy statuses
+            ex_proc.set_status_from_discipline()
 
         return ex_proc

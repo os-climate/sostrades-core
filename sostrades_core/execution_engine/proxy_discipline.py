@@ -21,6 +21,7 @@ import contextlib
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
+from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.discipline.io import IO
 from gemseo.core.execution_status import ExecutionStatus
@@ -102,7 +103,7 @@ class ProxyDiscipline:
 
         cls (Class): constructor of the model wrapper with user-defin ed run (or None)
     """
-
+    GEMSEO_OBJECTS = BaseMonitoredProcess
     # -- Disciplinary attributes
     DESC_IN = None
     DESC_OUT = None
