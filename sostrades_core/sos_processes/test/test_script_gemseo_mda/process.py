@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-# -- Generate test 1 process
+
+from plotly.tools import mpl_to_plotly
+
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 from sostrades_core.sos_processes.test.test_script_gemseo_mda.plot_newtonraphson_sobieski import script_gemseo
 from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
@@ -70,15 +72,16 @@ def post_processings(execution_engine, namespace, filters):
     :returns: list of post processing
     """
     mda = execution_engine.root_process.cls_builder
-
-    chart_name = 'OptHistoryView'
-    fig = mda.plot_residual_history(
+    chart_list = []
+    mda_plot = mda.plot_residual_history(
         n_iterations=10,
         logscale=(1e-8, 10.0),
         save=False,
         show=False,
         fig_size=(10, 2),
         )
-    plotly_native_chart = InstantiatedPlotlyNativeChart(fig, chart_name)
+    chart_name = "plot_residual_history"
+    fig = mpl_to_plotly(mda_plot)
+    chart_list.append(InstantiatedPlotlyNativeChart(fig, chart_name))
 
-    return [plotly_native_chart]
+    return chart_list

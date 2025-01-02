@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
-# -- Generate test 1 process
+
+
+from plotly.tools import mpl_to_plotly
+
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 from sostrades_core.sos_processes.test.test_script_gemseo.plot_gemseo_in_10_minutes import script_gemseo
 from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
@@ -72,9 +75,14 @@ def post_processings(execution_engine, namespace, filters):
     :returns: list of post processing
     """
     scenario = execution_engine.root_process.cls_builder
+    chart_list = []
+    opthistory_view = scenario.post_process(post_name="OptHistoryView", save=False, show=False)
+    for chart_name, matplotlib_fig in opthistory_view.figures.items():
 
-    chart_name = 'OptHistoryView'
-    fig =scenario.post_process(post_name="OptHistoryView", save=False, show=False)
-    plotly_native_chart = InstantiatedPlotlyNativeChart(fig, chart_name)
+        try:
+            fig = mpl_to_plotly(matplotlib_fig)
+            chart_list.append(InstantiatedPlotlyNativeChart(fig, chart_name))
+        except:
+            pass
 
-    return [plotly_native_chart]
+    return chart_list
