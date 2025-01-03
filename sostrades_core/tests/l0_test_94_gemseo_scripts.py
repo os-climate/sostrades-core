@@ -79,3 +79,11 @@ class TestResidualVariables(unittest.TestCase):
         self.assertTrue(isinstance(mda, BaseMDA))
         self.assertTrue(study.ee.wrapping_mode == 'GEMSEO')
         study.run(dump_study=True)
+
+        study = StudyGEMSEOMDO()
+
+        study.load_data()
+        scenario = study.ee.root_process.cls_builder
+        self.assertTrue(isinstance(scenario, BaseScenario))
+        self.assertTrue(study.ee.wrapping_mode == 'GEMSEO')
+        study.run(dump_study=True)

@@ -451,7 +451,7 @@ class BaseStudyManager:
         except Exception:
             logger.exception('The following error occurs in "after_execute_before_dump" methods')
 
-        if dump_study and self.dump_directory is not None and self.execution_engine.wrapping_mode == 'SoSTrades':
+        if dump_study and self.dump_directory is not None:
             self.dump_study(self.dump_directory)
             logger.debug("Reference dump to %s", self.dump_directory)
 
@@ -462,8 +462,9 @@ class BaseStudyManager:
         self.dump_data(dump_dir)
         self.dump_disciplines_data(dump_dir)
         # manage what to dump for the cache
-        self.manage_dump_cache()
-        self.dump_cache(dump_dir)
+        if self.execution_engine.wrapping_mode == 'SoSTrades':
+            self.manage_dump_cache()
+            self.dump_cache(dump_dir)
 
     def get_dataset_mapping(self) -> DatasetsMapping | None:
         """Method to overload in order to provide datasets mapping to load.

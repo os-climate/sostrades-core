@@ -25,7 +25,7 @@ from sostrades_core.execution_engine.ns_manager import NamespaceManager
 from sostrades_core.execution_engine.post_processing_manager import (
     PostProcessingManager,
 )
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling, BaseDiscipline, BaseScenario
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
@@ -709,8 +709,19 @@ class ExecutionEngine:
             if self.wrapping_mode == 'SoSTrades':
                 ex_proc.discipline_wrapp.discipline.execute(
                 input_data=input_data_wo_none)
+                io_data = ex_proc.discipline_wrapp.discipline.io.data
             elif self.wrapping_mode == 'GEMSEO':
                 ex_proc.discipline_wrapp.discipline.execute()
+                if isinstance(ex_proc.discipline_wrapp.discipline, BaseDiscipline):
+                    gemseo_disc = ex_proc.discipline_wrapp.discipline
+                    io_data = {f'{self.study_name}.{key}': value for key, value in gemseo_disc.io.data.items()}
+                elif isinstance(ex_proc.discipline_wrapp.discipline, BaseScenario):
+                    gemseo_discs = ex_proc.discipline_wrapp.discipline.disciplines
+                    io_data = {}
+                    for gemseo_disc in gemseo_discs:
+                        io_data.update(
+                            {f'{self.study_name}.{key}': value for key, value in gemseo_disc.io.data.items()})
+
         except:
             ex_proc.set_status_from_discipline()
             raise
@@ -721,12 +732,11 @@ class ExecutionEngine:
         if self.wrapping_mode == 'SoSTrades':
             self.logger.info("Storing local data in datamanager.")
             # -- store local data in datamanager
-            ex_proc.discipline_wrapp.discipline.io.data.pop("MDA residuals norm", None)
-            self.update_dm_with_local_data(
-                ex_proc.discipline_wrapp.discipline.io.data)
-            # Add residuals_history and other numerical outputs that are not in GEMSEO grammar to the data manager
-            self.update_dm_with_local_data(ex_proc.get_numerical_outputs_subprocess())
-            # -- update all proxy statuses
-            ex_proc.set_status_from_discipline()
+            io_data.pop("MDA residuals norm", None)
+        self.update_dm_with_local_data(io_data)
+        # Add residuals_history and other numerical outputs that are not in GEMSEO grammar to the data manager
+        self.update_dm_with_local_data(ex_proc.get_numerical_outputs_subprocess())
+        # -- update all proxy statuses
+        ex_proc.set_status_from_discipline()
 
         return ex_proc

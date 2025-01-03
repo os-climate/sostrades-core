@@ -188,6 +188,7 @@ class ProxyDiscipline:
         'bool': BOOL_MAP,
         'list': list,
         PROC_BUILDER_MODAL: dict,
+        ndarray: ndarray,
     }
     VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
