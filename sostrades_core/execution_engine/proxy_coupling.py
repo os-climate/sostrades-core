@@ -506,7 +506,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         io_dict = {gemseo_key: {self.TYPE: gemseo_type} for
                    gemseo_key, gemseo_type
-                   in gemseo_grammar.items()}
+                   in gemseo_grammar._get_names_to_types().items() if gemseo_type in self.VAR_TYPE_MAP}
         if io_type == self.IO_TYPE_IN:
             # for key in self.cls_builder.io.output_grammar:
             #     if key in gemseo_io_dict:

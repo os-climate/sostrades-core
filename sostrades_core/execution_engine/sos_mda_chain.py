@@ -447,5 +447,3 @@ class SoSMDAChain(MDAChain):
         else:
             _input_data = input_data
         return super(MDAChain, self).execute(input_data=_input_data)
-
-# Test.CCUS.carbon_capture.energy_consumption
