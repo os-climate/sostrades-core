@@ -107,6 +107,7 @@ class SoSWrapp(object):
         self.__proxy = None  # stores the proxy during configuration, decorator below to expose methods and properties
         self.dm = AccessOnlyProxy()  # object to proxy the dm during configuration allowing use avoiding wrong referencing
         self.logger = logger
+        self.analytic_jacobian = True
 
     # decorator to expose methods and properties delegated to ProxyDiscipline object during configuration
     # TODO: change by a decorator outside the class + an AccessOnlyProxy object  ? Or by a __getattr__ overload ?
@@ -475,6 +476,8 @@ class SoSWrapp(object):
         """
         return []
 
+    def compute_sos_jacobian(self):
+        self.analytic_jacobian = False
     def set_partial_derivative(self, y_key, x_key, value):
         """
         Method to fill the jacobian dict attribute of the wrapp with a partial derivative (value) given

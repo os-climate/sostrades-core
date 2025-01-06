@@ -241,3 +241,36 @@ class TestAnalyticGradients(unittest.TestCase):
         assert (mdo_disc.check_jacobian(values_dict, derr_approx='complex_step',
                                         step=1e-15, threshold=1e-8, inputs=inputs, outputs=outputs,
                                         output_column='value'))
+
+    def test_07_linearize_on_simple_disc_user(self):
+
+        exec_eng = ExecutionEngine(self.study_name)
+        factory = exec_eng.factory
+
+        proc_name = 'test_disc1_all_types'
+
+        builder = factory.get_builder_from_process(repo=self.repo,
+                                                   mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        exec_eng.configure()
+
+        values_dict = Study_disc1_all_types.setup_usecase(self)
+
+        exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.prepare_execution()
+        exec_eng.display_treeview_nodes()
+        for proxy_disc in exec_eng.root_process.proxy_disciplines:
+            mdo_disc = proxy_disc.discipline_wrapp.discipline
+            mdo_disc.linearization_mode = Discipline.LinearizationMode.ADJOINT
+            mdo_disc.add_differentiated_inputs()
+            mdo_disc.add_differentiated_outputs()
+            mdo_disc.linearize(values_dict)
+            print('LINEARIZE performed for ', proxy_disc.get_disc_full_name())
+        mda_chain = exec_eng.root_process.discipline_wrapp.discipline
+        mda_chain.linearization_mode = Discipline.LinearizationMode.ADJOINT
+        mda_chain.add_differentiated_inputs()
+        mda_chain.add_differentiated_outputs()
+        mda_chain.linearize(values_dict)
+        print('LINEARIZE performed for root coupling')
