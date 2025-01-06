@@ -25,7 +25,7 @@ from sostrades_core.execution_engine.ns_manager import NamespaceManager
 from sostrades_core.execution_engine.post_processing_manager import (
     PostProcessingManager,
 )
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling, BaseDiscipline, BaseScenario
+from sostrades_core.execution_engine.proxy_coupling import BaseDiscipline, BaseScenario, ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.sos_factory import SosFactory

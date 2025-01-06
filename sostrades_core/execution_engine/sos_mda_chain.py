@@ -32,6 +32,7 @@ from numpy import floating, ndarray
 from pandas import DataFrame
 
 from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
+from sostrades_core.execution_engine.sos_discipline_driver import SoSDisciplineDriver
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 if TYPE_CHECKING:
@@ -418,10 +419,47 @@ class SoSMDAChain(MDAChain):
             and len(self.disciplines) > 1
             and len(self.coupling_structure.strong_couplings) > 0
         ):
-            init_chain = MDOInitializationChain(
-                self.disciplines,
-                available_data_names=input_data,
-            )
+            # Need to pre-run coupling under the coupling if there is some
+            input_data = self.pre_run_driver_subcoupling(input_data)
+            _input_data = self.sos_pre_run(input_data, self)
+
+        else:
+            _input_data = input_data
+        return super(MDAChain, self).execute(input_data=_input_data)
+
+    def pre_run_driver_subcoupling(self, input_data):
+        '''
+
+        Args:
+            input_data: the input_data to populate with outputs from the pre-run
+
+        Returns: Input_data populated with pre-run from subcouplings
+                The concept of pre-run works if you pre-run low level mdachain first to retrieve strong coupling values for high level ones
+                In SoSTrades, the presence of subcoupling is now only present in the case of drivers (COupling under a driver)
+                Then you need to check if there are drivers under the mdachain
+                If they are then pre-run in the order of the sub disciplines to pre-run the driver sub-coupling first before pre-run the mother coupling
+
+        '''
+        driver_sub_disciplines_indexes = {i: disc for i, disc in enumerate(self.disciplines) if
+                                          isinstance(disc, SoSDisciplineDriver)}
+        if len(driver_sub_disciplines_indexes) != 0:
+            for i, disc in enumerate(self.disciplines):
+                if disc in driver_sub_disciplines_indexes.values():
+                    input_data = self.sos_pre_run(input_data, disc._disciplines[0])
+                    driver_sub_disciplines_indexes.pop(i)
+                else:
+                    new_input_data = disc.execute(input_data)
+                    input_data = input_data | new_input_data
+                if len(driver_sub_disciplines_indexes) == 0:
+                    break
+        return input_data
+
+    def sos_pre_run(self, input_data, disc):
+
+        driver_init_chain = MDOInitializationChain(
+            disc.disciplines,
+            available_data_names=input_data,
+        )
         #     default_input_data = {}
         #     for key, value in init_chain.execute(input_data).items():
         #         if key in self.input_grammar.names:
@@ -434,16 +472,13 @@ class SoSMDAChain(MDAChain):
         # return super(MDAChain, self).execute(input_data=input_data)
         # FIXME: from here below this is a quick-fix for many test errors. In fine the code commented out above should
         # be reactivated and actually solve the size mismatches between input data and MDA pre-run causing the crashes
-            pre_run_data = init_chain.execute(input_data)
-            self.default_input_data.update({
-                key: value
-                for key, value in pre_run_data.items()
-                if key in self.input_grammar.names
-            })
+        pre_run_data = driver_init_chain.execute(input_data)
+        self.default_input_data.update({
+            key: value
+            for key, value in pre_run_data.items()
+            if key in self.input_grammar.names
+        })
 
-            self.settings = self.settings.model_copy(update={"initialize_defaults": False})
-            _input_data = input_data | pre_run_data
-            # self.io.data.update(pre_run_data)
-        else:
-            _input_data = input_data
-        return super(MDAChain, self).execute(input_data=_input_data)
+        disc.settings = disc.settings.model_copy(
+            update={"initialize_defaults": False})
+        return input_data | pre_run_data

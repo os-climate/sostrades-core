@@ -28,10 +28,10 @@ import numpy as np
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.sequential_mda import MDASequential
 from gemseo.scenarios.base_scenario import BaseScenario
-from gemseo.core.discipline.base_discipline import BaseDiscipline
 from numpy import ndarray
 from pandas import DataFrame, concat
 
