@@ -184,7 +184,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.Eval.x'] = array([1.])
-        values_dict[f'{self.ns}.Eval.z'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1., 1.])
         values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
         values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
         values_dict[f'{self.ns}.Eval.z_in'] = 2 * array([1., 1.])
