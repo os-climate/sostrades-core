@@ -440,18 +440,20 @@ class SoSMDAChain(MDAChain):
                 If they are then pre-run in the order of the sub disciplines to pre-run the driver sub-coupling first before pre-run the mother coupling
 
         '''
-        driver_sub_disciplines_indexes = {i: disc for i, disc in enumerate(self.disciplines) if
-                                          isinstance(disc, SoSDisciplineDriver)}
-        if len(driver_sub_disciplines_indexes) != 0:
-            for i, disc in enumerate(self.disciplines):
-                if disc in driver_sub_disciplines_indexes.values():
-                    input_data = self.sos_pre_run(input_data, disc._disciplines[0])
-                    driver_sub_disciplines_indexes.pop(i)
-                else:
-                    new_input_data = disc.execute(input_data)
-                    input_data = input_data | new_input_data
-                if len(driver_sub_disciplines_indexes) == 0:
-                    break
+        driver_sub_disciplines = [disc for disc in self.disciplines if
+                                  isinstance(disc, SoSDisciplineDriver)]
+        if len(driver_sub_disciplines) != 0:
+            for task in self.coupling_structure.sequence:
+                for component in task:
+                    for disc in component:
+                        if disc in driver_sub_disciplines:
+                            input_data = self.sos_pre_run(input_data, disc._disciplines[0])
+                            driver_sub_disciplines.remove(disc)
+                        else:
+                            new_input_data = disc.execute(input_data)
+                            input_data = input_data | new_input_data
+                        if len(driver_sub_disciplines) == 0:
+                            return input_data
         return input_data
 
     def sos_pre_run(self, input_data, disc):
