@@ -462,8 +462,9 @@ class BaseStudyManager:
         self.dump_data(dump_dir)
         self.dump_disciplines_data(dump_dir)
         # manage what to dump for the cache
-        self.manage_dump_cache()
-        self.dump_cache(dump_dir)
+        if self.execution_engine.wrapping_mode == 'SoSTrades':
+            self.manage_dump_cache()
+            self.dump_cache(dump_dir)
 
     def get_dataset_mapping(self) -> DatasetsMapping | None:
         """Method to overload in order to provide datasets mapping to load.

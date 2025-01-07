@@ -25,7 +25,7 @@ from sostrades_core.execution_engine.ns_manager import NamespaceManager
 from sostrades_core.execution_engine.post_processing_manager import (
     PostProcessingManager,
 )
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+from sostrades_core.execution_engine.proxy_coupling import BaseDiscipline, BaseScenario, ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
@@ -87,6 +87,7 @@ class ExecutionEngine:
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.check_data_integrity: bool = True
+        self.wrapping_mode = 'SoSTrades'
 
     @property
     def factory(self) -> SosFactory:
@@ -139,8 +140,12 @@ class ExecutionEngine:
             self.root_builder_ist, self.factory.BUILDERS_FUNCTION_NAME)
         builder_list = builder_list_func()
 
-        self.factory.set_builders_to_coupling_builder(builder_list)
-        # -- We are changing what happend in root, need to reset dm
+        if isinstance(builder_list, ProxyDiscipline.GEMSEO_OBJECTS):
+            self.factory.set_gemseo_object_to_coupling_builder(builder_list)
+            self.wrapping_mode = 'GEMSEO'
+        else:
+            self.factory.set_builders_to_coupling_builder(builder_list)
+            # -- We are changing what happend in root, need to reset dm
         self.dm.reset()
         self.load_study_from_input_dict({})
 
@@ -701,8 +706,22 @@ class ExecutionEngine:
         self.logger.info("Executing.")
         input_data_wo_none = {key: value for key, value in input_data.items() if value is not None}
         try:
-            ex_proc.discipline_wrapp.discipline.execute(
+            if self.wrapping_mode == 'SoSTrades':
+                ex_proc.discipline_wrapp.discipline.execute(
                 input_data=input_data_wo_none)
+                io_data = ex_proc.discipline_wrapp.discipline.io.data
+            elif self.wrapping_mode == 'GEMSEO':
+                ex_proc.discipline_wrapp.discipline.execute()
+                if isinstance(ex_proc.discipline_wrapp.discipline, BaseDiscipline):
+                    gemseo_disc = ex_proc.discipline_wrapp.discipline
+                    io_data = {f'{self.study_name}.{key}': value for key, value in gemseo_disc.io.data.items()}
+                elif isinstance(ex_proc.discipline_wrapp.discipline, BaseScenario):
+                    gemseo_discs = ex_proc.discipline_wrapp.discipline.disciplines
+                    io_data = {}
+                    for gemseo_disc in gemseo_discs:
+                        io_data.update(
+                            {f'{self.study_name}.{key}': value for key, value in gemseo_disc.io.data.items()})
+
         except:
             ex_proc.set_status_from_discipline()
             raise
@@ -710,11 +729,11 @@ class ExecutionEngine:
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.', self.root_process.get_disc_full_name())
 
-        self.logger.info("Storing local data in datamanager.")
-        # -- store local data in datamanager
-        ex_proc.discipline_wrapp.discipline.io.data.pop("MDA residuals norm", None)
-        self.update_dm_with_local_data(
-            ex_proc.discipline_wrapp.discipline.io.data)
+        if self.wrapping_mode == 'SoSTrades':
+            self.logger.info("Storing local data in datamanager.")
+            # -- store local data in datamanager
+            io_data.pop("MDA residuals norm", None)
+        self.update_dm_with_local_data(io_data)
         # Add residuals_history and other numerical outputs that are not in GEMSEO grammar to the data manager
         self.update_dm_with_local_data(ex_proc.get_numerical_outputs_subprocess())
         # -- update all proxy statuses
