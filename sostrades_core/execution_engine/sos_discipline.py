@@ -377,6 +377,15 @@ class SoSDiscipline(Discipline):
             )
 
         self.compute_sos_jacobian()
+        if not self.sos_wrapp.analytic_jacobian:
+            # means that there is no analytic jacobian implemented
+            # we set to finite differences and rerun the same method
+            self.linearization_mode = ApproximationMode.FINITE_DIFFERENCES
+            self.logger.warning(
+                f"No compute_sos_jacobian found for the discipline {self.name}, switch to finite difference to compute the jacobian")
+            super()._compute_jacobian(input_names, output_names)
+
+
         # if self.check_linearize_data_changes:
         #     disc_data_after_linearize = self.local_data
         #

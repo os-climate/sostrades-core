@@ -463,6 +463,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         # prepare_execution of proxy_disciplines and extract GEMSEO objects
         if self.formulation:
             sub_disciplines = []
+            self.set_diff_mode_under_optim()
             for disc in self.proxy_disciplines:
                 disc.prepare_execution()
                 # Exclude non executable proxy Disciplines
@@ -706,12 +707,11 @@ class ProxyOptim(ProxyDriverEvaluator):
     def _update_eval_output_with_possible_out_values(self, possible_out_values, disc_in):
         pass
 
-    def set_diff_method(self):
+    def set_diff_mode_under_optim(self):
         """
-        Set differentiation method and send a WARNING
-        if some linearization_mode are not coherent with diff_method
+        Set linearization_mode under optim with respect to differentiation_method or send a warning
         """
-        diff_method = self.get_sosdisc_inputs('differentiation_method')
+        diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
 
         if diff_method in self.APPROX_MODES:
             for disc in self.proxy_disciplines:
@@ -721,7 +721,20 @@ class ProxyOptim(ProxyDriverEvaluator):
                         diff_method,
                         disc.linearization_mode,
                     )
-
+        elif diff_method == 'user':
+            for disc in self.proxy_disciplines:
+                if disc.linearization_mode in self.APPROX_MODES:
+                    self.logger.warning(
+                        "The differentiation method `%s` will overload the linearization mode `%s by default with auto linearization mode`",
+                        diff_method,
+                        disc.linearization_mode,
+                    )
+                    disc.linearization_mode = 'auto'
+    def set_diff_method(self):
+        """
+        Set differentiation method
+        """
+        diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
         fd_step = self.get_sosdisc_inputs(self.FD_STEP)
         self.scenario.set_differentiation_method(diff_method, fd_step)
 

@@ -143,6 +143,9 @@ class SosFactory:
 
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
+    def set_gemseo_object_to_coupling_builder(self, gemseo_object):
+        self.coupling_builder = self.create_builder_coupling(self.__sos_name)
+        self.coupling_builder.set_builder_info('cls_builder', gemseo_object)
     def add_discipline(self, discipline):
         """
         Add a discipline to the list of factory disciplines AND to the sos_discipline of the current sos_coupling

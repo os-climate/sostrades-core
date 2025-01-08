@@ -614,8 +614,8 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {})
         self.assertEqual(len(dm.get_value("usecase_dataset.Disc1.d")), 0)
-        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "finite_differences")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "finite_differences")
+        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "auto")
 
         study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
 
