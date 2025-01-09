@@ -444,9 +444,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         """
         ProxyDiscipline.configure(self)
         if self.ee.wrapping_mode == 'GEMSEO':
-            ## Use the IO of the gemseo object to populate the coupling inputs and outputs
+            # Use the IO of the gemseo object to populate the coupling inputs and outputs
             self.configure_coupling_with_gemseo_object()
-
 
         elif self.ee.wrapping_mode == 'SoSTrades':
 
@@ -533,6 +532,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             grammar = disc.io.output_grammar
 
         return grammar
+
     def _build_data_io(self):
         """
         Build data_in and data_out from sub proxies data_in and out

@@ -122,7 +122,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         #         self.proxy_disciplines[0]._update_status_recursive(self.STATUS_FAILED)  # FIXME: This won't work
         #     else:
         #         return dict_to_return
-        #return None
+        # return None
 
     def evaluation(self, x, convert_to_array=True):
         """
