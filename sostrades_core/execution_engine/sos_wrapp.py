@@ -478,6 +478,7 @@ class SoSWrapp(object):
 
     def compute_sos_jacobian(self):
         self.analytic_jacobian = False
+
     def set_partial_derivative(self, y_key, x_key, value):
         """
         Method to fill the jacobian dict attribute of the wrapp with a partial derivative (value) given

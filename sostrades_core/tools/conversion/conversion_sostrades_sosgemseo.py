@@ -221,7 +221,6 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
                 var_new_type = convert_array_into_dict_old_version(
                     var_array, new_data, deepcopy(metadata_list))
 
-
             else:
                 check_subtype(name, subtype, 'dict')
                 var_new_type = convert_array_into_dict(

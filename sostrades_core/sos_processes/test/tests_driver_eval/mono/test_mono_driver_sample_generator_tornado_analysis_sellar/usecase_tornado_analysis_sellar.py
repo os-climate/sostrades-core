@@ -63,4 +63,3 @@ if "__main__" == __name__:
     uc_cls = Study(run_usecase=True)
     uc_cls.load_data()
     uc_cls.run()
-
