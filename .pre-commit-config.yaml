@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/b4pm-devops/sostrades-pre-commit.git
-    rev: v1.1.0
+    rev: v1.1.1
     hooks:
     - id: update-headers
   - repo: https://github.com/astral-sh/ruff-pre-commit
