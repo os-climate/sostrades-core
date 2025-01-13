@@ -1,35 +1,83 @@
 {
-    "linearization_mode":  {"value": "auto"},
-    "debug_mode":  {"value": ""},
-    "cache_type": {
-        "value": ""
-    },
-    "cache_file_path": {"value": ""},
-    "inner_mda_name": {
-        "value": "MDAJacobi"
-    },
-    "max_mda_iter":  {"value": 30},
-    "n_processes":  {"value": 1},
-    "chain_linearize":  {"value": false},
-    "tolerance":  {"value": 1.0e-6},
-    "use_lu_fact":  {"value": false},
-    "warm_start":  {"value": false},
-    "acceleration":  {"value": "m2d"},
-    "warm_start_threshold":  {"value": -1},
-    "n_subcouplings_parallel":  {"value": 1},
-    "tolerance_gs":  {"value": 10.0},
-    "relax_factor":  {"value": 0.99},
-    "epsilon0":  {"value": 1.0e-6},
-    "linear_solver_MDO":  {"value": "GMRES"},
-    "linear_solver_MDO_preconditioner":  {"value": "None"},
-    "linear_solver_MDO_options":  {"value":{
-        "max_iter": 1000,
-        "tol": 1.0e-8}},
-    "linear_solver_MDA": {"value": "GMRES"},
-    "linear_solver_MDA_preconditioner": {"value": "None"},
-    "linear_solver_MDA_options": {"value": {
-        "max_iter": 1000,
-        "tol": 1.0e-8}},
-    "group_mda_disciplines": {"value": false},
-    "propagate_cache_to_children": {"value": false}
+  "linearization_mode": {
+    "value": "auto"
+  },
+  "debug_mode": {
+    "value": ""
+  },
+  "cache_type": {
+    "value": ""
+  },
+  "cache_file_path": {
+    "value": ""
+  },
+  "inner_mda_name": {
+    "value": "MDAJacobi"
+  },
+  "max_mda_iter": {
+    "value": 30
+  },
+  "n_processes": {
+    "value": 1
+  },
+  "chain_linearize": {
+    "value": false
+  },
+  "tolerance": {
+    "value": 1e-06
+  },
+  "use_lu_fact": {
+    "value": false
+  },
+  "warm_start": {
+    "value": false
+  },
+  "acceleration": {
+    "value": "m2d"
+  },
+  "warm_start_threshold": {
+    "value": -1
+  },
+  "n_subcouplings_parallel": {
+    "value": 1
+  },
+  "tolerance_gs": {
+    "value": 10.0
+  },
+  "relax_factor": {
+    "value": 0.99
+  },
+  "epsilon0": {
+    "value": 1e-06
+  },
+  "linear_solver_MDO": {
+    "value": "GMRES"
+  },
+  "linear_solver_MDO_preconditioner": {
+    "value": "None"
+  },
+  "linear_solver_MDO_options": {
+    "value": {
+      "max_iter": 1000,
+      "tol": 1e-08
+    }
+  },
+  "linear_solver_MDA": {
+    "value": "GMRES"
+  },
+  "linear_solver_MDA_preconditioner": {
+    "value": "None"
+  },
+  "linear_solver_MDA_options": {
+    "value": {
+      "max_iter": 1000,
+      "tol": 1e-08
+    }
+  },
+  "group_mda_disciplines": {
+    "value": false
+  },
+  "propagate_cache_to_children": {
+    "value": false
+  }
 }

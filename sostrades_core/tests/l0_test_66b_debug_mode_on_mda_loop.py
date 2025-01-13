@@ -275,7 +275,6 @@ class TestMDALoop(unittest.TestCase):
         self.assertIn(f'Discipline {self.name}.{coupling_name} set to debug mode input_change',
                       self.my_handler.msg_list)
 
-
         # sos_wrapps
         exec_eng.execute()
         self.assertEqual(

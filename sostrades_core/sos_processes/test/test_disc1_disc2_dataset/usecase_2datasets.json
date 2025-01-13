@@ -1,10 +1,25 @@
 {
-    "process_module_path": "sostrades_core.sos_processes.test.test_disc1_disc2_dataset",
-    "namespace_datasets_mapping": {
-        "v0|<study_ph>|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_ax|*"],
-        "v0|<study_ph>.Disc1VirtualNode|*" : ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_ax|*"],
-        "v0|<study_ph>.Disc2VirtualNode|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_ax|*"],
-        "v0|<study_ph>.Disc1|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_bc|*"],
-        "v0|<study_ph>.Disc2|*": ["MVP0_datasets_connector|default_numerical_parameters|*", "MVP0_datasets_connector|dataset_bc|*"]
-    }
+  "process_module_path": "sostrades_core.sos_processes.test.test_disc1_disc2_dataset",
+  "namespace_datasets_mapping": {
+    "v0|<study_ph>|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*",
+      "MVP0_datasets_connector|dataset_ax|*"
+    ],
+    "v0|<study_ph>.Disc1VirtualNode|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*",
+      "MVP0_datasets_connector|dataset_ax|*"
+    ],
+    "v0|<study_ph>.Disc2VirtualNode|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*",
+      "MVP0_datasets_connector|dataset_ax|*"
+    ],
+    "v0|<study_ph>.Disc1|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*",
+      "MVP0_datasets_connector|dataset_bc|*"
+    ],
+    "v0|<study_ph>.Disc2|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*",
+      "MVP0_datasets_connector|dataset_bc|*"
+    ]
+  }
 }

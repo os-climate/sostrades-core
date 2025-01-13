@@ -730,6 +730,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                         disc.linearization_mode,
                     )
                     disc.linearization_mode = 'auto'
+
     def set_diff_method(self):
         """
         Set differentiation method

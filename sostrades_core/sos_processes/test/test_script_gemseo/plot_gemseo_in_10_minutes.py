@@ -167,7 +167,7 @@ def script_gemseo():
     )
     design_space.add_variable("y_1", lower_bound=-100.0, upper_bound=100.0, value=ones(1))
     design_space.add_variable("y_2", lower_bound=-100.0, upper_bound=100.0, value=ones(1))
-    #design_space
+    # design_space
 
     # %%
     # Definition of the MDO scenario
@@ -229,7 +229,7 @@ def script_gemseo():
     # the maximum number of iterations to perform.
     # The execution of the scenario reads:
 
-    #scenario.execute(algo_name="SLSQP", max_iter=10)
+    # scenario.execute(algo_name="SLSQP", max_iter=10)
 
     # %%
     # The scenario converged after 7 iterations.
@@ -251,7 +251,7 @@ def script_gemseo():
     # following plots. Many other post-processors are available in |g| and
     # are described in :ref:`Post-processing <post_processing>`.
 
-    #scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+    # scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
     # %%
     # .. note::
@@ -266,7 +266,7 @@ def script_gemseo():
     # After the execution of the scenario, you may want to export your data to use it
     # elsewhere. The :meth:`.Scenario.to_dataset` will allow you to export your
     # results to a :class:`.Dataset`, the basic |g| class to store data.
-    #dataset = scenario.to_dataset("a_name_for_my_dataset")
+    # dataset = scenario.to_dataset("a_name_for_my_dataset")
 
     # %%
     # What's next?

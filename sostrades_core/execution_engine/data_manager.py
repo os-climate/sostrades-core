@@ -57,6 +57,7 @@ DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
 DISPLAY_NAME = ProxyDiscipline.DISPLAY_NAME
 
+
 @dataclass()
 class ParameterChange:
     """
