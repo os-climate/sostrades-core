@@ -85,6 +85,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         cls_builder: list[SoSBuilder],
         driver_wrapper_cls: type | None = None,
         associated_namespaces: list[str] | None = None,
+        map_name: str | None = None,
     ):
         """
         Args:
@@ -93,6 +94,8 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             cls_builder: The list of the sub proxy builders.
             driver_wrapper_cls: The class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper).
             associated_namespaces: The list containing ns ids ['name__value'] for namespaces associated to builder.
+            map_name: The name of the map associated to the scatter builder in case of multi-instance build. Unused
+            here, but passed by default by the driver builder.
         """
         super().__init__(
             sos_name,
@@ -100,6 +103,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             cls_builder,
             driver_wrapper_cls,
             associated_namespaces=associated_namespaces,
+            map_name=map_name,
         )
         self.driver_eval_mode = self.DRIVER_EVAL_MODE_MONO
 
