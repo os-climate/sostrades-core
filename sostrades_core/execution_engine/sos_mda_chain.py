@@ -416,12 +416,12 @@ class SoSMDAChain(MDAChain):
         # The initialization is needed for MDA loops.
         if (
             self.settings.initialize_defaults
-            and len(self.disciplines) > 1
             and len(self.coupling_structure.strong_couplings) > 0
         ):
             # Need to pre-run coupling under the coupling if there is some
-            input_data = self.pre_run_driver_subcoupling(input_data)
-            _input_data = self.sos_pre_run(input_data, self)
+            _input_data = self.pre_run_driver_subcoupling(input_data)
+            if len(self.disciplines) > 1:
+                _input_data = self.sos_pre_run(_input_data, self)
 
         else:
             _input_data = input_data
