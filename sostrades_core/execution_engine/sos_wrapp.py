@@ -17,6 +17,7 @@ limitations under the License.
 import logging
 from functools import wraps
 
+import numpy as np
 from numpy import array, complex128, ndarray
 from scipy.sparse import lil_matrix
 
@@ -454,6 +455,9 @@ class SoSWrapp(object):
         else:
             outputs = dict(zip(map(
                 self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
+            for key in dict_values.keys():
+                if self.attributes['output_full_name_map'].get(key) is None:
+                    raise ValueError(f"Output {key} asked to be stored but not declared as output of the discipline")
             self.local_data.update(outputs)
 
     def get_chart_filter_list(self):
@@ -474,6 +478,7 @@ class SoSWrapp(object):
         :return post processing instance list
         """
         return []
+
 
     def set_partial_derivative(self, y_key, x_key, value):
         """
@@ -541,7 +546,7 @@ class SoSWrapp(object):
             # Copy the data from the original matrix to the new complex matrix
             complex_matrix[:, :] = self.jac_dict[y_key_full][x_key_full][:, :]
             self.jac_dict[y_key_full][x_key_full] = complex_matrix
-        elif type(value[0]) in [array, ndarray]:
+        elif isinstance(value, np.ndarray) and type(value[0]) in [array, ndarray]:
             if value.dtype in [complex, complex128]:
                 # Create a new lil_matrix with the same shape but with complex dtype
                 complex_matrix = lil_matrix(self.jac_dict[y_key_full][x_key_full].shape, dtype=complex)
@@ -639,9 +644,12 @@ class SoSWrapp(object):
             index_column = [column for column in value.columns if column not in self.DEFAULT_EXCLUDED_COLUMNS].index(
                 column)
 
-        elif key_type == 'array' or key_type == 'float':
+        elif key_type == 'array':
             lines_nb = None
             index_column = None
+        elif key_type == 'float':
+            lines_nb = 1
+            index_column = 0
         elif key_type == 'dict':
             dict_keys = list(value.keys())
             lines_nb = len(value[column])
