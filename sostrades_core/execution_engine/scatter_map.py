@@ -18,6 +18,8 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
 
+class ScatterMapException(Exception):
+    pass
 
 class ScatterMap:
     '''
@@ -62,25 +64,25 @@ class ScatterMap:
 
         for key in map_dict.keys():
             if key not in self.POSSIBLE_KEYS:
-                raise Exception(
+                raise ScatterMapException(
                     f'The scatter map {self.name} contains a key not in possible capabilities : {self.POSSIBLE_KEYS}')
         if self.NS_TO_UPDATE in map_dict and self.NS_NOT_TO_UPDATE in map_dict:
-            raise Exception(
+            raise ScatterMapException(
                 f'The scatter map {self.name} can not have both {self.NS_TO_UPDATE} and {self.NS_NOT_TO_UPDATE} keys')
         if self.NS_TO_UPDATE in map_dict and not isinstance(map_dict[self.NS_TO_UPDATE], list) and any(
                 isinstance(val, str) for val in map_dict[self.NS_TO_UPDATE]):
-            raise Exception(
+            raise ScatterMapException(
                 f'The {self.NS_TO_UPDATE} key in scatter map {self.name} must be a string list')
         if self.NS_NOT_TO_UPDATE in map_dict and not isinstance(map_dict[self.NS_NOT_TO_UPDATE], list) and any(
                 isinstance(val, str) for val in map_dict[self.NS_NOT_TO_UPDATE]):
-            raise Exception(
+            raise ScatterMapException(
                 f'The {self.NS_NOT_TO_UPDATE} key in scatter map {self.name} must be a string list')
         if self.SCATTER_LIST_TUPLE in map_dict and not isinstance(map_dict[self.SCATTER_LIST_TUPLE], tuple) and any(
                 isinstance(val, str) for val in map_dict[self.SCATTER_LIST_TUPLE]):
-            raise Exception(
+            raise ScatterMapException(
                 f'The {self.SCATTER_LIST_TUPLE} key in scatter map {self.name} must be a tuple composed with (scatter_list name,scatter_list namespace)')
         if self.SCATTER_NAME in map_dict and not isinstance(map_dict[self.SCATTER_NAME], str):
-            raise Exception(
+            raise ScatterMapException(
                 f'The {self.SCATTER_NAME} key in scatter map {self.name} must be a string')
 
     def update_map(self, s_map):

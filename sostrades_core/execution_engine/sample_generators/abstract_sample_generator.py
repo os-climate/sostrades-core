@@ -67,7 +67,7 @@ class AbstractSampleGenerator(object):
             msg += "however sampling type of sampling generator <%s> " % str(
                 self.__class__.__name__)
             msg += "is <%s> " % str(type(samples))
-            raise SampleTypeError()
+            raise SampleTypeError(msg)
 
     # def get_options_and_default_values(self, algo_name):
     #     '''
@@ -95,7 +95,6 @@ class AbstractSampleGenerator(object):
         """
         return {}, {}
 
-    # TODO: renaming proxy / wrapper / proxy_or_wrapper for clarity when impl. is fixed in next 2 methods
     def sample(self, wrapper):
         """
         Method that takes the wrapper as input and returns the output of generate_samples.
@@ -124,6 +123,4 @@ class AbstractSampleGenerator(object):
         Method that takes the ProxySampleGenerator as input and filters the possible evaluated inputs values and types
         in order to constrain the input for specific sample generators.
         """
-        # proxy.eval_in_possible_values = [subprocess_inputs]
-        # proxy.eval_in_possible_types = {subprocess_input: variable_type}
         pass
