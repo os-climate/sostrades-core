@@ -856,7 +856,33 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.linear_solver_tolerance_MDO = linear_solver_settings_MDO.pop('tol')
         self.linear_solver_settings_MDO = linear_solver_settings_MDO
 
+        # FIXME: temporary fix
+        if self.all_strong_couplings_in_sub_mda():
+            num_data["max_mda_iter"] = 0
+
         return num_data
+
+    def get_sub_mdas(self):
+        sub_mdas = []
+        for disc in self.proxy_disciplines:
+            if isinstance(disc, ProxyCoupling):
+                sub_mdas.append(disc)
+            elif isinstance(disc, ProxyDisciplineBuilder):
+                for driver_subdisc in disc.proxy_disciplines:
+                    if isinstance(driver_subdisc, ProxyCoupling):
+                        sub_mdas.append(driver_subdisc)
+        return sub_mdas
+
+    def all_strong_couplings_in_sub_mda(self):
+        strong_couplings = set(self.coupling_structure.strong_couplings)
+        sub_mdas = self.get_sub_mdas()
+        if len(sub_mdas) == 1:
+            # NB: not handling the case of multiple sub-MDAs
+            sub_mda = sub_mdas[0]
+            sub_mda_strong_couplings = set(sub_mda.coupling_structure.strong_couplings)
+            if strong_couplings == sub_mda_strong_couplings:
+                return True
+        return False
 
     def get_maturity(self):
         """Get the maturity of the coupling proxy by adding all maturities of children proxy disciplines"""
