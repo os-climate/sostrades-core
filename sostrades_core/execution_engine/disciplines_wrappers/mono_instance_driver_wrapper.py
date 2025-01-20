@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from gemseo import create_design_space, create_scenario
 from gemseo.settings.doe import CustomDOE_Settings
-from numpy import atleast_1d, hstack, size
+from numpy import hstack, size
 from pandas import DataFrame, concat
 
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
@@ -152,7 +152,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         self.store_sos_outputs_values({'samples_outputs_df': samples_output_df})
         for dynamic_output, out_name in zip(self.attributes['eval_out_list'], self.attributes['eval_out_names']):
             dict_output = {
-                r[SampleGeneratorWrapper.SCENARIO_NAME]: atleast_1d(r[dynamic_output])
+                r[SampleGeneratorWrapper.SCENARIO_NAME]: r[dynamic_output]
                 for _, r in samples_output_df.iterrows()
             }
             self.store_sos_outputs_values({out_name: dict_output})
