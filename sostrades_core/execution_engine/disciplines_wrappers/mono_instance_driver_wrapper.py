@@ -137,8 +137,9 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             evaluation_outputs: The results of the samples evaluation.
             scenario_names: The scenario names corresponding to each sample.
         """
+        columns = [SampleGeneratorWrapper.SCENARIO_NAME, *evaluation_outputs.columns]
         evaluation_outputs[SampleGeneratorWrapper.SCENARIO_NAME] = scenario_names
-        samples_output_df = DataFrame(evaluation_outputs)
+        samples_output_df = DataFrame(evaluation_outputs, columns=columns)
 
         # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
         subprocess_ref_outputs = {
