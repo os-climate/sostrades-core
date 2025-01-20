@@ -65,7 +65,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             },
             axis=1,
         )
-        if "reference_scenario" not in samples[SampleGeneratorWrapper.SCENARIO_NAME]:
+        if "reference_scenario" not in list(samples[SampleGeneratorWrapper.SCENARIO_NAME]):
             # Add the reference_scenario if it has not already been added by a SampleGenerator or user
             reference_values = self.get_sosdisc_inputs(input_full_names, full_name_keys=True)
             if len(input_full_names) == 1:
