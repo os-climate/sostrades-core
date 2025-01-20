@@ -36,6 +36,7 @@ class UnitTestHandler(Handler):
     def emit(self, record):
         self.msg_list.append(record.msg)
 
+
 class TestResidualVariables(unittest.TestCase):
     """
     Discipline to test the new function run_solves_residuals and residuals variable of Gemseo
@@ -50,11 +51,11 @@ class TestResidualVariables(unittest.TestCase):
         study = StudyGEMSEOMDO()
 
         study.load_data()
-        #study.ee.logger.setLevel(10)
+        # study.ee.logger.setLevel(10)
         base_scenario_logger = logging.getLogger('gemseo.scenarios.base_scenario')
         base_scenario_logger.addHandler(self.my_handler)
-        scenario=study.ee.root_process.cls_builder
-        self.assertTrue(isinstance(scenario,BaseScenario))
+        scenario = study.ee.root_process.cls_builder
+        self.assertTrue(isinstance(scenario, BaseScenario))
         self.assertTrue(study.ee.wrapping_mode == 'GEMSEO')
         study.run(for_test=True)
 
@@ -67,7 +68,7 @@ class TestResidualVariables(unittest.TestCase):
 
         study.load_data()
         mda = study.ee.root_process.cls_builder
-        self.assertTrue(isinstance(mda,BaseMDA))
+        self.assertTrue(isinstance(mda, BaseMDA))
         self.assertTrue(study.ee.wrapping_mode == 'GEMSEO')
         study.run(for_test=True)
 

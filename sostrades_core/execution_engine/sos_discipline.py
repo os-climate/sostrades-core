@@ -163,6 +163,7 @@ class SoSDiscipline(Discipline):
         if self.debug_mode in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
         return local_data
+
     def execute(
         self,
         input_data,  # type:Optional[Dict[str, Any]]
@@ -384,7 +385,6 @@ class SoSDiscipline(Discipline):
             self.logger.warning(
                 f"No compute_sos_jacobian found for the discipline {self.name}, switch to finite difference to compute the jacobian")
             super()._compute_jacobian(input_names, output_names)
-
 
         # if self.check_linearize_data_changes:
         #     disc_data_after_linearize = self.local_data
