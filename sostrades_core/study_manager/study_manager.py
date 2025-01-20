@@ -25,8 +25,10 @@ from numpy.typing import NDArray
 
 from sostrades_core.sos_processes.script_test_all_usecases import processed_test_one_usecase
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.tools.check_process_gradients.tools import check_each_discpline_jacobians_in_process, \
-    generate_gradients_tests_for_disciplines_of_usecases
+from sostrades_core.tools.check_process_gradients.tools import (
+    check_each_discpline_jacobians_in_process,
+    generate_gradients_tests_for_disciplines_of_usecases,
+)
 
 if TYPE_CHECKING:
     from logging import Logger

@@ -22,6 +22,7 @@ from sostrades_core.execution_engine.ns_manager import NamespaceManager
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 
+
 class SoSBuilderException(Exception):
     pass
 

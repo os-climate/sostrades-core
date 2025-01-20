@@ -870,7 +870,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             elif isinstance(disc, ProxyDisciplineBuilder):
                 for driver_subdisc in disc.proxy_disciplines:
                     if isinstance(driver_subdisc, ProxyCoupling):
-                        sub_mdas.append(driver_subdisc)
+                        sub_mdas.append(driver_subdisc)  # noqa: PERF401
         return sub_mdas
 
     def all_strong_couplings_in_sub_mda(self):
