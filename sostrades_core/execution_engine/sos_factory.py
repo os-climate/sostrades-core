@@ -74,10 +74,7 @@ class SosFactory:
         self.__tool_factory = execution_engine.tool_factory
         self.__proxy_disciplines = []
 
-        self.__created_namespace = None
         self.__root = None
-        self.__sos_builders = None
-        self.__optimization_scenarii = None
         self.__current_discipline = None
         self.__repository = None
         self.__process_identifier = None
@@ -91,9 +88,6 @@ class SosFactory:
     def __reset(self):
         """Reinitialize members variables"""
         self.__proxy_disciplines = []
-        self.__optimization_scenarii = []
-        self.__created_namespace = []
-        self.__sos_builders = []
         self.__repository = None
         self.__process_identifier = None
 
@@ -135,17 +129,18 @@ class SosFactory:
             )
         elif builders.cls == SelectorDiscipline:
             self.coupling_builder = builders
-        elif builders.cls == ProxyCoupling :
-            new_builder_name = '.'.join([self.coupling_builder.sos_name,builders.sos_name])
+        elif builders.cls == ProxyCoupling:
+            new_builder_name = '.'.join([self.coupling_builder.sos_name, builders.sos_name])
             self.coupling_builder = builders
             self.coupling_builder.set_builder_info('sos_name', new_builder_name)
-        else :
+        else:
 
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
     def set_gemseo_object_to_coupling_builder(self, gemseo_object):
         self.coupling_builder = self.create_builder_coupling(self.__sos_name)
         self.coupling_builder.set_builder_info('cls_builder', gemseo_object)
+
     def add_discipline(self, discipline):
         """
         Add a discipline to the list of factory disciplines AND to the sos_discipline of the current sos_coupling
@@ -212,7 +207,7 @@ class SosFactory:
 
         ee_with_strong_couplings = len(self.__execution_engine.root_process.strong_couplings)
 
-        # TODO: second bool shouldnt be necessary  if the root_process is in self.proxy_disciplines
+        # NB: second bool shouldn't be necessary if the root_process is in self.proxy_disciplines
         return mda_disciplines_with_strong_couplings or ee_with_strong_couplings
 
     @property
@@ -416,8 +411,7 @@ class SosFactory:
         return sampling_builder
 
     def create_custom_driver_builder(self, sos_name, cls_builder, driver_wrapper_mod):
-        # TODO: recode when driver classes are properly merged, at the moment
-        # custom driver wrapper is off (won't build)
+        # NB: custom driver wrapper is off (won't build)
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
         driver_wrapper_cls = self.get_disc_class_from_module(
@@ -524,7 +518,7 @@ class SosFactory:
     def get_module_class_path(self, class_name, folder_list):
         """
         Return the module path of a class in a list of directories
-        Return the first found for now .. TODO
+        Return the first found for now ..
         """
 
         module_class_path = None
@@ -571,7 +565,7 @@ class SosFactory:
         mod_path = self.get_module_class_path(mod_name, folder_list)
 
         if mod_path is None:
-            raise Exception(
+            raise SosFactoryException(
                 f'The builder {mod_name} has not been found in the folder list {folder_list}'
             )
         return self.get_builder_from_module(sos_name, mod_path)
@@ -642,5 +636,5 @@ class SosFactory:
         try:
             discipline.father_executor.proxy_disciplines.remove(discipline)
 
-        except:
+        except ValueError:
             print("discipline already deleted from coupling children ")

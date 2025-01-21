@@ -28,8 +28,6 @@ with open('LICENSE') as f:
 with open('requirements.in', 'r') as requirements_file:
     reqs_list = [line.strip() for line in requirements_file if line.strip()]
 
-reqs_list.append('gemseo @ git+https://gitlab.com/sostrades/gemseo.git@sos_develop')
-
 setup(
     name='sostrades_core',
     version='0.1.0',

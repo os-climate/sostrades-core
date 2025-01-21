@@ -1,412 +1,412 @@
 {
-    "dataset_all_types": {
-        "<study_ph>": {
-            "inner_mda_name": {
-                "value": "MDAJacobi",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "max_mda_iter": {
-                "value": 30,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "n_processes": {
-                "value": 1,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "chain_linearize": {
-                "value": false,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "tolerance": {
-                "value": 1e-06,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "use_lu_fact": {
-                "value": false,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "warm_start": {
-                "value": false,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "acceleration": {
-                "value": "m2d",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "warm_start_threshold": {
-                "value": -1,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "n_subcouplings_parallel": {
-                "value": 1,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "tolerance_gs": {
-                "value": 10.0,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "relax_factor": {
-                "value": 0.99,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "epsilon0": {
-                "value": 1e-06,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "linear_solver_MDO": {
-                "value": "GMRES",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "linear_solver_MDO_preconditioner": {
-                "value": "None",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "linear_solver_MDO_options": {
-                "value": {
-                    "max_iter": 1000,
-                    "tol": 1e-08
-                },
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "linear_solver_MDA": {
-                "value": "GMRES",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "linear_solver_MDA_preconditioner": {
-                "value": "None",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "linear_solver_MDA_options": {
-                "value": {
-                    "max_iter": 1000,
-                    "tol": 1e-08
-                },
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "group_mda_disciplines": {
-                "value": false,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "propagate_cache_to_children": {
-                "value": false,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "linearization_mode": {
-                "value": "auto",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "cache_type": {
-                "value": "None",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "cache_file_path": {
-                "value": "",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "debug_mode": {
-                "value": "",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "residuals_history": {
-                "value": null,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            }
+  "dataset_all_types": {
+    "<study_ph>": {
+      "inner_mda_name": {
+        "value": "MDAJacobi",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "max_mda_iter": {
+        "value": 30,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "n_processes": {
+        "value": 1,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "chain_linearize": {
+        "value": false,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "tolerance": {
+        "value": 1e-06,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "use_lu_fact": {
+        "value": false,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "warm_start": {
+        "value": false,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "acceleration": {
+        "value": "m2d",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "warm_start_threshold": {
+        "value": -1,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "n_subcouplings_parallel": {
+        "value": 1,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "tolerance_gs": {
+        "value": 10.0,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "relax_factor": {
+        "value": 0.99,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "epsilon0": {
+        "value": 1e-06,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "linear_solver_MDO": {
+        "value": "GMRES",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "linear_solver_MDO_preconditioner": {
+        "value": "None",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "linear_solver_MDO_options": {
+        "value": {
+          "max_iter": 1000,
+          "tol": 1e-08
         },
-        "<study_ph>.Disc1": {
-            "x": {
-                "value": 4.0,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "a": {
-                "value": 1,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "b": {
-                "value": 2,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "name": {
-                "value": "A1",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "x_dict": {
-                "value": {
-                    "test1": 1,
-                    "test2": 2
-                },
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "y_array": {
-                "value": [
-                    1.0,
-                    2.0,
-                    3.0
-                ],
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "z_list": {
-                "value": [
-                    1.0,
-                    2.0,
-                    3.0
-                ],
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "b_bool": {
-                "value": false,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "d": {
-                "value": {
-                    "years": [
-                        2023,
-                        2024
-                    ],
-                    "x": [
-                        1.0,
-                        10.0
-                    ]
-                },
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "linearization_mode": {
-                "value": "auto",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "cache_type": {
-                "value": "None",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "cache_file_path": {
-                "value": "",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "debug_mode": {
-                "value": "",
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "indicator": {
-                "value": null,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "y": {
-                "value": null,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            },
-            "y_dict": {
-                "value": null,
-                "name": "",
-                "unit": "",
-                "description": "",
-                "source": "",
-                "link": "",
-                "last_update_date": ""
-            }
-        }
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "linear_solver_MDA": {
+        "value": "GMRES",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "linear_solver_MDA_preconditioner": {
+        "value": "None",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "linear_solver_MDA_options": {
+        "value": {
+          "max_iter": 1000,
+          "tol": 1e-08
+        },
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "group_mda_disciplines": {
+        "value": false,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "propagate_cache_to_children": {
+        "value": false,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "linearization_mode": {
+        "value": "auto",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "cache_type": {
+        "value": "None",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "cache_file_path": {
+        "value": "",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "debug_mode": {
+        "value": "",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "residuals_history": {
+        "value": null,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      }
+    },
+    "<study_ph>.Disc1": {
+      "x": {
+        "value": 4.0,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "a": {
+        "value": 1,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "b": {
+        "value": 2,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "name": {
+        "value": "A1",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "x_dict": {
+        "value": {
+          "test1": 1,
+          "test2": 2
+        },
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "y_array": {
+        "value": [
+          1.0,
+          2.0,
+          3.0
+        ],
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "z_list": {
+        "value": [
+          1.0,
+          2.0,
+          3.0
+        ],
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "b_bool": {
+        "value": false,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "d": {
+        "value": {
+          "years": [
+            2023,
+            2024
+          ],
+          "x": [
+            1.0,
+            10.0
+          ]
+        },
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "linearization_mode": {
+        "value": "auto",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "cache_type": {
+        "value": "None",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "cache_file_path": {
+        "value": "",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "debug_mode": {
+        "value": "",
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "indicator": {
+        "value": null,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "y": {
+        "value": null,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      },
+      "y_dict": {
+        "value": null,
+        "name": "",
+        "unit": "",
+        "description": "",
+        "source": "",
+        "link": "",
+        "last_update_date": ""
+      }
     }
+  }
 }

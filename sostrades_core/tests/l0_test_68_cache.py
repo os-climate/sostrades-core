@@ -286,7 +286,6 @@ class TestCache(unittest.TestCase):
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
 
-
         # first execute
         self.ee.execute()
         # ref
@@ -780,7 +779,6 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-
 
         # first execute
         self.ee.execute()

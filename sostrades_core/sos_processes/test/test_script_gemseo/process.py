@@ -38,11 +38,11 @@ class ProcessBuilder(BaseProcessBuilder):
     def get_builders(self):
         scenario = script_gemseo()
 
-
         self.ee.ns_manager.add_ns('ns_postproc', self.ee.study_name)
         self.ee.post_processing_manager.add_post_processing_functions_to_namespace(
             'ns_postproc', post_processing_filters, post_processings)
         return scenario
+
 
 def post_processing_filters(execution_engine, namespace):
     """ post processing function designed to build a rc vs saleprice 2D chart
