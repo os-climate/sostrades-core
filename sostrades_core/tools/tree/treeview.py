@@ -161,7 +161,6 @@ class TreeView:
             treenode.data[key][ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type,
                                                                                val[ProxyDiscipline.VAR_NAME])
 
-
             if key in treenode.disc_data:
                 treenode.data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = \
                     treenode.disc_data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]
@@ -191,7 +190,6 @@ class TreeView:
 
             temp_data[ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type,
                                                                       val[ProxyDiscipline.VAR_NAME])
-
 
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False

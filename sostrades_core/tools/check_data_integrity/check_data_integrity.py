@@ -123,6 +123,10 @@ class CheckDataIntegrity():
                     self.__check_formulas_in_variable(
                         var_data_dict, variable_formula)
                 else:
+
+                    # Some GEMSEO types or unhashable and cannot be found in a dict, data check integrity is not performed
+                    if getattr(self.variable_type, '__hash__', None) is None:
+                        return ''
                     # FIRST check type of the value
                     if not isinstance(self.variable_value, self.VAR_TYPE_MAP[self.variable_type]) and self.new_check:
                         check_integrity_msg = f'Value {self.variable_value} has not the type specified in datamanager which is {self.variable_type}'

@@ -129,6 +129,7 @@ class TestCompareDict(unittest.TestCase):
 
         self.assertFalse(dict_are_equal(self.data_dict_2,
                                         self.data_dict_1))
+
     def test_03_compute_len(self):
 
         type_len_0 = ['none', 'array', 'empty_list', 'empty_dict2', 'dataframe_empty']

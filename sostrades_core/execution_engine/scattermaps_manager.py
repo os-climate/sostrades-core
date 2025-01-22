@@ -70,10 +70,7 @@ class ScatterMapsManager:
         Instantiate build map and add to build_maps_dict
         '''
         if map_name in self.build_maps_dict:
-            # If the map does exist with same definition than do nothing
-            if self.build_maps_dict[map_name] == map_dict:
-                pass
-            else:
+            if self.build_maps_dict[map_name] != map_dict:
                 raise ScatterMapsManagerException(
                     f'Map {map_name} already defined with another definition')
         else:

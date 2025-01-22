@@ -101,6 +101,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         dynamic_inputs_ref_mode = self.add_reference_mode(disc_in)
         dynamic_inputs_scatter_map = self.add_scatter_map_inputs()
         self.add_inputs(dynamic_inputs_ref_mode | dynamic_inputs_scatter_map)
+
     def configure_sample_generator(self):
         """
         Configuration of the associated sample generator discipline for multi-instance driver is as in the general case

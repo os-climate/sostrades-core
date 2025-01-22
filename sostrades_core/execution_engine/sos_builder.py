@@ -23,6 +23,9 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 
 
+class SoSBuilderException(Exception):
+    pass
+
 class SoSBuilder:
     '''
     Class that stores a class and associated attributes to be built afterwards
@@ -34,7 +37,6 @@ class SoSBuilder:
         'ProxyDisciplineGather',
         'ProxyOptim',
         'ArchiBuilder',
-        'ProxyDriverEvaluator',  # FIXME: to remove
         'ProxyMonoInstanceDriver',
         'ProxyMultiInstanceDriver',
         'SelectorDiscipline',
@@ -96,7 +98,7 @@ class SoSBuilder:
         elif isinstance(ns_list, list):
             self.add_namespace_list_in_associated_namespaces(ns_list)
         else:
-            raise Exception('Should specify a list of strings or a string to associate namespaces')
+            raise SoSBuilderException('Should specify a list of strings or a string to associate namespaces')
         # self.__args['associated_namespaces'] = self.__associated_namespaces
 
     def set_disc_name(self, new_disc_name):
@@ -104,7 +106,9 @@ class SoSBuilder:
         self.__args['sos_name'] = self.__disc_name
 
     def build(self):
-        '''Instantiates the class self.cls'''
+        '''
+        Instantiates the class self.cls
+        '''
         current_ns = self.__ee.ns_manager.current_disc_ns
 
         # If we are in the builder of the high level coupling the current ns is None and
@@ -200,7 +204,7 @@ class SoSBuilder:
             extra_name: extra_name to add after the after name for each associated namespaces to the builder
             after_name: name after which you add the extra_name for each associated namespaces to the builder
         """
-        # TODO: no check so that a ns associated to two builders won't be updated twice.
+        # NB: no check so that a ns associated to two builders won't be updated twice.
         self.update_associated_namespaces_with_extra_name(extra_name, after_name)
         sub_builders = self.args["cls_builder"]
         try:

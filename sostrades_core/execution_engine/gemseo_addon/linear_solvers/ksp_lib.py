@@ -103,8 +103,6 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
         for solver_name in AVAILABLE_LINEAR_SOLVERS
     }
 
-    LOGGER.debug('algos infos: %s', ALGORITHM_INFOS)
-
     def _run(self, problem: LinearProblem, **settings: Any) -> ndarray:
         """Run the algorithm.
 

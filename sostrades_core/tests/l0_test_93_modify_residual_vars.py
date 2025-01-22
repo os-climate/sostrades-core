@@ -39,5 +39,5 @@ class TestResidualVariables(unittest.TestCase):
         study.run()
 
         study.ee.dm.get_value()
-        for proxy in study.ee.root_process.proxy_disciplines :
+        for proxy in study.ee.root_process.proxy_disciplines:
             self.assertTrue(proxy.discipline_wrapp.discipline.run_solves_residuals)
