@@ -691,9 +691,12 @@ class TestChartTemplate(unittest.TestCase):
         self.assertTrue(len(charts) > 0)
         self.assertEqual(charts[0].post_processing_section_name, 'section 1')
         self.assertEqual(charts[1].post_processing_section_name, 'section 2')
+        self.assertEqual(charts[-1].post_processing_section_name, 'KPIs')
         self.assertTrue(charts[0].post_processing_section_is_opened)
         self.assertFalse(charts[1].post_processing_section_is_opened)
+        self.assertFalse(charts[-1].post_processing_section_is_opened)
         self.assertFalse(charts[0].post_processing_is_key_chart)
+        self.assertFalse(charts[-1].post_processing_is_key_chart)
         self.assertTrue(charts[1].post_processing_is_key_chart)
 
 if __name__=='__main__':
