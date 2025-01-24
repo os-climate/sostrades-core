@@ -46,7 +46,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
         # Set the chart in a section:
         # define section name
         self.post_processing_section_name = ""
-        # define if the section should be opened by default 
+        # define if the section should be opened by default
         self.post_processing_section_is_opened = False
 
         #set the chart in a first section named "key chart"
