@@ -223,7 +223,7 @@ class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
             self.__to_csv()
 
         json[self.CSV_DATA] = self._plot_csv_data
-        
+
         #add chart metadata as watermarks or sections
         json.update(self.get_metadata_dict())
 
