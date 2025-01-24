@@ -319,9 +319,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
             self.__to_csv()
 
         json[self.CSV_DATA] = self._plot_csv_data
-        json[self.LOGO_NOTOFFICIAL] = self.logo_notofficial
-        json[self.LOGO_OFFICIAL] = self.logo_official
-        json[self.LOGO_WORK_IN_PROGRESS] = self.logo_work_in_progress
-        json[self.POST_PROCESSING_SECTION_NAME] = self.post_processing_section_name.capitalize()
+
+        #add chart metadata as watermarks or sections
+        json.update(self.get_metadata_dict())
 
         return json
