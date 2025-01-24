@@ -80,9 +80,8 @@ class InstantiatedIndicatorChart(AbstractPostProcessingPlotlyTooling):
         """
         json = self.to_plotly(logger).to_dict()
         json[self.CSV_DATA] = self.value
-        json[self.LOGO_NOTOFFICIAL] = self.logo_notofficial
-        json[self.LOGO_OFFICIAL] = self.logo_official
-        json[self.LOGO_WORK_IN_PROGRESS] = self.logo_work_in_progress
-        json[self.POST_PROCESSING_SECTION_NAME] = self.post_processing_section_name.capitalize()
+       
+        #add chart metadata as watermarks or sections
+        json.update(self.get_metadata_dict())
 
         return json
