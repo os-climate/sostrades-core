@@ -131,7 +131,7 @@ class DiscAllTypes(SoSWrapp):
             new_chart.post_processing_section_is_opened = True
             instanciated_charts.append(new_chart)
 
-            
+
 
         if 'c2 vs h' in charts_list:
             chart_name = 'c2 vs h'
