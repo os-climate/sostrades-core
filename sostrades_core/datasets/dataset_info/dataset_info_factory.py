@@ -79,6 +79,8 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
         if match:
             version = DatasetInfoSerializerVersion.get_enum_value(match.group(1))
         else:
-            warn("No version in dataset info is tolerated for now but will be deprecated in future versions", UserWarning)  # noqa: B028
+            message = "No version in dataset info is tolerated for now but will be deprecated in future versions"
+            DatasetInfoFactory.__logger.warning(message)
+            warn(message, UserWarning)  # noqa: B028
 
         return version
