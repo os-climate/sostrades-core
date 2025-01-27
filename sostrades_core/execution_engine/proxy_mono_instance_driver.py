@@ -35,7 +35,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
     """A driver that evaluates a single discipline or coupling."""
 
     _ontology_data: ClassVar = {
-        'label': ' Mono-Instance Driver',
+        'label': 'Mono-Instance Driver',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
