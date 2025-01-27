@@ -127,7 +127,7 @@ class TestPropagatesLinearizationMode(unittest.TestCase):
             proxy_discs[2].discipline_wrapp.discipline._linearization_mode,
             FINITE_DIFFERENCES)
 
-    ### This propagation does not work anymore !!!
+    # This propagation does not work anymore !!!
     # def test_02_linearization_mode_children_propagation_from_root_process(self):
     #     print("\n Test 2 : Propagation of linearization mode to children disciplines from root process")
     #     exec_eng = ExecutionEngine(self.study_name)

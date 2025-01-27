@@ -223,7 +223,7 @@ class DisciplineWrapp:
 
         elif self.wrapping_mode == 'GEMSEO':
             self.discipline = proxy.cls_builder
-            ###NEED TO UPDATE DEFAULTS OF self.discipline WITH get_sos_disc_inputs of proxy, HOW TO DO IT ?
+            # NEED TO UPDATE DEFAULTS OF self.discipline WITH get_sos_disc_inputs of proxy, HOW TO DO IT ?
 
     def create_mdo_scenario(self, sub_disciplines, proxy=None, reduced_dm=None):  # type: (...) -> None
         """

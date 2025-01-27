@@ -592,7 +592,7 @@ if '__main__' == __name__:
 
         # run black Python Code formatter to have a nice result in the usecase.py
         subprocess.run(
-            ['black', join(self.dump_dir, f'usecase_{self.usecase_name}.py')]
+            ['black', join(self.dump_dir, f'usecase_{self.usecase_name}.py')], check=True
         )
         print(
             f'✨✨ Usecase usecase_{self.usecase_name}.py has been written into {self.dump_dir} ✨✨'

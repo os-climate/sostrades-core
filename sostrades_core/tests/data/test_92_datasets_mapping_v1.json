@@ -1,7 +1,8 @@
 {
-    "process_module_path": "sostrades_core.sos_processes.test.test_disc1_all_types",
-
-    "namespace_datasets_mapping": {
-        "v1|*|*": ["v1|json_v1_connector|dataset_all_types|*|*"]
-    }
+  "process_module_path": "sostrades_core.sos_processes.test.test_disc1_all_types",
+  "namespace_datasets_mapping": {
+    "v1|*|*": [
+      "v1|json_v1_connector|dataset_all_types|*|*"
+    ]
+  }
 }

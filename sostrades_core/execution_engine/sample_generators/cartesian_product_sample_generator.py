@@ -65,7 +65,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             msg += "however sampling type of sampling generator <%s> " % str(
                 self.__class__.__name__)
             msg += "is <%s> " % str(type(samples_df))
-            raise SampleTypeError()
+            raise SampleTypeError(msg)
 
     def generate_samples(self, dict_of_list_values):
         '''

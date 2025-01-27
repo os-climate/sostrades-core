@@ -163,7 +163,6 @@ class TestStructuringInputs(unittest.TestCase):
 
         self.exec_eng.execute()
 
-
     def _test_05_proxycoupling_numerical_inputs_including_petsc(self):
         """
         Test proper definition of coupling numerical inputs, possible values, etc. and execute using LGMRES with

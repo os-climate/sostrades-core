@@ -191,10 +191,8 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
             dict[str, Any]: All values from the dataset.
         """
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier.dataset_id)
-        dataset_values = dict()
         filesystem_data_group_id = self.__get_data_group_directory(dataset_descriptor, dataset_identifier.dataset_id, dataset_identifier.group_id)
-        self._datasets_serializer.set_dataset_directory(
-                self.__build_group_path(dataset_identifier.dataset_id, filesystem_data_group_id))
+        self._datasets_serializer.set_dataset_directory(self.__build_group_path(dataset_identifier.dataset_id, filesystem_data_group_id))
         self._datasets_serializer.load_pickle_data()
         dataset_values = {
                 key: self._datasets_serializer.convert_from_dataset_data(key,
