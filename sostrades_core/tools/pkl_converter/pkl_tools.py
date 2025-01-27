@@ -10,6 +10,7 @@ def dump_compressed_pickle(fname, data):
     with BZ2File(fname, 'w') as f:
         pickle.dump(data, f)
 
+
 def load_compressed_pickle(fname):
     ''' decompress pickle and returns the data
     '''

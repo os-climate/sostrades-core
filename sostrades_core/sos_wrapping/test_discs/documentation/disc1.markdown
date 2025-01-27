@@ -154,7 +154,7 @@ Where:
 - $r$ [^16]
 - $\Delta T$ is the world
 
-### 3. World Capitals 
+### 3. World Capitals
 Capitals:
 $$
 \text{cap\ all\ type}[t] = \text{cap\ all\ type}[t-1] \times \left( 1 - \frac{\text{rate}}{100} \right) + \text{hari\ po\ heure}[t]

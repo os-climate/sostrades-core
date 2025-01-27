@@ -83,7 +83,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         self.selected_inputs = []
         self.selected_inputs_types = {}
-        # self.dict_desactivated_elem = {}
 
     def _reload(self):
         """
@@ -179,7 +178,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             msg = "Expected sampling output type should be pandas.core.frame.DataFrame"
             msg += f"however sampling type of sampling generator <{self.__class__.__name__!s}> "
             msg += f"is <{type(samples_df)!s}> "
-            raise SampleTypeError
+            raise SampleTypeError(msg)
 
     def generate_samples(self, sampling_algo_name, algo_options, design_space):
         """
@@ -256,7 +255,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         return pd.DataFrame(data=samples, columns=selected_inputs)
 
-    # TODO: REFACTOR IF POSSIBLE W/O PROXY REFs (note for the moment proxy is the wrapper until config. actions moved)
     def setup(self, proxy):
         """Method that setup the doe_algo method"""
         dynamic_inputs = {}
@@ -303,7 +301,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Arguments:
             dynamic_inputs (dict): the dynamic input dict to be updated
         """
-        # TODO: might want to refactor to simplify GridSearch
         disc_in = proxy.get_data_in()
         # Dynamic input of default design space
         if proxy.EVAL_INPUTS in disc_in:
@@ -393,8 +390,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
                             to_append = disc_in['design_space'][proxy.VALUE][
                                 disc_in['design_space'][proxy.VALUE][self.VARIABLES] == element
                             ]
-                            # TODO: in the current implementation it would be more proper that GridSearch setup its
-                            #  own design space instead of having particular cases in the Doe sample generator.
+                            # NB: gridsearch could set up its own space
                             if proxy.sampling_method == proxy.DOE_ALGO:
                                 # for DoE need to dismiss self.NB_POINTS
                                 to_append = to_append.loc[:, to_append.columns != self.NB_POINTS]
@@ -525,9 +521,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     def filter_inputs(self, proxy):
         """Filter for the majority of algorithms the"""
         disc_in = proxy.get_data_in()
-        if proxy.ALGO in disc_in and proxy.get_sosdisc_inputs(proxy.ALGO) in self.TYPE_PERMISSIVE_ALGORITHMS:
-            pass
-        elif proxy.eval_in_possible_types:
+        if not (proxy.ALGO in disc_in and proxy.get_sosdisc_inputs(proxy.ALGO) in self.TYPE_PERMISSIVE_ALGORITHMS) \
+                and  proxy.eval_in_possible_types:
             proxy.eval_in_possible_types = {
                 _v: _t for (_v, _t) in proxy.eval_in_possible_types.items() if _t in ('array', 'float')
             }

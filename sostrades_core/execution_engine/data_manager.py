@@ -57,6 +57,7 @@ DATAFRAME_EDITION_LOCKED = ProxyDiscipline.DATAFRAME_EDITION_LOCKED
 TYPE_METADATA = ProxyDiscipline.TYPE_METADATA
 DISPLAY_NAME = ProxyDiscipline.DISPLAY_NAME
 
+
 @dataclass()
 class ParameterChange:
     """
@@ -553,7 +554,7 @@ class DataManager:
             data_ns = data_value[NS_REFERENCE].value
             data_name = data_value[VAR_NAME]
             data_type = data_value[TYPE]
-            data_value = data_value[VALUE]
+            data_value_loc = data_value[VALUE]
 
             # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
             namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns,
@@ -561,7 +562,7 @@ class DataManager:
                                                                       DatasetsMapping.VALUE: {}})
             namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
             namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
-            namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value
+            namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value_loc
 
         # iterate on each datasets to export data in each dataset
         dataset_parameters_mapping, duplicates = datasets_mapping.get_datasets_namespace_mapping_for_study(self.name, namespaces_dict=namespaced_data_dict)
@@ -926,6 +927,12 @@ class DataManager:
                         # then the variable becomes an input
                         if io_type == ProxyDiscipline.IO_TYPE_OUT:
                             self.data_dict[var_id][ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
+                        # If the discipline that removes the key appears to be the model origin and there still exists other disciplines
+                        # that use the variable, the model origin needs to be modified (i.e. for data integrity)
+                        # the first discipline in the discipline_dependencies list become the model origin
+                        if disc_id == self.data_dict[var_id][ProxyDiscipline.ORIGIN]:
+                            self.data_dict[var_id][ProxyDiscipline.ORIGIN] = \
+                            self.data_dict[var_id][ProxyDiscipline.DISCIPLINES_DEPENDENCIES][0]
 
     def clean_from_disc(self, disc_id, clean_keys=True):
         ''' Clean disc in disciplines_dict and data_in/data_out keys in data_dict

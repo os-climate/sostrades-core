@@ -1,5 +1,5 @@
 '''
-Copyright 2024 Capgemini
+Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -47,9 +47,8 @@ CARTOUCHE_BASE = """'''
 {}'''
 """
 
-CAP_COPYRIGHT_2023 = "Copyright 2023 Capgemini"
-CAP_COPYRIGHT = "Copyright 2024 Capgemini"
-CAP_MODIFIED_COPYRIGHT = "Modifications on {} Copyright 2024 Capgemini"
+CAP_COPYRIGHT = "Copyright {} Capgemini".format(datetime.today().strftime("%Y/%m/%d"))
+CAP_MODIFIED_COPYRIGHT = "Modifications on {} " + "Copyright {} Capgemini".format(datetime.today().strftime("%Y"))
 AIRBUS_COPYRIGHT = "Copyright 2022 Airbus SAS"
 
 CARTOUCHE_CAP_AIRBUS = CARTOUCHE_BASE.format(f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED_COPYRIGHT}\n\n{LICENCE}")
@@ -57,7 +56,8 @@ CARTOUCHE_CAP = CARTOUCHE_BASE.format(f"{CAP_COPYRIGHT}\n\n{LICENCE}")
 
 # Define a regular expression to match the cartouche only at the beginning
 cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
-
+# cartouche_pattern = r"^(?:'''|\"\"\")(.*?)(?:'''|\"\"\")(\n|\Z)"
+cap_copyright_pattern = "Copyright 202(.) Capgemini"
 cartouche_modified_pattern = r"Modifications on (.+) Copyright 202(.) Capgemini"
 
 
@@ -115,10 +115,8 @@ class HeaderTools:
         cartouche_match = re.search(pattern=cartouche_pattern, string=content, flags=re.DOTALL)
 
         if cartouche_match:
-            if (
-                cartouche_match.group(0).startswith(f"'''\n{CAP_COPYRIGHT}")
-                or cartouche_match.group(0).startswith(f"'''\n{CAP_COPYRIGHT_2023}")
-            ) and LICENCE in cartouche_match.group(0):
+            first_line = cartouche_match.group(0).split("\n")[1]
+            if re.search(pattern=cap_copyright_pattern, string=first_line) and LICENCE in cartouche_match.group(0):
                 # OK
                 if self.verbose:
                     return None
@@ -191,10 +189,8 @@ class HeaderTools:
         cartouche_match = re.search(pattern=cartouche_pattern, string=content, flags=re.DOTALL)
 
         if cartouche_match:
-            if (
-                cartouche_match.group(0).startswith(f"'''\n{CAP_COPYRIGHT}")
-                or cartouche_match.group(0).startswith(f"'''\n{CAP_COPYRIGHT_2023}")
-            ) and LICENCE in cartouche_match.group(0):
+            first_line = cartouche_match.group(0).split("\n")[1]
+            if re.search(pattern=cap_copyright_pattern, string=first_line) and LICENCE in cartouche_match.group(0):
                 # OK
                 if self.verbose:
                     pass

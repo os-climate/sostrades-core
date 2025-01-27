@@ -42,6 +42,8 @@ def exp_complex(y):
         return exp_np(y)
     else:
         return exp_cp(y)
+
+
 class SellarProblem(SoSWrapp):
     """ Sellar Optimization Problem functions
     """

@@ -18,6 +18,8 @@ import unittest
 from os.path import dirname, join
 
 import sostrades_core
+from sostrades_core.sos_processes.test.test_disc_all_types.usecase import Study
+from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 '''
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
@@ -673,3 +675,30 @@ class TestChartTemplate(unittest.TestCase):
         )
         # indicator_chart.to_plotly().show()
         indicator_chart.to_plotly()
+
+    def test_22_check_chart_sections(self):
+        study = Study()
+
+        study.load_data()
+        study.run()
+        post_processing_factory = PostProcessingFactory()
+
+        charts = post_processing_factory.get_post_processing_by_namespace(
+            study.execution_engine, f"{study.study_name}.DiscAllTypes", None, as_json=False
+        )
+
+        self.assertIsNotNone(charts)
+        self.assertTrue(len(charts) > 0)
+        self.assertEqual(charts[0].post_processing_section_name, 'section 1')
+        self.assertEqual(charts[1].post_processing_section_name, 'section 2')
+        self.assertEqual(charts[-1].post_processing_section_name, 'KPIs')
+        self.assertTrue(charts[0].post_processing_section_is_opened)
+        self.assertFalse(charts[1].post_processing_section_is_opened)
+        self.assertFalse(charts[-1].post_processing_section_is_opened)
+        self.assertFalse(charts[0].post_processing_is_key_chart)
+        self.assertFalse(charts[-1].post_processing_is_key_chart)
+        self.assertTrue(charts[1].post_processing_is_key_chart)
+
+if __name__=='__main__':
+    test = TestChartTemplate()
+    test.test_22_check_chart_sections()

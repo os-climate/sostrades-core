@@ -1,23 +1,23 @@
 {
-    "X_dict_df": {
-        "value": "@object@X_dict_df"
-    },
-    "X_dict_dict_df": {
-        "value": "@object@X_dict_dict_df"
-    },
-    "X_dict_dict_float": {
-        "value": "@object@X_dict_dict_float"
-    },
-    "X_array_string": {
-        "value": "@object@X_array_string"
-    },
-    "X_array_df": {
-        "value": "@object@X_array_df"
-    },
-    "X_dspace_lists": {
-        "value": "@object@X_dspace_lists"
-    },
-    "X_dspace_array": {
-        "value": "@object@X_dspace_array"
-    }
+  "X_dict_df": {
+    "value": "@object@X_dict_df"
+  },
+  "X_dict_dict_df": {
+    "value": "@object@X_dict_dict_df"
+  },
+  "X_dict_dict_float": {
+    "value": "@object@X_dict_dict_float"
+  },
+  "X_array_string": {
+    "value": "@object@X_array_string"
+  },
+  "X_array_df": {
+    "value": "@object@X_array_df"
+  },
+  "X_dspace_lists": {
+    "value": "@object@X_dspace_lists"
+  },
+  "X_dspace_array": {
+    "value": "@object@X_dspace_array"
+  }
 }
