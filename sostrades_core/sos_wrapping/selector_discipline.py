@@ -160,11 +160,11 @@ def find_disciplines_in_folder(folder_name):
     for path in sys.path:
         folder_path = os.path.join(path, folder_name)
         if os.path.isdir(folder_path):
-            path = pathlib.Path(folder_path)
-            for file_path in path.glob('**/*.py'):
+            pathlib_path = pathlib.Path(folder_path)
+            for file_path in pathlib_path.glob('**/*.py'):
                 classes = find_classes_in_file(file_path, base_class)
                 if len(classes) == 1:
-                    string_path = os.path.splitext(os.path.relpath(file_path, path))[0].replace(os.path.sep, '.')
+                    string_path = os.path.splitext(os.path.relpath(file_path, pathlib_path))[0].replace(os.path.sep, '.')
                     module_paths.append(f'{string_path}.{classes[0]}')
             break
     return module_paths

@@ -650,9 +650,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             ]
 
                             # Need to modify names of builder
-                            for builder_list in archi_builder_list:
-                                builder_list.set_disc_name(
-                                    builder_list.sos_name.split(
+                            for builder_list_loop in archi_builder_list:
+                                builder_list_loop.set_disc_name(
+                                    builder_list_loop.sos_name.split(
                                         f'{builder_name}.')[-1]
                                 )
 

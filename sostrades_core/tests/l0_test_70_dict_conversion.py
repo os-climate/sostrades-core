@@ -79,8 +79,8 @@ class TestExtendString(unittest.TestCase):
 
             red_dm.update(new_reduced_dm)
             conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
-            for key in [f'key{i}' for i in range(1, 6)]:
-                assert_frame_equal(conversion_back[key], dict_df[key], check_dtype=False)
+            for key_inner in [f'key{i}' for i in range(1, 6)]:
+                assert_frame_equal(conversion_back[key_inner], dict_df[key_inner], check_dtype=False)
 
         dict_df_array = self.exec_eng.dm.get_value('EE.Disc.dict_dataframe_array')
         var_dict = {'EE.Disc.dict_dataframe_array': dict_df_array}
@@ -91,8 +91,8 @@ class TestExtendString(unittest.TestCase):
 
             red_dm.update(new_reduced_dm)
             conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
-            for key in [f'key{i}' for i in range(1, 6)]:
-                assert_frame_equal(conversion_back[key], dict_df_array[key],
+            for key_inner in [f'key{i}' for i in range(1, 6)]:
+                assert_frame_equal(conversion_back[key_inner], dict_df_array[key_inner],
                                    check_dtype=False)
 
         dict_array = self.exec_eng.dm.get_value('EE.Disc.dict_array')
@@ -104,8 +104,8 @@ class TestExtendString(unittest.TestCase):
 
             red_dm.update(new_reduced_dm)
             conversion_back = convert_array_into_new_type(key, converted_inputs, red_dm)
-            for key in [f'key{i}' for i in range(1, 6)]:
-                assert_array_equal(conversion_back[key], dict_array[key])
+            for key_inner in [f'key{i}' for i in range(1, 6)]:
+                assert_array_equal(conversion_back[key_inner], dict_array[key_inner])
 
     def test_02_recursive_dict_conversion(self):
         """ This test proves the ability to convert recursive  dict
