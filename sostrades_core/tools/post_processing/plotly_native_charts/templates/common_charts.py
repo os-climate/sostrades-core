@@ -262,7 +262,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         '''
 
         info_dict = deepcopy(in_dict)
-        columns_info = columns_info = {
+        columns_info = {
             'index': {'label': 'Name', 'format': None},
             'scenario_id': {'label': 'Scenario', 'format': None},
             'irr': {'label': 'Internal Rate of Return (IRR)', 'format': 'percent'},

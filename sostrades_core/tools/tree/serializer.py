@@ -302,11 +302,12 @@ class DataSerializer:
             loaded_st_n = get_study_from_namespace(next(iter(loaded_dict.keys())))
         for param_id, param_dict in loaded_dict.items():
             if just_return_data_dict or is_variable_wo_studyname_exists(param_id, data_dict):
+                param_id_to_update = param_id
                 if current_st_n != loaded_st_n:
-                    param_id = param_id.replace(loaded_st_n, current_st_n)
+                    param_id_to_update = param_id_to_update.replace(loaded_st_n, current_st_n)
                 if just_return_data_dict:
-                    data_dict[param_id] = {}
-                data_dict[param_id].update(param_dict)
+                    data_dict[param_id_to_update] = {}
+                data_dict[param_id_to_update].update(param_dict)
             else:
                 sp_var = strip_study_from_namespace(param_id)
                 msg = f"Variable {sp_var} does not exist into {data_dict.keys()}"
