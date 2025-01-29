@@ -113,50 +113,47 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
         Returns:
             The solution of the problem.
         """
-        try:
-            # Set default settings
-            # TODO: move to main linear solver classes so that all solvers benefit from these default inputs definition
-            solver = self.ALGORITHM_INFOS[self.algo_name].internal_algorithm_name
-            b = problem.rhs
-            a = problem.lhs
-            if 'maxiter' not in settings:
-                settings['maxiter'] = 50 * b.shape[0]
-            else:
-                settings['maxiter'] = min(settings['maxiter'], 50 * a.shape[0])
+        # Set default settings
+        # TODO: move to main linear solver classes so that all solvers benefit from these default inputs definition
+        solver = self.ALGORITHM_INFOS[self.algo_name].internal_algorithm_name
+        b = problem.rhs
+        a = problem.lhs
+        if 'maxiter' not in settings:
+            settings['maxiter'] = 50 * b.shape[0]
+        else:
+            settings['maxiter'] = min(settings['maxiter'], 50 * a.shape[0])
 
-            # first run
-            settings["old_sol"] = None
+        # first run
+        settings["old_sol"] = None
 
-            sol, info, ksp = self._run_petsc_strategy(problem, solver, **settings)
+        sol, info, ksp = self._run_petsc_strategy(problem, solver, **settings)
 
-            if info < 0:
+        if info < 0:
+            settings['preconditioner_type'] = 'gasm'
+            settings['old_sol'] = sol
+
+            # second run with bcgs
+            sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", **settings)
+            if info >= 0:
+                LOGGER.warning(
+                    "The second try with GASM preconditioner and bi CG stabilized linear solver has converged at %s",
+                    ksp.getResidualNorm(),
+                )
+            elif info == -3:
+                # DIVERGED_ITS
+                LOGGER.warning(
+                    "DIVERGED_ITS error : the number of iterations of the solver is %s with a max iter of %s, running again with 10*maxiter",
+                    len(ksp.getConvergenceHistory()),
+                    settings['maxiter'],
+                )
+                settings['maxiter'] = 10 * settings['maxiter']
                 settings['preconditioner_type'] = 'gasm'
                 settings['old_sol'] = sol
 
-                # second run with bcgs
+                # third run with bcgs and larger maxiter
                 sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", **settings)
-                if info >= 0:
-                    LOGGER.warning(
-                        "The second try with GASM preconditioner and bi CG stabilized linear solver has converged at %s",
-                        ksp.getResidualNorm(),
-                    )
-                elif info == -3:
-                    # DIVERGED_ITS
-                    LOGGER.warning(
-                        "DIVERGED_ITS error : the number of iterations of the solver is %s with a max iter of %s, running again with 10*maxiter",
-                        len(ksp.getConvergenceHistory()),
-                        settings['maxiter'],
-                    )
-                    settings['maxiter'] = 10 * settings['maxiter']
-                    settings['preconditioner_type'] = 'gasm'
-                    settings['old_sol'] = sol
 
-                    # third run with bcgs and larger maxiter
-                    sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", **settings)
-
-            return problem.solution
-        except Exception as e:
-            LOGGER.error(f"Unexpected error in PETSC solver: {str(e)}")
+        return problem.solution
 
     def _run_petsc_strategy(
         self, problem: LinearProblem, solver: str, **settings
