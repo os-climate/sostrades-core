@@ -64,12 +64,10 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         },
         'n_processes': {
             ProxyDriverEvaluator.TYPE: 'int',
-            ProxyDriverEvaluator.NUMERICAL: True,
             ProxyDriverEvaluator.DEFAULT: 1,
         },
         'wait_time_between_fork': {
             ProxyDriverEvaluator.TYPE: 'float',
-            ProxyDriverEvaluator.NUMERICAL: True,
             ProxyDriverEvaluator.DEFAULT: 0.0,
         },
     }
@@ -114,11 +112,11 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
             selected_outputs_dict = gather_selected_outputs(gather_outputs, self.GATHER_DEFAULT_SUFFIX)
             self.selected_outputs = selected_outputs_dict.keys()
-            if len(selected_outputs_dict) > 0:
-                self.eval_out_list = self._compose_with_driver_ns(selected_outputs_dict.keys())
+            if selected_outputs_dict:
+                self.eval_out_list = self._compose_with_driver_ns(self.selected_outputs)
                 self.eval_out_names = selected_outputs_dict.values()
                 # setting dynamic outputs. One output of type dict per selected output
-                dynamic_outputs.update({out_name: {self.TYPE: 'dict'} for out_name in selected_outputs_dict.values()})
+                dynamic_outputs.update({out_name: {self.TYPE: 'dict'} for out_name in self.eval_out_names})
                 dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe'}})
 
                 self.add_outputs(dynamic_outputs)
