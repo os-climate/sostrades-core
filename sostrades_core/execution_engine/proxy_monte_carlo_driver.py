@@ -103,6 +103,3 @@ class ProxyMonteCarloDriver(ProxyMonoInstanceDriver):
 
     def setup_sos_disciplines(self) -> None:
         """Overload the ProxyMonoInstanceDriver method to avoid adding irrelevant outputs."""
-        # super().setup_sos_disciplines()
-        # self.build_simple_data_io(self.IO_TYPE_OUT)
-        # self.clean_variables(self.eval_out_names, self.IO_TYPE_OUT)
