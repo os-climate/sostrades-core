@@ -150,6 +150,11 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         }
         algo_options_default = {option_name: option.default for option_name, option in algo_options.items()}
 
+        algo_options_default = {
+            option_name: option.default if not option.is_required() else None
+            for option_name, option in algo_options.items()
+        }
+
         algo_options_descr_dict = {option_name: option.description for option_name, option in algo_options.items()}
 
         return algo_options_default, algo_options_descr_dict
