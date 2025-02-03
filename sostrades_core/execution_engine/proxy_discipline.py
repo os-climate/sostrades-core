@@ -21,6 +21,7 @@ import contextlib
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
+from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.discipline.io import IO
 from gemseo.core.execution_status import ExecutionStatus
@@ -102,7 +103,7 @@ class ProxyDiscipline:
 
         cls (Class): constructor of the model wrapper with user-defin ed run (or None)
     """
-
+    GEMSEO_OBJECTS = BaseMonitoredProcess
     # -- Disciplinary attributes
     DESC_IN = None
     DESC_OUT = None
@@ -187,6 +188,7 @@ class ProxyDiscipline:
         'bool': BOOL_MAP,
         'list': list,
         PROC_BUILDER_MODAL: dict,
+        ndarray: ndarray,
     }
     VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
@@ -219,7 +221,7 @@ class ProxyDiscipline:
     NUM_DESC_IN = {
         LINEARIZATION_MODE: {
             TYPE: 'string',
-            DEFAULT: Discipline.ApproximationMode.FINITE_DIFFERENCES,
+            DEFAULT: Discipline.LinearizationMode.AUTO,
             POSSIBLE_VALUES: list(Discipline.LinearizationMode),
             NUMERICAL: True,
             STRUCTURING: True,
@@ -1673,11 +1675,11 @@ class ProxyDiscipline:
 
         disc_in = self.get_data_in()
         for var_name in disc_in:
+            var_f_name = self.get_var_full_name(var_name, disc_in)
             try:
-                var_f_name = self.get_var_full_name(var_name, disc_in)
                 default_val = self.dm.data_dict[self.dm.get_data_id(var_f_name)][self.DEFAULT]
-            except:
-                var_f_name = self.get_var_full_name(var_name, disc_in)
+            except Exception:
+                default_val = None
             if self.dm.get_value(var_f_name) is None and default_val is not None:
                 disc_in[var_name][self.VALUE] = default_val
             else:

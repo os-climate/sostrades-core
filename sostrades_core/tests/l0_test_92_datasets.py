@@ -614,8 +614,8 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), None)
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {})
         self.assertEqual(len(dm.get_value("usecase_dataset.Disc1.d")), 0)
-        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "finite_differences")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "finite_differences")
+        self.assertEqual(dm.get_value("usecase_dataset.linearization_mode"), "auto")
+        self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "auto")
 
         study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
 
@@ -866,7 +866,6 @@ class TestDatasets(unittest.TestCase):
 
         data_types_dict_disc1 = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars_disc1}
 
-
         dataset_vars = ["inner_mda_name", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
         data_types_dict = {_k: dm.get_data(f"usecase_dataset.{_k}", "type") for _k in dataset_vars}
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_datasets_mapping_v1.json")
@@ -934,7 +933,6 @@ class TestDatasets(unittest.TestCase):
             "d"]
 
         data_types_dict_disc1 = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars_disc1}
-
 
         dataset_vars = ["inner_mda_name", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
         data_types_dict = {_k: dm.get_data(f"usecase_dataset.{_k}", "type") for _k in dataset_vars}

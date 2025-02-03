@@ -54,7 +54,8 @@ class SoSDisciplineException(Exception):
 
 
 class SoSDiscipline(Discipline):
-    """**SoSDiscipline** is the class that overloads Discipline when using SoSTrades wrapping mode. It handles the
+    """
+    **SoSDiscipline** is the class that overloads Discipline when using SoSTrades wrapping mode. It handles the
     execution of the user-provided wrapper of the discipline (on the GEMSEO side)
 
     It is instantiated by the DisciplineWrapp during the prepare_execution step, and it is in one-to-one aggregation
@@ -97,13 +98,11 @@ class SoSDiscipline(Discipline):
             sos_wrapp (SoSWrapp): user-defined wrapper of the discipline
             reduced_dm (Dict[Dict]): reduced version of datamanager for i/o handling
         """
-        # self.disciplines = [] # TODO: remove and leave in driver
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
         self.input_full_name_map = None
         self.output_full_name_map = None
         self.logger = logger
-        # grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path
         self.debug_mode = debug_mode
         self.default_grammar_type = grammar_type
 
@@ -117,13 +116,13 @@ class SoSDiscipline(Discipline):
         self.output_grammar.data_converter.reduced_dm = self.reduced_dm
 
     def _run(self, input_data: StrKeyMapping):
-        """Call user-defined wrapper run."""
-        # TODO: [discuss] is this to be done at the prepare execution? (with set_wrapper_attributes)?
+        """
+        Call user-defined wrapper run.
+        """
         # send local data to the wrapper for i/o
         self.sos_wrapp.local_data = input_data
         self.sos_wrapp.input_data_names = self.get_input_data_names()
         self.sos_wrapp.output_data_names = self.get_output_data_names()
-        # self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
 
         # debug mode: input change
         if self.debug_mode in ['input_change', 'all']:
@@ -135,15 +134,10 @@ class SoSDiscipline(Discipline):
 
         # SoSWrapp run
         local_data = self.sos_wrapp._run()
-        # local data update
-        # self.io.update_output_data(local_data)
 
         # debug modes
         if self.debug_mode in ['nan', 'all']:
             self._check_nan_in_data(self.io.data)
-
-        # if self.debug_mode in ['linearize_data_change']:
-        #     self.check_linearize_data_changes = True
 
         if self.debug_mode in ['input_change', 'all']:
             disc_inputs_after_execution = {
@@ -163,11 +157,14 @@ class SoSDiscipline(Discipline):
         if self.debug_mode in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
         return local_data
+
     def execute(
         self,
         input_data,  # type:Optional[Dict[str, Any]]
     ):  # type: (...) -> Dict[str, Any]
-        """Overload method in order to catch exception through a try/except"""
+        """
+        Overload method in order to catch exception through a try/except
+        """
         try:
             self._local_data = super().execute(input_data)
         except Exception as error:
@@ -178,7 +175,8 @@ class SoSDiscipline(Discipline):
         return self._local_data
 
     def add_differentiated_inputs(self, input_names: Iterable[str] = ()) -> None:
-        """Add the inputs against which to differentiate the outputs.
+        """
+        Add the inputs against which to differentiate the outputs.
 
         Filters out the non-numerical (strings, booleans...) inputs before passing the list to GEMSEO.
 
@@ -192,7 +190,8 @@ class SoSDiscipline(Discipline):
             Discipline.add_differentiated_inputs(self, filtered_inputs)
 
     def add_differentiated_outputs(self, output_names: Iterable[str] = ()) -> None:
-        """Add the outputs to be differentiated.
+        """
+        Add the outputs to be differentiated.
 
         Filters out the non-numerical (strings, booleans...) inputs before passing the list to GEMSEO.
 
@@ -210,7 +209,8 @@ class SoSDiscipline(Discipline):
     def _prepare_io_for_check_jacobian(
         self, input_names: Iterable[str], output_names: Iterable[str]
     ) -> tuple[Iterable[str], Iterable[str]]:
-        """Filter the inputs and outputs to keep only the one that can be used for linearization.
+        """
+        Filter the inputs and outputs to keep only the one that can be used for linearization.
 
         Overrides the method from GEMSEO.
 
@@ -235,7 +235,8 @@ class SoSDiscipline(Discipline):
         self,
         compute_all_jacobians: bool = False,
     ) -> tuple[list[str], list[str]]:
-        """Get the inputs and outputs used in the differentiation of the discipline.
+        """
+        Get the inputs and outputs used in the differentiation of the discipline.
 
         Args:
             compute_all_jacobians: Whether to compute the Jacobians of all the output
@@ -276,7 +277,9 @@ class SoSDiscipline(Discipline):
         dump_jac_path=None,
         load_jac_path=None,
     ):
-        """Overload check jacobian to execute the init_execution"""
+        """
+        Overload check jacobian to execute the init_execution
+        """
         # The init execution allows to check jacobian without an execute before the check
         # however if an execute was done, we do not want to restart the model
         # and potentially loose informations to compute gradients (some
@@ -355,7 +358,8 @@ class SoSDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        """Over load of the GEMS function
+        """
+        Over load of the GEMS function
         Compute the analytic jacobian of a discipline/model
         Check if the jacobian in compute_sos_jacobian is OK
 
@@ -366,9 +370,6 @@ class SoSDiscipline(Discipline):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-        # if self.check_linearize_data_changes:
-        #     disc_data_before_linearize = self.local_data
-
         if self.jac is None:
             self._init_jacobian(input_names, output_names, init_type=self.InitJacobianType.SPARSE)
         else:
@@ -377,15 +378,13 @@ class SoSDiscipline(Discipline):
             )
 
         self.compute_sos_jacobian()
-        # if self.check_linearize_data_changes:
-        #     disc_data_after_linearize = self.local_data
-        #
-        #     self.check_discipline_data_integrity(disc_data_before_linearize,
-        #                                          disc_data_after_linearize,
-        #                                          'Discipline data integrity through compute_sos_jacobian')
-        # TODO REACTIVATE Check min_max_gradients
-        # if self.check_min_max_gradients:
-        #     self._check_min_max_gradients(self.jac)
+        if not self.sos_wrapp.analytic_jacobian:
+            # means that there is no analytic jacobian implemented
+            # we set to finite differences and rerun the same method
+            self.linearization_mode = ApproximationMode.FINITE_DIFFERENCES
+            self.logger.warning(
+                f"No compute_sos_jacobian found for the discipline {self.name}, switch to finite difference to compute the jacobian")
+            super()._compute_jacobian(input_names, output_names)
 
     def compute_sos_jacobian(self):
         """
@@ -405,7 +404,9 @@ class SoSDiscipline(Discipline):
                 discipline.clear_jacobian()
 
     def set_partial_derivative(self, y_key, x_key, value):
-        """Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac"""
+        """
+        Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac
+        """
         if y_key in self.jac and x_key in self.jac[y_key]:
             if isinstance(value, ndarray):
                 value = lil_matrix(value)
@@ -440,7 +441,9 @@ class SoSDiscipline(Discipline):
         return filter_variables_to_convert(self.reduced_dm, self.output_grammar.names)
 
     def _get_columns_indices(self, inputs, outputs, input_column, output_column):
-        """Returns indices of input_columns and output_columns"""
+        """
+        Returns indices of input_columns and output_columns
+        """
         # Get boundaries of the jacobian to compare
         if inputs is None:
             inputs = self.get_input_data_names()
@@ -479,7 +482,8 @@ class SoSDiscipline(Discipline):
     # ----------------------------------------------------
 
     def _check_nan_in_data(self, data):
-        """Using entry data, check if nan value exist in data's
+        """
+        Using entry data, check if nan value exist in data's
 
         :params: data
         :type: composite data
@@ -558,7 +562,9 @@ class SoSDiscipline(Discipline):
         return None
 
     def display_min_max_couplings(self):
-        """Method to display the minimum and maximum values among a discipline's couplings"""
+        """
+        Method to display the minimum and maximum values among a discipline's couplings
+        """
         min_coupling_dict, max_coupling_dict = {}, {}
         for key, value in self.io.data.items():
             is_coupling = self.reduced_dm[key]['coupling']

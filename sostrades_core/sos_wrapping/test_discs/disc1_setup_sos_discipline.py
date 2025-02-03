@@ -126,6 +126,7 @@ class Disc1RecursiveObjectDictCheck(Disc1):
         ObjectDictCheck(self, [])
         super().run()
 
+
 def ObjectDictCheck(obj, checked):
     objid = id(obj)
     if objid not in checked:

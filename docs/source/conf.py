@@ -19,8 +19,6 @@ project = 'sostrades-core'
 copyright = '2024, Sostrades Developers'
 author = 'Sostrades Developers'
 
-# version = '0.1.0'
-
 # -- General configuration
 
 extensions = [

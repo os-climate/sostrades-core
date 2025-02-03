@@ -192,6 +192,7 @@ class LocalFileSystemDatasetsConnectorV1(LocalFileSystemDatasetsConnectorBase):
                                                                    dataset_identifier.group_id)
         self._datasets_serializer.set_dataset_directory(
                 self.__build_group_path(dataset_identifier.dataset_id, filesystem_data_group_id))
+
         self._datasets_serializer.load_pickle_data()
         dataset_values = {
                 key: self._datasets_serializer.convert_from_dataset_data(key,

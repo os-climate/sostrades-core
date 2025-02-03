@@ -211,7 +211,7 @@ class DisciplineWrapp:
             discipline.linear_solver_MDO = proxy.linear_solver_MDO
             discipline.linear_solver_settings_MDO = proxy.linear_solver_settings_MDO
             discipline.linear_solver_tolerance_MDO = proxy.linear_solver_tolerance_MDO
-            discipline.linearization_mode = proxy.get_sosdisc_inputs(SoSDiscipline.LINEARIZATION_MODE)
+            discipline.linearization_mode = proxy.linearization_mode
 
             # # set other additional options (SoSTrades)
             # discipline.authorize_self_coupled_disciplines = proxy.get_sosdisc_inputs(
@@ -222,7 +222,8 @@ class DisciplineWrapp:
             proxy.status = self.discipline.execution_status.value
 
         elif self.wrapping_mode == 'GEMSEO':
-            raise NotImplementedError("GEMSEO native wrapping mode not yet available.")
+            self.discipline = proxy.cls_builder
+            # NEED TO UPDATE DEFAULTS OF self.discipline WITH get_sos_disc_inputs of proxy, HOW TO DO IT ?
 
     def create_mdo_scenario(self, sub_disciplines, proxy=None, reduced_dm=None):  # type: (...) -> None
         """

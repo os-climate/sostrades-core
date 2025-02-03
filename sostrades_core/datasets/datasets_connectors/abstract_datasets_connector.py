@@ -65,6 +65,7 @@ class AbstractDatasetsConnector(abc.ABC):
     def compatible_dataset_info_version(self):
         return set(self.COMPATIBLE_DATASET_INFO_VERSION)
 
+
     def check_dataset_info_version(self, dataset_identifier: AbstractDatasetInfo) -> None:
         """
         Check that the version of the dataset info is compatible with the version of the dataset Connector

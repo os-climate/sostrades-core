@@ -28,8 +28,10 @@ import numpy as np
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.sequential_mda import MDASequential
+from gemseo.scenarios.base_scenario import BaseScenario
 from numpy import ndarray
 from pandas import DataFrame, concat
 
@@ -441,27 +443,95 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         - configure all children disciplines
         """
         ProxyDiscipline.configure(self)
+        if self.ee.wrapping_mode == 'GEMSEO':
+            # Use the IO of the gemseo object to populate the coupling inputs and outputs
+            self.configure_coupling_with_gemseo_object()
 
-        disc_to_configure = self.get_disciplines_to_configure()
+        elif self.ee.wrapping_mode == 'SoSTrades':
 
-        if len(disc_to_configure) > 0:
-            self.set_configure_status(False)
-            for disc in disc_to_configure:
-                # possibly some one else like the driver has already configured the discipline
-                # not working for multiscenario of architecture builder ...
-                # if not disc.is_configured():
-                disc.configure()
-        else:
-            self.set_children_numerical_inputs()
-            # - all chidren are configured thus proxyCoupling can be configured
-            self.set_configure_status(True)
-            # - build the coupling structure
+            disc_to_configure = self.get_disciplines_to_configure()
 
-            self._build_coupling_structure()
-            # - builds data_in/out according to the coupling structure
-            self._build_data_io()
-            # - Update coupling and editable flags in the datamanager for the GUI
-            self._update_coupling_flags_in_dm()
+            if len(disc_to_configure) > 0:
+                self.set_configure_status(False)
+                for disc in disc_to_configure:
+                    # possibly some one else like the driver has already configured the discipline
+                    # not working for multiscenario of architecture builder ...
+                    # if not disc.is_configured():
+                    disc.configure()
+            else:
+                self.set_children_numerical_inputs()
+                # - all chidren are configured thus proxyCoupling can be configured
+                self.set_configure_status(True)
+                # - build the coupling structure
+
+                self._build_coupling_structure()
+                # - builds data_in/out according to the coupling structure
+                self._build_data_io()
+                # - Update coupling and editable flags in the datamanager for the GUI
+                self._update_coupling_flags_in_dm()
+
+    def configure_coupling_with_gemseo_object(self):
+        '''
+        Use the IO of the gemseo object to populate the coupling inputs and outputs
+
+        '''
+
+        gemseo_inputs = self.build_gemseo_io(self.IO_TYPE_IN)
+        gemseo_outputs = self.build_gemseo_io(self.IO_TYPE_OUT)
+
+        self.update_data_io_and_nsmap(gemseo_inputs, self.IO_TYPE_IN)
+        self.update_data_io_and_nsmap(gemseo_outputs, self.IO_TYPE_OUT)
+
+    def build_gemseo_io(self, io_type):
+        '''
+
+        Transform the gemseo grammars into understandable grammardict for sostrades
+        '''
+        gemseo_io_dict = {}
+        if isinstance(self.cls_builder, BaseDiscipline):
+            gemseo_disc = self.cls_builder
+            grammar = self.retrieve_gemseo_grammar(gemseo_disc, io_type)
+            gemseo_io_dict = self.convert_gemseo_grammar_into_io_dict(grammar, io_type)
+        elif isinstance(self.cls_builder, BaseScenario):
+            gemseo_discs = self.cls_builder.disciplines
+
+            for gemseo_disc in gemseo_discs:
+                disc_grammar = self.retrieve_gemseo_grammar(gemseo_disc, io_type)
+                gemseo_io_dict.update(self.convert_gemseo_grammar_into_io_dict(disc_grammar, io_type))
+
+        return gemseo_io_dict
+
+    def convert_gemseo_grammar_into_io_dict(self, gemseo_grammar, io_type):
+
+        io_dict = {gemseo_key: {self.TYPE: gemseo_type} for
+                   gemseo_key, gemseo_type
+                   in gemseo_grammar._get_names_to_types().items() if gemseo_type in self.VAR_TYPE_MAP}
+        if io_type == self.IO_TYPE_IN:
+            # for key in self.cls_builder.io.output_grammar:
+            #     if key in gemseo_io_dict:
+            #         gemseo_io_dict.pop(key)
+            for gemseo_key, gemseo_dict in io_dict.items():
+                gemseo_dict[self.DEFAULT] = gemseo_grammar.defaults[gemseo_key]
+
+        return io_dict
+
+    def retrieve_gemseo_grammar(self, disc, io_type):
+        '''
+
+        Args:
+            disc: the gemseo discipline where ther grammar is
+            io_type: the type of the grammar input or output
+
+        Returns: the grammar
+
+        '''
+        grammar = None
+        if io_type == self.IO_TYPE_IN:
+            grammar = disc.io.input_grammar
+        elif io_type == self.IO_TYPE_OUT:
+            grammar = disc.io.output_grammar
+
+        return grammar
 
     def _build_data_io(self):
         """
@@ -624,6 +694,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def prepare_execution(self):
         """Preparation of the GEMSEO process, including GEMSEO objects instanciation"""
         # prepare_execution of proxy_disciplines
+        if isinstance(self.cls_builder, ProxyDiscipline.GEMSEO_OBJECTS):
+            self.discipline_wrapp.wrapping_mode = 'GEMSEO'
 
         gemseo_disciplines = self.create_gemseo_disciplines()
         # store cache and n_calls before MDAChain reset, if prepare_execution
@@ -638,7 +710,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.discipline_wrapp.create_mda_chain(gemseo_disciplines, self, reduced_dm=reduced_dm)
 
         # set cache cache of gemseo object
-        self.set_gemseo_disciplines_caches(mda_chain_cache)
+        if self.discipline_wrapp.wrapping_mode != 'GEMSEO':
+            self.set_gemseo_disciplines_caches(mda_chain_cache)
 
     def create_gemseo_disciplines(self):
         gemseo_disciplines = []
@@ -654,6 +727,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def set_gemseo_disciplines_caches(self, mda_chain_cache):
         """Set cache of MDAChain, MDOChain and sub MDAs"""
         cache_type = self.get_sosdisc_inputs('cache_type')
+
+        # if warm_start then cache_type must be activated
+        if self.discipline_wrapp.discipline.settings.warm_start and cache_type == self.discipline_wrapp.discipline.CacheType.NONE:
+            cache_type = self.discipline_wrapp.discipline.CacheType.SIMPLE
         # set MDAChain cache
         if self._reset_cache:
             # set new cache when cache_type have changed (self._reset_cache == True)
@@ -779,7 +856,33 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.linear_solver_tolerance_MDO = linear_solver_settings_MDO.pop('tol')
         self.linear_solver_settings_MDO = linear_solver_settings_MDO
 
+        # FIXME: temporary fix
+        if self.all_strong_couplings_in_sub_mda():
+            num_data["max_mda_iter"] = 0
+
         return num_data
+
+    def get_sub_mdas(self):
+        sub_mdas = []
+        for disc in self.proxy_disciplines:
+            if isinstance(disc, ProxyCoupling):
+                sub_mdas.append(disc)
+            elif isinstance(disc, ProxyDisciplineBuilder):
+                for driver_subdisc in disc.proxy_disciplines:
+                    if isinstance(driver_subdisc, ProxyCoupling):
+                        sub_mdas.append(driver_subdisc)  # noqa: PERF401
+        return sub_mdas
+
+    def all_strong_couplings_in_sub_mda(self):
+        strong_couplings = set(self.coupling_structure.strong_couplings)
+        sub_mdas = self.get_sub_mdas()
+        if len(sub_mdas) == 1:
+            # NB: not handling the case of multiple sub-MDAs
+            sub_mda = sub_mdas[0]
+            sub_mda_strong_couplings = set(sub_mda.coupling_structure.strong_couplings)
+            if strong_couplings == sub_mda_strong_couplings:
+                return True
+        return False
 
     def get_maturity(self):
         """Get the maturity of the coupling proxy by adding all maturities of children proxy disciplines"""
