@@ -148,8 +148,6 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         algo_options = {
             key: value for key, value in all_options.items() if key not in BaseDriverSettings.model_fields
         }
-        algo_options_default = {option_name: option.default for option_name, option in algo_options.items()}
-
         algo_options_default = {
             option_name: option.default if not option.is_required() else None
             for option_name, option in algo_options.items()
