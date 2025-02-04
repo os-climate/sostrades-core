@@ -33,7 +33,7 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
     DatasetSerializerType,
 )
 
-class JSONDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):  # FIXME: remove the MV when all is tested
+class JSONDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):
     """
     Specific multi-version dataset connector for datasets in JSON format
     """

@@ -61,11 +61,11 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
                 raise DatasetGenericException(f"Multi-version connector {self} does not implement version {_version}.")
             _version_class = self.VERSION_TO_CLASS[_version]
             if _version in _version_class.COMPATIBLE_DATASET_INFO_VERSION:
-                # TODO: not registering the mono version connectors independently but probably should
+                # TODO: not registering the mono version connectors independently, should I?
                 if self.CONNECTOR_ID in _version_fields:
                     self.__version_connectors[_version] = _version_class(**_version_fields)
                 else:
-                    # TODO: this custom naming for subconnectors is to review, and it is probably useless unless registered
+                    # TODO: this custom naming for subconnectors is to review, and it is unused unless registered
                     subconnector_id = self.__get_subconnector_id(_version)
                     self.__version_connectors[_version] = _version_class(connector_id=subconnector_id,
                                                                          **_version_fields)
@@ -75,6 +75,10 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
 
     def __get_subconnector_id(self, version: str):
         return self.connector_id + self.VERSION_SUFFIX + version
+
+    @property
+    def all_connectors(self):
+        return self.__version_connectors.values()
 
     @property
     def compatible_dataset_info_version(self):
@@ -147,7 +151,7 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
             List[AbstractDatasetInfo]: List of available datasets
         """
         return list(set(chain.from_iterable(map(lambda _c: _c.get_datasets_available(),
-                                                self.__version_connectors.values()))))
+                                                self.all_connectors))))
 
     def _write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: Dict[str, Any],
                        data_types_dict: Dict[str, str], create_if_not_exists: bool = True, override: bool = False
@@ -197,13 +201,16 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
         Args:
             dataset_id (str): Identifier of the dataset to be removed
         """
-        raise NotImplementedError
+        # NB this might be improved if the dataset knew its version
+        for _c in self.all_connectors:
+            _c.clear_dataset(dataset_id)
 
     def clear_all_datasets(self):
         """
         Optional utility method to remove all datasets in a connector.
         """
-        map(lambda _d: self.clear_dataset(_d.dataset_id), self.get_datasets_available())
+        for _c in self.all_connectors:
+            _c.clear_all_datasets()
 
     def clear_connector(self):
         """
@@ -211,4 +218,6 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
         by deleting the root directory of a local connector, or by deleting the database file of a json connector. It
         defaults to clear_all_datasets unless overloaded.
         """
-        self.clear_all_datasets()
+        for _c in self.all_connectors:
+            _c.clear_connector()
+

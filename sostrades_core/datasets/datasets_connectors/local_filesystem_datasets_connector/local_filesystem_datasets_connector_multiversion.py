@@ -30,11 +30,6 @@ from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_conne
     local_filesystem_datasets_connectorV0 import LocalFileSystemDatasetsConnectorV0
 from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
     local_filesystem_datasets_connectorV1 import LocalFileSystemDatasetsConnectorV1
-from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
-    local_filesystem_datasets_connector_base import LocalFileSystemDatasetsConnectorBase
-from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
-    DatasetSerializerType,
-)
 
 
 class LocalFileSystemDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):  # FIXME: remove the MV when all is tested
@@ -67,18 +62,3 @@ class LocalFileSystemDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):
                                           f"{self.ROOT_DIRECTORY_PATH_ARG}")
         super().__init__(connector_id=connector_id,
                          mono_version_connectors_instantiation_fields=mono_version_connector_instantiation_fields)
-
-
-    # TODO [discuss] double inheritance or code duplication? :D
-    # def clear_connector(self):
-    #     rmtree_safe(self._root_directory_path)
-    #
-    # def clear_dataset(self, dataset_id: str) -> None:
-    #     """
-    #     Utility method to remove the directory corresponding to a given dataset_id within the root directory.
-    #
-    #     Args:
-    #         dataset_id (str): Identifier of the dataset to be removed.
-    #     """
-    #     rmtree_safe(os.path.join(self._root_directory_path, dataset_id))
-
