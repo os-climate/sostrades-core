@@ -1059,6 +1059,109 @@ class TestDatasets(unittest.TestCase):
         connector_to.clear_connector()
 
 
+    def test_23_file_system_V1_export_import(self):
+        """
+        Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
+        thus testing ability of LocalConnector to both write and load values.
+        """
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
+            DatasetConnectorType,
+        )
+        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
+            DatasetsConnectorManager,
+        )
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+        connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
+
+        connector_args_v0 = {
+            "root_directory_path": "./sostrades_core/tests/data/local_test_23_V0/",
+            "create_if_not_exists": True
+        }
+        connector_args_v1 = {
+            "root_directory_path": "./sostrades_core/tests/data/local_test_23_V1/",
+            "create_if_not_exists": True
+        }
+        DatasetsConnectorManager.register_connector(connector_identifier="local_v0v1_connector",
+                                                    connector_type=DatasetConnectorType.Local_MV,
+                                                    mono_version_connector_instantiation_fields={
+                                                        "V0": connector_args_v0,
+                                                        "V1": connector_args_v1,
+                                                    })
+
+        connector_export = DatasetsConnectorManager.get_connector("local_v0v1_connector")
+        study = Study()
+        study.load_data()  # load from mapping V0
+        dm = study.execution_engine.dm
+
+        # prepare data_type dict
+        dataset_vars_disc1 = [
+            "a",
+            "x",
+            "b",
+            "name",
+            "x_dict",
+            "y_array",
+            "z_list",
+            "b_bool",
+            "d"]
+
+        data_types_dict_disc1 = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars_disc1}
+
+        dataset_vars = ["inner_mda_name", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
+        data_types_dict = {_k: dm.get_data(f"usecase_dataset.{_k}", "type") for _k in dataset_vars}
+
+        # export data with the file system V1 connector
+        export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_datasets_mapping_v1.json")
+        try:
+            study.export_data_from_dataset_mapping(
+                from_datasets_mapping=DatasetsMapping.from_json_file(export_mapping_repo_file_path))
+            values = connector_export.get_values_all(
+                dataset_identifier=DatasetInfoV1('connector_export', "dataset_all_types", "<study_ph>"),
+                data_types_dict=data_types_dict)
+            values.update(connector_export.get_values_all(
+                dataset_identifier=DatasetInfoV1('connector_export', "dataset_all_types", "<study_ph>.Disc1"),
+                data_types_dict=data_types_dict_disc1))
+            self.assertEqual(values["a"], 1)
+            self.assertEqual(values["x"], 4.0)
+            self.assertEqual(values["b"], 2)
+            self.assertEqual(values["name"], "A1")
+            self.assertEqual(values["x_dict"], {"test1": 1, "test2": 2})
+            self.assertTrue(np.array_equal(values["y_array"], np.array([1.0, 2.0, 3.0])))
+            self.assertEqual(values["z_list"], [1.0, 2.0, 3.0])
+            self.assertEqual(values["b_bool"], False)
+            self.assertTrue((values["d"] == pd.DataFrame({"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
+
+        except Exception as cm:
+            connector_export.clear_dataset("dataset_all_types")
+            raise cm
+
+        # then import in an empty study
+        # create empty study:
+        empty_study = Study()
+        empty_stdy_dm = empty_study.execution_engine.dm
+
+        import_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_datasets_mapping_v1.json")
+        try:
+            empty_study.load_data(from_datasets_mapping=DatasetsMapping.from_json_file(import_mapping_repo_file_path))
+
+            self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.a"), 1)
+            self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+            self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.b"), 2)
+            self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.name"), "A1")
+            self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
+            self.assertTrue(
+                np.array_equal(empty_stdy_dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
+            self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
+            self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.b_bool"), False)
+            self.assertTrue((empty_stdy_dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame(
+                {"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
+
+        except Exception as cm:
+            connector_export.clear_dataset("dataset_all_types")
+            raise cm
+
+        connector_export.clear_connector()
+
 if __name__ == "__main__":
     cls = TestDatasets()
     cls.setUp()
