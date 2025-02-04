@@ -23,8 +23,10 @@ from sostrades_core.execution_engine.disciplines_wrappers.monte_carlo_driver_wra
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 
+STUDY_NAME = "MC"
+
 ONE_VAR_DISTRIB = {
-    "MC.Eval_MC.x": {
+    f"{STUDY_NAME}.Eval_MC.x": {
         MonteCarloDriverWrapper.DISTRIBUTION_TYPE_KEY: "OTTriangularDistribution",
         "minimum": 0,
         "maximum": 10,
@@ -33,13 +35,13 @@ ONE_VAR_DISTRIB = {
 }
 
 TWO_VAR_DISTRIB = {
-    "MC.Eval_MC.x": {
+    f"{STUDY_NAME}.Eval_MC.x": {
         MonteCarloDriverWrapper.DISTRIBUTION_TYPE_KEY: "OTTriangularDistribution",
         "minimum": 0,
         "maximum": 10,
         "mode": 5,
     },
-    "MC.Eval_MC.y_1": {
+    f"{STUDY_NAME}.Eval_MC.y_1": {
         MonteCarloDriverWrapper.DISTRIBUTION_TYPE_KEY: "OTUniformDistribution",
         "minimum": -10,
         "maximum": 10,
@@ -52,10 +54,9 @@ TWO_VAR_DISTRIB = {
 @pytest.mark.parametrize("criterion", ["n_samples", "target_cv", "target_std"])
 def test_monte_carlo_sellar(distributions, n_objectives, criterion):
     """Test the Monte Carlo driver on the Sellar problem."""
-    study_name = "MC"
     target_std = 1
     target_cv = 0.05
-    exec_eng = ExecutionEngine(study_name)
+    exec_eng = ExecutionEngine(STUDY_NAME)
     factory = exec_eng.factory
 
     mc_builder = factory.get_builder_from_process(
@@ -67,30 +68,30 @@ def test_monte_carlo_sellar(distributions, n_objectives, criterion):
     selected_outputs = [False, False, True, False, False] if n_objectives == 1 else [True] * 5
     n_samples = 100 if criterion == "n_samples" else 10000
     input_dict = {
-        f"{study_name}.Eval_MC.{ProxyDriverEvaluator.GATHER_OUTPUTS}": DataFrame({
+        f"{STUDY_NAME}.Eval_MC.{ProxyDriverEvaluator.GATHER_OUTPUTS}": DataFrame({
             'selected_output': selected_outputs,
             'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2'],
         }),
-        f"{study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.input_distributions}": distributions,
-        f"{study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.n_samples}": n_samples,
+        f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.input_distributions}": distributions,
+        f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.n_samples}": n_samples,
     }
     if criterion == "target_cv":
-        input_dict.update({f"{study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_cv}": target_cv})
+        input_dict.update({f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_cv}": target_cv})
     elif criterion == "target_std":
-        input_dict.update({f"{study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_std}": target_std})
+        input_dict.update({f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_std}": target_std})
 
     # Sellar inputs
-    input_dict[f'{study_name}.Eval_MC.x'] = array([1.0])
-    input_dict[f'{study_name}.Eval_MC.y_1'] = array([1.0])
-    input_dict[f'{study_name}.Eval_MC.y_2'] = array([1.0])
-    input_dict[f'{study_name}.Eval_MC.z'] = array([1.0, 1.0])
-    input_dict[f'{study_name}.Eval_MC.subprocess.Sellar_Problem.local_dv'] = 10.0
+    input_dict[f'{STUDY_NAME}.Eval_MC.x'] = array([1.0])
+    input_dict[f'{STUDY_NAME}.Eval_MC.y_1'] = array([1.0])
+    input_dict[f'{STUDY_NAME}.Eval_MC.y_2'] = array([1.0])
+    input_dict[f'{STUDY_NAME}.Eval_MC.z'] = array([1.0, 1.0])
+    input_dict[f'{STUDY_NAME}.Eval_MC.subprocess.Sellar_Problem.local_dv'] = 10.0
 
     exec_eng.load_study_from_input_dict(input_dict)
 
     exp_tv_list = [
-        f'Nodes representation for Treeview {study_name}',
-        f'|_ {study_name}',
+        f'Nodes representation for Treeview {STUDY_NAME}',
+        f'|_ {STUDY_NAME}',
         '\t|_ Eval_MC',
         '\t\t|_ subprocess',
         '\t\t\t|_ Sellar_Problem',
