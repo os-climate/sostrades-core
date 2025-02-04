@@ -143,12 +143,12 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         distributions_args: DistributionsArgsType = self.get_sosdisc_inputs(self.SoSInputNames.input_distributions)
         for var_name, distr_args in distributions_args.items():
             # Copy the dict as it will be modified
-            distr_args = deepcopy(distr_args)
-            distributions_type = distr_args.pop(self.DISTRIBUTION_TYPE_KEY)
+            distr_arg_copy = deepcopy(distr_args)
+            distributions_type = distr_arg_copy.pop(self.DISTRIBUTION_TYPE_KEY)
             self.parameter_space.add_random_variable(
                 name=var_name,
                 distribution=distributions_type,
-                **distr_args,
+                **distr_arg_copy,
             )
 
         gather_outputs = self.get_sosdisc_inputs(ProxyDriverEvaluator.GATHER_OUTPUTS)
@@ -240,9 +240,9 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         input_samples = samples_dict["designs"]
         self.store_sos_outputs_values({self.SoSOutputNames.input_samples: input_samples})
 
-        output_sizes = [size(self._discipline.local_data[output]) for output in self.outputs]
         output_array = next(iter(samples_dict["functions"].values()))
-        output_arrays = split(output_array, cumsum(output_sizes), axis=1)
+        output_sizes = [size(self._discipline.local_data[output]) for output in self.outputs]
+        output_arrays = split(output_array, cumsum(output_sizes[:-1]), axis=1)
         output_samples = {output: output_arrays[i] for i, output in enumerate(self.outputs)}
         self.store_sos_outputs_values({self.SoSOutputNames.output_samples: output_samples})
 
