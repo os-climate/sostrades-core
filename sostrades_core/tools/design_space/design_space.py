@@ -86,7 +86,7 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
                 var_type = 'float'
                 l_b = array(lb_loc)
                 u_b = array(ub_loc)
-                value = array(val)
+                value = array(val_loc)
 
             # 'automatic' var_type values are overwritten if filled by the user
             if vtype is not None:

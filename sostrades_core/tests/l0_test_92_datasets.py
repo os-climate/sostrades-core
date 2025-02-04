@@ -52,6 +52,26 @@ class TestDatasets(unittest.TestCase):
         # Set logging level to debug for datasets
         logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
 
+        # create connector for test
+        connector_args = {
+             "file_path": "./sostrades_core/tests/data/test_92_datasets_db.json"
+        }
+
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_datasets_connector",
+                                                    connector_type=DatasetConnectorType.get_enum_value("JSON"),
+                                                    **connector_args)
+
+        # create local connector
+        connector_args = {
+             "root_directory_path": "./sostrades_core/tests/data/local_datasets_db/",
+             "create_if_not_exists": True
+        }
+
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    **connector_args)
+
+
         # nested types reference values to be completed with more nested types
         df1 = pd.DataFrame({'years': [2020, 2021, 2022],
                             'type': ['alpha', 'beta', 'gamma']})
@@ -230,6 +250,9 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)
 
     def test_06_parameter_change_returned_in_load_data_using_both_dict_and_datasets(self):
+
+
+
         usecase_file_path = uc_dataset_dict.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -372,6 +395,7 @@ class TestDatasets(unittest.TestCase):
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
                                                     connector_type=DatasetConnectorType.get_enum_value("Local"),
                                                     **connector_args)
+
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -505,6 +529,8 @@ class TestDatasets(unittest.TestCase):
             connector_identifier="MVP0_local_datasets_connector_copy_test_nested",
             connector_type=DatasetConnectorType.get_enum_value("Local"),
             **connector_args)
+
+
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -704,6 +730,8 @@ class TestDatasets(unittest.TestCase):
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_bigquery_connector_copy_test",
                                                     connector_type=DatasetConnectorType.get_enum_value("Bigquery"),
                                                     **connector_args)
+
+
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -758,6 +786,8 @@ class TestDatasets(unittest.TestCase):
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_bigquery_connector_copy_test",
                                                     connector_type=DatasetConnectorType.get_enum_value("Bigquery"),
                                                     **connector_args)
+
+
         connector_to = DatasetsConnectorManager.get_connector('MVP0_bigquery_connector_copy_test')
         connector_from = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
 
@@ -905,6 +935,7 @@ class TestDatasets(unittest.TestCase):
             DatasetsConnectorManager,
         )
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+
         connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
 
         connector_args = {
@@ -1048,6 +1079,8 @@ class TestDatasets(unittest.TestCase):
         DatasetsConnectorManager.register_connector(connector_identifier="local_datasets_V1",
                                                     connector_type=DatasetConnectorType.Local_V1,
                                                     **connector_args)
+
+
         connector_to = DatasetsConnectorManager.get_connector('local_datasets_V1')
         connector_from = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
         with self.assertRaises(DatasetGenericException):
