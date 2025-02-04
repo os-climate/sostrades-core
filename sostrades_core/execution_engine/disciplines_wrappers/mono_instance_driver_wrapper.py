@@ -16,9 +16,11 @@ limitations under the License.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from gemseo import create_design_space, create_scenario
 from gemseo.settings.doe import CustomDOE_Settings
-from numpy import hstack, size
+from numpy import atleast_1d, cumsum, hstack, size, split
 from pandas import DataFrame, concat
 
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
@@ -28,6 +30,9 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
     SampleGeneratorWrapper,
 )
 from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
 
 
 class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
@@ -89,14 +94,14 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         scenario_names = samples.pop(SampleGeneratorWrapper.SCENARIO_NAME).to_list()
         return samples, scenario_names
 
-    def evaluate_samples(self, input_samples: DataFrame) -> DataFrame:
+    def evaluate_samples(self, input_samples: DataFrame) -> Dataset:
         """Evaluate the samples.
 
         Args:
             input_samples: The dataframe containing the samples input values.
 
         Returns:
-            The dataframe of output values.
+            The dataset of input and output values.
         """
         self._init_input_data()
         default_inputs = self._get_input_data({})
@@ -126,20 +131,39 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             wait_time_between_samples=wait_time_between_samples,
         )
         doe_scenario.execute(settings)
-        outputs_array = next(iter(doe_scenario.to_dataset().to_dict_of_arrays()["functions"].values()))
+        return doe_scenario.to_dataset()
 
-        return DataFrame(data=outputs_array, columns=outputs)
-
-    def process_output(self, evaluation_outputs: DataFrame, scenario_names: list[str]) -> None:
+    def process_output(self, evaluation_outputs: Dataset, scenario_names: list[str]) -> None:
         """Process and store the sampling outputs.
+
+        The output samples are gathered in a single array.
+        We need to retrieve the size of each separate output
+        and split the array into the sub-array corresponding to each output.
 
         Args:
             evaluation_outputs: The results of the samples evaluation.
             scenario_names: The scenario names corresponding to each sample.
         """
-        columns = [SampleGeneratorWrapper.SCENARIO_NAME, *evaluation_outputs.columns]
-        evaluation_outputs[SampleGeneratorWrapper.SCENARIO_NAME] = scenario_names
-        samples_output_df = DataFrame(evaluation_outputs, columns=columns)
+        n_samples = evaluation_outputs.shape[0]
+        output_names = self.attributes["eval_out_list"]
+        samples_dict = evaluation_outputs.to_dict_of_arrays()
+        output_array = next(iter(samples_dict["functions"].values()))
+        output_sizes = [size(self.attributes["sub_disciplines"][0].local_data[output]) for output in output_names]
+        if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
+            samples_output_df = DataFrame(output_array, columns=output_names)
+        else:  # some outputs have more than 1 component
+            df_list = []
+            output_arrays = split(output_array, cumsum(output_sizes[:-1]), axis=1)
+            for i, a in enumerate(output_arrays):
+                if output_sizes[i] == 1:
+                    df = DataFrame({output_names[i]: a.flatten()})
+                else:
+                    df = DataFrame({output_names[i]: [a[j, :] for j in range(n_samples)]})
+                df_list.append(df)
+            samples_output_df = concat(df_list, axis=1)
+        scenario_names_df = DataFrame(scenario_names, columns=[SampleGeneratorWrapper.SCENARIO_NAME])
+        samples_output_df = concat((samples_output_df, scenario_names_df), axis=1)
+        self.store_sos_outputs_values({"samples_outputs_df": samples_output_df})
 
         # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
         subprocess_ref_outputs = {
@@ -149,11 +173,9 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         }
         self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
 
-        self.store_sos_outputs_values({"samples_outputs_df": samples_output_df})
         for dynamic_output, out_name in zip(self.attributes["eval_out_list"], self.attributes["eval_out_names"]):
             dict_output = {
-                r[SampleGeneratorWrapper.SCENARIO_NAME]: r[dynamic_output]
-                for _, r in samples_output_df.iterrows()
+                r[SampleGeneratorWrapper.SCENARIO_NAME]: r[dynamic_output] for _, r in samples_output_df.iterrows()
             }
             self.store_sos_outputs_values({out_name: dict_output})
 
