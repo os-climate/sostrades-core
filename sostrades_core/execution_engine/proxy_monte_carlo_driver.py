@@ -97,9 +97,6 @@ class ProxyMonteCarloDriver(ProxyMonoInstanceDriver):
         Overload the ProxyDriverEvaluator method to avoid adding the subprocess outputs.
         """
         self._restart_data_io_to_disc_io()
-        for proxy_disc in self.proxy_disciplines:
-            subprocess_data_in = proxy_disc.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple=True)
-            self.update_data_io_with_child(subprocess_data_in, {})
 
     def setup_sos_disciplines(self) -> None:
         """Overload the ProxyMonoInstanceDriver method to avoid adding irrelevant outputs."""
