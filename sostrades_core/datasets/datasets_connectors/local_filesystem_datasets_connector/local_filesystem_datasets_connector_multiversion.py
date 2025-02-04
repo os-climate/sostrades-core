@@ -40,6 +40,7 @@ class LocalFileSystemDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):
     VERSION_TO_CLASS = {VERSION_V0: LocalFileSystemDatasetsConnectorV0,
                         VERSION_V1: LocalFileSystemDatasetsConnectorV1}
     ROOT_DIRECTORY_PATH_ARG = "root_directory_path"
+    CREATE_IF_NOT_EXISTS_ARG = "create_if_not_exists"
 
     def __init__(self,
                  connector_id: str,

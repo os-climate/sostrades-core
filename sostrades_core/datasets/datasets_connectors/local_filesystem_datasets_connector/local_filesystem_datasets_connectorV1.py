@@ -236,27 +236,6 @@ class LocalFileSystemDatasetsConnectorV1(LocalFileSystemDatasetsConnectorBase):
 
         return self.write_values(dataset_identifier=dataset_identifier, values_to_write=values_to_write, data_types_dict=data_types_dict)
 
-    # def clear(self, remove_root_directory: bool = False) -> None:
-    #     """
-    #     Utility method to remove all datasets in the connector root directory.
-    #
-    #     Args:
-    #         remove_root_directory (bool): Whether to delete the root directory itself too.
-    #     """
-    #     if remove_root_directory:
-    #         rmtree_safe(self._root_directory_path)
-    #     else:
-    #         map(self.clear_dataset, self.get_datasets_available())
-    #
-    # def clear_dataset(self, dataset_id: str) -> None:
-    #     """
-    #     Utility method to remove the directory corresponding to a given dataset_id within the root directory.
-    #
-    #     Args:
-    #         dataset_id (str): Identifier of the dataset to be removed.
-    #     """
-    #     rmtree_safe(os.path.join(self._root_directory_path, dataset_id))
-
     def __index_data_group_directory(self,
                                      dataset_descriptor: dict[str, dict[str, Any]],
                                      dataset_identifier: str,
