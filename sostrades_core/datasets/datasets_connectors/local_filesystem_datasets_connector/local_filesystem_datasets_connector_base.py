@@ -68,4 +68,6 @@ class LocalFileSystemDatasetsConnectorBase(AbstractDatasetsConnector, abc.ABC):
         Args:
             dataset_id (str): Identifier of the dataset to be removed.
         """
-        rmtree_safe(os.path.join(self._root_directory_path, dataset_id))
+        dataset_pth = os.path.join(self._root_directory_path, dataset_id)
+        if os.path.exists(dataset_pth):
+            rmtree_safe(dataset_pth)

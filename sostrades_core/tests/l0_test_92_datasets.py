@@ -1210,26 +1210,91 @@ class TestDatasets(unittest.TestCase):
 
         connector_v0v1.clear_connector()
 
-    # def test_24_repository_dataset_connector_as_multiversion(self):
-    #     """
-    #     Some example to check repository datasets connector in its multiversion mode
-    #     """
-    #     test_data_folder = os.path.join(os.path.dirname(__file__), "data")
-    #
-    #     # load the values in v0 as tested in test_10
-    #     mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
-    #     usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
-    #     study = StudyManager(file_path=usecase_file_path)
-    #     dm = study.execution_engine.dm
-    #     study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
-    #
-    #     # export entire study in V1 with the repos MV connector
-    #     export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_24_repository_datasets_mapping_v1.json")
-    #     study.export_data_from_dataset_mapping(
-    #         from_datasets_mapping=DatasetsMapping.from_json_file(export_mapping_repo_file_path))
-    #
+    def test_24_repository_dataset_connector_as_multiversion(self):
+        """
+        Some example to check repository datasets connector in its multiversion mode
+        """
+        test_data_folder = os.path.join(os.path.dirname(__file__), "data")
 
+        # load the values in v0 as tested in test_10
+        mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
+        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+        study = StudyManager(file_path=usecase_file_path)
+        study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
 
+        # change some values and re-export in v1
+        new_max_mda_iter = 50
+        new_y_array = np.array([4.0, 5.0, 6.0])
+        new_b = 3
+        new_x_dict = {"test1": 1, "test2": 2}
+        new_d = pd.DataFrame({"years": [2025, 2026], "x": [10.0, 1.0]})
+        values_dict = {
+            "usecase_dataset.max_mda_iter": new_max_mda_iter,
+            "usecase_dataset.Disc1.y_array": new_y_array,
+            "usecase_dataset.Disc1.b": new_b,
+            "usecase_dataset.Disc1.x_dict":  new_x_dict,
+            "usecase_dataset.Disc1.d": new_d,
+        }
+        study.ee.load_study_from_input_dict(values_dict)
+
+        # export entire study in V1 with the repos MV connector
+        export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_24_repository_datasets_mapping_v1.json")
+        study.export_data_from_dataset_mapping(
+            from_datasets_mapping=DatasetsMapping.from_json_file(export_mapping_repo_file_path))
+
+        # create an empty study and import with the same v1 mapping
+        empty_study = Study()
+        empty_stdy_dm = empty_study.execution_engine.dm
+        empty_study.load_data(from_datasets_mapping=DatasetsMapping.from_json_file(export_mapping_repo_file_path))
+
+        # assert that values are correct
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.inner_mda_name"), "MDAJacobi")
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.max_mda_iter"), new_max_mda_iter)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.n_processes"), 1)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.linear_solver_MDA_preconditioner"), "None")
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.a"), 1)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.b"), new_b)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.name"), "A1")
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.x_dict"), new_x_dict)
+        self.assertTrue(
+            np.array_equal(empty_stdy_dm.get_value("usecase_dataset.Disc1.y_array"), new_y_array))
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.b_bool"), False)
+        self.assertTrue((empty_stdy_dm.get_value("usecase_dataset.Disc1.d") == new_d).all().all())
+
+        # create a new empty study and import with a mapping that mixes v0 and v1
+        # namely only Disc1.y_array and numerical values are taken from v1 and the rest of Disc1 values from v0
+        empty_study = Study()
+        empty_stdy_dm = empty_study.execution_engine.dm
+        import_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_24_repository_datasets_mapping_mix_v0v1.json")
+        empty_study.load_data(from_datasets_mapping=DatasetsMapping.from_json_file(import_mapping_repo_file_path))
+
+        # assert that the values are mixed as expected
+
+        old_b = 2
+        old_x_dict = {"test1": 1, "test2": 2}
+        old_d = pd.DataFrame(
+            {"years": [2023, 2024], "x": [1.0, 10.0]})
+
+        # assert that values are correct
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.inner_mda_name"), "MDAJacobi")
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.max_mda_iter"), new_max_mda_iter)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.n_processes"), 1)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.linear_solver_MDA_preconditioner"), "None")
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.a"), 1)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.x"), 4.0)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.b"), old_b)
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.name"), "A1")
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.x_dict"), old_x_dict)
+        self.assertTrue(
+            np.array_equal(empty_stdy_dm.get_value("usecase_dataset.Disc1.y_array"), new_y_array))
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
+        self.assertEqual(empty_stdy_dm.get_value("usecase_dataset.Disc1.b_bool"), False)
+        self.assertTrue((empty_stdy_dm.get_value("usecase_dataset.Disc1.d") == old_d).all().all())
+
+        repo_connector = DatasetsConnectorManager.get_connector('repos:sostrades_core')
+        repo_connector.clear_dataset("test_dataset_all_types_v1_all_study__tmp")
 
 if __name__ == "__main__":
     cls = TestDatasets()
