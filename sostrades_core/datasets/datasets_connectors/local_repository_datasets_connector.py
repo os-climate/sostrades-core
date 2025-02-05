@@ -16,13 +16,14 @@ limitations under the License.
 import importlib
 from os.path import dirname, join
 
+from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V0, VERSION_V1
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     DatasetGenericException,
 )
 from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connector_multiversion import (
     LocalFileSystemDatasetsConnectorMV,
 )
-from sostrades_core.datasets.dataset_info.dataset_info_versions import (VERSION_V0, VERSION_V1)
+
 
 class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorMV):
     """

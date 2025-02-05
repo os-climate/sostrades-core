@@ -20,18 +20,16 @@ from typing import Any
 
 from sostrades_core.datasets.dataset_info.dataset_info_v1 import DatasetInfoV1
 from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V1
-from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
-local_filesystem_datasets_connector_base import LocalFileSystemDatasetsConnectorBase
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
-    AbstractDatasetsConnector,
     DatasetGenericException,
     DatasetNotFoundException,
 )
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
+local_filesystem_datasets_connector_base import LocalFileSystemDatasetsConnectorBase
 from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
     DatasetSerializerType,
-    DatasetsSerializerFactory,
 )
-from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
+from sostrades_core.tools.folder_operations import makedirs_safe
 
 
 class LocalFileSystemDatasetsConnectorV1(LocalFileSystemDatasetsConnectorBase):

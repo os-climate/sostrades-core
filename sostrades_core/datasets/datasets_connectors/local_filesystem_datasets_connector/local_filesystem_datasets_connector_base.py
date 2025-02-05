@@ -15,9 +15,7 @@ limitations under the License.
 '''
 import abc
 import os
-from typing import Any
 
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
 )
@@ -26,6 +24,7 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
     DatasetsSerializerFactory,
 )
 from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
+
 
 class LocalFileSystemDatasetsConnectorBase(AbstractDatasetsConnector, abc.ABC):
     """

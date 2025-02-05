@@ -17,10 +17,13 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Type
 from itertools import chain
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (AbstractDatasetsConnector,
-                                                                                     DatasetGenericException)
+from typing import TYPE_CHECKING, Any, Dict, List, Type
+
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+    AbstractDatasetsConnector,
+    DatasetGenericException,
+)
 
 if TYPE_CHECKING:
     from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
