@@ -1059,7 +1059,7 @@ class TestDatasets(unittest.TestCase):
         connector_to.clear_connector()
 
 
-    def test_23_file_system_V1_export_import(self):
+    def test_23_file_system_V0V1_export_import(self):
         """
         """
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
@@ -1209,6 +1209,27 @@ class TestDatasets(unittest.TestCase):
             raise cm
 
         connector_v0v1.clear_connector()
+
+    # def test_24_repository_dataset_connector_as_multiversion(self):
+    #     """
+    #     Some example to check repository datasets connector in its multiversion mode
+    #     """
+    #     test_data_folder = os.path.join(os.path.dirname(__file__), "data")
+    #
+    #     # load the values in v0 as tested in test_10
+    #     mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
+    #     usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
+    #     study = StudyManager(file_path=usecase_file_path)
+    #     dm = study.execution_engine.dm
+    #     study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
+    #
+    #     # export entire study in V1 with the repos MV connector
+    #     export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_24_repository_datasets_mapping_v1.json")
+    #     study.export_data_from_dataset_mapping(
+    #         from_datasets_mapping=DatasetsMapping.from_json_file(export_mapping_repo_file_path))
+    #
+
+
 
 if __name__ == "__main__":
     cls = TestDatasets()

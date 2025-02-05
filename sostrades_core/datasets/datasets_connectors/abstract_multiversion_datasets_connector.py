@@ -194,16 +194,21 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
                                                                              data_type=data_type)
         # CLEARING
 
-    def clear_dataset(self, dataset_id: str) -> None:
+    def clear_dataset(self, dataset_id: str, version_id: str = None) -> None:
         """
         Optional utility method to remove a given dataset_id within a certain connector.
 
         Args:
             dataset_id (str): Identifier of the dataset to be removed
+            version_id (str): Version of the dataset to be removed, if None will remove from all sub-connectors.
         """
-        # NB this might be improved if the dataset knew its version
-        for _c in self.all_connectors:
-            _c.clear_dataset(dataset_id)
+        if version_id is None:
+            for _c in self.all_connectors:
+                _c.clear_dataset(dataset_id)
+        elif version_id in self.VERSION_TO_CLASS:
+            self.__version_connectors[version_id].clear_dataset(dataset_id)
+        else:
+            raise DatasetGenericException(f"Multi-version connector {self} does handle version {version_id}.")
 
     def clear_all_datasets(self):
         """
