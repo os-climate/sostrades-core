@@ -1,0 +1,11 @@
+{
+  "process_module_path": "sostrades_core.sos_processes.test.test_disc1_all_types",
+  "namespace_datasets_mapping": {
+    "v0|<study_ph>|*": [
+      "v0|v0v1_connector|root|*"
+    ],
+    "v0|<study_ph>.Disc1|*": [
+      "v0|v0v1_connector|Disc1|*"
+    ]
+  }
+}
