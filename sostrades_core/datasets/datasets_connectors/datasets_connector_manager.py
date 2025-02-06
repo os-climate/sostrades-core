@@ -43,7 +43,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
     Datasets connector manager
     """
     CONNECTOR_TYPE_STR = "connector_type"
-    CONNECTOR_IDENTIFIER_STR = "connector_id"
+    CONNECTOR_IDENTIFIER_STR = AbstractDatasetsConnector.CONNECTOR_ID
     CONNECTOR_ARGS_STR = "connector_args"
     CONNECTOR_DEFAULT_REPOSITORY_RE = r'(?<=repos:)[\w-]+'
     __registered_connectors = {}
