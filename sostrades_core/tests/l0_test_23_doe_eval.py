@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/04-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/04-2025/01/20 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -303,27 +303,25 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert len(doe_disc_samples) == 6
         assert len(doe_disc_obj) == 6
         reference_dict_doe_disc_y1 = {
-            'scenario_1': array([15.10281769103777]),
-            'scenario_2': array([15.000894464416369]),
-            'scenario_3': array([11.278120786397253]),
-            'scenario_4': array([5.18930989931766]),
-            'scenario_5': array([101.52834766740203]),
-            'reference_scenario': array([2.2968901115681137]),
+            'scenario_1': 15.10281769103777,
+            'scenario_2': 15.000894464416369,
+            'scenario_3': 11.278120786397253,
+            'scenario_4': 5.18930989931766,
+            'scenario_5': 101.52834766740203,
+            'reference_scenario': 2.2968901115681137,
         }
         reference_dict_doe_disc_y2 = {
-            'scenario_1': array([
-                11.033919669251484,
-            ]),
-            'scenario_2': array([9.200264485832342]),
-            'scenario_3': array([6.186104480478865]),
-            'scenario_4': array([7.644306621670211]),
-            'scenario_5': array([10.67812780071307]),
-            'reference_scenario': array([3.515549442159431]),
+            'scenario_1': 11.033919669251484,
+            'scenario_2': 9.200264485832342,
+            'scenario_3': 6.186104480478865,
+            'scenario_4': 7.644306621670211,
+            'scenario_5': 10.67812780071307,
+            'reference_scenario': 3.515549442159431,
         }
         for key in doe_disc_y1:
-            self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0], delta=2e-6)
+            self.assertAlmostEqual(doe_disc_y1[key], reference_dict_doe_disc_y1[key], delta=2e-6)
         for key in doe_disc_y2:
-            self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0], delta=2e-6)
+            self.assertAlmostEqual(doe_disc_y2[key], reference_dict_doe_disc_y2[key], delta=2e-6)
 
     def test_3_separated_doe_and_eval_execution_lhs_on_1_var(self):
         """ """
@@ -401,35 +399,35 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert len(eval_disc_samples) == n_samples + 1
         assert len(eval_disc_obj) == n_samples + 1
         reference_dict_eval_disc_y1 = {
-            'scenario_1': array([10.491018977258355]),
-            'scenario_2': array([7.24782387574203]),
-            'scenario_3': array([2.975340931836132]),
-            'scenario_4': array([1.7522750305335788]),
-            'scenario_5': array([9.384097147979022]),
-            'scenario_6': array([8.367043113388867]),
-            'scenario_7': array([4.479056659260385]),
-            'scenario_8': array([5.286890682142451]),
-            'scenario_9': array([3.2401082970583297]),
-            'scenario_10': array([6.194560558626323]),
-            'reference_scenario': array([2.2968901115681137]),
+            'scenario_1': 10.491018977258355,
+            'scenario_2': 7.24782387574203,
+            'scenario_3': 2.975340931836132,
+            'scenario_4': 1.7522750305335788,
+            'scenario_5': 9.384097147979022,
+            'scenario_6': 8.367043113388867,
+            'scenario_7': 4.479056659260385,
+            'scenario_8': 5.286890682142451,
+            'scenario_9': 3.2401082970583297,
+            'scenario_10': 6.194560558626323,
+            'reference_scenario': 2.2968901115681137,
         }
         reference_dict_eval_disc_y2 = {
-            'scenario_1': array([5.238984250850621]),
-            'scenario_2': array([4.692178277109826]),
-            'scenario_3': array([3.724917659436569]),
-            'scenario_4': array([3.3237352569655227]),
-            'scenario_5': array([5.063347376315495]),
-            'scenario_6': array([4.892584158393472]),
-            'scenario_7': array([4.116378193816121]),
-            'scenario_8': array([4.299323961981532]),
-            'scenario_9': array([3.8000300822648296]),
-            'scenario_10': array([4.488887413810902]),
-            'reference_scenario': array([3.515549442159431]),
+            'scenario_1': 5.238984250850621,
+            'scenario_2': 4.692178277109826,
+            'scenario_3': 3.724917659436569,
+            'scenario_4': 3.3237352569655227,
+            'scenario_5': 5.063347376315495,
+            'scenario_6': 4.892584158393472,
+            'scenario_7': 4.116378193816121,
+            'scenario_8': 4.299323961981532,
+            'scenario_9': 3.8000300822648296,
+            'scenario_10': 4.488887413810902,
+            'reference_scenario': 3.515549442159431,
         }
         for key in eval_disc_y1:
-            self.assertAlmostEqual(eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0], delta=1e-6)
+            self.assertAlmostEqual(eval_disc_y1[key], reference_dict_eval_disc_y1[key], delta=1e-6)
         for key in eval_disc_y2:
-            self.assertAlmostEqual(eval_disc_y2[key][0], reference_dict_eval_disc_y2[key][0], delta=1e-6)
+            self.assertAlmostEqual(eval_disc_y2[key], reference_dict_eval_disc_y2[key], delta=1e-6)
 
         # we check that at the end of the run the dm contains the reference (or
         # initial ) point
@@ -1207,25 +1205,25 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert len(doe_disc_samples) == 6
         assert len(doe_disc_obj) == 6
         reference_dict_doe_disc_y1 = {
-            'scenario_1': array([15.10281769103777]),
-            'scenario_2': array([15.000894464416369]),
-            'scenario_3': array([11.278120786397253]),
-            'scenario_4': array([5.18930989931766]),
-            'scenario_5': array([101.52834766740203]),
-            'reference_scenario': array([2.2968901115681137]),
+            'scenario_1': 15.10281769103777,
+            'scenario_2': 15.000894464416369,
+            'scenario_3': 11.278120786397253,
+            'scenario_4': 5.18930989931766,
+            'scenario_5': 101.52834766740203,
+            'reference_scenario': 2.2968901115681137,
         }
         reference_dict_doe_disc_y2 = {
-            'scenario_1': array([11.033919669251484]),
-            'scenario_2': array([9.200264485832342]),
-            'scenario_3': array([6.186104480478865]),
-            'scenario_4': array([7.644306621670211]),
-            'scenario_5': array([10.67812780071307]),
-            'reference_scenario': array([3.515549442159431]),
+            'scenario_1': 11.033919669251484,
+            'scenario_2': 9.200264485832342,
+            'scenario_3': 6.186104480478865,
+            'scenario_4': 7.644306621670211,
+            'scenario_5': 10.67812780071307,
+            'reference_scenario': 3.515549442159431,
         }
         for key in doe_disc_y1:
-            self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0], delta=2e-6)
+            self.assertAlmostEqual(doe_disc_y1[key], reference_dict_doe_disc_y1[key], delta=2e-6)
         for key in doe_disc_y2:
-            self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0], delta=2e-6)
+            self.assertAlmostEqual(doe_disc_y2[key], reference_dict_doe_disc_y2[key], delta=2e-6)
 
         # reset of data integrity flag for next tests
         exec_eng.data_check_integrity = False
@@ -1554,25 +1552,25 @@ class TestSoSDOEScenario(unittest.TestCase):
         assert len(doe_disc_samples) == 6
         assert len(doe_disc_obj) == 6
         reference_dict_doe_disc_y1 = {
-            'scenario_1': array([15.10281769103777]),
-            'scenario_2': array([15.000894464416369]),
-            'scenario_3': array([11.278120786397253]),
-            'scenario_4': array([5.18930989931766]),
-            'scenario_5': array([101.52834766740203]),
-            'reference_scenario': array([2.2968901115681137]),
+            'scenario_1': 15.10281769103777,
+            'scenario_2': 15.000894464416369,
+            'scenario_3': 11.278120786397253,
+            'scenario_4': 5.18930989931766,
+            'scenario_5': 101.52834766740203,
+            'reference_scenario': 2.2968901115681137,
         }
         reference_dict_doe_disc_y2 = {
-            'scenario_1': array([11.033919669251484]),
-            'scenario_2': array([9.200264485832342]),
-            'scenario_3': array([6.186104480478865]),
-            'scenario_4': array([7.644306621670211]),
-            'scenario_5': array([10.67812780071307]),
-            'reference_scenario': array([3.515549442159431]),
+            'scenario_1': 11.033919669251484,
+            'scenario_2': 9.200264485832342,
+            'scenario_3': 6.186104480478865,
+            'scenario_4': 7.644306621670211,
+            'scenario_5': 10.67812780071307,
+            'reference_scenario': 3.515549442159431,
         }
         for key in doe_disc_y1:
-            self.assertAlmostEqual(doe_disc_y1[key][0], reference_dict_doe_disc_y1[key][0], delta=2e-6)
+            self.assertAlmostEqual(doe_disc_y1[key], reference_dict_doe_disc_y1[key], delta=2e-6)
         for key in doe_disc_y2:
-            self.assertAlmostEqual(doe_disc_y2[key][0], reference_dict_doe_disc_y2[key][0], delta=2e-6)
+            self.assertAlmostEqual(doe_disc_y2[key], reference_dict_doe_disc_y2[key], delta=2e-6)
 
     def test_17_doe_and_eval_execution_lhs_on_1_var_run_time_vs_config_time_sampling(self):
         """
@@ -1927,4 +1925,4 @@ class TestSoSDOEScenario(unittest.TestCase):
 if __name__ == '__main__':
     cls = TestSoSDOEScenario()
     cls.setUp()
-    cls.test_14_doe_eval_of_single_sub_discipline()
+    cls.test_3_separated_doe_and_eval_execution_lhs_on_1_var()
