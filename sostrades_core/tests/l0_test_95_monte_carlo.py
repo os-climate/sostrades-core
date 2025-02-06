@@ -54,8 +54,8 @@ TWO_VAR_DISTRIB = {
 @pytest.mark.parametrize("criterion", ["n_samples", "target_cv", "target_std"])
 def test_monte_carlo_sellar(distributions, n_objectives, criterion):
     """Test the Monte Carlo driver on the Sellar problem."""
-    target_std = 1
-    target_cv = 0.05
+    target_std = 2
+    target_cv = 0.025
     exec_eng = ExecutionEngine(STUDY_NAME)
     factory = exec_eng.factory
 
@@ -66,14 +66,14 @@ def test_monte_carlo_sellar(distributions, n_objectives, criterion):
     exec_eng.configure()
 
     selected_outputs = [False, False, True, False, False] if n_objectives == 1 else [True] * 5
-    n_samples = 100 if criterion == "n_samples" else 10000
+    max_n_samples = 100 if criterion == "n_samples" else 10000
     input_dict = {
         f"{STUDY_NAME}.Eval_MC.{ProxyDriverEvaluator.GATHER_OUTPUTS}": DataFrame({
             'selected_output': selected_outputs,
             'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2'],
         }),
         f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.input_distributions}": distributions,
-        f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.n_samples}": n_samples,
+        f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.n_samples}": max_n_samples,
     }
     if criterion == "target_cv":
         input_dict.update({f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_cv}": target_cv})
@@ -108,16 +108,17 @@ def test_monte_carlo_sellar(distributions, n_objectives, criterion):
     output_samples = mc_disc.get_sosdisc_outputs(MonteCarloDriverWrapper.SoSOutputNames.output_samples)
 
     assert list(input_samples.keys()) == list(distributions.keys())
-    assert len(output_samples) == n_objectives
+    assert output_samples.shape[1] == n_objectives
     if criterion == "n_samples":
-        assert all(a.shape[0] == n_samples for a in output_samples.values())
+        assert output_samples.shape[0] == max_n_samples
     else:
-        n_samples = next(iter(output_samples.values())).shape[0]
-        samples_std = array([a.std(axis=0) / sqrt(n_samples) for a in output_samples.values()]).flatten()
+        n_samples = output_samples.shape[0]
+        assert n_samples < max_n_samples
+        samples_std = output_samples.std(axis=0) / sqrt(n_samples)
         if criterion == "target_std":
             assert all(samples_std <= target_std)
         elif criterion == "target_cv":
-            samples_mean = array([a.mean(axis=0) for a in output_samples.values()]).flatten()
+            samples_mean = output_samples.mean(axis=0)
             assert all(samples_std / samples_mean <= target_cv)
 
 

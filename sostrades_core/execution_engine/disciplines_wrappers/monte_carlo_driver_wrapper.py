@@ -26,7 +26,7 @@ from gemseo.settings.doe import PYDOE_LHS_Settings
 from gemseo.settings.formulations import DisciplinaryOpt_Settings
 from gemseo.uncertainty import create_statistics
 from numpy import atleast_1d, cumsum, size, split, sqrt
-from pandas import concat
+from pandas import DataFrame, concat
 from strenum import StrEnum
 
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
@@ -226,7 +226,7 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
             dataset = concat((dataset, self._evaluate_n_samples(batch_size)))
         return dataset
 
-    def _process_outputs(self, dataset: Dataset) -> None:
+    def _process_outputs(self, evaluation_outputs: Dataset) -> None:
         """Process and export the input and output values of the sampling.
 
         The output samples are gathered in a single array.
@@ -234,17 +234,27 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         and split the array into the sub-array corresponding to each output.
 
         Args:
-            dataset: The dataset containing the input and output values.
+            evaluation_outputs: The dataset containing the input and output values.
         """
-        samples_dict = dataset.to_dict_of_arrays()
-        input_samples = samples_dict["designs"]
-        self.store_sos_outputs_values({self.SoSOutputNames.input_samples: input_samples})
-
+        n_samples = evaluation_outputs.shape[0]
+        samples_dict = evaluation_outputs.to_dict_of_arrays()
+        input_dict = {k: v.flatten() for k, v in samples_dict["designs"].items()}
+        self.store_sos_outputs_values({self.SoSOutputNames.input_samples: DataFrame(input_dict)})
         output_array = next(iter(samples_dict["functions"].values()))
-        output_sizes = [size(self._discipline.local_data[output]) for output in self.outputs]
-        output_arrays = split(output_array, cumsum(output_sizes[:-1]), axis=1)
-        output_samples = {output: output_arrays[i] for i, output in enumerate(self.outputs)}
-        self.store_sos_outputs_values({self.SoSOutputNames.output_samples: output_samples})
+        output_sizes = [size(self.attributes["sub_disciplines"][0].local_data[output]) for output in self.outputs]
+        if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
+            samples_output_df = DataFrame(output_array, columns=self.outputs)
+        else:  # some outputs have more than 1 component
+            df_list = []
+            output_arrays = split(output_array, cumsum(output_sizes[:-1]), axis=1)
+            for i, a in enumerate(output_arrays):
+                if output_sizes[i] == 1:
+                    df = DataFrame({self.outputs[i]: a.flatten()})
+                else:
+                    df = DataFrame({self.outputs[i]: [a[j, :] for j in range(n_samples)]})
+                df_list.append(df)
+            samples_output_df = concat(df_list, axis=1)
+        self.store_sos_outputs_values({self.SoSOutputNames.output_samples: samples_output_df})
 
     def run(self) -> None:
         """Perform a Quasi Monte Carlo sampling of the selected output(s).
