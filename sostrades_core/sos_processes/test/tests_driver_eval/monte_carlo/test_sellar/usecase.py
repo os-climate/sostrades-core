@@ -34,9 +34,6 @@ class Study(StudyManager):
 
     COUPLING_NAME = "SellarCoupling"
 
-    def __init__(self, **kwargs) -> None:  # noqa: D107
-        super().__init__(__file__, **kwargs)
-
     def setup_usecase(self) -> dict[str, Any]:
         """Setup the usecase."""
         distributions = {
