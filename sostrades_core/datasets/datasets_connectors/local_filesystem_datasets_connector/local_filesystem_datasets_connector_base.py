@@ -58,12 +58,14 @@ class LocalFileSystemDatasetsConnectorBase(AbstractDatasetsConnector, abc.ABC):
         self.connector_id = connector_id
 
     def clear_connector(self):
+        """
+        Removes the entire root directory of the FileSystem connector and all datasets in it.
+        """
         rmtree_safe(self._root_directory_path)
 
     def clear_dataset(self, dataset_id: str) -> None:
         """
         Utility method to remove the directory corresponding to a given dataset_id within the root directory.
-
         Args:
             dataset_id (str): Identifier of the dataset to be removed.
         """
