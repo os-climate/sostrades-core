@@ -15,8 +15,12 @@ limitations under the License.
 '''
 # mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 import time
+from os.path import join
+from pathlib import Path
 
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
+from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
+from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
@@ -29,6 +33,14 @@ class Study(StudyManager):
         return {}
 
     def get_dataset_mapping(self):
+         # create connector
+        connector_args = {
+             "file_path": join(Path(__file__).parents[3],"tests", "data","test_92_datasets_db.json")
+        }
+
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_datasets_connector",
+                                                    connector_type=DatasetConnectorType.get_enum_value("JSON"),
+                                                    **connector_args)
         # Get dataset file
         datasets_file = __file__.replace(".py", ".json")
         # Deserialize it

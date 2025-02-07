@@ -1255,7 +1255,7 @@ class TestDatasets(unittest.TestCase):
         study = StudyManager(file_path=usecase_file_path)
         study.update_data_from_dataset_mapping(DatasetsMapping.from_json_file(mapping_repo_file_path))
 
-        # change some values and re-export in v1
+        # change some values
         new_max_mda_iter = 50
         new_y_array = np.array([4.0, 5.0, 6.0])
         new_b = 3
