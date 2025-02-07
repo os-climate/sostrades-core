@@ -44,6 +44,7 @@ Class that manage a whole study process (load, execute, save, dump..)
 
 # CRITICAL, FATAL, ERROR, WARNING, WARN, INFO, DEBUG
 LOG_LEVEL = INFO  # = 20
+RW_STRATEGY_MSG = "rw_strategy arguments is not an inherited type of AbstractLoadDump"
 
 
 # Pylint code disable section
@@ -55,7 +56,6 @@ class BaseStudyManager:
 
     Overloading the method 'setup_use_case' allow to change the way to load data into the execution engine.
     """
-
     __execution_engine: ExecutionEngine | None
     """The study's execution engine."""
 
@@ -273,8 +273,6 @@ class BaseStudyManager:
             input_dict_to_load.update(uc_d)
 
         # Initialize execution engine with data
-        # import ipdb
-        # ipdb.set_trace()
         parameter_changes = self.execution_engine.load_study_from_input_dict(input_dict_to_load)
 
         # Load datasets data
@@ -662,7 +660,7 @@ class BaseStudyManager:
         :type: sostrades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
         """
         if not isinstance(rw_strategy, AbstractLoadDump):
-            msg = "rw_strategy arguments is not an inherited type of AbstractLoadDump"
+            msg = RW_STRATEGY_MSG
             raise TypeError(msg)
 
         if study_folder_path is not None:
@@ -684,7 +682,7 @@ class BaseStudyManager:
         :type: sostrades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
         """
         if not isinstance(rw_strategy, AbstractLoadDump):
-            msg = "rw_strategy arguments is not an inherited type of AbstractLoadDump"
+            msg = RW_STRATEGY_MSG
             raise TypeError(msg)
 
         if Path(study_folder_path).is_dir():
@@ -707,7 +705,7 @@ class BaseStudyManager:
         :type rw_strategy: sostrades_core.tools.rw.load_dump_dm_data.AbstractLoadDump base type
         """
         if not isinstance(rw_strategy, AbstractLoadDump):
-            msg = "rw_strategy arguments is not an inherited type of AbstractLoadDump"
+            msg = RW_STRATEGY_MSG
             raise TypeError(msg)
 
         result = []
