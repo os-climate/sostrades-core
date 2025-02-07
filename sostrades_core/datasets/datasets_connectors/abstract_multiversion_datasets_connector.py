@@ -76,15 +76,32 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
                 raise DatasetGenericException(f"The class {_version_class.__name__} defined for version {_version} in "
                                               f"multi-version connector {self} is not compatible with {_version}.")
 
-    def __get_subconnector_id(self, version: str):
+    def __get_subconnector_id(self, version: str) -> str:
+        """
+        Get identifier string of mono-version sub-connector associated to version. Note sub-connector identifiers are
+        only for their storage within the multi-version connector. Since these sub-connectors are not registered
+        one by one in the connector manager, their name is not exposed to the user.
+        Args:
+            version: string with version "V0"/"V1"/...
+        Returns:
+            name (identifier) of the associated mono-version sub-connector.
+        """
         return self.connector_id + self.VERSION_SUFFIX + version
 
     @property
     def all_connectors(self):
+        """
+        Iterate over all mono-version sub-connectors.
+        """
         return self.__version_connectors.values()
 
     @property
-    def compatible_dataset_info_version(self):
+    def compatible_dataset_info_version(self) -> set:
+        """
+        Get the set of compatible versions.
+        Returns:
+            set of compatible versions.
+        """
         return set(self.__version_connectors.keys())
 
     def version_connector(self, dataset_identifier: AbstractDatasetInfo) -> AbstractDatasetsConnector:
@@ -199,8 +216,8 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
 
     def clear_dataset(self, dataset_id: str) -> None:
         """
-        Optional utility method to remove a given dataset_id within a certain connector.
-
+        Optional utility method to remove a given dataset_id within a certain connector. If calling it in the multi-
+        version connector, the dataset will be removed from ALL connectors.
         Args:
             dataset_id (str): Identifier of the dataset to be removed
         """
@@ -210,7 +227,7 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
 
     def clear_all_datasets(self):
         """
-        Optional utility method to remove all datasets in a connector.
+        Optional utility method to remove all datasets in all sub-connectors.
         """
         for _c in self.all_connectors:
             _c.clear_all_datasets()
@@ -219,7 +236,7 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
         """
         Optional utility method to completely clear a connector further than clearing all datasets, if it applies, e.g.
         by deleting the root directory of a local connector, or by deleting the database file of a json connector. It
-        defaults to clear_all_datasets unless overloaded.
+        defaults to clear_all_datasets for ALL sub-connectors.
         """
         for _c in self.all_connectors:
             _c.clear_connector()

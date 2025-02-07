@@ -43,15 +43,13 @@ class JSONDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):
                  connector_id: str,
                  mono_version_connector_instantiation_fields: dict[str:dict[str:Any]]):
         """
-        Multi-version constructor with the instantiation arguments of connectors of type Local (FileSystem).
+        Multi-version constructor with the instantiation arguments of connectors of type JSON. Note that the different
+        mono-version sub-connectors should use different databases (JSON files).
 
         Args:
-            connector_id (str): The identifier for the connector.
-            root_directory_path (str): Root directory path for this dataset connector using filesystem.
-            create_if_not_exists (bool, optional): Whether to create the root directory if it does not exist. Defaults
-                to False.
-            serializer_type (DatasetSerializerType, optional): Type of serializer to deserialize data from connector.
-                Defaults to DatasetSerializerType.FileSystem.
+            connector_id: Connector identifier for the multiversion JSON connector
+            mono_version_connectors_instantiation_fields: keyword arguments that allow to instantiate each different
+                mono-version JSON connectors (cf. mono-version classes).
         """
         if len({_args[self.FILE_PATH_ARG] for _args in mono_version_connector_instantiation_fields.values()}
                ) < len(mono_version_connector_instantiation_fields):

@@ -1094,6 +1094,8 @@ class TestDatasets(unittest.TestCase):
 
     def test_23_file_system_V0V1_export_import(self):
         """
+        Test checks the capacity of the multi-version LocalFileSystem connector to maintain V0 and V1 functionalities,
+        using v0v1 import and export.
         """
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
@@ -1245,7 +1247,8 @@ class TestDatasets(unittest.TestCase):
 
     def test_24_repository_dataset_connector_as_multiversion(self):
         """
-        Some example to check repository datasets connector in its multiversion mode
+        Test that checks the upgrade of the repository connector to multi-version. Using v0 import already tested in
+        test_10, it checks v1 export of entire study, v1 import and then mixed v0v1 import in a single datasets mapping.
         """
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
 
