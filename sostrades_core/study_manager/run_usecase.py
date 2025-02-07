@@ -33,7 +33,7 @@ def test_module_importability(module_name: str):
     try:
         importlib.import_module(module_name)
     except ImportError as e:
-        raise Exception(f"Unable to import process module '{module_name}' is this module correct and in PYTHONPATH ?") from e
+        raise ImportError(f"Unable to import process module '{module_name}' is this module correct and in PYTHONPATH ?") from e
 
 
 def run_usecase(usecase_file: str, dataset_mapping_json_file: Optional[str]):
