@@ -413,6 +413,9 @@ class SoSMDAChain(MDAChain):
         self,
         input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> DisciplineData:
+        
+        _input_data = input_data
+
         # The initialization is needed for MDA loops.
         if (
             self.settings.initialize_defaults
@@ -429,8 +432,6 @@ class SoSMDAChain(MDAChain):
             if len(disc_to_pre_run) > 1:
                 _input_data = self.sos_pre_run(input_data, self, disc_to_pre_run)
 
-        else:
-            _input_data = input_data
         return super(MDAChain, self).execute(input_data=_input_data)
 
     def pre_run_driver_subcoupling(self, input_data, driver_sub_disciplines):
