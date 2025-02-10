@@ -413,7 +413,7 @@ class SoSMDAChain(MDAChain):
         self,
         input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> DisciplineData:
-        
+
         _input_data = input_data
 
         # The initialization is needed for MDA loops.
