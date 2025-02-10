@@ -82,11 +82,11 @@ class ProxyMonteCarloDriver(ProxyMonoInstanceDriver):
 
     DESC_OUT: ClassVar[dict[str, Any]] = {
         MonteCarloDriverWrapper.SoSOutputNames.input_samples: {
-            ProxyDriverEvaluator.TYPE: 'dict',
+            ProxyDriverEvaluator.TYPE: 'dataframe',
             'unit': None,
         },
         MonteCarloDriverWrapper.SoSOutputNames.output_samples: {
-            ProxyDriverEvaluator.TYPE: 'dict',
+            ProxyDriverEvaluator.TYPE: 'dataframe',
             'unit': None,
         },
     }
