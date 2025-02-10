@@ -220,7 +220,7 @@ class Sellar2(SoSWrapp):
 
         if debug_mode:
             # if debug mode activated raise an error
-            raise Exception("debug mode activated to trigger except")
+            raise Exception("debug mode activated to trigger except")  # noqa: S112
 
     @staticmethod
     def compute_y_2(y_1, z):
@@ -257,7 +257,7 @@ class Sellar2(SoSWrapp):
 
         if debug_mode:
             # if debug mode activated raise an error
-            raise Exception("debug mode activated to trigger except")
+            raise Exception("debug mode activated to trigger except")    # noqa: S112
 
 
 class Sellar3(SoSWrapp):

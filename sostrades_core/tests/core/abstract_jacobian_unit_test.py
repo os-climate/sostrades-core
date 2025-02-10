@@ -198,7 +198,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                 candidate_process = []
 
                 if len(process_list) > PROCESS_IN_PARALLEL:
-                    candidate_process = [process_list.pop() for index in range(PROCESS_IN_PARALLEL)]
+                    candidate_process = [process_list.pop() for _ in range(PROCESS_IN_PARALLEL)]
                 else:
                     candidate_process = process_list
                     process_list = []

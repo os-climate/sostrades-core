@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from os.path import join
 from pathlib import Path
 
@@ -34,7 +33,7 @@ class Study(StudyManager):
     def get_dataset_mapping(self):
         # create connector
         connector_args = {
-             "file_path": join(Path(__file__).parents[3],"tests", "data","local_datasets_db")
+             "root_directory_path": join(Path(__file__).parents[3],"tests", "data","local_datasets_db")
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector",
