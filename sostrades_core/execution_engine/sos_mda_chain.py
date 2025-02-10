@@ -413,21 +413,28 @@ class SoSMDAChain(MDAChain):
         self,
         input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> DisciplineData:
+
+        _input_data = input_data
+
         # The initialization is needed for MDA loops.
         if (
             self.settings.initialize_defaults
             and len(self.coupling_structure.strong_couplings) > 0
         ):
-            # Need to pre-run coupling under the coupling if there is some
-            _input_data = self.pre_run_driver_subcoupling(input_data)
-            if len(self.disciplines) > 1:
-                _input_data = self.sos_pre_run(_input_data, self)
 
-        else:
-            _input_data = input_data
+            # Need to pre-run coupling under the coupling if there is some
+            driver_sub_disciplines = [disc for disc in self.disciplines if
+                                      isinstance(disc, SoSDisciplineDriver)]
+            if len(driver_sub_disciplines) != 0:
+                input_data = self.pre_run_driver_subcoupling(input_data, driver_sub_disciplines)
+                _input_data = input_data
+            disc_to_pre_run = [disc for disc in self.disciplines if not isinstance(disc, SoSDisciplineDriver)]
+            if len(disc_to_pre_run) > 1:
+                _input_data = self.sos_pre_run(input_data, self, disc_to_pre_run)
+
         return super(MDAChain, self).execute(input_data=_input_data)
 
-    def pre_run_driver_subcoupling(self, input_data):
+    def pre_run_driver_subcoupling(self, input_data, driver_sub_disciplines):
         '''
 
         Args:
@@ -440,26 +447,25 @@ class SoSMDAChain(MDAChain):
                 If they are then pre-run in the order of the sub disciplines to pre-run the driver sub-coupling first before pre-run the mother coupling
 
         '''
-        driver_sub_disciplines = [disc for disc in self.disciplines if
-                                  isinstance(disc, SoSDisciplineDriver)]
-        if len(driver_sub_disciplines) != 0:
-            for task in self.coupling_structure.sequence:
-                for component in task:
-                    for disc in component:
-                        if disc in driver_sub_disciplines:
-                            input_data = self.sos_pre_run(input_data, disc._disciplines[0])
-                            driver_sub_disciplines.remove(disc)
-                        else:
-                            new_input_data = disc.execute(input_data)
-                            input_data = input_data | new_input_data
-                        if len(driver_sub_disciplines) == 0:
-                            return input_data
+
+        for task in self.coupling_structure.sequence:
+            for component in task:
+                for disc in component:
+                    if disc in driver_sub_disciplines:
+                        input_data = self.sos_pre_run(input_data, disc._disciplines[0])
+                        driver_sub_disciplines.remove(disc)
+                    else:
+                        new_input_data = disc.execute(input_data)
+                        input_data = input_data | new_input_data
+                    if len(driver_sub_disciplines) == 0:
+                        return input_data
         return input_data
 
-    def sos_pre_run(self, input_data, disc):
-
+    def sos_pre_run(self, input_data, disc, disciplines=None):
+        if disciplines is None:
+            disciplines = disc.disciplines
         driver_init_chain = MDOInitializationChain(
-            disc.disciplines,
+            disciplines,
             available_data_names=input_data,
         )
         #     default_input_data = {}
