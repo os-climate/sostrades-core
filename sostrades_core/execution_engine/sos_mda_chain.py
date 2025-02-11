@@ -429,11 +429,27 @@ class SoSMDAChain(MDAChain):
                 input_data = self.pre_run_driver_subcoupling(input_data, driver_sub_disciplines)
                 _input_data = input_data
             disc_to_pre_run = [disc for disc in self.disciplines if not isinstance(disc, SoSDisciplineDriver)]
-            if len(disc_to_pre_run) > 1:
+            if len(disc_to_pre_run) > 1 and self.check_strong_coupling_still_in_disc_to_pre_run(disc_to_pre_run):
                 _input_data = self.sos_pre_run(input_data, self, disc_to_pre_run)
 
         return super(MDAChain, self).execute(input_data=_input_data)
 
+    def check_strong_coupling_still_in_disc_to_pre_run(self, disc_to_pre_run):
+        '''
+        Check that strong couplings are still in the grammar of the disc to pre run and not in the subcoupling under the driver
+        Returns: True or False
+
+        '''
+        still_in_disc_to_pre_run = True
+        if len([disc for disc in self.disciplines if
+                isinstance(disc, SoSDisciplineDriver)]) != 0:
+            input_grammar_names = [disc.io.input_grammar.names for disc in disc_to_pre_run]
+            output_grammar_names = [disc.io.output_grammar.names for disc in disc_to_pre_run]
+            strong_coupling_in_disc_to_pre_run = [name for name in self.coupling_structure.strong_couplings if
+                                                  name in input_grammar_names + output_grammar_names]
+            if len(strong_coupling_in_disc_to_pre_run) == 0:
+                return False
+        return still_in_disc_to_pre_run
     def pre_run_driver_subcoupling(self, input_data, driver_sub_disciplines):
         '''
 
