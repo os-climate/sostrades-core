@@ -122,7 +122,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             msg = f"The provided algorithm name {algo_name} is not in the available algorithm list : {algo_names_list}"
             raise ValueError(msg)
 
-    def get_options_and_default_values(self, sampling_algo_name: str) -> tuple[dict[str, Any]]:
+    def get_options_and_default_values(self, sampling_algo_name: str) -> tuple[dict[str, Any], dict[str, Any]]:
         """Method that provides the list of options of an algorithm with there default values (if any) and description.
 
         Arguments:

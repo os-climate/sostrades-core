@@ -36,7 +36,7 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorMV):
 
     def __init__(self, connector_id: str, module_name: str):
         """
-        Constructor for Local Repository Datasets Connector
+        Constructor for Local Repository Datasets Connector.
 
         Args:
             connector_id (str): An unique name to identify clearly this connector
