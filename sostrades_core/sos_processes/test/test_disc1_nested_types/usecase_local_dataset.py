@@ -33,7 +33,7 @@ class Study(StudyManager):
     def get_dataset_mapping(self):
         # create connector
         connector_args = {
-             "file_path": join(Path(__file__).parents[3],"tests", "data","local_datasets_db")
+             "root_directory_path": join(Path(__file__).parents[3],"tests", "data","local_datasets_db")
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector",
