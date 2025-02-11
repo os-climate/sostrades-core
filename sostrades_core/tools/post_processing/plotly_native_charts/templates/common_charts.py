@@ -20,16 +20,17 @@ from __future__ import annotations
 import math
 from copy import deepcopy
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.graph_objects as go
+from numpy import asarray, mean, ndarray
+from pandas import Series
+from plotly.graph_objects import Trace
 
 from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
     InstantiatedPlotlyNativeChart,
 )
-from sostrades_core.tools.post_processing.post_processing_tools import (
-    align_two_y_axes,
-    format_currency_legend,
-)
+from sostrades_core.tools.post_processing.post_processing_tools import align_two_y_axes, format_currency_legend
 
 
 class CommonCharts(InstantiatedPlotlyNativeChart):
@@ -246,11 +247,10 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         return new_chart
 
     def generate_columns_infos_table(self, info_df, in_dict=dict()):
-        '''
+        """
         Function to make more understandable the variables' names
         that appear in post-processing tables
-        '''
-
+        """
         info_dict = deepcopy(in_dict)
         columns_info = {
             'index': {'label': 'Name', 'format': None},
@@ -381,9 +381,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         chart_name,
         ticksuffix=None,
     ):
-        '''
+        """
         data_df : dataframe with data to plot
-        '''
+        """
         # Create figure
         fig = go.Figure()
 
@@ -397,9 +397,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
                 if columns_info_dict[key].get('format', None) == 'currency':
                     columns_data.append(data.apply(format_currency_legend, args=(ticksuffix)).values)
                 elif columns_info_dict[key].get('format', None) == 'percent':
-                    columns_data.append(
-                        data.apply(lambda x: "{0:.2f}%".format(x * 100) if not isinstance(x, str) else x).values
-                    )
+                    columns_data.append(data.apply(lambda x: f"{x * 100:.2f}%" if not isinstance(x, str) else x).values)
                 else:
                     columns_data.append(data.values)
             else:
@@ -562,15 +560,14 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         ),
         string_text=False,
     ):
-        '''
+        """
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
         x_axis_column : string column name of x axis
         y_axis_column_list : list columns names for y bar to plot
         add_cumulated : True to add the cumulative serie of the data
         if mode = 'markers' or mode = 'markers + text'
             marker= {'color': str, 'size': integer, }
-        '''
-
+        """
         categories_list = data_df[column_with_categories].unique()
         # Create figure
         fig = go.Figure()
@@ -642,12 +639,11 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         updatemenus: list = [],
         offsetgroup=None,
     ):
-        '''
+        """
         data_df : dataframe with data to plot but these data are repeated as many times as number of categories
         x_axis_column : string column name of x axis
         y_axis_column_list : list columns names for y bar to plot
-        '''
-
+        """
         categories_list = data_df[column_with_categories].unique()
         # Create figure
         fig = go.Figure()
@@ -1014,7 +1010,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         annotation_upper_left: dict = {},
         annotation_upper_right: dict = {},
     ):
-        '''Generate a bar chart from data in a dataframe
+        """Generate a bar chart from data in a dataframe
 
         Args:
             data_df (pd.DataFrame): dataframe containing data.
@@ -1036,8 +1032,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             showlegend (bool, optional): Possibility to show or hide the legend. Defaults to True.
 
         Returns:
-            InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data'''
-
+        InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data
+        """
         categories_list = data_df[column_with_categories].unique()
         # Create figure
         fig = go.Figure()
@@ -1441,3 +1437,89 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             new_chart = InstantiatedPlotlyNativeChart(fig=fig, chart_name=chart_name, default_legend=False)
 
         return new_chart
+
+    @staticmethod
+    def generate_hexbin_chart(
+        x_data: ndarray | Series, y_data: ndarray | Series, gridsize: int = 25, min_count: int = 1
+    ) -> Trace:
+        """Generate a 2D hexbin chart.
+
+        The figure is created with matplolib and converted manually to plotly.
+        The matplotlib figure only needs to be instanciated, its size does not matter.
+
+        Args:
+            x_data: The x-axis data.
+            y_data: The y-axis data.
+            gridsize: The grid resolution, in number of hexagons.
+            min_count: The minimum number of samples that must be in an hexagon for it to be displayed.
+
+        Returns:
+            The plotly trace.
+        """
+        plt.figure(figsize=(0.05, 0.05))
+        plt.axis("off")
+        hb = plt.hexbin(x_data, y_data, gridsize=gridsize, mincnt=min_count)
+
+        # Extract the data from the matplotlib figure
+        paths = hb.get_paths()
+        points_codes = list(paths[0].iter_segments())  # path[0].iter_segments() is a generator
+        hexagon_vertices = [item[0] for item in points_codes]
+        offsets = hb.get_offsets()
+        mpl_facecolors = hb.get_facecolors()
+        counts = hb.get_array()
+
+        # Create the hexagons
+        def make_hexagon(prototypical_hex, offset, fillcolor, linecolor=None):
+            new_hex_vertices = [vertex + offset for vertex in prototypical_hex]
+            vertices = asarray(new_hex_vertices[:-1])
+            # hexagon center
+            center = mean(vertices, axis=0)
+            if linecolor is None:
+                linecolor = fillcolor
+            # define the SVG-type path:
+            path = "M "
+            for vert in new_hex_vertices:
+                path += f"{vert[0]}, {vert[1]} L"
+            return {
+                "type": "path",
+                "line": {"color": linecolor, "width": 0.5},
+                "path": path[:-2],
+                "fillcolor": fillcolor,
+            }, center
+
+        cell_color = [f"rgb({int(R * 255)}, {int(G * 255)}, {int(B * 255)})" for (R, G, B, A) in mpl_facecolors]
+
+        shapes = []
+        centers = []
+        for k in range(len(offsets)):
+            shape, center = make_hexagon(hexagon_vertices, offsets[k], cell_color[k])
+            shapes.append(shape)
+            centers.append(center)
+
+        # Create the plotly figure
+        x_centers, y_centers = zip(*centers)
+        text = [
+            f"x: {round(x_centers[k], 2)}<br>y: {round(y_centers[k], 2)}<br>counts: {int(counts[k])}"
+            for k in range(len(x_centers))
+        ]
+
+        trace = go.Scatter(
+            x=list(x_centers),
+            y=list(y_centers),
+            mode="markers",
+            marker={"size": 0.5, "color": counts, "showscale": True, "colorbar": {"thickness": 20, "ticklen": 4}},
+            text=text,
+            hoverinfo="text",
+        )
+        axis = {"showgrid": True, "showline": True, "zeroline": False, "ticklen": 4}
+
+        layout = go.Layout(
+            title="",
+            width=530,
+            height=550,
+            xaxis=axis,
+            yaxis=axis,
+            hovermode="closest",
+            shapes=shapes,
+        )
+        return go.Figure(data=[trace], layout=layout)
