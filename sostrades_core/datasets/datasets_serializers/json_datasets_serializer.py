@@ -25,9 +25,8 @@ from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer i
 
 
 class JSONDatasetsSerializer(AbstractDatasetsSerializer):
-    """
-    Specific dataset serializer for dataset in json format
-    """
+    """Specific dataset serializer for dataset in json format"""
+
     def __init__(self):
         super().__init__()
         self.__logger = logging.getLogger(__name__)
@@ -45,6 +44,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             Any: Converted data
+
         """
         # retrieve the type of the data into the data_type_dict.
         # If the data type is not found, the data value is not converted
@@ -81,6 +81,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             Any: Converted data
+
         """
         # retrieve the type of the data into the data_type_dict.
         # If the data type is not found, the data value is not converted
@@ -116,6 +117,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             pd.DataFrame: Deserialized dataframe
+
         """
         return pd.DataFrame.from_dict(data_value)
 
@@ -128,6 +130,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             np.ndarray: Deserialized array
+
         """
         return np.array(data_value)
 
@@ -141,6 +144,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             dict: Serialized dataframe
+
         """
         return pd.DataFrame.to_dict(data_value, 'list')
 
@@ -154,6 +158,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             list: Serialized array
+
         """
         return data_value.tolist()
 
@@ -167,5 +172,6 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             Any: Serialized data
+
         """
         return data_value

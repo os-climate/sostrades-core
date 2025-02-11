@@ -95,9 +95,7 @@ class Disc1(SoSWrapp):
 
 
 class Disc1ProxyCheck(Disc1):
-    """
-    Modification of Disc1 with implementational checks for proper proxy and dm un-assignation during run.
-    """
+    """Modification of Disc1 with implementational checks for proper proxy and dm un-assignation during run."""
 
     def run(self):
         if self._SoSWrapp__proxy is not None:
@@ -109,24 +107,32 @@ class Disc1ProxyCheck(Disc1):
 
 
 class Disc1ConfigActionAtRunTime(Disc1):
-    """
-    Modification of Disc1 requesting a proxy-delegated configuration action at run-time (will crash).
-    """
+    """Modification of Disc1 requesting a proxy-delegated configuration action at run-time (will crash)."""
 
     def run(self):
         self.add_inputs({})
 
 
 class Disc1RecursiveObjectDictCheck(Disc1):
-    """
-    Modification
-    """
+    """Modification"""
 
     def run(self):
         ObjectDictCheck(self, [])
         super().run()
 
+
 def ObjectDictCheck(obj, checked):
+    """
+    Recursively checks objects, their attributes, and sub-objects for reference leaks.
+
+    Args:
+        obj (object): The object to check for reference leaks.
+        checked (list): A list to track the IDs of checked objects to prevent re-checking.
+
+    Calls:
+        ElementCheck: Checks if an object is a reference leak (e.g., DataManager, ProxyDiscipline).
+
+    """
     objid = id(obj)
     if objid not in checked:
         ElementCheck(obj)
@@ -144,6 +150,16 @@ def ObjectDictCheck(obj, checked):
 
 
 def ElementCheck(element):
+    """
+    Checks if the given element is an instance of certain classes and raises an exception if so.
+
+    Args:
+        element (object): The element to check.
+
+    Raises:
+        Exception: If the element is an instance of 'DataManager' or 'ProxyDiscipline', an exception is raised.
+
+    """
     if element.__class__.__name__ == 'DataManager':
         raise Exception('reference leak to data manager in SoSWrapp')
     elif element.__class__.__name__ == 'ProxyDiscipline':

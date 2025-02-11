@@ -33,6 +33,7 @@ class ArchiNode:
         action (Union[Tuple[str], str]): The action associated with the node, default is "standard".
         activation (bool): Whether the node is activated or not, default is False.
         children (List["ArchiNode"]): A list of child nodes, default is an empty list.
+
     """
 
     name: str = ""
@@ -43,9 +44,7 @@ class ArchiNode:
     children: List["ArchiNode"] = field(default_factory=list)
 
     def __post_init__(self):
-        """
-        Update the parent name in all child nodes after initialization.
-        """
+        """Update the parent name in all child nodes after initialization."""
         self.update_parent_name_in_children()
 
     def update_parent_name_in_children(self):
@@ -68,6 +67,7 @@ class ArchiNode:
 
         Returns:
             List[str]: A list of values for the specified field.
+
         """
         if skip_self:
             fields = []
@@ -86,8 +86,8 @@ class ArchiNode:
 
         Returns:
             pd.DataFrame: A pandas DataFrame containing the node information.
-        """
 
+        """
         data = {
             "Parent": self.get_field_as_list("parent", skip_self=skip_self),
             "Current": self.get_field_as_list("name", skip_self=skip_self),

@@ -24,9 +24,7 @@ from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDiscip
 
 
 class SoSBuilder:
-    '''
-    Class that stores a class and associated attributes to be built afterwards
-    '''
+    '''Class that stores a class and associated attributes to be built afterwards'''
 
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
     SPECIFIC_PROXYS = [
@@ -81,16 +79,15 @@ class SoSBuilder:
         return list(self.__associated_namespaces_dict.values())
 
     def set_builder_info(self, key_info: str, value_info: Any):
-        '''Sets the arguments that will be needed to instantiate self.cls
+        '''
+        Sets the arguments that will be needed to instantiate self.cls
         :param args: list of arguments to instantiate the self.cls class
         :type args: list
         '''
         self.__args[key_info] = value_info
 
     def associate_namespaces(self, ns_list):
-        '''
-        Associate namespaces to a builder, rule to instantiate the disciplines
-        '''
+        '''Associate namespaces to a builder, rule to instantiate the disciplines'''
         if isinstance(ns_list, str):
             self.add_namespace_list_in_associated_namespaces([ns_list])
         elif isinstance(ns_list, list):
@@ -196,9 +193,11 @@ class SoSBuilder:
     def update_associated_namespaces_with_extra_name_rec(self, extra_name, after_name=None):
         """
         Recursively update_associated_namespaces_with_extra_name for builder and sub-builders.
+
         Args:
             extra_name: extra_name to add after the after name for each associated namespaces to the builder
             after_name: name after which you add the extra_name for each associated namespaces to the builder
+
         """
         # TODO: no check so that a ns associated to two builders won't be updated twice.
         self.update_associated_namespaces_with_extra_name(extra_name, after_name)

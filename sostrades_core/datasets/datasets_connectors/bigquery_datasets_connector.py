@@ -34,9 +34,8 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
 
 
 class BigqueryDatasetsConnector(AbstractDatasetsConnector):
-    """
-    Specific dataset connector for dataset in google cloud bigquery db format
-    """
+    """Specific dataset connector for dataset in google cloud bigquery db format"""
+
     SELF_TABLE_TYPES = ["dataframe", "dict", "array", "list"]
     NO_TABLE_TYPES = ["string", "int", "float", "bool"]
     DESCRIPTOR_TABLE_NAME = "descriptor_parameters"         # reserved table for dataset descriptor
@@ -78,8 +77,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: dict of retrieved data
-        """
 
+        """
         dataset_id = "{}.{}".format(self.client.project, dataset_identifier.dataset_id)
         json_descriptor, col_name_index, _, _ = self.__load_descriptor_index_tables(dataset_id)
         parameters_data = dict()
@@ -123,6 +122,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: dict of written values
+
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
 
@@ -196,8 +196,8 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: dict of all values
-        """
 
+        """
         return self.get_values(dataset_identifier, data_types_dict)
 
     def get_datasets_available(self) -> list[AbstractDatasetInfo]:
@@ -206,6 +206,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             list[AbstractDatasetInfo]: list of available datasets
+
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
         datasets = list(self.client.list_datasets())
@@ -232,6 +233,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: dict of written values
+
         """
         self.__logger.debug(
             f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})"
@@ -267,6 +269,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             str: path/url/uri to find the dataset data
+
         """
         path_to_data = ""
 
@@ -324,6 +327,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             tuple[dict, dict]: updated JSON descriptor and complex type parameters values
+
         """
         json_descriptor_parameters = old_json_descriptor or {}
         json_values = {parameter: self.__datasets_serializer.convert_to_dataset_data(parameter, parameter_value,
@@ -349,6 +353,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             str: column name
+
         """
         column_name = self.STRING_VALUE
         if parameter_type == "int":
@@ -369,6 +374,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             tuple[dict, dict, str, str]: tuple of descriptor, index, descriptor table id, and index table id
+
         """
         # load dataset descriptor table
         table_descriptor_id = "{}.{}".format(dataset_id, self.DESCRIPTOR_TABLE_NAME)
@@ -413,6 +419,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict: dict of parameters and their metadata
+
         """
         QUERY = (f'SELECT * FROM `{table_id}` ')
         query_job = self.client.query(QUERY)  # API request
@@ -427,6 +434,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             pd.DataFrame: dataframe
+
         """
         QUERY = (f'SELECT * FROM `{table_id}` ')
         return self.client.query(QUERY).result().to_dataframe()
@@ -440,6 +448,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict: dict
+
         """
         QUERY = (f'SELECT * FROM `{table_id}` ')
         query_job = self.client.query(QUERY)

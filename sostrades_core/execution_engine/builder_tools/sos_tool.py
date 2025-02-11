@@ -19,9 +19,7 @@ import abc
 
 
 class SosTool():
-    '''
-    Class that instantiate a tool to help a driver to build sub disciplines
-    '''
+    '''Class that instantiate a tool to help a driver to build sub disciplines'''
 
     # ontology information
     _ontology_data = {
@@ -38,10 +36,7 @@ class SosTool():
     }
 
     def __init__(self, sos_name, ee, cls_builder):
-        '''
-        Constructor
-        '''
-
+        '''Constructor'''
         self.sos_name = sos_name
 
         self.associated_namespaces = None
@@ -56,18 +51,14 @@ class SosTool():
 
     @sub_builders.setter
     def sub_builders(self, sub_builders):
-        """
-        setter of sub_builders
-        """
+        """Setter of sub_builders"""
         if isinstance(sub_builders, list):
             self.__builders = sub_builders
         else:
             self.__builders = [sub_builders]
 
     def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None):
-        '''
-
-        '''
+        '''Associates a tool to a driver'''
         self.driver = driver
 
         if associated_namespaces is None:
@@ -92,18 +83,14 @@ class SosTool():
 
     @abc.abstractmethod
     def prepare_tool(self):
-        '''
-        Prepare tool function if some data of the driver are needed to configure the tool
-        '''
+        '''Prepare tool function if some data of the driver are needed to configure the tool'''
         pass
 
     def get_dynamic_output_from_tool(self):
         pass
 
     def associate_namespaces_to_builder(self, builder, ns_list):
-        '''
-        Associate namespaces defined in the constructor + all namespaces which has been updated in update_namespaces
-        '''
+        '''Associate namespaces defined in the constructor + all namespaces which has been updated in update_namespaces'''
         if self.associated_namespaces != []:
             builder.add_namespace_list_in_associated_namespaces(
                 self.associated_namespaces)
@@ -111,8 +98,5 @@ class SosTool():
             ns_list)
 
     def set_father_discipline(self):
-        '''
-        Set the current discipline to build the builder_list at father_executor of the driver level (which is the coupling above the driver
-        '''
-
+        '''Set the current discipline to build the builder_list at father_executor of the driver level (which is the coupling above the driver'''
         self.ee.factory.current_discipline = self.driver.father_executor

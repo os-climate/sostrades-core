@@ -101,6 +101,7 @@ class ProxyDiscipline:
 
 
         cls (Class): constructor of the model wrapper with user-defin ed run (or None)
+
     """
 
     # -- Disciplinary attributes
@@ -273,6 +274,7 @@ class ProxyDiscipline:
             ee (ExecutionEngine): execution engine of the current process
             cls_builder (Class): class constructor of the user-defined wrapper (or None)
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+
         """
         # Must assign logger before calling create_discipline_wrap
         self.logger = ee.logger.getChild(self.__class__.__name__)
@@ -311,6 +313,7 @@ class ProxyDiscipline:
 
         Arguments:
             father_executor (ProxyDiscipline): proxy that orchestrates the execution of this proxy discipline (e.g. coupling)
+
         """
         self.father_executor = father_executor
 
@@ -328,6 +331,7 @@ class ProxyDiscipline:
             ee (ExecutionEngine): execution engine of the current process
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
             logger (logging.Logger): logger to use
+
         """
         self.logger = ee.logger.getChild(self.__class__.__name__)
         self.proxy_disciplines: list[ProxyDiscipline] = []
@@ -392,7 +396,8 @@ class ProxyDiscipline:
 
     @property
     def name(self) -> str:
-        """Return the full proxy name.
+        """
+        Return the full proxy name.
 
         Used by GEMSEO.
         """
@@ -539,11 +544,13 @@ class ProxyDiscipline:
                 self.discipline_wrapp.discipline.execution_status.add_observer(observer)
 
     def set_cache(self, disc: Discipline, cache_type: str) -> None:
-        """Instanciate and set cache for disc.
+        """
+        Instanciate and set cache for disc.
 
         Arguments:
             disc (Discipline): GEMSEO object to set cache
             cache_type (string): type of cache
+
         """
         cache_type = (
             Discipline.CacheType.NONE if cache_type.lower() == "none" else cache_type
@@ -566,6 +573,7 @@ class ProxyDiscipline:
 
         Arguments:
             data_dict (Dict[dict]): data_in or data_out
+
         """
         shared_namespace_list = []
 
@@ -581,6 +589,7 @@ class ProxyDiscipline:
         Arguments:
             item (dict): element to append to the ns_list
             ns_list (List[Namespace]): list of namespaces [???]
+
         """
         if self.VISIBILITY in item and item[self.VISIBILITY] == self.SHARED_VISIBILITY:
             with contextlib.suppress(Exception):
@@ -590,6 +599,7 @@ class ProxyDiscipline:
         """
         Returns:
             (List[string]) of input data full names based on i/o and namespaces declarations in the user wrapper
+
         """
         data_in = self.get_data_io_with_full_name(self.IO_TYPE_IN, as_namespaced_tuple)
         if numerical_inputs:
@@ -639,6 +649,7 @@ class ProxyDiscipline:
         """
         Returns:
             (List[string]) outpput data full names based on i/o and namespaces declarations in the user wrapper
+
         """
         data_out = self.get_data_io_with_full_name(self.IO_TYPE_OUT, as_namespaced_tuple)
 
@@ -657,6 +668,7 @@ class ProxyDiscipline:
             (Dict(dict)) data_in or data_out
         Raises:
             Exception if io_type
+
         """
         if io_type == self.IO_TYPE_IN:
             return self.get_data_in()
@@ -674,6 +686,7 @@ class ProxyDiscipline:
 
         Returns:
             (list) data_in or data_out keys
+
         """
         if io_type == self.IO_TYPE_IN:
             return self.get_data_in().keys()
@@ -691,6 +704,7 @@ class ProxyDiscipline:
 
         Returns:
             (list of keys) _data_in or _data_out tuple keys
+
         """
         if io_type == self.IO_TYPE_IN:
             return self._data_in.keys()
@@ -708,6 +722,7 @@ class ProxyDiscipline:
             var_name (string): short name of the variable
         Returns:
             (dict) data_in or data_out of the variable
+
         """
         data_io = self.get_data_io_dict(io_type)
 
@@ -717,7 +732,6 @@ class ProxyDiscipline:
         raise Exception(msg)
 
     def get_variable_name_from_ns_key(self, io_type, ns_key):
-        """ """
         return self.get_data_io_dict(io_type)[ns_key][self.VAR_NAME]
 
     def reload_io(self):
@@ -757,6 +771,7 @@ class ProxyDiscipline:
 
         Arguments:
             data_dict (Dict[dict]): item to update data manager with
+
         """
         self.dm.update_with_discipline_dict(self.disc_id, data_dict)
 
@@ -791,6 +806,7 @@ class ProxyDiscipline:
 
         Returns:
             list[tuple] : [(var_short_name, id(ns_ref)), ...]
+
         """
         return [(key, id(v[self.NS_REFERENCE])) for key, v in short_name_data_dict.items()]
 
@@ -804,6 +820,7 @@ class ProxyDiscipline:
 
         Raises:
             Exception if io_type is not IO_TYPE_IN or IO_TYPE_OUT
+
         """
         if io_type == self.IO_TYPE_IN:
             self._io_ns_map_in.update(var_ns_tuples)
@@ -822,6 +839,7 @@ class ProxyDiscipline:
 
         Raises:
             Exception if io_type is not IO_TYPE_IN or IO_TYPE_OUT
+
         """
         if io_type is None:
             io_types = [self.IO_TYPE_IN, self.IO_TYPE_OUT]
@@ -848,6 +866,7 @@ class ProxyDiscipline:
 
         Raises:
             Exception if io_type is not IO_TYPE_IN or IO_TYPE_OUT
+
         """
         if io_type == self.IO_TYPE_IN:
             data_io = self._data_in
@@ -872,6 +891,7 @@ class ProxyDiscipline:
 
         Returns:
             the dict filtered with variables that are not yet in data_io
+
         """
         return {
             key: value
@@ -908,6 +928,7 @@ class ProxyDiscipline:
 
         Returns:
             (List[ProxyDiscipline]): complete descendancy of sub proxies
+
         """
         if disc_list is None:
             disc_list = []
@@ -930,6 +951,7 @@ class ProxyDiscipline:
 
         Arguments:
             disc (ProxyDiscipline): discipline to add
+
         """
         self.proxy_disciplines.append(disc)
         disc.set_father_executor(self)
@@ -941,6 +963,7 @@ class ProxyDiscipline:
 
         Arguments:
             disc_list (List[ProxyDiscipline]): disciplines to add
+
         """
         for disc in disc_list:
             self.add_discipline(disc)
@@ -951,6 +974,7 @@ class ProxyDiscipline:
 
         Arguments:
             data_dict (Dict[dict]): data_in or data_out
+
         """
         shared_namespace_list = self.get_shared_namespace_list(data_dict)
         self.ee.ns_manager.add_dependencies_to_shared_namespace(self, shared_namespace_list)
@@ -963,6 +987,7 @@ class ProxyDiscipline:
             data_dict (Dict[dict]): new dynamic inputs/outputs
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             clean_variables (bool): flag to remove old variables from data_in/data_out, inst_desc_in/inst_desc_out, datamanger
+
         """
         variables_to_remove = []
         if io_type == self.IO_TYPE_IN:
@@ -981,7 +1006,8 @@ class ProxyDiscipline:
 
         Arguments:
             data_dict (Dict[dict]): new dynamic inputs
-            clean_variables (bool): flag to remove old variables from data_in, inst_desc_in and datamanger
+            clean_inputs (bool): flag to remove old variables from data_in, inst_desc_in and datamanger
+
         """
         self.add_variables(data_dict, self.IO_TYPE_IN, clean_variables=clean_inputs)
 
@@ -991,7 +1017,8 @@ class ProxyDiscipline:
 
         Arguments:
             data_dict (Dict[dict]): new dynamic outputs
-            clean_variables (bool): flag to remove old variables from data_out, inst_desc_out and datamanger
+            clean_outputs (bool): flag to remove old variables from data_out, inst_desc_out and datamanger
+
         """
         self.add_variables(data_dict, self.IO_TYPE_OUT, clean_variables=clean_outputs)
 
@@ -1002,6 +1029,7 @@ class ProxyDiscipline:
         Arguments:
             var_name_list (List[string]): variable names to clean
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+
         """
         for var_name in var_name_list:
             if io_type == self.IO_TYPE_IN:
@@ -1032,6 +1060,7 @@ class ProxyDiscipline:
             var_name (string): variable names to clean
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             new_default_value: value to update VALUE and DEFAULT with
+
         """
         if var_name in self.get_data_io_dict(io_type):
             self.get_data_io_dict(io_type)[var_name][self.DEFAULT] = new_default_value
@@ -1216,7 +1245,8 @@ class ProxyDiscipline:
         self._structuring_variables = {}
 
     def get_data_in(self):
-        """ "
+        """
+        "
         _simple_data_in getter
         """
         return self._simple_data_in
@@ -1266,9 +1296,11 @@ class ProxyDiscipline:
 
         Arguments:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+            as_namespaced_tuple (bool): Wether to return the data io as namespaced tuple
 
         Return:
             data_io_full_name (Dict[dict]): data_in/data_out with variable full names
+
         """
         if io_type == self.IO_TYPE_IN:
             if as_namespaced_tuple:
@@ -1293,6 +1325,7 @@ class ProxyDiscipline:
 
         Return:
             (dict or Any) the data dict or its field [data_name]
+
         """
         data_io_full_name = self.get_data_io_with_full_name(io_type)
 
@@ -1301,7 +1334,8 @@ class ProxyDiscipline:
         return data_io_full_name[full_name][data_name]
 
     def initialize_gemseo_io(self) -> None:
-        """Create the GEMSEO IO object and fills the grammars.
+        """
+        Create the GEMSEO IO object and fills the grammars.
 
         This method must be call before creating the coupling structure.
         """
@@ -1320,6 +1354,7 @@ class ProxyDiscipline:
         Arguments:
             visibility (string): visibility to get local or shared namespace
             namespace (Namespace): namespace in case of shared visibility
+
         """
         ns_manager = self.ee.ns_manager
 
@@ -1336,6 +1371,7 @@ class ProxyDiscipline:
 
         Arguments:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+
         """
         dict_in_keys = self.get_data_io_dict_keys(io_type)
         ns_manager = self.ee.ns_manager
@@ -1355,6 +1391,7 @@ class ProxyDiscipline:
         Arguments:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             data_dict (Dict[dict]): the data dict to prepare
+
         """
         new_data_dict = {}
         for key, curr_data in data_dict.items():
@@ -1466,6 +1503,7 @@ class ProxyDiscipline:
 
         Returns:
             The inputs values list or dict
+
         """
         # TODO: refactor
         if keys is None:
@@ -1497,6 +1535,7 @@ class ProxyDiscipline:
 
         Returns:
             The outputs values list or dict
+
         """
         # TODO: refactor
         if keys is None:
@@ -1531,6 +1570,7 @@ class ProxyDiscipline:
             dict of keys values
         Raises:
             Exception if query key is not in the data manager
+
         """
         # TODO: refactor
         if isinstance(keys, str):
@@ -1578,6 +1618,7 @@ class ProxyDiscipline:
 
         Arguments:
             names (List[string]): names to update
+
         """
         study = self.ee.study_name
         new_names = []
@@ -1665,6 +1706,7 @@ class ProxyDiscipline:
 
         Returns:
             dict[Any]: the dictionary with same values and full name keys
+
         """
         return {
             self.ee.ns_manager.ns_tuple_to_full_name(var_ns_tuple): value for var_ns_tuple, value in in_dict.items()
@@ -1730,6 +1772,7 @@ class ProxyDiscipline:
 
         Return:
             variables (list[string]): the list of varaible namespace name
+
         """
         # Refactor  variables keys with namespace
         if isinstance(keys, str):
@@ -1739,15 +1782,18 @@ class ProxyDiscipline:
         return variables
 
     def _convert_to_namespace_name(self, key, io_type):
-        """Convert to namespace with coupling_namespace management
+        """
+        Convert to namespace with coupling_namespace management
         Using a key (variables name) and reference_data (yaml in or out),
         build the corresponding namespaced key using the visibility property
 
         Arguments:
             key (string): variable name
+            io_type (string): IO_TYPE_IN or IO_TYPE_OUT
 
         Return:
             (string) the variable namespace name
+
         """
         # Refactor  variables keys with namespace
         return self.ee.ns_manager.get_namespaced_variable(self, key, io_type)
@@ -1759,6 +1805,7 @@ class ProxyDiscipline:
 
         Arguments:
             status (string): the status to update
+
         """
         # Avoid unnecessary call to status property (which can trigger event in
         # case of change)
@@ -1779,6 +1826,7 @@ class ProxyDiscipline:
 
         Arguments:
             status (string): the status to update
+
         """
         # keep reference branch status to 'REFERENCE'
         self._update_status_dm(status)
@@ -1826,6 +1874,7 @@ class ProxyDiscipline:
         Arguments:
             maturity (string or dict or None): maturity to set
             maturity_dict (bool): whether the maturity is a dict
+
         """
         if maturity is None or maturity in self.possible_maturities or maturity_dict:
             self._maturity = maturity
@@ -1866,6 +1915,7 @@ class ProxyDiscipline:
 
         Returns:
             post processing instance list
+
         """
         if self.discipline_wrapp is not None and self.discipline_wrapp.wrapper is not None:
             self.assign_proxy_to_wrapper()  # to allow for direct calls after run, without reconfiguration
@@ -2140,6 +2190,7 @@ class ProxyDiscipline:
         Return:
             input_full_name_map (Dict[Str]): dict whose keys are input short names and values are input full names
             output_full_name_map (Dict[Str]): dict whose keys are output short names and values are output full names
+
         """
         return {
             key: self.ee.ns_manager.ns_tuple_to_full_name((key, value)) for key, value in self._io_ns_map_in.items()
@@ -2181,6 +2232,7 @@ class ProxyDiscipline:
 
         Arguments:
             callback (method taking ProxyDiscipline as input) : callback function to show for each ProxyDiscipline in []
+
         """
         proxy_subtree = []
         self.get_proxy_subtree_rec(proxy_subtree, 0, callback)

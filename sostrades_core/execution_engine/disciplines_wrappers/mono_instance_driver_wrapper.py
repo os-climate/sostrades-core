@@ -122,14 +122,13 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         #         self.proxy_disciplines[0]._update_status_recursive(self.STATUS_FAILED)  # FIXME: This won't work
         #     else:
         #         return dict_to_return
-        #return None
+        # return None
 
     def evaluation(self, x, convert_to_array=True):
         """
         Call to the function to evaluate with x : values which are modified by the evaluator (only input values with a delta)
         Only these values are modified in the dm. Then the eval_process is executed and output values are convert into arrays.
         """
-
         values_dict = x
         local_data = self.attributes['sub_disciplines'][0].execute(self._get_input_data(values_dict))
         out_local_data = self._select_output_data(local_data, self.attributes['eval_out_list'])

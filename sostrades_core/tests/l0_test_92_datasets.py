@@ -44,9 +44,7 @@ from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 
 class TestDatasets(unittest.TestCase):
-    """
-    Discipline to test datasets
-    """
+    """Discipline to test datasets"""
 
     def setUp(self):
         # Set logging level to debug for datasets
@@ -168,9 +166,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), "string_2")
 
     def test_03_mapping(self):
-        """
-        Some example to work with dataset mapping
-        """
+        """Some example to work with dataset mapping"""
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         json_file_path = os.path.join(test_data_folder, "test_92_example_mapping.json")
 
@@ -416,9 +412,7 @@ class TestDatasets(unittest.TestCase):
             raise cm
 
     def test_09_dataset_error(self):
-        """
-        Some example to check datasets error
-        """
+        """Some example to check datasets error"""
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
 
         # check mapping file error
@@ -435,9 +429,7 @@ class TestDatasets(unittest.TestCase):
             study.update_data_from_dataset_mapping(mapping)
 
     def test_10_repository_dataset_connector(self):
-        """
-        Some example to check repository datasets connector
-        """
+        """Some example to check repository datasets connector"""
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
 
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
@@ -471,7 +463,6 @@ class TestDatasets(unittest.TestCase):
             - design space with lists (DataFrame with string, list, and bool columns)
             - design space with arrays (DataFrame with string, array, list and bool columns)
         """
-
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -534,9 +525,7 @@ class TestDatasets(unittest.TestCase):
             raise cm
 
     def test_13_export_with_repository_dataset_connector(self):
-        """
-        Some example to check repository datasets connector export
-        """
+        """Some example to check repository datasets connector export"""
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
         )
@@ -630,9 +619,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "auto")
 
     def test_15_test_export_parameter_level(self):
-        """
-        Some example to check repository datasets connector export
-        """
+        """Some example to check repository datasets connector export"""
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
         )
@@ -689,8 +676,7 @@ class TestDatasets(unittest.TestCase):
             raise
 
     def _test_16_bigquery_plain_types_export_import(self):
-        """
-        """
+        """Tests big query plain types export and import"""
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
@@ -743,8 +729,6 @@ class TestDatasets(unittest.TestCase):
             {"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
 
     def _test_17_bigquery_colum_name_characters_compatibility_on_dataframe_and_dict_tables(self):
-        """
-        """
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
         from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
             DatasetConnectorType,
@@ -866,7 +850,6 @@ class TestDatasets(unittest.TestCase):
 
         data_types_dict_disc1 = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars_disc1}
 
-
         dataset_vars = ["inner_mda_name", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
         data_types_dict = {_k: dm.get_data(f"usecase_dataset.{_k}", "type") for _k in dataset_vars}
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_datasets_mapping_v1.json")
@@ -934,7 +917,6 @@ class TestDatasets(unittest.TestCase):
             "d"]
 
         data_types_dict_disc1 = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars_disc1}
-
 
         dataset_vars = ["inner_mda_name", "max_mda_iter", "n_processes", "linear_solver_MDA_preconditioner"]
         data_types_dict = {_k: dm.get_data(f"usecase_dataset.{_k}", "type") for _k in dataset_vars}
@@ -1004,7 +986,6 @@ class TestDatasets(unittest.TestCase):
             - design space with lists (DataFrame with string, list, and bool columns)
             - design space with arrays (DataFrame with string, array, list and bool columns)
         """
-
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -1039,10 +1020,7 @@ class TestDatasets(unittest.TestCase):
         local_connector_v1.clear(True)
 
     def test_22_compatibility_V0_V1(self):
-        """
-        check that there is an error when we try to copy a dataset from connector V0 to connector V1
-        """
-
+        """Check that there is an error when we try to copy a dataset from connector V0 to connector V1"""
         connector_args = {
             "root_directory_path": "./sostrades_core/tests/data/local_test_22_import_V1/",
             "create_if_not_exists": True

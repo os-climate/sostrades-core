@@ -26,9 +26,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
+        '''Default initialisation test'''
         # Select the nested subprocess
         repo = 'sostrades_core.sos_processes.test.sellar'
         sub_proc = 'test_sellar_list'

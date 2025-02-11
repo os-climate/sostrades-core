@@ -157,7 +157,8 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
 
     @staticmethod
     def launch_all_pickle_generation(root_module, file_regex='l1*.py', directories=None, test_names=None):
-        """Static method that look for jacobian test to generate associated pickle (in the given folder)
+        """
+        Static method that look for jacobian test to generate associated pickle (in the given folder)
         and then push newly generated files into git repository
         """
         if test_names is None:

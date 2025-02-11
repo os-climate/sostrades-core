@@ -41,6 +41,7 @@ class ExecutionEngineException(Exception):
 
 class ExecutionEngine:
     """SoSTrades execution engine"""
+
     STUDY_AND_ROOT_PLACEHODER: str = '<study_and_root_ph>'
     STUDY_PLACEHOLDER_WITH_DOT: str = '<study_ph>.'
     STUDY_PLACEHOLDER_WITHOUT_DOT: str = '<study_ph>'
@@ -90,19 +91,21 @@ class ExecutionEngine:
 
     @property
     def factory(self) -> SosFactory:
-        """ Read-only accessor to the factory object
+        """
+        Read-only accessor to the factory object
 
-            :return: current used factory
-            :type: SosFactory
+        :return: current used factory
+        :type: SosFactory
         """
         return self.__factory
 
     @property
     def post_processing_manager(self) -> PostProcessingManager:
-        """ Read-only accessor to the post_processing_manager object
+        """
+        Read-only accessor to the post_processing_manager object
 
-            :return: current used post_processing_manager
-            :type: PostProcessingManager
+        :return: current used post_processing_manager
+        :type: PostProcessingManager
         """
         return self.__post_processing_manager
 
@@ -161,9 +164,7 @@ class ExecutionEngine:
         self.dm.treeview = None
 
     def prepare_execution(self):
-        '''
-        loop on proxy disciplines and execute prepare execution
-        '''
+        '''Loop on proxy disciplines and execute prepare execution'''
         self.logger.info("Preparing execution.")
         # - instantiate models in user wrapps
 
@@ -191,9 +192,7 @@ class ExecutionEngine:
         self.root_process.update_from_dm()
 
     def build_cache_map(self):
-        '''
-        Build cache map with all gemseo disciplines cache
-        '''
+        '''Build cache map with all gemseo disciplines cache'''
         self.dm.reinit_cache_map()
 
         self.root_process._set_dm_cache_map()
@@ -206,17 +205,19 @@ class ExecutionEngine:
 
         Returns:
         - dict: A dictionary with the same structure as cache_map, but with anonymized keys.
+
         """
 
         def anonymize_dict(dict_to_anonymize):
             """
             Convert each key in the dictionary to its anonymized form.
 
-            Parameters:
-            - dict_to_anonymize (dict): A dictionary with original keys.
+            Args:
+                dict_to_anonymize (dict): A dictionary with original keys.
 
             Returns:
-            - dict: A dictionary with anonymized keys.
+                dict: A dictionary with anonymized keys.
+
             """
             return {self.anonymize_key(key): value for key, value in dict_to_anonymize.items()}
 
@@ -224,11 +225,12 @@ class ExecutionEngine:
             """
             Convert each key in a dictionary of dictionary to its anonymized form.
 
-            Parameters:
-            - dict_to_anonymize (dict): A dictionary with original keys.
+            Args:
+                dict_to_anonymize (dict): A dictionary with original keys.
 
             Returns:
-            - dict: A dictionary with anonymized keys.
+                dict: A dictionary with anonymized keys.
+
             """
             return {self.anonymize_key(key): anonymize_dict(value) for key, value in dict_to_anonymize.items()}
 
@@ -257,22 +259,24 @@ class ExecutionEngine:
         to its original form. The returned cache map is a dictionary with the same structure,
         but with unanonymized keys.
 
-        Parameters:
-        - cache_map (dict): A dictionary where each value is a list of cache objects.
+        Args:
+            cache_map (dict): A dictionary where each value is a list of cache objects.
 
         Returns:
-        - dict: A dictionary with the same structure as cache_map, but with unanonymized keys.
+            dict: A dictionary with the same structure as cache_map, but with unanonymized keys.
+
         """
 
         def un_anonymize_dict(dict_to_anonymize):
             """
             Convert each key in the dictionary to its original form.
 
-            Parameters:
-            - dict_to_anonymize (dict): A dictionary with anonymized keys.
+            Args:
+                dict_to_anonymize (dict): A dictionary with anonymized keys.
 
             Returns:
-            - dict: A dictionary with the original keys.
+                dict: A dictionary with the original keys.
+
             """
             return {self.__unanonimize_key(key): value for key, value in dict_to_anonymize.items()}
 
@@ -280,11 +284,12 @@ class ExecutionEngine:
             """
             Convert each key in the dictionary to its original form.
 
-            Parameters:
-            - dict_to_anonymize (dict): A dictionary with anonymized keys.
+            Args:
+                dict_to_anonymize (dict): A dictionary with anonymized keys.
 
             Returns:
-            - dict: A dictionary with the original keys.
+                dict: A dictionary with the original keys.
+
             """
             return {self.__unanonimize_key(key): un_anonymize_dict(value) for key, value in dict_to_anonymize.items()}
 
@@ -304,9 +309,7 @@ class ExecutionEngine:
         return unanonymized_cache_map
 
     def get_cache_map_to_dump(self):
-        '''
-        Build if necessary and return data manager cache map
-        '''
+        '''Build if necessary and return data manager cache map'''
         if self.dm.cache_map is None:
             self.build_cache_map()
 
@@ -315,10 +318,7 @@ class ExecutionEngine:
         return anonymized_cache_map
 
     def load_cache_from_map(self, cache_map):
-        '''
-        Load disciplines cache from cache_map
-        '''
-
+        '''Load disciplines cache from cache_map'''
         if len(cache_map) > 0:
             # build cache map and gemseo disciplines id map in data manager
             self.build_cache_map()
@@ -331,14 +331,12 @@ class ExecutionEngine:
                 unanonymized_cache_map)
 
     def update_status_configure(self):
-        '''
-        Update status configure of all disciplines in factory
-        '''
+        '''Update status configure of all disciplines in factory'''
         for disc in self.factory.proxy_disciplines:
             disc._update_status_dm(ProxyDiscipline.STATUS_CONFIGURE)
 
     def get_treeview(self, no_data=False, read_only=False, exec_display=False):
-        ''' returns the treenode build based on datamanager '''
+        '''Returns the treenode build based on datamanager'''
         if self.dm.treeview is None or self.dm.treeview.exec_display != exec_display:
             self.dm.create_treeview(
                 self.root_process, self.__factory.process_module, no_data, read_only, exec_display=exec_display)
@@ -346,9 +344,7 @@ class ExecutionEngine:
         return self.dm.treeview
 
     def display_treeview_nodes(self, display_variables=None, exec_display=False):
-        '''
-        Display the treeview and create it if not
-        '''
+        '''Display the treeview and create it if not'''
         self.get_treeview(exec_display=exec_display)
         tv_to_display = self.dm.treeview.display_nodes(
             display_variables=display_variables)
@@ -476,10 +472,7 @@ class ExecutionEngine:
                                          update_status_configure=update_status_configure)
 
     def get_anonimated_data_dict(self):
-        '''
-        return execution engine data dict using anonimizin key for serialisation purpose
-        '''
-
+        '''Return execution engine data dict using anonimizin key for serialisation purpose'''
         converted_dict = {}
         dict_to_convert = self.dm.convert_data_dict_with_full_name()
 
@@ -599,16 +592,12 @@ class ExecutionEngine:
         return parameter_changes
 
     def clean_unused_namespaces(self):
-        '''
-
-        Returns:
-
-        '''
+        '''Returns:'''
         post_processing_ns_list = list(self.post_processing_manager.namespace_post_processing.keys())
         self.ns_manager.clean_unused_namespaces(post_processing_ns_list)
 
     def get_data_integrity_msg(self) -> str:
-        """gathers the messages concerning data integrity"""
+        """Gathers the messages concerning data integrity"""
         integrity_msg_list = [
             f'Variable {self.dm.get_var_full_name(var_id)} : {var_data_dict[ProxyDiscipline.CHECK_INTEGRITY_MSG]}'
             for var_id, var_data_dict in self.dm.data_dict.items() if
@@ -628,8 +617,7 @@ class ExecutionEngine:
             raise ValueError(data_integrity_msg)
 
     def set_debug_mode(self, mode=None, disc=None):
-        ''' set recursively <disc> debug options of in ProxyDiscipline
-        '''
+        '''Set recursively <disc> debug options of in ProxyDiscipline'''
         # TODO : update with new debug mode logic
         if disc is None:
             disc = self.root_process
@@ -669,9 +657,7 @@ class ExecutionEngine:
             self.set_debug_mode(mode, disc)
 
     def get_input_data_for_gemseo(self, proxy_coupling):
-        '''
-        Get values of discipline input_grammar from data manager
-        '''
+        '''Get values of discipline input_grammar from data manager'''
         input_data = {}
         input_data_names = proxy_coupling.discipline_wrapp.discipline.input_grammar.names
         if len(input_data_names) > 0:
@@ -686,12 +672,12 @@ class ExecutionEngine:
 
         Arguments:
             local_data (dict): to update datamanager with
+
         '''
         self.dm.set_values_from_dict(local_data)
 
     def execute(self, loaded_cache=None):
-        ''' execution of the execution engine
-        '''
+        '''Execution of the execution engine'''
         self.logger.info('PROCESS EXECUTION %s STARTS...', self.root_process.get_disc_full_name())
         #         self.root_process.clear_cache()
         self.update_from_dm()

@@ -34,14 +34,10 @@ from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 
 class TestVerySimpleMultiScenario(unittest.TestCase):
-    """
-    SoSVerySimpleMultiScenario test class
-    """
+    """SoSVerySimpleMultiScenario test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
@@ -676,9 +672,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.assertEqual(len(self.exec_eng.ns_manager.ns_list), 8)  # maybe should be 8 ?
 
     def test_11_multi_scenario_driver_multi_post_pro_double_configure(self):
-        '''
-        Test multi-scenario with a postprocessing per scenario and one for the multi-scenario
-        '''
+        '''Test multi-scenario with a postprocessing per scenario and one for the multi-scenario'''
         # instantiate factory # get instantiator from Discipline class
 
         builder_list = self.factory.get_builder_from_process(repo=self.repo,

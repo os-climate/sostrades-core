@@ -20,14 +20,10 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 
 
 class Scenario:
-    """
-    Class to represent scenario object
-    """
+    """Class to represent scenario object"""
 
     def __init__(self, name, scenario_manager=None):
-        """
-        Constructor for scenario class
-        """
+        """Constructor for scenario class"""
         self.name = name
         self.scenario_manager = scenario_manager
         self.parameters = []

@@ -25,14 +25,10 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 
 
 class TestVisibility(unittest.TestCase):
-    """
-    Visibility test class
-    """
+    """Visibility test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'Test'
         self.ee = ExecutionEngine(self.name)
         self.factory = self.ee.factory

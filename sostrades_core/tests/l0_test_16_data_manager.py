@@ -30,6 +30,20 @@ from sostrades_core.tools.tree.serializer import DataSerializer
 
 
 def init_execution_engine_disc1(name, encryption_dir=None):
+    """
+    Initializes the ExecutionEngine for a single discipline (Disc1) with optional encryption.
+
+    Args:
+        name (str): The name of the study or process.
+        encryption_dir (str, optional): Directory containing encryption keys. If not provided, no encryption is used.
+
+    Returns:
+        ExecutionEngine: The initialized ExecutionEngine with a loaded study from the provided input dictionary.
+
+    This function sets up the execution engine, selects the root process, modifies the data manager with input values,
+    and loads the study. If an encryption directory is provided, it configures encryption strategies for reading/writing.
+
+    """
     # , rw_object=None => no encryption strategy
     if encryption_dir is not None:
         priv_key_f = join(encryption_dir, 'private_key.pem')
@@ -52,6 +66,19 @@ def init_execution_engine_disc1(name, encryption_dir=None):
 
 
 def init_execution_engine_coupling_disc1_disc2(name):
+    """
+    Initializes the ExecutionEngine for coupling of two disciplines (Disc1 and Disc2).
+
+    Args:
+        name (str): The name of the study or process.
+
+    Returns:
+        ExecutionEngine: The initialized ExecutionEngine with a loaded study from the provided input dictionary.
+
+    This function sets up the execution engine, selects the root process, modifies the data manager with input values,
+    and loads the study.
+
+    """
     exec_eng = ExecutionEngine(name)
     repo = 'sostrades_core.sos_processes.test'
     exec_eng.select_root_process(repo,
@@ -68,6 +95,18 @@ def init_execution_engine_coupling_disc1_disc2(name):
 
 
 def get_hexdigest(file):
+    """
+    Computes the SHA-256 hash of a file.
+
+    Args:
+        file (str): The path to the file for which the hash needs to be calculated.
+
+    Returns:
+        str: The hexadecimal digest of the file's SHA-256 hash.
+
+    This function reads the file in blocks of 64KB and updates the hash incrementally for efficient memory usage.
+
+    """
     BLOCK_SIZE = 65536
     file_hash = hashlib.sha256()
     with open(file, 'rb') as f:
@@ -80,9 +119,7 @@ def get_hexdigest(file):
 
 
 class TestDataManagerGenerator(unittest.TestCase):
-    """
-    Data manager generator test class
-    """
+    """Data manager generator test class"""
 
     def setUp(self):
         self.dirs_to_del = []

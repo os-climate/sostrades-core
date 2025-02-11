@@ -34,11 +34,11 @@ GROUP_NAME = 'group-name'
 
 
 class SoSProcessFactory:
-    '''Class to manager processes
-    '''
+    '''Class to manager processes'''
 
     def __init__(self, additional_repository_list=None, search_python_path=True, logger: Optional[logging.Logger] = None):
-        """ SoSProcessFactory constructor
+        """
+        SoSProcessFactory constructor
 
         :params: additional_repository_list, list with additonal repository to load
         :type: list of string, default None
@@ -46,7 +46,6 @@ class SoSProcessFactory:
         :params: search_python_path, look for process into python path library or not
         :type: boolean, default True
         """
-
         self.__processes_dict = None
 
         # Setup the logging object
@@ -84,8 +83,7 @@ class SoSProcessFactory:
         return self.__processes_dict
 
     def get_repo_list(self):
-        ''' return list of dict {repo name: repo path} '''
-
+        '''Return list of dict {repo name: repo path}'''
         # get all processes from appli root directory
         return self.__repository_list
 
@@ -93,28 +91,20 @@ class SoSProcessFactory:
         return self.__processes_dict[repo]
 
     def get_processes_dict(self):
-        """
-        Return the buit dictionary processes base on repository list
-        """
-
+        """Return the buit dictionary processes base on repository list"""
         return self.__processes_dict
 
     def get_user_default_rights_dict(self):
-        """
-        Return the buit dictionary processes user default rights base on repository list
-        """
+        """Return the buit dictionary processes user default rights base on repository list"""
         return self.__user_default_rights_dict
 
     def get_group_default_rights_dict(self):
-        """
-        Return the buit dictionary processes group default rights base on repository list
-        """
+        """Return the buit dictionary processes group default rights base on repository list"""
         return self.__group_default_rights_dict
 
     # -- Protected methods
     def _set_processes_dict(self):
-        ''' load processes list
-        '''
+        '''Load processes list'''
         # -- re-initialize processes_list
         self.__processes_dict = {}
         self.__repository_list = []
@@ -156,7 +146,6 @@ class SoSProcessFactory:
 
         Find for each path the file containing default access rights file for this repository
         """
-
         # check for PYTHONPATH environment variable
         python_path_libraries = environ.get('PYTHONPATH')
         self.logger.info('Adding PYTHONPATH processes')
@@ -188,7 +177,8 @@ class SoSProcessFactory:
                                     self.__process_default_right_files[process_module] = yaml_data
 
     def __get_repositories_by_process(self, repository_module_name):
-        """ retrieve the list of process name into the specified module name
+        """
+        retrieve the list of process name into the specified module name
 
         :params: repository_module_name, module name (import like name)
         :type: list of strings

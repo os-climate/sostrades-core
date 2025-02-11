@@ -40,7 +40,8 @@ PROCESS_IN_PARALLEL = 5
 
 
 def manage_process_queue(process_list, message_queue):
-    """ Regarding a given process list (already start)
+    """
+    Regarding a given process list (already start)
     manage sub process lifecycle and queue message passing
 
     :params: process_list, list of processses to manage
@@ -79,7 +80,8 @@ def manage_process_queue(process_list, message_queue):
 
 
 def manage_process_launch(process_list, message_queue) -> tuple[str, str]:
-    """ Regarding a given process list (not started)
+    """
+    Regarding a given process list (not started)
     manage sub process launching
 
     :params: process_list, list of processses to manage
@@ -91,7 +93,6 @@ def manage_process_launch(process_list, message_queue) -> tuple[str, str]:
 
     :return: (str, str) , test status and error message list
     """
-
     global_output_msg = ''
     global_test_passed = True
 
@@ -136,7 +137,6 @@ def get_all_usecases(processes_repo: str) -> list[str]:
     Retrieve all usecases in a repository
     :params: processes_repo, repository where to find processes
     """
-
     process_factory = SoSProcessFactory(additional_repository_list=[
         processes_repo], search_python_path=False)
     process_list = process_factory.get_processes_dict()
@@ -163,10 +163,10 @@ Union[BaseStudyManager, None],
 Union[dict, None],
 Union[dict, None]]:
     """
-        Run twice a usecase and return the two treeviews from the runs
-        :params: usecase, usecase to run twice
-        :type: String
-        :returns: Two treeview as dictionary
+    Run twice a usecase and return the two treeviews from the runs
+    :params: usecase, usecase to run twice
+    :type: String
+    :returns: Two treeview as dictionary
     """
     print(f'----- RUN TWICE A USECASE {usecase} -----')
     # Instanciate Study
@@ -239,12 +239,11 @@ Union[dict, None]]:
 
 def multiple_configure(usecase):
     """
-        Configure twice a usecase and return the two treeviews from the configure
-        :params: usecase, usecase to configure twice
-        :type: String
-        :returns: Two dm as dictionary
+    Configure twice a usecase and return the two treeviews from the configure
+    :params: usecase, usecase to configure twice
+    :type: String
+    :returns: Two dm as dictionary
     """
-
     logging.info(f'----- CONFIGURE TWICE A USECASE {usecase} -----')
     # Instanciate Study
     imported_module = import_module(usecase)
@@ -284,9 +283,11 @@ def multiple_configure(usecase):
 def test_compare_dm(dm_1: dict, dm_2: dict, usecase: str, msg: str) -> tuple[bool, str]:
     """
     Compares dm from two configured studies.
+
     Returns:
          compare_test_passed: bool, dms are identical,
          error_msg_compare: error message, (empty string if test is passed)
+
     """
     compare_test_passed = True
     error_msg_compare = ''
@@ -418,6 +419,20 @@ def test_double_run(study: BaseStudyManager, force_run: bool = False) -> tuple[b
 
 
 def check_if_all_post_processings_succeeded(ee_postprocessing_manager):
+    """
+    Checks if all post-processings have succeeded by evaluating the errors
+    in each post-processing task.
+
+    Args:
+        ee_postprocessing_manager (object): The post-processing manager instance
+            that holds post-processing tasks.
+
+    Returns:
+        tuple: A tuple containing:
+            - A boolean indicating if all post-processings succeeded (True if no errors).
+            - A string containing error messages for any failed post-processing tasks.
+
+    """
     error_msg_post_processing_list = []
     for post_processing_list in ee_postprocessing_manager.namespace_post_processing.values():
         error_msg_post_processing_list.extend([post_proc.post_processing_error for post_proc in post_processing_list if
@@ -530,7 +545,7 @@ def processed_test_one_usecase(usecase: str, message_queue: Optional[Queue] = No
 
 
 def run_test_check_outputs(usecase):
-    """ Runs the outputs check for the test """
+    """Runs the outputs check for the test"""
     imported_module = import_module(usecase)
     uc = getattr(imported_module, 'Study')()
     if uc.check_outputs:

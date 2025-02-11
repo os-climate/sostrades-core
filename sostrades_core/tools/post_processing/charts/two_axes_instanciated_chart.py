@@ -31,18 +31,15 @@ Class that define a 2 dimensional instantiated chart
 
 
 class InstanciatedSeriesException(Exception):
-    """ Overload Exception basic type
-    """
+    """Overload Exception basic type"""
 
 
 class InstanciatedSeries (SeriesTemplate):
-    """ Class that define a series abscissa and ordinate list with a name
-    """
+    """Class that define a series abscissa and ordinate list with a name"""
 
 
 class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
-    """ Class that define a 2 dimensional chart template
-    """
+    """Class that define a 2 dimensional chart template"""
 
     CUMULATIVE_TO_ZERO_Y = 'tozeroy'
     CUMULATIVE_TO_NEXT_Y = 'tonexty'
@@ -67,7 +64,6 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
 
         :return plotly.graph_objects.go instance
         """
-
         fig = go.Figure()
 
         # -- Series and cumulative surface management

@@ -24,9 +24,7 @@ from sostrades_core.tools.design_space import design_space as dspace_tool
 
 class SampleGeneratorWrapper(SoSWrapp):
     # TODO: docstring is not up to date
-    '''
-    SampleGeneratorWrapper for ProxySampleGenerator discipline sampling at run-time.
-    '''
+    '''SampleGeneratorWrapper for ProxySampleGenerator discipline sampling at run-time.'''
 
     _ontology_data = {
         'label': 'Sample_Generator wrapper',
@@ -70,16 +68,12 @@ class SampleGeneratorWrapper(SoSWrapp):
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def sample(self):
-        """
-        Ask sample generator to sample using wrapper object to retrieve inputs.
-        """
+        """Ask sample generator to sample using wrapper object to retrieve inputs."""
         return self.set_scenario_columns(self.sample_generator.sample(self))
 
     def set_scenario_columns(self, samples_df, scenario_names=None):
         # TODO: [to discuss] move to AbstractSampleGenerator ?
-        '''
-        Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df, by default selecting all scenarios.
-        '''
+        '''Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df, by default selecting all scenarios.'''
         if self.SELECTED_SCENARIO not in samples_df:
             ordered_columns = [self.SELECTED_SCENARIO, self.SCENARIO_NAME] + samples_df.columns.tolist()
             if samples_df.empty:

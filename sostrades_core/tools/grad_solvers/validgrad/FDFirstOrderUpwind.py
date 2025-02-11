@@ -24,7 +24,8 @@ from .FDScheme import FDScheme
 
 
 class AbstractFDFirstOrderUpwind(FDScheme):
-    """"
+    """
+    "
     Abstract class for the first order schemes.
     """
 
@@ -47,7 +48,6 @@ class AbstractFDFirstOrderUpwind(FDScheme):
 
 
 class FDFirstOrderUpwind(AbstractFDFirstOrderUpwind):
-
     """
     First order upwind finite differences scheme.
     grad = (f(x+fd_step)-f(x))/(fd_step)
@@ -87,7 +87,6 @@ class FDFirstOrderUpwind(AbstractFDFirstOrderUpwind):
 
 
 class FDFirstOrderUpwindComplexStep(AbstractFDFirstOrderUpwind):
-
     """
     Complex step, first order gradient calculation.
     Enables a much lower step than real finite differences,

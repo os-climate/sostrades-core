@@ -175,6 +175,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             map_name (string): name of the map associated to the scatter builder in case of multi-instance build
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
             logger (logging.Logger): Logger to use
+
         """
         super().__init__(sos_name, ee, driver_wrapper_cls, associated_namespaces=associated_namespaces)
         if cls_builder is not None:
@@ -235,9 +236,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                                              wrapping_mode)
 
     def configure(self):
-        """
-        Configure the DriverEvaluator layer
-        """
+        """Configure the DriverEvaluator layer"""
         # set the scenarios references, for flattened subprocess configuration
         if self.builder_tool:
             self.scenarios = self.builder_tool.get_all_built_disciplines()
@@ -309,15 +308,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self.update_data_io_with_child(subprocess_data_in, subprocess_data_out)
 
     def configure_driver(self):
-        """
-        To be overloaded by drivers with specific configuration actions
-        """
+        """To be overloaded by drivers with specific configuration actions"""
         pass
 
     def prepare_build(self):
-        """
-        Get the actual drivers of the subprocesses of the DriverEvaluator.
-        """
+        """Get the actual drivers of the subprocesses of the DriverEvaluator."""
         # NB: custom driver wrapper not implemented
         disc_in = self.get_data_in()
         if self.WITH_SAMPLE_GENERATOR in disc_in and self.get_sosdisc_inputs(self.WITH_SAMPLE_GENERATOR):
@@ -362,9 +357,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         return sampling_disc
 
     def prepare_execution(self):
-        """
-        Preparation of the GEMSEO process, including GEMSEO objects instantiation
-        """
+        """Preparation of the GEMSEO process, including GEMSEO objects instantiation"""
         # prepare_execution of proxy_disciplines as in coupling
         for disc in self.scenarios:
             disc.prepare_execution()
@@ -376,11 +369,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             self._update_status_dm(self.STATUS_DONE)
 
     def reset_subdisciplines_of_wrapper(self):
-        '''
-
-        Reset subdisciplines of the wrapper
-
-        '''
+        '''Reset subdisciplines of the wrapper'''
         self.discipline_wrapp.reset_subdisciplines(self)
 
     def set_wrapper_attributes(self, wrapper):
@@ -398,31 +387,21 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             if proxy.discipline_wrapp is not None]})  # discs and couplings but not scenarios
 
     def is_configured(self):
-        """
-        Return False if discipline is not configured or structuring variables have changed or children are not all configured
-        """
+        """Return False if discipline is not configured or structuring variables have changed or children are not all configured"""
         driver_is_configured = super().is_configured() and self.subprocess_is_configured()
         sample_generator_is_configured = not self.sample_generator_disc or self.sample_generator_disc.is_configured()
         return driver_is_configured and sample_generator_is_configured
 
     def subprocess_is_configured(self):
-        """
-        Return True if the subprocess is configured or the builder is empty.
-        """
+        """Return True if the subprocess is configured or the builder is empty."""
         return self.get_disciplines_to_configure() == []
 
     def get_disciplines_to_configure(self):
-        '''
-
-        Get the disciplines to configure which are the self.scenarios in driver world
-
-        '''
+        '''Get the disciplines to configure which are the self.scenarios in driver world'''
         return self._get_disciplines_to_configure(self.scenarios)
 
     def check_data_integrity(self):
-        '''
-        Check the data integrity of the input variables of the driver
-        '''
+        '''Check the data integrity of the input variables of the driver'''
         # checking for duplicates
         self.check_integrity_msg_list = []
         disc_in = self.get_data_in()
@@ -447,7 +426,6 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         - if column names are not coherent with subprocess
         - if value to describe the scenario has not the type in line with the subprocess
         '''
-
         samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
         if len(samples_df) > 0:
             scenario_names = samples_df[self.SCENARIO_NAME].values.tolist()
@@ -516,9 +494,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                                 samples_df_descriptor, check_value=False)
 
     def manage_import_inputs_from_sub_process(self, ref_discipline_full_name):
-        """
-        Method for import usecase option which will be refactored
-        """
+        """Method for import usecase option which will be refactored"""
         # Set sub_proc_import_usecase_status
         with_modal = True
         self.set_sub_process_usecase_status_from_user_inputs(with_modal)
@@ -545,14 +521,11 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
         # TODO: currently inactive in ProxyOptim, need overload to activate
 
         '''
-
         return False
 
     def update_reference_from_anonymised_dict(self, anonymize_input_dict_from_usecase, ref_discipline_full_name,
                                               with_modal):
-        """
-                # TODO: Refactor with the US refactor reference mode
-        """
+        """# TODO: Refactor with the US refactor reference mode"""
         # 1. Put anonymized dict in context (unanonymize) of the reference
         # First identify the reference scenario
         input_dict_from_usecase = self.put_anonymized_input_dict_in_sub_process_context(
@@ -627,9 +600,9 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def set_sub_process_usecase_status_from_user_inputs(self, with_modal):
         """
-            State subprocess usecase import status
-            The uscase is defined by its name and its anonimized dict
-            Function needed in manage_import_inputs_from_sub_process()
+        State subprocess usecase import status
+        The uscase is defined by its name and its anonimized dict
+        Function needed in manage_import_inputs_from_sub_process()
         """
         disc_in = self.get_data_in()
 
@@ -667,8 +640,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
     def put_anonymized_input_dict_in_sub_process_context(self, anonymize_input_dict_from_usecase,
                                                          ref_discipline_full_name):
         """
-            Put_anonymized_input_dict in sub_process context
-            Function needed in manage_import_inputs_from_sub_process()
+        Put_anonymized_input_dict in sub_process context
+        Function needed in manage_import_inputs_from_sub_process()
         """
         # Get unanonymized dict (i.e. dict of subprocess in driver context)
         # from anonymized dict and context
@@ -700,8 +673,8 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
             io_type_in (bool): whether to take inputs into account
             io_type_out (bool): whether to take outputs into account
             strip_first_ns (bool): whether to strip the scenario name (multi-instance case) from the variable name
-        '''
 
+        '''
         possible_in_types, possible_out_values = find_possible_values(self, io_type_in=io_type_in,
                                                                       io_type_out=io_type_out,
                                                                       strip_first_ns=strip_first_ns,

@@ -27,7 +27,8 @@ from sostrades_core.execution_engine.namespace import Namespace
 
 
 def dict_are_equal(d1: dict[str, Any], d2: dict[str, Any], tolerance: float = 0.) -> bool:
-    """Use compare_dict method to return True/False if d1 and d2 are/aren't equals.
+    """
+    Use compare_dict method to return True/False if d1 and d2 are/aren't equals.
 
     Args:
         d1: The first dictionary to compare.
@@ -36,6 +37,7 @@ def dict_are_equal(d1: dict[str, Any], d2: dict[str, Any], tolerance: float = 0.
 
     Returns:
         Whether the dictionaries are equal.
+
     """
     return compare_dict(d1, d2, tree='', error=None, df_equals=True)
 
@@ -108,6 +110,20 @@ def compare_dict(d1, d2, tree, error, df_equals=False):
 
 
 def parse_list_to_compare(list_1, list_2, tree, error, df_equals=False):
+    """
+    Compares two lists element-wise, ensuring they have the same structure and values.
+
+    Args:
+        list_1 (list): The first list to compare.
+        list_2 (list): The second list to compare.
+        tree (str): A string representing the hierarchy or path in the comparison process.
+        error (dict or None): A dictionary to store error messages, if provided.
+        df_equals (bool, optional): A flag to determine if DataFrame comparisons should be strict.
+
+    Returns:
+        bool: True if all elements in the lists match, False otherwise.
+
+    """
     if len(list_1) != len(list_2):
         if error is None:
             return False
@@ -150,6 +166,20 @@ def parse_list_to_compare(list_1, list_2, tree, error, df_equals=False):
 
 
 def parse_tuple_to_compare(tuple1, tuple2, tree, error):
+    """
+    Compares two tuples element-wise, checking for equality of dictionaries, lists,
+    or individual elements.
+
+    Args:
+        tuple1 (tuple): The first tuple to compare.
+        tuple2 (tuple): The second tuple to compare.
+        tree (str): A string representing the hierarchy or path in the comparison process.
+        error (dict or None): A dictionary to store error messages, if provided.
+
+    Returns:
+        bool: True if all elements in the tuples match, False otherwise.
+
+    """
     try:
         for tup in tuple1:
             if isinstance(tup, dict):
@@ -176,9 +206,7 @@ def parse_tuple_to_compare(tuple1, tuple2, tree, error):
 
 
 def compare_dataframes(df1, df2, tree, error, df_equals):
-    """
-    Compare two dataframes and raise an exception if not equal
-    """
+    """Compare two dataframes and raise an exception if not equal"""
     if df_equals:
         if not df1.equals(df2):
             if error is None:
@@ -223,9 +251,9 @@ def compare_elements(el1, el2, tree, error):
 
 def delete_keys_from_dict(dictionary):
     '''
-        Delete key refering to a namespace object in the dictionary/sub-lists/sub-dict
-        :params: dictionary, dictionary where to delete the sos namespace ref
-        :type: Dict
+    Delete key refering to a namespace object in the dictionary/sub-lists/sub-dict
+    :params: dictionary, dictionary where to delete the sos namespace ref
+    :type: Dict
     '''
     for key in dictionary.keys():
         with suppress(KeyError):
@@ -244,10 +272,10 @@ def delete_keys_from_dict(dictionary):
 
 def parse_list(list_1):
     '''
-        Parse list to find other list or dict to delete
-        namespace references
-        :params: list_1, list to parse to delete namespace ref in sub-dictionary
-        :type: List
+    Parse list to find other list or dict to delete
+    namespace references
+    :params: list_1, list to parse to delete namespace ref in sub-dictionary
+    :type: List
     '''
     current = 0
     while current < len(list_1):

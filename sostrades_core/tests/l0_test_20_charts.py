@@ -26,9 +26,7 @@ unit test for chart template
 
 
 class TestChartTemplate(unittest.TestCase):
-    """
-    Class to test template filters and charts
-    """
+    """Class to test template filters and charts"""
 
     def setUp(self):
         self.data_path = join(dirname(sostrades_core.__file__),

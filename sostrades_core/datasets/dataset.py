@@ -30,6 +30,7 @@ class Dataset:
     Attributes:
         dataset_info (AbstractDatasetInfo): Information about the dataset.
         connector (AbstractDatasetsConnector): Connector to interact with the dataset.
+
     """
 
     dataset_info: AbstractDatasetInfo
@@ -44,5 +45,6 @@ class Dataset:
 
         Returns:
             dict[str, Any]: Dictionary with the retrieved data values.
+
         """
         return self.connector.get_values(dataset_identifier=self.dataset_info, data_to_get=data_dict)

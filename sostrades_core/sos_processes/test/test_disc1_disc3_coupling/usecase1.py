@@ -19,7 +19,8 @@ from sostrades_core.study_manager.study_manager import StudyManager
 
 
 class Study(StudyManager):
-    '''This is an example of usecase study for
+    '''
+    This is an example of usecase study for
      the test_disc1_disc3_coupling.
     This process instantiates the coupling of (disc1_scenario,disc3_scenario).
     '''

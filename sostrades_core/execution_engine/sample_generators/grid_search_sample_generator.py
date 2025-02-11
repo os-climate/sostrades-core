@@ -69,6 +69,7 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
 
         Returns:
             eval_inputs_cp(dataframe): with extra column with the values for CartesianProduct SampleGenerator.
+
         """
         if eval_inputs is not None and design_space is not None:
             lists_of_values = []

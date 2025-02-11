@@ -21,9 +21,8 @@ from typing import Any
 
 
 class AbstractDatasetsSerializer(abc.ABC):
-    """
-    Abstract class to inherit in order to build specific datasets connector
-    """
+    """Abstract class to inherit in order to build specific datasets connector"""
+
     __logger = logging.getLogger(__name__)
     SOSTRADES_TYPES = {'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe', 'array'}
 
@@ -42,6 +41,7 @@ class AbstractDatasetsSerializer(abc.ABC):
 
         Returns:
             Any: Converted data value.
+
         """
 
     @abc.abstractmethod
@@ -56,4 +56,5 @@ class AbstractDatasetsSerializer(abc.ABC):
 
         Returns:
             Any: Converted data value.
+
         """

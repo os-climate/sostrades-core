@@ -36,9 +36,7 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestAnalyticGradients(unittest.TestCase):
-    """
-    Class to test analytic gradients of Sellar optim case
-    """
+    """Class to test analytic gradients of Sellar optim case"""
 
     def setUp(self):
         self.dirs_to_del = []

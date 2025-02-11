@@ -32,9 +32,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
+        '''Default initialisation test'''
         ns_7 = self.ee.ns_manager.add_ns(
             'ns_protected', f'{self.ee.study_name}.Disc7')
         mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'

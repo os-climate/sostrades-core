@@ -23,9 +23,7 @@ from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
 
 
 class ValueBlockDiscipline(GatherDiscipline):
-    """
-    Generic Value Block Discipline getting children outputs as inputs and gathering them as outputs
-    """
+    """Generic Value Block Discipline getting children outputs as inputs and gathering them as outputs"""
 
     # ontology information
     _ontology_data = {

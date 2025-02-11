@@ -51,7 +51,8 @@ LOG_LEVEL = INFO  # = 20
 
 
 class BaseStudyManager:
-    """Base class used to manage making, loading and saving data for a process into an execution engine instance.
+    """
+    Base class used to manage making, loading and saving data for a process into an execution engine instance.
 
     Overloading the method 'setup_use_case' allow to change the way to load data into the execution engine.
     """
@@ -71,8 +72,8 @@ class BaseStudyManager:
         execution_engine: ExecutionEngine | None = None,
         test_post_procs: bool = True,
     ):
-        """Constructor.
-
+        """
+        Constructor.
 
         :params: repository_name, package name that contain the target process to load
         :type: str
@@ -117,7 +118,8 @@ class BaseStudyManager:
 
     @property
     def ee(self) -> ExecutionEngine:
-        """Return the current execution engine instance.
+        """
+        Return the current execution engine instance.
 
         :return: sostrades_core.execution_engine.execution_engine.ExecutionEngine
         """
@@ -125,7 +127,8 @@ class BaseStudyManager:
 
     @property
     def execution_engine(self) -> ExecutionEngine:
-        """Return the current execution engine instance.
+        """
+        Return the current execution engine instance.
 
         :return: sostrades_core.execution_engine.execution_engine.ExecutionEngine
         """
@@ -147,7 +150,8 @@ class BaseStudyManager:
 
     @property
     def logger(self):
-        """Return the current Study logger object.
+        """
+        Return the current Study logger object.
 
         @return logging.logger
         """
@@ -169,7 +173,8 @@ class BaseStudyManager:
         return DataSerializer.study_cache_file_path(study_to_load=self.dump_directory)
 
     def _init_exec_engine(self):
-        """Create an instance of the execution engine
+        """
+        Create an instance of the execution engine
         This method create only the instance and does not apply any process to build.
 
         It is intended to overload this method if some configuration has to be done between the creation of the
@@ -191,7 +196,8 @@ class BaseStudyManager:
         pass
 
     def update_data_from_dataset_mapping(self, from_datasets_mapping=None, display_treeview=True):
-        """Method that load data into the execution engine with datasets.
+        """
+        Method that load data into the execution engine with datasets.
 
         :params: display_treeview, display or not treeview state (optional parameter)
         :type: boolean
@@ -235,7 +241,8 @@ class BaseStudyManager:
         return self.execution_engine.dm.export_data_in_datasets(from_datasets_mapping)
 
     def load_data(self, from_path=None, from_input_dict=None, display_treeview=True, from_datasets_mapping=None):
-        """Method that load data into the execution engine
+        """
+        Method that load data into the execution engine
 
         :params: from_path, location of pickle file to load (optional parameter)
         :type: str
@@ -308,10 +315,12 @@ class BaseStudyManager:
         """Method to overload to have a specific check on some output datas."""
 
     def dump_data(self, study_folder_path: Path | str | None = None):
-        """Dump data from the execution engine to a file.
+        """
+        Dump data from the execution engine to a file.
 
         Args:
             study_folder_path: The directory where the pickle file will be created.
+
         """
         # Retrieve data to dump
         data = self.execution_engine.get_anonimated_data_dict()
@@ -322,7 +331,8 @@ class BaseStudyManager:
         self._put_data_into_file(study_folder_path, data)
 
     def dump_cache(self, study_folder_path):
-        """Method that dump cache_map from the data manager to a file
+        """
+        Method that dump cache_map from the data manager to a file
         Do not dump the cache if there is no cache to dump
         :params: study_folder_path, location of pickle file to load
         :type: str.
@@ -331,7 +341,8 @@ class BaseStudyManager:
             self._put_cache_into_file(study_folder_path, self.dump_cache_map)
 
     def manage_dump_cache(self) -> None:
-        """Define the dump strategy.
+        """
+        Define the dump strategy.
 
         Three possible cases :
             1 Execution is done, a cache_map exists and is not empty
@@ -361,10 +372,12 @@ class BaseStudyManager:
                 self.dumped_cache = False
 
     def read_cache_pickle(self, study_folder_path: Path | str | None = None) -> None:
-        """Read cache pickle and save it into the study manager.
+        """
+        Read cache pickle and save it into the study manager.
 
         Args:
             study_folder_path: The path to the directory containing the pickle file to load.
+
         """
         # Retrieve the cache map to load
         if study_folder_path is not None and Path(study_folder_path).is_dir():
@@ -374,10 +387,12 @@ class BaseStudyManager:
             self.loaded_cache = None
 
     def load_disciplines_data(self, study_folder_path=None) -> None:
-        """Load data into the execution engine.
+        """
+        Load data into the execution engine.
 
         Args:
             study_folder_path: The path to the directory containing the pickle file to load.
+
         """
         # Retrieve data to load and make sure they have the correct type
         loaded_dict = self.setup_disciplines_data(study_folder_path)
@@ -386,10 +401,12 @@ class BaseStudyManager:
         self.execution_engine.load_disciplines_status_dict(loaded_dict)
 
     def dump_disciplines_data(self, study_folder_path):
-        """Write data to a pickle file.
+        """
+        Write data to a pickle file.
 
         Args:
             study_folder_path: The path to the directory where the pickle file will be created.
+
         """
         # Retrieve data to dump
         data = self.execution_engine.get_anonimated_disciplines_status_dict()
@@ -397,7 +414,8 @@ class BaseStudyManager:
         self._put_disciplines_data_into_file(study_folder_path, data)
 
     def run(self, logger_level=None, dump_study=False, for_test=False):
-        """Method that run execution engine study with some additionals options.
+        """
+        Method that run execution engine study with some additionals options.
 
         :params: logger_level, target logging level request for the run (None by default,
                     so use the current class variable value => INFO)
@@ -466,14 +484,16 @@ class BaseStudyManager:
         self.dump_cache(dump_dir)
 
     def get_dataset_mapping(self) -> DatasetsMapping | None:
-        """Method to overload in order to provide datasets mapping to load.
+        """
+        Method to overload in order to provide datasets mapping to load.
 
         :return: Optional[DatasetsMapping]
         """
         return None
 
     def setup_usecase(self, study_folder_path=None):
-        """Method to overload in order to provide data to the loaded study process
+        """
+        Method to overload in order to provide data to the loaded study process
         from a specific way.
 
         :params: study_folder_path, location of pickle file to load (optional parameter)
@@ -487,7 +507,8 @@ class BaseStudyManager:
         return []
 
     def setup_disciplines_data(self, study_folder_path=None):
-        """Method to overload in order to provide data to the loaded study process
+        """
+        Method to overload in order to provide data to the loaded study process
         from a specific way.
 
         :params: study_folder_path, location of pickle file to load (optional parameter)
@@ -540,10 +561,12 @@ class BaseStudyManager:
             raise RuntimeError(output_error)
 
     def set_dump_directory(self, dump_dir: Path | str):
-        """Set the dump directory of the StudyManager.
+        """
+        Set the dump directory of the StudyManager.
 
         Args:
             dump_dir: The dump directory.
+
         """
         logger = self.execution_engine.logger
         built_directory = Path(dump_dir) / self.repository_name / self.process_name / self.study_name
@@ -552,7 +575,8 @@ class BaseStudyManager:
         self.dump_directory = built_directory
 
     def _get_data_from_file(self, study_folder_path):
-        """Method that load data from a file using an serializer object strategy (set with the according setter).
+        """
+        Method that load data from a file using an serializer object strategy (set with the according setter).
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -576,7 +600,8 @@ class BaseStudyManager:
         return result
 
     def _put_data_into_file(self, study_folder_path: str, data: dict):
-        """Method that load save from a file using an serializer object strategy (set with the according setter)
+        """
+        Method that load save from a file using an serializer object strategy (set with the according setter)
         File will be entirely overwrittent.
 
         :params: study_folder_path, location of pickle file to save
@@ -588,7 +613,8 @@ class BaseStudyManager:
             serializer.put_dict_from_study(study_folder_path, self.__rw_strategy, data)
 
     def _put_cache_into_file(self, study_folder_path, data):
-        """Method that load save from a file using an serializer object strategy (set with the according setter)
+        """
+        Method that load save from a file using an serializer object strategy (set with the according setter)
         File will be entirely overwrittent.
 
         :params: study_folder_path, location of pickle file to save
@@ -604,7 +630,8 @@ class BaseStudyManager:
             serializer.put_cache_from_study(study_folder_path, self.__rw_strategy, data)
 
     def _get_cache_from_file(self, study_folder_path):
-        """Method that load discipline data into the execution engine.
+        """
+        Method that load discipline data into the execution engine.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -619,7 +646,8 @@ class BaseStudyManager:
         return result
 
     def _get_disciplines_data_from_file(self, study_folder_path):
-        """Method that load discipline data into the execution engine.
+        """
+        Method that load discipline data into the execution engine.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -634,7 +662,8 @@ class BaseStudyManager:
         return result
 
     def _put_disciplines_data_into_file(self, study_folder_path, disciplines_data):
-        """Method that load discipline data into the execution engine.
+        """
+        Method that load discipline data into the execution engine.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -649,7 +678,8 @@ class BaseStudyManager:
 
     @staticmethod
     def static_dump_data(study_folder_path, execution_engine, rw_strategy):
-        """Method that dump the entire execution engine information.
+        """
+        Method that dump the entire execution engine information.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -671,7 +701,8 @@ class BaseStudyManager:
 
     @staticmethod
     def static_load_data(study_folder_path: Path | str, execution_engine, rw_strategy):
-        """Method that load the entire execution engine information.
+        """
+        Method that load the entire execution engine information.
 
         :params: study_folder_path, location of pickle file to load
         :type: str
@@ -697,7 +728,8 @@ class BaseStudyManager:
 
     @staticmethod
     def static_load_raw_data(folder_path: Path | str, rw_strategy):
-        """Method that load the data pickle from a folder.
+        """
+        Method that load the data pickle from a folder.
 
         :param folder_path: location of pickle file to load
         :type folder_path: str
@@ -722,7 +754,8 @@ class BaseStudyManager:
 
     @staticmethod
     def static_load_raw_usecase_data(repository_name, process_name, usecase_name):
-        """Method that load the data from a specific usecase file from a repository.
+        """
+        Method that load the data from a specific usecase file from a repository.
 
         :param repository_name: repository module name where the process is located
         :type repository_name: str

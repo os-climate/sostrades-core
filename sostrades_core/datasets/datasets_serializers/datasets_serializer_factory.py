@@ -34,9 +34,7 @@ from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
 class DatasetSerializerType(Enum):
-    """
-    Dataset serializer types enum
-    """
+    """Dataset serializer types enum"""
 
     JSON = JSONDatasetsSerializer
     FileSystem = FileSystemDatasetsSerializer
@@ -55,6 +53,7 @@ class DatasetSerializerType(Enum):
 
         Raises:
             ValueError: If no matching enum value is found.
+
         """
         try:
             # Iterate through the enum members and find the one with a matching value
@@ -64,9 +63,8 @@ class DatasetSerializerType(Enum):
 
 
 class DatasetsSerializerFactory(metaclass=NoInstanceMeta):
-    """
-    Dataset serializer factory
-    """
+    """Dataset serializer factory"""
+
     __logger = logging.getLogger(__name__)
 
     @classmethod
@@ -84,6 +82,7 @@ class DatasetsSerializerFactory(metaclass=NoInstanceMeta):
         Raises:
             ValueError: If the serializer type is unexpected.
             Exception: If there is an error during instantiation.
+
         """
         cls.__logger.debug(f"Instantiating serializer of type {serializer_type}")
         if not isinstance(serializer_type, DatasetSerializerType) or not issubclass(

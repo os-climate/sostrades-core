@@ -28,16 +28,13 @@ NS_SEP = '.'
 
 
 class NamespaceManager:
-    '''
-    Specification: NamespaceManager allows to manage namespaces for disciplines data
-    '''
+    '''Specification: NamespaceManager allows to manage namespaces for disciplines data'''
+
     NS_SEP = '.'
     NS_NAME_SEPARATOR = Namespace.NS_NAME_SEPARATOR
 
     def __init__(self, name, ee):
-        '''
-            Constructor
-        '''
+        '''Constructor'''
         self.name = name  # old habit
 
         self.ee = ee
@@ -73,7 +70,7 @@ class NamespaceManager:
 
     @staticmethod
     def compose_ns(args):
-        ''' concatenate list of string items as namespace-like '''
+        '''Concatenate list of string items as namespace-like'''
         if not isinstance(args, list) and not isinstance(args, tuple):
             args = [args]
         if None in args:
@@ -88,16 +85,12 @@ class NamespaceManager:
 
     @property
     def shared_ns_dict(self):
-        '''
-        Dict of shared namespaces which fills the others_ns key of the disc_ns_dict
-        '''
+        '''Dict of shared namespaces which fills the others_ns key of the disc_ns_dict'''
         return self.__shared_ns_dict
 
     @property
     def local_ns_dict(self):
-        '''
-        Dict of local namespaces which fills the local_ns key of the disc_ns_dict
-        '''
+        '''Dict of local namespaces which fills the local_ns key of the disc_ns_dict'''
         return self.__local_ns_dict
 
     @property
@@ -129,7 +122,6 @@ class NamespaceManager:
         add namespace to namespace manager
         WARNING: Do not use to update namespace values
         '''
-
         # if the couple (name,value) already exists do not create another
         # object take the one that exists
         ns_id = f'{name}{self.NS_NAME_SEPARATOR}{ns_value}'
@@ -165,9 +157,7 @@ class NamespaceManager:
         self.associate_display_values_to_new_local_namespaces(disc_builder)
 
     def delete_display_ns_in_builder(self, disc_builder):
-        '''
-        Delete a builder in the display_ns_dict
-        '''
+        '''Delete a builder in the display_ns_dict'''
         del self.display_ns_dict[disc_builder]
 
     def add_display_ns_to_builder_list(self, builder_list, display_value):
@@ -188,9 +178,7 @@ class NamespaceManager:
                     display_value)
 
     def get_all_namespace_with_name(self, name):
-        '''
-        Get all namespaces with same name
-        '''
+        '''Get all namespaces with same name'''
         ns_list = [
             namespace
             for namespace in self.ns_list
@@ -200,15 +188,11 @@ class NamespaceManager:
         return ns_list
 
     def get_shared_ns_dict(self):
-        '''
-        Get a deepcopy of the shared_ns_dict
-        '''
+        '''Get a deepcopy of the shared_ns_dict'''
         return copy(self.shared_ns_dict)
 
     def get_ns_in_shared_ns_dict(self, ns_name):
-        '''
-        Get a deepcopy of the shared_ns_dict
-        '''
+        '''Get a deepcopy of the shared_ns_dict'''
         if ns_name not in self.shared_ns_dict:
             raise Exception(
                 f'The namespace {ns_name} is not defined in the namespace manager')
@@ -216,9 +200,7 @@ class NamespaceManager:
             return self.shared_ns_dict[ns_name]
 
     def get_ns_from_id(self, ns_id):
-        '''
-        Get namespace object from namespace id
-        '''
+        '''Get namespace object from namespace id'''
         if ns_id in self.all_ns_dict.keys():
             return self.all_ns_dict[ns_id]
         else:
@@ -227,15 +209,11 @@ class NamespaceManager:
     # -- Disciplinary name space management
 
     def reset_current_disc_ns(self):
-        '''
-        Reset the current_disc_ns to None
-        '''
+        '''Reset the current_disc_ns to None'''
         self.current_disc_ns = None
 
     def set_current_disc_ns(self, disc_ns):
-        '''
-        Set directly the current_disc_ns with the argument disc_ns
-        '''
+        '''Set directly the current_disc_ns with the argument disc_ns'''
         self.current_disc_ns = disc_ns
 
         # add extra_ns to current_disc_ns
@@ -263,16 +241,12 @@ class NamespaceManager:
                             new_ns_value_split)
 
     def update_shared_ns_with_others_ns(self, disc):
-        '''
-        Update shared_ns_dict with others_ns in disc_nd_cit[disc]
-        '''
+        '''Update shared_ns_dict with others_ns in disc_nd_cit[disc]'''
         self.shared_ns_dict.update(
             self.get_disc_others_ns(disc))
 
     def update_others_ns_with_shared_ns(self, disc, ns_name):
-        '''
-        Update ns in others_ns with ns in shared_ns_dict
-        '''
+        '''Update ns in others_ns with ns in shared_ns_dict'''
         self.get_disc_others_ns(disc).update(
             {ns_name: self.shared_ns_dict[ns_name]})
 
@@ -302,7 +276,6 @@ class NamespaceManager:
         Add the discipline disc to the dependency list of each shared
         namespace in shared_namespace_list
         '''
-
         disc_namespace_dict = self.get_associated_ns(disc)
         for namespace in shared_namespace_list:
             if namespace in disc_namespace_dict:
@@ -329,7 +302,6 @@ class NamespaceManager:
         - Collect all shared namepace used in this discipline
         - Add this discipline to the dependency disc lit of each found namespace
         '''
-
         local_ns = self.create_local_namespace(disc)
 
         others_ns = self.get_associated_ns(disc)
@@ -366,9 +338,7 @@ class NamespaceManager:
         return self.compose_ns([self.current_disc_ns, disc.sos_name])
 
     def create_local_namespace(self, disc):
-        '''
-         Create a namespace object for the local namespace
-        '''
+        '''Create a namespace object for the local namespace'''
         local_ns_value = self.compose_local_namespace_value(disc)
 
         local_ns = Namespace(disc.sos_name, local_ns_value)
@@ -379,9 +349,7 @@ class NamespaceManager:
         return local_ns
 
     def remove_dependencies_after_disc_deletion(self, disc, disc_id=None):
-        '''
-        Remove dependencies of deleted disc for all namespaces
-        '''
+        '''Remove dependencies of deleted disc for all namespaces'''
         others_ns = copy(self.get_disc_others_ns(disc))
         if disc_id is None:
             disc_id = disc.get_disc_id_from_namespace()
@@ -390,9 +358,7 @@ class NamespaceManager:
         del self.disc_ns_dict[disc]
 
     def clean_ns_without_dependencies(self):
-        '''
-        Delete namespaces without dependency in ns_list
-        '''
+        '''Delete namespaces without dependency in ns_list'''
         for ns in self.ns_list:
             dependendy_disc_id_list = ns.get_dependency_disc_list()
             dependency_disc_list = [self.ee.dm.get_discipline(
@@ -434,9 +400,7 @@ class NamespaceManager:
         return self.disc_ns_dict[disc]
 
     def get_disc_others_ns(self, disc):
-        '''
-        Get the others namespace dict of the specified discipline disc
-        '''
+        '''Get the others namespace dict of the specified discipline disc'''
         return self.get_disc_ns_info(disc)['others_ns']
 
     def check_namespace_name_in_ns_manager(self, disc, var_ns):
@@ -444,27 +408,21 @@ class NamespaceManager:
         return var_ns in self.get_disc_others_ns(disc)
 
     def get_shared_namespace_value(self, disc, var_ns):
-        '''
-        Return the value of the shared_namespace linked to var_ns for the discipline disc
-        '''
+        '''Return the value of the shared_namespace linked to var_ns for the discipline disc'''
         if not self.check_namespace_name_in_ns_manager(disc, var_ns):
             raise Exception(
                 f'The namespace {var_ns} is missing for the discipline {disc.sos_name}')
         return self.get_disc_others_ns(disc)[var_ns].get_value()
 
     def get_shared_namespace(self, disc, var_ns):
-        '''
-        Return the shared_namespace linked to var_ns for the discipline disc
-        '''
+        '''Return the shared_namespace linked to var_ns for the discipline disc'''
         if not self.check_namespace_name_in_ns_manager(disc, var_ns):
             raise Exception(
                 f'The namespace {var_ns} is missing for the discipline {disc.sos_name}')
         return self.get_disc_others_ns(disc)[var_ns]
 
     def get_local_namespace_value(self, disc):
-        '''
-        Return the local_namespace linked to the discipline disc
-        '''
+        '''Return the local_namespace linked to the discipline disc'''
         return self.disc_ns_dict[disc]['local_ns'].get_value()
 
     #     def get_display_namespace_value(self, disc):
@@ -483,15 +441,11 @@ class NamespaceManager:
         return self.disc_ns_dict[disc]['local_ns'].get_display_value()
 
     def get_local_namespace(self, disc):
-        '''
-        Return the local_namespace linked to the discipline disc
-        '''
+        '''Return the local_namespace linked to the discipline disc'''
         return self.disc_ns_dict[disc]['local_ns']
 
     def get_namespaced_variable(self, disc, var_name, io_type):
-        '''
-        Get the complete namespace of a variable using NS_REFERENCE and VAR_NAME
-        '''
+        '''Get the complete namespace of a variable using NS_REFERENCE and VAR_NAME'''
         data_io_var = disc.get_data_io_from_key(
             io_type, var_name)
         complete_var_name = data_io_var[ProxyDiscipline.VAR_NAME]
@@ -502,9 +456,7 @@ class NamespaceManager:
         return result
 
     def get_display_variable(self, disc, var_name, io_type, exec_display=False):
-        '''
-        Get the complete namespace of a variable using NS_REFERENCE and VAR_NAME
-        '''
+        '''Get the complete namespace of a variable using NS_REFERENCE and VAR_NAME'''
         data_io_var = disc.get_data_io_from_key(
             io_type, var_name)
         complete_var_name = data_io_var[ProxyDiscipline.VAR_NAME]
@@ -516,9 +468,7 @@ class NamespaceManager:
         return result
 
     def ns_tuple_to_full_name(self, ns_tuple):
-        """
-        get variable full name from a tuple('var_name', id(ns_ref))
-        """
+        """Get variable full name from a tuple('var_name', id(ns_ref))"""
         if isinstance(ns_tuple[0], tuple):
             var_name = ns_tuple[0][0]
         else:
@@ -527,9 +477,7 @@ class NamespaceManager:
         return self.compose_ns([ns_reference.value, var_name])
 
     def update_namespace_list_with_extra_ns(self, extra_ns, after_name=None, namespace_list=None, clean_existing=True):
-        '''
-        Update the value of a list of namespaces with an extra namespace placed behind after_name
-        '''
+        '''Update the value of a list of namespaces with an extra namespace placed behind after_name'''
         ns_ids = []
         if namespace_list is None:
             namespace_list = list(self.shared_ns_dict.values())
@@ -542,9 +490,7 @@ class NamespaceManager:
         return ns_ids
 
     def update_all_shared_namespaces_by_name(self, extra_ns, shared_ns_name, after_name=None):
-        '''
-        Update all shared namespaces named shared_ns_name with extra_namespace
-        '''
+        '''Update all shared namespaces named shared_ns_name with extra_namespace'''
         for namespace in deepcopy(self.ns_list):
             if namespace.name == shared_ns_name:
                 self.__update_namespace_with_extra_ns(
@@ -555,7 +501,6 @@ class NamespaceManager:
         Update the value of old_ns_object with an extra namespace which will be placed just after the variable after_name
         if after is the name of the discipline then we do not add the extra namespace
         '''
-
         old_ns_value = old_ns_object.get_value()
 
         new_ns_value = self.update_ns_value_with_extra_ns(
@@ -599,9 +544,7 @@ class NamespaceManager:
                 old_local_ns_value.replace(self.ee.study_name, study_name))
 
     def set_database_conf_path(self, database_conf_path):
-        """
-        Set database configuration file path
-        """
+        """Set database configuration file path"""
         self.database_conf_path = database_conf_path
 
     def set_db_infos_to_ns(self, database_infos):
@@ -635,6 +578,7 @@ class NamespaceManager:
 
         We can safely delete the namespace from the namespace manager without checking if this namespace is used by a discipline because discipline are not yet built
         CAUTION : This method MUST BE USED WISELY AND NEVER IN A DISCIPLINE
+
         """
         self.__clean_namespace(ns)
 
@@ -643,7 +587,6 @@ class NamespaceManager:
         Method to clean all namespaces with given name in different namespace manager objects
         ns_name : namespace name to delete
         """
-
         ns_list = self.get_all_namespace_with_name(ns_name)
 
         for ns_to_clean in ns_list:
@@ -696,6 +639,7 @@ class NamespaceManager:
 
         Returns:
             True if the namespace is unused, False if it is used
+
         '''
         return ns.name not in post_proc_ns_list and not ns.check_namespace_is_used()
 

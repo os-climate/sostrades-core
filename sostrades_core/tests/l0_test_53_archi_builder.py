@@ -28,9 +28,7 @@ from sostrades_core.tools.archi_node.archi_node import ArchiNode
 
 
 class UnitTestHandler(Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         Handler.__init__(self)
@@ -41,14 +39,10 @@ class UnitTestHandler(Handler):
 
 
 class TestArchiBuilder(unittest.TestCase):
-    """
-    Architecture Builder test class
-    """
+    """Architecture Builder test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'

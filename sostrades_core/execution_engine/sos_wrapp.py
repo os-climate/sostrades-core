@@ -28,7 +28,8 @@ class SoSWrappException(Exception):
 
 
 class SoSWrapp(object):
-    '''**SoSWrapp** is the class from which inherits our model wrapper when using 'SoSTrades' wrapping mode.
+    '''
+    **SoSWrapp** is the class from which inherits our model wrapper when using 'SoSTrades' wrapping mode.
 
     It contains necessary information for the discipline configuration. It is owned by both the DisciplineWrapp and
     the SoSDiscipline.
@@ -41,7 +42,9 @@ class SoSWrapp(object):
         sos_name (string): name of the discipline
         local_data_short_name (Dict[Dict]): short name version of the local data for model input and output
         local_data (Dict[Any]): output of the model last run
+
     '''
+
     # -- Disciplinary attributes
     DESC_IN = {}
     DESC_OUT = {}
@@ -90,6 +93,8 @@ class SoSWrapp(object):
 
         Arguments:
             sos_name (string): name of the discipline
+            logger (logging.Logger): Logger to use
+
         """
         self.sos_name = sos_name
         self.input_full_name_map = {}
@@ -163,16 +168,12 @@ class SoSWrapp(object):
     # methods delegated to the proxy totally (that only make sense at configuration time)
     @at_proxy
     def add_inputs(self, input_dict, clean_inputs=True):
-        """
-        Method add_inputs delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method add_inputs delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def add_outputs(self, output_dict, clean_outputs=True):
-        """
-        Method add_inputs delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method add_inputs delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
@@ -183,120 +184,89 @@ class SoSWrapp(object):
         Arguments:
             var_name_list (List[string]): variable names to clean
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
+
         """
         pass
 
     def check_data_integrity(self):
-        """
-        Method check_data_integrity
-        """
+        """Method check_data_integrity"""
         pass
 
     @at_proxy
     def get_data_in(self):
-        """
-        Method add_inputs delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method add_inputs delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def get_data_out(self):
-        """
-        Method add_inputs delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method add_inputs delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def set_dynamic_default_values(self, default_values_dict):
-        """
-        Method set_dynamic_default_values delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method set_dynamic_default_values delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def update_default_value(self, var_name, io_type, new_default_value):
-        """
-        Method update_default_value delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method update_default_value delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def get_disc_full_name(self):
-        """
-        Method get_disc_full_name delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method get_disc_full_name delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def get_disc_display_name(self):
-        """
-        Method get_disc_display_name delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method get_disc_display_name delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def get_input_var_full_name(self, var_name):
-        """
-        Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def get_output_var_full_name(self, var_name):
-        """
-        Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method get_input_var_full_name delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @property
     @at_proxy
     def config_dependency_disciplines(self):
-        """
-        Property config_dependency_disciplines delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Property config_dependency_disciplines delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def get_inst_desc_in(self):
-        """
-        Method get_inst_desc_in delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method get_inst_desc_in delegated to associated ProxyDiscipline object during configuration."""
         # TODO: expose proxy attributes not only methods to SoSWrapp ? Would also affect properties (see decorator impl)
         pass
 
     @at_proxy
     def get_father_executor(self):
-        """
-        Method get_father_executor delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method get_father_executor delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def add_disc_to_config_dependency_disciplines(self):
-        """
-        Method add_disc_to_config_dependency_disciplines delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method add_disc_to_config_dependency_disciplines delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def get_var_full_name(self, short_name, data_io):
-        """
-        Method get_var_full_name delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method get_var_full_name delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def add_new_shared_ns(self, shared_ns):
-        """
-        Method add_new_shared_ns delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method add_new_shared_ns delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     @at_proxy
     def get_shared_ns_dict(self):
-        """
-        Method get_shared_ns_dict delegated to associated ProxyDiscipline object during configuration.
-        """
+        """Method get_shared_ns_dict delegated to associated ProxyDiscipline object during configuration."""
         pass
 
     def setup_sos_disciplines(self):  # type: (...) -> None
@@ -307,6 +277,7 @@ class SoSWrapp(object):
 
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline for dynamic i/o configuration
+
         """
         pass
 
@@ -318,6 +289,7 @@ class SoSWrapp(object):
 
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline for dynamic i/o configuration
+
         """
         pass
 
@@ -338,8 +310,10 @@ class SoSWrapp(object):
             in_dict (bool): if output format is dict
             full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that only
                                    True allows to query for variables of the subprocess as well as of the discipline itself.
+
         Returns:
             The inputs values list or dict
+
         """
         if keys is None:
             # if no keys, get all discipline keys and force
@@ -365,13 +339,16 @@ class SoSWrapp(object):
     def _get_sosdisc_outputs(self, keys=None, in_dict=False, full_name_keys=False):
         """
         Accessor for the outputs values as a list or dict to be used by the SoSWrapp object at runtime.
+
         Arguments:
             keys (List): the output short or full names list (depending on value of full_name_keys)
             in_dict (bool): if output format is dict
             full_name_keys (bool): if keys in args AND returned dictionary are full names or short names. Note that only
                                    True allows to query for variables of the subprocess as well as of the discipline itself.
+
         Returns:
             The outputs values list or dict
+
         """
         if keys is None:
             # if no keys, get all discipline keys and force
@@ -403,13 +380,14 @@ class SoSWrapp(object):
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
             full_name_keys: if keys in args and returned dict are full names. Note that only True allows to query for
                             variables of the subprocess as well as of the discipline itself.
+
         Returns:
             dict of keys values
         Raises:
             ValueError if i_o type is not IO_TYPE_IN or IO_TYPE_OUT
             KeyError if asked for an output key when self.local_data is not initialized
-        """
 
+        """
         # convert local key names to namespaced ones
         if isinstance(keys, str):
             keys = [keys]
@@ -436,18 +414,22 @@ class SoSWrapp(object):
 
         Returns:
             local_data (Dict): outputs of the model run
+
         """
         self.run()
         return self.local_data
 
     def store_sos_outputs_values(self, dict_values, full_name_keys=False):
-        """"
+        """
+        "
         Store run outputs in the local_data attribute.
 
         NB: permits coherence with EEV3 wrapper run definition.
 
         Arguments:
             dict_values (Dict): variables' values to store
+            full_name_keys (bool): True if dict_values has full_name keys
+
         """
         if full_name_keys:
             self.local_data.update(dict_values)
@@ -457,7 +439,8 @@ class SoSWrapp(object):
             self.local_data.update(outputs)
 
     def get_chart_filter_list(self):
-        """ Return a list of ChartFilter instance base on the inherited
+        """
+        Return a list of ChartFilter instance base on the inherited
         class post processing filtering capabilities
 
         :return: ChartFilter[]
@@ -465,7 +448,8 @@ class SoSWrapp(object):
         return []
 
     def get_post_processing_list(self, filters=None):
-        """ Return a list of post processing instance using the ChartFilter list given
+        """
+        Return a list of post processing instance using the ChartFilter list given
         as parameter, to be overload in subclasses
 
         :param filters: filter to apply during post processing making
@@ -653,9 +637,7 @@ class SoSWrapp(object):
 
 
 class AccessOnlyProxy:
-    """
-    Class that proxies an object providing access but avoiding its erroneous referencing. Unrelated to ProxyDiscipline.
-    """
+    """Class that proxies an object providing access but avoiding its erroneous referencing. Unrelated to ProxyDiscipline."""
 
     # TODO: move to a tool?
     def __init__(self):

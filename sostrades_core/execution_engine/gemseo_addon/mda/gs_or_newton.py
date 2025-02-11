@@ -112,7 +112,8 @@ class GSorNewtonMDA(MDASequential):
         self._init_mda_sequence(sequence)
 
     def _execute(self):
-        """Runs the MDAs in a sequential way
+        """
+        Runs the MDAs in a sequential way
 
         :returns: the local data
         """

@@ -27,9 +27,7 @@ from sostrades_core.tools.post_processing.post_processing_factory import (
 
 
 class TestTornadoChartAnalysis(unittest.TestCase):
-    """
-    UncertaintyQuantification test class
-    """
+    """UncertaintyQuantification test class"""
 
     def test_01_tornado_chart_analysis(self):
         ns = "usecase_tornado_analysis"

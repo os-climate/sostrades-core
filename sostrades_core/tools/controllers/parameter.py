@@ -23,9 +23,8 @@ from .simpy_formula import SympyFormula as Formula
 
 
 class Parameter(BaseController):
-    """
-    PParameter Class
-    """
+    """PParameter Class"""
+
     # --Class Variables
     CLASS_MSG = 'PParameter'
     ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
@@ -46,9 +45,7 @@ class Parameter(BaseController):
         self.set_fexpr(fexpr, AliasDict=AliasDict)
 
     def __repr__(self):
-        """
-        Display some information about the variable
-        """
+        """Display some information about the variable"""
         info_string = BaseController.__repr__(self)
         info_string += "\n   Formula         : " + self.__FormulaObj.get_formula()
         info_string += "\n   Grad Formula    : " + self.__FormulaObj.get_grad_formula()

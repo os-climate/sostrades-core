@@ -24,8 +24,8 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class SimpleDisc1(SoSWrapp):
-    """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
-    """
+    """Discipline used in Driver coupling of simple discipline output with driver subprocess input."""
+
     _maturity = 'Fake'
     DESC_IN = {'z_in': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'added_algo_options': {'type': 'dict', 'visibility': SoSWrapp.LOCAL_VISIBILITY}
@@ -39,8 +39,7 @@ class SimpleDisc1(SoSWrapp):
                 }
 
     def run(self):
-        """ Discipline 1 execution
-        """
+        """Discipline 1 execution"""
         z_in = self.get_sosdisc_inputs(['z_in'])
         z = self.compute_z(z_in)
         z_out = {'z': z}
@@ -53,16 +52,13 @@ class SimpleDisc1(SoSWrapp):
 
     @staticmethod
     def compute_z(z):
-        """ Computes the output of the simple discipline in array form
-        """
+        """Computes the output of the simple discipline in array form"""
         out = z * pow(2, -1)
         return out
 
     @staticmethod
     def decide_sampling_algo(z):
-        """ Computes the output of the simple discipline in array form
-        """
-
+        """Computes the output of the simple discipline in array form"""
         if z[0] > 0.5:
             sampling_algo = "PYDOE_LHS"
         else:
@@ -71,9 +67,7 @@ class SimpleDisc1(SoSWrapp):
         return sampling_algo
 
     def decide_algo_options(self, algo_name):
-        """ Computes the output of the simple discipline in array form
-        """
-
+        """Computes the output of the simple discipline in array form"""
         # Get the algo default options
         if algo_name in get_available_doe_algorithms():
             algo_options, algo_options_descr_dict = DoeSampleGenerator(logger=self.logger.getChild("DoeSampleGenerator")).get_options_and_default_values(algo_name)
@@ -95,8 +89,8 @@ class SimpleDisc1(SoSWrapp):
 
 
 class SimpleDisc2(SoSWrapp):
-    """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
-    """
+    """Discipline used in Driver coupling of simple discipline output with driver subprocess input."""
+
     _maturity = 'Fake'
     DESC_IN = {'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'y_1_dict': {'type': 'dict', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
@@ -106,8 +100,7 @@ class SimpleDisc2(SoSWrapp):
     DESC_OUT = {'out_simple2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ Discipline 2 execution
-        """
+        """Discipline 2 execution"""
         c_1 = self.get_sosdisc_inputs(['c_1'])
         y_1_dict = self.get_sosdisc_inputs('y_1_dict')
 
@@ -117,8 +110,7 @@ class SimpleDisc2(SoSWrapp):
 
     @staticmethod
     def compute_out_simple2(c_1, y_1_dict):
-        """ Computes the output of the simple discipline in array form
-        """
+        """Computes the output of the simple discipline in array form"""
         values_dict = list(y_1_dict.values())
         out = c_1 * std(values_dict[:-1])
         return out

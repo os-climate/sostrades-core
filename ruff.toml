@@ -1,14 +1,27 @@
 line-length = 120
 
 [lint]
-select = ["I", "TCH", "PLC", "PLE", "F", "E", "W", "PERF"]
+select = ["I", "TCH", "PLC", "PLE", "F", "E", "W", "PERF", "D"]
 # extend-select = ["ALL"]
 
-ignore  = ["E722", "F841", "E501", "D400", "D415", "D212", "D300", "PERF203"]
-# E722 Do not use bare `except`
-# F841 Local variable `xxx` is assigned to but never used
-# E501 Line too long
-# D400 First line should end with a period
-# D415 First line should end with a period, question mark, or exclamation point
-# D212 [*] Multi-line docstring summary should start at the first line
-# D300 [*] Use triple double quotes `"""`
+ignore  = [
+# Exceptions
+    "E501", # Line too long
+    "E722", # Do not use bare `except`
+    "F841", # F841 Local variable `xxx` is assigned to but never used
+    "D104", # Missing docstring in public package
+    "D105", # Missing docstring in magic method
+    "D205", # 1 blank line required between summary line and description
+    "D212", # [*] Multi-line docstring summary should start at the first line
+    "D300", # [*] Use triple double quotes `"""`
+    "D400", # First line should end with a period
+    "D401", # First line of docstring should be in imperative mood:
+    "D404", # First word of the docstring should not be "This"
+    "D415", # First line should end with a period, question mark, or exclamation point
+    "PERF203", # `try`-`except` within a loop incurs performance overhead
+# WIP rules. To remove at some point
+    "D101", # Missing docstring in public class
+    "D102", # Missing docstring in public method
+    "D107", # Missing docstring in `__init__`
+    "D417", # Missing argument descriptions in the docstring
+    ]

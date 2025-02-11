@@ -25,9 +25,8 @@ from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_conne
 
 
 class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorV0):
-    """
-    Local file system connector for default repository connector
-    """
+    """Local file system connector for default repository connector"""
+
     DATASETS_DB_NAME = 'datasets_database'
     DATASETS_FOLDER_NAME = 'datasets'
     MAPPINGS_FOLDER_NAME = 'mappings'
@@ -42,6 +41,7 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorV0):
 
         Raises:
             DatasetGenericException: If the module cannot be imported
+
         """
         try:
             # import the module
@@ -68,6 +68,7 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorV0):
 
         Raises:
             DatasetGenericException: If the module cannot be imported
+
         """
         try:
             # import the module

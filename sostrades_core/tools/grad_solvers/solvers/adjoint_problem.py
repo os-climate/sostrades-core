@@ -20,16 +20,13 @@ from numpy.linalg import solve
 
 
 class AdjointProblem(object):
-    """
-    Generic implementation of Adjoint Problem
-    """
+    """Generic implementation of Adjoint Problem"""
+
     ERROR_MSG = 'ERROR in AdjointProblem.'
     WARNING_MSG = 'WARNING in AdjointProblem.'
 
     def __init__(self, R, dpRdpW, dpRdpchi, dpFdpW, dpFdpchi):
-        """
-        Adjoint problem generic solver
-        """
+        """Adjoint problem generic solver"""
         self.__R = R        # Residual of the problem for the resolved state
         self.__dpRdpW = dpRdpW   # Jacobian of the problem for the resolved state
         # partial derivative of the problem with respect to design variables
@@ -57,28 +54,20 @@ class AdjointProblem(object):
         return self.__dFdchi
 
     def solve(self):
-        """
-        Solve the adjoint problem and compute gradient assembly and adjoint convergence correction
-        """
+        """Solve the adjoint problem and compute gradient assembly and adjoint convergence correction"""
         self.__adjoint()
         self.__convergence_correction()
         self.__adjoint_gradient_assembly()
 
     def __adjoint(self):
-        """
-        Compute the adjoint state vector of the problem
-        """
+        """Compute the adjoint state vector of the problem"""
         self.__adjstate = solve(self.__dpRdpW.T, -self.__dpFdpW.T)
 
     def __convergence_correction(self):
-        """
-        Compute the adjoint convergence correction for the problem
-        """
+        """Compute the adjoint convergence correction for the problem"""
         self.__conv_corr = np.dot(self.__adjstate.T, self.__R)
 
     def __adjoint_gradient_assembly(self):
-        """
-        Compute the adjoint gradient assembly to (dF/dchi)
-        """
+        """Compute the adjoint gradient assembly to (dF/dchi)"""
         self.__dFdchi = self.__dpFdpchi + \
             np.dot(self.__adjstate.T, self.__dpRdpchi)

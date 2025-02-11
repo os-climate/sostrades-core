@@ -27,19 +27,18 @@ Class that define a pie chart display as post post processing
 
 
 class InstantiatedIndicatorChartException(Exception):
-    """ Overload Exception basic type
-    """
+    """Overload Exception basic type"""
 
 
 class InstantiatedIndicatorChart(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a pie chart display as post post processing
-    """
+    """Class that define a pie chart display as post post processing"""
 
     CHART_NAME = 'chart_name'
     VALUE = 'value'
 
     def __init__(self, chart_name='', value=[], mode='', title={}, gauge={}):
-        """ Create a new table
+        """
+        Create a new table
 
         @param pie_chart_name : string that contains pie chart name
         @param labels : string list that contains labels for each pie chart values
@@ -60,20 +59,21 @@ class InstantiatedIndicatorChart(AbstractPostProcessingPlotlyTooling):
         self.mode = mode
 
     def to_plotly(self, logger=None):
-        """ Convert current instance into a plotly object
+        """
+        Convert current instance into a plotly object
 
         @param logger: logging object to log message
         @type Logging.logger
 
         @return plotly.graph_objects.go instance
         """
-
         indicator = go.Indicator(value=self.value, mode=self.mode, title=self.title, gauge=self.gauge)
         fig = go.Figure(data=[indicator])
         return fig
 
     def to_plotly_dict(self, logger=None):
-        """ Method that convert current instance to plotly object and then to a dictionary
+        """
+        Method that convert current instance to plotly object and then to a dictionary
 
         @param logger: logger instance
         @type Logging.loger

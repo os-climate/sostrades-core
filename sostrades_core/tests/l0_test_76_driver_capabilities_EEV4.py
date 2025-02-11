@@ -34,9 +34,7 @@ unit test for doe scenario
 
 
 class UnitTestHandler(Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         Handler.__init__(self)
@@ -140,7 +138,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         This test checks that the coupling between the output of a simple discipline and the input of a driver
         subprocess works. The doe_eval will be made sith a lhs on x.
         """
-
         dspace_dict_x = {'variable': ['x'],
 
                          'lower_bnd': [array([0.])],
@@ -405,7 +402,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         This test checks that the coupling between the output of a simple discipline and the input of a driver
         subprocess works. The doe_eval will be made sith a lhs on x.
         """
-
         dspace_dict_x = {'variable': ['x'],
 
                          'lower_bnd': [0.],
@@ -510,7 +506,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         sampling is applied to variables that are not in the root process, to check that namespacing works properly.
         It is a non regression test
         """
-
         study_name = 'root'
         ns = study_name
 
@@ -593,10 +588,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         #     i += 1
 
     def test_7_Coupling_of_Coupling_to_check_data_io(self):
-        """
-        TO BE COMPLETED
-        """
-
+        """TO BE COMPLETED"""
         study_name = 'root'
 
         exec_eng = ExecutionEngine(study_name)
@@ -1120,9 +1112,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         #                  exp_proxy_tree)  # FIXME: update with flatten_subprocess
 
     def _test_11_usecase_import_multi_instances(self):
-        """
-        This test checks the usecase import capability in multi instance mode.
-        """
+        """This test checks the usecase import capability in multi instance mode."""
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -1206,7 +1196,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
         are non-trade variables.
         '''
-
         from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import (
             Study,
         )
@@ -1825,9 +1814,7 @@ class TestSoSDOEScenario(unittest.TestCase):
                          'linked_mode')  # TODO: THIS SHOULD LEAD TO ERROR as in GUI!!!!!
 
     def test_13_sellar_coupling_multi_instances_flatten(self):
-        """
-        This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val.
-        """
+        """This test checks the flatten_subprocess flag on a sellar coupling with cp gene and multi instances val."""
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 

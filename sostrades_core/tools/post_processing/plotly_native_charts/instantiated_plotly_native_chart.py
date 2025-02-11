@@ -27,17 +27,16 @@ Class that define a pareto front optimal chart display as post post processing
 
 
 class InstantiatedPlotlyNativeChartException(Exception):
-    """ Overload Exception basic type
-    """
+    """Overload Exception basic type"""
 
 
 class InstantiatedPlotlyNativeChart(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a native plotly chart display as post post processing
-    """
+    """Class that define a native plotly chart display as post post processing"""
 
     def __init__(self, fig, chart_name='', default_title=True, default_legend=True,
                  default_font=True, with_default_annotations=True):
-        """ Create a new chart definition
+        """
+        Create a new chart definition
 
         :params: chart_name : string that contains chart name
         :type: str
@@ -71,7 +70,8 @@ class InstantiatedPlotlyNativeChart(AbstractPostProcessingPlotlyTooling):
         return self.__fig
 
     def to_plotly(self, logger=None):
-        """ Convert current instance into a plotly object
+        """
+        Convert current instance into a plotly object
 
         @param logger: logging object to log message
         @type Logging.logger
@@ -119,7 +119,8 @@ class InstantiatedPlotlyNativeChart(AbstractPostProcessingPlotlyTooling):
                 'dataframe parameter is mandatory, cannot be None')
 
     def to_plotly_dict(self, logger=None):
-        """ Method that convert current instance to plotly object and then to a dictionary
+        """
+        Method that convert current instance to plotly object and then to a dictionary
 
         @param logger: logger instance
         @type Logging.loger

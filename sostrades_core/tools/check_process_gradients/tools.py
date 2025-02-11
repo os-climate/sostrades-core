@@ -125,6 +125,7 @@ def get_discipline_classname_from_module(module_path):
 
     Returns:
     list: A list of class objects found in the module
+
     """
     try:
         # Dynamically import the module
@@ -157,6 +158,22 @@ def one_test_gradients_discipline(test_name: str,
                                   coupling_inputs: list[str],
                                   coupling_outputs: list[str],
                                   ):
+    """
+    Tests the gradients of a discipline at the exact point of the use case's ending point.
+
+    Args:
+        test_name (str): The name of the test.
+        model_name (str): The name of the model to test.
+        discipline_class_path (str): The path to the discipline's class.
+        inputs (dict): The input parameters for the discipline.
+        namespaces (dict): The namespaces for the discipline.
+        coupling_inputs (list[str]): The list of input variables for the coupling.
+        coupling_outputs (list[str]): The list of output variables for the coupling.
+
+    Returns:
+        bool: True if the gradient test passes, False otherwise.
+
+    """
     if len(coupling_inputs) == 0 or len(coupling_outputs) == 0:
         return True
 
@@ -226,7 +243,6 @@ def handle_discipline_with_wrong_gradients(coupling_inputs: list[str],
                                            name: str,
                                            jacobian_pkl_name: str):
     """Prepares a dedicated test file to help debug the gradients"""
-
     pickle_to_dump = {
         'ns_dict': ns_dict,
         'values_dict': discipline_inputs,

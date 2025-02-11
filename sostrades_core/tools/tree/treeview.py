@@ -34,14 +34,12 @@ VISI = ProxyDiscipline.VISIBILITY
 
 
 class TreeView:
-    """
-    Tree view class
-    """
+    """Tree view class"""
+
     PROCESS_DOCUMENTATION = 'Process documentation'
 
     def __init__(self, name, no_data=False, read_only=False, exec_display=False):
-        """ class constructor
-        """
+        """Class constructor"""
         self.name = name
         self.no_data = no_data
         self.read_only = read_only
@@ -49,7 +47,8 @@ class TreeView:
         self.exec_display = exec_display
 
     def create_tree_node(self, data_manager, root_process, ns_manager, process_module=''):
-        """ Function that builds a composite structure (tree view  of tree nodes)
+        """
+        Function that builds a composite structure (tree view  of tree nodes)
         regarding the DataManager stored through disciplines references and data dictionary
 
         :params: data_manager, execution engine data manager
@@ -64,7 +63,6 @@ class TreeView:
         :params: process_module, module name use to generated the process
         :type: string
         """
-
         disc_dict = data_manager.disciplines_dict
 
         treenodes = {}
@@ -140,7 +138,7 @@ class TreeView:
                 pass
 
     def set_treenode_data(self, treenode, key, val, disc_dict):
-
+        """Sets the treenode data"""
         if not self.no_data:
 
             treenode.data[key] = {k: v for k, v in val.items()}
@@ -161,7 +159,6 @@ class TreeView:
             treenode.data[key][ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type,
                                                                                val[ProxyDiscipline.VAR_NAME])
 
-
             if key in treenode.disc_data:
                 treenode.data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST] = \
                     treenode.disc_data[key][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]
@@ -172,7 +169,7 @@ class TreeView:
             treenode.data[key][ProxyDiscipline.SIZE_MO] = compute_data_size_in_Mo(treenode.data[key][ProxyDiscipline.VALUE])
 
     def set_treenode_discipline_data(self, treenode, key, val, disc_dict):
-
+        """Sets the treenode discipline data"""
         if not self.no_data:
             temp_data = {k: v for k, v in val.items()}
 
@@ -191,7 +188,6 @@ class TreeView:
 
             temp_data[ProxyDiscipline.VARIABLE_KEY] = create_data_key(model_name_full_path, io_type,
                                                                       val[ProxyDiscipline.VAR_NAME])
-
 
             if self.read_only:
                 temp_data[ProxyDiscipline.EDITABLE] = False
@@ -227,7 +223,9 @@ class TreeView:
                         treenode.data_management_disciplines[discipline_key].disciplinary_outputs[key] = temp_data
 
     def add_treenode(self, discipline, namespace=None):
-        """ Add a new treenode to the treeview.
+        """
+        Add a new treenode to the treeview.
+
         Treenode position is driven using discipline attribute from the root node
 
         :params: discipline, discipline node to add
@@ -238,7 +236,6 @@ class TreeView:
 
         :return: TreeNode
         """
-
         if namespace is None:
             namespace = discipline.get_disc_display_name(
                 self.exec_display).split(NS_SEP)
@@ -255,8 +252,9 @@ class TreeView:
             return self.__add_treenode(self.root, discipline, children_namespace)
 
     def __add_treenode(self, current_treenode, discipline, children_namespace):
-        """ Recursively look into each treenode to find/add a new treeenode regarding
-        the namespace place
+        """
+        Recursively look into each treenode to find/add a new treeenode regarding the namespace place
+
         Return the treenode created/find at the end of the namespace
 
         :params: current_treenode, current treenode search pointer
@@ -270,7 +268,6 @@ class TreeView:
 
         :return: TreeNode
         """
-
         if current_treenode is None:
             pass  # raise error
 
@@ -299,10 +296,7 @@ class TreeView:
             return current_treenode
 
     def create_treenode_rec(self, current_treenode, treenodes, disc_dict):
-        """ Recursive method that create treenode structure regarding
-        the SoSDisci
-        """
-
+        """Recursive method that create treenode structure of the SoSDiscipline"""
         # Retireve current tree node discipline
         if current_treenode.identifier in disc_dict:
             # Retrieve the list of sub disciplines to map as Treenode
@@ -319,15 +313,19 @@ class TreeView:
                         new_treenode, treenodes, disc_dict)
 
     def to_json(self):
+        """Returns a json representation of the object"""
         return self.root.to_json()
 
     def to_dict(self):
+        """Returns a dict representation of the object"""
         return self.root.to_dict()
 
     def __str__(self):
+        """Returns a str representation of the object"""
         return str(self.root)
 
     def display_nodes(self, display_variables=None):
+        """Returns a string representation of nodes"""
 
         def display_node(node, level=0,
                          display_variables=display_variables):

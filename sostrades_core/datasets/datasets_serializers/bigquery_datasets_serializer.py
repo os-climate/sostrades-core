@@ -25,9 +25,8 @@ from sostrades_core.datasets.datasets_serializers.json_datasets_serializer impor
 
 
 class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
-    """
-    Specific dataset serializer for dataset in json format
-    """
+    """Specific dataset serializer for dataset in json format"""
+
     LIST_VALUE = "value"  # this is for storage of list/array as dict, for visibility on bigquery
     COL_NAME_ALLOWED_CHAR_0 = set(ascii_letters + '_')
     COL_NAME_ALLOWED_CHAR_1 = set(digits)
@@ -35,9 +34,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
     COL_INDEX = "__index__"
 
     def __init__(self):
-        """
-        Initialize the BigQueryDatasetsSerializer.
-        """
+        """Initialize the BigQueryDatasetsSerializer."""
         super().__init__()
         self.__logger = logging.getLogger(__name__)
         self.__col_name_index = None
@@ -48,13 +45,12 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Args:
             col_name_index (dict[str, dict[str, str]]): The column name index.
+
         """
         self.__col_name_index = col_name_index
 
     def clear_col_name_index(self) -> None:
-        """
-        Clear the column name index.
-        """
+        """Clear the column name index."""
         self.__col_name_index = None
 
     @property
@@ -64,6 +60,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             dict[str, dict[str, str]]: The column name index.
+
         """
         return self.__col_name_index
 
@@ -76,6 +73,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             str: The formatted column name.
+
         """
         bq_col_name = ""
         for i, _char in enumerate(col_name):
@@ -96,6 +94,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             Any: The converted data.
+
         """
         data_type = data_types_dict.get(data_name)
 
@@ -123,6 +122,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             Any: The converted data.
+
         """
         data_type = data_types_dict.get(data_name)
 
@@ -149,6 +149,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             Any: The serialized data.
+
         """
         _renamer = dict()
         _all_new_cols = set()
@@ -180,6 +181,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             Any: The deserialized data.
+
         """
         converted_df = data_value.rename(columns=self.__col_name_index[data_name])
 
@@ -203,6 +205,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             dict[str, list]: The serialized data.
+
         """
         return {self.LIST_VALUE: self._serialize_sub_element_jsonifiable(data_value.tolist())}
 
@@ -215,6 +218,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             np.ndarray: The deserialized data.
+
         """
         return np.array(data_value[self.LIST_VALUE])
 
@@ -227,6 +231,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             dict[str, list]: The serialized data.
+
         """
         return {self.LIST_VALUE: self._serialize_sub_element_jsonifiable(data_value)}
 
@@ -239,6 +244,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             list: The deserialized data.
+
         """
         return list(data_value[self.LIST_VALUE])
 
@@ -252,6 +258,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             dict: The serialized data.
+
         """
         _renamer = dict()
         _all_new_cols = set()
@@ -277,6 +284,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             dict: The deserialized data.
+
         """
         return self.__rename_dict_keys(data_value, self.__col_name_index[data_name])
 
@@ -290,6 +298,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             dict: The dictionary with renamed keys.
+
         """
         return {(key_name_map[key] if key in key_name_map else key): value
                 for key, value in dict_to_rename_keys.items()}
@@ -303,6 +312,7 @@ class BigQueryDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             list: The converted data.
+
         """
         json_value = []
         for element in data_value:

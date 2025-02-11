@@ -26,6 +26,12 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 def print_test_name():
+    """
+    Prints the name of the current method.
+
+    This function retrieves the name of the method that calls it and prints it to the console,
+    enclosed in a separator line.
+    """
     # prints the name of current method
     print('\n' + "-" * 10)
     print(sys._getframe(1).f_code.co_name)
@@ -33,14 +39,10 @@ def print_test_name():
 
 
 class TestCache(unittest.TestCase):
-    """
-    SoSDiscipline test class
-    """
+    """SoSDiscipline test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'SoSDisc'
         self.ee = ExecutionEngine(self.name)
         self.repo = 'sostrades_core.sos_processes.test'
@@ -73,9 +75,7 @@ class TestCache(unittest.TestCase):
             pass
 
     def test_1_test_cache_discipline_without_input_change(self):
-        '''
-        Checks cache setting and number of calls.
-        '''
+        '''Checks cache setting and number of calls.'''
         # WITHOUT CACHE
 
         self.ee.select_root_process(self.repo, 'test_disc1')
@@ -201,9 +201,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(n_call_2, 0)
 
     def test_2_test_cache_discipline_with_input_change(self):
-        '''
-        Checks number of calls is coherent.
-        '''
+        '''Checks number of calls is coherent.'''
         print_test_name()
         self.ee.select_root_process(self.repo, 'test_disc1')
         # set input data
@@ -236,9 +234,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(n_call_2, n_call_1)
 
     def test_3_test_cache_coupling_without_input_change(self):
-        '''
-        Checks number of calls is coherent.
-        '''
+        '''Checks number of calls is coherent.'''
         print_test_name()
         self.ee.select_root_process(self.repo, 'test_disc1_disc2_coupling')
         values_dict = {}
@@ -264,9 +260,7 @@ class TestCache(unittest.TestCase):
             self.assertEqual(disc.execution_statistics.n_executions, 0)
 
     def test_4_test_cache_coupling_with_input_change(self):
-        '''
-        Checks number of calls is coherent.
-        '''
+        '''Checks number of calls is coherent.'''
         print_test_name()
         self.ee.select_root_process(self.repo, 'test_disc1_disc2_coupling')
 
@@ -285,7 +279,6 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-
 
         # first execute
         self.ee.execute()
@@ -349,9 +342,7 @@ class TestCache(unittest.TestCase):
             disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_5_cache_coupling_wo_change_of_strings(self):
-        '''
-        Checks number of calls is coherent.
-        '''
+        '''Checks number of calls is coherent.'''
         ns_dict = {'ns_ac': self.name}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -423,9 +414,7 @@ class TestCache(unittest.TestCase):
             disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_6_test_cache_coupling_with_string_change(self):
-        '''
-        Checks number of calls is coherent.
-        '''
+        '''Checks number of calls is coherent.'''
         ns_dict = {'ns_ac': self.name}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -544,9 +533,7 @@ class TestCache(unittest.TestCase):
             disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_7_test_cache_coupling_with_string_of_dict_change(self):
-        '''
-        Checks number of calls is coherent.
-        '''
+        '''Checks number of calls is coherent.'''
         ns_dict = {'ns_ac': self.name}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -634,8 +621,7 @@ class TestCache(unittest.TestCase):
             disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_8_test_cache_coupling_with_string_list_change(self):
-        '''
-        '''
+        """Tests cache coupling wth a list of change"""
         ns_dict = {'ns_ac': self.name}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -742,9 +728,7 @@ class TestCache(unittest.TestCase):
             disc2.discipline_wrapp.discipline.execution_statistics.n_executions, n_calls_disc2)
 
     def test_9_test_cache_coupling_with_string_list_of_dict_change(self):
-        '''
-        Checks number of calls is coherent.
-        '''
+        '''Checks number of calls is coherent.'''
         ns_dict = {'ns_ac': self.name}
 
         self.ee.ns_manager.add_ns_def(ns_dict)
@@ -780,7 +764,6 @@ class TestCache(unittest.TestCase):
         disc1 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc1')[0]
         disc2 = self.ee.dm.get_disciplines_with_name('SoSDisc.Disc2')[0]
         sos_coupl = self.ee.root_process
-
 
         # first execute
         self.ee.execute()

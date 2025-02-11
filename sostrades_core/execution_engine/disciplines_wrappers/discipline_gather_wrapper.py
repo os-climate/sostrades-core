@@ -18,8 +18,8 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class DisciplineGatherWrapper(SoSWrapp):
-    """Wrapper for the gather discipline
-    """
+    """Wrapper for the gather discipline"""
+
     _maturity = 'Fake'
 
     # def __init__(self):

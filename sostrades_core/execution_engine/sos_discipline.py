@@ -54,7 +54,8 @@ class SoSDisciplineException(Exception):
 
 
 class SoSDiscipline(Discipline):
-    """**SoSDiscipline** is the class that overloads Discipline when using SoSTrades wrapping mode. It handles the
+    """
+    **SoSDiscipline** is the class that overloads Discipline when using SoSTrades wrapping mode. It handles the
     execution of the user-provided wrapper of the discipline (on the GEMSEO side)
 
     It is instantiated by the DisciplineWrapp during the prepare_execution step, and it is in one-to-one aggregation
@@ -66,6 +67,7 @@ class SoSDiscipline(Discipline):
         sos_wrapp (SoSWrapp): the user-defined wrapper of the discipline
         reduced_dm (Dict[Dict]): reduced data manager for i/o handling (NB: there is only one reduced_dm per process)
         io_full_name_map (Dict[string]): map from short names to full names of model output variables
+
     """
 
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
@@ -96,6 +98,8 @@ class SoSDiscipline(Discipline):
             cache_file_path (string): file path for the cache pickle
             sos_wrapp (SoSWrapp): user-defined wrapper of the discipline
             reduced_dm (Dict[Dict]): reduced version of datamanager for i/o handling
+            logger (logging.Logger): Logger to use
+
         """
         # self.disciplines = [] # TODO: remove and leave in driver
         self.sos_wrapp = sos_wrapp
@@ -163,6 +167,7 @@ class SoSDiscipline(Discipline):
         if self.debug_mode in ['min_max_couplings', 'all']:
             self.display_min_max_couplings()
         return local_data
+
     def execute(
         self,
         input_data,  # type:Optional[Dict[str, Any]]
@@ -178,13 +183,15 @@ class SoSDiscipline(Discipline):
         return self._local_data
 
     def add_differentiated_inputs(self, input_names: Iterable[str] = ()) -> None:
-        """Add the inputs against which to differentiate the outputs.
+        """
+        Add the inputs against which to differentiate the outputs.
 
         Filters out the non-numerical (strings, booleans...) inputs before passing the list to GEMSEO.
 
         Args:
             input_names: The input variables against which to differentiate the outputs.
                 If empty, use all the inputs.
+
         """
         input_names = input_names or self.io.input_grammar.keys()
         filtered_inputs = filter_variables_to_convert(self.reduced_dm, input_names, write_logs=True, logger=self.logger)
@@ -192,13 +199,15 @@ class SoSDiscipline(Discipline):
             Discipline.add_differentiated_inputs(self, filtered_inputs)
 
     def add_differentiated_outputs(self, output_names: Iterable[str] = ()) -> None:
-        """Add the outputs to be differentiated.
+        """
+        Add the outputs to be differentiated.
 
         Filters out the non-numerical (strings, booleans...) inputs before passing the list to GEMSEO.
 
         Args:
             output_names: The outputs to be differentiated.
                 If empty, use all the outputs.
+
         """
         output_names = output_names or self.io.output_grammar.keys()
         filtered_outputs = filter_variables_to_convert(
@@ -210,7 +219,8 @@ class SoSDiscipline(Discipline):
     def _prepare_io_for_check_jacobian(
         self, input_names: Iterable[str], output_names: Iterable[str]
     ) -> tuple[Iterable[str], Iterable[str]]:
-        """Filter the inputs and outputs to keep only the one that can be used for linearization.
+        """
+        Filter the inputs and outputs to keep only the one that can be used for linearization.
 
         Overrides the method from GEMSEO.
 
@@ -222,6 +232,7 @@ class SoSDiscipline(Discipline):
             A tuple containing:
               - the filtered input names.
               - the filtered outputs names.
+
         """
         input_names = input_names or self.io.input_grammar.keys()
         output_names = output_names or self.io.output_grammar.keys()
@@ -235,7 +246,8 @@ class SoSDiscipline(Discipline):
         self,
         compute_all_jacobians: bool = False,
     ) -> tuple[list[str], list[str]]:
-        """Get the inputs and outputs used in the differentiation of the discipline.
+        """
+        Get the inputs and outputs used in the differentiation of the discipline.
 
         Args:
             compute_all_jacobians: Whether to compute the Jacobians of all the output
@@ -245,6 +257,7 @@ class SoSDiscipline(Discipline):
                 with :meth:`.add_differentiated_inputs`
                 and set these output variables to differentiate
                 with :meth:`.add_differentiated_outputs`.
+
         """
         # filtered_inputs and outputs option not in GEMSEO
         if compute_all_jacobians:
@@ -355,7 +368,8 @@ class SoSDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        """Over load of the GEMS function
+        """
+        Over load of the GEMS function
         Compute the analytic jacobian of a discipline/model
         Check if the jacobian in compute_sos_jacobian is OK
 
@@ -420,6 +434,7 @@ class SoSDiscipline(Discipline):
 
         Return:
             List[string] The names of the input variables.
+
         """
         if not filtered_inputs:
             return self.input_grammar.names
@@ -434,6 +449,7 @@ class SoSDiscipline(Discipline):
 
         Return:
             List[string] The names of the output variables.
+
         """
         if not filtered_outputs:
             return self.output_grammar.names
@@ -479,7 +495,8 @@ class SoSDiscipline(Discipline):
     # ----------------------------------------------------
 
     def _check_nan_in_data(self, data):
-        """Using entry data, check if nan value exist in data's
+        """
+        Using entry data, check if nan value exist in data's
 
         :params: data
         :type: composite data
@@ -542,6 +559,7 @@ class SoSDiscipline(Discipline):
 
         Return:
             output_error (dict): dict with mismatches spotted in comparison
+
         """
         dict_error = {}
         compare_dict(left_dict, right_dict, '', dict_error)

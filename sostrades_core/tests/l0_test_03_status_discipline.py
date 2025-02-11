@@ -24,14 +24,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestStatusDiscipline(unittest.TestCase):
-    """
-    SoSDiscipline status test class
-    """
+    """SoSDiscipline status test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dic_status = {
             'CONFIGURE': False,
             'RUNNING': False,

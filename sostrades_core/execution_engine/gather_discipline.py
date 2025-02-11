@@ -36,9 +36,7 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 
 
 class GatherDiscipline(SoSWrapp):
-    """
-    Generic Gather Discipline getting children outputs as inputs and gathering them as outputs
-    """
+    """Generic Gather Discipline getting children outputs as inputs and gathering them as outputs"""
 
     # ontology information
     _ontology_data = {
@@ -80,6 +78,7 @@ class GatherDiscipline(SoSWrapp):
 
         Arguments:
             sos_name (string): name of the discipline/node
+            logger (logging.Logger): Logger to use
 
         """
         super().__init__(sos_name, logger)
@@ -88,8 +87,8 @@ class GatherDiscipline(SoSWrapp):
 
     def setup_sos_disciplines(self):
         '''
-           We add to the desc_in all the outputs of each child
-           We add to the desc_out the dict which will gather all inputs by name
+        We add to the desc_in all the outputs of each child
+        We add to the desc_out the dict which will gather all inputs by name
         '''
         try:
             eval_outputs_f_name = self.get_var_full_name(self.GATHER_OUTPUTS, self.get_data_in())
@@ -117,9 +116,7 @@ class GatherDiscipline(SoSWrapp):
         return dynamic_inputs, dynamic_outputs
 
     def build_eval_output(self):
-        '''
-        find possible values and add them into the eval_output variable
-        '''
+        '''Find possible values and add them into the eval_output variable'''
         disc_namespace = self.get_disc_display_name()
         possible_out_values = set()
         children_list = self.config_dependency_disciplines
@@ -216,9 +213,7 @@ class GatherDiscipline(SoSWrapp):
         return dynamic_inputs, dynamic_outputs
 
     def run(self):
-        '''
-        The run function of the generic gather discipline will only gather variables
-        '''
+        '''The run function of the generic gather discipline will only gather variables'''
         input_dict = self.get_sosdisc_inputs()
         output_dict = {}
         output_keys = self.get_sosdisc_outputs().keys()

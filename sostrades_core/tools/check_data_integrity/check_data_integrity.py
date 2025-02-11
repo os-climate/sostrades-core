@@ -28,11 +28,7 @@ RANGE_TYPES = ['int', 'float']
 
 
 def add_integrity_msg(integrity_msg_dict, key, error_msg):
-    '''
-
-    Generic add integrity msf if a message already exists or not
-
-    '''
+    '''Generic add integrity msf if a message already exists or not'''
     if key in integrity_msg_dict:
         integrity_msg_dict[key] += '\n' + error_msg
     else:
@@ -42,13 +38,10 @@ def add_integrity_msg(integrity_msg_dict, key, error_msg):
 
 
 class CheckDataIntegrity():
-    '''CheckDataIntegrity class is here to check the data integrity of a variable regarding its type or variable descriptor associated
-    '''
+    '''CheckDataIntegrity class is here to check the data integrity of a variable regarding its type or variable descriptor associated'''
 
     def __init__(self, sos_disc_class, dm):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         self.dm = dm
         self.new_check = False
         self.check_integrity_msg_list = []
@@ -142,10 +135,7 @@ class CheckDataIntegrity():
         return out
 
     def __check_variable_range(self, var_data_dict):
-        '''
-        CHeck the data range of the data_dict
-        '''
-
+        '''CHeck the data range of the data_dict'''
         if self.variable_type in RANGE_TYPES:
 
             # check type of range vs type of value
@@ -182,19 +172,14 @@ class CheckDataIntegrity():
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
 
     def __check_range_type_vs_value_type(self, value, variable_range):
-        '''
-        Check the type of the first value in the range vs the type of the value
-        '''
-
+        '''Check the type of the first value in the range vs the type of the value'''
         if not can_cast(type(value), type(variable_range[0])):
             check_integrity_msg_range_type = f'Type of {value} ({type(value)}) not the same as the type of {variable_range[0]} ({type(variable_range[0])}) in range list'
             self.__add_msg_to_check_integrity_msg_list(
                 check_integrity_msg_range_type)
 
     def __check_possible_values(self):
-        '''
-        Check the possible values of the data_dict
-        '''
+        '''Check the possible values of the data_dict'''
         check_integrity_msg = ''
 
         if self.variable_type in POSSIBLE_VALUES_TYPES:
@@ -212,10 +197,7 @@ class CheckDataIntegrity():
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
 
     def __check_dataframe_descriptor(self, var_data_dict):
-        '''
-        Check dataframe descriptor of the data_dict vs the value if the dataframe is unlocked
-        '''
-
+        '''Check dataframe descriptor of the data_dict vs the value if the dataframe is unlocked'''
         dataframe_descriptor = var_data_dict[self.DATAFRAME_DESCRIPTOR]
         dataframe_edition_locked = var_data_dict[self.DATAFRAME_EDITION_LOCKED]
         # Mean that dataframe columns can be dynamic depending on the case and cannot be checked
@@ -274,9 +256,7 @@ class CheckDataIntegrity():
                             self.variable_value[key], dataframe_descriptor[key], key)
 
     def __add_msg_to_check_integrity_msg_list(self, new_msg):
-        '''
-        Add message in the message_list and join at the end of the function
-        '''
+        '''Add message in the message_list and join at the end of the function'''
         if new_msg != '':
             self.check_integrity_msg_list.append(new_msg)
 
@@ -317,10 +297,7 @@ class CheckDataIntegrity():
                 self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
 
     def __check_subtype_descriptor(self, var_data_dict):
-        '''
-        Check subtype descriptor of the data_dict vs the value for list and dict
-        '''
-
+        '''Check subtype descriptor of the data_dict vs the value for list and dict'''
         if self.SUBTYPE in var_data_dict:
             variable_subtype = var_data_dict[self.SUBTYPE]
             if list(variable_subtype.keys())[0] != self.variable_type:
@@ -330,10 +307,10 @@ class CheckDataIntegrity():
                                  self.variable_value)
 
     def __check_subtype(self, subtype, type_to_check, variable_value):
-        """This function checks that the subtype given to a list or dict is compliant
+        """
+        This function checks that the subtype given to a list or dict is compliant
         with the defined standard for subtype and the value is compliant with the defined subtype descriptor
         """
-
         if not isinstance(subtype, dict):
             check_integrity_msg = 'Subtype descriptor must be a dictionnary'
             self.__add_msg_to_check_integrity_msg_list(check_integrity_msg)
@@ -403,9 +380,7 @@ class CheckDataIntegrity():
                     formula_error_msg)
 
     def __check_formula(self, formula):
-        '''
-        Check a single formula
-        '''
+        '''Check a single formula'''
         err_msg = None
         try:
             sympy_formula = SympyFormula(formula)
@@ -418,10 +393,7 @@ class CheckDataIntegrity():
             self.__check_formula_dict()
 
     def __fill_formula_dict(self, sympy_formula):
-        """
-        build dict with all formulas and parameters to evaluate :formula given
-        """
-
+        """Build dict with all formulas and parameters to evaluate :formula given"""
         parameter_list = sympy_formula.get_token_list()
         parameter_list.sort()
         # look at each parameter of the formula
@@ -507,9 +479,7 @@ class CheckDataIntegrity():
             self.__check_formula_dict()
 
     def __update_dict(self, dict_to_update, filled_dict):
-        """
-        complete dict_to_update with the key : value of filled_dict if not possessed
-        """
+        """Complete dict_to_update with the key : value of filled_dict if not possessed"""
         for key, value in filled_dict.items():
             if key not in dict_to_update.keys():
                 dict_to_update[key] = value

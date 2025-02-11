@@ -95,6 +95,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
 
         cls (Class): constructor of the model wrapper with user-defin ed run (or None)
+
     """
 
     # Default values of algorithms
@@ -644,13 +645,15 @@ class ProxyOptim(ProxyDriverEvaluator):
             self.scenario.formulation.optimization_problem.design_space = dspace
 
     def get_algo_options(self, algo_name: str):
-        """Create default dict for algo options.
+        """
+        Create default dict for algo options.
 
         Args:
             algo_name: The name of the algorithm.
 
         Returns:
             A dictionary with algo options default values.
+
         """
         # TODO : add warning and log algo options
         default_dict = {}
@@ -902,6 +905,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         Returns:
             _out_names (list[string]): output list of variable full names anonymized wrt. driver node.
             _out_errors (list[string]): list of error strings obtained from the queries for data integrity (empty if OK)
+
         """
         if io_type == self.IO_TYPE_IN:
             subpr_vars = self.eval_in_possible_types
@@ -943,6 +947,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         Returns:
             f_names (list[string]): output list of variable full names (absolute, with study name too)
+
         """
         f_names, query_err = self._get_subprocess_var_names(var_names, io_type)
         if query_err:

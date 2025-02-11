@@ -58,7 +58,8 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
             name: str,
             value,
     ) -> ndarray:
-        """Convert a data value to a NumPy array.
+        """
+        Convert a data value to a NumPy array.
 
         Args:
             name: The data name.
@@ -66,6 +67,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
 
         Returns:
             The NumPy array.
+
         """
         if type(value) in ValueTypes:
             return super().convert_value_to_array(name, value)
@@ -76,7 +78,8 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
 
     @classmethod
     def get_value_size(cls, name: str, value) -> int:
-        """Return the size of a data value.
+        """
+        Return the size of a data value.
 
         The size is typically what is returned by ``ndarray.size`` or ``len(list)``.
         The size of a number is 1.
@@ -87,6 +90,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
 
         Returns:
             The size.
+
         """
         if isinstance(value, cls._NON_ARRAY_TYPES):
             return 1

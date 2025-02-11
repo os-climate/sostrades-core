@@ -22,14 +22,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestScatterDiscipline(unittest.TestCase):
-    """
-    Class to test Scatter discipline configure and cleaning
-    """
+    """Class to test Scatter discipline configure and cleaning"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'Root'
         self.ee = ExecutionEngine(self.name)
 

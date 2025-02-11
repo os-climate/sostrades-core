@@ -52,7 +52,8 @@ def get_available_linear_solvers():
 
 
 class SoSMDAChain(MDAChain):
-    """GEMSEO Overload.
+    """
+    GEMSEO Overload.
 
     A chain of sub-MDAs. The execution sequence is provided by the :class:`.DependencyGraph`.
     """
@@ -126,6 +127,7 @@ class SoSMDAChain(MDAChain):
                 to compute the eventually missing :attr:`.default_input_data` at the first
                 execution.
             **inner_mda_options: The options of the inner-MDAs.
+
         """
         self.logger = logger
         self.is_sos_coupling = True
@@ -301,7 +303,8 @@ class SoSMDAChain(MDAChain):
     # ----------------------------------------------------
 
     def _check_nan_in_data(self, data):
-        """Using entry data, check if nan value exist in data's
+        """
+        Using entry data, check if nan value exist in data's
 
         :params: data
         :type: composite data
@@ -376,6 +379,7 @@ class SoSMDAChain(MDAChain):
 
         Return:
             List[string] The names of the input variables.
+
         """
         if not filtered_inputs:
             return self.input_grammar.names
@@ -391,6 +395,7 @@ class SoSMDAChain(MDAChain):
 
         Returns:
             List[str]: The names of the output variables.
+
         """
         # Initialize the output data names from the output grammar
         output_data_names = set(self.output_grammar.names)

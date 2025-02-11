@@ -42,9 +42,7 @@ class ProxySampleGeneratorException(Exception):
 
 
 class ProxySampleGenerator(ProxyDiscipline):
-    '''
-    Class that gather output data from a scatter discipline
-    '''
+    '''Class that gather output data from a scatter discipline'''
 
     # ontology information
     _ontology_data = {
@@ -192,9 +190,11 @@ class ProxySampleGenerator(ProxyDiscipline):
 
         Arguments:
             possible_values (list(string)): possible values of the eval_inputs variable names
+            possible_types (dict(string)): possible types of the eval_inputs variable
         Returns:
              driver_is_configured (bool): flag to detect whether driver could ask sample generator for necessary
                 configuration actions
+
         """
         if self.eval_in_possible_types.keys() != possible_types.keys():
             self.eval_in_possible_values = possible_values
@@ -208,6 +208,7 @@ class ProxySampleGenerator(ProxyDiscipline):
 
         Arguments:
             eval_inputs_row (pd.Series): row of the evaluated inputs dataframe to check
+
         """
         selected = eval_inputs_row[self.SELECTED_INPUT]
         var_name = eval_inputs_row[self.FULL_NAME]
@@ -315,15 +316,11 @@ class ProxySampleGenerator(ProxyDiscipline):
                                 self.CHECK_INTEGRITY_MSG, '\n'.join(design_space_integrity_msg))
 
     def is_configured(self):
-        """
-        Configuration criterion including whether a configuration-time sample is pending.
-        """
+        """Configuration criterion including whether a configuration-time sample is pending."""
         return super().is_configured() and not self.sample_pending
 
     def setup_sos_disciplines(self):
-        """
-        Dynamic i/o of the sample generator.
-        """
+        """Dynamic i/o of the sample generator."""
         disc_in = self.get_data_in()
         if disc_in:
             self.sampling_method = self.get_sosdisc_inputs(self.SAMPLING_METHOD)
@@ -351,9 +348,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.add_outputs(dynamic_outputs)
 
     def instantiate_sampling_tool(self):
-        """
-           Instantiate a new SampleGenerator only if needed
-        """
+        """Instantiate a new SampleGenerator only if needed"""
         if self.sampling_method is not None:
             if self.sampling_method in self.AVAILABLE_SAMPLING_METHODS:
                 sample_generator_cls = self.SAMPLE_GENERATOR_CLS[self.sampling_method]
@@ -425,6 +420,7 @@ class ProxySampleGenerator(ProxyDiscipline):
 
         Arguments:
             disc_in (dict): input data dict of the discipline obtained via self.get_data_in()
+
         """
         _df_desc = None
         # build right dataframe descriptor
@@ -448,6 +444,7 @@ class ProxySampleGenerator(ProxyDiscipline):
         Arguments:
             eval_inputs_df_desc (dict): dataframe descriptor to impose
             disc_in (dict): the discipline inputs dict (to avoid an extra call to self.get_data_in())
+
         """
         # get the data_in only if not provided
         d_in = disc_in or self.get_data_in()
@@ -476,6 +473,7 @@ class ProxySampleGenerator(ProxyDiscipline):
 
         Arguments:
             disc_in (dict): the discipline inputs dict (to avoid an extra call to self.get_data_in())
+
         """
         if self.eval_in_possible_values and self.EVAL_INPUTS in disc_in:
             default_in_dataframe = pd.DataFrame({self.SELECTED_INPUT: [False for _ in self.eval_in_possible_values],

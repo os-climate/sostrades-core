@@ -23,7 +23,8 @@ class ProxyDisciplineBuilderException(Exception):
 
 
 class ProxyDisciplineBuilder(ProxyDiscipline):
-    """**ProxyDisciplineBuilder** is a ProxyDiscipline with the ability to instantiate sub proxies. It is an
+    """
+    **ProxyDisciplineBuilder** is a ProxyDiscipline with the ability to instantiate sub proxies. It is an
     abstract clas that delegates the build method to the children classes.
 
     All nodes of the SoSTrades process tree that have sub proxies are represented by proxy instances that inherit
@@ -64,9 +65,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     NUM_DESC_IN.update(ProxyDiscipline.NUM_DESC_IN)
 
     def _build(self, builder_list):
-        """
-        Instanciate sub proxies managed by the coupling
-        """
+        """Instanciate sub proxies managed by the coupling"""
         old_current_discipline = self.ee.factory.current_discipline
         self.set_father_discipline()
 
@@ -97,17 +96,13 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     #         ProxyDisciplineBuilder.clear_cache(self)
 
     def associate_namespace_to_sub_builder(self, builder):
-        '''
-        Associate namespaces in associated namespaces list to sub builders
-        '''
+        '''Associate namespaces in associated namespaces list to sub builders'''
         if self.associated_namespaces != []:
             builder.add_namespace_list_in_associated_namespaces(
                 self.associated_namespaces)
 
     def set_father_discipline(self):
-        '''
-        Set the current discipline to build the builder_list at this level
-        '''
+        '''Set the current discipline to build the builder_list at this level'''
         self.ee.factory.current_discipline = self
 
     def build(self):
@@ -115,9 +110,7 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         self._build(builder_list)
 
     def prepare_build(self):
-        """
-        To be overload by subclasses with special builds.
-        """
+        """To be overload by subclasses with special builds."""
         return self.cls_builder
 
     def update_data_io_with_child(self, sub_data_in, sub_data_out):

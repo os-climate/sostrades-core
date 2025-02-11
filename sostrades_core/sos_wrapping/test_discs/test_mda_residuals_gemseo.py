@@ -1,3 +1,4 @@
+# noqa D100
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -16,6 +17,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -31,7 +33,8 @@ if TYPE_CHECKING:
 
 
 def disc_1_expr(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> tuple[float, float, float]:
-    """A linear function with residuals. First toy discipline.
+    """
+    A linear function with residuals. First toy discipline.
 
     Args:
         w1: The initial state value.
@@ -40,6 +43,7 @@ def disc_1_expr(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> tuple[float
 
     Returns:
         The couplings1, state1 and residuals1
+
     """
     w1 = (3 * x - y2) / 7.0
     y1 = 5 * w1 + x + 3 * y2
@@ -48,7 +52,8 @@ def disc_1_expr(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> tuple[float
 
 
 def disc_1_expr_jac(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> ndarray:
-    """The Jacobian of linear function with residuals. First toy discipline.
+    """
+    The Jacobian of linear function with residuals. First toy discipline.
 
     Args:
         w1: The initial state value.
@@ -57,6 +62,7 @@ def disc_1_expr_jac(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> ndarray
 
     Returns:
         The couplings1, state1 and residuals1 Jacobian.
+
     """
     d_y_w_r_d_w_y_x = array([
         [5.0, 3.0, 1.0],
@@ -67,7 +73,8 @@ def disc_1_expr_jac(w1: float = 0.0, y2: float = 2.0, x: float = 3.0) -> ndarray
 
 
 def disc_2_expr(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> tuple[float, float, float]:
-    """A linear function with residuals. Second toy discipline.
+    """
+    A linear function with residuals. Second toy discipline.
 
     Args:
         w2: The initial state value.
@@ -76,6 +83,7 @@ def disc_2_expr(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> tuple[float
 
     Returns:
         The couplings2, state2 and radius2
+
     """
     w2 = (2 * x - y1) / 5.0
     y2 = 13 * w2 + x + 2 * y1
@@ -85,7 +93,8 @@ def disc_2_expr(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> tuple[float
 
 
 def disc_2_expr_jac(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> ndarray:
-    """The Jacobian of linear function with residuals. Second toy discipline.
+    """
+    The Jacobian of linear function with residuals. Second toy discipline.
 
     Args:
         w2: The initial state value.
@@ -94,6 +103,7 @@ def disc_2_expr_jac(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> ndarray
 
     Returns:
         The couplings2, state2 and residuals2 Jacobian.
+
     """
     d_y_w_r_d_w_y_x = array([
         [13.0, 2.0, 1.0],
@@ -104,7 +114,8 @@ def disc_2_expr_jac(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> ndarray
 
 
 def disc_3_expr(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> float:
-    """A linear objective function. Third toy discipline.
+    """
+    A linear objective function. Third toy discipline.
 
     Args:
         y1: The first input coupling value.
@@ -113,13 +124,15 @@ def disc_3_expr(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> float:
 
     Returns:
         The objective function.
+
     """
     obj = y1 + 2 * y2 + 11 * x
     return obj  # noqa: RET504
 
 
 def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray:
-    """A linear objective function. Third toy discipline.
+    """
+    A linear objective function. Third toy discipline.
 
     Args:
         y1: The first input coupling value.
@@ -128,6 +141,7 @@ def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray
 
     Returns:
         The objective function Jacobian.
+
     """
     d_obj_d_y1_y2_x = array([[1.0, 2.0, 11.0]])
     return d_obj_d_y1_y2_x  # noqa: RET504
@@ -135,10 +149,12 @@ def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray
 
 @pytest.fixture
 def res_disciplines() -> list[Discipline]:
-    """Create the three disciplines required to make a MDA with residual variables.
+    """
+    Create the three disciplines required to make a MDA with residual variables.
 
     Returns:
         The disciplines instances.
+
     """
     d1 = create_discipline("AutoPyDiscipline", py_func=disc_1_expr, py_jac=disc_1_expr_jac)
     d1.residual_variables = {"r1": "w1"}

@@ -27,14 +27,10 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestScatter(unittest.TestCase):
-    """
-    SoSDiscipline test class
-    """
+    """SoSDiscipline test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'

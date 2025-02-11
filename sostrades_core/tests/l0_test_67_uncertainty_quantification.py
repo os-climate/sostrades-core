@@ -296,7 +296,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
         """
 
     def test_04_uncertainty_quantification_with_arrays_in_input_and_outputs(self):
-        """This tests evaluates the capacity to perform uncertainty quantification when some inputs are arrays and
+        """
+        This tests evaluates the capacity to perform uncertainty quantification when some inputs are arrays and
         some outputs are arrays.
         """
         builder = self.factory.get_builder_from_process(self.repo, self.proc_name)

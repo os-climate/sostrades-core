@@ -19,8 +19,7 @@ from sostrades_core.study_manager.study_manager import StudyManager
 
 
 class Study(StudyManager):
-    '''This is an example of usecase study for
-    '''
+    '''This is an example of usecase study for'''
 
     def __init__(self, execution_engine=None):
         super().__init__(__file__, execution_engine=execution_engine)

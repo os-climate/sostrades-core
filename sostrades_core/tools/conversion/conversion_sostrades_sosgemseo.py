@@ -66,12 +66,23 @@ NEW_VAR_TYPE = list(set(chain.from_iterable(elt if isinstance(elt, tuple) else [
 
 
 def is_value_type_handled(val):
+    """
+    Checks if a given value is of a handled type.
+
+    Args:
+        val (any): The value to check.
+
+    Returns:
+        bool: True if the value is of a handled type, False otherwise.
+
+    """
     return isinstance(val, tuple(VAR_TYPE_MAP.values())
                       ) or isinstance(val, np_complex128) or val is None
 
 
 def get_nested_val(dict_in, keys):
-    ''' returns the value of a nested dictionary of depth len(keys)
+    '''
+    returns the value of a nested dictionary of depth len(keys)
     output : d[keys[0]][..][keys[n]]
     '''
 
@@ -83,6 +94,20 @@ def get_nested_val(dict_in, keys):
 
 
 def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
+    """
+    Converts a numerical array into a nested dictionary structure using metadata.
+
+    Args:
+        arr_to_convert (numpy.ndarray): The array to be converted into a dictionary.
+        new_data (dict): The dictionary where converted values will be stored.
+        val_datalist (list of dict): A list of metadata dictionaries that describe the structure
+                                      and types of data to be reconstructed.
+
+    Returns:
+        dict: A nested dictionary reconstructed from the numerical array, following the
+              structure defined in val_datalist.
+
+    """
     # convert list into dict using keys from dm.data_dict
     if len(val_datalist) == 0:
         # means the dictionary is empty or None
@@ -150,6 +175,21 @@ def convert_array_into_dict_old_version(arr_to_convert, new_data, val_datalist):
 
 
 def convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
+    """
+    Converts a numerical array into a pandas DataFrame using provided metadata.
+
+    Args:
+        arr_to_convert (numpy.ndarray): The array to be converted into a DataFrame.
+        metadata (dict): A dictionary containing metadata such as shape, size, column names,
+                         data types, and optional indices.
+        excluded_columns (list of str, optional): A list of column names to be inserted at the beginning
+                                                  of the DataFrame if present in metadata. Defaults to DEFAULT_EXCLUDED_COLUMNS.
+
+    Returns:
+        pandas.DataFrame: A DataFrame reconstructed from the numerical array with appropriate
+                          column names, data types, and optional indices.
+
+    """
     # convert list into dataframe using columns from dm.data_dict
     _shape = metadata['__shape__']
     _size = metadata['__size__']
@@ -197,10 +237,10 @@ def convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXC
 
 
 def convert_array_into_new_type(name, var_array, reduced_dm={}):
-    ''' convert list in local_data into correct type in data_in
-        returns an updated copy of local_data
     '''
-
+    convert list in local_data into correct type in data_in
+    returns an updated copy of local_data
+    '''
     _type = reduced_dm.get(VAR_TYPE_ID)
     metadata_list = reduced_dm.get(TYPE_METADATA)
     if array is None:
@@ -220,7 +260,6 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
 
                 var_new_type = convert_array_into_dict_old_version(
                     var_array, new_data, deepcopy(metadata_list))
-
 
             else:
                 check_subtype(name, subtype, 'dict')
@@ -263,10 +302,9 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
 
 def convert_dict_into_array_old_version(var_dict, values_list, metadata, prev_keys, prev_metadata):
     """
-        Convert a nested var_dict into a numpy array, and stores metadata
-        useful to build the dictionary afterwards
-        """
-
+    Convert a nested var_dict into a numpy array, and stores metadata
+    useful to build the dictionary afterwards
+    """
     for key, val in var_dict.items():
         # for each value in the dictionary to convert
         nested_keys = prev_keys + [key]
@@ -359,7 +397,6 @@ def convert_dict_into_array(var_dict, subtype):
     Convert a nested var_dict into a numpy array, and stores metadata
     useful to build the dictionary afterwards
     '''
-
     if (check_subtype('', subtype, 'dict') in BASE_TYPE_EXCLUDED) or (len(var_dict) == 0):
         return var_dict, None
     if type(subtype['dict']).__name__ != 'dict':
@@ -424,8 +461,7 @@ def convert_dict_into_array(var_dict, subtype):
 
 
 def convert_array_into_dict(to_convert, metadata, subtype):
-    """ convert an array into initial dict
-    """
+    """Convert an array into initial dict"""
     if (check_subtype('', subtype, 'dict') in BASE_TYPE_EXCLUDED) or (len(to_convert) == 0):
         return to_convert
     # Here we deal with a dict of only one level eg {'dict':'array'}, {'dict':'float'} , {'dict':'dataframe'}
@@ -535,7 +571,6 @@ def convert_new_type_into_array(
     Check element type in var_dict, convert new type into numpy array
         and stores metadata into DM for after reconversion
     '''
-
     var_type = type(var)
     metadata = []
     new_reduced_dm = {}
@@ -628,7 +663,8 @@ def convert_string_to_int(val, val_data):
 
 
 def convert_list_into_array(var, subtype):
-    """This function converts a list into an array
+    """
+    This function converts a list into an array
     It also creates the metadata needed to reconvert the array into the initial list
     """
     if (check_subtype('', subtype, 'list') in BASE_TYPE_EXCLUDED) or (len(var) == 0):
@@ -697,8 +733,7 @@ def convert_list_into_array(var, subtype):
 
 
 def convert_array_into_list(to_convert, metadata, subtype):
-    """ convert an array into initial list
-    """
+    """Convert an array into initial list"""
     if (check_subtype('', subtype, 'list') in BASE_TYPE_EXCLUDED) or (len(to_convert)) == 0:
         return to_convert
     # Here we deal with a list of only one level eg {'list':'string'}, {'list':'float'} , {'list':'df'}
@@ -756,7 +791,8 @@ def convert_array_into_list(to_convert, metadata, subtype):
 
 
 def check_subtype(var_full_name, subtype, type_to_check):
-    """This function checks that the subtype given to a list is compliant
+    """
+    This function checks that the subtype given to a list is compliant
     with the defined standard for subtype
     """
     if type(subtype).__name__ != 'dict':

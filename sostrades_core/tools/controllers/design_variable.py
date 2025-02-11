@@ -20,9 +20,8 @@ from .base_controller import BaseController
 
 
 class DesignVariable(BaseController):
-    """
-    PDesignVariable Class
-    """
+    """PDesignVariable Class"""
+
     CLASS_MSG = 'DesignVariable'
     ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
 
@@ -77,9 +76,7 @@ class DesignVariable(BaseController):
             raise Exception(ERROR_MSG + ' Lower bound greater or equal to upper bound!')
 
     def set_value(self, value, flag_updates=True, raise_error=False):
-        """
-        Set value of the PDesignVariable
-        """
+        """Set value of the PDesignVariable"""
         BaseController.set_value(self, value, flag_updates=flag_updates)
         self.check_bounds(raise_error)
         self.__norm_value()
@@ -94,9 +91,7 @@ class DesignVariable(BaseController):
 
     # --methods
     def check_bounds(self, raise_error=False):
-        """
-        Check if variable is consistent
-        """
+        """Check if variable is consistent"""
         lbnd = self.__bounds[0]
         ubnd = self.__bounds[1]
         valid = True

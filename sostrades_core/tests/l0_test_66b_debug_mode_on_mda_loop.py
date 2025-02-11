@@ -26,9 +26,7 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class UnitTestHandler(Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         Handler.__init__(self)
@@ -39,9 +37,7 @@ class UnitTestHandler(Handler):
 
 
 class TestMDALoop(unittest.TestCase):
-    """
-    MDA test class
-    """
+    """MDA test class"""
 
     def setUp(self):
         self.dirs_to_del = []
@@ -55,10 +51,7 @@ class TestMDALoop(unittest.TestCase):
                 rmtree_safe(dir_to_del)
 
     def _test_01_debug_mode_mda_nan(self):
-        """
-        Checks exception is raised by activating nan debug mode in a bugged discipline.
-        """
-
+        """Checks exception is raised by activating nan debug mode in a bugged discipline."""
         exec_eng = ExecutionEngine(self.name)
 
         # add disciplines SellarCoupling
@@ -92,10 +85,7 @@ class TestMDALoop(unittest.TestCase):
             raise Exception('Execution worked, and it should not have')
 
     def test_02_debug_mode_mda_input_change(self):
-        """
-        Checks exception is raised by activating input_change debug mode in a bugged discipline.
-        """
-
+        """Checks exception is raised by activating input_change debug mode in a bugged discipline."""
         exec_eng = ExecutionEngine(self.name)
 
         # add disciplines SellarCoupling
@@ -129,10 +119,7 @@ class TestMDALoop(unittest.TestCase):
             raise Exception('Execution worked, and it should not have')
 
     def test_04_debug_mode_mda_min_max_coupling(self):
-        """
-        Checks message is logged after activating min_max_coupling debug mode.
-        """
-
+        """Checks message is logged after activating min_max_coupling debug mode."""
         exec_eng = ExecutionEngine(self.name)
         LOGGER = exec_eng.logger.getChild("ProxyDiscipline.DisciplineWrapp.SoSDiscipline")
         LOGGER.setLevel(DEBUG)
@@ -166,9 +153,7 @@ class TestMDALoop(unittest.TestCase):
             self.my_handler.msg_list)
 
     def test_05_debug_mode_all(self):
-        """
-        Check the proper setting of debug mode all on ProxyDiscipline side.
-        """
+        """Check the proper setting of debug mode all on ProxyDiscipline side."""
         exec_eng = ExecutionEngine(self.name)
 
         exec_eng.logger.setLevel(DEBUG)
@@ -274,7 +259,6 @@ class TestMDALoop(unittest.TestCase):
         self.assertIn('Discipline Sellar_3 set to debug mode input_change', self.my_handler.msg_list)
         self.assertIn(f'Discipline {self.name}.{coupling_name} set to debug mode input_change',
                       self.my_handler.msg_list)
-
 
         # sos_wrapps
         exec_eng.execute()

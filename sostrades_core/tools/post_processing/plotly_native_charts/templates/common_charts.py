@@ -59,7 +59,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             showlegend: bool = True,
             offsetgroup=None,
     ) -> InstantiatedPlotlyNativeChart:
-        """Generate a bar chart from data in a dataframe
+        """
+        Generate a bar chart from data in a dataframe
 
         Args:
             data_df (pd.DataFrame): dataframe containing data.
@@ -79,9 +80,11 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             add_cumulated (bool, optional): True to add a cumulated serie for te value. Defaults to False.
             column_val_cum_sum (str, optional): Column to use as the cumulated value. Defaults to None.
             showlegend (bool, optional): Possibility to show or hide the legend. Defaults to True.
+            offsetgroup (Any): Set several traces linked to the same position axis or matching axes to the same offsetgroup where bars of the same position coordinate will line up.
 
         Returns:
             InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data
+
         """
         # Create figure
         fig = go.Figure()
@@ -190,7 +193,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             mode: str = 'lines',
             textposition: str = "top center",
     ) -> InstantiatedPlotlyNativeChart:
-        """Generate a line chart from data in a dataframe
+        """
+        Generate a line chart from data in a dataframe
 
         Args:
             data_df (pd.DataFrame): dataframe containing data.
@@ -208,6 +212,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         Returns:
             InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data
+
         """
         # Create figure
         fig = go.Figure()
@@ -260,7 +265,6 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         Function to make more understandable the variables' names
         that appear in post-processing tables
         '''
-
         info_dict = deepcopy(in_dict)
         columns_info = columns_info = {
             'index': {'label': 'Name', 'format': None},
@@ -393,9 +397,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             chart_name,
             ticksuffix=None,
     ):
-        '''
-        data_df : dataframe with data to plot
-        '''
+        '''data_df : dataframe with data to plot'''
         # Create figure
         fig = go.Figure()
 
@@ -595,7 +597,6 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         if mode = 'markers' or mode = 'markers + text'
             marker= {'color': str, 'size': integer, }
         '''
-
         categories_list = data_df[column_with_categories].unique()
         # Create figure
         fig = go.Figure()
@@ -678,7 +679,6 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         x_axis_column : string column name of x axis
         y_axis_column_list : list columns names for y bar to plot
         '''
-
         categories_list = data_df[column_with_categories].unique()
         # Create figure
         fig = go.Figure()
@@ -1079,7 +1079,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             annotation_upper_left: dict = {},
             annotation_upper_right: dict = {},
     ):
-        '''Generate a bar chart from data in a dataframe
+        '''
+        Generate a bar chart from data in a dataframe
 
         Args:
             data_df (pd.DataFrame): dataframe containing data.
@@ -1101,8 +1102,9 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             showlegend (bool, optional): Possibility to show or hide the legend. Defaults to True.
 
         Returns:
-            InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data'''
+            InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data
 
+        '''
         categories_list = data_df[column_with_categories].unique()
         # Create figure
         fig = go.Figure()

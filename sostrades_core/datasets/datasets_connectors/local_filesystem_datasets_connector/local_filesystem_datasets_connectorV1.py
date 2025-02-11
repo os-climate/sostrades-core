@@ -33,9 +33,8 @@ from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 
 
 class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
-    """
-    Specific dataset connector for dataset in local filesystem
-    """
+    """Specific dataset connector for dataset in local filesystem"""
+
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
     DATA_GROUP_DIRECTORY_KEY = '__data_group_filesystem_directory__'
 
@@ -50,6 +49,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
             root_directory_path (str): Root directory path for this dataset connector using filesystem.
             create_if_not_exists (bool): Whether to create the root directory if it does not exist.
             serializer_type (DatasetSerializerType): Type of serializer to deserialize data from connector.
+
         """
         super().__init__()
         self._root_directory_path = os.path.abspath(root_directory_path)
@@ -77,6 +77,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             dict[str, dict[str, Any]]: Dataset descriptor.
+
         """
         filesystem_dataset_identifier = self._datasets_serializer.format_filesystem_name(dataset_id)
         if filesystem_dataset_identifier != dataset_id:
@@ -101,6 +102,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: Retrieved data.
+
         """
         self._logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier.dataset_id}, dataset group {dataset_identifier.group_id}, for connector {self}")
 
@@ -130,6 +132,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             list[DatasetInfoV1]: List of datasets identifiers.
+
         """
         self._logger.debug(f"Getting all datasets for connector {self}")
         return [DatasetInfoV1(self.connector_id, dataset_id, group_id)
@@ -147,6 +150,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: Written values.
+
         """
         self._logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
 
@@ -189,6 +193,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: All values from the dataset.
+
         """
         dataset_descriptor = self.__load_dataset_descriptor(dataset_identifier.dataset_id)
         dataset_values = dict()
@@ -215,6 +220,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
             data_types_dict (dict[str, str]): Dict of data types {name: type}.
             create_if_not_exists (bool): Create the dataset if it does not exists (raises otherwise).
             override (bool): Override dataset if it exists (raises otherwise).
+
         """
         self._logger.debug(f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
 
@@ -242,6 +248,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Args:
             remove_root_directory (bool): Whether to delete the root directory itself too.
+
         """
         if remove_root_directory:
             rmtree_safe(self._root_directory_path)
@@ -254,6 +261,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Args:
             dataset_id (str): Identifier of the dataset to be removed.
+
         """
         rmtree_safe(os.path.join(self._root_directory_path, dataset_id))
 
@@ -273,6 +281,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             dict[str, dict[str, Any]]: Updated dataset descriptor.
+
         """
         if filesystem_data_group_identifier != data_group_identifier:
             dataset_descriptor[data_group_identifier][self.DATA_GROUP_DIRECTORY_KEY] = filesystem_data_group_identifier
@@ -299,6 +308,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             str: Data group directory.
+
         """
         data_group_dir = dataset_descriptor[data_group_identifier].get(self.DATA_GROUP_DIRECTORY_KEY, data_group_identifier)
         formatted_data_group_dir = self._datasets_serializer.format_filesystem_name(data_group_dir)
@@ -317,6 +327,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             str: Dataset descriptor file path.
+
         """
         return os.path.join(self.__build_dataset_path(dataset_id), self.DESCRIPTOR_FILE_NAME)
 
@@ -329,6 +340,7 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             str: Dataset folder path.
+
         """
         return os.path.join(self._root_directory_path, dataset_id)
 
@@ -342,5 +354,6 @@ class LocalFileSystemDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             str: Group path.
+
         """
         return os.path.join(self._root_directory_path, dataset_id, group_name)

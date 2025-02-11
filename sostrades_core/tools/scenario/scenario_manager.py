@@ -23,30 +23,22 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 
 
 class ScenarioManager:
-    """
-    Class to manage all scenarios
-    """
+    """Class to manage all scenarios"""
 
     def __init__(self, name):
-        """
-        Constructor
-        """
+        """Constructor"""
         self.name = name
         self.list_scenarios_ids = []
         self.list_scenarios = []
 
     def add_scenario(self, name):
-        """
-        Add new scenario
-        """
+        """Add new scenario"""
         new_scenario = Scenario(name, scenario_manager=self)
         self.list_scenarios.append(new_scenario)
         self.list_scenarios_ids.append(new_scenario.name)
         return new_scenario
 
     def get_scenario(self, name):
-        """
-        Get scenario from name
-        """
+        """Get scenario from name"""
         index = self.list_scenarios_ids.index(name)
         return self.list_scenarios[index]

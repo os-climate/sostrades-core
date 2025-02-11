@@ -20,14 +20,10 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class TestDataManagerStorage(unittest.TestCase):
-    """
-    Class to test storage of data and disciplines in data manager
-    """
+    """Class to test storage of data and disciplines in data manager"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'SoSDisc'
         self.ee = ExecutionEngine('Test')
         self.ns_test = 'Test'

@@ -26,9 +26,8 @@ if TYPE_CHECKING:
 
 
 class AbstractDatasetsConnector(abc.ABC):
-    """
-    Abstract class to inherit in order to build specific datasets connector
-    """
+    """Abstract class to inherit in order to build specific datasets connector"""
+
     __logger = logging.getLogger(__name__)
 
     NAME = "name"
@@ -70,6 +69,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Raises:
             DatasetDeserializeException: If the version is not compatible
+
         """
         if dataset_identifier.version_id not in self.compatible_dataset_info_version:
             raise DatasetDeserializeException(dataset_identifier.dataset_id, f'the version {dataset_identifier.version_id} is not compatible with the dataset connector {dataset_identifier.connector_id}')
@@ -84,6 +84,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             bool: True if the connectors have at least one version in common
+
         """
         return bool(set(self.compatible_dataset_info_version) & set(connector.compatible_dataset_info_version))
 
@@ -97,6 +98,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: Retrieved data
+
         """
         self.check_dataset_info_version(dataset_identifier)
         return self._get_values(dataset_identifier=dataset_identifier, data_to_get=data_to_get)
@@ -112,6 +114,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: Retrieved data
+
         """
 
     def write_values(self, dataset_identifier: AbstractDatasetInfo, values_to_write: Dict[str, Any], data_types_dict: Dict[str, str]) -> Dict[str, Any]:
@@ -125,6 +128,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: Written data
+
         """
         self.check_dataset_info_version(dataset_identifier)
         return self._write_values(dataset_identifier, values_to_write, data_types_dict)
@@ -141,6 +145,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: Written data
+
         """
         return values_to_write
 
@@ -154,6 +159,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: All values from the dataset
+
         """
         self.check_dataset_info_version(dataset_identifier)
         return self._get_values_all(dataset_identifier, data_types_dict)
@@ -169,6 +175,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: All values from the dataset
+
         """
 
     @abc.abstractmethod
@@ -178,6 +185,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             List[AbstractDatasetInfo]: List of available datasets
+
         """
 
     def write_dataset(self, dataset_identifier: AbstractDatasetInfo, values_to_write: Dict[str, Any], data_types_dict: Dict[str, str], create_if_not_exists: bool = True, override: bool = False) -> Dict[str, Any]:
@@ -193,6 +201,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: Written data
+
         """
         self.check_dataset_info_version(dataset_identifier)
         return self._write_dataset(dataset_identifier, values_to_write, data_types_dict, create_if_not_exists, override)
@@ -211,6 +220,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: Written data
+
         """
         return values_to_write
 
@@ -225,6 +235,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             str: Path/URL/URI to find the dataset data
+
         """
         self.check_dataset_info_version(dataset_identifier)
         return self._build_path_to_data(dataset_identifier, data_name, data_type)
@@ -240,6 +251,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             str: Path/URL/URI to find the dataset data
+
         """
         return ""
 
@@ -256,6 +268,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Raises:
             DatasetGenericException: If connectors have incompatible versions
+
         """
         self.check_dataset_info_version(dataset_identifier)
         if not self.check_connector_compatible_version(connector_from):
@@ -277,6 +290,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Raises:
             DatasetGenericException: If connectors have incompatible versions
+
         """
         if not self.check_connector_compatible_version(connector_from):
             raise DatasetGenericException("Connectors have incompatible versions, for now it is not possible to copy data V0 <-> V1")
@@ -299,6 +313,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: New datum with default metadata
+
         """
         if old_datum is None:
             new_datum = self.DEFAULT_METADATA_DICT.copy()
@@ -318,6 +333,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: Updated datum
+
         """
         new_datum = {self.VALUE: value}
         new_datum.update(self._new_datum(datum))
@@ -331,6 +347,7 @@ class AbstractDatasetsConnector(abc.ABC):
             data (Dict[str, Dict[str, Any]]): Data to update
             values (Dict[str, Any]): Values to update with
             data_types (Dict[str, str]): Data types
+
         """
         for key, value in values.items():
             new_datum = self._insert_value_into_datum(value=value, datum=data.get(key, None), parameter_name=key, parameter_type=data_types[key])
@@ -346,6 +363,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Any: Extracted value
+
         """
         return datum[self.VALUE]
 
@@ -358,6 +376,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, str]: Extracted metadata
+
         """
         return {_k: _v for _k, _v in datum_to_extract.items() if _k not in self.VALUE_KEYS}
 
@@ -370,6 +389,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Any]: Extracted values
+
         """
         return {key: self._extract_value_from_datum(_datum) for key, _datum in data_to_extract.items()}
 
@@ -382,39 +402,36 @@ class AbstractDatasetsConnector(abc.ABC):
 
         Returns:
             Dict[str, Dict[str, str]]: Extracted metadata
+
         """
         return {key: self._extract_metadata_from_datum(_datum) for key, _datum in data_to_extract.items()}
 
 
 class DatasetGenericException(Exception):
-    """
-    Generic exception for datasets
-    """
+    """Generic exception for datasets"""
+
     pass
 
 
 class DatasetNotFoundException(DatasetGenericException):
-    """
-    Exception when a dataset is not found
-    """
+    """Exception when a dataset is not found"""
+
     def __init__(self, dataset_name: str):
         self.dataset_name = dataset_name
         super().__init__(f"Dataset '{dataset_name}' not found")
 
 
 class DatasetDeserializeException(DatasetGenericException):
-    """
-    Exception when a dataset deserializing
-    """
+    """Exception when a dataset deserializing"""
+
     def __init__(self, dataset_name: str, error_message: str):
         self.dataset_name = dataset_name
         super().__init__(f"Error reading dataset '{dataset_name}': \n{error_message}")
 
 
 class DatasetUnableToInitializeConnectorException(DatasetGenericException):
-    """
-    Exception when an error occurs during dataset initialization
-    """
+    """Exception when an error occurs during dataset initialization"""
+
     def __init__(self, connector_type: AbstractDatasetsConnector):
         self.connector_type = connector_type
         super().__init__(f"Unable to initialize connector of type {connector_type}")

@@ -36,6 +36,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger("gemseo.addons.mda.pure_newton_raphson")
 SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
 
+
 class PureNewtonRaphson(BaseMDARoot):
     """Pure NewtonRaphson solver based on Taylor's theorem."""
 
@@ -60,6 +61,7 @@ class PureNewtonRaphson(BaseMDARoot):
         """
         Args:
             relax_factor: The relaxation factor in the Newton step.
+
         """
         self.n_processes = n_processes
         self.default_grammar_type = grammar_type
@@ -95,10 +97,12 @@ class PureNewtonRaphson(BaseMDARoot):
     def __check_relax_factor(
         relax_factor,  # type: float
     ):  # type:(...) -> float
-        """Check that the relaxation factor in the Newton step is in (0, 1].
+        """
+        Check that the relaxation factor in the Newton step is in (0, 1].
 
         Args:
             relax_factor: The relaxation factor.
+
         """
         if relax_factor <= 0.0 or relax_factor > 1:
             msg = f"Newton relaxation factor should belong to (0, 1] (current value: {relax_factor})."

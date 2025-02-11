@@ -108,9 +108,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             wrapper.attributes.update(eval_attributes)
 
     def prepare_build(self):
-        '''
-        Get the builder of the single subprocesses in mono-instance builder mode.
-        '''
+        '''Get the builder of the single subprocesses in mono-instance builder mode.'''
         if self.get_data_in() and self.eval_process_builder is None:
             self._set_eval_process_builder()
         sub_builders = [self.eval_process_builder] if self.eval_process_builder else []
@@ -125,9 +123,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         return super().is_configured() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
 
     def _set_eval_process_builder(self):
-        '''
-        Create the eval process builder, in a coupling if necessary, which will allow mono-instance builds.
-        '''
+        '''Create the eval process builder, in a coupling if necessary, which will allow mono-instance builds.'''
         updated_ns_list = self.update_sub_builders_namespaces()
         if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
@@ -149,10 +145,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             updated_ns_list)
 
     def update_sub_builders_namespaces(self):
-        '''
-        Update sub builders namespaces with the driver name in monoinstance case
-        '''
-
+        '''Update sub builders namespaces with the driver name in monoinstance case'''
         ns_ids_list = []
         extra_name = f'{self.sos_name}'
         after_name = self.father_executor.get_disc_full_name()

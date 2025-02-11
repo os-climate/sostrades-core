@@ -25,9 +25,6 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-
-        """
         ns = f'{self.study_name}'
 
         private_val_list = [{f'{ns}.multi_scenarios.samples_df': pd.DataFrame({'selected_scenario': [True,

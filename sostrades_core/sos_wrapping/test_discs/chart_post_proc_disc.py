@@ -23,6 +23,17 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
 
 
 def post_processing_filters(execution_engine, namespace):
+    """
+    Generates a list of chart filters for post-processing.
+
+    Args:
+        execution_engine (ExecutionEngine): The execution engine
+        namespace (str): The namespace
+
+    Returns:
+        list: A list containing the ChartFilter objects for the charts.
+
+    """
     chart_filters = []
 
     chart_list = ['o vs x']
@@ -34,6 +45,18 @@ def post_processing_filters(execution_engine, namespace):
 
 
 def post_processings(execution_engine, namespace, chart_filters=None):
+    """
+    Post-processes the charts based on the provided filters and execution engine.
+
+    Args:
+        execution_engine (ExecutionEngine): The execution engine containing the data.
+        namespace (str): The namespace to fetch values for the charts.
+        chart_filters (list, optional): A list of ChartFilter objects to filter the charts. Defaults to None.
+
+    Returns:
+        list: A list of instantiated charts after applying the filters.
+
+    """
     instanciated_charts = []
 
     charts_list = []

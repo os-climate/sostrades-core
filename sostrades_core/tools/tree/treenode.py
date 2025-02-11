@@ -35,9 +35,8 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 
 
 class TreeNode:
-    """
-    Class to build tree node from data manager
-    """
+    """Class to build tree node from data manager"""
+
     STATUS_INPUT_DATA = 'INPUT_DATA'
     MARKDOWN_NAME_KEY = 'name'
     MARKDOWN_DOCUMENTATION_KEY = 'documentation'
@@ -47,8 +46,7 @@ class TreeNode:
                         ProxyDiscipline.OPTIONAL]
 
     def __init__(self, name, exec_display=False):
-        """ class constructor
-        """
+        """Class constructor"""
         self.name = name
 
         self.exec_display = exec_display
@@ -147,7 +145,8 @@ class TreeNode:
         return dict_obj
 
     def update_treenode_attributes(self, discipline, no_data=False, read_only=False):
-        """ Inject discipline data into the current treenode
+        """
+        Inject discipline data into the current treenode
 
         :params: discipline to set into the treenode
         :type: ProxyDiscipline
@@ -280,7 +279,8 @@ class TreeNode:
         # self.add_markdown_documentation(markdown_data, self.model_name_full_path)
 
     def update_disc_data(self, new_disc_data, namespace, discipline):
-        """ Set variable from discipline into treenode disc_data
+        """
+        Set variable from discipline into treenode disc_data
         :params: new_disc_data, variable data
         :type: ProxyDiscipline variable data_dict
 
@@ -290,7 +290,6 @@ class TreeNode:
         :params: discipline to set into the treenode
         :type: ProxyDiscipline
         """
-
         disc_full_path = discipline.get_module()
 
         if namespace not in self.disc_data:
@@ -304,7 +303,8 @@ class TreeNode:
 
     def add_disc_data_in_data_management_discipline(self, new_disc_data, namespace, disc_full_path,
                                                     discipline_variable_list):
-        """ Set variable from discipline into treenode disc_data
+        """
+        Set variable from discipline into treenode disc_data
         :params: new_disc_data, variable data
         :type: ProxyDiscipline variable data_dict
 
@@ -326,7 +326,8 @@ class TreeNode:
                 discipline_variable_list[namespace][ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST].append(disc_full_path)
 
     def add_markdown_documentation(self, markdown_data, key):
-        """ Add a markdon documentation to the treenode
+        """
+        Add a markdon documentation to the treenode
 
         :params: markdown_data, markdown documenation to set
         :type: str
@@ -334,7 +335,6 @@ class TreeNode:
         :params: key, associated key (used to manage multiple documentation into the same treenode
         :type: key
         """
-
         if markdown_data is not None and markdown_data != "":
             self.markdown_documentation.append({
                 TreeNode.MARKDOWN_NAME_KEY: key,
@@ -412,9 +412,10 @@ class TreeNode:
         return f'name : {self.name}, data : {self.data}, node_type : {self.node_type}, status : {self.status}, maturity: {self.maturity}\nchildren : {children_str}'
 
     def __manage_status(self, new_status):
-        """ Each treenode can have multiple discipline
-            for each new discipline, we compare the new status with the old one to choose
-            which status is the most prioritary
+        """
+        Each treenode can have multiple discipline
+        for each new discipline, we compare the new status with the old one to choose
+        which status is the most prioritary
         """
         current_status_priority = TreeNode.status_to_integer(self.status)
         new_status_priority = TreeNode.status_to_integer(new_status)
@@ -424,14 +425,14 @@ class TreeNode:
 
     @staticmethod
     def status_to_integer(status):
-        """ Convert status to integer value to make some sort with status
-
-            :params: status, disciplines status name
-            :type: string
-
-            :return: integer
         """
+        Convert status to integer value to make some sort with status
 
+        :params: status, disciplines status name
+        :type: string
+
+        :return: integer
+        """
         if status == TreeNode.STATUS_INPUT_DATA:
             return -1
         elif status == ProxyDiscipline.STATUS_CONFIGURE:

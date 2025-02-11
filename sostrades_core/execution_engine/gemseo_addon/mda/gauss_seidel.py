@@ -26,8 +26,11 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from numpy import array
 
 SOS_GRAMMAR_TYPE = "SoSSimpleGrammar"
+
+
 class SoSMDAGaussSeidel(MDAGaussSeidel):
-    """Overload of GEMSEO's MDA GaussSeidel
+    """
+    Overload of GEMSEO's MDA GaussSeidel
     (overload introduces warm_start_threshold option)
     """
 

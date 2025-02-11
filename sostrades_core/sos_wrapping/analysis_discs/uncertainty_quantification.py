@@ -314,11 +314,13 @@ class UncertaintyQuantification(SoSWrapp):
         self.check_eval_in_out_types(self.GATHER_OUTPUTS, self.IO_TYPE_OUT)
 
     def check_eval_in_out_types(self, eval_io_name, io_type) -> None:
-        """Check data integrity of input or output parameters.
+        """
+        Check data integrity of input or output parameters.
 
         Args:
             eval_io_name: evalinputs or gather_outputs.
             io_type: "in" or "out".
+
         """
         eval_io = self.get_sosdisc_inputs(eval_io_name)
         if eval_io is not None:
@@ -362,7 +364,8 @@ class UncertaintyQuantification(SoSWrapp):
         self.set_float_input_distribution_parameters_df_values()
 
     def breakdown_arrays_to_float(self):
-        """Converts arrays inputs and outputs to lists of floats for ease of manipulation later.
+        """
+        Converts arrays inputs and outputs to lists of floats for ease of manipulation later.
 
         The logic for handling arrays inputs/outputs is the following :
         - break them down into floats at first
@@ -589,7 +592,8 @@ class UncertaintyQuantification(SoSWrapp):
         return distrib
 
     def compute_output_interpolation(self):
-        """Perform the interpolation based on the inputs/outputs samples provided.
+        """
+        Perform the interpolation based on the inputs/outputs samples provided.
 
         for each ouput, an interpolation is performed, then all the interpolations are gathered into one dataframe
         """
@@ -645,7 +649,8 @@ class UncertaintyQuantification(SoSWrapp):
             )
 
     def get_chart_filter_list(self):
-        """Get the available charts.
+        """
+        Get the available charts.
 
         For the outputs, making a graph for tco vs year for each range and for specific
         value of ToT with a shift of five year between then.
@@ -992,7 +997,8 @@ class UncertaintyQuantification(SoSWrapp):
         return InstantiatedPlotlyNativeChart(fig=hist_y, chart_name=f"{name} - Distribution", default_legend=False)
 
     def array_uncertainty_plot(self, list_of_arrays: list[np.ndarray], name: str, is_output: bool = False):
-        """Plots the output of uncertainty analysis.
+        """
+        Plots the output of uncertainty analysis.
 
         Returns a chart for 1-dimensional array types inputs/outputs (time series typically), with
         - all the samples (all the time series)

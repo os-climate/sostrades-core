@@ -27,9 +27,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
+        '''Default initialisation test'''
         # add disciplines Sellar
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
         mods_dict_sellar = {

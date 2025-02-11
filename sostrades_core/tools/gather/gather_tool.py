@@ -45,6 +45,23 @@ def gather_selected_outputs(gather_outputs, gather_suffix):
 
 
 def get_eval_output(possible_out_values, eval_output_dm):
+    """
+    Compares and updates the evaluation output dataframe with the possible output values.
+
+    Args:
+        possible_out_values (list of str): The list of possible output names.
+        eval_output_dm (pandas.DataFrame, optional): The existing dataframe containing
+                                                     evaluation output information.
+                                                     If None, a new dataframe is created.
+
+    Returns:
+        tuple:
+            - pandas.DataFrame: The updated dataframe containing the selected output
+              and output names.
+            - list of str: A list of error messages, if any discrepancies are found
+              between the `eval_output_dm` and the default values.
+
+    """
     error_msg = []
     default_dataframe = None
     if possible_out_values:

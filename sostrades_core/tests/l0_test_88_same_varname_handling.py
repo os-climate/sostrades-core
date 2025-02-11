@@ -23,9 +23,7 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestSameVarnameHandling(unittest.TestCase):
-    """
-    Same var name handling test class
-    """
+    """Same var name handling test class"""
 
     def setUp(self):
         self.dirs_to_del = []

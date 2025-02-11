@@ -50,9 +50,7 @@ from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
 class DatasetConnectorType(Enum):
-    """
-    Dataset connector types enum
-    """
+    """Dataset connector types enum"""
 
     JSON = JSONDatasetsConnectorV0
     JSON_V1 = JSONDatasetsConnectorV1
@@ -76,6 +74,7 @@ class DatasetConnectorType(Enum):
 
         Raises:
             DatasetUnableToInitializeConnectorException: If no matching enum value is found.
+
         """
         try:
             # Iterate through the enum members and find the one with a matching value
@@ -85,9 +84,8 @@ class DatasetConnectorType(Enum):
 
 
 class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
-    """
-    Dataset connector factory
-    """
+    """Dataset connector factory"""
+
     __logger = logging.getLogger(__name__)
 
     @classmethod
@@ -107,6 +105,7 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
 
         Raises:
             DatasetUnableToInitializeConnectorException: If the connector type is invalid.
+
         """
         cls.__logger.debug(f"Instantiating connector of type {connector_type}")
         if not isinstance(connector_type, DatasetConnectorType) or not issubclass(

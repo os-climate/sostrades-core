@@ -28,14 +28,10 @@ from sostrades_core.sos_processes.test.test_sellar_opt_discopt.usecase import (
 
 
 class TestStructuringInputs(unittest.TestCase):
-    """
-    Class to test behaviour of structuring inputs during configure step
-    """
+    """Class to test behaviour of structuring inputs during configure step"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.file_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
@@ -162,7 +158,6 @@ class TestStructuringInputs(unittest.TestCase):
         print(self.exec_eng.display_treeview_nodes())
 
         self.exec_eng.execute()
-
 
     def _test_05_proxycoupling_numerical_inputs_including_petsc(self):
         """

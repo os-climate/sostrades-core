@@ -44,6 +44,7 @@ def _save_dataframe(file_path: str, df: pd.DataFrame) -> None:
     Args:
         file_path (str): The path to the CSV file.
         df (pd.DataFrame): The DataFrame to save.
+
     """
     df.to_csv(file_path, sep=CSV_SEP, header=True, index=False)
 
@@ -57,15 +58,15 @@ def _load_dataframe(file_path: str) -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: The loaded DataFrame.
+
     """
     df_value = pd.read_csv(file_path, na_filter=False)
     return df_value.map(isevaluatable)
 
 
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
-    """
-    Specific dataset serializer for dataset
-    """
+    """Specific dataset serializer for dataset"""
+
     # TYPE_IN_FILESYSTEM_PREFIXES = ['@dataframe@', '@array@']  # TODO: discuss
     TYPE_IN_FILESYSTEM_PARTICLE = '@'
     TYPE_DATAFRAME = 'dataframe'
@@ -107,6 +108,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             str: Formatted filesystem name filesystem-compatible using utf-8 encoding of forbidden characters.
+
         """
         # utf-8 replacement
         def replace_special_char(c):
@@ -130,6 +132,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Args:
             dataset_directory (str): The dataset directory path.
+
         """
         self.__current_dataset_directory = dataset_directory
 
@@ -146,6 +149,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Raises:
             DatasetDeserializeException: If there is an error reading the descriptor file.
+
         """
         # Load the descriptor, the serializer loads the pickle if it exists
         self.check_path_exists("Dataset descriptor file", dataset_descriptor_path)
@@ -167,6 +171,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         Args:
             dataset_descriptor_path (str): The path to the dataset descriptor file.
             dataset_descriptor (dict[str, Any]): The dataset descriptor.
+
         """
         # read the already existing values
         # write in dataset descriptor
@@ -187,6 +192,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Raises:
             DatasetGenericException: If the path does not exist.
+
         """
         if not os.path.exists(dataset_path):
             raise DatasetGenericException(f"{directory_info} not found at {dataset_path}.")
@@ -200,6 +206,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             bool: True if the folder name is valid, False otherwise.
+
         """
         filesystem_dataset_identifier = self.format_filesystem_name(folder_name)
         if filesystem_dataset_identifier != folder_name:
@@ -207,9 +214,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         return True
 
     def load_pickle_data(self) -> None:
-        """
-        Load and buffer the non-serializable types data stored in the pickle file.
-        """
+        """Load and buffer the non-serializable types data stored in the pickle file."""
         pkl_data = {}
         if self.__current_dataset_directory is None:
             self.__logger.error("Error while trying to load pickled data because dataset directory is undefined")
@@ -228,15 +233,11 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         self.__pickle_data = pkl_data
 
     def clear_pickle_data(self) -> None:
-        """
-        Clear buffered data from pickle load.
-        """
+        """Clear buffered data from pickle load."""
         self.__pickle_data = {}
 
     def dump_pickle_data(self) -> None:
-        """
-        Write the buffered non-serializable data into the dataset pickle file and clear the buffer.
-        """
+        """Write the buffered non-serializable data into the dataset pickle file and clear the buffer."""
         if self.__pickle_data:
             if self.__current_dataset_directory is None:
                 self.__logger.error("Error while trying to dump pickled data because dataset directory is undefined")
@@ -253,6 +254,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Args:
             data_name (str): The name of the data to clear.
+
         """
         # TODO: [discuss] is this necessary ?
         if data_name in self.__pickle_data:
@@ -269,6 +271,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             Any: The converted data value.
+
         """
         # sanity checks allowing not to load a @...@ into variable type not requiring filesystem storage.
         sanity = True
@@ -311,6 +314,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             str: The dataset descriptor type (e.g. dataframe) or None if the variable does not have the @type@ prefix.
+
         """
         if isinstance(data_value, str):
             _tmp = data_value.split(self.TYPE_IN_FILESYSTEM_PARTICLE)
@@ -328,6 +332,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             str: The dataset descriptor path (e.g. d.csv).
+
         """
         _tmp = data_value.split(self.TYPE_IN_FILESYSTEM_PARTICLE)
         _subpath = self.TYPE_IN_FILESYSTEM_PARTICLE.join(_tmp[2:])
@@ -346,6 +351,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             Any: The deserialized value for the variable.
+
         """
         if self.__current_dataset_directory is None:
             self.__logger.error(f"Error while trying to deserialize {descriptor_value} because dataset directory "
@@ -371,6 +377,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             str: Dataset descriptor value for the variable (e.g. "@dataframe@d.csv").
+
         """
         if self.__current_dataset_directory is None:
             self.__logger.error(f"Error while trying to serialize {data_value} because dataset directory "
@@ -401,6 +408,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             pd.DataFrame: The deserialized DataFrame.
+
         """
         # NB: dataframe csv deserialization as in webapi
         try:
@@ -418,6 +426,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             np.ndarray: The deserialized array.
+
         """
         # NB: to be improved with astype(subtype) along subtype management
         return self.__deserialize_from_filesystem(np.loadtxt, data_value, ndmin=1)
@@ -432,6 +441,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             str: Dataset descriptor value for the DataFrame.
+
         """
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_DATAFRAME, self.format_filesystem_name(data_name))),
@@ -449,6 +459,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             str: Dataset descriptor value for the array.
+
         """
         descriptor_value = self.EXTENSION_SEP.join((
             self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_ARRAY, self.format_filesystem_name(data_name))),
@@ -466,6 +477,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             Any: The serialized data value.
+
         """
         try:
             _ = json.dumps(data_value)
@@ -485,6 +497,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             str: Dataset descriptor value for the object.
+
         """
         descriptor_value = self.TYPE_IN_FILESYSTEM_PARTICLE.join(('', self.TYPE_OBJECT, data_name))
         self.__pickle_data[data_name] = data_value
@@ -499,6 +512,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
 
         Returns:
             Any: The deserialized object.
+
         """
         pickle_key = self.__get_data_path(data_value)
         return self.__pickle_data[pickle_key]

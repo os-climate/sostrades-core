@@ -32,14 +32,10 @@ from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 
 class TestMultiScenario(unittest.TestCase):
-    """
-    SoSMultiScenario test class
-    """
+    """SoSMultiScenario test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'

@@ -17,9 +17,7 @@ from sostrades_core.sos_wrapping.valueblock_discipline import ValueBlockDiscipli
 
 
 class FakeValueBlockDiscipline(ValueBlockDiscipline):
-    """
-    Fake value block discipline to test architecture builder functionalities
-    """
+    """Fake value block discipline to test architecture builder functionalities"""
 
     # ontology information
     _ontology_data = {

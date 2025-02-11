@@ -69,6 +69,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         cls_builder (List[SoSBuilder]): list of the sub proxy builders
 
         discipline_wrapp (DisciplineWrapp): aggregated object that references a GEMSEO MDAChain
+
     """
 
     # ontology information
@@ -307,6 +308,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
             cls_builder (List[Class]): list of the sub proxy constructors for the recursive build of the process tree [???]
+            associated_namespaces (List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+
         """
         if cls_builder is None:
             cls_builder = []
@@ -336,6 +339,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         Arguments:
             sos_name (string): name of the discipline/node
             ee (ExecutionEngine): execution engine of the current process
+            associated_namespaces (List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
+
         """
         self.is_sos_coupling = True
         ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
@@ -858,7 +863,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         return ordered_list
 
     def _get_mda_structure_as_in_gemseo(self):
-        """Based on GEMSEO create_mdo_chain function, in MDAChain.py
+        """
+        Based on GEMSEO create_mdo_chain function, in MDAChain.py
         returns a list of disciplines (weak couplings) or list (strong couplings / MDAs) :
         - if a MDA loop is detected, put disciplines in a sub-list
         - if no MDA loop, the current discipline is added in the main list
@@ -891,25 +897,29 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         return chained_disciplines
 
     def __get_MDA_io(self, data_in_list, data_out_list):
-        """Returns a tuple of the i/o dict {(local_name, ns ID) : value} (data_io formatting) of provided list of data_io,
+        """
+        Returns a tuple of the i/o dict {(local_name, ns ID) : value} (data_io formatting) of provided list of data_io,
         according to GEMSEO rules for MDAs grammar creation :
         MDA input grammar is built as the union of inputs of all sub-disciplines, same for outputs.
 
         Args:
         data_in_list : list of data_in (one per discipline)
         data_out_list : list of data_out (one per discipline)
+
         """
         data_in = ChainMap(*data_in_list)  # merge list of dict in 1 dict
         data_out = ChainMap(*data_out_list)
         return data_in, data_out
 
     def __get_MDOChain_io(self, data_in_list, data_out_list):
-        """Returns a tuple of dictionaries (data_in, data_out) of the provided disciplines,
+        """
+        Returns a tuple of dictionaries (data_in, data_out) of the provided disciplines,
         according to GEMSEO convention for MDOChain grammar creation :
 
         Args:
         data_in_list : list of data_in (one per discipline)
         data_out_list : list of data_out (one per discipline)
+
         """
         mdo_inputs = {}
         mdo_outputs = {}

@@ -69,7 +69,8 @@ KSP_CONVERGED_REASON = {
 
 
 class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
-    """Interface to PETSC KSP.
+    """
+    Interface to PETSC KSP.
 
     For further information, please read
     https://petsc4py.readthedocs.io/en/stable/manual/ksp/
@@ -106,7 +107,8 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
     LOGGER.debug('algos infos: %s', ALGORITHM_INFOS)
 
     def _run(self, problem: LinearProblem, **settings: Any) -> ndarray:
-        """Run the algorithm.
+        """
+        Run the algorithm.
 
         Args:
             problem: The linear problem to solve.
@@ -114,6 +116,7 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
 
         Returns:
             The solution of the problem.
+
         """
         # Set default settings
         # TODO: move to main linear solver classes so that all solvers benefit from these default inputs definition
@@ -160,7 +163,8 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
     def _run_petsc_strategy(
         self, problem: LinearProblem, solver: str, **settings
     ) -> tuple[NumberArray | None, int, Any]:
-        """Runs the solver.
+        """
+        Runs the solver.
 
         Args:
             problem: The linear algebra problem to solve.
@@ -172,6 +176,7 @@ class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
               - the solution of the problem.
               - the return code.
               - the KSP problem.
+
         """
         # Initialize the KSP solver.
         options_cmd = settings.get("options_cmd")

@@ -37,9 +37,8 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
 
 
 class ArangoDatasetsConnector(AbstractDatasetsConnector):
-    """
-    Specific dataset connector for dataset in arango db format
-    """
+    """Specific dataset connector for dataset in arango db format"""
+
     COLLECTION_NAME_STR = "name"
     COLLECTION_SYSTEM_STR = "system"
     VALUE_STR = "value"
@@ -61,6 +60,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
             password (str): Password
             serializer_type (DatasetSerializerType, optional): Type of serializer to deserialize data from connector. Defaults to DatasetSerializerType.JSON.
             datasets_descriptor_collection_name (str, optional): Database describing datasets. Defaults to "datasets".
+
         """
         super().__init__()
         self.__logger = logging.getLogger(__name__)
@@ -90,6 +90,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             str: Valid ArangoDB collection name
+
         """
         # Remove characters not allowed in collection names
         filtered_name = re.sub(r'[^a-zA-Z0-9_\-]', '', dataset_name)
@@ -115,6 +116,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, StandardCollection]: Mapping between dataset names and collections
+
         """
         collection = self.db.collection(name=self.datasets_descriptor_collection_name)
         return {document[ArangoDatasetsConnector.DATASET_NAME_STR]: document[ArangoDatasetsConnector.KEY_STR] for document in collection}
@@ -131,6 +133,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         Raises:
             DatasetNotFoundException: If the dataset is not found
+
         """
         try:
             mapping = self.__parse_datasets_mapping()
@@ -153,6 +156,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: Retrieved data
+
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier.dataset_id} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier.dataset_id)
@@ -182,6 +186,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: Written values
+
         """
         self.__logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier.dataset_id)
@@ -204,6 +209,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: All values from the dataset
+
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier.dataset_id} for connector {self}")
         dataset_collection = self.__get_dataset_collection(name=dataset_identifier.dataset_id)
@@ -221,6 +227,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             list[AbstractDatasetInfo]: List of available datasets
+
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
         mapping = self.__parse_datasets_mapping()
@@ -246,6 +253,7 @@ class ArangoDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: Written values
+
         """
         self.__logger.debug(
             f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})"

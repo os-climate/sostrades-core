@@ -35,9 +35,7 @@ class SosFactoryException(Exception):
 
 
 class SosFactory:
-    """
-    Specification: SosFactory allows to manage builders and disciplines to instantiate a process
-    """
+    """Specification: SosFactory allows to manage builders and disciplines to instantiate a process"""
 
     EE_PATH = 'sostrades_core.execution_engine'
     GENERIC_MODS_PATH = 'sostrades_core.sos_wrapping'
@@ -47,7 +45,8 @@ class SosFactory:
 
     @staticmethod
     def build_module_name(repository, process_identifier):
-        """Return the built process module name using given arguments
+        """
+        Return the built process module name using given arguments
 
         :params: repository, repository name
         :type: str
@@ -59,7 +58,8 @@ class SosFactory:
         return f'{repository}.{process_identifier}.{BUILDERS_MODULE_NAME}'
 
     def __init__(self, execution_engine, sos_name):
-        """Constructor
+        """
+        Constructor
 
         :params: execution_engine (current execution engine instance)
         :type: ExecutionEngine
@@ -67,7 +67,6 @@ class SosFactory:
         :params: sos_name (discipline name)
         :type: string
         """
-
         self.__sos_name = sos_name
         self.__execution_engine = execution_engine
         self.__ns_manager = execution_engine.ns_manager
@@ -100,9 +99,7 @@ class SosFactory:
         self.__current_discipline = None
 
     def init_execution(self):  # type: (...) -> None
-        """
-        init_execution delegated to the wrapper using the proxy for i/o configuration.
-        """
+        """init_execution delegated to the wrapper using the proxy for i/o configuration."""
         for proxy in self.__proxy_disciplines:
             if proxy.discipline_wrapp is not None:
                 factory = proxy.discipline_wrapp
@@ -122,12 +119,12 @@ class SosFactory:
         return self.__tool_factory
 
     def set_builders_to_coupling_builder(self, builders):
-        """add builders to builder list
+        """
+        add builders to builder list
 
         :params: builders, list of builders to add
         :type: list
         """
-
         self.coupling_builder = self.create_builder_coupling(self.__sos_name)
         if isinstance(builders, list):
             self.coupling_builder.set_builder_info(
@@ -135,18 +132,16 @@ class SosFactory:
             )
         elif builders.cls == SelectorDiscipline:
             self.coupling_builder = builders
-        elif builders.cls == ProxyCoupling :
-            new_builder_name = '.'.join([self.coupling_builder.sos_name,builders.sos_name])
+        elif builders.cls == ProxyCoupling:
+            new_builder_name = '.'.join([self.coupling_builder.sos_name, builders.sos_name])
             self.coupling_builder = builders
             self.coupling_builder.set_builder_info('sos_name', new_builder_name)
-        else :
+        else:
 
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
     def add_discipline(self, discipline):
-        """
-        Add a discipline to the list of factory disciplines AND to the sos_discipline of the current sos_coupling
-        """
+        """Add a discipline to the list of factory disciplines AND to the sos_discipline of the current sos_coupling"""
         # Useful to debug but not right , in theory you can add a discipline everywhere you want
         #         if self.__current_discipline.get_disc_full_name() not in discipline.get_disc_full_name():
         #             raise Exception(
@@ -161,7 +156,8 @@ class SosFactory:
         self.__proxy_disciplines.extend(disciplines)
 
     def remove_discipline(self, disc):
-        """remove one discipline from coupling
+        """
+        remove one discipline from coupling
         :param disc: sos discipline to remove
         :type: SoSDiscipline Object
         """
@@ -177,7 +173,8 @@ class SosFactory:
 
     @current_discipline.setter
     def current_discipline(self, disc):
-        """set current discipline on which subdiscipline will be attached to
+        """
+        set current discipline on which subdiscipline will be attached to
         :param disc: sos discipline to remove
         :type: SoSDiscipline Object
         """
@@ -188,12 +185,12 @@ class SosFactory:
 
     @property
     def proxy_disciplines(self):
-        """Return all sostrades disciplines manage by the factory
+        """
+        Return all sostrades disciplines manage by the factory
 
         :returns: list of sostrades disciplines
         :type: SoSDisciplines[]
         """
-
         return self.__proxy_disciplines
 
     @property
@@ -224,7 +221,8 @@ class SosFactory:
 
     @property
     def process_identifier(self):
-        """Return the process identifier used to create the
+        """
+        Return the process identifier used to create the
         process inside the defined repository
         Return None if no process has been loaded
         """
@@ -232,7 +230,8 @@ class SosFactory:
 
     @process_identifier.setter
     def process_identifier(self, value):
-        """Set the process identifier used to create the
+        """
+        Set the process identifier used to create the
         process inside the defined repository
         Return None if no process has been loaded
         """
@@ -240,10 +239,10 @@ class SosFactory:
 
     @property
     def process_module(self):
-        """Return the full module name of the loaded process
+        """
+        Return the full module name of the loaded process
         Return None if no process has been loaded
         """
-
         if self.repository is None or self.process_identifier is None:
             return None
         else:
@@ -266,7 +265,6 @@ class SosFactory:
         Return the list of builders of the process in the repo with the specific base_id
         if additional args are given we use them to setup the process before get builders function
         """
-
         pb_cls = getattr(
             import_module(SosFactory.build_module_name(repo, mod_id)),
             self.PROCESS_BUILDER,
@@ -292,26 +290,20 @@ class SosFactory:
         return pb_ist
 
     def get_builder_from_module(self, sos_name, mod_path):
-        """
-        Get a builder which is defined by the class in the mod_path
-        """
+        """Get a builder which is defined by the class in the mod_path"""
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
     def add_gather_builder(self, sos_name):
-        '''
-        Add Gather Discipline builder
-        '''
+        '''Add Gather Discipline builder'''
         module_struct_list = f'{self.EE_PATH}.gather_discipline.GatherDiscipline'
         builder = self.get_builder_from_module(sos_name, module_struct_list)
 
         return builder
 
     def add_uq_builder(self, sos_name):
-        '''
-        Add Uncertainty Quantification builder
-        '''
+        '''Add Uncertainty Quantification builder'''
         mod_path = 'sostrades_core.sos_wrapping.analysis_discs.uncertainty_quantification.UncertaintyQuantification'
         builder = self.get_builder_from_module(
             sos_name, mod_path)
@@ -319,9 +311,7 @@ class SosFactory:
         return builder
 
     def add_tornado_chart_analysis_builder(self, sos_name):
-        '''
-        Add tornado chart analysis builder
-        '''
+        '''Add tornado chart analysis builder'''
         mod_path = 'sostrades_core.sos_wrapping.analysis_discs.tornado_chart_analysis.TornadoChartAnalysis'
         builder = self.get_builder_from_module(sos_name, mod_path)
 
@@ -334,6 +324,7 @@ class SosFactory:
             cls_builder: (builder list or 1 builder) builder that will be use for driver subprocess
         Returns:
             builder_list: list containing the driver builder
+
         '''
         module_struct_list = f'{self.EE_PATH}.proxy_mono_instance_driver.ProxyMonoInstanceDriver'
         driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.mono_instance_driver_wrapper.MonoInstanceDriverWrapper'
@@ -351,6 +342,7 @@ class SosFactory:
             map_name (optional): Map associated to scatter tool
         Returns:
             builder_list: list containing the driver builder
+
         '''
         module_struct_list = f'{self.EE_PATH}.proxy_multi_instance_driver.ProxyMultiInstanceDriver'
         builder_list = self._create_driver(sos_name=sos_name,
@@ -430,9 +422,7 @@ class SosFactory:
     def create_architecture_builder(
             self, builder_name, architecture_df, custom_vb_folder_list=None
     ):
-        """
-        create a builder  defined by a type ArchiBuilder
-        """
+        """Create a builder  defined by a type ArchiBuilder"""
         mod_path = f'{self.EE_PATH}.archi_builder.ArchiBuilder'
         cls = self.get_disc_class_from_module(mod_path)
         # is_executable flag is False because the archi discipline has no
@@ -449,17 +439,13 @@ class SosFactory:
         return builder
 
     def create_scatter_tool_builder(self, tool_name, map_name):
-        """
-        create a scatter tool builder with the tool factory
-        """
+        """Create a scatter tool builder with the tool factory"""
         scatter_tool = self.tool_factory.create_tool_builder(tool_name, 'ScatterTool', map_name=map_name)
 
         return scatter_tool
 
     def create_scatter_data_builder(self, sos_name, map_name):
-        """
-        create a builder defined by a scatter data type SoSScatterData
-        """
+        """Create a builder defined by a scatter data type SoSScatterData"""
         module_struct_list = f'{self.EE_PATH}.scatter_data.SoSScatterData'
         cls = self.get_disc_class_from_module(module_struct_list)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
@@ -468,9 +454,7 @@ class SosFactory:
         return builder
 
     def create_gather_data_builder(self, sos_name, map_name):
-        """
-        create a builder defined by a gather data type SoSGatherData
-        """
+        """Create a builder defined by a gather data type SoSGatherData"""
         module_struct_list = f'{self.EE_PATH}.gather_data.SoSGatherData'
         cls = self.get_disc_class_from_module(module_struct_list)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
@@ -479,25 +463,21 @@ class SosFactory:
         return builder
 
     def create_builder_coupling(self, sos_name: str) -> SoSBuilder:
-        """
-        create a builder  defined by a coupling type SoSCoupling
-        """
+        """Create a builder  defined by a coupling type SoSCoupling"""
         mod_path = f'{self.EE_PATH}.proxy_coupling.ProxyCoupling'
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
     def create_builder_selector_disc(self, sos_name: str) -> SoSBuilder:
-        """
-        create a builder  defined by a selectordiscipline
-        """
+        """Create a builder  defined by a selectordiscipline"""
         mod_path = f'{self.GENERIC_MODS_PATH}.selector_discipline.SelectorDiscipline'
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         return builder
 
     def create_optim_builder(self, sos_name, cls_builder) -> SoSBuilder:
-        """creates the builder of the optim scenario"""
+        """Creates the builder of the optim scenario"""
         mod_path = f'{self.EE_PATH}.proxy_optim.ProxyOptim'
         cls = self.get_disc_class_from_module(mod_path)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
@@ -505,9 +485,7 @@ class SosFactory:
         return builder
 
     def get_disc_class_from_module(self, module_path):
-        """
-        Get the disc class from the module_path
-        """
+        """Get the disc class from the module_path"""
         module_struct_list = module_path.split('.')
         import_name = '.'.join(module_struct_list[:-1])
         # print('import_name = ',import_name)
@@ -523,7 +501,6 @@ class SosFactory:
         Return the module path of a class in a list of directories
         Return the first found for now .. TODO
         """
-
         module_class_path = None
         for folder in folder_list:
             # Get the module of the folder
@@ -562,9 +539,7 @@ class SosFactory:
         return module_class_path
 
     def get_builder_from_class_name(self, sos_name, mod_name, folder_list):
-        """
-        Get builder only using class name and retrievind the module path from the function get_module_class_path
-        """
+        """Get builder only using class name and retrievind the module path from the function get_module_class_path"""
         mod_path = self.get_module_class_path(mod_name, folder_list)
 
         if mod_path is None:
@@ -574,9 +549,7 @@ class SosFactory:
         return self.get_builder_from_module(sos_name, mod_path)
 
     def clean_discipline_list(self, disciplines, current_discipline=None):
-        """
-        Clean all disciplines in the proxy_disciplines list of the factory and of the current_discipline
-        """
+        """Clean all disciplines in the proxy_disciplines list of the factory and of the current_discipline"""
         if current_discipline is None:
             current_discipline = self.__current_discipline
 
@@ -601,41 +574,30 @@ class SosFactory:
         current_discipline.remove_discipline_list(disciplines)
 
     def update_builder_with_extra_name(self, builder, extra_name):
-        """
-        Update the name of builder with an extra name which will be placed just after the variable after_name
-        """
+        """Update the name of builder with an extra name which will be placed just after the variable after_name"""
         new_builder_name = f'{extra_name}.{builder.sos_name}'
         builder.set_disc_name(new_builder_name)
 
     def update_builder_list_with_extra_name(self, extra_name, builder_list=None):
-        """
-        Update the name of a list of builders with an extra name placed behind after_name
-        """
+        """Update the name of a list of builders with an extra name placed behind after_name"""
         if builder_list is None:
             builder_list = [self.coupling_builder]
         for builder in builder_list:
             self.update_builder_with_extra_name(builder, extra_name)
 
     def convert_builder_to_list(self, cls_builder):
-        """
-        Return list of builders
-        """
+        """Return list of builders"""
         if isinstance(cls_builder, list):
             return cls_builder
         else:
             return [cls_builder]
 
     def remove_sos_discipline(self, discipline):
-        """
-        Delete discipline from the factory proxy_disciplines and from the discipline father builder
-        """
-
+        """Delete discipline from the factory proxy_disciplines and from the discipline father builder"""
         self.__proxy_disciplines.remove(discipline)
 
     def remove_discipline_from_father_executor(self, discipline):
-        """
-        Delete a discipline from its coupling children
-        """
+        """Delete a discipline from its coupling children"""
         try:
             discipline.father_executor.proxy_disciplines.remove(discipline)
 

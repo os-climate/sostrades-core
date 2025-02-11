@@ -30,9 +30,7 @@ from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 
 class MultipliersWrapper(SoSWrapp):
-    '''
-
-    '''
+    '''Multipliers wrapper'''
 
     _ontology_data = {
         'label': 'Multipliers wrapper',
@@ -62,9 +60,7 @@ class MultipliersWrapper(SoSWrapp):
         self.multiplier_variables = {}  # dict containing io names for runtime
 
     def setup_sos_disciplines(self):
-        '''
-        Overload of setup_sos_disciplines to specify the specific dynamic inputs of multipliers disc
-        '''
+        '''Overload of setup_sos_disciplines to specify the specific dynamic inputs of multipliers disc'''
         disc_in = self.get_data_in()
         # TODO: dm calls or dynamic inputs ?
 
@@ -205,10 +201,10 @@ class MultipliersWrapper(SoSWrapp):
 
     def fill_possible_values(self, disc):
         '''
-            Fill possible values lists for eval inputs and outputs
-            an input variable must be a float coming from a data_in of a discipline in all the process
-            and not a default variable
-            an output variable must be any data from a data_out discipline
+        Fill possible values lists for eval inputs and outputs
+        an input variable must be a float coming from a data_in of a discipline in all the process
+        and not a default variable
+        an output variable must be any data from a data_out discipline
         '''
         poss_in_values_full = []
         poss_out_values_full = []
@@ -244,8 +240,8 @@ class MultipliersWrapper(SoSWrapp):
     def find_possible_values(
             self, disc, possible_in_values, possible_out_values):
         '''
-            Run through all disciplines and sublevels
-            to find possible values for eval_inputs and gather_outputs
+        Run through all disciplines and sublevels
+        to find possible values for eval_inputs and gather_outputs
         '''
         # TODO: copy-pasted code should b refactored (see above)
         # configuration ? (<-> config. graph)

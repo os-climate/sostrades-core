@@ -16,9 +16,8 @@ limitations under the License.
 
 
 class SingletonMeta(type):
-    """
-    Metaclass for a singleton class
-    """
+    """Metaclass for a singleton class"""
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):

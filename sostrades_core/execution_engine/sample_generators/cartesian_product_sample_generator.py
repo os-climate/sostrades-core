@@ -33,9 +33,8 @@ class CartesianProductSampleTypeError(SampleTypeError):
 
 
 class CartesianProductSampleGenerator(AbstractSampleGenerator):
-    '''
-    Caresian Product class that generates sampling
-    '''
+    '''Caresian Product class that generates sampling'''
+
     GENERATOR_NAME = "CARTESIAN_PRODUCT_GENERATOR"
 
     DIMENSION = "dimension"
@@ -47,9 +46,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     N_SAMPLES = "n_samples"
 
     def __init__(self, logger: logging.Logger):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         super().__init__(self.GENERATOR_NAME, logger=logger)
 
     def _check_samples(self, samples_df):
@@ -77,8 +74,8 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
         Returns:
             samples_df (dataframe) : generated samples
-        '''
 
+        '''
         variable_list = dict_of_list_values.keys()
         vect_list = [dict_of_list_values[elem]
                      for elem in variable_list]

@@ -27,10 +27,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
-
+        '''Default initialisation test'''
         # Select the nested subprocess
         cls_list = self.ee.factory.get_builder_from_process(repo='sostrades_core.sos_processes.test',
                                                             mod_id='test_disc1_disc2_coupling')

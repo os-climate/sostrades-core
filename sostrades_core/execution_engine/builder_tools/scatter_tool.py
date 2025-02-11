@@ -24,9 +24,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 
 class ScatterTool(SosTool):
-    '''
-    Class that build disciplines using a builder and a map containing data to scatter
-    '''
+    '''Class that build disciplines using a builder and a map containing data to scatter'''
 
     # ontology information
     _ontology_data = {
@@ -51,10 +49,7 @@ class ScatterTool(SosTool):
     #                                                   Scenarios will be under discipline for the display treeview
 
     def __init__(self, sos_name, ee, cls_builder, map_name=None):
-        '''
-        Constructor
-        '''
-
+        '''Constructor'''
         SosTool.__init__(self, sos_name, ee, cls_builder)
 
         self.map_name = map_name
@@ -76,10 +71,7 @@ class ScatterTool(SosTool):
         return self.__scatter_list
 
     def set_display_options(self, display_options_dict):
-        '''
-        Set the display options dictionnary for the driver
-        '''
-
+        '''Set the display options dictionnary for the driver'''
         if display_options_dict is not None:
             if not isinstance(display_options_dict, dict):
                 raise Exception(
@@ -93,9 +85,7 @@ class ScatterTool(SosTool):
                         self.display_options[key] = display_options_dict[key]
 
     def associate_tool_to_driver(self, driver, cls_builder=None, associated_namespaces=None):
-        '''
-        Method that associate tool to the driver and add scatter map
-        '''
+        '''Method that associate tool to the driver and add scatter map'''
         SosTool.associate_tool_to_driver(
             self, driver, cls_builder=cls_builder, associated_namespaces=associated_namespaces)
 
@@ -107,10 +97,7 @@ class ScatterTool(SosTool):
         self.get_values_for_namespaces_to_update()
 
     def prepare_tool(self):
-        '''
-        Prepare tool function if some data of the driver are needed to configure the tool
-        '''
-
+        '''Prepare tool function if some data of the driver are needed to configure the tool'''
         super().prepare_tool()
         if self.driver.SAMPLES_DF in self.driver.get_data_in():
             instance_reference = self.driver.get_sosdisc_inputs(self.driver.INSTANCE_REFERENCE)
@@ -137,9 +124,7 @@ class ScatterTool(SosTool):
             self.driver_display_value = self.driver.get_disc_display_name()
 
     def get_values_for_namespaces_to_update(self):
-        '''
-        Get the values of the namespace list defined in the namespace manager
-        '''
+        '''Get the values of the namespace list defined in the namespace manager'''
         ns_to_update_name_list = self.get_ns_to_update_name_list()
 
         # store ns_to_update namespace object
@@ -208,7 +193,6 @@ class ScatterTool(SosTool):
         - Remove disciplines that are not in the scatter list
         - Scatter the instantiator cls and adapt namespaces depending if it is a list or a singleton
         '''
-
         if self.__scatter_list is not None:
 
             # get new_names that are not yet built and clean the one that are no more in the scatter list
@@ -233,7 +217,6 @@ class ScatterTool(SosTool):
         All namespaces are not added in shared_ns_dict to be transparent and only associated to the right disciplines
         We need to take into account all namespaces already associated to builders that needs a specific update by builders
         '''
-
         ns_ids_list = []
         extra_name = f'{self.driver.sos_name}.{name}'
         after_name = self.driver.father_executor.get_disc_full_name()
@@ -274,7 +257,6 @@ class ScatterTool(SosTool):
         6. Set the old name to the builder for next iteration
 
         '''
-
         for builder in self.sub_builders:
 
             old_builder_name = builder.sos_name
@@ -384,12 +366,11 @@ class ScatterTool(SosTool):
 
     def add_gather(self):
         '''
-            Add gather discipline for gather outputs
-            the gather discipline name will automatically be the name of the builder
-            if display option group_scenarios_under_disciplines is activated then we want a gather per subbuilder
+        Add gather discipline for gather outputs
+        the gather discipline name will automatically be the name of the builder
+        if display option group_scenarios_under_disciplines is activated then we want a gather per subbuilder
 
         '''
-
         # if self.display_options['group_scenarios_under_disciplines']:
         #     for sub_builder in self.sub_builders:
 
@@ -442,10 +423,7 @@ class ScatterTool(SosTool):
         return new_sub_names
 
     def remove_scattered_disciplines(self, disc_to_remove):
-        '''
-        Remove a list of disciplines from the scattered_disciplines
-        '''
-
+        '''Remove a list of disciplines from the scattered_disciplines'''
         for disc in disc_to_remove:
             self.clean_from_driver(self.__scattered_disciplines[disc])
             del self.__scattered_disciplines[disc]
@@ -455,15 +433,11 @@ class ScatterTool(SosTool):
         self.clean_from_driver(all_disc_list)
 
     def clean_from_driver(self, disc_list):
-        """
-        This method cleans the given list of children from the current discipline
-        """
+        """This method cleans the given list of children from the current discipline"""
         self.driver.clean_children(disc_list)
 
     def add_scatter_discipline(self, disc, name):
-        '''
-        Add the discipline to the factory and to the dictionary of scattered_disciplines
-        '''
+        '''Add the discipline to the factory and to the dictionary of scattered_disciplines'''
         self.set_father_discipline()
         self.ee.factory.add_discipline(disc)
         if name in self.__scattered_disciplines.keys():
