@@ -72,7 +72,7 @@ class TestSameVarnameHandling(unittest.TestCase):
         self.assertEqual(true_x, true_x_out)
         self.assertTrue(test_a)
 
-    def _test_02_mda_io_with_namespaced_tuples(self):
+    def test_02_mda_io_with_namespaced_tuples(self):
         """
         Test the proper construction of coupling IO in the presence of weak couplings that come from namespaces which
         have different name but same value.
