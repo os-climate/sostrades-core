@@ -992,12 +992,14 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         mdo_outputs = {}
         mdo_outputs_full_names = set()
         for d_in, d_out in zip(data_in_list, data_out_list):
-            # add discipline input tuple (name, id) if tuple not already in outputs
-            mdo_inputs.update({t: v for (t, v) in d_in.items() if self.ns_tuples_to_full_name_keys(
-                {t: None}).keys().__iter__().__next__() not in mdo_outputs_full_names})
+            # add discipline input tuple (name, id) if associated full name not already in outputs
+            mdo_inputs.update({t: v for (t, v) in d_in.items() if
+                               self.ee.ns_manager.ns_tuple_to_full_name(t)
+                               not in mdo_outputs_full_names})
             # add discipline output name in outputs
             mdo_outputs.update(d_out)
-            mdo_outputs_full_names.update(self.ns_tuples_to_full_name_keys(d_out).keys())
+            # update output full names
+            mdo_outputs_full_names.update({self.ee.ns_manager.ns_tuple_to_full_name(t) for t in d_out})
         return mdo_inputs, mdo_outputs
 
     def get_chart_filter_list(self):
