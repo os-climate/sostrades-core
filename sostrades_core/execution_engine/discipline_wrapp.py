@@ -201,6 +201,7 @@ class DisciplineWrapp:
             sub_disciplines (List[Discipline]): list of sub-Disciplines of the MDAChain
             proxy: proxy coupling for grammar initialisation and numericla inputs.
             input_data (dict): input data to update default values of the MDAChain with
+            reduced_dm (Dict[Dict]): reduced data manager without values for i/o configuration
 
         """
         if reduced_dm is None:
@@ -249,6 +250,7 @@ class DisciplineWrapp:
             sub_disciplines (List[Discipline]): list of sub-Disciplines of the MDAChain
             proxy (ProxyDiscipline): proxy discipline for grammar initialisation
             input_data (dict): input data to update default values of the MDAChain with
+            reduced_dm (Dict[Dict]): reduced data manager without values for i/o configuration
 
         """
         if self.wrapping_mode == 'SoSTrades':

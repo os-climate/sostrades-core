@@ -59,9 +59,21 @@ class GSPureNewtonMDA(MDASequential):
     ):
         """
         Args:
-            relax_factor: The relaxation factor.
+            disciplines: set of disciplines in the MDA
+            name: name of the MDA
+            grammar_type: type of grammar used
+            tolerance: target maximum residual at convergence
+            max_mda_iter: maximum of iterations of the MDA that can be conducted
+            over_relaxation_factor: the over relaxation factor in the Newton step.
             linear_solver: The type of linear solver to be used to solve the Newton problem.
-            max_mda_iter_gs: The maximum number of iterations of the Gauss-Seidel solver.
+            tolerance_gs: target maximum residual of the Gauss-Seidel strategy
+            max_mda_iter_gs: maximum number of iterations of the Gauss-Seidel solver
+            linear_solver_tolerance: tolerance for linear solver
+            scaling_method: scaling method applied for computation of residual
+            warm_start: wether to use warm start
+            use_lu_fact: whether to use LU factorization
+            coupling_structure: coupling structure
+            linear_solver_settings: settings for linear solver
             log_convergence: Whether to log the MDA convergence, expressed in terms of normed residuals.
             **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
 

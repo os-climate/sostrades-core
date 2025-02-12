@@ -112,13 +112,24 @@ class SoSMDAChain(MDAChain):
     ) -> None:
         """
         Args:
+            disciplines: set of disciplines in the MDA
+            logger: object logging system to use
+            reduced_dm: reduced version of datamanager for i/o handling
             inner_mda_name: The class name of the inner-MDA.
-            n_processes: The maximum simultaneous number of threads if ``use_threading``
-                is set to True, otherwise processes, used to parallelize the execution.
+            max_mda_iter: maximum of iterations of the MDA that can be conducted
+            name: name of the MDA
             chain_linearize: Whether to linearize the chain of execution. Otherwise,
                 linearize the overall MDA with base class method. This last option is
                 preferred to minimize computations in adjoint mode, while in direct
                 mode, linearizing the chain may be cheaper.
+            tolerance: target maximum residual at convergence
+            linear_solver_tolerance: tolerance for linear solver
+            use_lu_fact: whether to use LU factorization
+            grammar_type: type of grammar used
+            coupling_structure: coupling structure
+            log_convergence: Whether to log the MDA convergence, expressed in terms of normed residuals.
+            linear_solver: The type of linear solver to be used
+            linear_solver_settings: settings for linear solver
             mdachain_parallelize_tasks: Whether to parallelize the parallel tasks, if
                 any.
             mdachain_parallel_settings: The options of the MDOParallelChain instances, if
@@ -126,6 +137,7 @@ class SoSMDAChain(MDAChain):
             initialize_defaults: Whether to create a :class:`.MDOInitializationChain`
                 to compute the eventually missing :attr:`.default_input_data` at the first
                 execution.
+            scaling_method: scaling method applied for computation of residual
             **inner_mda_options: The options of the inner-MDAs.
 
         """

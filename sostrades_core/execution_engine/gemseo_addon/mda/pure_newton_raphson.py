@@ -60,8 +60,21 @@ class PureNewtonRaphson(BaseMDARoot):
     ) -> None:
         """
         Args:
-            relax_factor: The relaxation factor in the Newton step.
-
+            disciplines: set of disciplines in the MDA
+            max_mda_iter: maximum of iterations of the MDA that can be conducted
+            over_relaxation_factor: the over relaxation factor in the Newton step.
+            name: name of the MDA
+            grammar_type: type of grammar used
+            linear_solver: The type of linear solver to be used to solve the Newton problem.
+            tolerance: target maximum residual at convergence
+            linear_solver_tolerance: tolerance for linear solver
+            scaling_method: scaling method applied for computation of residual
+            warm_start: wether to use warm start
+            use_lu_fact: whether to use LU factorization
+            coupling_structure: coupling structure
+            log_convergence: Whether to log the MDA convergence, expressed in terms of normed residuals.
+            linear_solver_settings: setting for linear solver
+            n_processes: number of processes for multi-processing
         """
         self.n_processes = n_processes
         self.default_grammar_type = grammar_type

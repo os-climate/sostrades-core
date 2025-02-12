@@ -95,7 +95,8 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         Method that reformat eval_input_cp depending on user's selection
 
         Arguments:
-            eval_inputs_cp (dataframe):
+            eval_inputs_cp (dataframe): dataframe containing evaluated inputs and their values for the Cartesian Product
+            wrapper (SoSWrapp): object in charge of the sampling
 
         Returns:
             dict_of_list_values (dict[list]) : dictionary {'var': [var_cp_values]} ignoring empty lists

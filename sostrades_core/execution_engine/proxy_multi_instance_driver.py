@@ -381,13 +381,11 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
     def set_variables_editability(self, scenario_names, original_editable_dict):
         '''
+        Turn Editable all the variables that needs to be editable in the original_editable_dict
 
         Args:
-            scenario_names (list) : List of scenario names
-
-        Turn Editable all the variables that needs to be editable in the original_editable_dict
-        TO DO : better explain why
-
+            scenario_names (list[str]) : List of scenario names
+            original_editable_dict (dict[str, bool]): dictionary with the original editability value of the variables
         '''
         if original_editable_dict:
             for sc in scenario_names:
@@ -397,7 +395,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                             self.ee.dm.set_data(
                                 key, 'editable', original_editable_dict[key])
                         except:
-                            self.logger.debug(f'the variable {key} could not beeing found to reset its editability')
+                            self.logger.debug(f'the variable {key} could not be found to reset its editability')
 
     # def set_reference_trade_variables_in_samples_df(self, sce_df):
     #
