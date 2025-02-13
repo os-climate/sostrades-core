@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from __future__ import annotations
 
 import pytest
@@ -60,7 +61,7 @@ def test_monte_carlo_sellar(distributions, n_objectives, criterion):
     factory = exec_eng.factory
 
     mc_builder = factory.get_builder_from_process(
-        repo='sostrades_core.sos_processes.test.tests_driver_eval.monte_carlo', mod_id="test_sellar"
+        repo="sostrades_core.sos_processes.test.tests_driver_eval.monte_carlo", mod_id="test_sellar"
     )
     exec_eng.factory.set_builders_to_coupling_builder(mc_builder)
     exec_eng.configure()
@@ -69,43 +70,43 @@ def test_monte_carlo_sellar(distributions, n_objectives, criterion):
     max_n_samples = 100 if criterion == "n_samples" else 10000
     input_dict = {
         f"{STUDY_NAME}.Eval_MC.{ProxyDriverEvaluator.GATHER_OUTPUTS}": DataFrame({
-            'selected_output': selected_outputs,
-            'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2'],
+            "selected_output": selected_outputs,
+            "full_name": ["c_1", "c_2", "obj", "y_1", "y_2"],
         }),
-        f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.input_distributions}": distributions,
-        f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.n_samples}": max_n_samples,
+        f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.INPUT_DISTRIBUTIONS}": distributions,
+        f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.N_SAMPLES}": max_n_samples,
     }
     if criterion == "target_cv":
-        input_dict.update({f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_cv}": target_cv})
+        input_dict.update({f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.TARGET_CV}": target_cv})
     elif criterion == "target_std":
-        input_dict.update({f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_std}": target_std})
+        input_dict.update({f"{STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.TARGET_STD}": target_std})
 
     # Sellar inputs
-    input_dict[f'{STUDY_NAME}.Eval_MC.x'] = array([1.0])
-    input_dict[f'{STUDY_NAME}.Eval_MC.y_1'] = array([1.0])
-    input_dict[f'{STUDY_NAME}.Eval_MC.y_2'] = array([1.0])
-    input_dict[f'{STUDY_NAME}.Eval_MC.z'] = array([1.0, 1.0])
-    input_dict[f'{STUDY_NAME}.Eval_MC.subprocess.Sellar_Problem.local_dv'] = 10.0
+    input_dict[f"{STUDY_NAME}.Eval_MC.x"] = array([1.0])
+    input_dict[f"{STUDY_NAME}.Eval_MC.y_1"] = array([1.0])
+    input_dict[f"{STUDY_NAME}.Eval_MC.y_2"] = array([1.0])
+    input_dict[f"{STUDY_NAME}.Eval_MC.z"] = array([1.0, 1.0])
+    input_dict[f"{STUDY_NAME}.Eval_MC.subprocess.Sellar_Problem.local_dv"] = 10.0
 
     exec_eng.load_study_from_input_dict(input_dict)
 
     exp_tv_list = [
-        f'Nodes representation for Treeview {STUDY_NAME}',
-        f'|_ {STUDY_NAME}',
-        '\t|_ Eval_MC',
-        '\t\t|_ subprocess',
-        '\t\t\t|_ Sellar_Problem',
-        '\t\t\t|_ Sellar_2',
-        '\t\t\t|_ Sellar_1',
+        f"Nodes representation for Treeview {STUDY_NAME}",
+        f"|_ {STUDY_NAME}",
+        "\t|_ Eval_MC",
+        "\t\t|_ subprocess",
+        "\t\t\t|_ Sellar_Problem",
+        "\t\t\t|_ Sellar_2",
+        "\t\t\t|_ Sellar_1",
     ]
-    exp_tv_str = '\n'.join(exp_tv_list)
+    exp_tv_str = "\n".join(exp_tv_list)
     exec_eng.display_treeview_nodes(True)
     assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
 
     exec_eng.execute()
-    mc_disc = exec_eng.dm.get_disciplines_with_name('MC.Eval_MC')[0].discipline_wrapp.discipline.sos_wrapp
-    input_samples = mc_disc.get_sosdisc_outputs(MonteCarloDriverWrapper.SoSOutputNames.input_samples)
-    output_samples = mc_disc.get_sosdisc_outputs(MonteCarloDriverWrapper.SoSOutputNames.output_samples)
+    mc_disc = exec_eng.dm.get_disciplines_with_name("MC.Eval_MC")[0].discipline_wrapp.discipline.sos_wrapp
+    input_samples = mc_disc.get_sosdisc_outputs(MonteCarloDriverWrapper.SoSOutputNames.INPUT_SAMPLES)
+    output_samples = mc_disc.get_sosdisc_outputs(MonteCarloDriverWrapper.SoSOutputNames.OUTPUT_SAMPLES)
 
     assert list(input_samples.keys()) == list(distributions.keys())
     assert output_samples.shape[1] == n_objectives
