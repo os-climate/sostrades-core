@@ -52,18 +52,18 @@ class Study(StudyManager):
         selected_outputs = [False, False, True, False, False]
         input_dict = {
             f"{self.STUDY_NAME}.Eval_MC.{ProxyDriverEvaluator.GATHER_OUTPUTS}": DataFrame({
-                'selected_output': selected_outputs,
-                'full_name': ['c_1', 'c_2', 'obj', 'y_1', 'y_2'],
+                "selected_output": selected_outputs,
+                "full_name": ["c_1", "c_2", "obj", "y_1", "y_2"],
             }),
             f"{self.STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.input_distributions}": distributions,
             f"{self.STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.n_samples}": 10000,
         }
         input_dict.update({f"{self.STUDY_NAME}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_cv}": 0.05})
-        input_dict[f'{self.STUDY_NAME}.Eval_MC.x'] = array([1.0])
-        input_dict[f'{self.STUDY_NAME}.Eval_MC.y_1'] = array([1.0])
-        input_dict[f'{self.STUDY_NAME}.Eval_MC.y_2'] = array([1.0])
-        input_dict[f'{self.STUDY_NAME}.Eval_MC.z'] = array([1.0, 1.0])
-        input_dict[f'{self.STUDY_NAME}.Eval_MC.subprocess.Sellar_Problem.local_dv'] = 10.0
+        input_dict[f"{self.STUDY_NAME}.Eval_MC.x"] = array([1.0])
+        input_dict[f"{self.STUDY_NAME}.Eval_MC.y_1"] = array([1.0])
+        input_dict[f"{self.STUDY_NAME}.Eval_MC.y_2"] = array([1.0])
+        input_dict[f"{self.STUDY_NAME}.Eval_MC.z"] = array([1.0, 1.0])
+        input_dict[f"{self.STUDY_NAME}.Eval_MC.subprocess.Sellar_Problem.local_dv"] = 10.0
         return [input_dict]
 
 
