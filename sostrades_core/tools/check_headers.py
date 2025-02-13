@@ -55,8 +55,8 @@ CARTOUCHE_CAP_AIRBUS = CARTOUCHE_BASE.format(f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED
 CARTOUCHE_CAP = CARTOUCHE_BASE.format(f"{CAP_COPYRIGHT}\n\n{LICENCE}")
 
 # Define a regular expression to match the cartouche only at the beginning
-cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
-# cartouche_pattern = r"^(?:'''|\"\"\")(.*?)(?:'''|\"\"\")(\n|\Z)"
+#cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
+cartouche_pattern = r"^(?:'''|\"\"\")(.*?)(?:'''|\"\"\")(\n|\Z)"
 cap_copyright_pattern = "Copyright 202(.) Capgemini"
 cartouche_modified_pattern = r"Modifications on (.+) Copyright 202(.) Capgemini"
 
