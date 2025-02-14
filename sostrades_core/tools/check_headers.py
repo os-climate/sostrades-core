@@ -108,6 +108,8 @@ class HeaderTools:
         :param file_path: path to the file where to check the header status
         :type file_path: str
         """
+        if not os.path.exists(file_path):
+            return None
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
 
@@ -143,6 +145,9 @@ class HeaderTools:
         :param file_path: path to the file where to check the header status
         :type file_path: str
         """
+        if not os.path.exists(file_path):
+            return None
+
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
 
@@ -508,4 +513,5 @@ class HeaderTools:
                 errors += str(he)
             errors += f"\nFound {len(header_error_list)} header error(s)"
             msg = f"{errors}"
+            print(msg)
             raise Exception(msg)
