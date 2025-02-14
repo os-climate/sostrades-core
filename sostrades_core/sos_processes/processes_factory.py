@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # -- process configuration class
+from __future__ import annotations
+
 import logging
 import traceback
 from importlib import import_module

@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-from typing import Any
+from __future__ import annotations
 
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+import logging
+from typing import TYPE_CHECKING, Any
+
 from sostrades_core.datasets.dataset_info.dataset_info_v1 import DatasetInfoV1
 from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V1
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
@@ -31,6 +32,9 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
     DatasetSerializerType,
     DatasetsSerializerFactory,
 )
+
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 
 
 class JSONDatasetsConnectorV1(AbstractDatasetsConnector):

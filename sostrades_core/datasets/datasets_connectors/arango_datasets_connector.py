@@ -13,16 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import logging
 import random
 import re
 import string
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from arango import ArangoClient, CollectionListError
-from arango.collection import StandardCollection
 
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
@@ -34,6 +34,11 @@ from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory im
     DatasetSerializerType,
     DatasetsSerializerFactory,
 )
+
+if TYPE_CHECKING:
+    from arango.collection import StandardCollection
+
+    from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 
 
 class ArangoDatasetsConnector(AbstractDatasetsConnector):

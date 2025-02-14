@@ -13,18 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import logging
 import os
 import pickle
-from typing import Any, Tuple
+from typing import TYPE_CHECKING, Any, Tuple
 
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetGenericException,
     DatasetNotFoundException,
 )
+
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 
 
 class SoSPickleDatasetsConnector(AbstractDatasetsConnector):

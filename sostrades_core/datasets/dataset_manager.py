@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict
 
 from sostrades_core.datasets.dataset import Dataset
 from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
@@ -25,6 +26,9 @@ from sostrades_core.datasets.datasets_connectors.datasets_connector_manager impo
     DatasetsConnectorManager,
 )
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+
+if TYPE_CHECKING:
+    import logging
 
 
 class DatasetsManager:

@@ -13,13 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from dataclasses import dataclass
-from typing import Any
+from __future__ import annotations
 
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
-    AbstractDatasetsConnector,
-)
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+    from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+        AbstractDatasetsConnector,
+    )
 
 
 @dataclass()

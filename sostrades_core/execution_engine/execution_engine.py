@@ -15,10 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 # Execution engine SoSTrades code
-import logging
-from typing import Any, Callable, Optional, Union
+from __future__ import annotations
 
-from sostrades_core.datasets.dataset_mapping import DatasetsMapping
+import logging
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+
 from sostrades_core.execution_engine.builder_tools.tool_factory import ToolFactory
 from sostrades_core.execution_engine.data_manager import DataManager, ParameterChange
 from sostrades_core.execution_engine.ns_manager import NamespaceManager
@@ -29,6 +30,9 @@ from sostrades_core.execution_engine.proxy_coupling import BaseDiscipline, BaseS
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
+
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 
 DEFAULT_FACTORY_NAME = 'default_factory'
 DEFAULT_NS_MANAGER_NAME = 'default_ns_namanger'

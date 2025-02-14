@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import pandas as pd
 
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
