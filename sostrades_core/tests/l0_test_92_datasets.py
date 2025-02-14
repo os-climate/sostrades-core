@@ -33,7 +33,6 @@ from sostrades_core.datasets.dataset_mapping import (
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     DatasetGenericException,
 )
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset import Study
 from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import (
@@ -58,7 +57,7 @@ class TestDatasets(unittest.TestCase):
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_datasets_connector",
-                                                    connector_type=DatasetConnectorType.get_enum_value("JSON"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.JSON_V0",
                                                     **connector_args)
 
         # create local connector
@@ -68,7 +67,7 @@ class TestDatasets(unittest.TestCase):
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V0",
                                                     **connector_args)
 
 

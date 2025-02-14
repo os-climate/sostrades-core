@@ -446,6 +446,6 @@ class DatasetUnableToInitializeConnectorException(DatasetGenericException):
     """
     Exception when an error occurs during dataset initialization
     """
-    def __init__(self, connector_type: AbstractDatasetsConnector):
+    def __init__(self, connector_type: str):
         self.connector_type = connector_type
         super().__init__(f"Unable to initialize connector of type {connector_type}")
