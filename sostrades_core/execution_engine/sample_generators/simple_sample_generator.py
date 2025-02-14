@@ -71,7 +71,7 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
             msg += "however sampling type of sampling generator <%s> " % str(
                 self.__class__.__name__)
             msg += "is <%s> " % str(type(samples_df))
-            raise SimpleSampleGeneratorTypeError()
+            raise SimpleSampleGeneratorTypeError(msg)
 
     def setup(self, proxy):
         self.samples_df_f_name = proxy.samples_df_f_name

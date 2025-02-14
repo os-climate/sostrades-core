@@ -1,9 +1,11 @@
 {
-    "process_module_path": "sostrades_core.sos_processes.test.sellar.test_sellar_coupling",
-    "namespace_datasets_mapping": {
-        "v0|<study_ph>|*": ["MVP0_datasets_connector|default_numerical_parameters|*"]
-    },
-    "sub_process_datasets_mapping": {
-        "v0|<study_ph>.SellarCoupling|*": "./sostrades_core/sos_processes/test/sellar/test_sellar_list/usecase_dataset_sellar_list.json"
-    }
+  "process_module_path": "sostrades_core.sos_processes.test.sellar.test_sellar_coupling",
+  "namespace_datasets_mapping": {
+    "v0|<study_ph>|*": [
+      "MVP0_datasets_connector|default_numerical_parameters|*"
+    ]
+  },
+  "sub_process_datasets_mapping": {
+    "v0|<study_ph>.SellarCoupling|*": "./sostrades_core/sos_processes/test/sellar/test_sellar_list/usecase_dataset_sellar_list.json"
+  }
 }

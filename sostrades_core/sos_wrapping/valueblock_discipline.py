@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/27-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/10/27-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,9 +49,6 @@ class ValueBlockDiscipline(GatherDiscipline):
 
         children_list = self.config_dependency_disciplines
         for child in children_list:
-            # child_name = child.sos_name.replace(f'{self.sos_name}.', '')
-            # child_name = child.get_disc_full_name().split(
-            #     f'{self.sos_name}.')[-1]
             for output, output_dict in child.get_data_io_dict(self.IO_TYPE_OUT).items():
 
                 data_in_dict = {

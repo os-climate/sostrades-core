@@ -1,0 +1,14 @@
+{
+  "process_module_path": "sostrades_core.sos_processes.test.test_disc1_all_types",
+  "namespace_datasets_mapping": {
+    "v1|<study_ph>|*": [
+      "v1|repos:sostrades_core|test_dataset_all_types_v1_all_study|*|*"
+    ],
+    "v0|<study_ph>.Disc1|*": [
+      "v0|repos:sostrades_core|dataset_all_types|*"
+    ],
+    "v1|<study_ph>.Disc1|y_array": [
+      "v1|repos:sostrades_core|test_dataset_all_types_v1_all_study|*|y_array"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/07-2024/07/04 Copyright 2023 Capgemini
+Modifications on 2023/04/07-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -102,13 +102,11 @@ class SoSDiscipline(Discipline):
             debug_mode (str): identifier of the debug mode to apply or empty
 
         """
-        # self.disciplines = [] # TODO: remove and leave in driver
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
         self.input_full_name_map = None
         self.output_full_name_map = None
         self.logger = logger
-        # grammar_type=grammar_type, cache_type=cache_type, cache_file_path=cache_file_path
         self.debug_mode = debug_mode
         self.default_grammar_type = grammar_type
 
@@ -123,12 +121,10 @@ class SoSDiscipline(Discipline):
 
     def _run(self, input_data: StrKeyMapping):
         """Call user-defined wrapper run."""
-        # TODO: [discuss] is this to be done at the prepare execution? (with set_wrapper_attributes)?
         # send local data to the wrapper for i/o
         self.sos_wrapp.local_data = input_data
         self.sos_wrapp.input_data_names = self.get_input_data_names()
         self.sos_wrapp.output_data_names = self.get_output_data_names()
-        # self.sos_wrapp.input_full_name_map, self.sos_wrapp.output_full_name_map = self.create_io_full_name_map()
 
         # debug mode: input change
         if self.debug_mode in ['input_change', 'all']:
@@ -140,15 +136,10 @@ class SoSDiscipline(Discipline):
 
         # SoSWrapp run
         local_data = self.sos_wrapp._run()
-        # local data update
-        # self.io.update_output_data(local_data)
 
         # debug modes
         if self.debug_mode in ['nan', 'all']:
             self._check_nan_in_data(self.io.data)
-
-        # if self.debug_mode in ['linearize_data_change']:
-        #     self.check_linearize_data_changes = True
 
         if self.debug_mode in ['input_change', 'all']:
             disc_inputs_after_execution = {
@@ -381,9 +372,6 @@ class SoSDiscipline(Discipline):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-        # if self.check_linearize_data_changes:
-        #     disc_data_before_linearize = self.local_data
-
         if self.jac is None:
             self._init_jacobian(input_names, output_names, init_type=self.InitJacobianType.SPARSE)
         else:
@@ -392,15 +380,13 @@ class SoSDiscipline(Discipline):
             )
 
         self.compute_sos_jacobian()
-        # if self.check_linearize_data_changes:
-        #     disc_data_after_linearize = self.local_data
-        #
-        #     self.check_discipline_data_integrity(disc_data_before_linearize,
-        #                                          disc_data_after_linearize,
-        #                                          'Discipline data integrity through compute_sos_jacobian')
-        # TODO REACTIVATE Check min_max_gradients
-        # if self.check_min_max_gradients:
-        #     self._check_min_max_gradients(self.jac)
+        if not self.sos_wrapp.analytic_jacobian:
+            # means that there is no analytic jacobian implemented
+            # we set to finite differences and rerun the same method
+            self.linearization_mode = ApproximationMode.FINITE_DIFFERENCES
+            self.logger.warning(
+                f"No compute_sos_jacobian found for the discipline {self.name}, switch to finite difference to compute the jacobian")
+            super()._compute_jacobian(input_names, output_names)
 
     def compute_sos_jacobian(self):
         """

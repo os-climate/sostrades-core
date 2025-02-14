@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,9 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.proxy_discipline_builder import ProxyDisciplineBuilder
 
 
+class SoSBuilderException(Exception):
+    pass
+
 class SoSBuilder:
     '''Class that stores a class and associated attributes to be built afterwards'''
 
@@ -32,7 +35,6 @@ class SoSBuilder:
         'ProxyDisciplineGather',
         'ProxyOptim',
         'ArchiBuilder',
-        'ProxyDriverEvaluator',  # FIXME: to remove
         'ProxyMonoInstanceDriver',
         'ProxyMultiInstanceDriver',
         'SelectorDiscipline',
@@ -93,7 +95,7 @@ class SoSBuilder:
         elif isinstance(ns_list, list):
             self.add_namespace_list_in_associated_namespaces(ns_list)
         else:
-            raise Exception('Should specify a list of strings or a string to associate namespaces')
+            raise SoSBuilderException('Should specify a list of strings or a string to associate namespaces')
         # self.__args['associated_namespaces'] = self.__associated_namespaces
 
     def set_disc_name(self, new_disc_name):
@@ -199,7 +201,7 @@ class SoSBuilder:
             after_name: name after which you add the extra_name for each associated namespaces to the builder
 
         """
-        # TODO: no check so that a ns associated to two builders won't be updated twice.
+        # NB: no check so that a ns associated to two builders won't be updated twice.
         self.update_associated_namespaces_with_extra_name(extra_name, after_name)
         sub_builders = self.args["cls_builder"]
         try:

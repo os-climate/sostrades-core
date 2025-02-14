@@ -41,8 +41,6 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
     def __init__(self, logger: logging.Logger):
         """Constructor"""
         super().__init__(logger=logger)
-        # TODO: currently it is a doesamplegenerator using cartesianproductsamplegenerator in composition,
-        #  design might be improved as only need to setup a design space so it could be detached from DoE setup
         self.cp_generator = CartesianProductSampleGenerator(logger=logger)
 
     def setup(self, proxy):

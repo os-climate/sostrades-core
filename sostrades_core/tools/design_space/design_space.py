@@ -70,21 +70,24 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
                 u_b = array([ub])
                 value = array([val])
             else:
+                val_loc = val
+                lb_loc = lb
+                ub_loc = ub
                 # check if there is any False in l_activated
                 if not all(l_activated):
                     index_false = nonzero(logical_not(l_activated))[0]  # NB: assumption is that array is 1D
                     dict_desactivated_elem[dv] = {
                         'value': array(val)[index_false], 'position': index_false}
 
-                    val = delete(val, index_false)
-                    lb = delete(lb, index_false)
-                    ub = delete(ub, index_false)
+                    val_loc = delete(val_loc, index_false)
+                    lb_loc = delete(lb_loc, index_false)
+                    ub_loc = delete(ub_loc, index_false)
 
-                size = len(val)
+                size = len(val_loc)
                 var_type = 'float'
-                l_b = array(lb)
-                u_b = array(ub)
-                value = array(val)
+                l_b = array(lb_loc)
+                u_b = array(ub_loc)
+                value = array(val_loc)
 
             # 'automatic' var_type values are overwritten if filled by the user
             if vtype is not None:

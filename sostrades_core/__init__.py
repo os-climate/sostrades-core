@@ -17,13 +17,15 @@ limitations under the License.
 
 import logging
 import os
+import re
 from os.path import dirname, join
 
 logging.basicConfig(level=logging.INFO)
 
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers, grammars etc)
-logging.getLogger('gemseo').setLevel('DEBUG')
-parent_dir = dirname(__file__)
+# logging.getLogger('gemseo').setLevel('DEBUG')
+# Hotfix gemseo pathsep handling
+parent_dir = re.sub(r'.\:', '', dirname(__file__))
 GEMSEO_ADDON_DIR = "gemseo_addon"
 EXEC_ENGINE = "execution_engine"
 

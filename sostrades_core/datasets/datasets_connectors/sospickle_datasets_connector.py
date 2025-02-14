@@ -194,7 +194,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         dataset_keys = []
         for key in self.__pickle_data:
-            dataset_id, data_name = self.__get_dataset_id_and_data_name(key)
+            dataset_id, _ = self.__get_dataset_id_and_data_name(key)
             if dataset_id == dataset_identifier.dataset_id:
                 dataset_keys.append(key)
 

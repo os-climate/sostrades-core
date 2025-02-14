@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/02/23-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ from __future__ import annotations
 
 import contextlib
 from copy import deepcopy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.discipline.io import IO
 from gemseo.core.execution_status import ExecutionStatus
@@ -104,6 +105,7 @@ class ProxyDiscipline:
 
     """
 
+    GEMSEO_OBJECTS = BaseMonitoredProcess
     # -- Disciplinary attributes
     DESC_IN = None
     DESC_OUT = None
@@ -188,16 +190,17 @@ class ProxyDiscipline:
         'bool': BOOL_MAP,
         'list': list,
         PROC_BUILDER_MODAL: dict,
+        ndarray: ndarray,
     }
     VAR_TYPE_GEMS = ['int', 'array', 'float_list', 'int_list']
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
     NEW_VAR_TYPE = ['dict', 'dataframe', 'string_list', 'string', 'float', 'int', 'list']
 
     UNSUPPORTED_GEMSEO_TYPES = []
-    for type in VAR_TYPE_MAP:
-        if type not in VAR_TYPE_GEMS and type not in NEW_VAR_TYPE:
+    for _var_type in VAR_TYPE_MAP:
+        if _var_type not in VAR_TYPE_GEMS and _var_type not in NEW_VAR_TYPE:
             # Fixing PERF401 would require heavy refactoring
-            UNSUPPORTED_GEMSEO_TYPES.append(type)  # noqa: PERF401
+            UNSUPPORTED_GEMSEO_TYPES.append(_var_type)  # noqa: PERF401
 
     # # Warning : We cannot put string_list into dict, all other types inside a dict are possiblr with the type dict
     # # df_dict = dict , string_dict = dict, list_dict = dict
@@ -220,7 +223,7 @@ class ProxyDiscipline:
     NUM_DESC_IN = {
         LINEARIZATION_MODE: {
             TYPE: 'string',
-            DEFAULT: Discipline.ApproximationMode.FINITE_DIFFERENCES,
+            DEFAULT: Discipline.LinearizationMode.AUTO,
             POSSIBLE_VALUES: list(Discipline.LinearizationMode),
             NUMERICAL: True,
             STRUCTURING: True,
@@ -610,7 +613,7 @@ class ProxyDiscipline:
             if (not value[self.NUMERICAL] or (value[self.NUMERICAL] and value[self.RUN_NEEDED]))
         ]
 
-    def get_input_data_names_and_defaults(self, as_namespaced_tuple: bool = False, numerical_inputs=True) -> list[str]:
+    def get_input_data_names_and_defaults(self, as_namespaced_tuple: bool = False, numerical_inputs=True) -> dict[str:Any]:
         """
 
         Args:
@@ -675,7 +678,7 @@ class ProxyDiscipline:
         if io_type == self.IO_TYPE_OUT:
             return self.get_data_out()
         msg = f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]'
-        raise Exception(msg)
+        raise ProxyDisciplineException(msg)
 
     def get_data_io_dict_keys(self, io_type):
         """
@@ -693,7 +696,7 @@ class ProxyDiscipline:
         if io_type == self.IO_TYPE_OUT:
             return self.get_data_out().keys()
         msg = f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]'
-        raise Exception(msg)
+        raise ProxyDisciplineException(msg)
 
     def get_data_io_dict_tuple_keys(self, io_type):
         """
@@ -711,7 +714,7 @@ class ProxyDiscipline:
         if io_type == self.IO_TYPE_OUT:
             return self._data_out.keys()
         msg = f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]'
-        raise Exception(msg)
+        raise ProxyDisciplineException(msg)
 
     def get_data_io_from_key(self, io_type, var_name):
         """
@@ -729,7 +732,7 @@ class ProxyDiscipline:
         if var_name in data_io:
             return data_io[var_name]
         msg = f'No key matching with variable name {var_name} in the data_{io_type}'
-        raise Exception(msg)
+        raise ProxyDisciplineException(msg)
 
     def get_variable_name_from_ns_key(self, io_type, ns_key):
         return self.get_data_io_dict(io_type)[ns_key][self.VAR_NAME]
@@ -793,7 +796,7 @@ class ProxyDiscipline:
                 _desc.update(deepcopy(self.discipline_wrapp.wrapper.DESC_OUT))
             return _desc
         msg = f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]'
-        raise Exception(msg)
+        raise ProxyDisciplineException(msg)
 
     def _extract_var_ns_tuples(self, short_name_data_dict):
         """
@@ -828,7 +831,7 @@ class ProxyDiscipline:
             self._io_ns_map_out.update(var_ns_tuples)
         else:
             msg = f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]'
-            raise Exception(msg)
+            raise ProxyDisciplineException(msg)
 
     def _restart_data_io_to_disc_io(self, io_type=None):
         """
@@ -847,7 +850,7 @@ class ProxyDiscipline:
             io_types = [io_type]
         else:
             msg = f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]'
-            raise Exception(msg)
+            raise ProxyDisciplineException(msg)
         if self.IO_TYPE_IN in io_types:
             self._data_in = {(key, id_ns): self._data_in[key, id_ns] for key, id_ns in self._io_ns_map_in.items()}
 
@@ -874,12 +877,12 @@ class ProxyDiscipline:
             data_io = self._data_out
         else:
             msg = f'data type {io_type} not recognized [{self.IO_TYPE_IN}/{self.IO_TYPE_OUT}]'
-            raise Exception(msg)
+            raise ProxyDisciplineException(msg)
 
         if data_dict_in_short_names:
             error_msg = 'data_dict_in_short_names for uodate_data_io not implemented'
             self.logger.error(error_msg)
-            raise Exception(error_msg)
+            raise ProxyDisciplineException(error_msg)
         data_io.update(data_dict)
 
     def get_new_variables_in_dict(self, var_dict, io_type):
@@ -1376,7 +1379,6 @@ class ProxyDiscipline:
         dict_in_keys = self.get_data_io_dict_keys(io_type)
         ns_manager = self.ee.ns_manager
 
-        # original_data = deepcopy(dict_in)
         dict_out_keys = []
         for key in dict_in_keys:
             namespaced_key = ns_manager.get_namespaced_variable(self, key, io_type)
@@ -1545,7 +1547,6 @@ class ProxyDiscipline:
                 keys = list(self.get_data_io_with_full_name(self.IO_TYPE_OUT).keys())  # discipline and subprocess
             else:
                 keys = list(self.get_data_out().keys())  # discipline only
-            # keys = [d[self.VAR_NAME] for d in self.get_data_out().values()]
             in_dict = True
         outputs = self._get_sosdisc_io(keys, io_type=self.IO_TYPE_OUT, full_name_keys=full_name_keys)
         if in_dict:
@@ -1641,7 +1642,6 @@ class ProxyDiscipline:
         disc_dict_info = {}
         disc_dict_info[self.REFERENCE] = self
         disc_dict_info['classname'] = self.__class__.__name__
-        #         disc_dict_info['model_name'] = self.__module__.split('.')[-2]
         disc_dict_info[self.MODEL_NAME_FULL_PATH] = self.get_module()
         disc_dict_info['disc_label'] = self.get_disc_label()
         disc_dict_info['treeview_order'] = 'no'
@@ -1718,11 +1718,11 @@ class ProxyDiscipline:
 
         disc_in = self.get_data_in()
         for var_name in disc_in:
+            var_f_name = self.get_var_full_name(var_name, disc_in)
             try:
-                var_f_name = self.get_var_full_name(var_name, disc_in)
                 default_val = self.dm.data_dict[self.dm.get_data_id(var_f_name)][self.DEFAULT]
-            except:
-                var_f_name = self.get_var_full_name(var_name, disc_in)
+            except Exception:
+                default_val = None
             if self.dm.get_value(var_f_name) is None and default_val is not None:
                 disc_in[var_name][self.VALUE] = default_val
             else:
@@ -1880,7 +1880,7 @@ class ProxyDiscipline:
             self._maturity = maturity
         else:
             msg = f'Unkown maturity {maturity} for discipline {self.sos_name}'
-            raise Exception(msg)
+            raise ProxyDisciplineException(msg)
 
     def get_maturity(self):
         """Get the maturity of the ProxyDiscipline (a discipline does not have any subdisciplines, only a coupling has)"""
@@ -1891,9 +1891,6 @@ class ProxyDiscipline:
                 return self.discipline_wrapp.wrapper._maturity
             return ''
         return ''
-
-    def _build_dynamic_DESC_IN(self):
-        pass
 
     def get_chart_filter_list(self):
         """
@@ -1970,12 +1967,12 @@ class ProxyDiscipline:
         if disc == self:
             error_msg = f'Not possible to add self in the config_dependency_list for disc : {disc.get_disc_full_name()}'
             self.logger.error(error_msg)
-            raise Exception(error_msg)
+            raise ProxyDisciplineException(error_msg)
 
         if self in disc.config_dependency_disciplines:
             error_msg = f'The discipline {disc.get_disc_full_name()} has already {self.get_disc_full_name()} in its config_dependency_list, it is not possible to add the discipline in config_dependency_list of myself'
             self.logger.error(error_msg)
-            raise Exception(error_msg)
+            raise ProxyDisciplineException(error_msg)
 
         if disc not in self.__config_dependency_disciplines:
             self.__config_dependency_disciplines.append(disc)
@@ -2177,11 +2174,6 @@ class ProxyDiscipline:
         }
         wrapper.inst_desc_in = self.inst_desc_in
         wrapper.inst_desc_out = self.inst_desc_out
-
-    # def set_discipline_attributes(self, discipline):
-    #     """ set the attribute attributes of discipline --> not needed if using SoSDisciplineDriver
-    #     """
-    #     pass
 
     def create_io_full_name_map(self):
         """

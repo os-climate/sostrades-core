@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/01/19 Copyright 2024 Capgemini
+Modifications on 2024/01/19-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -59,10 +59,7 @@ class ScatterMapsManager:
     def add_build_map(self, map_name, map_dict):
         '''Instantiate build map and add to build_maps_dict'''
         if map_name in self.build_maps_dict:
-            # If the map does exist with same definition than do nothing
-            if self.build_maps_dict[map_name] == map_dict:
-                pass
-            else:
+            if self.build_maps_dict[map_name] != map_dict:
                 raise ScatterMapsManagerException(
                     f'Map {map_name} already defined with another definition')
         else:

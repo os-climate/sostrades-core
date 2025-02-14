@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/10-2023/11/03 Copyright 2023 Capgemini
+Modifications on 2023/10/10-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -84,9 +84,6 @@ class SosTool():
     @abc.abstractmethod
     def prepare_tool(self):
         '''Prepare tool function if some data of the driver are needed to configure the tool'''
-        pass
-
-    def get_dynamic_output_from_tool(self):
         pass
 
     def associate_namespaces_to_builder(self, builder, ns_list):

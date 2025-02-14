@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/12-2023/11/08 Copyright 2023 Capgemini
+Modifications on 2023/04/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -51,10 +51,6 @@ class DriverEvaluatorWrapper(SoSWrapp):
     """
 
     _maturity = 'Fake'
-
-    # MONO_INSTANCE = 'mono_instance'
-    # MULTI_INSTANCE = 'multi_instance'
-    # REGULAR_BUILD = 'regular_build'
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
     USECASE_DATA = 'usecase_data'
 
@@ -79,7 +75,6 @@ class DriverEvaluatorWrapper(SoSWrapp):
         """Initialise the attribute that stores the input data of every subprocess for this run."""
         self.n_subprocs = len(self.attributes['sub_disciplines'])
         self.input_data_for_disc = [{}] * self.n_subprocs
-        # TODO: deepcopy option? [discuss]
         for i_subprocess in self.subprocesses_to_eval or range(self.n_subprocs):
             self.input_data_for_disc[i_subprocess] = self.get_input_data_for_gemseo(
                 self.attributes['sub_disciplines'][i_subprocess])
@@ -99,7 +94,6 @@ class DriverEvaluatorWrapper(SoSWrapp):
             self.input_data_for_disc[i_subprocess] (dict): the input data updated with new values for certain variables
 
         """
-        # TODO: deepcopy option? [discuss]
         self.input_data_for_disc[i_subprocess].update(var_delta_dict)
         return self.input_data_for_disc[i_subprocess]
 

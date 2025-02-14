@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -199,7 +199,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
                 candidate_process = []
 
                 if len(process_list) > PROCESS_IN_PARALLEL:
-                    candidate_process = [process_list.pop() for index in range(PROCESS_IN_PARALLEL)]
+                    candidate_process = [process_list.pop() for _ in range(PROCESS_IN_PARALLEL)]
                 else:
                     candidate_process = process_list
                     process_list = []

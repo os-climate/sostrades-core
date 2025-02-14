@@ -18,7 +18,6 @@ from os.path import dirname, join
 import numpy as np
 import pandas as pd
 
-# mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
 from sostrades_core.study_manager.study_manager import StudyManager
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,

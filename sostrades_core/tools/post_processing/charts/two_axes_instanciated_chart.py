@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/11/14-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/11/14-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
                 f'given series has the wrong type, {type(series)} instead of InstanciatedSeries')
 
         if self.y_min_zero:
-            self.y_primary_max = max(max(series.ordinate), self.y_primary_max)
+            self.y_primary_max = max(*series.ordinate, self.y_primary_max)
             self.primary_ordinate_axis_range = [-0.05 * self.y_primary_max, self.y_primary_max * 1.1]
 
     def to_plotly(self, logger=None):
@@ -315,9 +315,8 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
             self.__to_csv()
 
         json[self.CSV_DATA] = self._plot_csv_data
-        json[self.LOGO_NOTOFFICIAL] = self.logo_notofficial
-        json[self.LOGO_OFFICIAL] = self.logo_official
-        json[self.LOGO_WORK_IN_PROGRESS] = self.logo_work_in_progress
-        json[self.POST_PROCESSING_SECTION_NAME] = self.post_processing_section_name.capitalize()
+
+        #add chart metadata as watermarks or sections
+        json.update(self.get_metadata_dict())
 
         return json

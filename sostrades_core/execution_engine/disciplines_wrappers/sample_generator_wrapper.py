@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,10 @@ import pandas as pd
 
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.design_space import design_space as dspace_tool
+
+
+class SampleGeneratorWrapperException(Exception):
+    pass
 
 
 class SampleGeneratorWrapper(SoSWrapp):
@@ -61,10 +65,8 @@ class SampleGeneratorWrapper(SoSWrapp):
     def run(self):
         samples_df = self.sample()
         # TODO [to discuss]: is this the place for this exception ?
-        if isinstance(samples_df, pd.DataFrame):
-            pass
-        else:
-            raise Exception("Sampling has not been made")
+        if not isinstance(samples_df, pd.DataFrame):
+            raise SampleGeneratorWrapperException("Sampling has not been made")
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def sample(self):
@@ -72,7 +74,6 @@ class SampleGeneratorWrapper(SoSWrapp):
         return self.set_scenario_columns(self.sample_generator.sample(self))
 
     def set_scenario_columns(self, samples_df, scenario_names=None):
-        # TODO: [to discuss] move to AbstractSampleGenerator ?
         '''Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df, by default selecting all scenarios.'''
         if self.SELECTED_SCENARIO not in samples_df:
             ordered_columns = [self.SELECTED_SCENARIO, self.SCENARIO_NAME] + samples_df.columns.tolist()

@@ -36,20 +36,21 @@ class Disc1Residuals(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'w1': {'type': 'float', 'unit': '-','default':0.0},
-        'y2': {'type': 'float', 'unit': '-','default':2.0,'visibility':'Shared','namespace':'ns_coupling'},
-        'x': {'type': 'float', 'unit': '-','default':3.0,'visibility':'Shared','namespace':'ns_coupling'}
+        'w1': {'type': 'float', 'unit': '-', 'default': 0.0},
+        'y2': {'type': 'float', 'unit': '-', 'default': 2.0, 'visibility': 'Shared', 'namespace': 'ns_coupling'},
+        'x': {'type': 'float', 'unit': '-', 'default': 3.0, 'visibility': 'Shared', 'namespace': 'ns_coupling'}
     }
     DESC_OUT = {
         'w1': {'type': 'float', 'unit': '-'},
-        'y1': {'type': 'float', 'unit': '-','visibility':'Shared','namespace':'ns_coupling'},
+        'y1': {'type': 'float', 'unit': '-', 'visibility': 'Shared', 'namespace': 'ns_coupling'},
         'r1': {'type': 'float', 'unit': '-'}
     }
 
     def run(self):
-        w1, y2, x = self.get_sosdisc_inputs(['w1','y2','x'])
-        y1, w1, r1=disc_1_expr(w1, y2, x)
-        self.store_sos_outputs_values({'y1':y1,'w1':w1,'r1':r1})
+        w1, y2, x = self.get_sosdisc_inputs(['w1', 'y2', 'x'])
+        y1, w1, r1 = disc_1_expr(w1, y2, x)
+        self.store_sos_outputs_values({'y1': y1, 'w1': w1, 'r1': r1})
+
     def get_chart_filter_list(self):
 
         chart_filters = []
@@ -69,6 +70,7 @@ class Disc1Residuals(SoSWrapp):
 
         return instanciated_charts
 
+
 class Disc2Residuals(SoSWrapp):
     # ontology information
     _ontology_data = {
@@ -85,20 +87,21 @@ class Disc2Residuals(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'w2': {'type': 'float', 'unit': '-','default':0.0},
-        'y1': {'type': 'float', 'unit': '-','default':2.0,'visibility':'Shared','namespace':'ns_coupling'},
-        'x': {'type': 'float', 'unit': '-','default':3.0,'visibility':'Shared','namespace':'ns_coupling'}
+        'w2': {'type': 'float', 'unit': '-', 'default': 0.0},
+        'y1': {'type': 'float', 'unit': '-', 'default': 2.0, 'visibility': 'Shared', 'namespace': 'ns_coupling'},
+        'x': {'type': 'float', 'unit': '-', 'default': 3.0, 'visibility': 'Shared', 'namespace': 'ns_coupling'}
     }
     DESC_OUT = {
-        'y2': {'type': 'float', 'unit': '-','visibility':'Shared','namespace':'ns_coupling'},
+        'y2': {'type': 'float', 'unit': '-', 'visibility': 'Shared', 'namespace': 'ns_coupling'},
         'w2': {'type': 'float', 'unit': '-'},
         'r2': {'type': 'float', 'unit': '-'}
     }
 
     def run(self):
-        w1, y2, x = self.get_sosdisc_inputs(['w2','y1','x'])
-        y2, w2, r2=disc_2_expr(w1, y2, x)
-        self.store_sos_outputs_values({'y2':y2,'w2':w2,'r2':r2})
+        w1, y2, x = self.get_sosdisc_inputs(['w2', 'y1', 'x'])
+        y2, w2, r2 = disc_2_expr(w1, y2, x)
+        self.store_sos_outputs_values({'y2': y2, 'w2': w2, 'r2': r2})
+
     def get_chart_filter_list(self):
 
         chart_filters = []

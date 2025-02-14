@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/06/10 Copyright 2024 Capgemini
+Modifications on 2024/06/10-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -73,7 +73,6 @@ class TestScatter(unittest.TestCase):
                             for line in result.split('\n')])
 
         with open(join(dirname(__file__), 'test_disc1_perfos.csv'), 'w+') as f:
-            # f = open(result.rsplit('.')[0] + '.csv', 'w')
             f.write(result)
             f.close()
 

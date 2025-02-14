@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16-2024/06/28 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,13 +32,24 @@ class AbstractPostProcessingPlotlyTooling(ABC):
     LOGO_NOTOFFICIAL = 'logo_notofficial'
     LOGO_WORK_IN_PROGRESS = 'logo_work_in_progress'
     POST_PROCESSING_SECTION_NAME = 'post_processing_section_name'
+    POST_PROCESSING_SECTION_IS_OPENED = 'post_processing_section_is_opened'
+    POST_PROCESSING_IS_KEY_CHART = 'post_processing_is_key_chart'
 
     def __init__(self):
         """Initialize members variables"""
         # Initialize annotation properties
         self.annotation_upper_left = {}
         self.annotation_upper_right = {}
+
+        # Set the chart in a section:
+        # define section name
         self.post_processing_section_name = ""
+        # define if the section should be opened by default
+        self.post_processing_section_is_opened = False
+
+        #set the chart in a first section named "key chart"
+        self.post_processing_is_key_chart = False
+
         self._plot_csv_data = None
         self.logo_official = False
         self.logo_notofficial = False
@@ -135,6 +146,18 @@ class AbstractPostProcessingPlotlyTooling(ABC):
         # Deserialize annotation upper right attribute if exist
         if AbstractPostProcessingPlotlyTooling.ANNOTATION_UPPER_RIGHT in dict_obj:
             self.annotation_upper_right = dict_obj[AbstractPostProcessingPlotlyTooling.ANNOTATION_UPPER_RIGHT]
+
+    def get_metadata_dict(self):
+        '''Get chart metadata into a dict'''
+        json = {}
+        json[self.LOGO_NOTOFFICIAL] = self.logo_notofficial
+        json[self.LOGO_OFFICIAL] = self.logo_official
+        json[self.LOGO_WORK_IN_PROGRESS] = self.logo_work_in_progress
+        json[self.POST_PROCESSING_SECTION_NAME] = self.post_processing_section_name
+        json[self.POST_PROCESSING_SECTION_IS_OPENED] = self.post_processing_section_is_opened
+        json[self.POST_PROCESSING_IS_KEY_CHART] = self.post_processing_is_key_chart
+
+        return json
 
     def get_default_title_layout(self, title_name='', pos_x=0.5, pos_y=0.9):
         """

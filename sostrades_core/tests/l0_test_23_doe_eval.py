@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/04-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/04-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1871,6 +1871,66 @@ class TestSoSDOEScenario(unittest.TestCase):
         samples_df = eval_disc.get_sosdisc_inputs('samples_df')
         assert isinstance(samples_df['Disc1.a'][0], float)
 
+    def test_21_doe_fullfact_at_configuration_time_double_execution_of_upper_mda(self):
+        """
+        With same process as test 19 we test that the upper mda does not perform double execution due to self-coupling
+        of the driver discipline.
+        """
+        same_usecase_name = 'DoE+Eval'
+        exec_eng = ExecutionEngine(same_usecase_name)
+        factory = exec_eng.factory
+
+        proc_name = "test_mono_driver_with_sample_option_sellar"
+        doe_eval_builder = factory.get_builder_from_process(repo=self.repo, mod_id=proc_name)
+
+        exec_eng.factory.set_builders_to_coupling_builder(doe_eval_builder)
+
+        exec_eng.configure()
+
+        # -- set up disciplines in Scenario
+        disc_dict = {}
+        # DoE inputs
+        n_samples = 10
+        disc_dict[f'{same_usecase_name}.SampleGenerator.sampling_method'] = self.sampling_method_doe
+        disc_dict[f'{same_usecase_name}.SampleGenerator.sampling_algo'] = "PYDOE_FULLFACT"
+        disc_dict[f'{same_usecase_name}.SampleGenerator.design_space'] = self.dspace_eval
+        disc_dict[f'{same_usecase_name}.SampleGenerator.algo_options'] = {
+            'n_samples': n_samples,
+        }
+        disc_dict[f'{same_usecase_name}.Eval.with_sample_generator'] = True
+        disc_dict[f'{same_usecase_name}.SampleGenerator.eval_inputs'] = self.input_selection_x_z
+        disc_dict[f'{same_usecase_name}.Eval.gather_outputs'] = self.output_selection_obj_y1_y2
+        exec_eng.load_study_from_input_dict(disc_dict)
+
+        # Sellar inputs
+        local_dv = 10.0
+        values_dict = {}
+        # values_dict[f'{same_usecase_name}.max_mda_iter'] = 1
+        values_dict[f'{same_usecase_name}.inner_mda_name'] = "MDAGaussSeidel"
+        values_dict[f'{same_usecase_name}.Eval.x'] = array([1.0])
+        values_dict[f'{same_usecase_name}.Eval.y_1'] = array([1.0])
+        values_dict[f'{same_usecase_name}.Eval.y_2'] = array([1.0])
+        values_dict[f'{same_usecase_name}.Eval.z'] = array([1.0, 1.0])
+        values_dict[f'{same_usecase_name}.Eval.subprocess.Sellar_Problem.local_dv'] = local_dv
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.execute()
+
+        exp_tv_list = [
+            f'Nodes representation for Treeview {same_usecase_name}',
+            f'|_ {same_usecase_name}',
+            '\t|_ SampleGenerator',
+            '\t|_ Eval',
+            '\t\t|_ subprocess',
+            '\t\t\t|_ Sellar_Problem',
+            '\t\t\t|_ Sellar_2',
+            '\t\t\t|_ Sellar_1',
+        ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        exec_eng.display_treeview_nodes(True)
+        assert exp_tv_str == exec_eng.display_treeview_nodes(exec_display=True)
+        root_mda = exec_eng.dm.get_disciplines_with_name(f'{same_usecase_name}')[0].discipline_wrapp.discipline
+        self.assertEqual(0, len(root_mda.residuals_history))
 
 if __name__ == '__main__':
     cls = TestSoSDOEScenario()

@@ -18,6 +18,7 @@ import inspect
 import os
 import pickle
 import time
+from typing import Union
 
 from tqdm import tqdm
 
@@ -26,14 +27,46 @@ from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobi
 
 GENERATED_TEST_FOLDERNAME = 'generated_jacobian_tests'
 
+def generate_gradients_tests_for_disciplines_of_usecases(usecase_path: str, disciplines_names: dict[str: str], path_test_files_to_write: str):
+    """Generates gradients tests for disciplines"""
+    disciplines_dict, usecase, ee, global_data_dict, namespaces_dict, all_coupling_variables = run_study_and_get_disciplines_to_test(usecase_path=usecase_path)
+    for disc_to_test, dict_test_filename in disciplines_names.items():
+        corresponding_disciplines = list(filter(lambda x: disc_to_test in x, disciplines_dict.keys()))
+        if len(corresponding_disciplines) != 1:
+            msg = '\n'.join(list(disciplines_dict.keys()))
+            raise ValueError(f"{disc_to_test} : error matching discipline name with available disciplines in usecase."
+                             f"\nAvailable disciplines in usecase are {msg}")
 
-def check_each_discpline_jacobians_in_process(usecase_path: str):
-    """
-    This function executes the usecase and test each discipline gradients at the point obtained after execution.
+        discipline_class_path = corresponding_disciplines[0]
+        proxy_discipline = disciplines_dict[discipline_class_path]
+        disc_study_path = usecase.ee.dm.disciplines_dict[proxy_discipline.disc_id]['disc_label']
+        print("TESTING :", disc_study_path)
+        model_name = disc_study_path.split('.')[-1]
+        test_name = disc_study_path.split(f'.{model_name}')[0]
+        inputs_disc = list(proxy_discipline.get_sosdisc_inputs(full_name_keys=True).keys())
+        outputs_disc = list(proxy_discipline.get_sosdisc_outputs(full_name_keys=True).keys())
 
-    When testing a discpline gradients, the coupling outputs are tested wrt the coupling inputs.
-    The coupling caracter is based on if the variables are coupling or not in the complete process.
-    """
+        coupling_inputs = list(filter(lambda input_var_disc: input_var_disc in all_coupling_variables, inputs_disc))
+        coupling_outputs = list(filter(lambda output_var_disc: output_var_disc in all_coupling_variables, outputs_disc))
+
+        discipline_inputs_dict = {key: global_data_dict[key] for key in inputs_disc}
+        pickle_filename = f'{dict_test_filename}.pkl'
+        handle_discipline_with_wrong_gradients(coupling_inputs=coupling_inputs,
+                                               coupling_outputs=coupling_outputs,
+                                               discipline_module_path=discipline_class_path,
+                                               discipline_inputs=discipline_inputs_dict,
+                                               model_name=model_name,
+                                               ns_dict=namespaces_dict,
+                                               name=test_name,
+                                               override_dump_jacobian=True,
+                                               jacobian_pkl_name=pickle_filename,
+                                               test_filename=dict_test_filename,
+                                               test_folder=path_test_files_to_write)
+
+
+
+def run_study_and_get_disciplines_to_test(usecase_path):
+    """Runs a study and get the disciplines to test"""
     name = 'jacobianIsolatedDiscTest'
     ee = ExecutionEngine(name)
 
@@ -68,22 +101,38 @@ def check_each_discpline_jacobians_in_process(usecase_path: str):
         if 'sostrades_core' not in module_path_discipline:
             ids_discipline_to_test.append(id_disc)
 
-    gloal_data_dict = usecase.ee.dm.get_data_dict_values()
-    namespaces_dict = {key: ns_obj.value for key, ns_obj in usecase.ee.ns_manager.shared_ns_dict.items()}
-    all_coupling_variables = list(
-        filter(lambda key: usecase.ee.dm.reduced_dm[key]['coupling'], usecase.ee.dm.reduced_dm.keys()))
-
-    discipline_with_wrong_gradients = []
+    disciplines_dict = {}
     for disc_id in tqdm(ids_discipline_to_test):
         discipline_module = usecase.ee.dm.disciplines_dict[disc_id]['model_name_full_path']
         proxy_discipline = usecase.ee.dm.disciplines_dict[disc_id]['reference']
         discipline_class_name = get_discipline_classname_from_module(discipline_module)
         discipline_class_path = f"{discipline_module}.{discipline_class_name}"
+        disciplines_dict[discipline_class_path] = proxy_discipline
 
-        disc_study_path = usecase.ee.dm.disciplines_dict[disc_id]['disc_label']
-        print("TESTING :", disc_study_path)
-        model_name = disc_study_path.split('.')[-1]
-        test_name = disc_study_path.split(f'.{model_name}')[0]
+    global_data_dict = usecase.ee.dm.get_data_dict_values()
+    namespaces_dict = {key: ns_obj.value for key, ns_obj in usecase.ee.ns_manager.shared_ns_dict.items()}
+    all_coupling_variables = list(
+        filter(lambda key: usecase.ee.dm.reduced_dm[key]['coupling'], usecase.ee.dm.reduced_dm.keys()))
+
+
+    return disciplines_dict, usecase, ee, global_data_dict, namespaces_dict, all_coupling_variables
+
+def check_each_discpline_jacobians_in_process(usecase_path: str):
+    """
+    This function executes the usecase and test each discipline gradients at the point obtained after execution.
+
+    When testing a discpline gradients, the coupling outputs are tested wrt the coupling inputs.
+    The coupling caracter is based on if the variables are coupling or not in the complete process.
+    """
+    disciplines_dict, usecase, ee, global_data_dict, namespaces_dict, all_coupling_variables =\
+        run_study_and_get_disciplines_to_test(usecase_path=usecase_path)
+
+
+    discipline_with_wrong_gradients = []
+    for discipline_class_path, proxy_discipline in tqdm(disciplines_dict.items()):
+        print("TESTING :", discipline_class_path)
+        model_name = discipline_class_path.split(".")[-1]
+        test_name = discipline_class_path.split(f'.{model_name}')[0]
 
         inputs_disc = list(proxy_discipline.get_sosdisc_inputs(full_name_keys=True).keys())
         outputs_disc = list(proxy_discipline.get_sosdisc_outputs(full_name_keys=True).keys())
@@ -91,7 +140,7 @@ def check_each_discpline_jacobians_in_process(usecase_path: str):
         coupling_inputs = list(filter(lambda input_var_disc: input_var_disc in all_coupling_variables, inputs_disc))
         coupling_outputs = list(filter(lambda output_var_disc: output_var_disc in all_coupling_variables, outputs_disc))
 
-        discipline_inputs_dict = {key: gloal_data_dict[key] for key in inputs_disc}
+        discipline_inputs_dict = {key: global_data_dict[key] for key in inputs_disc}
 
         success_discipline_gradients = one_test_gradients_discipline(test_name=test_name,
                                                                      model_name=model_name,
@@ -200,7 +249,7 @@ def one_test_gradients_discipline(test_name: str,
             result = True
 
             self.override_dump_jacobian = True
-            disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+            disc_techno = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.mdo_discipline
             pickle_filename = f'{test_name}.{model_name}'.replace('.', '_') + '.pkl'
             if not os.path.exists(GENERATED_TEST_FOLDERNAME):
                 os.mkdir(GENERATED_TEST_FOLDERNAME)
@@ -241,7 +290,10 @@ def handle_discipline_with_wrong_gradients(coupling_inputs: list[str],
                                            ns_dict: dict,
                                            model_name: str,
                                            name: str,
-                                           jacobian_pkl_name: str):
+                                           jacobian_pkl_name: str,
+                                           override_dump_jacobian: bool = False,
+                                           test_filename: Union[str, None] = None,
+                                           test_folder: str = GENERATED_TEST_FOLDERNAME):
     """Prepares a dedicated test file to help debug the gradients"""
     pickle_to_dump = {
         'ns_dict': ns_dict,
@@ -251,17 +303,19 @@ def handle_discipline_with_wrong_gradients(coupling_inputs: list[str],
         'mod_path': discipline_module_path,
         'model_name': model_name
     }
-    generated_test_filename = discipline_module_path.replace('.', '_') + '.pkl'
-    generated_test_data_folder = os.path.join(GENERATED_TEST_FOLDERNAME, 'data')
+    DATA_FOLDERNAME = "data_for_generated_test"
+    pickle_filename = discipline_module_path.replace('.', '_') + '.pkl' if test_filename is None else test_filename + ".pkl"
+    test_filename = discipline_module_path.replace('.', '_') + '.pkl' if test_filename is None else test_filename + ".py"
+    generated_test_data_folder = os.path.join(test_folder, DATA_FOLDERNAME)
 
     if not os.path.exists(generated_test_data_folder):
         os.mkdir(generated_test_data_folder)
-    path_generated_test_file_data = os.path.join(generated_test_data_folder, generated_test_filename)
+    path_generated_test_file_data = os.path.join(generated_test_data_folder, pickle_filename)
 
     with open(path_generated_test_file_data, 'wb') as f:
         pickle.dump(pickle_to_dump, f)
 
-    path_pickle_in_test_file = os.path.join("data", generated_test_filename)
+    path_pickle_in_test_file = os.path.join(DATA_FOLDERNAME, pickle_filename)
 
     generated_code = f"""
 import pickle
@@ -305,15 +359,15 @@ class MyGeneratedTest(AbstractJacobianUnittest):
 
         self.ee.execute()
 
-        disc_techno = self.ee.root_process.proxy_disciplines[0].mdo_discipline_wrapp.mdo_discipline
+        disc_techno = self.ee.root_process.proxy_disciplines[0].discipline_wrapp.discipline
 
+        self.override_dump_jacobian = {override_dump_jacobian}
         self.check_jacobian(location=dirname(__file__), filename='{jacobian_pkl_name}',
                             discipline=disc_techno, step=1e-15, derr_approx='complex_step', local_data = disc_techno.local_data,
                             inputs=coupling_inputs,
                             outputs=coupling_ouputs)
     """
-    genretated_test_file_name = discipline_module_path.replace('.', '_') + '.py'
-    path_generated_test_file = os.path.join(GENERATED_TEST_FOLDERNAME, genretated_test_file_name)
+    path_generated_test_file = os.path.join(test_folder, test_filename)
 
     with open(path_generated_test_file, 'w') as f:
         f.write(generated_code)

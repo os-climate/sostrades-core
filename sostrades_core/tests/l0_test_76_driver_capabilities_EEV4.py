@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         local_dv = 10.
         values_dict = {}
         values_dict[f'{self.ns}.Eval.x'] = array([1.])
-        values_dict[f'{self.ns}.Eval.z'] = array([1.])
+        values_dict[f'{self.ns}.Eval.z'] = array([1., 1.])
         values_dict[f'{self.ns}.Eval.y_1'] = array([1.])
         values_dict[f'{self.ns}.Eval.y_2'] = array([1.])
         values_dict[f'{self.ns}.Eval.z_in'] = 2 * array([1., 1.])

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/07/04 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -115,6 +115,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         self.get_children_list_by_vb(self.builder_dict)
 
     def prepare_execution(self):
+        """Purely a configuration discipline it does not prepare execution."""
         pass
 
     @property
@@ -166,7 +167,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 f'The architecture dataframe must have 5 columns named : {self.ARCHI_COLUMNS}'
             )
 
-        if not archi_df[self.ACTIVATION].dtype == 'bool':
+        if archi_df[self.ACTIVATION].dtype != 'bool':
             raise ArchiBuilderException(
                 'The architecture dataframe must contains bouleans in Activation column'
             )
@@ -267,12 +268,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             modified_activation_df.loc[
                                 ~modified_activation_df[colname], children_names
                             ] = False
-
-            # if len(rows_to_delete) > 0:
-            #     # remove rows with values not among possible_values
-            #     self.get_data_in()[self.ACTIVATION_DF][self.VALUE] = modified_activation_df.drop(
-            #         rows_to_delete
-            #     )
 
     def get_children_names(self, parent_name, architecture):
         """Recursive method to get children names for parent name by reading architecture_df"""
@@ -514,7 +509,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     builder_name = namespace
                     if not builder.sos_name.endswith('@archi_node'):
                         old_builder_name = builder.sos_name
-                        builder.set_disc_name(f'{builder.sos_name}@archi_node')
+                        builder.set_disc_name(f'{old_builder_name}@archi_node')
                         # self.ee.ns_manager.add_display_ns_to_builder(builder, old_builder_name)
                 action, args = self.get_action_builder(namespace, archi_df)
 
@@ -574,7 +569,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
                             if isinstance(args[1], tuple):
                                 # get builder of scatter of scatter
-                                raise Exception('Nested scatters in architecture builder not implemented')
+                                raise ArchiBuilderException('Nested scatters in architecture builder not implemented')
                             else:
                                 # get builder of scatter
                                 scatter_builder = self.get_builder_from_factory(
@@ -619,9 +614,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             ]
 
                             # Need to modify names of builder
-                            for builder_list in archi_builder_list:
-                                builder_list.set_disc_name(
-                                    builder_list.sos_name.split(
+                            for builder_list_loop in archi_builder_list:
+                                builder_list_loop.set_disc_name(
+                                    builder_list_loop.sos_name.split(
                                         f'{builder_name}.')[-1]
                                 )
 
@@ -722,8 +717,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         attribute children_list
         """
         for ns, disc_list in self.archi_disciplines.items():
-            # scatter_in_node = False
-            # scattered_disciplines = {}
             for disc in disc_list:
                 disc_children_list = [
                     child
@@ -807,8 +800,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             builder_name = namespace
             driver_name = f'{builder_name}.driver'
 
-        # TODO: check it is OK to always go multi-instance
-        # FIXME: issue with the treeviews...
         if isinstance(builder, list):
             builder_scatter = self.ee.factory.create_multi_instance_driver(driver_name, builder)
         else:
@@ -825,7 +816,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], self.get_disc_full_name().replace(self.sos_name, namespace))
         else:
-            # builder_name = f"{namespace.split('.', 1)[1]}"
             self.ee.ns_manager.add_display_ns_to_builder(
                 builder_scatter[0], f'{self.get_disc_full_name()}.{builder_name}')
         result_builder_list.extend(builder_scatter)

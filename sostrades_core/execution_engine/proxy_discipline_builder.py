@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/26-2024/06/24 Copyright 2023 Capgemini
+Modifications on 2023/04/26-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
     """
 
     # -- Disciplinary attributes
-
     # ontology information
     _ontology_data = {
         'label': 'Core Discipline Builder Model',
@@ -53,10 +52,6 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         'version': '',
     }
 
-    # def __init__(self):
-    #
-    #     self.proxy_discipline = None
-    #     self.built_sos_disciplines = None
     PROPAGATE_CACHE = 'propagate_cache_to_children'
     NUM_DESC_IN = {PROPAGATE_CACHE: {ProxyDiscipline.TYPE: 'bool', ProxyDiscipline.POSSIBLE_VALUES: [True, False],
                                      ProxyDiscipline.DEFAULT: False, ProxyDiscipline.NUMERICAL: True,
@@ -68,23 +63,23 @@ class ProxyDisciplineBuilder(ProxyDiscipline):
         """Instanciate sub proxies managed by the coupling"""
         old_current_discipline = self.ee.factory.current_discipline
         self.set_father_discipline()
+        if not isinstance(builder_list, ProxyDiscipline.GEMSEO_OBJECTS):
+            for builder in builder_list:
+                # A builder of disciplines should propagate its associated namespaces
+                # and has the priority over associated namespaces already set
+                self.associate_namespace_to_sub_builder(builder)
 
-        for builder in builder_list:
-            # A builder of disciplines should propagate its associated namespaces
-            # and has the priority over associated namespaces already set
-            self.associate_namespace_to_sub_builder(builder)
+                proxy_disc = builder.build()
 
-            proxy_disc = builder.build()
-
-            if self.ee.ns_manager.get_local_namespace(
+                if self.ee.ns_manager.get_local_namespace(
                     self).is_display_value() and builder not in self.ee.ns_manager.display_ns_dict:
-                father_display_value = self.get_disc_display_name()
-                display_value = f'{father_display_value}.{builder.sos_name}'
-                self.ee.ns_manager.get_local_namespace(
-                    proxy_disc).set_display_value(display_value)
+                    father_display_value = self.get_disc_display_name()
+                    display_value = f'{father_display_value}.{builder.sos_name}'
+                    self.ee.ns_manager.get_local_namespace(
+                        proxy_disc).set_display_value(display_value)
 
-            if proxy_disc not in self.proxy_disciplines:
-                self.ee.factory.add_discipline(proxy_disc)
+                if proxy_disc not in self.proxy_disciplines:
+                    self.ee.factory.add_discipline(proxy_disc)
         # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
         # high level coupling and we do not have to restore the
         # current_discipline

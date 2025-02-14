@@ -1,6 +1,6 @@
 '''
 Copyright 2024 Capgemini
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import pandas as pd
 
 from sostrades_core.sos_processes.test.tests_driver_eval.mono.test_mono_driver_sample_generator_tornado_analysis.usecase_tornado_analysis import (
     Study,
+)
+from sostrades_core.sos_processes.test.tests_driver_eval.mono.test_mono_driver_sample_generator_tornado_analysis_sellar.usecase_tornado_analysis_sellar import (
+    Study as StudySellar,
 )
 from sostrades_core.tools.post_processing.post_processing_factory import (
     PostProcessingFactory,
@@ -140,3 +143,8 @@ class TestTornadoChartAnalysis(unittest.TestCase):
         #     chart.to_plotly().show()
         self.assertIsNotNone(charts)
         self.assertTrue(len(charts) == 2)
+
+    def test_03_tornado_chart_analysis_sellar_not_fully_initialized(self):
+        uc_cls = StudySellar(run_usecase=True)
+        uc_cls.load_data()
+        uc_cls.run()

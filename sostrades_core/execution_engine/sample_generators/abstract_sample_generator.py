@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class AbstractSampleGenerator(object):
             msg += "however sampling type of sampling generator <%s> " % str(
                 self.__class__.__name__)
             msg += "is <%s> " % str(type(samples))
-            raise SampleTypeError()
+            raise SampleTypeError(msg)
 
     # def get_options_and_default_values(self, algo_name):
     #     '''
@@ -89,7 +89,6 @@ class AbstractSampleGenerator(object):
         """
         return {}, {}
 
-    # TODO: renaming proxy / wrapper / proxy_or_wrapper for clarity when impl. is fixed in next 2 methods
     def sample(self, wrapper):
         """Method that takes the wrapper as input and returns the output of generate_samples."""
         _args, _kwargs = self.get_arguments(wrapper)
@@ -116,6 +115,4 @@ class AbstractSampleGenerator(object):
         Method that takes the ProxySampleGenerator as input and filters the possible evaluated inputs values and types
         in order to constrain the input for specific sample generators.
         """
-        # proxy.eval_in_possible_values = [subprocess_inputs]
-        # proxy.eval_in_possible_types = {subprocess_input: variable_type}
         pass

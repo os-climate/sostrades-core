@@ -67,7 +67,6 @@ def _load_dataframe(file_path: str) -> pd.DataFrame:
 class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     """Specific dataset serializer for dataset"""
 
-    # TYPE_IN_FILESYSTEM_PREFIXES = ['@dataframe@', '@array@']  # TODO: discuss
     TYPE_IN_FILESYSTEM_PARTICLE = '@'
     TYPE_DATAFRAME = 'dataframe'
     TYPE_ARRAY = 'array'
@@ -256,7 +255,6 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
             data_name (str): The name of the data to clear.
 
         """
-        # TODO: [discuss] is this necessary ?
         if data_name in self.__pickle_data:
             del self.__pickle_data[data_name]
 
@@ -279,7 +277,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
         if data_name in data_types_dict:
             # unknown data type is handled in mother class method
             data_type = data_types_dict[data_name]
-            # TODO[discuss]: when the data is in the pickle pre-fill with @object@ and will be overwritten by connector
+            # when the data is in the pickle, pre-fill with @object@ and will be overwritten by connector
             if filesystem_type == self.TYPE_OBJECT:
                 self.__logger.debug(f"{data_name} with filesystem descriptor {data_value} is loaded from"
                                     f"non-serializable types pickle file.")

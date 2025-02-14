@@ -28,17 +28,26 @@ from sostrades_core.datasets.datasets_connectors.arango_datasets_connector impor
 from sostrades_core.datasets.datasets_connectors.bigquery_datasets_connector import (
     BigqueryDatasetsConnector,
 )
+from sostrades_core.datasets.datasets_connectors.json_datasets_connector.\
+    json_datasets_connector_multiversion import (
+    JSONDatasetsConnectorMV,
+)
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_datasets_connectorV0 import (
     JSONDatasetsConnectorV0,
 )
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_datasets_connectorV1 import (
     JSONDatasetsConnectorV1,
 )
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
+    local_filesystem_datasets_connector_multiversion import (
+    LocalFileSystemDatasetsConnectorMV,
+)
+from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
+    local_filesystem_datasets_connectorV1 import (
+    LocalFileSystemDatasetsConnectorV1,
+)
 from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connectorV0 import (
     LocalFileSystemDatasetsConnectorV0,
-)
-from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.local_filesystem_datasets_connectorV1 import (
-    LocalFileSystemDatasetsConnectorV1,
 )
 from sostrades_core.datasets.datasets_connectors.local_repository_datasets_connector import (
     LocalRepositoryDatasetsConnector,
@@ -54,8 +63,10 @@ class DatasetConnectorType(Enum):
 
     JSON = JSONDatasetsConnectorV0
     JSON_V1 = JSONDatasetsConnectorV1
+    JSON_MV = JSONDatasetsConnectorMV
     Local = LocalFileSystemDatasetsConnectorV0
     Local_V1 = LocalFileSystemDatasetsConnectorV1
+    Local_MV = LocalFileSystemDatasetsConnectorMV
     Arango = ArangoDatasetsConnector
     SoSpickle = SoSPickleDatasetsConnector
     Local_repository = LocalRepositoryDatasetsConnector

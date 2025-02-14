@@ -67,7 +67,6 @@ class ProxySampleGenerator(ProxyDiscipline):
     SCENARIO_NAME = SampleGeneratorWrapper.SCENARIO_NAME
     REFERENCE_SCENARIO_NAME = 'Reference Scenario'
 
-    # TODO: move to tools ?
     N_SAMPLES = "n_samples"
     ALGO = SampleGeneratorWrapper.ALGO
     ALGO_OPTIONS = SampleGeneratorWrapper.ALGO_OPTIONS
@@ -141,7 +140,7 @@ class ProxySampleGenerator(ProxyDiscipline):
     OVERWRITE_SAMPLES_DF_DESC = {
         ProxyDiscipline.TYPE: 'bool',
         ProxyDiscipline.STRUCTURING: True,
-        ProxyDiscipline.DEFAULT: False,  # TODO: think about
+        ProxyDiscipline.DEFAULT: False,
     }
     MAX_AUTO_SELECT_SCENARIOS = 1024  # maximum number of scenarios to be auto-selected after a sampling at config. time
 
@@ -174,12 +173,10 @@ class ProxySampleGenerator(ProxyDiscipline):
         self.samples_gene_df = None  # sample generated at configuration-time
 
         self.force_sampling_at_configuration_time = False
-        # TODO: actually no need for two variables as the type dict could be sorted and its keys be the possible_values
         self.eval_in_possible_values = []
         self.eval_in_possible_types = {}
         self.samples_df_f_name = None
         self.analysis_disc = None
-        # FIXME: using samples_df_f_name to sample means configuration-time sampling needs to be banned on standalone sample gen.
 
     def set_eval_in_possible_values(self,
                                     possible_values: list[str],
@@ -267,7 +264,7 @@ class ProxySampleGenerator(ProxyDiscipline):
             self.sg_data_integrity = False
             self.ee.dm.set_data(self.get_var_full_name(self.SAMPLING_METHOD, disc_in),
                                     self.CHECK_INTEGRITY_MSG, '\n'.join(method_mode_integrity_msg))
-        # check integrity for eval_inputs # TODO: move to cartesian product sample generator ?
+        # check integrity for eval_inputs, could be done by cartesian product sample generator
         eval_inputs_integrity_msg = []
         if self.configurator and self.EVAL_INPUTS in disc_in:
             eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
@@ -343,7 +340,6 @@ class ProxySampleGenerator(ProxyDiscipline):
                 self.all_input_structuring = True
                 self.sample_at_configuration_time(disc_in)
 
-            # TODO: manage config-time sample for grid search and test for DoE as well as coupled run-time sampling for CP
             self.add_inputs(dynamic_inputs)
             self.add_outputs(dynamic_outputs)
 
@@ -404,7 +400,6 @@ class ProxySampleGenerator(ProxyDiscipline):
             disc_in[self.SAMPLING_GENERATION_MODE][self.EDITABLE] = False
             expected_mode = forced_methods_modes[self.sampling_method]
             if sampling_generation_mode != expected_mode:
-                # TODO: discuss warnings and exception handlings
                 # warn and force config time sampling
                 self.logger.warning(f'Forcing {self.SAMPLING_GENERATION_MODE} to {expected_mode} for '
                                     f'{self.sampling_method} {self.SAMPLING_METHOD}.')
@@ -536,7 +531,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                 if overwrite_samples_df:
                     try:
                         self.samples_gene_df = self.discipline_wrapp.wrapper.sample()
-                    except ValueError as cm:  # TODO: larger clause ?
+                    except ValueError as cm:
                         self.samples_gene_df = None
                         self.logger.error('Failed to sample due to ' + str(cm))
                     if self.samples_gene_df is not None and not self.samples_gene_df.empty:

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/07/17-2024/06/24 Copyright 2023 Capgemini
+Modifications on 2023/07/17-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@ from sostrades_core.execution_engine.builder_tools.sos_tool import SosTool
 '''
 mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 '''
+
+
+class ScatterToolException(Exception):
+    pass
 
 
 class ScatterTool(SosTool):
@@ -74,12 +78,12 @@ class ScatterTool(SosTool):
         '''Set the display options dictionnary for the driver'''
         if display_options_dict is not None:
             if not isinstance(display_options_dict, dict):
-                raise Exception(
+                raise ScatterToolException(
                     'The display options parameter for the driver creation should be a dict')
             else:
                 for key in display_options_dict:
                     if key not in self.DISPLAY_OPTIONS_POSSIBILITIES:
-                        raise Exception(
+                        raise ScatterToolException(
                             f'Display options should be in the possible list : {self.DISPLAY_OPTIONS_POSSIBILITIES}')
                     else:
                         self.display_options[key] = display_options_dict[key]
@@ -102,7 +106,6 @@ class ScatterTool(SosTool):
         if self.driver.SAMPLES_DF in self.driver.get_data_in():
             instance_reference = self.driver.get_sosdisc_inputs(self.driver.INSTANCE_REFERENCE)
             samples_df = self.driver.get_sosdisc_inputs(self.driver.SAMPLES_DF)
-            # sce_df = copy.deepcopy(samples_df)
             if instance_reference:
                 ref_series = pd.Series(
                     {self.driver.SELECTED_SCENARIO: True, self.driver.SCENARIO_NAME: 'ReferenceScenario'})
@@ -179,7 +182,7 @@ class ScatterTool(SosTool):
     def set_scatter_list(self, scatter_list):
         self.__scatter_list = scatter_list
         if self.sc_map is not None and self.sc_map.get_scatter_list_name_and_namespace() is not None:
-            scatter_list_name, scatter_list_namespace = self.sc_map.get_scatter_list_name_and_namespace()
+            scatter_list_name, _ = self.sc_map.get_scatter_list_name_and_namespace()
             if scatter_list_name in self.driver.get_data_in():
                 self.ee.dm.set_data(self.driver.get_var_full_name(
                     scatter_list_name, self.driver.get_data_in()), 'value', self.__scatter_list)
@@ -220,7 +223,6 @@ class ScatterTool(SosTool):
         ns_ids_list = []
         extra_name = f'{self.driver.sos_name}.{name}'
         after_name = self.driver.father_executor.get_disc_full_name()
-        # ns_list = self.ns_to_update.values()
 
         for ns_name, ns in self.ns_to_update.items():
             updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(

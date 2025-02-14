@@ -1,5 +1,10 @@
 # Documentation test
 
+# Navigation
+- [Model Documentation](#model-documentation)
+  - [1. Overview](#1-overview)
+  - [2. Values](#2-values)
+
 On rc :
 
 ```mermaid
@@ -18,12 +23,13 @@ graph LR
 ```
 
 $$RC = RC\_Propulsion + RC\_Make + RC\_Liability$$
-$$RC\_Make = (1-Perc\_Labour)*RC\_Material + \\
-Perc\_Labour*RC\_Labour$$
-![Test Image](test_doc_image.PNG)
+$$RC\_Make = (1-Perc\_Labour) * RC\_Material + \\ Perc\_Labour * RC\_Labour$$
+$$sch_{mean}= \frac{1}{2}(C_{SCH}^t + C_{SCH}^{1750})$$
+
+![](test_doc_image.PNG)
 Percentages on Labour (30%), Common (60%), New (30%) and Modify (10%) can be easily changed.
 
-## ZZZ: Model Documentation
+## Model Documentation
 
 ### 1. Overview
 
@@ -105,13 +111,11 @@ Basic future of production[^14]
 
 The model MYKE [^15]:
 
-$$\text{Myke(\%)} = \max(0, \frac{2.56 * (T - 234)}{90} * 100)$$
 
 #### 2.2 Meat Production Loss
 
 The model assumes a direct relationship between temperature increase and reduction in dry matter intake[^15]:
 
-$$\text{Meat Loss (\%)} = \max(0, 0.85 * (T - 21) * 100)$$
 
 Where:
 - T is the temperature in °C
@@ -150,12 +154,19 @@ Where:
 - $r$ [^16]
 - $\Delta T$ is the world
 
-### 3. text in formula
-Therefore the variables $\text{My new variable}_{t}$ and $\text{My other variable}_{t}$ are updated for all years $t \geq t$.
+### 3. World Capitals
+Capitals:
+$$
+\text{cap\ all\ type}[t] = \text{cap\ all\ type}[t-1] \times \left( 1 - \frac{\text{rate}}{100} \right) + \text{hari\ po\ heure}[t]
+$$
+
+
+### 3.1 text in formula
+Therefore the variables $\text{My new variable}\_{t}$ and $\text{My other variable}\_{t}$ are updated for all years $t \geq t$.
 
 $\text{function fn (called f)} = \text{big F function }\text{\%} \times \text{function G}$
 
-$\text{Delta X}_{t} = \text{result}_{t} - \text{y}_{t} + a^{\text{b}}_{t} + a^{\text{variable c}}_{t}$
+$\text{Delta X}\_{t} = \text{result}\_{t} - \text{y}\_{t} + a^{\text{b}}\_{t} + a^{\text{variable c}}\_{t}$
 
 $$\text{F1 function (X,\$)} = \frac{\text{ab, M\$}}{\text{number of data}} \times 10^6$$
 $$\text{F2 function (Y, \%)} = \frac{\text{cd}}{\text{number}} \times 100$$
@@ -166,6 +177,8 @@ $$\text{Total of all functions, M\$} = \text{ruslt of summ}$$
 $$\text{Mass Loss (}\text{\%}\text{)} = \max\left(0, 0.1 \times (P - 9.81) \times 100\right)$$
 
 END.
+
+
 
 ## Sources
 [^1]: "Rain-free France experiences record-equalling 31-day dry spell", Le Monde, 21 February 2023,

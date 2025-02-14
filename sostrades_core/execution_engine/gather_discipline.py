@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/21-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/02/21-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -261,7 +261,6 @@ class GatherDiscipline(SoSWrapp):
             key_split = key_column_name.split('_')
             if len(key_split) == 1:
                 key_column_name = key_split[0] + "_1"
-                # key_column_name = 'key_level_1'
             else:
                 key_split[-1] = str(int(key_split[-1]) + 1)
                 key_column_name = '_'.join(key_split)
@@ -285,7 +284,6 @@ class GatherDiscipline(SoSWrapp):
     def get_post_processing_list(self, chart_filters=None):
 
         instanciated_charts = []
-        # scenario_name = self.get_sosdisc_inputs('shared_scenario_name')
 
         # Overload default value with chart filter
         if chart_filters is not None:
@@ -335,10 +333,6 @@ class GatherDiscipline(SoSWrapp):
                         new_chart.series.append(
                             serie)
                     instanciated_charts.append(new_chart)
-            elif isinstance(output_value, pd.DataFrame):
-                pass
-                # new_chart_list = self.create_chart_gather_dataframes(output_value, chart_unit, chart_name)
-                # instanciated_charts.extend(new_chart_list)
         return instanciated_charts
 
     def create_chart_gather_dataframes(self, output_value, chart_unit, chart_name):

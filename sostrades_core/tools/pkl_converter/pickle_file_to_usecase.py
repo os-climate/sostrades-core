@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/06/11-2024/07/03 Copyright 2024 Capgemini
+Modifications on 2024/06/11-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -609,7 +609,7 @@ if '__main__' == __name__:
 
         # run black Python Code formatter to have a nice result in the usecase.py
         subprocess.run(
-            ['black', join(self.dump_dir, f'usecase_{self.usecase_name}.py')]
+            ['black', join(self.dump_dir, f'usecase_{self.usecase_name}.py')], check=True
         )
         print(
             f'✨✨ Usecase usecase_{self.usecase_name}.py has been written into {self.dump_dir} ✨✨'

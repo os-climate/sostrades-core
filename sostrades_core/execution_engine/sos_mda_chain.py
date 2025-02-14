@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/02-2024/07/04 Copyright 2023 Capgemini
+Modifications on 2023/03/02-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ from numpy import floating, ndarray
 from pandas import DataFrame
 
 from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
+from sostrades_core.execution_engine.sos_discipline_driver import SoSDisciplineDriver
 from sostrades_core.tools.filter.filter import filter_variables_to_convert
 
 if TYPE_CHECKING:
@@ -85,7 +86,7 @@ class SoSMDAChain(MDAChain):
             RUN_NEEDED: True,
         },
     }
-    NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA']
+    NEWTON_ALGO_LIST = ['MDANewtonRaphson', 'MDAGSNewton']
 
     def __init__(
         self,
@@ -307,6 +308,9 @@ class SoSMDAChain(MDAChain):
         self.linear_solver = self.linear_solver_MDO
         self.linear_solver_settings = self.linear_solver_settings_MDO
         self.linear_solver_tolerance = self.linear_solver_tolerance_MDO
+        # use the same linearization_mode for the coupling and its children
+        for disc in self.coupling_structure.disciplines:
+            disc.linearization_mode = self.linearization_mode
 
         MDAChain._compute_jacobian(self, inputs, outputs)
 
@@ -426,16 +430,77 @@ class SoSMDAChain(MDAChain):
         self,
         input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> DisciplineData:
+
+        _input_data = input_data
+
         # The initialization is needed for MDA loops.
         if (
             self.settings.initialize_defaults
-            and len(self.disciplines) > 1
             and len(self.coupling_structure.strong_couplings) > 0
         ):
-            init_chain = MDOInitializationChain(
-                self.disciplines,
-                available_data_names=input_data,
-            )
+
+            # Need to pre-run coupling under the coupling if there is some
+            driver_sub_disciplines = [disc for disc in self.disciplines if
+                                      isinstance(disc, SoSDisciplineDriver)]
+            if len(driver_sub_disciplines) != 0:
+                input_data = self.pre_run_driver_subcoupling(input_data, driver_sub_disciplines)
+                _input_data = input_data
+            disc_to_pre_run = [disc for disc in self.disciplines if not isinstance(disc, SoSDisciplineDriver)]
+            if len(disc_to_pre_run) > 1 and self.check_strong_coupling_still_in_disc_to_pre_run(disc_to_pre_run):
+                _input_data = self.sos_pre_run(input_data, self, disc_to_pre_run)
+
+        return super(MDAChain, self).execute(input_data=_input_data)
+
+    def check_strong_coupling_still_in_disc_to_pre_run(self, disc_to_pre_run):
+        '''
+        Check that strong couplings are still in the grammar of the disc to pre run and not in the subcoupling under the driver
+        Returns: True or False
+
+        '''
+        still_in_disc_to_pre_run = True
+        if len([disc for disc in self.disciplines if
+                isinstance(disc, SoSDisciplineDriver)]) != 0:
+            input_grammar_names = [disc.io.input_grammar.names for disc in disc_to_pre_run]
+            output_grammar_names = [disc.io.output_grammar.names for disc in disc_to_pre_run]
+            strong_coupling_in_disc_to_pre_run = [name for name in self.coupling_structure.strong_couplings if
+                                                  name in input_grammar_names + output_grammar_names]
+            if len(strong_coupling_in_disc_to_pre_run) == 0:
+                return False
+        return still_in_disc_to_pre_run
+    def pre_run_driver_subcoupling(self, input_data, driver_sub_disciplines):
+        '''
+
+        Args:
+            input_data: the input_data to populate with outputs from the pre-run
+            driver_sub_disciplines: drivers sub disciplines
+
+        Returns: Input_data populated with pre-run from subcouplings
+                The concept of pre-run works if you pre-run low level mdachain first to retrieve strong coupling values for high level ones
+                In SoSTrades, the presence of subcoupling is now only present in the case of drivers (COupling under a driver)
+                Then you need to check if there are drivers under the mdachain
+                If they are then pre-run in the order of the sub disciplines to pre-run the driver sub-coupling first before pre-run the mother coupling
+
+        '''
+        for task in self.coupling_structure.sequence:
+            for component in task:
+                for disc in component:
+                    if disc in driver_sub_disciplines:
+                        input_data = self.sos_pre_run(input_data, disc._disciplines[0])
+                        driver_sub_disciplines.remove(disc)
+                    else:
+                        new_input_data = disc.execute(input_data)
+                        input_data = input_data | new_input_data
+                    if len(driver_sub_disciplines) == 0:
+                        return input_data
+        return input_data
+
+    def sos_pre_run(self, input_data, disc, disciplines=None):
+        if disciplines is None:
+            disciplines = disc.disciplines
+        driver_init_chain = MDOInitializationChain(
+            disciplines,
+            available_data_names=input_data,
+        )
         #     default_input_data = {}
         #     for key, value in init_chain.execute(input_data).items():
         #         if key in self.input_grammar.names:
@@ -448,18 +513,13 @@ class SoSMDAChain(MDAChain):
         # return super(MDAChain, self).execute(input_data=input_data)
         # FIXME: from here below this is a quick-fix for many test errors. In fine the code commented out above should
         # be reactivated and actually solve the size mismatches between input data and MDA pre-run causing the crashes
-            pre_run_data = init_chain.execute(input_data)
-            self.default_input_data.update({
-                key: value
-                for key, value in pre_run_data.items()
-                if key in self.input_grammar.names
-            })
+        pre_run_data = driver_init_chain.execute(input_data)
+        self.default_input_data.update({
+            key: value
+            for key, value in pre_run_data.items()
+            if key in self.input_grammar.names
+        })
 
-            self.settings = self.settings.model_copy(update={"initialize_defaults": False})
-            _input_data = input_data | pre_run_data
-            # self.io.data.update(pre_run_data)
-        else:
-            _input_data = input_data
-        return super(MDAChain, self).execute(input_data=_input_data)
-
-# Test.CCUS.carbon_capture.energy_consumption
+        disc.settings = disc.settings.model_copy(
+            update={"initialize_defaults": False})
+        return input_data | pre_run_data

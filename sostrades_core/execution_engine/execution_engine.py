@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2024/07/30 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ from sostrades_core.execution_engine.ns_manager import NamespaceManager
 from sostrades_core.execution_engine.post_processing_manager import (
     PostProcessingManager,
 )
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
+from sostrades_core.execution_engine.proxy_coupling import BaseDiscipline, BaseScenario, ProxyCoupling
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
@@ -88,6 +88,7 @@ class ExecutionEngine:
         self.root_process: Union[ProxyCoupling, None] = None
         self.root_builder_ist = None
         self.check_data_integrity: bool = True
+        self.wrapping_mode = 'SoSTrades'
 
     @property
     def factory(self) -> SosFactory:
@@ -142,8 +143,12 @@ class ExecutionEngine:
             self.root_builder_ist, self.factory.BUILDERS_FUNCTION_NAME)
         builder_list = builder_list_func()
 
-        self.factory.set_builders_to_coupling_builder(builder_list)
-        # -- We are changing what happend in root, need to reset dm
+        if isinstance(builder_list, ProxyDiscipline.GEMSEO_OBJECTS):
+            self.factory.set_gemseo_object_to_coupling_builder(builder_list)
+            self.wrapping_mode = 'GEMSEO'
+        else:
+            self.factory.set_builders_to_coupling_builder(builder_list)
+            # -- We are changing what happend in root, need to reset dm
         self.dm.reset()
         self.load_study_from_input_dict({})
 
@@ -180,12 +185,6 @@ class ExecutionEngine:
 
         self.factory.build()
         self.root_process.configure_io()
-
-    def __configure_execution(self):
-        self.root_process.configure_execution()
-
-        # create DM treenode to be able to populate it from GUI
-        self.dm.treeview = None
 
     def update_from_dm(self):
         self.logger.info("Updating from DM.")
@@ -563,7 +562,7 @@ class ExecutionEngine:
                 loop_stop = True
             elif iteration >= 100:
                 self.logger.warning('CONFIGURE WARNING: root process is not configured after 100 iterations')
-                raise Exception('Too many iterations')
+                raise ExecutionEngineException('Too many iterations')
 
         # Convergence is ended
         # Set all output variables and strong couplings
@@ -574,7 +573,6 @@ class ExecutionEngine:
         if self.__yield_method is not None:
             self.__yield_method()
 
-        #         self.__configure_execution()
         # -- Init execute, to fully initialize models in discipline
         if len(parameter_changes) > 0:
             self.update_from_dm()
@@ -630,8 +628,6 @@ class ExecutionEngine:
         if mode is None:
             disc.nan_check = True
             disc.check_if_input_change_after_run = True
-            # disc.check_linearize_data_changes = True
-            # disc.check_min_max_gradients = True
             disc.check_min_max_couplings = True
         elif mode == "nan":
             disc.nan_check = True
@@ -696,8 +692,22 @@ class ExecutionEngine:
         self.logger.info("Executing.")
         input_data_wo_none = {key: value for key, value in input_data.items() if value is not None}
         try:
-            ex_proc.discipline_wrapp.discipline.execute(
+            if self.wrapping_mode == 'SoSTrades':
+                ex_proc.discipline_wrapp.discipline.execute(
                 input_data=input_data_wo_none)
+                io_data = ex_proc.discipline_wrapp.discipline.io.data
+            elif self.wrapping_mode == 'GEMSEO':
+                ex_proc.discipline_wrapp.discipline.execute()
+                if isinstance(ex_proc.discipline_wrapp.discipline, BaseDiscipline):
+                    gemseo_disc = ex_proc.discipline_wrapp.discipline
+                    io_data = {f'{self.study_name}.{key}': value for key, value in gemseo_disc.io.data.items()}
+                elif isinstance(ex_proc.discipline_wrapp.discipline, BaseScenario):
+                    gemseo_discs = ex_proc.discipline_wrapp.discipline.disciplines
+                    io_data = {}
+                    for gemseo_disc in gemseo_discs:
+                        io_data.update(
+                            {f'{self.study_name}.{key}': value for key, value in gemseo_disc.io.data.items()})
+
         except:
             ex_proc.set_status_from_discipline()
             raise
@@ -705,11 +715,11 @@ class ExecutionEngine:
         self.status = self.root_process.status
         self.logger.info('PROCESS EXECUTION %s ENDS.', self.root_process.get_disc_full_name())
 
-        self.logger.info("Storing local data in datamanager.")
-        # -- store local data in datamanager
-        ex_proc.discipline_wrapp.discipline.io.data.pop("MDA residuals norm", None)
-        self.update_dm_with_local_data(
-            ex_proc.discipline_wrapp.discipline.io.data)
+        if self.wrapping_mode == 'SoSTrades':
+            self.logger.info("Storing local data in datamanager.")
+            # -- store local data in datamanager
+            io_data.pop("MDA residuals norm", None)
+        self.update_dm_with_local_data(io_data)
         # Add residuals_history and other numerical outputs that are not in GEMSEO grammar to the data manager
         self.update_dm_with_local_data(ex_proc.get_numerical_outputs_subprocess())
         # -- update all proxy statuses

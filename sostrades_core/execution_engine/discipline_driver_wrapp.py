@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/06/24 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -76,10 +76,9 @@ class DisciplineDriverWrapp(DisciplineWrapp):
             self._init_grammar_with_keys(proxy)
             # self._update_all_default_values(input_data) #TODO: numerical inputs etc?
             self._set_wrapper_attributes(proxy, self.wrapper)
-            # self._set_discipline_attributes(proxy, self.discipline)
 
         elif self.wrapping_mode == 'GEMSEO':
-            pass
+            raise NotImplementedError("GEMSEO native wrapping mode not yet available.")
 
     def get_sub_disciplines(self, proxy):
         return [

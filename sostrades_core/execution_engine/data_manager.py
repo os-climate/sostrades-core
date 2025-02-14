@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/08/01 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -74,6 +74,10 @@ class ParameterChange:
     variable_key: str
 
 
+class DataManagerException(Exception):
+    pass
+
+
 class DataManager:
     """Specification: DataManager class collects inputs/outputs and disciplines"""
 
@@ -130,7 +134,7 @@ class DataManager:
         self.cache_map[hashed_uid] = disc.cache
         # store disc in DM map
         if hashed_uid in self.gemseo_disciplines_id_map:
-            raise Exception(
+            raise DataManagerException(
                 'The hashed_uid to fill the cache_map must be unique')
         else:
             self.gemseo_disciplines_id_map[hashed_uid] = disc
@@ -158,9 +162,7 @@ class DataManager:
         if isinstance(empty_cache, SimpleCache):
 
             cached_inputs = serialized_cache[1]['inputs']
-            in_names = list(cached_inputs.keys())
             cached_outputs = serialized_cache[1]['outputs']
-            out_names = list(cached_outputs.keys())
             empty_cache.cache_outputs(cached_inputs,
                                       cached_outputs)
             #
@@ -410,7 +412,6 @@ class DataManager:
         # do a map between namespace and data from data_dict not already fetched
         # to have a list of data by namespace
         namespaced_data_dict = {}
-        KEY = 'key'
 
         for key, data_value in self.data_dict.items():
             # check if the key is an output variable
@@ -428,8 +429,8 @@ class DataManager:
                 data_type = data_value[TYPE]
 
                 # create a dict with namespace, datas with keys (to fill dm after) and types (to convert from dataset)
-                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {KEY: {}, TYPE: {}})
-                namespaced_data_dict[data_ns][KEY][data_name] = key
+                namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY: {}, TYPE: {}})
+                namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
                 namespaced_data_dict[data_ns][TYPE][data_name] = data_type
 
         # iterate on each namespace to retrieve data in this namespace
@@ -444,7 +445,7 @@ class DataManager:
                 self.logger.warning(f"Retrieved the namespace {namespace} with values: {list(updated_data.keys())}")
                 # update data values in dm
                 for data_name, new_data in updated_data.items():
-                    key = data_dict[KEY][data_name]
+                    key = data_dict[DatasetsMapping.KEY][data_name]
                     new_value = new_data[DatasetsManager.VALUE]
                     connector_id = new_data[DatasetsManager.DATASET_INFO].connector_id
                     dataset_id = new_data[DatasetsManager.DATASET_INFO].dataset_info_id
@@ -498,8 +499,8 @@ class DataManager:
             if not dict_are_equal({VALUE: old_value}, {VALUE: new_value}):
                 parameter_changes.append(ParameterChange(parameter_id=self.get_var_full_name(key),
                                                          variable_type=dm_data[TYPE],
-                                                         old_value=deepcopy(old_value),  # FIXME: deepcopies avoidable ?
-                                                         new_value=deepcopy(new_value),  # FIXME: deepcopies avoidable ?
+                                                         old_value=deepcopy(old_value),
+                                                         new_value=deepcopy(new_value),
                                                          connector_id=connector_id,
                                                          dataset_id=dataset_id,
                                                          dataset_parameter_id=dataset_parameter_id,
@@ -509,7 +510,7 @@ class DataManager:
 
         dm_data[VALUE] = new_value
 
-    def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> None:
+    def export_data_in_datasets(self, datasets_mapping: DatasetsMapping) -> list[ParameterChange]:
         '''
         Set values in datasets from data_dict
 
@@ -522,13 +523,12 @@ class DataManager:
         # to have a list of data by namespace
         exported_parameters = []
         namespaced_data_dict = {}
-        KEY = 'key'
 
         for key, data_value in self.data_dict.items():
             data_ns = data_value[NS_REFERENCE].value
             data_name = data_value[VAR_NAME]
             data_type = data_value[TYPE]
-            data_value = data_value[VALUE]
+            data_value_loc = data_value[VALUE]
 
             # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
             namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns,
@@ -536,7 +536,7 @@ class DataManager:
                                                                       DatasetsMapping.VALUE: {}})
             namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
             namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
-            namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value
+            namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value_loc
 
         # iterate on each datasets to export data in each dataset
         dataset_parameters_mapping, duplicates = datasets_mapping.get_datasets_namespace_mapping_for_study(self.name, namespaces_dict=namespaced_data_dict)
@@ -557,12 +557,12 @@ class DataManager:
                 # save which data have been exported
                 for data_dataset_name in updated_data.keys():
                     key = mapping_dict[DatasetsMapping.KEY][data_dataset_name]
-                    type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
+                    var_type = mapping_dict[DatasetsMapping.TYPE][data_dataset_name]
                     connector_id = dataset.connector_id
                     dataset_id = dataset.dataset_info_id
                     dataset_data_path = self.dataset_manager.get_path_to_dataset_data(dataset,
                                                                                       data_dataset_name,
-                                                                                      type)
+                                                                                      var_type)
                     # build ontology key
                     io_type = self.data_dict[key][ProxyDiscipline.IO_TYPE]
                     discipline_name = self.disciplines_dict.get(self.data_dict[key].get('model_origin')).get(
@@ -570,7 +570,7 @@ class DataManager:
                     variable_key = create_data_key(discipline_name, io_type, self.data_dict[key].get('var_name'))
 
                     exported_parameters.append(ParameterChange(parameter_id=self.get_var_full_name(key),
-                                                         variable_type=type,
+                                                         variable_type=var_type,
                                                          old_value=deepcopy(mapping_dict[DatasetsMapping.VALUE][data_dataset_name]),
                                                          new_value=None,
                                                          connector_id=connector_id,
@@ -737,7 +737,6 @@ class DataManager:
                                 # if same discipline: just an update
                                 self.data_dict[var_id].update(
                                     disc_dict[var_name])
-                                # self.no_change = False
                         else:
                             if self.get_disc_full_name(self.data_dict[var_id][ORIGIN]) is None:
                                 # Quick fix to solve cases when
@@ -809,7 +808,7 @@ class DataManager:
             error_msg = f'Trying to add two distinct disciplines with the same local namespace: {disc_f_name} , classes are : {disc1_name} and {disc2_name}'
             self.logger.error(error_msg)
             # Exception
-            raise Exception(error_msg)
+            raise DataManagerException(error_msg)
 
             # # Off-design behavior
             # self.disciplines_id_map[disc_f_name].append(disc_id)
@@ -890,8 +889,12 @@ class DataManager:
                         # then the variable becomes an input
                         if io_type == ProxyDiscipline.IO_TYPE_OUT:
                             self.data_dict[var_id][ProxyDiscipline.IO_TYPE] = ProxyDiscipline.IO_TYPE_IN
-                else:
-                    pass
+                        # If the discipline that removes the key appears to be the model origin and there still exists other disciplines
+                        # that use the variable, the model origin needs to be modified (i.e. for data integrity)
+                        # the first discipline in the discipline_dependencies list become the model origin
+                        if disc_id == self.data_dict[var_id][ProxyDiscipline.ORIGIN]:
+                            self.data_dict[var_id][ProxyDiscipline.ORIGIN] = \
+                            self.data_dict[var_id][ProxyDiscipline.DISCIPLINES_DEPENDENCIES][0]
 
     def clean_from_disc(self, disc_id, clean_keys=True):
         '''Clean disc in disciplines_dict and data_in/data_out keys in data_dict'''

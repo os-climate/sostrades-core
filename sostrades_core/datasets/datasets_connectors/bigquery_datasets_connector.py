@@ -248,7 +248,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
                 # if dataset doesn't exists, create the dataset
                 # Construct a full Dataset object to send to the API.
                 dataset = bigquery.Dataset(dataset_id)
-                # TODO: Specify the geographic location where the dataset should reside.
+                # specify the geographic location where the dataset should reside.
                 dataset.location = "europe-west1"
 
                 # Send the dataset to the API for creation, with an explicit timeout.
@@ -380,7 +380,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         table_descriptor_id = "{}.{}".format(dataset_id, self.DESCRIPTOR_TABLE_NAME)
         table_descriptor_exists = True
         try:
-             table = self.client.get_table(table_descriptor_id)  # Make an API request.
+            _ = self.client.get_table(table_descriptor_id)  # Make an API request.
         except:
             table_descriptor_exists = False
             self.__logger.debug(f"create table for descriptor:{table_descriptor_id}")
@@ -396,7 +396,7 @@ class BigqueryDatasetsConnector(AbstractDatasetsConnector):
         table_index_id = "{}.{}".format(dataset_id, self.COL_NAME_INDEX_TABLE_NAME)
         table_index_exists = True
         try:
-             table = self.client.get_table(table_index_id)  # Make an API request.
+            _ = self.client.get_table(table_index_id)  # Make an API request.
         except:
             table_index_exists = False
             self.__logger.debug(f"create table for descriptor:{table_index_id}")

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/06/24 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
             msg += "however sampling type of sampling generator <%s> " % str(
                 self.__class__.__name__)
             msg += "is <%s> " % str(type(samples_df))
-            raise SampleTypeError()
+            raise SampleTypeError(msg)
 
     def generate_samples(self, dict_of_list_values):
         '''

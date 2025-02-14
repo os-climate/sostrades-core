@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/20-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/06/20-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,10 @@ from numpy.typing import NDArray
 
 from sostrades_core.sos_processes.script_test_all_usecases import processed_test_one_usecase
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
-from sostrades_core.tools.check_process_gradients.tools import check_each_discpline_jacobians_in_process
+from sostrades_core.tools.check_process_gradients.tools import (
+    check_each_discpline_jacobians_in_process,
+    generate_gradients_tests_for_disciplines_of_usecases,
+)
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -157,6 +160,7 @@ class StudyManager(BaseStudyManager):
             self.dspace["dspace_size"] += dspace_size
             self.dspace.update(dspace)
 
+
     def setup_usecase_sub_study_list(self) -> None:
         """
         Instantiate sub-studies and values dictionaries from setup_usecase.
@@ -187,3 +191,6 @@ class StudyManager(BaseStudyManager):
 
     def test_jacobians_of_each_disc(self):
         check_each_discpline_jacobians_in_process(self.study_full_path)
+
+    def generate_gradients_test_for_disciplines(self, disciplines_names: dict[str: str], path_test_files_to_write: str):
+        generate_gradients_tests_for_disciplines_of_usecases(self.study_full_path, disciplines_names, path_test_files_to_write)

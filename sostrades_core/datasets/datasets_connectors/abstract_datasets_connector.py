@@ -56,8 +56,14 @@ class AbstractDatasetsConnector(abc.ABC):
     BOOL_VALUE = "parameter_bool_value"
     VALUE_KEYS.update({STRING_VALUE, INT_VALUE, FLOAT_VALUE, BOOL_VALUE, PARAMETER_NAME})
 
+    DATASET_FOLDER = "Dataset folder"
     # list of compatible version of dataset info (V0, V1...)
-    compatible_dataset_info_version = [VERSION_V0]
+    COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V0]
+    CONNECTOR_ID = "connector_id"
+    @property
+    def compatible_dataset_info_version(self):
+        return set(self.COMPATIBLE_DATASET_INFO_VERSION)
+
 
     def check_dataset_info_version(self, dataset_identifier: AbstractDatasetInfo) -> None:
         """
@@ -304,6 +310,30 @@ class AbstractDatasetsConnector(abc.ABC):
     def __str__(self) -> str:
         return f"{type(self).__name__}"
 
+    # CLEARING
+    def clear_dataset(self, dataset_id: str) -> None:
+        """
+        Optional utility method to remove a given dataset_id within a certain connector.
+
+        Args:
+            dataset_id (str): Identifier of the dataset to be removed
+
+        """
+        raise NotImplementedError
+
+    def clear_all_datasets(self):
+        """Optional utility method to remove all datasets in a connector."""
+        map(lambda _d: self.clear_dataset(_d.dataset_id), self.get_datasets_available())
+
+    def clear_connector(self):
+        """
+        Optional utility method to completely clear a connector further than clearing all datasets, if it applies, e.g.
+        by deleting the root directory of a local connector, or by deleting the database file of a json connector. It
+        defaults to clear_all_datasets unless overloaded.
+        """
+        self.clear_all_datasets()
+
+    # METADATA HANDLING
     def _new_datum(self, old_datum: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create a new datum with default metadata

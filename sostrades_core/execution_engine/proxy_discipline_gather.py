@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/17-2024/07/03 Copyright 2023 Capgemini
+Modifications on 2023/04/17-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -268,8 +268,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
         709b4be "Modify the exec_engine for evaluator processes" VJ
         and fb91c7d "maturity fixing (WIP)" CG
         '''
-        # maturity = {}
-        # return maturity
         return ''
 
     def setup_sos_disciplines(self):

@@ -72,12 +72,14 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
 
         """
         # check if the key starts with V0 or V1 (or v0 or v1)
-        version_pattern = r"^([Vv][0-9])\|"
+        version_pattern = r"^([Vv][\d])\|"
         match = re.match(version_pattern, dataset_mapping_key)
         version = DatasetInfoSerializerVersion.V0
         if match:
             version = DatasetInfoSerializerVersion.get_enum_value(match.group(1))
         else:
-            warn("No version in dataset info is tolerated for now but will be deprecated in future versions", UserWarning)  # noqa: B028
+            message = "No version in dataset info is tolerated for now but will be deprecated in future versions"
+            DatasetInfoFactory.__logger.warning(message)
+            warn(message, UserWarning)  # noqa: B028
 
         return version

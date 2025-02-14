@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/17-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/04/17-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,8 +28,10 @@ import numpy as np
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.sequential_mda import MDASequential
+from gemseo.scenarios.base_scenario import BaseScenario
 from numpy import ndarray
 from pandas import DataFrame, concat
 
@@ -86,12 +88,13 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         'version': '',
     }
     RESIDUALS_HISTORY = "residuals_history"
+    RESIDUALS_HISTORY_PRETTY = "Residuals History"
     NORMALIZED_RESIDUAL_NORM = 'MDA residuals norm'
     # AUTHORIZE_SELF_COUPLED_DISCIPLINES = "authorize_self_coupled_disciplines"
 
     # get list of available linear solvers from LinearSolversFactory
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
-    NEWTON_ALGO_LIST = ('MDANewtonRaphson', 'MDAGSNewton', 'GSorNewtonMDA')
+    NEWTON_ALGO_LIST = ('MDANewtonRaphson', 'MDAGSNewton')
 
     # set default value of linear solver according to the operating system
     if getenv("USE_PETSC", "").lower() in ("true", "1"):
@@ -346,8 +349,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         ProxyDiscipline._reload(self, sos_name, ee, associated_namespaces=associated_namespaces)
         self.logger = ee.logger.getChild(self.__class__.__name__)
 
-    # TODO: [and TODISCUSS] move it to discipline_wrapp, if we want to
-    # reduce footprint in GEMSEO
     def _set_dm_cache_map(self):
         """Update cache_map dict in DM with cache, mdo_chain cache, inner_mdas caches and its children recursively"""
         mda_chain = self.discipline_wrapp.discipline
@@ -378,28 +379,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             for sub_mda in mda.mda_sequence:
                 self._set_sub_mda_dm_cache_map(sub_mda)
 
-    # def build(self):
-    #     """
-    #     Instanciate sub proxies managed by the coupling
-    #     """
-    #     old_current_discipline = self.ee.factory.current_discipline
-    #     self.ee.factory.current_discipline = self
-    #     for builder in self.cls_builder:
-    #         proxy_disc = builder.build()
-    #         if proxy_disc not in self.proxy_disciplines:
-    #             self.ee.factory.add_discipline(proxy_disc)
-    #     # If the old_current_discipline is None that means that it is the first build of a coupling then self is the
-    #     # high level coupling and we do not have to restore the
-    #     # current_discipline
-    #     if old_current_discipline is not None:
-    #         self.ee.factory.current_discipline = old_current_discipline
-    #
-    # #     def clear_cache(self):
-    # #         self.mdo_chain.cache.clear()
-    # #         ProxyDisciplineBuilder.clear_cache(self)
-
     # -- Public methods
-
     def setup_sos_disciplines(self):
         """
         Set possible values of preconditioner in data manager, according to liner solver MDA/MDO value
@@ -409,12 +389,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         disc_in = self.get_data_in()
         # set possible values of linear solver MDA preconditioner
         if 'linear_solver_MDA' in disc_in:
-            linear_solver_MDA = self.get_sosdisc_inputs('linear_solver_MDA')
-            if linear_solver_MDA.endswith('_PETSC'):
+            linear_solver_mda = self.get_sosdisc_inputs('linear_solver_MDA')
+            if linear_solver_mda.endswith('_PETSC'):
                 if getenv("USE_PETSC", "").lower() not in ("true", "1"):
                     msg = (
                         f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
-                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
+                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_mda} or activate '
                         f'USE_PETSC'
                     )
                     raise ValueError(msg)
@@ -434,12 +414,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         # set possible values of linear solver MDO preconditioner
         if 'linear_solver_MDO' in disc_in:
-            linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
-            if linear_solver_MDO.endswith('_PETSC'):
+            linear_solver_mdo = self.get_sosdisc_inputs('linear_solver_MDO')
+            if linear_solver_mdo.endswith('_PETSC'):
                 if getenv("USE_PETSC", "").lower() not in ("true", "1"):
                     msg = (
                         f'Trying to use PETSC linear solver with USE_PETSC environment variable undefined or false, '
-                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_MDA} or activate '
+                        f'modify linear_solver_MDA option of {self.sos_name} : {linear_solver_mda} or activate '
                         f'USE_PETSC'
                     )
                     raise ValueError(msg)
@@ -468,27 +448,88 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         - configure all children disciplines
         """
         ProxyDiscipline.configure(self)
+        if self.ee.wrapping_mode == 'GEMSEO':
+            # Use the IO of the gemseo object to populate the coupling inputs and outputs
+            self.configure_coupling_with_gemseo_object()
 
-        disc_to_configure = self.get_disciplines_to_configure()
+        elif self.ee.wrapping_mode == 'SoSTrades':
 
-        if len(disc_to_configure) > 0:
-            self.set_configure_status(False)
-            for disc in disc_to_configure:
-                # possibly some one else like the driver has already configured the discipline
-                # not working for multiscenario of architecture builder ...
-                # if not disc.is_configured():
-                disc.configure()
-        else:
-            self.set_children_numerical_inputs()
-            # - all chidren are configured thus proxyCoupling can be configured
-            self.set_configure_status(True)
-            # - build the coupling structure
+            disc_to_configure = self.get_disciplines_to_configure()
 
-            self._build_coupling_structure()
-            # - builds data_in/out according to the coupling structure
-            self._build_data_io()
-            # - Update coupling and editable flags in the datamanager for the GUI
-            self._update_coupling_flags_in_dm()
+            if len(disc_to_configure) > 0:
+                self.set_configure_status(False)
+                for disc in disc_to_configure:
+                    # possibly some one else like the driver has already configured the discipline
+                    # not working for multiscenario of architecture builder ...
+                    # if not disc.is_configured():
+                    disc.configure()
+            else:
+                self.set_children_numerical_inputs()
+                # - all chidren are configured thus proxyCoupling can be configured
+                self.set_configure_status(True)
+                # - build the coupling structure
+
+                self._build_coupling_structure()
+                # - builds data_in/out according to the coupling structure
+                self._build_data_io()
+                # - Update coupling and editable flags in the datamanager for the GUI
+                self._update_coupling_flags_in_dm()
+
+    def configure_coupling_with_gemseo_object(self):
+        '''Use the IO of the gemseo object to populate the coupling inputs and outputs'''
+        gemseo_inputs = self.build_gemseo_io(self.IO_TYPE_IN)
+        gemseo_outputs = self.build_gemseo_io(self.IO_TYPE_OUT)
+
+        self.update_data_io_and_nsmap(gemseo_inputs, self.IO_TYPE_IN)
+        self.update_data_io_and_nsmap(gemseo_outputs, self.IO_TYPE_OUT)
+
+    def build_gemseo_io(self, io_type):
+        '''Transform the gemseo grammars into understandable grammardict for sostrades'''
+        gemseo_io_dict = {}
+        if isinstance(self.cls_builder, BaseDiscipline):
+            gemseo_disc = self.cls_builder
+            grammar = self.retrieve_gemseo_grammar(gemseo_disc, io_type)
+            gemseo_io_dict = self.convert_gemseo_grammar_into_io_dict(grammar, io_type)
+        elif isinstance(self.cls_builder, BaseScenario):
+            gemseo_discs = self.cls_builder.disciplines
+
+            for gemseo_disc in gemseo_discs:
+                disc_grammar = self.retrieve_gemseo_grammar(gemseo_disc, io_type)
+                gemseo_io_dict.update(self.convert_gemseo_grammar_into_io_dict(disc_grammar, io_type))
+
+        return gemseo_io_dict
+
+    def convert_gemseo_grammar_into_io_dict(self, gemseo_grammar, io_type):
+
+        io_dict = {gemseo_key: {self.TYPE: gemseo_type} for
+                   gemseo_key, gemseo_type
+                   in gemseo_grammar._get_names_to_types().items() if gemseo_type in self.VAR_TYPE_MAP}
+        if io_type == self.IO_TYPE_IN:
+            # for key in self.cls_builder.io.output_grammar:
+            #     if key in gemseo_io_dict:
+            #         gemseo_io_dict.pop(key)
+            for gemseo_key, gemseo_dict in io_dict.items():
+                gemseo_dict[self.DEFAULT] = gemseo_grammar.defaults[gemseo_key]
+
+        return io_dict
+
+    def retrieve_gemseo_grammar(self, disc, io_type):
+        '''
+
+        Args:
+            disc: the gemseo discipline where ther grammar is
+            io_type: the type of the grammar input or output
+
+        Returns: the grammar
+
+        '''
+        grammar = None
+        if io_type == self.IO_TYPE_IN:
+            grammar = disc.io.input_grammar
+        elif io_type == self.IO_TYPE_OUT:
+            grammar = disc.io.output_grammar
+
+        return grammar
 
     def _build_data_io(self):
         """
@@ -651,6 +692,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def prepare_execution(self):
         """Preparation of the GEMSEO process, including GEMSEO objects instanciation"""
         # prepare_execution of proxy_disciplines
+        if isinstance(self.cls_builder, ProxyDiscipline.GEMSEO_OBJECTS):
+            self.discipline_wrapp.wrapping_mode = 'GEMSEO'
 
         gemseo_disciplines = self.create_gemseo_disciplines()
         # store cache and n_calls before MDAChain reset, if prepare_execution
@@ -665,7 +708,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.discipline_wrapp.create_mda_chain(gemseo_disciplines, self, reduced_dm=reduced_dm)
 
         # set cache cache of gemseo object
-        self.set_gemseo_disciplines_caches(mda_chain_cache)
+        if self.discipline_wrapp.wrapping_mode != 'GEMSEO':
+            self.set_gemseo_disciplines_caches(mda_chain_cache)
 
     def create_gemseo_disciplines(self):
         gemseo_disciplines = []
@@ -681,6 +725,10 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     def set_gemseo_disciplines_caches(self, mda_chain_cache):
         """Set cache of MDAChain, MDOChain and sub MDAs"""
         cache_type = self.get_sosdisc_inputs('cache_type')
+
+        # if warm_start then cache_type must be activated
+        if self.discipline_wrapp.discipline.settings.warm_start and cache_type == self.discipline_wrapp.discipline.CacheType.NONE:
+            cache_type = self.discipline_wrapp.discipline.CacheType.SIMPLE
         # set MDAChain cache
         if self._reset_cache:
             # set new cache when cache_type have changed (self._reset_cache == True)
@@ -706,7 +754,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         The check if a variable that is used in input of multiple disciplines is coherent is made in check_inputs of datamanager
         the list of data_to_check is defined in SoSDiscipline
         """
-        # TODO: probably better if moved into proxy discipline
         self._build_coupling_structure()
         if self.logger.level <= logging.DEBUG:
             coupling_vars = self.coupling_structure.graph.get_disciplines_couplings()
@@ -733,9 +780,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                                     self.logger.debug(
                                         f'The unit and the dataframe descriptor of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]} : cannot find unit for this dataframe'
                                     )
-                            # TODO : Check the unit in the dataframe descriptor of both data and check if it is ok : Need to add a new value to the df_descriptor tuple check with WALL-E
-                            #                             else :
-                            #                                 from_disc_data[self.DATAFRAME_DESCRIPTOR]
                             else:
                                 self.logger.debug(
                                     f'The unit of the coupling variable {var} is None in input of {to_disc.__class__} : {to_disc_data[data_name]} and in output of {from_disc.__class__} : {from_disc_data[data_name]}'
@@ -810,7 +854,33 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         self.linear_solver_tolerance_MDO = linear_solver_settings_MDO.pop('tol')
         self.linear_solver_settings_MDO = linear_solver_settings_MDO
 
+        # FIXME: temporary fix
+        if self.all_strong_couplings_in_sub_mda():
+            num_data["max_mda_iter"] = 0
+
         return num_data
+
+    def get_sub_mdas(self):
+        sub_mdas = []
+        for disc in self.proxy_disciplines:
+            if isinstance(disc, ProxyCoupling):
+                sub_mdas.append(disc)
+            elif isinstance(disc, ProxyDisciplineBuilder):
+                for driver_subdisc in disc.proxy_disciplines:
+                    if isinstance(driver_subdisc, ProxyCoupling):
+                        sub_mdas.append(driver_subdisc)  # noqa: PERF401
+        return sub_mdas
+
+    def all_strong_couplings_in_sub_mda(self):
+        strong_couplings = set(self.coupling_structure.strong_couplings)
+        sub_mdas = self.get_sub_mdas()
+        if len(sub_mdas) == 1:
+            # NB: not handling the case of multiple sub-MDAs
+            sub_mda = sub_mdas[0]
+            sub_mda_strong_couplings = set(sub_mda.coupling_structure.strong_couplings)
+            if strong_couplings == sub_mda_strong_couplings:
+                return True
+        return False
 
     def get_maturity(self):
         """Get the maturity of the coupling proxy by adding all maturities of children proxy disciplines"""
@@ -923,19 +993,22 @@ class ProxyCoupling(ProxyDisciplineBuilder):
         """
         mdo_inputs = {}
         mdo_outputs = {}
-
+        mdo_outputs_full_names = set()
         for d_in, d_out in zip(data_in_list, data_out_list):
-            # add discipline input tuple (name, id) if tuple not already in outputs
-            mdo_inputs.update({t: v for (t, v) in d_in.items() if t not in mdo_outputs})
+            # add discipline input tuple (name, id) if associated full name not already in outputs
+            mdo_inputs.update({t: v for (t, v) in d_in.items() if
+                               self.ee.ns_manager.ns_tuple_to_full_name(t)
+                               not in mdo_outputs_full_names})
             # add discipline output name in outputs
             mdo_outputs.update(d_out)
-
+            # update output full names
+            mdo_outputs_full_names.update({self.ee.ns_manager.ns_tuple_to_full_name(t) for t in d_out})
         return mdo_inputs, mdo_outputs
 
     def get_chart_filter_list(self):
         chart_filters = []
 
-        chart_list = ['Residuals History']
+        chart_list = [self.RESIDUALS_HISTORY_PRETTY]
 
         chart_filters.append(ChartFilter('Charts', chart_list, chart_list, 'charts'))
 
@@ -965,12 +1038,12 @@ class ProxyCoupling(ProxyDisciplineBuilder):
                 series.append(new_series)
             return series
 
-        if select_all or 'Residuals History' in chart_list:
+        if select_all or self.RESIDUALS_HISTORY_PRETTY in chart_list:
             inner_mda_name = self.get_sosdisc_inputs('inner_mda_name')
             if post_processing_mda_data is not None and inner_mda_name in post_processing_mda_data.columns:
                 residuals_through_iterations = np.asarray([[x[0]] for x in post_processing_mda_data[inner_mda_name]])
                 iterations = list(range(len(residuals_through_iterations)))
-                chart_name = 'Residuals History'
+                chart_name = self.RESIDUALS_HISTORY_PRETTY
 
                 new_chart = TwoAxesInstanciatedChart('Iterations', 'Residuals', chart_name=chart_name, y_axis_log=True)
 

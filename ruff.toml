@@ -1,7 +1,11 @@
 line-length = 120
+extend-exclude = [
+    "sostrades_core/sos_processes/test/test_script_gemseo/plot_gemseo_in_10_minutes.py",
+    "sostrades_core/sos_processes/test/test_script_gemseo_mda/plot_newtonraphson_sobieski.py"]
+
 
 [lint]
-select = ["I", "TCH", "PLC", "PLE", "F", "E", "W", "PERF", "D"]
+select = ["I", "TCH", "PLC", "PLE", "F", "E", "W", "PERF", "PLW", "D"]
 # extend-select = ["ALL"]
 
 ignore  = [
