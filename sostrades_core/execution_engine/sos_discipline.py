@@ -100,6 +100,7 @@ class SoSDiscipline(Discipline):
             reduced_dm (Dict[Dict]): reduced version of datamanager for i/o handling
             logger (logging.Logger): Logger to use
             debug_mode (str): identifier of the debug mode to apply or empty
+
         """
         # self.disciplines = [] # TODO: remove and leave in driver
         self.sos_wrapp = sos_wrapp

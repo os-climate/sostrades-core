@@ -75,6 +75,7 @@ class PureNewtonRaphson(BaseMDARoot):
             log_convergence: Whether to log the MDA convergence, expressed in terms of normed residuals.
             linear_solver_settings: setting for linear solver
             n_processes: number of processes for multi-processing
+
         """
         self.n_processes = n_processes
         self.default_grammar_type = grammar_type

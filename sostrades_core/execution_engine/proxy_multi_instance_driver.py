@@ -386,6 +386,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         Args:
             scenario_names (list[str]) : List of scenario names
             original_editable_dict (dict[str, bool]): dictionary with the original editability value of the variables
+
         '''
         if original_editable_dict:
             for sc in scenario_names:

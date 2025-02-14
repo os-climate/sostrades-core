@@ -23,5 +23,4 @@ ignore  = [
     "D101", # Missing docstring in public class
     "D102", # Missing docstring in public method
     "D107", # Missing docstring in `__init__`
-    "D417", # Missing argument descriptions in the docstring
     ]
