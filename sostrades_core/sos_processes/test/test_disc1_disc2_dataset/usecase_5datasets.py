@@ -19,7 +19,6 @@ from pathlib import Path
 
 from sostrades_core.datasets.dataset_manager import DatasetsConnectorManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
