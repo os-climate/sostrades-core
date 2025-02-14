@@ -780,7 +780,7 @@ class DataManager:
                                 # Data cannot be the OUTPUT of several
                                 # disciplines
                                 raise ValueError(
-                                    f'Model key: {self.get_var_full_name(var_id)} of discipline {self.get_disc_full_name(disc_id)} already exists from disc {self.get_disc_full_name(self.data_dict[var_id][ORIGIN])}')
+                                    f'Model key: \n\t{self.get_var_full_name(var_id)}\nof discipline\n\t{self.get_disc_full_name(disc_id)}\nalready exists from disc\n\t{self.get_disc_full_name(self.data_dict[var_id][ORIGIN])}')
                     else:
                         # Overwrite OUTPUT information over INPUT information
                         # (OUTPUT has priority)
