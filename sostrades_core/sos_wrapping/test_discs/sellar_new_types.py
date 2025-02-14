@@ -193,7 +193,7 @@ class Sellar1Df(SoSWrapp):
             ('y_1', 'value'), ('x', 'value'), np.identity(lines_nb))
 
         self.set_partial_derivative_for_other_types(
-            ('y_1', 'value'), ('z',), [[2.0 * z[0], 1.0] for i in range(lines_nb)])
+            ('y_1', 'value'), ('z',), [[2.0 * z[0], 1.0] for _ in range(lines_nb)])
 
         self.set_partial_derivative_for_other_types(
             ('y_1', 'value'), ('y_2', 'value'), -0.2 * np.identity(lines_nb))
@@ -259,7 +259,7 @@ class Sellar2Df(SoSWrapp):
                                                     1.0 / (2 * sqrt(y_1.iloc[0]['value'])) * np.identity(lines_nb))
 
         self.set_partial_derivative_for_other_types(('y_2', 'value'), ('z',), [
-            [1.0, 1.0] for i in range(lines_nb)])
+            [1.0, 1.0] for _ in range(lines_nb)])
 
 
 if __name__ == '__main__':

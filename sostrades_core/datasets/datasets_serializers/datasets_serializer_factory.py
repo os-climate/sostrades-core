@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 from enum import Enum
 
+from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import DatasetGenericException
 from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer import (
     AbstractDatasetsSerializer,
 )
@@ -93,4 +94,4 @@ class DatasetsSerializerFactory(metaclass=NoInstanceMeta):
         try:
             return serializer_type.value()
         except TypeError as exc:
-            raise Exception(serializer_type) from exc
+            raise DatasetGenericException(serializer_type) from exc

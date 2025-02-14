@@ -113,6 +113,8 @@ class DiscAllTypes(SoSWrapp):
             for chart_filter in filters:
                 if chart_filter.filter_key == 'graphs':
                     charts_list = chart_filter.selected_values
+        else:
+            charts_list = ['c1 vs h', 'c2 vs h', 'z vs h']
 
         if 'c1 vs h' in charts_list:
             chart_name = 'c1 vs h'
@@ -126,7 +128,10 @@ class DiscAllTypes(SoSWrapp):
 
             new_chart.series.append(serie)
             new_chart.post_processing_section_name = 'section 1'
+            new_chart.post_processing_section_is_opened = True
             instanciated_charts.append(new_chart)
+
+
 
         if 'c2 vs h' in charts_list:
             chart_name = 'c2 vs h'
@@ -140,6 +145,7 @@ class DiscAllTypes(SoSWrapp):
 
             new_chart.series.append(serie)
             new_chart.post_processing_section_name = 'section 2'
+            new_chart.post_processing_is_key_chart = True
             instanciated_charts.append(new_chart)
 
         if 'z vs h' in charts_list:
@@ -153,5 +159,19 @@ class DiscAllTypes(SoSWrapp):
                 list(h), list(df_out['z'].values), '', 'scatter')
 
             new_chart.series.append(serie)
+            instanciated_charts.append(new_chart)
+
+            chart_name = 'z in section 3'
+
+            df_out = self.get_sosdisc_outputs('df_out')
+            h = self.get_sosdisc_inputs('h')
+            new_chart = TwoAxesInstanciatedChart('h (-)', 'z (-)',
+                                                 chart_name=chart_name)
+            serie = InstanciatedSeries(
+                list(h), list(df_out['z'].values), '', 'scatter')
+
+            new_chart.series.append(serie)
+            new_chart.post_processing_section_name = 'KPIs'
+            new_chart.post_processing_section_is_opened = False
             instanciated_charts.append(new_chart)
         return instanciated_charts
