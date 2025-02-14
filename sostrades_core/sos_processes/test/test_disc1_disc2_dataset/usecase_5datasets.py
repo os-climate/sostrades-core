@@ -38,7 +38,7 @@ class Study(StudyManager):
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_datasets_connector",
-                                                    connector_type=DatasetConnectorType.get_enum_value("JSON"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.JSON_V0",
                                                     **connector_args)
         # Get dataset file
         datasets_file = __file__.replace(".py", ".json")
