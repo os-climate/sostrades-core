@@ -86,7 +86,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
 
         Args:
             connector_identifier (str): An unique name to identify clearly this connector
-            connector_type (DatasetConnectorType): Name of an existing connector
+            connector_type (str): Class path to an existing connector (module_path.ClassName)
             **connector_instanciation_fields: dictionary of key/value needed by the connector
 
         Returns:

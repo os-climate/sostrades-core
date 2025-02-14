@@ -61,10 +61,11 @@ class AbstractDatasetsConnector(abc.ABC):
     # list of compatible version of dataset info (V0, V1...)
     COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V0]
     CONNECTOR_ID = "connector_id"
+
+
     @property
     def compatible_dataset_info_version(self):
         return set(self.COMPATIBLE_DATASET_INFO_VERSION)
-
 
     def check_dataset_info_version(self, dataset_identifier: AbstractDatasetInfo) -> None:
         """
