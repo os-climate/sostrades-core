@@ -16,13 +16,12 @@ limitations under the License.
 from __future__ import annotations
 
 import logging
-from enum import Enum
 
-from sostrades_core.tools.import_tool.import_tool import get_class_from_path
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
     DatasetUnableToInitializeConnectorException,
 )
+from sostrades_core.tools.import_tool.import_tool import get_class_from_path
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 

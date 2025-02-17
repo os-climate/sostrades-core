@@ -14,8 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.tools.import_tool.import_tool import get_class_from_path, get_module_class_path
 from sostrades_core.execution_engine.builder_tools.tool_builder import ToolBuilder
+from sostrades_core.tools.import_tool.import_tool import get_class_from_path, get_module_class_path
 
 
 class ToolFactoryException(Exception):
