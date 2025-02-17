@@ -47,7 +47,7 @@ CARTOUCHE_BASE = """'''
 {}'''
 """
 
-CAP_COPYRIGHT = "Copyright {} Capgemini".format(datetime.today().strftime("%Y/%m/%d"))
+CAP_COPYRIGHT = "Copyright {} Capgemini".format(datetime.today().strftime("%Y"))
 CAP_MODIFIED_COPYRIGHT = "Modifications on {} " + "Copyright {} Capgemini".format(datetime.today().strftime("%Y"))
 AIRBUS_COPYRIGHT = "Copyright 2022 Airbus SAS"
 
