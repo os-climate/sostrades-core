@@ -55,7 +55,7 @@ class _SoSInputNames(LowercaseStrEnum):
 
 
 SoSInputNames = merge_enums(
-    "SoSOutputNames",
+    "SoSInputNames",
     LowercaseStrEnum,
     MonteCarloDriverWrapper.SoSOutputNames,
     _SoSInputNames,
