@@ -55,7 +55,7 @@ CARTOUCHE_CAP_AIRBUS = CARTOUCHE_BASE.format(f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED
 CARTOUCHE_CAP = CARTOUCHE_BASE.format(f"{CAP_COPYRIGHT}\n\n{LICENCE}")
 
 # Define a regular expression to match the cartouche only at the beginning
-#cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
+# cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
 cartouche_pattern = r"^(?:'''|\"\"\")(.*?)(?:'''|\"\"\")(\n|\Z)"
 cap_copyright_pattern = "Copyright 202(.) Capgemini"
 cartouche_modified_pattern = r"Modifications on (.+) Copyright 202(.) Capgemini"
@@ -301,7 +301,7 @@ class HeaderTools:
 
     def write_headers_if_needed_in_repo(self, ignored_exts, ignored_files, sha, repo_dir):
 
-        print("Start to analyse Headers for repository "+ os.path.abspath(os.path.dirname(repo_dir) + "..."))
+        print("Start to analyse Headers for repository " + os.path.abspath(os.path.dirname(repo_dir) + "..."))
 
         # Initialize a Git Repo object
         git_repo = git.Repo(repo_dir)
