@@ -39,7 +39,9 @@ class ProxyMonteCarloDriver(ProxyMonoInstanceDriver):
         "version": "",
     }
 
-    REF_DISCIPLINE_NAME: str = "Eval_MC"
+    REF_DISCIPLINE_NAME: str = "ns_eval_MC"
+
+    NAMESPACE: str = REF_DISCIPLINE_NAME
 
     DESC_IN: ClassVar[dict[str, Any]] = {
         ProxyDriverEvaluator.GATHER_OUTPUTS: {
