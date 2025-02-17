@@ -60,4 +60,3 @@ class Study(StudyManager):
         datasets_file = join(dirname(realpath(__file__)), "usecase_dataset_sellar_coupling.json")
         # Deserialize it
         return DatasetsMapping.from_json_file(datasets_file)
-
