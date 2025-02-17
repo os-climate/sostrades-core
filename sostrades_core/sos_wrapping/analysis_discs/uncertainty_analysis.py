@@ -23,13 +23,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.uncertainty import create_statistics
-from numpy import ndarray, size
+from gemseo.utils.enumeration import merge_enums
+from numpy import array, ndarray, size
 from pandas import DataFrame, Series, concat
-from strenum import StrEnum
+from strenum import LowercaseStrEnum
 
-from sostrades_core.execution_engine.disciplines_wrappers.monte_carlo_driver_wrapper import (
-    SoSOutputNames as MCOutputNames,
-)
+from sostrades_core.execution_engine.disciplines_wrappers.monte_carlo_driver_wrapper import MonteCarloDriverWrapper
 from sostrades_core.execution_engine.proxy_monte_carlo_driver import ProxyMonteCarloDriver
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
@@ -41,36 +40,33 @@ from sostrades_core.tools.post_processing.post_processing_tools import format_cu
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+_NAMESPACE_DRIVER = "ns_driver_MC"  # must be here to be used in list comprehension in DESC_IN
 
-class SoSInputNames(MCOutputNames):
-    """The names of the input parameters."""
 
-    probability_threshold = auto()
+class _SoSInputNames(LowercaseStrEnum):
+    """The names of the additional input parameters."""
+
+    PROBABILITY_THRESHOLD = auto()
     """The threshold value used to compute the probability.
 
     The analysis will return the probability that the output is above the threshold.
     Can be a single float, or an iterable of the same length as the number of outputs.
     """
 
-    tolerance_confidence = auto()
-    """The confidence for the tolerance coverage.
 
-    Must be between 0 and 1.
-    Can be a single float, or an iterable of the same length as the number of outputs.
-    """
-
-    tolerance_coverage = auto()
-    """The proportion of output values that must be in the tolerance interval with the specified confidence.
-
-    Must be between 0 and 1.
-    Can be a single float, or an iterable of the same length as the number of outputs.
-    """
+SoSInputNames = merge_enums(
+    "SoSOutputNames",
+    LowercaseStrEnum,
+    MonteCarloDriverWrapper.SoSOutputNames,
+    _SoSInputNames,
+    doc="The names of the output parameters.",
+)
 
 
-class SoSOutputNames(StrEnum):
-    """The names of the output parameters."""
+class SoSOutputNames(LowercaseStrEnum):
+    """The names of the additional output parameters."""
 
-    statistics = auto()
+    STATISTICS = auto()
     """The statistics of the output samples."""
 
 
@@ -91,22 +87,31 @@ class UncertaintyAnalysis(SoSWrapp):
         "version": "",
     }
 
+    NAMESPACE_DRIVER: str = _NAMESPACE_DRIVER
+    """The namespace of the Monte Carlo driver."""
+
     SoSInputNames: ClassVar[type[SoSInputNames]] = SoSInputNames
 
     SoSOutputNames: ClassVar[type[SoSOutputNames]] = SoSOutputNames
 
-    DESC_IN: ClassVar[dict[str, Any]] = ProxyMonteCarloDriver.DESC_OUT
+    DESC_IN: ClassVar[dict[str, Any]] = {
+        name: desc | {"namespace": _NAMESPACE_DRIVER, "visibility": SoSWrapp.SHARED_VISIBILITY}
+        for name, desc in ProxyMonteCarloDriver.DESC_OUT.items()
+    }
 
     DESC_IN.update({
-        SoSInputNames.probability_threshold: {SoSWrapp.DEFAULT: 0.0},
-        SoSInputNames.tolerance_confidence: {SoSWrapp.DEFAULT: 0.95},
-        SoSInputNames.tolerance_coverage: {SoSWrapp.DEFAULT: 0.99},
+        SoSInputNames.PROBABILITY_THRESHOLD: {
+            SoSWrapp.TYPE: "array",
+            SoSWrapp.DEFAULT: array([0.0]),
+        },
     })
 
     DESC_OUT: ClassVar[dict[str, Any]] = {
-        SoSOutputNames.statistics: {
+        SoSOutputNames.STATISTICS: {
             SoSWrapp.TYPE: "dataframe",
             "unit": None,
+            # "visibility": SoSWrapp.SHARED_VISIBILITY,
+            # "namespace": NAMESPACE_DRIVER,
         },
     }
 
@@ -123,7 +128,7 @@ class UncertaintyAnalysis(SoSWrapp):
         The data is stored in a IODataset that can be used for statistics and sensitivity analysis.
         """
         self._dataset = IODataset()
-        input_samples = self.get_sosdisc_inputs(self.SoSInputNames.input_samples)
+        input_samples = self.get_sosdisc_inputs(self.SoSInputNames.INPUT_SAMPLES)
         for input_name in input_samples.columns:
             if s := size(input_samples.loc[0, input_name]) == 1:
                 self._dataset.add_input_variable(input_name, input_samples[input_name])
@@ -133,7 +138,7 @@ class UncertaintyAnalysis(SoSWrapp):
                 self._dataset.add_input_variable(
                     f"{input_name}_{i}", [sample[i] for sample in input_samples[input_name]]
                 )
-        output_samples = self.get_sosdisc_inputs(self.SoSInputNames.output_samples)
+        output_samples = self.get_sosdisc_inputs(self.SoSInputNames.OUTPUT_SAMPLES)
         for output_name in output_samples.columns:
             if s := size(output_samples.loc[0, output_name]) == 1:
                 self._dataset.add_output_variable(output_name, output_samples[output_name])
@@ -150,11 +155,7 @@ class UncertaintyAnalysis(SoSWrapp):
         Raises:
             ValueError: If one of the parameters has the wrong size.
         """
-        param_names = (
-            SoSInputNames.probability_threshold,
-            SoSInputNames.tolerance_confidence,
-            SoSInputNames.tolerance_coverage,
-        )
+        param_names = (SoSInputNames.PROBABILITY_THRESHOLD,)
         self._numerical_parameters = {param: self.get_sosdisc_inputs(param) for param in param_names}
         required_size = len(self._dataset.output_names)
         msg = ""
@@ -168,30 +169,30 @@ class UncertaintyAnalysis(SoSWrapp):
     def _compute_statistics(self) -> None:
         """Compute the statistics of the samples."""
         analysis = create_statistics(self._dataset)
+
+        # Compute the mean, median, std, cv
         mean = DataFrame(analysis.compute_mean())
         median = DataFrame(analysis.compute_median())
         std = DataFrame(analysis.compute_standard_deviation())
         cv = DataFrame(analysis.compute_variation_coefficient())
-        threshold = self._numerical_parameters[SoSInputNames.probability_threshold]
-        proba = DataFrame(analysis.compute_probability(threshold))
-        coverage = self._numerical_parameters[SoSInputNames.tolerance_coverage]
-        confidence = self._numerical_parameters[SoSInputNames.tolerance_confidence]
-        lower_interval = DataFrame(analysis.compute_tolerance_interval(coverage, confidence, side="LOWER"))
-        upper_interval = DataFrame(analysis.compute_tolerance_interval(coverage, confidence, side="UPPER"))
-        both_sides_interval = DataFrame(analysis.compute_tolerance_interval(coverage, confidence, side="BOTH"))
-        df = concat((mean, median, std, cv, proba, lower_interval, upper_interval, both_sides_interval), axis=0)
-        tolerance_interval_index = f"tolerance interval (coverage={coverage * 100} %, confidence={confidence * 100} %)"
+
+        # Compute the probability to be above a certain threshold
+        threshold = self._numerical_parameters[SoSInputNames.PROBABILITY_THRESHOLD]
+        if size(threshold) == 1:
+            thresh = dict.fromkeys(analysis.names, threshold[0])
+        else:
+            thresh = {name: threshold.flatten()[i] for i, name in enumerate(analysis.names)}
+        proba = DataFrame(analysis.compute_probability(thresh))
+
+        df = concat((mean, median, std, cv, proba), axis=0)
         df.index = [
             "mean",
             "median",
             "standard deviation",
             "coefficient of variation",
             f"P[X] > {threshold}",
-            f"lower {tolerance_interval_index}",
-            f"upper {tolerance_interval_index}",
-            f"both-sides {tolerance_interval_index}",
         ]
-        self.store_sos_outputs_values({SoSOutputNames.statistics: df})
+        self.store_sos_outputs_values({SoSOutputNames.STATISTICS: df})
 
     def run(self) -> None:
         """Run the uncertainty analysis."""
@@ -241,9 +242,6 @@ class UncertaintyAnalysis(SoSWrapp):
         stats = self.get_sosdisc_outputs(SoSOutputNames.statistics)
         mean = stats.iloc[0, variable_name]
         median = stats.iloc[1, variable_name]
-        lower_bnd = stats.iloc[5, variable_name][0]
-        upper_bnd = stats.iloc[6, variable_name][1]
-        both_bnd = stats.iloc[7, variable_name]
 
         fig.add_annotation(
             x=0.85,
@@ -259,9 +257,7 @@ class UncertaintyAnalysis(SoSWrapp):
             borderwidth=1,
         )
 
-        for value, text in zip(
-            [mean, median, lower_bnd, upper_bnd], ["mean", "median", "lower confidence bound", "upper confidence bound"]
-        ):
+        for value, text in zip([mean, median], ["mean", "median"]):
             fig.add_vline(
                 xref="x",
                 yref="paper",
@@ -280,19 +276,6 @@ class UncertaintyAnalysis(SoSWrapp):
                 showarrow=False,
                 xanchor="right",
             )
-
-        fig.add_vrect(x0=both_bnd[0], x1=both_bnd[1], line_width=0, fillcolor="grey", opacity=0.2)
-        x_annotation = 0.5 * (both_bnd[0] + both_bnd[1])
-        fig.add_annotation(
-            xref="x",
-            yref="paper",
-            x=x_annotation,
-            y=-0.025,
-            font={"color": "black", "size": 12},
-            text=text,
-            showarrow=False,
-            xanchor="right",
-        )
 
         return InstantiatedPlotlyNativeChart(
             fig=fig,
