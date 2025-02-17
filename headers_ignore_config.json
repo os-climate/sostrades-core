@@ -23,11 +23,8 @@
     "xlsx"
   ],
   "files_to_ignore": [
-    "sostrades_core/execution_engine/gemseo_addon/mda/gauss_seidel.py",
-    "sostrades_core/sos_processes/test/tests_driver_eval/multi/test_multi_driver_sample_generator_subprocess_1_3/process.py",
-    "sostrades_core/sos_processes/test/test_excel_wrapp/process.py",
-    "sostrades_core/tools/archi_node/__init__.py",
-    "sostrades_core/tools/tree/deserialization.py",
+    "sostrades_core/sos_processes/test/test_script_gemseo_mda/plot_newtonraphson_sobieski.py",
+    "sostrades_core/sos_processes/test/test_script_gemseo/plot_gemseo_in_10_minutes.py",
     ".readthedocs.yaml",
     "docs/LICENSE-DOC",
     "docs/make.bat",

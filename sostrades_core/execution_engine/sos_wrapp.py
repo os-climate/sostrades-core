@@ -456,9 +456,11 @@ class SoSWrapp(object):
         else:
             outputs = dict(zip(map(
                 self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
-            for key in dict_values.keys():
-                if self.attributes['output_full_name_map'].get(key) is None:
-                    raise ValueError(f"Output {key} asked to be stored but not declared as output of the discipline")
+            outputs_asked_to_be_stored_but_not_declared = list(filter(lambda key: key not in self.attributes['output_full_name_map'], dict_values.keys()))
+            if outputs_asked_to_be_stored_but_not_declared:
+                msg = "\n".join(outputs_asked_to_be_stored_but_not_declared)
+                raise ValueError(f"The following outputs are asked to be stored but "
+                                 f"not declared as outputs of the discipline :\n{msg}")
             self.local_data.update(outputs)
 
     def get_chart_filter_list(self):
