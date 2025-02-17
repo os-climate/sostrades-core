@@ -456,10 +456,7 @@ class SoSWrapp(object):
         else:
             outputs = dict(zip(map(
                 self.attributes['output_full_name_map'].get, dict_values.keys()), dict_values.values()))
-            outputs_asked_to_be_stored_but_not_declared = []
-            for key in dict_values.keys():
-                if self.attributes['output_full_name_map'].get(key) is None:
-                    outputs_asked_to_be_stored_but_not_declared.append(key)
+            outputs_asked_to_be_stored_but_not_declared = list(filter(lambda key: key not in self.attributes['output_full_name_map'], dict_values.keys()))
             if outputs_asked_to_be_stored_but_not_declared:
                 msg = "\n".join(outputs_asked_to_be_stored_but_not_declared)
                 raise ValueError(f"The following outputs are asked to be stored but "
