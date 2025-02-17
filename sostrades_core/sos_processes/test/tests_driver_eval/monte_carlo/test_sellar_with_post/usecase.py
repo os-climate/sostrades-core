@@ -71,6 +71,5 @@ if __name__ == "__main__":
     usecase = Study()
     usecase.load_data()
     usecase.execution_engine.display_treeview_nodes(display_variables=True)
-    usecase.dump_study(".")
 
     usecase.run(logger_level="INFO")
