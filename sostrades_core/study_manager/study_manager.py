@@ -186,4 +186,3 @@ class StudyManager(BaseStudyManager):
 
     def generate_gradients_test_for_disciplines(self, disciplines_names: dict[str: str], path_test_files_to_write: str):
         generate_gradients_tests_for_disciplines_of_usecases(self.study_full_path, disciplines_names, path_test_files_to_write)
-

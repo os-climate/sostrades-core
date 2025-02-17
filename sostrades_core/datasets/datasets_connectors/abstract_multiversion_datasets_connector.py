@@ -240,4 +240,3 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
         """
         for _c in self.all_connectors:
             _c.clear_connector()
-
