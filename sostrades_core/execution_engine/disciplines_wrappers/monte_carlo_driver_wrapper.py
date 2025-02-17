@@ -17,6 +17,7 @@ limitations under the License.
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import dataclass
 from enum import auto
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -41,38 +42,40 @@ if TYPE_CHECKING:
     from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
-class SoSInputNames(LowercaseStrEnum):
+@dataclass
+class SoSInputNames:
     """The names of the input parameters."""
 
-    BATCH_SIZE = auto()
+    BATCH_SIZE = "batch_size"
     """The batch size for the sampling when using std or cv stopping criterion."""
 
-    INPUT_DISTRIBUTIONS = auto()
+    INPUT_DISTRIBUTIONS = "input_distributions"
     """The distributions of each input variables."""
 
-    N_PROCESSES = auto()
+    N_PROCESSES = "n_processes"
     """The number of processes for the sampling."""
 
-    N_SAMPLES = auto()
+    N_SAMPLES = "n_samples"
     """The number of samples to evaluate."""
 
-    TARGET_CV = auto()
+    TARGET_CV = "target_cv"
     """The target coefficients of variation for each component of the estimator."""
 
-    TARGET_STD = auto()
+    TARGET_STD = "target_std"
     """The target standard deviations for each component of the estimator."""
 
-    WAIT_TIME_BETWEEN_SAMPLES = auto()
+    WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
     """The time to wait between evaluationg two samples."""
 
 
-class SoSOutputNames(LowercaseStrEnum):
+@dataclass
+class SoSOutputNames:
     """The names of the output parameters."""
 
-    INPUT_SAMPLES = auto()
+    INPUT_SAMPLES = "input_samples"
     """The dictionary of input samples."""
 
-    OUTPUT_SAMPLES = auto()
+    OUTPUT_SAMPLES = "output_samples"
     """The dictionary of output samples."""
 
 

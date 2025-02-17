@@ -16,17 +16,15 @@ limitations under the License.
 
 from __future__ import annotations
 
-from enum import auto
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import plotly.express as px
 import plotly.graph_objects as go
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.uncertainty import create_statistics
-from gemseo.utils.enumeration import merge_enums
 from numpy import array, ndarray, size
 from pandas import DataFrame, Series, concat
-from strenum import LowercaseStrEnum
 
 from sostrades_core.execution_engine.disciplines_wrappers.monte_carlo_driver_wrapper import MonteCarloDriverWrapper
 from sostrades_core.execution_engine.proxy_monte_carlo_driver import ProxyMonteCarloDriver
@@ -43,10 +41,11 @@ if TYPE_CHECKING:
 _NAMESPACE_DRIVER = "ns_driver_MC"  # must be here to be used in list comprehension in DESC_IN
 
 
-class _SoSInputNames(LowercaseStrEnum):
-    """The names of the additional input parameters."""
+@dataclass
+class SoSInputNames(MonteCarloDriverWrapper.SoSOutputNames):
+    """The names of the input parameters."""
 
-    PROBABILITY_THRESHOLD = auto()
+    PROBABILITY_THRESHOLD = "probability_threshold"
     """The threshold value used to compute the probability.
 
     The analysis will return the probability that the output is above the threshold.
@@ -54,19 +53,11 @@ class _SoSInputNames(LowercaseStrEnum):
     """
 
 
-SoSInputNames = merge_enums(
-    "SoSInputNames",
-    LowercaseStrEnum,
-    MonteCarloDriverWrapper.SoSOutputNames,
-    _SoSInputNames,
-    doc="The names of the output parameters.",
-)
-
-
-class SoSOutputNames(LowercaseStrEnum):
+@dataclass
+class SoSOutputNames:
     """The names of the additional output parameters."""
 
-    STATISTICS = auto()
+    STATISTICS = "statistics"
     """The statistics of the output samples."""
 
 
