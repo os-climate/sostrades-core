@@ -9,7 +9,6 @@ repos:
       - id: ruff
         args: [
           --fix,
-          --preview,
           --exit-non-zero-on-fix,
           --config=ruff.toml,
         ]
