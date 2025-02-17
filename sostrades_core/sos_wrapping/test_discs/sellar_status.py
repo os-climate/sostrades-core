@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/01/16 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,37 +14,43 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
+from __future__ import annotations
+
 from cmath import exp, sqrt
 
-from numpy import NaN, array, atleast_2d
+from numpy import atleast_1d, atleast_2d, nan
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
-'''
+"""
 Implementation of Sellar Disciplines (Sellar, 1996)
 Adapted from GEMSEO examples
-'''
+"""
 
 
 class SellarProblem(SoSWrapp):
-    """ Sellar Optimization Problem functions
-    """
-    _maturity = 'Fake'
-    DESC_IN = {'x': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'local_dv': {'type': 'float', 'range': [0.0, 20.0]}}
+    """Sellar Optimization Problem functions"""
 
-    DESC_OUT = {'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'c_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'obj': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    _maturity = 'Fake'
+    DESC_IN = {
+        'x': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'local_dv': {'type': 'float', 'range': [0.0, 20.0]},
+    }
+
+    DESC_OUT = {
+        'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'c_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'obj': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+    }
 
     def run(self):
-        """ computes
-        """
+        """Computes"""
         x, y_1, y_2, z = self.get_sosdisc_inputs(['x', 'y_1', 'y_2', 'z'])
         local_dv = self.get_sosdisc_inputs('local_dv')
 
@@ -52,7 +58,7 @@ class SellarProblem(SoSWrapp):
         c_1 = self.c_1(y_1)
         c_2 = self.c_2(y_2)
         obj += local_dv
-        out = {'obj': array([obj]), 'c_1': array([c_1]), 'c_2': array([c_2])}
+        out = {'obj': atleast_1d(obj), 'c_1': atleast_1d(c_1), 'c_2': atleast_1d(c_2)}
         self.store_sos_outputs_values(out)
 
     @staticmethod
@@ -70,9 +76,7 @@ class SellarProblem(SoSWrapp):
         :returns: Objective value
         :rtype: float
         """
-        out = x ** 2 + z[1] + y_1 + exp(-y_2)
-
-        return out
+        return x**2 + z[1] + y_1 + exp(-y_2)
 
     @staticmethod
     def c_1(y_1):
@@ -94,7 +98,7 @@ class SellarProblem(SoSWrapp):
         :returns: Value of the constraint 2
         :rtype: float
         """
-        return y_2 - 24.
+        return y_2 - 24.0
 
     def compute_sos_jacobian(self):
         """
@@ -106,42 +110,35 @@ class SellarProblem(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         x, y_2 = self.get_sosdisc_inputs(['x', 'y_2'])
 
-        self.set_partial_derivative('c_1', 'y_1', atleast_2d(array([-1.0])))
+        self.set_partial_derivative('c_1', 'y_1', atleast_2d(-1.0))
 
-        self.set_partial_derivative('c_2', 'y_2', atleast_2d(array(
-            [1.0])))
+        self.set_partial_derivative('c_2', 'y_2', atleast_2d(1.0))
 
-        self.set_partial_derivative('obj', 'x', atleast_2d(array(
-            [2.0 * x])))
+        self.set_partial_derivative('obj', 'x', atleast_2d(2.0 * x))
 
-        self.set_partial_derivative('obj', 'z', atleast_2d(array(
-            [0.0, 1.0])))
-        self.set_partial_derivative('obj', 'y_1', atleast_2d(array(
-            [1.0])))
-        self.set_partial_derivative('obj', 'y_2', atleast_2d(array(
-            [-exp(-y_2)])))
+        self.set_partial_derivative('obj', 'z', atleast_2d([0.0, 1.0]))
+        self.set_partial_derivative('obj', 'y_1', atleast_2d(1.0))
+        self.set_partial_derivative('obj', 'y_2', atleast_2d([-exp(-y_2)]))
 
-        self.set_partial_derivative('obj', 'local_dv', atleast_2d(array(
-            [1.0])))
+        self.set_partial_derivative('obj', 'local_dv', atleast_2d([1.0]))
 
 
 class Sellar1(SoSWrapp):
-    """ Discipline 1
-    """
-    _maturity = 'Fake'
-    DESC_IN = {'x': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    """Discipline 1"""
 
-    DESC_OUT = {'y_1': {'type': 'float',
-                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    _maturity = 'Fake'
+    DESC_IN = {
+        'x': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+    }
+
+    DESC_OUT = {'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ Discipline 1 execution
-        """
+        """Discipline 1 execution"""
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
         y1_out = {'y_1': y_1}
@@ -160,8 +157,7 @@ class Sellar1(SoSWrapp):
         :returns: coupling variable y_1 of discipline 1
         :rtype: float
         """
-        out = z[0] ** 2 + x + z[1] - 0.2 * y_2
-        return out
+        return z[0] ** 2 + x + z[1] - 0.2 * y_2
 
     def compute_sos_jacobian(self):
         """
@@ -173,20 +169,17 @@ class Sellar1(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         z = self.get_sosdisc_inputs('z')
 
-        self.set_partial_derivative('y_1', 'x', atleast_2d(array([1.0])))
+        self.set_partial_derivative('y_1', 'x', atleast_2d(1.0))
 
-        self.set_partial_derivative('y_1', 'z', atleast_2d(array(
-            [2.0 * z[0], 1.0])))
+        self.set_partial_derivative('y_1', 'z', atleast_2d([2.0 * z[0], 1.0]))
 
-        self.set_partial_derivative('y_1', 'y_2', atleast_2d(array([-0.2])))
+        self.set_partial_derivative('y_1', 'y_2', atleast_2d(-0.2))
 
 
 class Sellar2(SoSWrapp):
-    """ Discipline 2
-    """
+    """Discipline 2"""
 
     # ontology information
     _ontology_data = {
@@ -202,17 +195,21 @@ class Sellar2(SoSWrapp):
         'version': '',
     }
     _maturity = 'Fake'
-    DESC_IN = {'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'debug_mode_sellar': {'type': 'bool', 'default': False, 'visibility': SoSWrapp.SHARED_VISIBILITY,
-                                     'namespace': 'ns_OptimSellar'}}
+    DESC_IN = {
+        'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'debug_mode_sellar': {
+            'type': 'bool',
+            'default': False,
+            'visibility': SoSWrapp.SHARED_VISIBILITY,
+            'namespace': 'ns_OptimSellar',
+        },
+    }
 
-    DESC_OUT = {'y_2': {'type': 'float',
-                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ solves Discipline1
-        """
+        """Solves Discipline1"""
         y_1, z, debug_mode = self.get_sosdisc_inputs(['y_1', 'z', 'debug_mode_sellar'])
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': y_2}
@@ -220,7 +217,8 @@ class Sellar2(SoSWrapp):
 
         if debug_mode:
             # if debug mode activated raise an error
-            raise Exception("debug mode activated to trigger except")  # noqa: S112
+            msg = "debug mode activated to trigger except"
+            raise Exception(msg)
 
     @staticmethod
     def compute_y_2(y_1, z):
@@ -233,8 +231,7 @@ class Sellar2(SoSWrapp):
         :returns: coupling variable y_2
         :rtype: float
         """
-        out = z[0] + z[1] + sqrt(y_1)
-        return out
+        return z[0] + z[1] + sqrt(y_1)
 
     def compute_sos_jacobian(self):
         """
@@ -246,23 +243,20 @@ class Sellar2(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         y_1, debug_mode = self.get_sosdisc_inputs(['y_1', 'debug_mode_sellar'])
 
-        self.set_partial_derivative('y_2', 'y_1', atleast_2d(
-            array([1.0 / (2.0 * sqrt(y_1))])))
+        self.set_partial_derivative('y_2', 'y_1', atleast_2d(1.0 / (2.0 * sqrt(y_1))))
 
-        self.set_partial_derivative('y_2', 'z', atleast_2d(
-            array([1.0, 1.0])))
+        self.set_partial_derivative('y_2', 'z', atleast_2d([1.0, 1.0]))
 
         if debug_mode:
             # if debug mode activated raise an error
-            raise Exception("debug mode activated to trigger except")    # noqa: S112
+            msg = "debug mode activated to trigger except"
+            raise Exception(msg)
 
 
 class Sellar3(SoSWrapp):
-    """ Discipline 2 but with NaN in calculation on purpose for test
-    """
+    """Discipline 2 but with NaN in calculation on purpose for test"""
 
     # ontology information
     _ontology_data = {
@@ -278,26 +272,35 @@ class Sellar3(SoSWrapp):
         'version': '',
     }
     _maturity = 'Fake'
-    DESC_IN = {'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'error_string': {'type': 'string', 'default': '', 'possible_values': ["", "nan", "input_change",
-                                                                                     "linearize_data_change",
-                                                                                     "min_max_grad",
-                                                                                     "min_max_couplings", "all"]}}
+    DESC_IN = {
+        'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'error_string': {
+            'type': 'string',
+            'default': '',
+            'possible_values': [
+                "",
+                "nan",
+                "input_change",
+                "linearize_data_change",
+                "min_max_grad",
+                "min_max_couplings",
+                "all",
+            ],
+        },
+    }
 
-    DESC_OUT = {'y_2': {'type': 'float',
-                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ computes Discipline3
-        """
+        """Computes Discipline3"""
         y_1, z = self.get_sosdisc_inputs(['y_1', 'z'])
         error_string = self.get_sosdisc_inputs('error_string')
 
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': y_2}
         if error_string == 'nan':
-            y1_out['y_2'] = NaN
+            y1_out['y_2'] = nan
         elif error_string == 'input_change':
             y_1 = self.get_sosdisc_inputs('y_1')
             y_1 += 0.5
@@ -314,8 +317,7 @@ class Sellar3(SoSWrapp):
         :returns: coupling variable y_2
         :rtype: float
         """
-        out = z[0] + z[1] + sqrt(y_1)
-        return out
+        return z[0] + z[1] + sqrt(y_1)
 
     def compute_sos_jacobian(self):
         """
@@ -327,7 +329,6 @@ class Sellar3(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         y_1 = self.get_sosdisc_inputs(['y_1'])
         error_string = self.get_sosdisc_inputs('error_string')
 
@@ -335,15 +336,12 @@ class Sellar3(SoSWrapp):
             y_1 = self.get_sosdisc_inputs('y_1')
             y_1 += 0.5
 
-        self.set_partial_derivative('y_2', 'y_1', atleast_2d(
-            array([1.0 / (2.0 * sqrt(y_1))])))
+        self.set_partial_derivative('y_2', 'y_1', atleast_2d(1.0 / (2.0 * sqrt(y_1))))
 
-        self.set_partial_derivative('y_2', 'z', atleast_2d(
-            array([1.0, 1.0])))
+        self.set_partial_derivative('y_2', 'z', atleast_2d([1.0, 1.0]))
 
         if error_string == 'min_max_grad':
-            self.set_partial_derivative('y_2', 'y_1', atleast_2d(
-                array([1e10])))
+            self.set_partial_derivative('y_2', 'y_1', atleast_2d(1e10))
 
     # def _check_min_max_gradients(self, jac):
     #     '''Override the _check_min_max_gradients method from <gemseo.core.discipline> with a raise for test purposes
