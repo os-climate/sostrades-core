@@ -58,8 +58,5 @@ class ProcessBuilder(BaseProcessBuilder):  # noqa: D101
             },
         )
         builder_list_mc.extend(mc_driver)
-        # coupling_builder = self.ee.factory.create_builder_coupling("MC")
-        # coupling_builder.set_builder_info("cls_builder", builder_list_mc)
-        # self.ee.ns_manager.add_ns("ns_MC", f"{self.ee.study_name}.MC")
 
         return builder_list_mc
