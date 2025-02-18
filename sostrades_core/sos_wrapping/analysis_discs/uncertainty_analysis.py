@@ -114,15 +114,15 @@ class UncertaintyAnalysis(SoSWrapp):
     DESC_OUT: ClassVar[dict[str, Any]] = {
         SoSOutputNames.INPUT_SAMPLES: {
             SoSWrapp.TYPE: "dataframe",
-            "unit": None,
+            SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         },
         SoSOutputNames.OUTPUT_SAMPLES: {
             SoSWrapp.TYPE: "dataframe",
-            "unit": None,
+            SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         },
         SoSOutputNames.STATISTICS: {
             SoSWrapp.TYPE: "dataframe",
-            "unit": None,
+            SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         },
     }
 
