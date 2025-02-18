@@ -201,15 +201,17 @@ class UncertaintyAnalysis(SoSWrapp):
             thresh = dict.fromkeys(analysis.names, threshold[0])
         else:
             thresh = {name: threshold.flatten()[i] for i, name in enumerate(columns)}
+        threshold = DataFrame(thresh, index=[0])
         proba = DataFrame(analysis.compute_probability(thresh))
 
-        df = concat((mean, median, std, cv, proba), axis=0)
+        df = concat((mean, median, std, cv, threshold, proba), axis=0)
         df.index = [
             "mean",
             "median",
             "standard deviation",
             "coefficient of variation",
-            f"P[X] > {threshold}",
+            "threshold",
+            "P[X > threshold]",
         ]
         # Swap the columns in the original order
         df = df[columns]
