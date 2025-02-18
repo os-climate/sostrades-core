@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2025/02/14 Copyright 2025 Capgemini
+Modifications on 2023/02/23-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import plotly.graph_objects as go
 from scipy.interpolate import RegularGridInterpolator
 from scipy.stats import norm
 
+from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import SampleGeneratorWrapper
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
@@ -176,7 +177,6 @@ class UncertaintyQuantification(SoSWrapp):
                 eval_inputs = self.get_sosdisc_inputs(self.EVAL_INPUTS)
 
                 if (eval_inputs is not None) & (gather_outputs is not None):
-
                     selected_inputs = eval_inputs.loc[eval_inputs['selected_input']]['full_name']
 
                     in_param = selected_inputs.tolist()
@@ -351,7 +351,9 @@ class UncertaintyQuantification(SoSWrapp):
 
         samples_outputs_df = inputs_dict["samples_outputs_df"]
         samples_outputs_df = self.delete_reference_scenarios(samples_outputs_df)
-        self.output_names = list(samples_outputs_df.columns)[1:]
+        self.output_names = [
+            name for name in samples_outputs_df.columns if name != SampleGeneratorWrapper.SCENARIO_NAME
+        ]
 
         self.confidence_interval = inputs_dict["confidence_interval"] / 100
         self.sample_size = inputs_dict["sample_size"]

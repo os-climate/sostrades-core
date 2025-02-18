@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2025/02/14 Copyright 2025 Capgemini
+Modifications on 2023/04/13-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -212,34 +212,34 @@ class TestSoSDOEScenario(unittest.TestCase):
         eval_disc_y2 = eval_disc.get_sosdisc_outputs('y_2_dict')
         # self.assertEqual(len(eval_disc_samples), n_samples + 1)
         self.assertEqual(len(eval_disc_obj), n_samples + 1)
-        reference_dict_eval_disc_y1 = {'scenario_1': array([10.491018977258355]),
-                                       'scenario_2': array([7.24782387574203]),
-                                       'scenario_3': array([2.975340931836132]),
-                                       'scenario_4': array([1.7522750305335788]),
-                                       'scenario_5': array([9.384097147979022]),
-                                       'scenario_6': array([8.367043113388867]),
-                                       'scenario_7': array([4.479056659260385]),
-                                       'scenario_8': array([5.286890682142451]),
-                                       'scenario_9': array([3.2401082970583297]),
-                                       'scenario_10': array([6.194560558626323]),
-                                       'reference_scenario': array([2.2968901115681137])}
-        reference_dict_eval_disc_y2 = {'scenario_1': array([5.238984250850621]),
-                                       'scenario_2': array([4.692178277109826]),
-                                       'scenario_3': array([3.724917659436569]),
-                                       'scenario_4': array([3.3237352569655227]),
-                                       'scenario_5': array([5.063347376315495]),
-                                       'scenario_6': array([4.892584158393472]),
-                                       'scenario_7': array([4.116378193816121]),
-                                       'scenario_8': array([4.299323961981532]),
-                                       'scenario_9': array([3.8000300822648296]),
-                                       'scenario_10': array([4.488887413810902]),
-                                       'reference_scenario': array([3.515549442159431])}
+        reference_dict_eval_disc_y1 = {'scenario_1': 10.491018977258355,
+                                       'scenario_2': 7.24782387574203,
+                                       'scenario_3': 2.975340931836132,
+                                       'scenario_4': 1.7522750305335788,
+                                       'scenario_5': 9.384097147979022,
+                                       'scenario_6': 8.367043113388867,
+                                       'scenario_7': 4.479056659260385,
+                                       'scenario_8': 5.286890682142451,
+                                       'scenario_9': 3.2401082970583297,
+                                       'scenario_10': 6.194560558626323,
+                                       'reference_scenario': 2.2968901115681137}
+        reference_dict_eval_disc_y2 = {'scenario_1': 5.238984250850621,
+                                       'scenario_2': 4.692178277109826,
+                                       'scenario_3': 3.724917659436569,
+                                       'scenario_4': 3.3237352569655227,
+                                       'scenario_5': 5.063347376315495,
+                                       'scenario_6': 4.892584158393472,
+                                       'scenario_7': 4.116378193816121,
+                                       'scenario_8': 4.299323961981532,
+                                       'scenario_9': 3.8000300822648296,
+                                       'scenario_10': 4.488887413810902,
+                                       'reference_scenario': 3.515549442159431}
         for key in eval_disc_y1.keys():
             self.assertAlmostEqual(
-                eval_disc_y1[key][0], reference_dict_eval_disc_y1[key][0], delta=1e-6)
+                eval_disc_y1[key], reference_dict_eval_disc_y1[key], delta=1e-6)
         for key in eval_disc_y2.keys():
             self.assertAlmostEqual(
-                eval_disc_y2[key][0], reference_dict_eval_disc_y2[key][0], delta=1e-6)
+                eval_disc_y2[key], reference_dict_eval_disc_y2[key], delta=1e-6)
 
     def _test_3_simple_custom_driver(self):
         # FIXME: Out of scope current US. This test will have to be adapted to

@@ -14,10 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-from sostrades_core.sos_wrapping.test_discs.test_mda_residuals_gemseo import (
-    disc_1_expr,
-    disc_2_expr,
-)
 
 
 class Disc1Residuals(SoSWrapp):
@@ -47,8 +43,12 @@ class Disc1Residuals(SoSWrapp):
     }
 
     def run(self):
+        # From https://gitlab.com/gemseo/dev/gemseo/-/blob/develop/tests/mda/test_mda_residuals.py
         w1, y2, x = self.get_sosdisc_inputs(['w1', 'y2', 'x'])
-        y1, w1, r1 = disc_1_expr(w1, y2, x)
+        w1 = (3 * x - y2) / 7.0
+        y1 = 5 * w1 + x + 3 * y2
+        r1 = y2 - 3 * x + 7 * w1
+
         self.store_sos_outputs_values({'y1': y1, 'w1': w1, 'r1': r1})
 
     def get_chart_filter_list(self):
@@ -98,8 +98,13 @@ class Disc2Residuals(SoSWrapp):
     }
 
     def run(self):
-        w1, y2, x = self.get_sosdisc_inputs(['w2', 'y1', 'x'])
-        y2, w2, r2 = disc_2_expr(w1, y2, x)
+        # From https://gitlab.com/gemseo/dev/gemseo/-/blob/develop/tests/mda/test_mda_residuals.py
+        w2, y1, x = self.get_sosdisc_inputs(['w2', 'y1', 'x'])
+        w2 = (2 * x - y1) / 5.0
+        y2 = 13 * w2 + x + 2 * y1
+
+        r2 = y1 - 2 * x + 5 * w2
+
         self.store_sos_outputs_values({'y2': y2, 'w2': w2, 'r2': r2})
 
     def get_chart_filter_list(self):

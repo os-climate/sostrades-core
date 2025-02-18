@@ -13,18 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, ClassVar
+
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
 from sostrades_core.execution_engine.proxy_sample_generator import ProxySampleGenerator
 from sostrades_core.tools.gather.gather_tool import gather_selected_outputs
 
+if TYPE_CHECKING:
+    from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+    from sostrades_core.execution_engine.sos_builder import SoSBuilder
 
-class ProxyMonoInstanceDriverException(Exception):
-    pass
+
+class ProxyMonoInstanceDriverError(Exception):
+    """Error class for the ProxyMonoInstanceDriver."""
 
 
 class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
-    _ontology_data = {
-        'label': ' Mono-Instance Driver',
+    """A driver that evaluates a single discipline or coupling."""
+
+    _ontology_data: ClassVar = {
+        'label': 'Mono-Instance Driver',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -36,62 +47,91 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         'version': '',
     }
 
-    SUBCOUPLING_NAME = 'subprocess'
-    DESC_IN = {
-        ProxyDriverEvaluator.GATHER_OUTPUTS: {ProxyDriverEvaluator.TYPE: 'dataframe',
-                                              ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
-                                                  'selected_output': ('bool', None, True),
-                                                  'full_name': ('string', None, False),
-                                                  'output_name': ('multiple', None, True)},
-                                              ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
-                                              ProxyDriverEvaluator.STRUCTURING: True},
-        'n_processes': {ProxyDriverEvaluator.TYPE: 'int', ProxyDriverEvaluator.NUMERICAL: True,
-                        ProxyDriverEvaluator.DEFAULT: 1},
-        'wait_time_between_fork': {ProxyDriverEvaluator.TYPE: 'float', ProxyDriverEvaluator.NUMERICAL: True,
-                                   ProxyDriverEvaluator.DEFAULT: 0.0}
+    SUBCOUPLING_NAME: str = "subprocess"
+
+    REF_DISCIPLINE_NAME: str = "Eval"
+
+    DESC_IN: ClassVar[dict[str, Any]] = {
+        ProxyDriverEvaluator.GATHER_OUTPUTS: {
+            ProxyDriverEvaluator.TYPE: 'dataframe',
+            ProxyDriverEvaluator.DATAFRAME_DESCRIPTOR: {
+                'selected_output': ('bool', None, True),
+                'full_name': ('string', None, False),
+                'output_name': ('multiple', None, True),
+            },
+            ProxyDriverEvaluator.DATAFRAME_EDITION_LOCKED: False,
+            ProxyDriverEvaluator.STRUCTURING: True,
+        },
+        'n_processes': {
+            ProxyDriverEvaluator.TYPE: 'int',
+            ProxyDriverEvaluator.DEFAULT: 1,
+        },
+        'wait_time_between_fork': {
+            ProxyDriverEvaluator.TYPE: 'float',
+            ProxyDriverEvaluator.DEFAULT: 0.0,
+        },
     }
 
     DESC_IN.update(ProxyDriverEvaluator.DESC_IN)
 
-    DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None}}
+    DESC_OUT: ClassVar[dict[str, Any]] = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None}}
 
-    def __init__(self, sos_name, ee, cls_builder,
-                 driver_wrapper_cls=None,
-                 associated_namespaces=None,
-                 map_name=None
-                 ):
-        super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=associated_namespaces, map_name=map_name)
+    def __init__(
+        self,
+        sos_name: str,
+        ee: ExecutionEngine,
+        cls_builder: list[SoSBuilder],
+        driver_wrapper_cls: type | None = None,
+        associated_namespaces: list[str] | None = None,
+        map_name: str | None = None,
+    ):
+        """
+        Args:
+            sos_name: The name of the discipline/node.
+            ee: The execution engine of the current process.
+            cls_builder: The list of the sub proxy builders.
+            driver_wrapper_cls: The class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper).
+            associated_namespaces: The list containing ns ids ['name__value'] for namespaces associated to builder.
+            map_name: The name of the map associated to the scatter builder in case of multi-instance build. Unused
+            here, but passed by default by the driver builder.
+
+        """
+        super().__init__(
+            sos_name,
+            ee,
+            cls_builder,
+            driver_wrapper_cls,
+            associated_namespaces=associated_namespaces,
+            map_name=map_name,
+        )
         self.driver_eval_mode = self.DRIVER_EVAL_MODE_MONO
 
-    def setup_sos_disciplines(self):
+    def setup_sos_disciplines(self):  # noqa: D102
         disc_in = self.get_data_in()
         dynamic_outputs = {}
         if disc_in and self.GATHER_OUTPUTS in disc_in:
             gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
             selected_outputs_dict = gather_selected_outputs(gather_outputs, self.GATHER_DEFAULT_SUFFIX)
             self.selected_outputs = selected_outputs_dict.keys()
-            if len(selected_outputs_dict) > 0:
-                self.eval_out_list = self._compose_with_driver_ns(selected_outputs_dict.keys())
+            if selected_outputs_dict:
+                self.eval_out_list = self._compose_with_driver_ns(self.selected_outputs)
                 self.eval_out_names = selected_outputs_dict.values()
                 # setting dynamic outputs. One output of type dict per selected output
-                dynamic_outputs.update(
-                    {out_name: {self.TYPE: 'dict'}
-                     for out_name in selected_outputs_dict.values()})
+                dynamic_outputs.update({out_name: {self.TYPE: 'dict'} for out_name in self.eval_out_names})
                 dynamic_outputs.update({'samples_outputs_df': {self.TYPE: 'dataframe'}})
 
                 self.add_outputs(dynamic_outputs)
 
-    def configure_driver(self):
+    def configure_driver(self):  # noqa: D102
         if len(self.proxy_disciplines) > 0:
             # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
             # Manage usecase import
-            ref_discipline_full_name = f'{self.ee.study_name}.Eval'
-            self.manage_import_inputs_from_sub_process(
-                ref_discipline_full_name)
+            ref_discipline_full_name = f"{self.ee.study_name}.{self.REF_DISCIPLINE_NAME}"
+            self.manage_import_inputs_from_sub_process(ref_discipline_full_name)
             # SET EVAL POSSIBLE VALUES
             self.set_eval_possible_values()
 
-    def set_wrapper_attributes(self, wrapper):
+    def set_wrapper_attributes(self, wrapper):  # noqa: D102
         super().set_wrapper_attributes(wrapper)
         if self.selected_inputs is not None:
             # specific to mono-instance
@@ -106,7 +146,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             wrapper.attributes.update(eval_attributes)
 
     def prepare_build(self):
-        '''Get the builder of the single subprocesses in mono-instance builder mode.'''
+        """Get the builder of the single subprocesses in mono-instance builder mode."""
         if self.get_data_in() and self.eval_process_builder is None:
             self._set_eval_process_builder()
         sub_builders = [self.eval_process_builder] if self.eval_process_builder else []
@@ -114,14 +154,14 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         sub_builders.extend(super().prepare_build())
         return sub_builders
 
-    def update_reference(self):
+    def update_reference(self):  # noqa: D102
         return bool(self.get_data_in())
 
-    def is_configured(self):
+    def is_configured(self):  # noqa: D102
         return super().is_configured() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
 
     def _set_eval_process_builder(self):
-        '''Create the eval process builder, in a coupling if necessary, which will allow mono-instance builds.'''
+        """Create the eval process builder, in a coupling if necessary, which will allow mono-instance builds."""
         updated_ns_list = self.update_sub_builders_namespaces()
         if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
@@ -133,17 +173,15 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             # If eval process is a list of builders then we build a coupling
             # containing the eval process
 
-            disc_builder = self.create_sub_builder_coupling(
-                self.SUBCOUPLING_NAME, self.cls_builder)
+            disc_builder = self.create_sub_builder_coupling(self.SUBCOUPLING_NAME, self.cls_builder)
             self.hide_coupling_in_driver_for_display(disc_builder)
 
         self.eval_process_builder = disc_builder
 
-        self.eval_process_builder.add_namespace_list_in_associated_namespaces(
-            updated_ns_list)
+        self.eval_process_builder.add_namespace_list_in_associated_namespaces(updated_ns_list)
 
     def update_sub_builders_namespaces(self):
-        '''Update sub builders namespaces with the driver name in monoinstance case'''
+        """Update sub builders namespaces with the driver name in monoinstance case"""
         ns_ids_list = []
         extra_name = f'{self.sos_name}'
         after_name = self.father_executor.get_disc_full_name()
@@ -151,29 +189,29 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         for ns_name in self.sub_builder_namespaces:
             old_ns = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
             updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
-                old_ns.get_value(), extra_name, after_name=after_name)
+                old_ns.get_value(), extra_name, after_name=after_name
+            )
             display_value = old_ns.get_display_value_if_exists()
             ns_id = self.ee.ns_manager.add_ns(
-                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False)
+                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False
+            )
             ns_ids_list.append(ns_id)
 
         return ns_ids_list
 
     def hide_coupling_in_driver_for_display(self, disc_builder):
-        '''
+        """
         Set the display_value of the sub coupling to the display_value of the driver
         (if no display_value filled the display_value is the simulation value)
-        '''
-        driver_display_value = self.ee.ns_manager.get_local_namespace(
-            self).get_display_value()
-        self.ee.ns_manager.add_display_ns_to_builder(
-            disc_builder, driver_display_value)
+        """
+        driver_display_value = self.ee.ns_manager.get_local_namespace(self).get_display_value()
+        self.ee.ns_manager.add_display_ns_to_builder(disc_builder, driver_display_value)
 
     def check_data_integrity(self):
-        '''
+        """
         Check the data integrity of the driver (from super) and there should be at least one trades variables
         and at least one gather output should be selected
-        '''
+        """
         super().check_data_integrity()
         disc_in = self.get_data_in()
 
@@ -196,8 +234,8 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                     self.driver_data_integrity = False
                     data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
                     self.dm.set_data(
-                        self.get_var_full_name(self.SAMPLES_DF, disc_in),
-                        self.CHECK_INTEGRITY_MSG, data_integrity_msg)
+                        self.get_var_full_name(self.SAMPLES_DF, disc_in), self.CHECK_INTEGRITY_MSG, data_integrity_msg
+                    )
 
             # check that there is at least one gather output selected
             gather_outputs = self.get_sosdisc_inputs(self.GATHER_OUTPUTS)
@@ -205,4 +243,6 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             if selected_outputs_dict is None or len(selected_outputs_dict) == 0:
                 self.dm.set_data(
                     self.get_var_full_name(self.GATHER_OUTPUTS, disc_in),
-                    self.CHECK_INTEGRITY_MSG, "There should be at least one selected output")
+                    self.CHECK_INTEGRITY_MSG,
+                    "There should be at least one selected output",
+                )

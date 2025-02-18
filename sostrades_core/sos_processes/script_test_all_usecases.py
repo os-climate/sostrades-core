@@ -326,6 +326,7 @@ bool, str]:
     error_msg_compare = ''
     try:
         study_1, study_2, dm_1, dm_2 = multiple_configure(usecase=usecase)
+        print(study_1.ee.display_treeview_nodes())
     except Exception:
         double_config_passed = False
         error_msg_compare += f'\nERROR while Configuring twice {usecase}:\n {traceback.format_exc()}'

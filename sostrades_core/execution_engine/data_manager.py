@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
+Modifications on 2023/05/12-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -748,7 +748,7 @@ class DataManager:
                                 # Data cannot be the OUTPUT of several
                                 # disciplines
                                 raise ValueError(
-                                    f'Model key: {self.get_var_full_name(var_id)} of discipline {self.get_disc_full_name(disc_id)} already exists from disc {self.get_disc_full_name(self.data_dict[var_id][ORIGIN])}')
+                                    f'Model key: \n\t{self.get_var_full_name(var_id)}\nof discipline\n\t{self.get_disc_full_name(disc_id)}\nalready exists from disc\n\t{self.get_disc_full_name(self.data_dict[var_id][ORIGIN])}')
                     else:
                         # Overwrite OUTPUT information over INPUT information
                         # (OUTPUT has priority)
