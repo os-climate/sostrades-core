@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/07-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/07-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 from importlib import import_module
 
 from pandas.core.common import flatten
@@ -35,7 +37,7 @@ class SosFactoryException(Exception):
 
 class SosFactory:
     """
-    Specification: SosFactory allows to manage builders and disciplines to instantiate a process
+    Specification: SosFactory allows to manage builders and disciplines to instantiate a process.
     """
 
     EE_PATH = 'sostrades_core.execution_engine'
@@ -123,9 +125,7 @@ class SosFactory:
 
         self.coupling_builder = self.create_builder_coupling(self.__sos_name)
         if isinstance(builders, list):
-            self.coupling_builder.set_builder_info(
-                'cls_builder', list(flatten(builders))
-            )
+            self.coupling_builder.set_builder_info('cls_builder', list(flatten(builders)))
         elif builders.cls == SelectorDiscipline:
             self.coupling_builder = builders
         elif builders.cls == ProxyCoupling:
@@ -133,7 +133,6 @@ class SosFactory:
             self.coupling_builder = builders
             self.coupling_builder.set_builder_info('sos_name', new_builder_name)
         else:
-
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
     def set_gemseo_object_to_coupling_builder(self, gemseo_object):
@@ -165,8 +164,7 @@ class SosFactory:
         disc_id = disc.get_disc_id_from_namespace()
         disc.clean_dm_from_disc(disc)
         self.proxy_disciplines.remove(disc)
-        self.__ns_manager.remove_dependencies_after_disc_deletion(
-            disc, disc_id)
+        self.__ns_manager.remove_dependencies_after_disc_deletion(disc, disc_id)
 
     @property
     def current_discipline(self):
@@ -179,9 +177,7 @@ class SosFactory:
         :type: SoSDiscipline Object
         """
         self.__current_discipline = disc
-        self.__execution_engine.ns_manager.set_current_disc_ns(
-            disc.get_disc_full_name()
-        )
+        self.__execution_engine.ns_manager.set_current_disc_ns(disc.get_disc_full_name())
 
     @property
     def proxy_disciplines(self):
@@ -200,9 +196,17 @@ class SosFactory:
 
     @property
     def contains_mda_with_strong_couplings(self) -> bool:
-        mda_disciplines_with_strong_couplings = len(list(
-            filter(lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
-                   self.proxy_disciplines))) > 0
+        mda_disciplines_with_strong_couplings = (
+            len(
+                list(
+                    filter(
+                        lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
+                        self.proxy_disciplines,
+                    )
+                )
+            )
+            > 0
+        )
 
         ee_with_strong_couplings = len(self.__execution_engine.root_process.strong_couplings)
 
@@ -280,7 +284,6 @@ class SosFactory:
         return proc_list
 
     def get_pb_ist_from_process(self, repo, mod_id):
-
         pb_cls = getattr(
             import_module(SosFactory.build_module_name(repo, mod_id)),
             self.PROCESS_BUILDER,
@@ -310,8 +313,7 @@ class SosFactory:
         Add Uncertainty Quantification builder
         '''
         mod_path = 'sostrades_core.sos_wrapping.analysis_discs.uncertainty_quantification.UncertaintyQuantification'
-        builder = self.get_builder_from_module(
-            sos_name, mod_path)
+        builder = self.get_builder_from_module(sos_name, mod_path)
 
         return builder
 
@@ -324,52 +326,86 @@ class SosFactory:
 
         return builder
 
-    def create_mono_instance_driver(self, sos_name, cls_builder):
-        '''
+    def create_mono_instance_driver(self, sos_name: str, cls_builder: type | list[type]) -> list[SoSBuilder]:
+        """Create a mono-instance driver.
+
         Args:
-            sos_name: Name of the driver
-            cls_builder: (builder list or 1 builder) builder that will be use for driver subprocess
+            sos_name: The name of the driver.
+            cls_builder: The builder or list of builders of the driver's subprocess.
+
         Returns:
-            builder_list: list containing the driver builder
-        '''
+            A list containing the driver's builder.
+        """
         module_struct_list = f'{self.EE_PATH}.proxy_mono_instance_driver.ProxyMonoInstanceDriver'
-        driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.mono_instance_driver_wrapper.MonoInstanceDriverWrapper'
-        return self._create_driver(sos_name=sos_name,
-                                  cls_builder=cls_builder,
-                                  map_name=None,
-                                  module_struct_list=module_struct_list,
-                                  driver_wrapper_mod=driver_wrapper_mod)
+        driver_wrapper_mod = (
+            f'{self.EE_PATH}.disciplines_wrappers.mono_instance_driver_wrapper.MonoInstanceDriverWrapper'
+        )
+        return self._create_driver(
+            sos_name=sos_name,
+            cls_builder=cls_builder,
+            map_name=None,
+            module_struct_list=module_struct_list,
+            driver_wrapper_mod=driver_wrapper_mod,
+        )
 
-    def create_multi_instance_driver(self, sos_name, cls_builder, map_name=None):
-        '''
+    def create_multi_instance_driver(
+        self, sos_name: str, cls_builder: type | list[type], map_name: dict | None = None
+    ) -> list[SoSBuilder]:
+        """Create a multi-instance driver.
+
         Args:
-            sos_name: Name of the driver
-            cls_builder: (builder list or 1 builder) builders that will be used for driver subprocess
-            map_name (optional): Map associated to scatter tool
+            sos_name: The name of the driver.
+            cls_builder: The builder or list of builders of the driver's subprocess.
+            map_name: The mapping of names for the scatter tool.
+
         Returns:
-            builder_list: list containing the driver builder
-        '''
+            A list containing the driver's builder.
+        """
         module_struct_list = f'{self.EE_PATH}.proxy_multi_instance_driver.ProxyMultiInstanceDriver'
-        builder_list = self._create_driver(sos_name=sos_name,
-                                          cls_builder=cls_builder,
-                                          map_name=map_name,
-                                          module_struct_list=module_struct_list)
-        return builder_list
+        return self._create_driver(
+            sos_name=sos_name, cls_builder=cls_builder, map_name=map_name, module_struct_list=module_struct_list
+        )
 
-    def _create_driver(self, sos_name, cls_builder, map_name=None,
-                      module_struct_list=None, driver_wrapper_mod=None):
-        '''
+    def create_monte_carlo_driver(self, sos_name: str, cls_builder: type | list[type]) -> list[SoSBuilder]:
+        """Create a Monte Carlo driver.
 
         Args:
-            sos_name: Name of the driver
-            cls_builder: sub process builder list to evaluate
-            map_name (optional): Map associated to scatter_tool (in multiinstance mode)
-            module_struct_list (string): module of the proxy
-            driver_wrapper_mod (string): module of the driver wrapper (mono-instance)
+            sos_name: The name of the driver.
+            cls_builder: The builder or list of builders of the driver's subprocess.
 
-        Returns: A driver evaluator with all the parameters
+        Returns:
+            A list containing the driver's builder.
+        """
+        module_struct_list = f'{self.EE_PATH}.proxy_monte_carlo_driver.ProxyMonteCarloDriver'
+        driver_wrapper_mod = f'{self.EE_PATH}.disciplines_wrappers.monte_carlo_driver_wrapper.MonteCarloDriverWrapper'
+        return self._create_driver(
+            sos_name=sos_name,
+            cls_builder=cls_builder,
+            map_name=None,
+            module_struct_list=module_struct_list,
+            driver_wrapper_mod=driver_wrapper_mod,
+        )
 
-        '''
+    def _create_driver(
+        self,
+        sos_name: str,
+        cls_builder: type | list[type],
+        map_name: str | None = None,
+        module_struct_list: str | None = None,
+        driver_wrapper_mod: str | None = None,
+    ) -> list[SoSBuilder]:
+        """Create a driver.
+
+        Args:
+            sos_name: The name of the driver.
+            cls_builder: The builder or list of builders of the driver's subprocess.
+            map_name: The mapping of names for the scatter tool (in multi-instance mode).
+            module_struct_list: The module containing the proxy.
+            driver_wrapper_mod: The module containing the driver wrapper.
+
+        Returns:
+            A list containing the driver's builder.
+        """
         if module_struct_list is None:
             module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
@@ -378,14 +414,12 @@ class SosFactory:
 
         if cls_builder is not None:
             if isinstance(cls_builder, list):
-                builder.set_builder_info(
-                    'cls_builder', list(flatten(cls_builder)))
+                builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
             else:
                 builder.set_builder_info('cls_builder', [cls_builder])
 
         if driver_wrapper_mod is not None:
-            driver_wrapper_cls = self.get_disc_class_from_module(
-                driver_wrapper_mod)
+            driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
             builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
 
         builder.set_builder_info('map_name', map_name)
@@ -413,8 +447,7 @@ class SosFactory:
         # NB: custom driver wrapper is off (won't build)
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
-        driver_wrapper_cls = self.get_disc_class_from_module(
-            driver_wrapper_mod)
+        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         if isinstance(cls_builder, list):
             builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
@@ -423,9 +456,7 @@ class SosFactory:
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
         return builder
 
-    def create_architecture_builder(
-            self, builder_name, architecture_df, custom_vb_folder_list=None
-    ):
+    def create_architecture_builder(self, builder_name, architecture_df, custom_vb_folder_list=None):
         """
         create a builder  defined by a type ArchiBuilder
         """
@@ -433,14 +464,11 @@ class SosFactory:
         cls = self.get_disc_class_from_module(mod_path)
         # is_executable flag is False because the archi discipline has no
         # run method
-        builder = SoSBuilder(
-            builder_name, self.__execution_engine, cls, is_executable=False
-        )
+        builder = SoSBuilder(builder_name, self.__execution_engine, cls, is_executable=False)
         builder.set_builder_info('architecture_df', architecture_df)
         # add custom value block folder if specified
         if custom_vb_folder_list is not None:
-            builder.set_builder_info(
-                'custom_vb_folder_list', custom_vb_folder_list)
+            builder.set_builder_info('custom_vb_folder_list', custom_vb_folder_list)
 
         return builder
 
@@ -502,9 +530,10 @@ class SosFactory:
 
     def get_disc_class_from_module(self, module_path):
         """
-        Just maintains the old interface..
+        Just maintains the old interface.
         """
         return get_class_from_path(class_path=module_path)
+
 
     def get_builder_from_class_name(self, sos_name, mod_name, folder_list):
         """
@@ -513,9 +542,7 @@ class SosFactory:
         mod_path = get_module_class_path(mod_name, folder_list)
 
         if mod_path is None:
-            raise SosFactoryException(
-                f'The builder {mod_name} has not been found in the folder list {folder_list}'
-            )
+            raise SosFactoryException(f'The builder {mod_name} has not been found in the folder list {folder_list}')
         return self.get_builder_from_module(sos_name, mod_path)
 
     def clean_discipline_list(self, disciplines, current_discipline=None):
@@ -536,9 +563,7 @@ class SosFactory:
             if isinstance(disc, ProxyDisciplineBuilder):
                 # case of the sosCoupling
                 if isinstance(disc, ProxyCoupling):
-                    self.clean_discipline_list(
-                        disc.proxy_disciplines, current_discipline=disc
-                    )
+                    self.clean_discipline_list(disc.proxy_disciplines, current_discipline=disc)
 
             disc.father_builder.remove_discipline(disc)
             self.__proxy_disciplines.remove(disc)
