@@ -299,7 +299,7 @@ class UncertaintyAnalysis(SoSWrapp):
         fig.add_annotation(
             x=0.85,
             y=1.15,
-            font={"family": "Arial", "color": "#7f7f7f", "size": 10},
+            font={"family": "Arial", "color": "black", "size": 10},
             text=f" Mean: {mean} <br> Median: {median} ",
             showarrow=False,
             xanchor="left",
@@ -310,11 +310,16 @@ class UncertaintyAnalysis(SoSWrapp):
             borderwidth=1,
         )
 
-        for value, text, y_pos in zip([mean, median], ["mean", "median"], [-0.15, 1.05]):
+        for value, text, y_pos, color in zip(
+            [mean, median],
+            ["mean", "median"],
+            [-0.10, 1.05],
+            ["black", "red"],
+        ):
             fig.add_vline(
                 xref="x",
                 x=value,
-                line_color="black",
+                line_color=color,
                 line_width=2,
                 line_dash="dot",
             )
@@ -323,7 +328,7 @@ class UncertaintyAnalysis(SoSWrapp):
                 yref="y domain",
                 x=value,
                 y=y_pos,
-                font={"color": "black", "size": 12},
+                font={"color": color, "size": 12},
                 text=text,
                 showarrow=False,
                 xanchor="center",
