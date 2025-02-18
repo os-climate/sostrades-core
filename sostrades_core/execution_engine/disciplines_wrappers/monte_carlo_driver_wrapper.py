@@ -17,6 +17,7 @@ limitations under the License.
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import dataclass
 from enum import auto
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -27,7 +28,7 @@ from gemseo.settings.formulations import DisciplinaryOpt_Settings
 from gemseo.uncertainty import create_statistics
 from numpy import atleast_1d, cumsum, size, split, sqrt
 from pandas import DataFrame, concat
-from strenum import StrEnum
+from strenum import LowercaseStrEnum
 
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import DriverEvaluatorWrapper
 from sostrades_core.execution_engine.proxy_driver_evaluator import ProxyDriverEvaluator
@@ -41,52 +42,54 @@ if TYPE_CHECKING:
     from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
-class SoSInputNames(StrEnum):
+@dataclass
+class SoSInputNames:
     """The names of the input parameters."""
 
-    batch_size = auto()
+    BATCH_SIZE = "batch_size"
     """The batch size for the sampling when using std or cv stopping criterion."""
 
-    input_distributions = auto()
+    INPUT_DISTRIBUTIONS = "input_distributions"
     """The distributions of each input variables."""
 
-    n_processes = auto()
+    N_PROCESSES = "n_processes"
     """The number of processes for the sampling."""
 
-    n_samples = auto()
+    N_SAMPLES = "n_samples"
     """The number of samples to evaluate."""
 
-    target_cv = auto()
+    TARGET_CV = "target_cv"
     """The target coefficients of variation for each component of the estimator."""
 
-    target_std = auto()
+    TARGET_STD = "target_std"
     """The target standard deviations for each component of the estimator."""
 
-    wait_time_between_samples = auto()
+    WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
     """The time to wait between evaluationg two samples."""
 
 
-class SoSOutputNames(StrEnum):
+@dataclass
+class SoSOutputNames:
     """The names of the output parameters."""
 
-    input_samples = auto()
+    INPUT_SAMPLES = "input_samples"
     """The dictionary of input samples."""
 
-    output_samples = auto()
+    OUTPUT_SAMPLES = "output_samples"
     """The dictionary of output samples."""
 
 
-class StoppingCriterion(StrEnum):
+class StoppingCriterion(LowercaseStrEnum):
     """The stopping criterion for the Monte Carlo sampling."""
 
-    n_samples = auto()
+    N_SAMPLES = auto()
     """Stop the sampling after a given number of samples."""
 
-    std = auto()
+    STD = auto()
     """Stop the sampling when the standard deviation of the estimator reaches the target value,
     or when the maximum number of samples is reached."""
 
-    cv = auto()
+    CV = auto()
     """Stop the sampling when the coefficient of variation of the estimator reaches the target value,
     or when the maximum number of samples is reached."""
 
@@ -140,7 +143,7 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
     def _setup_inputs_outputs(self) -> None:
         """Setup the input distributions and output names."""
         self.parameter_space = ParameterSpace()
-        distributions_args: DistributionsArgsType = self.get_sosdisc_inputs(self.SoSInputNames.input_distributions)
+        distributions_args: DistributionsArgsType = self.get_sosdisc_inputs(self.SoSInputNames.INPUT_DISTRIBUTIONS)
         for var_name, distr_args in distributions_args.items():
             # Copy the dict as it will be modified
             distr_arg_copy = deepcopy(distr_args)
@@ -157,15 +160,15 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
 
     def _setup_stopping_criterion(self) -> None:
         """Setup the stopping criterion."""
-        self._n_samples = self.get_sosdisc_inputs(self.SoSInputNames.n_samples)
-        if target_std := self.get_sosdisc_inputs(self.SoSInputNames.target_std):
+        self._n_samples = self.get_sosdisc_inputs(self.SoSInputNames.N_SAMPLES)
+        if target_std := self.get_sosdisc_inputs(self.SoSInputNames.TARGET_STD):
             self._target_std = atleast_1d(target_std).flatten()
-            self._stopping_criterion = StoppingCriterion.std
-        elif target_cv := self.get_sosdisc_inputs(self.SoSInputNames.target_cv):
+            self._stopping_criterion = StoppingCriterion.STD
+        elif target_cv := self.get_sosdisc_inputs(self.SoSInputNames.TARGET_CV):
             self._target_cv = atleast_1d(target_cv).flatten()
-            self._stopping_criterion = StoppingCriterion.cv
+            self._stopping_criterion = StoppingCriterion.CV
         else:
-            self._stopping_criterion = StoppingCriterion.n_samples
+            self._stopping_criterion = StoppingCriterion.N_SAMPLES
 
     def _evaluate_n_samples(self, n_samples: int) -> Dataset:
         """Sample the input distributions for a given number of samples and evaluate the outputs.
@@ -184,8 +187,8 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
             scenario_type="DOE",
             formulation_settings_model=formulation_settings,
         )
-        n_processes = self.get_sosdisc_inputs(self.SoSInputNames.n_processes)
-        wait_time_between_samples = self.get_sosdisc_inputs(self.SoSInputNames.wait_time_between_samples)
+        n_processes = self.get_sosdisc_inputs(self.SoSInputNames.N_PROCESSES)
+        wait_time_between_samples = self.get_sosdisc_inputs(self.SoSInputNames.WAIT_TIME_BETWEEN_SAMPLES)
         algo_settings = PYDOE_LHS_Settings(
             n_samples=n_samples,
             n_processes=n_processes,
@@ -205,7 +208,7 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         """
         n = dataset.shape[0]
         analysis = create_statistics(dataset, variable_names=["_".join(self.outputs)])
-        if self._stopping_criterion == StoppingCriterion.std:
+        if self._stopping_criterion == StoppingCriterion.STD:
             std = next(iter(analysis.compute_standard_deviation().values()))
             return all(std / sqrt(n) <= self._target_std)
         cv = next(iter(analysis.compute_variation_coefficient().values()))
@@ -217,10 +220,10 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         Returns:
             The dataset of input and output values.
         """
-        if self._stopping_criterion == StoppingCriterion.n_samples:
+        if self._stopping_criterion == StoppingCriterion.N_SAMPLES:
             return self._evaluate_n_samples(self._n_samples)
 
-        batch_size = self.get_sosdisc_inputs(self.SoSInputNames.batch_size) or self._n_samples // 100
+        batch_size = self.get_sosdisc_inputs(self.SoSInputNames.BATCH_SIZE) or self._n_samples // 100
         dataset = self._evaluate_n_samples(batch_size)
         while not self._is_criterion_reached(dataset) and dataset.shape[0] < self._n_samples:
             dataset = concat((dataset, self._evaluate_n_samples(batch_size)))
@@ -239,7 +242,7 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         n_samples = evaluation_outputs.shape[0]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
         input_dict = {k: v.flatten() for k, v in samples_dict["designs"].items()}
-        self.store_sos_outputs_values({self.SoSOutputNames.input_samples: DataFrame(input_dict)})
+        self.store_sos_outputs_values({self.SoSOutputNames.INPUT_SAMPLES: DataFrame(input_dict)})
         output_array = next(iter(samples_dict["functions"].values()))
         output_sizes = [size(self.attributes["sub_disciplines"][0].local_data[output]) for output in self.outputs]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
@@ -254,7 +257,7 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
                     df = DataFrame({self.outputs[i]: [a[j, :] for j in range(n_samples)]})
                 df_list.append(df)
             samples_output_df = concat(df_list, axis=1)
-        self.store_sos_outputs_values({self.SoSOutputNames.output_samples: samples_output_df})
+        self.store_sos_outputs_values({self.SoSOutputNames.OUTPUT_SAMPLES: samples_output_df})
 
     def run(self) -> None:
         """Perform a Quasi Monte Carlo sampling of the selected output(s).

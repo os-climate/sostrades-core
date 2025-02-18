@@ -61,10 +61,11 @@ class AbstractDatasetsConnector(abc.ABC):
     # list of compatible version of dataset info (V0, V1...)
     COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V0]
     CONNECTOR_ID = "connector_id"
+
+
     @property
     def compatible_dataset_info_version(self):
         return set(self.COMPATIBLE_DATASET_INFO_VERSION)
-
 
     def check_dataset_info_version(self, dataset_identifier: AbstractDatasetInfo) -> None:
         """
@@ -446,6 +447,6 @@ class DatasetUnableToInitializeConnectorException(DatasetGenericException):
     """
     Exception when an error occurs during dataset initialization
     """
-    def __init__(self, connector_type: AbstractDatasetsConnector):
+    def __init__(self, connector_type: str):
         self.connector_type = connector_type
         super().__init__(f"Unable to initialize connector of type {connector_type}")
