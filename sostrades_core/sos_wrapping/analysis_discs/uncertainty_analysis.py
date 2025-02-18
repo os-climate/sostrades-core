@@ -55,12 +55,12 @@ class SoSInputNames(MCOutputNames):
 
 @dataclass
 class SoSOutputNames:
-    """The names of the additional output parameters."""
+    """The names of the output parameters."""
 
-    INPUT_SAMPLES = "input_samples"
+    INPUT_SAMPLES_POST = "input_samples_post"
     """The dataframe of input samples, split in 1D components."""
 
-    OUTPUT_SAMPLES = "output_samples"
+    OUTPUT_SAMPLES_POST = "output_samples_post"
     """The dataframe of output samples, split in 1D components."""
 
     STATISTICS = "statistics"
@@ -112,11 +112,11 @@ class UncertaintyAnalysis(SoSWrapp):
     })
 
     DESC_OUT: ClassVar[dict[str, Any]] = {
-        SoSOutputNames.INPUT_SAMPLES: {
+        SoSOutputNames.INPUT_SAMPLES_POST: {
             SoSWrapp.TYPE: "dataframe",
             SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         },
-        SoSOutputNames.OUTPUT_SAMPLES: {
+        SoSOutputNames.OUTPUT_SAMPLES_POST: {
             SoSWrapp.TYPE: "dataframe",
             SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         },
@@ -161,10 +161,10 @@ class UncertaintyAnalysis(SoSWrapp):
                 )
         inputs_df = self._dataset.input_dataset
         inputs_df.columns = inputs_df.columns.droplevel(0).droplevel(1)
-        self.store_sos_outputs_values({SoSOutputNames.INPUT_SAMPLES: inputs_df})
+        self.store_sos_outputs_values({SoSOutputNames.INPUT_SAMPLES_POST: inputs_df})
         outputs_df = self._dataset.output_dataset
         outputs_df.columns = outputs_df.columns.droplevel(0).droplevel(1)
-        self.store_sos_outputs_values({SoSOutputNames.OUTPUT_SAMPLES: outputs_df})
+        self.store_sos_outputs_values({SoSOutputNames.OUTPUT_SAMPLES_POST: outputs_df})
 
     def _check_parameters(self) -> None:
         """Check the numerical parameters.
@@ -248,8 +248,8 @@ class UncertaintyAnalysis(SoSWrapp):
                 chart_list = _filter.selected_values
                 break
         instantiated_graphs = []
-        input_samples = self.get_sosdisc_outputs(SoSInputNames.INPUT_SAMPLES)
-        output_samples = self.get_sosdisc_outputs(SoSInputNames.OUTPUT_SAMPLES)
+        input_samples = self.get_sosdisc_outputs(SoSOutputNames.INPUT_SAMPLES_POST)
+        output_samples = self.get_sosdisc_outputs(SoSOutputNames.OUTPUT_SAMPLES_POST)
         for chart_name in chart_list:
             if chart_name == self.CHART_BOXPLOT_NAME:
                 instantiated_graphs.append(self.boxplot(input_samples, output_samples))
