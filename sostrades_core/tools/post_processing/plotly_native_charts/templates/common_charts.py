@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2025/02/11 Copyright 2025 Capgemini
+Modifications on 2023/02/23-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,18 +19,21 @@ from __future__ import annotations
 
 import math
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.graph_objects as go
 from numpy import asarray, mean, ndarray
 from pandas import Series
-from plotly.graph_objects import Trace
 
 from sostrades_core.tools.post_processing.plotly_native_charts.instantiated_plotly_native_chart import (
     InstantiatedPlotlyNativeChart,
 )
 from sostrades_core.tools.post_processing.post_processing_tools import align_two_y_axes, format_currency_legend
+
+if TYPE_CHECKING:
+    from plotly.graph_objects import Trace
 
 
 class CommonCharts(InstantiatedPlotlyNativeChart):

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/07-2025/01/29 Copyright 2025 Capgemini
+Modifications on 2023/04/07-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
 from __future__ import annotations
 
 import inspect
@@ -30,6 +31,10 @@ from sostrades_core.execution_engine.proxy_optim import ProxyOptim
 from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
 from sostrades_core.sos_wrapping.selector_discipline import SelectorDiscipline
+
+
+class SosFactoryException(Exception):
+    pass
 
 
 class SosFactory:
@@ -122,9 +127,7 @@ class SosFactory:
 
         self.coupling_builder = self.create_builder_coupling(self.__sos_name)
         if isinstance(builders, list):
-            self.coupling_builder.set_builder_info(
-                'cls_builder', list(flatten(builders))
-            )
+            self.coupling_builder.set_builder_info('cls_builder', list(flatten(builders)))
         elif builders.cls == SelectorDiscipline:
             self.coupling_builder = builders
         elif builders.cls == ProxyCoupling:
@@ -132,7 +135,6 @@ class SosFactory:
             self.coupling_builder = builders
             self.coupling_builder.set_builder_info('sos_name', new_builder_name)
         else:
-
             self.coupling_builder.set_builder_info('cls_builder', [builders])
 
     def set_gemseo_object_to_coupling_builder(self, gemseo_object):
@@ -164,8 +166,7 @@ class SosFactory:
         disc_id = disc.get_disc_id_from_namespace()
         disc.clean_dm_from_disc(disc)
         self.proxy_disciplines.remove(disc)
-        self.__ns_manager.remove_dependencies_after_disc_deletion(
-            disc, disc_id)
+        self.__ns_manager.remove_dependencies_after_disc_deletion(disc, disc_id)
 
     @property
     def current_discipline(self):
@@ -178,9 +179,7 @@ class SosFactory:
         :type: SoSDiscipline Object
         """
         self.__current_discipline = disc
-        self.__execution_engine.ns_manager.set_current_disc_ns(
-            disc.get_disc_full_name()
-        )
+        self.__execution_engine.ns_manager.set_current_disc_ns(disc.get_disc_full_name())
 
     @property
     def proxy_disciplines(self):
@@ -199,9 +198,17 @@ class SosFactory:
 
     @property
     def contains_mda_with_strong_couplings(self) -> bool:
-        mda_disciplines_with_strong_couplings = len(list(
-            filter(lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
-                   self.proxy_disciplines))) > 0
+        mda_disciplines_with_strong_couplings = (
+            len(
+                list(
+                    filter(
+                        lambda disc: isinstance(disc, ProxyCoupling) and len(disc.strong_couplings) > 0,
+                        self.proxy_disciplines,
+                    )
+                )
+            )
+            > 0
+        )
 
         ee_with_strong_couplings = len(self.__execution_engine.root_process.strong_couplings)
 
@@ -279,7 +286,6 @@ class SosFactory:
         return proc_list
 
     def get_pb_ist_from_process(self, repo, mod_id):
-
         pb_cls = getattr(
             import_module(SosFactory.build_module_name(repo, mod_id)),
             self.PROCESS_BUILDER,
@@ -309,8 +315,7 @@ class SosFactory:
         Add Uncertainty Quantification builder
         '''
         mod_path = 'sostrades_core.sos_wrapping.analysis_discs.uncertainty_quantification.UncertaintyQuantification'
-        builder = self.get_builder_from_module(
-            sos_name, mod_path)
+        builder = self.get_builder_from_module(sos_name, mod_path)
 
         return builder
 
@@ -444,8 +449,7 @@ class SosFactory:
         # NB: custom driver wrapper is off (won't build)
         module_struct_list = f'{self.EE_PATH}.proxy_driver_evaluator.ProxyDriverEvaluator'
         cls = self.get_disc_class_from_module(module_struct_list)
-        driver_wrapper_cls = self.get_disc_class_from_module(
-            driver_wrapper_mod)
+        driver_wrapper_cls = self.get_disc_class_from_module(driver_wrapper_mod)
         builder = SoSBuilder(sos_name, self.__execution_engine, cls)
         if isinstance(cls_builder, list):
             builder.set_builder_info('cls_builder', list(flatten(cls_builder)))
@@ -454,9 +458,7 @@ class SosFactory:
         builder.set_builder_info('driver_wrapper_cls', driver_wrapper_cls)
         return builder
 
-    def create_architecture_builder(
-            self, builder_name, architecture_df, custom_vb_folder_list=None
-    ):
+    def create_architecture_builder(self, builder_name, architecture_df, custom_vb_folder_list=None):
         """
         create a builder  defined by a type ArchiBuilder
         """
@@ -464,14 +466,11 @@ class SosFactory:
         cls = self.get_disc_class_from_module(mod_path)
         # is_executable flag is False because the archi discipline has no
         # run method
-        builder = SoSBuilder(
-            builder_name, self.__execution_engine, cls, is_executable=False
-        )
+        builder = SoSBuilder(builder_name, self.__execution_engine, cls, is_executable=False)
         builder.set_builder_info('architecture_df', architecture_df)
         # add custom value block folder if specified
         if custom_vb_folder_list is not None:
-            builder.set_builder_info(
-                'custom_vb_folder_list', custom_vb_folder_list)
+            builder.set_builder_info('custom_vb_folder_list', custom_vb_folder_list)
 
         return builder
 
@@ -563,10 +562,7 @@ class SosFactory:
             # Get all files in the folder_path
             file_list = os.listdir(folder_path)
             # Find all submodules in the path
-            sub_module_list = [
-                import_module('.'.join([folder, file.split('.')[0]]))
-                for file in file_list
-            ]
+            sub_module_list = [import_module('.'.join([folder, file.split('.')[0]])) for file in file_list]
 
             for sub_module in sub_module_list:
                 # Find all members of each submodule which are classes
@@ -574,13 +570,11 @@ class SosFactory:
                 class_list = [
                     value
                     for value, cls in inspect.getmembers(sub_module)
-                    if inspect.isclass(getattr(sub_module, value))
-                       and cls.__module__ == sub_module.__name__
+                    if inspect.isclass(getattr(sub_module, value)) and cls.__module__ == sub_module.__name__
                 ]
                 # CHeck if the following class is in the list
                 if class_name in class_list:
-                    module_class_path = '.'.join(
-                        [sub_module.__name__, class_name])
+                    module_class_path = '.'.join([sub_module.__name__, class_name])
                     break
             else:
                 continue
@@ -595,9 +589,7 @@ class SosFactory:
         mod_path = self.get_module_class_path(mod_name, folder_list)
 
         if mod_path is None:
-            raise SosFactoryException(
-                f'The builder {mod_name} has not been found in the folder list {folder_list}'
-            )
+            raise SosFactoryException(f'The builder {mod_name} has not been found in the folder list {folder_list}')
         return self.get_builder_from_module(sos_name, mod_path)
 
     def clean_discipline_list(self, disciplines, current_discipline=None):
@@ -618,9 +610,7 @@ class SosFactory:
             if isinstance(disc, ProxyDisciplineBuilder):
                 # case of the sosCoupling
                 if isinstance(disc, ProxyCoupling):
-                    self.clean_discipline_list(
-                        disc.proxy_disciplines, current_discipline=disc
-                    )
+                    self.clean_discipline_list(disc.proxy_disciplines, current_discipline=disc)
 
             disc.father_builder.remove_discipline(disc)
             self.__proxy_disciplines.remove(disc)
