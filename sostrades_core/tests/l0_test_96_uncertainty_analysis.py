@@ -20,8 +20,8 @@ from pathlib import Path
 
 import pytest
 from numpy import array
-from numpy.testing import assert_allclose
 from pandas import DataFrame, read_csv
+from pandas.testing import assert_frame_equal
 
 from sostrades_core.sos_processes.test.test_uncertainty_analysis.usecase import Study
 from sostrades_core.sos_wrapping.analysis_discs.uncertainty_analysis import UncertaintyAnalysis
@@ -38,7 +38,7 @@ def test_uncertainty_analysis(n_objectives: int):
     expected_stats = read_csv(Path(__file__).parent / "data/test_96_statistics.csv")
     if n_objectives == 1:
         output_samples = DataFrame(output_samples["usecase.Eval_MC.obj"])
-        expected_stats = expected_stats.loc[:, ["usecase.Eval_MC.x", "usecase.Eval_MC.obj"]]
+        expected_stats = expected_stats.loc[:, [" ", "usecase.Eval_MC.x", "usecase.Eval_MC.obj"]]
         threshold = array([5, 45])
     else:
         threshold = array([5, 0, -19.5, 45, 5, 4])
@@ -53,7 +53,7 @@ def test_uncertainty_analysis(n_objectives: int):
     # Check the output
     dm = study.execution_engine.dm
     stats = dm.get_value(f"{study.study_name}.{POST_NAME}.{UncertaintyAnalysis.SoSOutputNames.STATISTICS}")
-    assert_allclose(stats.to_numpy(), expected_stats.to_numpy())
+    assert_frame_equal(stats, expected_stats)
 
 
 if __name__ == "__main__":

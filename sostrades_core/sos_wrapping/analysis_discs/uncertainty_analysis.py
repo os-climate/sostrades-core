@@ -204,16 +204,23 @@ class UncertaintyAnalysis(SoSWrapp):
         threshold = DataFrame(thresh, index=[0])
         proba = DataFrame(analysis.compute_probability(thresh))
 
-        df = concat((mean, median, std, cv, threshold, proba), axis=0)
-        df.index = [
-            "mean",
-            "median",
-            "standard deviation",
-            "coefficient of variation",
-            "threshold",
-            "P[X > threshold]",
-        ]
+        df = concat((mean, median, std, cv, threshold, proba), axis=0, ignore_index=True)
+        df_index = DataFrame(
+            {
+                " ": [
+                    "mean",
+                    "median",
+                    "standard deviation",
+                    "coefficient of variation",
+                    "threshold",
+                    "P[X > threshold]",
+                ]
+            },
+            index=list(range(6)),
+        )
+        df = concat((df_index, df), axis=1)
         # Swap the columns in the original order
+        columns = [" ", *columns]
         df = df[columns]
         self.store_sos_outputs_values({SoSOutputNames.STATISTICS: df})
 
