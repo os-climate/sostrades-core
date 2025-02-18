@@ -34,11 +34,9 @@ class ProcessBuilder(BaseProcessBuilder):  # noqa: D101
         # Create the post-treatment discipline
         post_disc = "sostrades_core.sos_wrapping.analysis_discs.uncertainty_analysis.UncertaintyAnalysis"
         mods_dict = {"MC post": post_disc}
-        builder_list = self.create_builder_list(
+        return self.create_builder_list(
             mods_dict,
             ns_dict={
                 "ns_driver_MC": f"{self.ee.study_name}.Eval_MC",
             },
         )
-
-        return builder_list

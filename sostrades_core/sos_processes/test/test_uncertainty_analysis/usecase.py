@@ -42,8 +42,8 @@ class Study(StudyManager):
         input_samples = read_csv(Path(__file__).parent / "data/input_samples.csv")
         output_samples = read_csv(Path(__file__).parent / "data/output_samples.csv")
         input_dict = {
-            f"{self.study_name}.{POST_NAME}.{UncertaintyAnalysis.SoSInputNames.INPUT_SAMPLES}": input_samples,
-            f"{self.study_name}.{POST_NAME}.{UncertaintyAnalysis.SoSInputNames.OUTPUT_SAMPLES}": output_samples,
+            f"usecase.Eval_MC.{UncertaintyAnalysis.SoSInputNames.INPUT_SAMPLES}": input_samples,
+            f"usecase.Eval_MC.{UncertaintyAnalysis.SoSInputNames.OUTPUT_SAMPLES}": output_samples,
             f"{self.study_name}.{POST_NAME}.{UncertaintyAnalysis.SoSInputNames.PROBABILITY_THRESHOLD}": array([
                 5,
                 0,
