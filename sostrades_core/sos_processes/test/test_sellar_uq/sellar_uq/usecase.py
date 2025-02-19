@@ -24,9 +24,8 @@ class Study(DOEStudy):
 
     UQ_NAME = "UncertaintyQuantification"
 
-    def __init__(self, log_level="INFO", write_to_file: bool = False, **kwargs) -> None:  # noqa: D107
-        logger = self.configure_logger(log_level, write_to_file)
-        super(DOEStudy, self).__init__(__file__, logger=logger, **kwargs)
+    def __init__(self, **kwargs) -> None:  # noqa: D107
+        super(DOEStudy, self).__init__(__file__, **kwargs)
 
     def setup_usecase(self):
         """Setup the usecase."""
