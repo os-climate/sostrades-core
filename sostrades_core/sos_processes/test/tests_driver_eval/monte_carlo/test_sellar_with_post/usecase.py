@@ -37,7 +37,7 @@ class Study(StudyManager):
     def __init__(self, **kwargs) -> None:  # noqa: D107
         super().__init__(__file__, **kwargs)
 
-    def setup_usecase(self) -> dict[str, Any]:
+    def setup_usecase(self) -> list[dict[str, Any]]:
         """Setup the usecase."""
         distributions = {
             f"{self.study_name}.Eval_MC.x": {

@@ -37,7 +37,7 @@ class Study(StudyManager):
     def __init__(self, **kwargs) -> None:  # noqa: D107
         super().__init__(__file__, **kwargs)
 
-    def setup_usecase(self) -> dict[str, Any]:
+    def setup_usecase(self) -> list[dict[str, Any]]:
         """Setup the usecase."""
         distributions = {
             f"{self.study_name}.Eval_MC.x": {
@@ -53,10 +53,10 @@ class Study(StudyManager):
                 "selected_output": selected_outputs,
                 "full_name": ["c_1", "c_2", "obj", "y_1", "y_2"],
             }),
-            f"{self.study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.input_distributions}": distributions,
-            f"{self.study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.n_samples}": 10000,
+            f"{self.study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.INPUT_DISTRIBUTIONS}": distributions,
+            f"{self.study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.N_SAMPLES}": 10000,
         }
-        input_dict.update({f"{self.study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.target_cv}": 0.05})
+        input_dict.update({f"{self.study_name}.Eval_MC.{MonteCarloDriverWrapper.SoSInputNames.TARGET_CV}": 0.05})
         input_dict[f"{self.study_name}.Eval_MC.x"] = array([1.0])
         input_dict[f"{self.study_name}.Eval_MC.y_1"] = array([1.0])
         input_dict[f"{self.study_name}.Eval_MC.y_2"] = array([1.0])
