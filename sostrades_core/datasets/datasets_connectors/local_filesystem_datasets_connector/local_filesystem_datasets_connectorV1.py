@@ -26,9 +26,6 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
 )
 from sostrades_core.datasets.datasets_connectors.local_filesystem_datasets_connector.\
 local_filesystem_datasets_connector_base import LocalFileSystemDatasetsConnectorBase
-from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
-    DatasetSerializerType,
-)
 from sostrades_core.tools.folder_operations import makedirs_safe
 
 
@@ -41,8 +38,7 @@ class LocalFileSystemDatasetsConnectorV1(LocalFileSystemDatasetsConnectorBase):
     COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V1]
 
     def __init__(self, connector_id: str, root_directory_path: str,
-                 create_if_not_exists: bool = False,
-                 serializer_type: DatasetSerializerType = DatasetSerializerType.FileSystem):
+                 create_if_not_exists: bool = False):
         """
         Constructor for Local Filesystem data connector
 
@@ -50,12 +46,10 @@ class LocalFileSystemDatasetsConnectorV1(LocalFileSystemDatasetsConnectorBase):
             connector_id (str): The identifier for the connector.
             root_directory_path (str): Root directory path for this dataset connector using filesystem.
             create_if_not_exists (bool, optional): Whether to create the root directory if it does not exist. Defaults to False.
-            serializer_type (DatasetSerializerType, optional): Type of serializer to deserialize data from connector. Defaults to DatasetSerializerType.FileSystem.
         """
         super().__init__(connector_id=connector_id,
                          root_directory_path=root_directory_path,
-                         create_if_not_exists=create_if_not_exists,
-                         serializer_type=serializer_type)
+                         create_if_not_exists=create_if_not_exists)
         self._logger = logging.getLogger(__name__)
         self._logger.debug(f"Initializing local connector V1 on {root_directory_path}")
 
