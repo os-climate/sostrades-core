@@ -1,6 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/06/07 Copyright 2023 Capgemini
+Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -136,8 +135,8 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         l_variables = design_space['variable']
 
         for var_name in l_variables:
-            var_name = var_name.split('.')[-1]
-            full_name_var = self.get_namespace_from_var_name(var_name)
+            var_name_loc = var_name.split('.')[-1]
+            full_name_var = self.get_namespace_from_var_name(var_name_loc)
             if full_name_var in self.activated_variables:
                 value_x_opt = [self.scenario.formulation.design_space.get_current_value([full_name_var])]
                 if self.scenario.dict_desactivated_elem[full_name_var] != {}:
@@ -148,7 +147,7 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
                     ):
                         value_x_opt.insert(_pos, _val)
 
-                design_space.loc[design_space['variable'] == var_name, 'value'] = pd.Series(
+                design_space.loc[design_space['variable'] == var_name_loc, 'value'] = pd.Series(
                     [value_x_opt] * len(design_space)
                 )
         self.design_space_out = design_space

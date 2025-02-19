@@ -13,8 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-# mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8
+from os.path import join
+from pathlib import Path
+
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
+from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
+from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
@@ -27,7 +31,19 @@ class Study(StudyManager):
         return {}
 
     def get_dataset_mapping(self):
+        # create connector
+        connector_args = {
+             "root_directory_path": join(Path(__file__).parents[3],"tests", "data","local_datasets_db")
+        }
+
+        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector",
+                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    **connector_args)
         # Get dataset file
         datasets_file = __file__.replace(".py", ".json")
         # Deserialize it
         return DatasetsMapping.from_json_file(datasets_file)
+
+if __name__ == "__main__":
+    study = Study()
+    study.load_data()

@@ -1,6 +1,6 @@
 '''
 Copyright 2024 Capgemini
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/01/16 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import unittest
 
 import pandas as pd
@@ -30,9 +32,7 @@ from sostrades_core.tools.post_processing.post_processing_factory import (
 
 
 class TestTornadoChartAnalysis(unittest.TestCase):
-    """
-    UncertaintyQuantification test class
-    """
+    """UncertaintyQuantification test class"""
 
     def test_01_tornado_chart_analysis(self):
         ns = "usecase_tornado_analysis"
@@ -88,15 +88,15 @@ class TestTornadoChartAnalysis(unittest.TestCase):
 
         uc_cls.run()
         variations_output_df_computed = dm.get_value(f"{ns}.tornado_chart_analysis.y_dict_variations")
-        self.assertIsNotNone(variations_output_df_computed)
+        assert variations_output_df_computed is not None
 
         post_processing_factory = PostProcessingFactory()
         charts = post_processing_factory.get_post_processing_by_namespace(
             uc_cls.execution_engine, f"{uc_cls.study_name}.tornado_chart_analysis", None, as_json=False
         )
 
-        self.assertIsNotNone(charts)
-        self.assertTrue(len(charts) > 0)
+        assert charts is not None
+        assert len(charts) > 0
 
     def test_02_tornado_chart_analysis_notapplicable_variations(self):
         ns = "usecase_tornado_analysis"
@@ -134,9 +134,10 @@ class TestTornadoChartAnalysis(unittest.TestCase):
 
         uc_cls.run()
         variations_output_df_computed = dm.get_value(
-            f'{ns}.tornado_chart_analysis.Coupling.Disc1.indicator_dict_variations')
-        self.assertIsNotNone(variations_output_df_computed)
-        self.assertTrue(variations_output_df_computed['output_variation [%]'].values.tolist() == ['N/A'] * 4)
+            f'{ns}.tornado_chart_analysis.Coupling.Disc1.indicator_dict_variations'
+        )
+        assert variations_output_df_computed is not None
+        assert variations_output_df_computed["output_variation [%]"].values.tolist() == ["N/A"] * 4
         post_processing_factory = PostProcessingFactory()
         charts = post_processing_factory.get_post_processing_by_namespace(
             uc_cls.execution_engine, f"{uc_cls.study_name}.tornado_chart_analysis", None, as_json=False

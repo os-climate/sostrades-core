@@ -19,7 +19,6 @@ import os
 import sys
 from typing import Optional
 
-import sostrades_core.study_manager.run_usecase
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 from sostrades_core.study_manager.study_manager import StudyManager
 
@@ -34,7 +33,7 @@ def test_module_importability(module_name: str):
     try:
         importlib.import_module(module_name)
     except ImportError as e:
-        raise Exception(f"Unable to import process module '{module_name}' is this module correct and in PYTHONPATH ?") from e
+        raise ImportError(f"Unable to import process module '{module_name}' is this module correct and in PYTHONPATH ?") from e
 
 
 def run_usecase(usecase_file: str, dataset_mapping_json_file: Optional[str]):
@@ -81,7 +80,7 @@ if __name__ == "__main__":
     python -m sostrades_core.study_manager.run_usecase ./sostrades_core/sos_processes/test/test_disc1_disc2_dataset/usecase_dataset.py ./sostrades_core/sos_processes/test/test_disc1_disc2_dataset/usecase_2datasets.json
     """
     if not 2 <= len(sys.argv) <= 3:
-        print(f"Usage: python -m {sostrades_core.study_manager.run_usecase.__name__} <usecase_file> Optional<dataset_mapping_json_file>")
+        print(f"Usage: python -m {run_usecase.__name__} <usecase_file> Optional<dataset_mapping_json_file>")
         sys.exit(1)
 
     # Extract command-line arguments

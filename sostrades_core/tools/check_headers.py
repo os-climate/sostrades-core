@@ -47,7 +47,7 @@ CARTOUCHE_BASE = """'''
 {}'''
 """
 
-CAP_COPYRIGHT = "Copyright {} Capgemini".format(datetime.today().strftime("%Y/%m/%d"))
+CAP_COPYRIGHT = "Copyright {} Capgemini".format(datetime.today().strftime("%Y"))
 CAP_MODIFIED_COPYRIGHT = "Modifications on {} " + "Copyright {} Capgemini".format(datetime.today().strftime("%Y"))
 AIRBUS_COPYRIGHT = "Copyright 2022 Airbus SAS"
 
@@ -55,7 +55,8 @@ CARTOUCHE_CAP_AIRBUS = CARTOUCHE_BASE.format(f"{AIRBUS_COPYRIGHT}\n{CAP_MODIFIED
 CARTOUCHE_CAP = CARTOUCHE_BASE.format(f"{CAP_COPYRIGHT}\n\n{LICENCE}")
 
 # Define a regular expression to match the cartouche only at the beginning
-cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
+# cartouche_pattern = r"^'''(.*?)'''(\n|\Z)"
+cartouche_pattern = r"^(?:'''|\"\"\")(.*?)(?:'''|\"\"\")(\n|\Z)"
 cap_copyright_pattern = "Copyright 202(.) Capgemini"
 cartouche_modified_pattern = r"Modifications on (.+) Copyright 202(.) Capgemini"
 
@@ -108,6 +109,8 @@ class HeaderTools:
         :param file_path: path to the file where to check the header status
         :type file_path: str
         """
+        if not os.path.exists(file_path):
+            return None
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
 
@@ -118,11 +121,13 @@ class HeaderTools:
             if re.search(pattern=cap_copyright_pattern, string=first_line) and LICENCE in cartouche_match.group(0):
                 # OK
                 if self.verbose:
-                    return None
+                    print(f"Cartouche OK for path {file_path}")
                 return None
             # Unexpected cartouche
             if self.verbose:
-                pass
+                print(
+                    f"ERROR Unexpected cartouche for path {file_path}", cartouche_match
+                )
             return HeaderError(
                 file_path,
                 FileChange.ADDED,
@@ -133,7 +138,7 @@ class HeaderTools:
 
         # No cartouche
         if self.verbose:
-            pass
+            print(f"No Cartouche Error for path {file_path}")
         return HeaderError(file_path, FileChange.ADDED, "No header", CARTOUCHE_CAP)
 
     def check_header_for_modified_file(self, file_path) -> HeaderError:
@@ -161,11 +166,13 @@ class HeaderTools:
             ):
                 # OK
                 if self.verbose:
-                    return None
+                    print(f"Cartouche OK for path {file_path}")
                 return None
             # Unexpected cartouche
             if self.verbose:
-                pass
+                print(
+                    f"ERROR Unexpected cartouche for path {file_path}", cartouche_match
+                )
             return HeaderError(
                 file_path,
                 FileChange.MODIFIED,
@@ -176,7 +183,7 @@ class HeaderTools:
 
         # No cartouche, add it
         if self.verbose:
-            pass
+            print(f"No Cartouche Error for path {file_path}")
         return HeaderError(file_path, FileChange.MODIFIED, "No header", CARTOUCHE_CAP_AIRBUS)
 
     def parse_and_replace_add_cartouche(self, file_path, new_cartouche):
@@ -192,11 +199,12 @@ class HeaderTools:
             if re.search(pattern=cap_copyright_pattern, string=first_line) and LICENCE in cartouche_match.group(0):
                 # OK
                 if self.verbose:
-                    pass
+                    print(f"Cartouche OK for path {file_path}")
             else:
                 # Unexpected cartouche
-                # Than modify it
-
+                # Then modify it
+                if self.verbose:
+                    print(f"Unexpected Cartouche Error for path {file_path}")
                 new_content = re.sub(
                     pattern=cartouche_pattern,
                     repl=new_cartouche,
@@ -208,7 +216,7 @@ class HeaderTools:
         else:
             # No cartouche
             if self.verbose:
-                pass
+                print(f"No Cartouche Error for path {file_path}")
             new_content = new_cartouche + content
             self.write_back(file_path, new_content)
 
@@ -233,11 +241,13 @@ class HeaderTools:
             ):
                 # OK
                 if self.verbose:
-                    pass
+                    print(f"Cartouche OK for path {file_path}")
             else:
                 # Unexpected cartouche
                 if self.verbose:
-                    pass
+                    print(
+                        f"ERROR Unexpected cartouche for path {file_path}", cartouche_match
+                    )
                 new_content = re.sub(
                     pattern=cartouche_pattern,
                     repl=new_cartouche,
@@ -249,7 +259,7 @@ class HeaderTools:
         else:
             # No cartouche, add it
             if self.verbose:
-                pass
+                print(f"No Cartouche Error for path {file_path}")
             new_content = new_cartouche + content
             self.write_back(file_path, new_content)
 
@@ -291,6 +301,8 @@ class HeaderTools:
 
     def write_headers_if_needed_in_repo(self, ignored_exts, ignored_files, sha, repo_dir):
 
+        print("Start to analyse Headers for repository " + os.path.abspath(os.path.dirname(repo_dir) + "..."))
+
         # Initialize a Git Repo object
         git_repo = git.Repo(repo_dir)
         git_git = git.Git(repo_dir)
@@ -305,7 +317,7 @@ class HeaderTools:
 
             if item_path not in ignored_files:
                 if self.verbose:
-                    pass
+                    print("A", item_path)
 
                 file_path = os.path.join(repo_dir, item_path)
 
@@ -316,14 +328,14 @@ class HeaderTools:
                     # Do nothing for pkl, markdown, csv, ...
                     pass
                 else:
-                    pass
+                    print("UNHANDLED", file_path)
 
         for diff_item in diff_index.iter_change_type("D"):
             # Deleted
             if item_path not in ignored_files:
                 item_path = diff_item.a_path
                 if self.verbose:
-                    pass
+                    print("D", item_path)
 
         for diff_item in diff_index.iter_change_type("R"):
             # Renamed
@@ -331,14 +343,14 @@ class HeaderTools:
             if item_path not in ignored_files:
                 item_path_r = diff_item.b_path
                 if self.verbose:
-                    pass
+                    print("R", item_path, "->", item_path_r)
 
         for diff_item in diff_index.iter_change_type("M"):
             # Modified
             item_path = diff_item.b_path
             if item_path not in ignored_files:
                 if self.verbose:
-                    pass
+                    print("M", item_path)
 
                 file_path = os.path.join(repo_dir, item_path)
 
@@ -386,7 +398,8 @@ class HeaderTools:
             # Changed in the type path
             item_path = diff_item.a_path
             if item_path not in ignored_files and self.verbose:
-                pass
+                print("T", item_path)
+        print("Done")
 
     def check_headers(self, ignored_exts, ignored_file, airbus_rev_commit: str):
         header_error_list = []
@@ -403,6 +416,8 @@ class HeaderTools:
         commit_dev = repo.head.commit
         commit_airbus = repo.commit(airbus_rev_commit)
 
+        print("Airbus date : " + str(commit_airbus.committed_datetime))
+
         diff_index = commit_airbus.diff(commit_dev)
 
         for diff_item in diff_index.iter_change_type("A"):
@@ -411,7 +426,7 @@ class HeaderTools:
 
             if item_path not in ignored_file:
                 if self.verbose:
-                    pass
+                    print("A", item_path)
 
                 file_path = os.path.join(repo_dir, item_path)
 
@@ -437,16 +452,17 @@ class HeaderTools:
                     #    error = check_header_for_modified_file(file_path)
                     if error:
                         header_error_list.append(error)
+                    print("UNHANDLED", file_path)
 
             else:
                 if self.verbose:
-                    pass
+                    print("Ignored added file", item_path)
 
         for diff_item in diff_index.iter_change_type("D"):
             # Deleted
             item_path = diff_item.a_path
             if item_path not in ignored_file and self.verbose:
-                pass
+                print("D", item_path)
 
         for diff_item in diff_index.iter_change_type("R"):
             # Renamed
@@ -454,7 +470,7 @@ class HeaderTools:
             item_path_r = diff_item.b_path
 
             if item_path_r not in ignored_file and self.verbose:
-                pass
+                print("R", item_path, "->", item_path_r)
 
         for diff_item in diff_index.iter_change_type("M"):
             # Modified
@@ -462,7 +478,7 @@ class HeaderTools:
 
             if item_path not in ignored_file:
                 if self.verbose:
-                    pass
+                    print("M", item_path)
 
                 file_path = os.path.join(repo_dir, item_path)
 
@@ -491,16 +507,17 @@ class HeaderTools:
                         )  # if not commited from Airbus then it is an added file detected by error by diff has a modified file
                     if error:
                         header_error_list.append(error)
+                    print("UNHANDLED", file_path)
             else:
                 if self.verbose:
-                    pass
+                    print("Ignored modified file", item_path)
 
         for diff_item in diff_index.iter_change_type("T"):
             # Changed in the type path
             item_path = diff_item.a_path
 
             if item_path not in ignored_file and self.verbose:
-                pass
+                print("T", item_path)
 
         if len(header_error_list) > 0:
             errors = ""
@@ -508,4 +525,5 @@ class HeaderTools:
                 errors += str(he)
             errors += f"\nFound {len(header_error_list)} header error(s)"
             msg = f"{errors}"
+            print(msg)
             raise Exception(msg)
