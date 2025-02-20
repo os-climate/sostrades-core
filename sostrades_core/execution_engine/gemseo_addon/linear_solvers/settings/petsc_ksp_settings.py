@@ -15,6 +15,7 @@ limitations under the License.
 '''
 
 from __future__ import annotations
+
 from os import getenv
 
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
@@ -47,7 +48,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         atol: NonNegativeFloat = Field(
             default=1e-200,
             description="""The absolute convergence tolerance.
-    
+
     Absolute tolerance of the (possibly preconditioned) residual norm.
     Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
         )
@@ -55,20 +56,20 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         dtol: NonNegativeFloat = Field(
             default=1e50,
             description="""The divergence tolerance.
-    
+
     The amount the (possibly preconditioned) residual norm can increase.""",
         )
 
         preconditioner_type: SoSPreconditionerType | None = Field(
             default=SoSPreconditionerType.ILU,
             description="""The type of the precondtioner.
-    
+
     See [https://www.mcs.anl.gov/petsc/petsc4py-current/docs/apiref/petsc4py.PETSc.PC.Type-class.html]""",
         )
 
         rtol: NonNegativeFloat = Field(
             default=1e-200,
             description="""The relative convergence tolerance.
-    
+
     Relative decrease in the (possibly preconditioned) residual norm.""",
         )

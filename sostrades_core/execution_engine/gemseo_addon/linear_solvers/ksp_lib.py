@@ -16,6 +16,7 @@ limitations under the License.
 '''
 
 from __future__ import annotations
+
 from os import getenv
 
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
