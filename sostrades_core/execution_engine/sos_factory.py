@@ -14,11 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
 from __future__ import annotations
 
-import inspect
-import os
 from importlib import import_module
 
 from pandas.core.common import flatten
@@ -31,6 +28,7 @@ from sostrades_core.execution_engine.proxy_optim import ProxyOptim
 from sostrades_core.execution_engine.sos_builder import SoSBuilder
 from sostrades_core.sos_processes.processes_factory import BUILDERS_MODULE_NAME
 from sostrades_core.sos_wrapping.selector_discipline import SelectorDiscipline
+from sostrades_core.tools.import_tool.import_tool import get_class_from_path, get_module_class_path
 
 
 class SosFactoryException(Exception):
@@ -532,61 +530,16 @@ class SosFactory:
 
     def get_disc_class_from_module(self, module_path):
         """
-        Get the disc class from the module_path
+        Just maintains the old interface.
         """
-        module_struct_list = module_path.split('.')
-        import_name = '.'.join(module_struct_list[:-1])
-        # print('import_name = ',import_name)
-        try:
-            m = import_module(import_name)
+        return get_class_from_path(class_path=module_path)
 
-        except Exception as e:
-            raise (e)
-        return getattr(m, module_struct_list[-1])
-
-    def get_module_class_path(self, class_name, folder_list):
-        """
-        Return the module path of a class in a list of directories
-        Return the first found for now ..
-        """
-
-        module_class_path = None
-        for folder in folder_list:
-            # Get the module of the folder
-            try:
-                module = import_module(folder)
-                folder_path = os.path.dirname(module.__file__)
-            except:
-                raise Warning(f'The folder {folder} is not a module')
-
-            # Get all files in the folder_path
-            file_list = os.listdir(folder_path)
-            # Find all submodules in the path
-            sub_module_list = [import_module('.'.join([folder, file.split('.')[0]])) for file in file_list]
-
-            for sub_module in sub_module_list:
-                # Find all members of each submodule which are classes
-                # belonging to the sub_module
-                class_list = [
-                    value
-                    for value, cls in inspect.getmembers(sub_module)
-                    if inspect.isclass(getattr(sub_module, value)) and cls.__module__ == sub_module.__name__
-                ]
-                # CHeck if the following class is in the list
-                if class_name in class_list:
-                    module_class_path = '.'.join([sub_module.__name__, class_name])
-                    break
-            else:
-                continue
-            break
-
-        return module_class_path
 
     def get_builder_from_class_name(self, sos_name, mod_name, folder_list):
         """
         Get builder only using class name and retrievind the module path from the function get_module_class_path
         """
-        mod_path = self.get_module_class_path(mod_name, folder_list)
+        mod_path = get_module_class_path(mod_name, folder_list)
 
         if mod_path is None:
             raise SosFactoryException(f'The builder {mod_name} has not been found in the folder list {folder_list}')
