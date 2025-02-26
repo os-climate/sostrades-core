@@ -28,9 +28,7 @@ mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
 
 
 class SelectorDiscipline(ProxyCoupling):
-    """
-    Generic Uncertainty Quantification class
-    """
+    """Generic Uncertainty Quantification class"""
 
     # ontology information
     _ontology_data = {
@@ -60,8 +58,7 @@ class SelectorDiscipline(ProxyCoupling):
     new_variables = False
 
     def setup_sos_disciplines(self):
-        """setup sos disciplines"""
-
+        """Setup sos disciplines"""
         dynamic_inputs = {}
         data_in = self.get_data_in()
         if data_in != {}:
@@ -95,17 +92,12 @@ class SelectorDiscipline(ProxyCoupling):
         return label_todisc_dict
 
     def is_configured(self):
-        '''
-        Return False if at least one sub discipline needs to be configured, True if not
-        '''
+        '''Return False if at least one sub discipline needs to be configured, True if not'''
         return self.get_configure_status() and not self.check_structuring_variables_changes() and (
                 self.get_disciplines_to_configure() == []) and not self.new_variables
 
     def prepare_build(self):
-        '''
-        Prepare the builder to be build according to the discipline chosen by the user
-        '''
-
+        '''Prepare the builder to be build according to the discipline chosen by the user'''
         if 'discipline' in self.get_data_in():
             inputs_dict = self.get_sosdisc_inputs()
             disc_name = inputs_dict['discipline_name']
@@ -154,6 +146,17 @@ class SelectorDiscipline(ProxyCoupling):
 
 
 def find_disciplines_in_folder(folder_name):
+    """
+    Finds all disciplines in the specified folder by looking for classes
+    that inherit from SoSWrapp.
+
+    Args:
+        folder_name (str): The folder to search for disciplines.
+
+    Returns:
+        list: A list of module paths with classes inheriting from SoSWrapp.
+
+    """
     module_paths = []
     base_class = SoSWrapp
 
@@ -171,6 +174,17 @@ def find_disciplines_in_folder(folder_name):
 
 
 def find_classes_in_file(file_path, base_class):
+    """
+    Finds all classes in a Python file that inherit from a given base class.
+
+    Args:
+        file_path (str): The path to the Python file to search in.
+        base_class (type): The base class to check for inheritance.
+
+    Returns:
+        list: A list of class names that inherit from the base class.
+
+    """
     with open(file_path, 'r') as file:
         source_code = file.read()
 

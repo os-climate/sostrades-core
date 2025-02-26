@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,21 +27,15 @@ class SampleTypeError(TypeError):
 
 
 class AbstractSampleGenerator(object):
-    '''
-    Abstract class that generates sampling
-    '''
+    '''Abstract class that generates sampling'''
 
     def __init__(self, generator_name, logger=logging.Logger):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         self.generator_name = generator_name
         self.logger = logger
 
     def generate_samples(self, *args, **kwargs):
-        '''
-        Method that generate samples and checks the output formating
-        '''
+        '''Method that generate samples and checks the output formating'''
         # check options
         self._check_options(*args, **kwargs)
         # generate the sampling by subclass
@@ -59,9 +53,7 @@ class AbstractSampleGenerator(object):
         raise NotImplementedError
 
     def _check_samples(self, samples):
-        '''
-        Method that checks the sample output type
-        '''
+        '''Method that checks the sample output type'''
         if not isinstance(samples, list):
             msg = "Expected sampling output type should be <list>, "
             msg += "however sampling type of sampling generator <%s> " % str(
@@ -87,18 +79,18 @@ class AbstractSampleGenerator(object):
     def setup(self, proxy):
         """
         Method used in combination with the ProxySampleGenerator in order to configure a given generation method.
+
         Arguments:
             proxy (ProxySampleGenerator) : associated proxy discipline
         Returns:
             dynamic_inputs (dict) : dynamic inputs of the sample generation method
             dynamic_outputs (dict( : dynamic outputs of the sample generation method
+
         """
         return {}, {}
 
     def sample(self, wrapper):
-        """
-        Method that takes the wrapper as input and returns the output of generate_samples.
-        """
+        """Method that takes the wrapper as input and returns the output of generate_samples."""
         _args, _kwargs = self.get_arguments(wrapper)
         return self.generate_samples(*_args, **_kwargs)
 

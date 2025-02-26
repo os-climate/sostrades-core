@@ -30,6 +30,7 @@ def find_possible_input_values(disc, prefix_name_to_delete=None, strip_first_ns=
 
     Returns:
         A dict of possible input_values and its types
+
     '''
     return find_possible_values(disc, prefix_name_to_delete=prefix_name_to_delete,
                                 io_type_in=True, io_type_out=False, strip_first_ns=strip_first_ns)[0]
@@ -45,6 +46,7 @@ def find_possible_output_values(disc, prefix_name_to_delete=None, strip_first_ns
 
     Returns:
         A set of possible output_values
+
     '''
     return find_possible_values(disc, prefix_name_to_delete=prefix_name_to_delete,
                                 io_type_in=False, io_type_out=True, strip_first_ns=strip_first_ns)[1]
@@ -62,6 +64,7 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
     Returns:
         A dict of possible input_values and its types
         A set of possible output_values
+
     '''
     # if no prefix_name to delete has been filled we use the full_name of the disc
     if prefix_name_to_delete is None:
@@ -102,10 +105,10 @@ def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_t
 
 def fill_possible_values(disc, prefix_name_to_delete, io_type_in=False, io_type_out=True, original_editable_state_dict=None):
     '''
-        Fill possible values lists for eval inputs and outputs
-        an input variable must be a float coming from a data_in of a discipline in all the process
-        and not a default variable
-        an output variable must be any data from a data_out discipline
+    Fill possible values lists for eval inputs and outputs
+    an input variable must be a float coming from a data_in of a discipline in all the process
+    and not a default variable
+    an output variable must be any data from a data_out discipline
     '''
     poss_in_types_full = {}
     poss_out_values_full = set()
@@ -120,14 +123,17 @@ def fill_possible_values(disc, prefix_name_to_delete, io_type_in=False, io_type_
 
 def fill_possible_input_values(disc, poss_in_types_full, prefix_name_to_delete, original_editable_state_dict):
     '''
+    Fill possible values lists for eval inputs
 
     Args:
         disc: discipline where to find input values
         poss_in_types_full: dict where to store input values name and types
         prefix_name_to_delete: prefix_name_to_delete to delete from the name of the input value
+        original_editable_state_dict: dict of editable data
 
     Returns:
         Set of possible input values
+
     '''
     disc_in = disc.get_data_in()
     for key, data_dict in disc_in.items():
@@ -172,6 +178,7 @@ def fill_possible_output_values(disc, poss_out_values_full, prefix_name_to_delet
 
     Returns:
         Set of possible output values
+
     '''
     disc_out = disc.get_data_out()
     for data_out_key in disc_out.keys():

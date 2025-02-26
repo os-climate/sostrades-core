@@ -29,10 +29,7 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for Eval and generator cp with reference and input usecase of Sellar Problem
-        """
-
+        """Usecase for Eval and generator cp with reference and input usecase of Sellar Problem"""
         ns = f'{self.study_name}'
 
         # ======================================================================

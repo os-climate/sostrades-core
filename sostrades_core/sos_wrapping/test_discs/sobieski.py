@@ -30,8 +30,8 @@ Adapted from GEMSEO examples
 
 
 class SobieskiMission(SoSWrapp):
-    """ Sobieski range wrapper using the Breguet formula.
-    """
+    """Sobieski range wrapper using the Breguet formula."""
+
     _maturity = 'Fake'
     DESC_IN = {
         'y_14': {'type': 'array', 'default': array([50606.97417114, 7306.20262124]),
@@ -47,8 +47,7 @@ class SobieskiMission(SoSWrapp):
     DESC_OUT = {'y_4': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSobieski'}}
 
     def run(self):
-        """ computes
-        """
+        """Computes"""
         y_14, y_24, y_34, z = self.get_sosdisc_inputs(['y_14', 'y_24', 'y_34', 'z'])
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
@@ -67,7 +66,6 @@ class SobieskiMission(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         y_14, y_24, y_34, z = self.get_sosdisc_inputs(['y_14', 'y_24', 'y_34', 'z'])
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
@@ -81,8 +79,8 @@ class SobieskiMission(SoSWrapp):
 
 
 class SobieskiStructure(SoSWrapp):
-    """ Sobieski mass estimation wrapper.
-    """
+    """Sobieski mass estimation wrapper."""
+
     _maturity = 'Fake'
     DESC_IN = {
         'x_1': {'type': 'array', 'default': array([0.25, 1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
@@ -104,8 +102,7 @@ class SobieskiStructure(SoSWrapp):
     }
 
     def run(self):
-        """ computes
-        """
+        """Computes"""
         x_1, y_21, y_31, z = self.get_sosdisc_inputs(['x_1', 'y_21', 'y_31', 'z'])
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
@@ -130,7 +127,6 @@ class SobieskiStructure(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         x_1, y_21, y_31, z = self.get_sosdisc_inputs(['x_1', 'y_21', 'y_31', 'z'])
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
@@ -144,8 +140,8 @@ class SobieskiStructure(SoSWrapp):
 
 
 class SobieskiAerodynamics(SoSWrapp):
-    """ Sobieski aerodynamic discipline wrapper.
-    """
+    """Sobieski aerodynamic discipline wrapper."""
+
     _maturity = 'Fake'
     DESC_IN = {
         'x_2': {'type': 'array', 'default': array([1.0]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
@@ -167,8 +163,7 @@ class SobieskiAerodynamics(SoSWrapp):
     }
 
     def run(self):
-        """ computes
-        """
+        """Computes"""
         x_2, y_12, y_32, z = self.get_sosdisc_inputs(['x_2', 'y_12', 'y_32', 'z'])
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
@@ -194,7 +189,6 @@ class SobieskiAerodynamics(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         x_2, y_12, y_32, z = self.get_sosdisc_inputs(['x_2', 'y_12', 'y_32', 'z'])
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
@@ -208,8 +202,8 @@ class SobieskiAerodynamics(SoSWrapp):
 
 
 class SobieskiPropulsion(SoSWrapp):
-    """ Sobieski propulsion propulsion wrapper.
-    """
+    """Sobieski propulsion propulsion wrapper."""
+
     _maturity = 'Fake'
     DESC_IN = {
         'x_3': {'type': 'array', 'default': array([0.5]), 'visibility': SoSWrapp.SHARED_VISIBILITY,
@@ -229,8 +223,7 @@ class SobieskiPropulsion(SoSWrapp):
     }
 
     def run(self):
-        """ computes
-        """
+        """Computes"""
         x_3, y_23, z = self.get_sosdisc_inputs(['x_3', 'y_23', 'z'])
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE
@@ -255,7 +248,6 @@ class SobieskiPropulsion(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         x_3, y_23, z = self.get_sosdisc_inputs(['x_3', 'y_23', 'z'])
         DTYPE_DOUBLE = "float64"
         dtype = DTYPE_DOUBLE

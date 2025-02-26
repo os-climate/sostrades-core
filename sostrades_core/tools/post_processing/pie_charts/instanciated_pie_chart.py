@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,13 +31,11 @@ Class that define a pie chart display as post post processing
 
 
 class InstanciatedPieChartException(Exception):
-    """ Overload Exception basic type
-    """
+    """Overload Exception basic type"""
 
 
 class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a pie chart display as post post processing
-    """
+    """Class that define a pie chart display as post post processing"""
 
     PIE_CHART_NAME = 'pie_chart_name'
     LABELS = 'labels'
@@ -45,7 +43,8 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
     STYLES = 'styles'
 
     def __init__(self, pie_chart_name='', labels=[], values=[]):
-        """ Create a new table
+        """
+        Create a new table
 
         @param pie_chart_name : string that contains pie chart name
         @param labels : string list that contains labels for each pie chart values
@@ -68,7 +67,8 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
         self.values = values
 
     def __repr__(self):
-        """ Overload of the class representation
+        """
+        Overload of the class representation
 
         @return str, string representation of the instance
         """
@@ -80,7 +80,8 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
         return result
 
     def to_plotly(self, logger=None):
-        """ Convert current instance into a plotly object
+        """
+        Convert current instance into a plotly object
 
         @param logger: logging object to log message
         @type Logging.logger
@@ -129,7 +130,8 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
         self.set_csv_data(csv_list)
 
     def to_plotly_dict(self, logger=None):
-        """ Method that convert current instance to plotly object and then to a dictionary
+        """
+        Method that convert current instance to plotly object and then to a dictionary
 
         @param logger: logger instance
         @type Logging.loger

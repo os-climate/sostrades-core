@@ -19,9 +19,8 @@ from sostrades_core.execution_engine.sos_builder import SoSBuilder
 
 
 class ToolBuilder(SoSBuilder):
-    '''
-    Class that stores a class and associated attributes to be built afterwards
-    '''
+    '''Class that stores a class and associated attributes to be built afterwards'''
+
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
 
     def __init__(self, tool_name, ee, cls):
@@ -34,8 +33,7 @@ class ToolBuilder(SoSBuilder):
         self.tool = None
 
     def instantiate(self):
-        ''' Instantiates the class self.cls
-        '''
+        '''Instantiates the class self.cls'''
         current_ns = self.ee.ns_manager.current_disc_ns
 
         # If we are in the builder of the high level coupling the current ns is None and

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,13 +30,14 @@ Class that define a parallel coordinates chart display as post post processing
 
 
 class ParallelCoordinatesTrace:
-    """ Class that define parallel coordinate chart trace
-    """
+    """Class that define parallel coordinate chart trace"""
+
     TRACE_TEXT = 'text'
     TRACE_NUMBER = 'number'
 
     def __init__(self, trace_name='', trace_values=[], trace_type=TRACE_NUMBER):
-        """  Init of the class
+        """
+        Init of the class
 
         @param trace_name: name of the trace
         @type str
@@ -47,7 +48,6 @@ class ParallelCoordinatesTrace:
         @param trace_type: type of the trace (TRACE_TEXT or TRACE_NUMBER)
         @type str
         """
-
         self.trace_name = trace_name
 
         if not isinstance(trace_values, list):
@@ -63,11 +63,11 @@ class ParallelCoordinatesTrace:
 
 
 class InstantiatedParallelCoordinatesChart(AbstractPostProcessingPlotlyTooling):
-    """ Class that define parallel coordinates display as post post processing
-    """
+    """Class that define parallel coordinates display as post post processing"""
 
     def __init__(self, chart_name=''):
-        """  Init of the class
+        """
+        Init of the class
 
         @param chart_name: name of the chart
         @type str
@@ -81,7 +81,8 @@ class InstantiatedParallelCoordinatesChart(AbstractPostProcessingPlotlyTooling):
         self.chart_name = chart_name
 
     def add_trace(self, trace):
-        """ Private method to add trace to current parallel coordinates chart
+        """
+        Private method to add trace to current parallel coordinates chart
 
         @param trace: trace instance to add
         @type ParallelCoordinatesTrace
@@ -99,7 +100,8 @@ class InstantiatedParallelCoordinatesChart(AbstractPostProcessingPlotlyTooling):
         self.__traces.append(trace)
 
     def to_plotly(self, logger=None):
-        """ Convert current instance into a plotly object
+        """
+        Convert current instance into a plotly object
 
         @param logger: logging object to log message
         @type Logging.logger
@@ -181,7 +183,8 @@ class InstantiatedParallelCoordinatesChart(AbstractPostProcessingPlotlyTooling):
         self.set_csv_data(csv_list)
 
     def to_plotly_dict(self, logger=None):
-        """ Method that convert current instance to plotly object and then to a dictionary
+        """
+        Method that convert current instance to plotly object and then to a dictionary
 
         @param logger: logger instance
         @type Logging.loger

@@ -22,10 +22,30 @@ else we use NewtonRaphson
 
 
 def true_func(self):
+    """
+    Always returns True.
+
+    Args:
+        self: An instance of the class.
+
+    Returns:
+        bool: Always True.
+
+    """
     return True
 
 
 def lagrangian_objective_func(self):
+    """
+    Checks if the Lagrangian objective exceeds a predefined threshold.
+
+    Args:
+        self: An instance containing discipline data and optimization parameters.
+
+    Returns:
+        bool: True if the Lagrangian objective is greater than 1.0e10, otherwise False.
+
+    """
     ns_objective = self._disciplines[0].dm.get_all_namespaces_from_var_name(
         'objective_lagrangian')[0]
 
@@ -36,6 +56,16 @@ def lagrangian_objective_func(self):
 
 
 def max_ite_func(self):
+    """
+    Determines whether the maximum number of iterations has been reached.
+
+    Args:
+        self: An instance containing discipline data and optimization parameters.
+
+    Returns:
+        bool: True if the maximum iteration condition is satisfied, otherwise False.
+
+    """
     try:
         ns_objective_list = self._disciplines[0].dm.get_all_namespaces_from_var_name(
             'optim_output_df')
@@ -59,6 +89,17 @@ def max_ite_func(self):
 
 
 def lagrangian_objective_and_max_ite_func(self):
+    """
+    Evaluates the stopping condition based on the maximum iteration function and Lagrangian objective function.
+
+    Args:
+        self: An instance containing the necessary attributes for evaluation.
+
+    Returns:
+        bool: True if either the maximum iteration condition or the Lagrangian objective condition is met,
+        otherwise False.
+
+    """
     condition = max_ite_func(self)
 
     condition2 = lagrangian_objective_func(self)

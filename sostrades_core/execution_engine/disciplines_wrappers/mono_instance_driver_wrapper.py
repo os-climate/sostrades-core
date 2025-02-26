@@ -39,12 +39,14 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
     """Class that executes a DOE."""
 
     def prepare_input_samples(self) -> tuple[DataFrame, list[str]]:
-        """Prepare the dataframe of input samples to evaluate.
+        """
+        Prepare the dataframe of input samples to evaluate.
 
         Returns:
             A tuple composed of:
               - a dataframe containing the samples input values,
               - the list of scenario names corresponding to each sample.
+
         """
         samples_df = self.get_sosdisc_inputs(SampleGeneratorWrapper.SAMPLES_DF)
 
@@ -95,13 +97,15 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         return samples, scenario_names
 
     def evaluate_samples(self, input_samples: DataFrame) -> Dataset:
-        """Evaluate the samples.
+        """
+        Evaluate the samples.
 
         Args:
             input_samples: The dataframe containing the samples input values.
 
         Returns:
             The dataset of input and output values.
+
         """
         self._init_input_data()
         default_inputs = self._get_input_data({})
@@ -134,7 +138,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         return doe_scenario.to_dataset()
 
     def process_output(self, evaluation_outputs: Dataset, scenario_names: list[str]) -> None:
-        """Process and store the sampling outputs.
+        """
+        Process and store the sampling outputs.
 
         The output samples are gathered in a single array.
         We need to retrieve the size of each separate output
@@ -143,6 +148,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         Args:
             evaluation_outputs: The results of the samples evaluation.
             scenario_names: The scenario names corresponding to each sample.
+
         """
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]

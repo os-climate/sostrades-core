@@ -38,10 +38,12 @@ class ProcessBuilder(ProcessBuilderDOE):
     }
 
     def get_builders(self) -> list[SoSBuilder]:
-        """Create the builders for the process.
+        """
+        Create the builders for the process.
 
         Returns:
             The list of builders.
+
         """
         # Build the DOE process
         builders = super().get_builders()

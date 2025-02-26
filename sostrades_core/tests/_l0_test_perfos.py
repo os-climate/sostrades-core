@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/06/10 Copyright 2024 Capgemini
+Modifications on 2024/06/10-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,14 +27,10 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestScatter(unittest.TestCase):
-    """
-    SoSDiscipline test class
-    """
+    """SoSDiscipline test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'

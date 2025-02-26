@@ -94,6 +94,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             associated_namespaces: The list containing ns ids ['name__value'] for namespaces associated to builder.
             map_name: The name of the map associated to the scatter builder in case of multi-instance build. Unused
             here, but passed by default by the driver builder.
+
         """
         super().__init__(
             sos_name,

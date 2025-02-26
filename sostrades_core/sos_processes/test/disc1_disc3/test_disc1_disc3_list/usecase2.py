@@ -24,10 +24,7 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for disc1 disc2 list
-        """
-
+        """Usecase for disc1 disc2 list"""
         # reference var values
         self.x = 23.
         self.a = 23

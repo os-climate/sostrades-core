@@ -20,9 +20,8 @@ Controller class: Can be variables, parameters, design variables, ...
 
 
 class Controller:
-    """
-    Controller class: Can be variables, parameters, design variables, ..
-    """
+    """Controller class: Can be variables, parameters, design variables, .."""
+
     # --Class variables
     CLASS_MSG = 'Controller'
     ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
@@ -92,9 +91,7 @@ class Controller:
         return self.__influences_id
 
     def _add_influence(self, controller):
-        """
-        influences are managed via dependances, user should not add any dependance to the list.
-        """
+        """Influences are managed via dependances, user should not add any dependance to the list."""
         if controller is not None:
             cid = controller.get_id()
             # if cid not in self.get_influences_id():
@@ -171,18 +168,14 @@ class Controller:
         return self.get_ndv() == self.get_manager().get_ndv()
 
     def handle_dv_changes(self):
-        """
-        Handles any change in DV number. At least, reallocate gradients tables
-        """
+        """Handles any change in DV number. At least, reallocate gradients tables"""
         pass
 
     def check(self):
         pass
 
     def update_specific(self):
-        """
-        Update specific to each Controller.
-        """
+        """Update specific to each Controller."""
         pass
 
     def update(self):

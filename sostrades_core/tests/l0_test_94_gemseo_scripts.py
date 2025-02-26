@@ -25,9 +25,7 @@ from sostrades_core.sos_processes.test.test_script_gemseo_mda.usecase import Stu
 
 
 class UnitTestHandler(Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         Handler.__init__(self)
@@ -38,9 +36,7 @@ class UnitTestHandler(Handler):
 
 
 class TestResidualVariables(unittest.TestCase):
-    """
-    Discipline to test the new function run_solves_residuals and residuals variable of Gemseo
-    """
+    """Discipline to test the new function run_solves_residuals and residuals variable of Gemseo"""
 
     def setUp(self):
         # Set logging level to debug for residual_vars

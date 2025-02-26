@@ -18,6 +18,18 @@ import numpy as np
 
 
 def specific_check_years(dm):
+    """
+    Performs a check on the 'years' column of dataframes in the data dictionary to ensure it is consistent with
+    the defined 'year_start' and 'year_end' values.
+
+    Args:
+        dm: DataManager object that contains the data dictionary and associated methods.
+
+    Raises:
+        Exception: If the value of any variable is None.
+        ValueError: If the 'years' column in a dataframe is not coherent with the 'year_start' and 'year_end'.
+
+    """
     # check all elements of data dict
     data_dict = dm.data_dict
 

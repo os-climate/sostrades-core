@@ -27,14 +27,10 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 
 
 class TestPrepareExecution(unittest.TestCase):
-    """
-    SoSCoupling status test class
-    """
+    """SoSCoupling status test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'EETests'
         self.repo = 'sostrades_core.sos_processes.test'
 

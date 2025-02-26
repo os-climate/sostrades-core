@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
 
-import logging
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -33,11 +34,12 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     TwoAxesInstanciatedChart,
 )
 
+if TYPE_CHECKING:
+    import logging
+
 
 class TornadoChartAnalysis(SoSWrapp):
-    """
-    Tornado chart Analysis class
-    """
+    """Tornado chart Analysis class"""
 
     # ontology information
     _ontology_data = {
@@ -77,7 +79,7 @@ class TornadoChartAnalysis(SoSWrapp):
         self.selected_outputs_dict = {}
 
     def setup_sos_disciplines(self):
-        """setup sos disciplines"""
+        """Setup sos disciplines"""
         data_in = self.get_data_in()
         if data_in != {}:
             # Add the outputs of the driver eval selected in gather_outputs in input of the disc
@@ -107,9 +109,7 @@ class TornadoChartAnalysis(SoSWrapp):
             self.add_outputs(dynamic_outputs)
 
     def __get_input_variables_list_and_df(self):
-        """
-        Get the list of input variable for the tornado chart
-        """
+        """Get the list of input variable for the tornado chart"""
         variation_data_df = self.get_sosdisc_inputs(self.SCENARIO_VARIABLE_VARIATIONS)
         # get the list of inputs by removing the column of scenario_names
         variables_list = [col for col in variation_data_df.columns if col != self.SCENARIO_NAME_COL]
@@ -202,9 +202,7 @@ class TornadoChartAnalysis(SoSWrapp):
         self.store_sos_outputs_values(dict_values)
 
     def __get_outputs_compatible_tornado_types(self):
-        """
-        Get outputs with valid types for tornado chart analysis
-        """
+        """Get outputs with valid types for tornado chart analysis"""
         outputs_list = list(self.selected_outputs_dict.values())
         outputs_with_valid_types = []
         for output_name in outputs_list:
@@ -305,9 +303,7 @@ class TornadoChartAnalysis(SoSWrapp):
         return output_variations
 
     def get_chart_filter_list(self):
-        """
-        post processing function designed to build filters
-        """
+        """Post processing function designed to build filters"""
         filters = []
         outputs_list = self.__get_outputs_compatible_tornado_types()
         filters.append(
@@ -325,9 +321,7 @@ class TornadoChartAnalysis(SoSWrapp):
         return filters
 
     def get_post_processing_list(self, filters=None):
-        """
-        post processing function designed to build graphs
-        """
+        """Post processing function designed to build graphs"""
         # For the outputs, making a bar graph with gradients values
 
         instanciated_charts = []
@@ -384,9 +378,7 @@ class TornadoChartAnalysis(SoSWrapp):
         variation_value_neg, variation_value_pos = list(sorted(variations))
 
         def get_output_variation_value(input_name: str, variation_value: float) -> float:
-            """
-            Gets the output variation for an input and a given variation
-            """
+            """Gets the output variation for an input and a given variation"""
             result = variation_df[
                 (variation_df[TornadoChartAnalysis.INPUT_COL] == input_name)
                 & (variation_df[TornadoChartAnalysis.VARIATION_INPUT_COL] == variation_value)

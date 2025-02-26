@@ -26,9 +26,8 @@ from sostrades_core.tools.grad_solvers.solvers.newton_raphson_problem import (
 
 
 class TestNewtonRaphsonProblem(unittest.TestCase):
-    """
-    NewtonRaphsonProblem test class
-    """
+    """NewtonRaphsonProblem test class"""
+
     # Simple example to test the Newton Raphson method
     # Try to solve:
     #  R[0] = x**2+y**2
@@ -77,52 +76,40 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         return dRdW
 
     def test_01_NewtonRaphsonProblem_instantiation(self):
-        """
-        test class instantiation
-        """
+        """Test class instantiation"""
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         assert (NRPb is not None)
 
     def test_02_NewtonRaphsonProblem_W0_list(self):
-        """
-        test set of starting point in python list format
-        """
+        """Test set of starting point in python list format"""
         W0 = [1., 1., 1.]
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         assert (NRPb is not None)
 
     def test_03_NewtonRaphsonProblem_set_relax_factor(self):
-        """
-        test relax_factor attribute overload
-        """
+        """Test relax_factor attribute overload"""
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         NRPb.set_relax_factor(0.80)
         assert (NRPb.get_relax_factor() == 0.80)
 
     def test_04_NewtonRaphsonProblem_set_stop_residual(self):
-        """
-        test stop_residual attribute overload
-        """
+        """Test stop_residual attribute overload"""
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         NRPb.set_stop_residual(1.e-9)
         assert (NRPb.get_stop_residual() == 1.e-9)
 
     def test_05_NewtonRaphsonProblem_set_max_iterations(self):
-        """
-        test max_iterations attribute overload
-        """
+        """Test max_iterations attribute overload"""
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         NRPb.set_max_iterations(200)
         assert (NRPb.get_max_iterations() == 200)
 
     def test_06_NewtonRaphsonProblem_defaults_parameters(self):
-        """
-        test defaults parameters sfor relax_factor, stop_residual and max_iterations
-        """
+        """Test defaults parameters sfor relax_factor, stop_residual and max_iterations"""
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         assert (NRPb.get_relax_factor() == 0.99)
@@ -130,9 +117,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         assert (NRPb.get_max_iterations() == 100)
 
     def test_07_NewtonRaphsonProblem_jacobian_validation(self):
-        """
-        test Hessian validation when Hessian is valid
-        """
+        """Test Hessian validation when Hessian is valid"""
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_dRdW)
         ok = NRPb.valid_jacobian(W0, iprint=True)
@@ -143,9 +128,7 @@ class TestNewtonRaphsonProblem(unittest.TestCase):
         remove('gradient_file2.dat')
 
     def test_08_NewtonRaphsonProblem_jacobian_non_validation(self):
-        """
-        test Hessian validation when Hessian is not valid
-        """
+        """Test Hessian validation when Hessian is not valid"""
         W0 = array([1., 1., 1.])
         NRPb = NewtonRaphsonProblem(W0, self.__comp_R, self.__comp_wrong_dRdW)
         ok, df_fd, df = NRPb.valid_jacobian(W0, iprint=False)

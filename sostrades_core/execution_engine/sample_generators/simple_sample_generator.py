@@ -35,15 +35,12 @@ class SimpleSampleGeneratorTypeError(SampleTypeError):
 
 
 class SimpleSampleGenerator(AbstractSampleGenerator):
-    '''
-    Caresian Product class that generates sampling
-    '''
+    '''Caresian Product class that generates sampling'''
+
     GENERATOR_NAME = "SIMPLE_SAMPLE_GENERATOR"
 
     def __init__(self, logger: logging.Logger):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         super().__init__(self.GENERATOR_NAME, logger=logger)
         self.samples_df_f_name = None
 
@@ -57,6 +54,7 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
             var_names (list[string]): trade variables to become column name list
         Returns:
             samples_df (dataframe) : generated samples with appropriate columns
+
         '''
         return samples_df.reindex(columns=samples_df.columns[:2].tolist() + var_names)
 

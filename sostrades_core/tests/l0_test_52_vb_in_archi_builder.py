@@ -23,14 +23,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestVBArchiBuilder(unittest.TestCase):
-    """
-    Class to test Value Block build in architecture builder
-    """
+    """Class to test Value Block build in architecture builder"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'

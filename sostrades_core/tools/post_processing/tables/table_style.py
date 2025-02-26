@@ -22,32 +22,28 @@ Class that define styles than can be applied to a table row
 
 
 class TableStylesException(Exception):
-    """ Overload Exception basic type
-    """
+    """Overload Exception basic type"""
 
 
 class TableStyles:
-    """ Class that define styles than can be applied to a table row
-    """
+    """Class that define styles than can be applied to a table row"""
 
     BACKGROUND_COLOR = 'background_color'
     FONT_COLOR = 'font_color'
 
     def __init__(self, background_color='white', font_color='black'):
-        """ Create a new table style
+        """
+        Create a new table style
 
         :params: background_color : string with a color name for a row background color
         :params: font_color : string with a color name for a row fontregarde color
         :params: cells : string list of list that contains each data line for the table
         """
-
         self.background_color = background_color
         self.font_color = font_color
 
     def __repr__(self):
-        """ Overload of the class representation
-        """
-
+        """Overload of the class representation"""
         table_string = f'\nbackground_color: {self.background_color} \n'
         table_string += f'font_color: {self.font_color}'
 
@@ -66,8 +62,7 @@ class TableStyles:
         return dict_obj
 
     def from_dict(self, dict_obj):
-        """ Method that initialize from dict the InstanciatedTable class
-        """
+        """Method that initialize from dict the InstanciatedTable class"""
         # Serialize table background colo attribute
         self.background_color = dict_obj[TableStyles.BACKGROUND_COLOR]
 

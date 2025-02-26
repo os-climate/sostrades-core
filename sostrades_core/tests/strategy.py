@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import glob
 import os
 import sys
@@ -43,7 +45,7 @@ How to use ?
 
 
 def run_tests_l0_l1_l2(main_folder, file_pattern):
-    """run the tests in main folder corresponding to file_pattern"""
+    """Run the tests in main folder corresponding to file_pattern"""
     initial_path = os.path.abspath(os.path.curdir)
     sub_test_folder = 'tests' if main_folder != "sos_trades_api" else os.path.join('tests', 'controllers')
     test_folder = os.path.join(initial_path, main_folder, sub_test_folder)
@@ -70,7 +72,7 @@ def run_tests_l0_l1_l2(main_folder, file_pattern):
 
 
 def run_generated_usecase_test(temp_file_path):
-    """run the tests in main folder corresponding to file_pattern"""
+    """Run the tests in main folder corresponding to file_pattern"""
     try:
         # Use subprocess to run the pytest command on the specified file
         exitcode = pytest.main(['-W', 'ignore', '--verbose', '--durations=5', '--durations-min=2.0'] + [temp_file_path])
@@ -83,7 +85,7 @@ def run_generated_usecase_test(temp_file_path):
 
 
 def gather_usecases(mainfolder: str, processes_reponame: str):
-    """gather all usecases of a repo"""
+    """Gather all usecases of a repo"""
     processes_root_path = os.path.join(mainfolder, processes_reponame)
 
     def recursive_gathering(folder_path) -> list[str]:
@@ -102,7 +104,7 @@ def gather_usecases(mainfolder: str, processes_reponame: str):
 
 
 def generate_script_for_usecases_test(usecases):
-    """generates code for testing usecases"""
+    """Generates code for testing usecases"""
     script = "import unittest\n\n\nclass TestUsecases(unittest.TestCase):\n\tpass\n"
 
     def get_test_function_for_usecase(usecase_path: str, test_number: int):
@@ -120,12 +122,19 @@ def generate_script_for_usecases_test(usecases):
 
 
 def delete_generated_file(path):
+    """
+    Deletes the file at the specified path if it exists.
+
+    Args:
+        path (str): The path of the file to be deleted.
+
+    """
     if os.path.exists(path):
         os.remove(path)
 
 
 def test_usecases(mainfolder: str, processes_reponame: str):
-    """test usecases"""
+    """Test usecases"""
     usecases = gather_usecases(mainfolder, processes_reponame)
     script_test = generate_script_for_usecases_test(usecases)
 
@@ -156,7 +165,7 @@ l_tests_pattern_mapping = {
 
 
 def gather_arguments(test_type_default_value: str):
-    """gathers arguments for running tests"""
+    """Gathers arguments for running tests"""
     testtype = test_type_default_value
     file_pattern = ''
     if len(sys.argv) >= 2:
@@ -176,6 +185,17 @@ def gather_arguments(test_type_default_value: str):
 
 
 def test_strategy(main_folder_default_value: str, processes_folder: Union[str, None]):
+    """
+    Runs tests based on the specified test type and processes folder.
+
+    Args:
+        main_folder_default_value (str): The default folder where tests will be executed.
+        processes_folder (Union[str, None]): The folder containing process-related files, optional.
+
+    Exits:
+        The function will exit with the appropriate exit code after running the tests.
+
+    """
     sys.modules.pop('logging')
     test_type, file_pattern = gather_arguments(test_type_default_value="l0")
 

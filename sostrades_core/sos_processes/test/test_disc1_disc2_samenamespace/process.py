@@ -48,7 +48,8 @@ class ProcessBuilder(BaseProcessBuilder):
 
 
 def post_processing_filters(execution_engine, namespace):
-    """ post processing function designed to build a rc vs saleprice 2D chart
+    """
+    post processing function designed to build a rc vs saleprice 2D chart
 
     :params: execution_engine, execution engine instance that hold data
     :type: ExecutionEngine
@@ -58,7 +59,6 @@ def post_processing_filters(execution_engine, namespace):
 
     :returns: ChartFilter[]
     """
-
     filters = []
     (x, y) = get_x_and_y(execution_engine, namespace)
 
@@ -70,7 +70,8 @@ def post_processing_filters(execution_engine, namespace):
 
 
 def post_processings(execution_engine, namespace, filters):
-    """ post processing function designed to build a rc vs saleprice 2D chart
+    """
+    post processing function designed to build a rc vs saleprice 2D chart
 
     :params: execution_engine, execution engine instance that hold data
     :type: ExecutionEngine
@@ -89,7 +90,8 @@ def post_processings(execution_engine, namespace, filters):
 
 
 def get_x_and_y(execution_engine, namespace):
-    """ post processing function designed to build check if data can be retrieved
+    """
+    post processing function designed to build check if data can be retrieved
     (x and y)
 
     :params: execution_engine, execution engine instance that hold data
@@ -100,7 +102,6 @@ def get_x_and_y(execution_engine, namespace):
 
     :returns: tuple (rc dataframe, sale price dataframe)
     """
-
     x = None
     y = None
 

@@ -116,7 +116,6 @@ class ProcessBuilderParameterType:
         Convert current instance to data manager value dictionary
         :return: dict
         '''
-
         result = {}
         result[ProcessBuilderParameterType.PROCESS_REPOSITORY] = self.process_repository
         result[ProcessBuilderParameterType.PROCESS_NAME] = self.process_name

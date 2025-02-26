@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16-2025/01/16 Copyright 2025 Capgemini
+Modifications on 2024/05/16-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -63,7 +63,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def obj(x, z, y_1, y_2):
-        """Objective function
+        """
+        Objective function
 
         :param x: local design variables
         :type x: numpy.array
@@ -80,7 +81,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def c_1(y_1):
-        """First constraint on system level
+        """
+        First constraint on system level
 
         :param y_1: coupling variable from discipline 1
         :type y_1: numpy.array
@@ -91,7 +93,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def c_2(y_2):
-        """Second constraint on system level
+        """
+        Second constraint on system level
 
         :param y_2: coupling variable from discipline 2
         :type y_2: numpy.array
@@ -146,7 +149,8 @@ class Sellar1(SoSWrapp):
 
     @staticmethod
     def compute_y_1(x, y_2, z):
-        """Solve the first coupling equation in functional form.
+        """
+        Solve the first coupling equation in functional form.
 
         :param x: vector of design variables local to discipline 1
         :type x: numpy.array
@@ -222,7 +226,8 @@ class Sellar2(SoSWrapp):
 
     @staticmethod
     def compute_y_2(y_1, z):
-        """Solve the second coupling equation in functional form.
+        """
+        Solve the second coupling equation in functional form.
 
         :param z: vector of shared design variables
         :type z: numpy.array
@@ -308,7 +313,8 @@ class Sellar3(SoSWrapp):
 
     @staticmethod
     def compute_y_2(y_1, z):
-        """Solve the second coupling equation in functional form.
+        """
+        Solve the second coupling equation in functional form.
 
         :param z: vector of shared design variables
         :type z: numpy.array

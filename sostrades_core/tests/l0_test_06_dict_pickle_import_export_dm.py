@@ -43,6 +43,25 @@ from sostrades_core.tools.tree.serializer import (
 
 
 def init_dict(dtype, unit=None, value=None, st_name=None, visi=None, ns=None, var_name=None):
+    """
+    Initializes a dictionary with default and customizable values for variable metadata.
+
+    Args:
+        dtype (str): The type of the variable (e.g., 'int', 'float').
+        unit (str, optional): The unit of the variable, if applicable.
+        value (any, optional): The initial value of the variable.
+        st_name (str, optional): The name of the discipline to which the variable belongs.
+        visi (str, optional): The visibility of the variable.
+        ns (str, optional): The namespace of the variable.
+        var_name (str, optional): The variable name.
+
+    Returns:
+        dict: A dictionary with keys for various metadata, initialized with the provided values.
+
+    This function creates a dictionary for variable metadata, including type, value, and unit, as well as various other
+    properties such as visibility, discipline dependencies, and whether the variable is editable or optional.
+
+    """
     if st_name is not None:
         disc_dep = [st_name]
     else:
@@ -74,9 +93,7 @@ def init_dict(dtype, unit=None, value=None, st_name=None, visi=None, ns=None, va
 
 
 class TestSerializeDF(unittest.TestCase):
-    """
-    SerializeDF test class
-    """
+    """SerializeDF test class"""
 
     def setUp(self):
         self.ns_test = 'TestSerializeDF'

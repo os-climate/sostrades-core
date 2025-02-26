@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/12-2023/11/08 Copyright 2023 Capgemini
+Modifications on 2023/04/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
         Arguments:
             sos_name (string): name of the discipline
             logger (logging.Logger): logger to use
+
         """
         super().__init__(sos_name=sos_name, logger=logger)
         self.custom_samples = None  # input samples dataframe
@@ -71,9 +72,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
         self.subprocesses_to_eval = None
 
     def _init_input_data(self):
-        """
-        Initialise the attribute that stores the input data of every subprocess for this run.
-        """
+        """Initialise the attribute that stores the input data of every subprocess for this run."""
         self.n_subprocs = len(self.attributes['sub_disciplines'])
         self.input_data_for_disc = [{}] * self.n_subprocs
         for i_subprocess in self.subprocesses_to_eval or range(self.n_subprocs):
@@ -93,6 +92,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
         Returns:
             self.input_data_for_disc[i_subprocess] (dict): the input data updated with new values for certain variables
+
         """
         self.input_data_for_disc[i_subprocess].update(var_delta_dict)
         return self.input_data_for_disc[i_subprocess]
@@ -107,6 +107,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
         Returns:
              output_data_dict (dict): filtered dictionary
+
         """
         output_data_dict = {key: value for key, value in raw_data.items()
                             if key in eval_out_data_names}
@@ -121,6 +122,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
 
         Returns:
             input_data (dict): full names and reference values for the subprocess inputs
+
         """
         input_data = {}
         input_data_names = disc.input_grammar.names
@@ -130,7 +132,5 @@ class DriverEvaluatorWrapper(SoSWrapp):
         return input_data
 
     def run(self):
-        """
-        Run overload
-        """
+        """Run overload"""
         pass

@@ -20,9 +20,8 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 
 
 class DataManagementDiscipline:
-    """
-    Class to store discipline data
-    """
+    """Class to store discipline data"""
+
     def __init__(self):
 
         # model of the discipline

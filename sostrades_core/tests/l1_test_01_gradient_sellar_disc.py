@@ -25,9 +25,8 @@ from sostrades_core.tests.core.abstract_jacobian_unit_test import (
 
 
 class GradientSellar(AbstractJacobianUnittest):
-    """
-    Sellar gradients test class
-    """
+    """Sellar gradients test class"""
+
     np.random.seed(42)
 
     def analytic_grad_entry(self):
@@ -44,8 +43,7 @@ class GradientSellar(AbstractJacobianUnittest):
         pass
 
     def test_01_analytic_gradient_default_dataframe_fill(self):
-        """Test gradient for Sellar1 """
-
+        """Test gradient for Sellar1"""
         # create exec engine and use discipline
         self.ee = ExecutionEngine(self.study_name)
         factory = self.ee.factory
@@ -77,7 +75,7 @@ class GradientSellar(AbstractJacobianUnittest):
                             )
 
     def test_02_analytic_gradient_sellar_2(self):
-        """Test gradient for Sellar2 """
+        """Test gradient for Sellar2"""
         # create exec engine and use discipline
 
         self.ee = ExecutionEngine(self.study_name)
@@ -107,8 +105,7 @@ class GradientSellar(AbstractJacobianUnittest):
                             )
 
     def test_03_analytic_gradient_sellar_problem(self):
-        """Test gradient for SellarProblem """
-
+        """Test gradient for SellarProblem"""
         # create exec engine and use discipline
 
         self.ee = ExecutionEngine(self.study_name)

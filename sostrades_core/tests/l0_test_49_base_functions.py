@@ -25,20 +25,14 @@ from sostrades_core.tools.base_functions.exp_min import (
 
 
 class TestBaseFunction(unittest.TestCase):
-    """
-    Base Function test class
-    """
+    """Base Function test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         pass
 
     def test_01_exp_min_function(self):
-        '''
-        Test the function
-        '''
+        '''Test the function'''
         x = np.linspace(1, -1, 1000)
         min_value = 1.0e-1
         x_minimized = compute_func_with_exp_min(x, min_value)
@@ -51,9 +45,7 @@ class TestBaseFunction(unittest.TestCase):
             self.assertLessEqual(0.9 * min_value, x_i)
 
     def test_02_exp_min_function_gradient(self):
-        '''
-        Test the gradient
-        '''
+        '''Test the gradient'''
         x = np.linspace(1, -1, 100)
         min_value = 1.0e-1
         x_minimized = compute_func_with_exp_min(x, min_value)

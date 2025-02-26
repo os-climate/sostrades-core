@@ -19,9 +19,7 @@ from scipy.interpolate import BSpline as bspline_sp
 
 
 class BSpline(object):
-    """
-    Generic implementation of BSpline.
-    """
+    """Generic implementation of BSpline."""
 
     def __init__(self, degree=3, n_poles=8, dtype=np.float64, knots=None, errmsg=''):
         self.degree = degree
@@ -78,12 +76,14 @@ class BSpline(object):
         return B_array
 
     def float_is_zero(self, v):
-        """ Test if floating point number is zero. """
+        """Test if floating point number is zero."""
         return v.real == 0.
 
     def special_div(self, num, den):
-        """ Return num/dev with the special rule
-        that 0/0 is 0. """
+        """
+        Return num/dev with the special rule
+        that 0/0 is 0.
+        """
         if self.float_is_zero(num) or self.float_is_zero(den):
             return 0.
         else:
@@ -138,9 +138,7 @@ class BSpline(object):
         self.ctrl_pts = ctrl
 
     def eval_list_t(self, t_adim):
-        """
-        Method to evaluate the bspline in an array
-        """
+        """Method to evaluate the bspline in an array"""
         barray_list = np.zeros((len(t_adim), self.n_poles))
         bsp_scipy = bspline_sp(self.knots, self.ctrl_pts, self.degree)
         if isinstance(self.ctrl_pts, list):
@@ -163,9 +161,7 @@ class BSpline(object):
         return result, barray_list
 
     def update_b_array(self, b_array, index_desactivated=None):
-        """
-        Update b_array to delete element fixed by user
-        """
+        """Update b_array to delete element fixed by user"""
         if index_desactivated is not None:
             updated_barray = []
 

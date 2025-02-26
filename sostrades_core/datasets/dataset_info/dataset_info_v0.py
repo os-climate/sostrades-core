@@ -23,9 +23,7 @@ from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V
 
 @dataclass(frozen=True)
 class DatasetInfoV0(AbstractDatasetInfo):
-    """
-    Stores the informations of a dataset V0
-    """
+    """Stores the informations of a dataset V0"""
 
     MAPPING_ITEM_FIELDS = [
                         AbstractDatasetInfo.VERSION_ID_KEY,
@@ -41,6 +39,7 @@ class DatasetInfoV0(AbstractDatasetInfo):
 
         Returns:
             str: The version ID of the dataset.
+
         """
         return VERSION_V0
 
@@ -59,6 +58,7 @@ class DatasetInfoV0(AbstractDatasetInfo):
 
         Raises:
             DatasetsInfoMappingException: If the dataset name is '*'.
+
         """
         # check if the version is in the mapping key or not
         input_dict = DatasetInfoV0.extract_mapping_key_field(dataset_mapping_key, DatasetInfoV0.MAPPING_ITEM_FIELDS)
@@ -76,6 +76,7 @@ class DatasetInfoV0(AbstractDatasetInfo):
 
         Returns:
             DatasetInfoV0: An instance of DatasetInfoV0.
+
         """
         return DatasetInfoV0(
             connector_id=input_dict[DatasetInfoV0.CONNECTOR_ID_KEY],
@@ -91,6 +92,7 @@ class DatasetInfoV0(AbstractDatasetInfo):
 
         Returns:
             AbstractDatasetInfo: A new instance of DatasetInfoV0 with the updated namespace.
+
         """
         # there is no need to update ns in this dataset info version
         return DatasetInfoV0(
@@ -112,6 +114,7 @@ class DatasetInfoV0(AbstractDatasetInfo):
 
         Raises:
             ValueError: If the format of the dataset mapping key is incorrect.
+
         """
         # check if there is a version in the key, if not it is V0
         if not (dataset_mapping_key.startswith(f'V0{cls.SEPARATOR}') or dataset_mapping_key.startswith(f'v0{cls.SEPARATOR}')):

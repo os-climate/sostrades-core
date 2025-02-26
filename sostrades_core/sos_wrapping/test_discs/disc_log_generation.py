@@ -19,9 +19,8 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class DiscLogGeneration(SoSWrapp):
-    """
-    Discipline to generate logs
-    """
+    """Discipline to generate logs"""
+
     # ontology information
     _ontology_data = {
         'label': 'DiscLogGeneration',

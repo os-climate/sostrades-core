@@ -1,5 +1,5 @@
 '''
-Copyright 2024 Capgemini
+Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,10 +24,7 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for lhs DoE and Eval on x variable of Sellar Problem
-        """
-
+        """Usecase for lhs DoE and Eval on x variable of Sellar Problem"""
         ns = self.study_name
         coupling_name = 'SellarCoupling'
 

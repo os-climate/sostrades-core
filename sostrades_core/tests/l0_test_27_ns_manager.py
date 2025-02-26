@@ -21,14 +21,10 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class TestNSManager(unittest.TestCase):
-    """
-    Namespace manager test class
-    """
+    """Namespace manager test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'MyCase'
         self.exec_eng = ExecutionEngine(self.name)
 

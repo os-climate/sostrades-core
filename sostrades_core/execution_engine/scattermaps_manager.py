@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/01/19 Copyright 2024 Capgemini
+Modifications on 2024/01/19-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,9 +22,8 @@ class ScatterMapsManagerException(Exception):
 
 
 class ScatterMapsManager:
-    '''
-    Specification: ScatterMapsManager allows to manager scatter maps for scatter disciplines
-    '''
+    '''Specification: ScatterMapsManager allows to manager scatter maps for scatter disciplines'''
+
     INPUT_NAME = 'input_name'
     INPUT_TYPE = 'input_type'
     OUTPUT_NAME = 'output_name'
@@ -33,9 +32,7 @@ class ScatterMapsManager:
     SCATTER_VAR_NAME = 'scatter_var_name'
 
     def __init__(self, name, ee):
-        '''
-        CLass to manage scatter maps
-        '''
+        '''CLass to manage scatter maps'''
         self.name = name
         self.ee = ee
         self.build_maps_dict = {}
@@ -43,32 +40,24 @@ class ScatterMapsManager:
         self.reuse_existing_data_maps = False
 
     def get_build_map(self, map_name):
-        '''
-        Get map from build_maps_dict
-        '''
+        '''Get map from build_maps_dict'''
         smap = self.build_maps_dict[map_name]
 
         return smap
 
     def get_data_map(self, map_name):
-        '''
-        Get map from data_maps_dict
-        '''
+        '''Get map from data_maps_dict'''
         smap = self.data_maps_dict[map_name]
 
         return smap
 
     def associate_disc_to_build_map(self, disc):
-        '''
-        Associate a discipline to its own build map
-        '''
+        '''Associate a discipline to its own build map'''
         smap = self.get_build_map(disc.map_name)
         smap.add_dependency(disc.disc_id)
 
     def add_build_map(self, map_name, map_dict):
-        '''
-        Instantiate build map and add to build_maps_dict
-        '''
+        '''Instantiate build map and add to build_maps_dict'''
         if map_name in self.build_maps_dict:
             if self.build_maps_dict[map_name] != map_dict:
                 raise ScatterMapsManagerException(
@@ -78,9 +67,7 @@ class ScatterMapsManager:
             self.build_maps_dict.update({map_name: s_map})
 
     def add_data_map(self, map_name, map_dict):
-        '''
-        Instantiate data map and add to data_maps_dict
-        '''
+        '''Instantiate data map and add to data_maps_dict'''
         if map_name in self.data_maps_dict:
             # check if parameter reuse existing map is True
             if self.reuse_existing_data_maps:
@@ -98,9 +85,7 @@ class ScatterMapsManager:
         return s_map
 
     def remove_build_map(self, map_name):
-        '''
-        Remove build map from build_maps_dict
-        '''
+        '''Remove build map from build_maps_dict'''
         if map_name in self.build_maps_dict:
             del self.build_maps_dict[map_name]
         else:
@@ -108,9 +93,7 @@ class ScatterMapsManager:
                 f'Trying to remove not existing in build map {map_name}')
 
     def remove_data_map(self, map_name):
-        '''
-        Remove data map from data_maps_dict
-        '''
+        '''Remove data map from data_maps_dict'''
         if map_name in self.data_maps_dict:
             del self.data_maps_dict[map_name]
         else:
@@ -118,9 +101,7 @@ class ScatterMapsManager:
                 f'Trying to remove not existing in data map {map_name}')
 
     def check_map_parameters(self, map):
-        '''
-        Check type and length of map parameters and put lists in input_name, input_type, output_name, output_type
-        '''
+        '''Check type and length of map parameters and put lists in input_name, input_type, output_name, output_type'''
         # check type
         if not isinstance(map[self.SCATTER_VAR_NAME], str):
             raise ScatterMapsManagerException(
@@ -155,9 +136,7 @@ class ScatterMapsManager:
             return map
 
     def is_input_name_in_build_maps_dict(self, input_name_list):
-        '''
-        Return True if name matches with an input_name in buil_maps_dict
-        '''
+        '''Return True if name matches with an input_name in buil_maps_dict'''
         for build_map in self.build_maps_dict.values():
             for input_name in input_name_list:
                 if build_map.get_input_name() == input_name:
@@ -165,25 +144,19 @@ class ScatterMapsManager:
         return False
 
     def get_input_ns_from_build_map(self, input_name):
-        '''
-        Get input ns of build map with input_name
-        '''
+        '''Get input ns of build map with input_name'''
         for build_map in self.build_maps_dict.values():
             if build_map.get_input_name() == input_name:
                 return build_map.get_input_ns()
 
     def get_input_type_from_build_map(self, input_name):
-        '''
-        Get input type of build map with input_name
-        '''
+        '''Get input type of build map with input_name'''
         for build_map in self.build_maps_dict.values():
             if build_map.get_input_name() == input_name:
                 return build_map.get_input_type()
 
     def get_build_map_with_input_name(self, input_name):
-        '''
-        Get build map with input_name
-        '''
+        '''Get build map with input_name'''
         for build_map in self.build_maps_dict.values():
             if build_map.get_input_name() == input_name:
                 return build_map

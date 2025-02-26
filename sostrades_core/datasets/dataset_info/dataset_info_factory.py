@@ -26,9 +26,7 @@ from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
 class DatasetInfoSerializerVersion(Enum):
-    """
-    DatasetInfo version enum
-    """
+    """DatasetInfo version enum"""
 
     V0 = DatasetInfoV0
     V1 = DatasetInfoV1
@@ -46,6 +44,7 @@ class DatasetInfoSerializerVersion(Enum):
 
         Raises:
             ValueError: If no matching enum value is found.
+
         """
         try:
             # Iterate through the enum members and find the one with a matching value
@@ -55,9 +54,8 @@ class DatasetInfoSerializerVersion(Enum):
 
 
 class DatasetInfoFactory(metaclass=NoInstanceMeta):
-    """
-    Dataset info factory
-    """
+    """Dataset info factory"""
+
     __logger = logging.getLogger(__name__)
 
     @classmethod
@@ -71,6 +69,7 @@ class DatasetInfoFactory(metaclass=NoInstanceMeta):
 
         Returns:
             DatasetInfoSerializerVersion: The corresponding DatasetInfoSerializerVersion enum value.
+
         """
         # check if the key starts with V0 or V1 (or v0 or v1)
         version_pattern = r"^([Vv][\d])\|"

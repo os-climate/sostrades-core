@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/04/13-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,9 +28,7 @@ class SampleGeneratorWrapperException(Exception):
 
 class SampleGeneratorWrapper(SoSWrapp):
     # TODO: docstring is not up to date
-    '''
-    SampleGeneratorWrapper for ProxySampleGenerator discipline sampling at run-time.
-    '''
+    '''SampleGeneratorWrapper for ProxySampleGenerator discipline sampling at run-time.'''
 
     _ontology_data = {
         'label': 'Sample_Generator wrapper',
@@ -72,15 +70,11 @@ class SampleGeneratorWrapper(SoSWrapp):
         self.store_sos_outputs_values({self.SAMPLES_DF: samples_df})
 
     def sample(self):
-        """
-        Ask sample generator to sample using wrapper object to retrieve inputs.
-        """
+        """Ask sample generator to sample using wrapper object to retrieve inputs."""
         return self.set_scenario_columns(self.sample_generator.sample(self))
 
     def set_scenario_columns(self, samples_df, scenario_names=None):
-        '''
-        Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df, by default selecting all scenarios.
-        '''
+        '''Add the columns SELECTED_SCENARIO and SCENARIO_NAME to the samples_df, by default selecting all scenarios.'''
         if self.SELECTED_SCENARIO not in samples_df:
             ordered_columns = [self.SELECTED_SCENARIO, self.SCENARIO_NAME] + samples_df.columns.tolist()
             if samples_df.empty:

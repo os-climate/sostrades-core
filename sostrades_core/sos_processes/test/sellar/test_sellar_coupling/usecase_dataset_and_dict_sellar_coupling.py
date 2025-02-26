@@ -20,7 +20,6 @@ from numpy import array
 
 from sostrades_core.datasets.dataset_manager import DatasetsConnectorManager
 from sostrades_core.datasets.dataset_mapping import DatasetsMapping
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
 from sostrades_core.study_manager.study_manager import StudyManager
 
 
@@ -30,9 +29,7 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for a coupling of Sellar Problem
-        """
+        """Usecase for a coupling of Sellar Problem"""
         ns = f'{self.study_name}'
         coupling_name = "SellarCoupling"
 
@@ -54,10 +51,9 @@ class Study(StudyManager):
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_datasets_connector",
-                                                    connector_type=DatasetConnectorType.get_enum_value("JSON"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.JSON_V0",
                                                     **connector_args)
         # Get dataset file NOTE it is not the same as the usecase name because it uses same dataset as other use case
         datasets_file = join(dirname(realpath(__file__)), "usecase_dataset_sellar_coupling.json")
         # Deserialize it
         return DatasetsMapping.from_json_file(datasets_file)
-

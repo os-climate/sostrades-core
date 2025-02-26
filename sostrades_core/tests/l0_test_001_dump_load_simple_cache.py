@@ -32,9 +32,7 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestLoadSimpleCache(unittest.TestCase):
-    """
-    Test of SimpleCache dump and load from files
-    """
+    """Test of SimpleCache dump and load from files"""
 
     def setUp(self):
 
@@ -53,9 +51,7 @@ class TestLoadSimpleCache(unittest.TestCase):
                 rmtree_safe(dir)
 
     def test_01_dump_and_load_cache_None(self):
-        '''
-        Test when cache is None that file is not written + map are empty
-        '''
+        '''Test when cache is None that file is not written + map are empty'''
         dump_dir = join(self.dump_dir, 'test_01')
 
         # run study, then dump dm and disciplines status
@@ -194,9 +190,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         self.dir_to_del.append(self.dump_dir)
 
     def test_04_dump_and_load_simple_cache_on_process(self):
-        '''
-        Dump and load a simple cache on the entire process with same name to check all values
-        '''
+        '''Dump and load a simple cache on the entire process with same name to check all values'''
         dump_dir = join(self.dump_dir, 'test_04')
 
         # run study, then dump dm and disciplines status
@@ -261,9 +255,7 @@ class TestLoadSimpleCache(unittest.TestCase):
         self.dir_to_del.append(self.dump_dir)
 
     def test_05_dump_and_load_simple_cache_only_one_disc(self):
-        '''
-        Dump and load a simple cache on ony one disc to test the configuration +  different process names
-        '''
+        '''Dump and load a simple cache on ony one disc to test the configuration +  different process names'''
         dump_dir = join(self.dump_dir, 'test_05')
 
         # run study, then dump dm and disciplines status

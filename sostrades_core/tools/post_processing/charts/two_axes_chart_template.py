@@ -28,13 +28,11 @@ Class that define a 2 dimensional chart template
 
 
 class SeriesTemplateException(Exception):
-    """ Overload Exception basic type
-    """
+    """Overload Exception basic type"""
 
 
 class SeriesTemplate:
-    """ Class that define a series abscissa and ordinate list with a name
-    """
+    """Class that define a series abscissa and ordinate list with a name"""
 
     DASH_LINES_DISPLAY = 'dash_lines'
     DASH_DOT_LINES_DISPLAY = 'dash_dot_lines'
@@ -70,7 +68,8 @@ class SeriesTemplate:
     def __init__(self, abscissa=[], ordinate=[], series_name='', display_type='lines', visible=True,
                  y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle', marker=None, line=None,
                  text=None):
-        """ Create a new series to add in a chart
+        """
+        Create a new series to add in a chart
 
         :param abscissa: list of number values for abscissa
         :type abscissa: list of number
@@ -95,7 +94,6 @@ class SeriesTemplate:
         :param text: symbol to describe the data to be displayed on as label of the datapoint on the graph
         :type text: list(floats)
         """
-
         self.__ordinate = []
         self.__abscissa = []
 
@@ -136,7 +134,6 @@ class SeriesTemplate:
 
         :return filtered list of values
         """
-
         return self.__filter_values(self.abscissa, 'Abscissa', logger)
 
     @property
@@ -156,7 +153,6 @@ class SeriesTemplate:
 
         :return filtered list of values
         """
-
         return self.__filter_values(self.ordinate, 'Ordinate', logger)
 
     def __convert_to_list(self, values, attribute_name):
@@ -182,7 +178,6 @@ class SeriesTemplate:
         :type logger: logging.logger
         :return filterred list of values
         """
-
         filtered_series, has_nan = convert_nan(values)
 
         if logger is not None and has_nan:
@@ -199,7 +194,6 @@ class SeriesTemplate:
 
         :return str, string representation of the instance
         """
-
         series_string = [f'\nname: {self.series_name}',
                          f'abscissa: {self.abscissa}',
                          f'ordinate: {self.ordinate}',
@@ -221,7 +215,6 @@ class SeriesTemplate:
 
         :return dict
         """
-
         dict_obj = {}
         # Serialize name attribute
         dict_obj.update({SeriesTemplate.SERIES_NAME: self.series_name})
@@ -311,8 +304,7 @@ class SeriesTemplate:
 
 
 class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a 2 dimensional chart template
-    """
+    """Class that define a 2 dimensional chart template"""
 
     CHART_NAME = 'chart_name'
     ABSCISSA_AXIS_NAME = 'abscissa_axis_name'
@@ -357,7 +349,6 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         :param show_legend: bool indicating legend to be shown or not. If None, reverts to default behaviour. Defaults to None.
         :type bool
         """
-
         super().__init__()
 
         # Host the list of series for this chart
@@ -409,7 +400,6 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
         :param series: series instance to add
         :type series: SeriesTemplate
         """
-
         if isinstance(series, SeriesTemplate):
             self.series.append(series)
         else:
@@ -422,7 +412,6 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
 
         :return str: string representation of the instance
         """
-
         inline_series_string = '\n'.join(
             [str(series) for series in self.series])
 
@@ -461,7 +450,6 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
 
         :return dict
         """
-
         dict_obj = {}
         # Serialize chart name attribute
         dict_obj.update({TwoAxesChartTemplate.CHART_NAME: self.chart_name})
@@ -519,7 +507,6 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
 
         :return sostrades_core.post-processing.charts.chart_filter.ChartFilter
         """
-
         super().from_dict(dict_obj)
 
         # Serialize chart name attribute

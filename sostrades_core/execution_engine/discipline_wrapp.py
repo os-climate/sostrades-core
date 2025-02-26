@@ -35,7 +35,8 @@ class DisciplineWrappException(Exception):
 
 
 class DisciplineWrapp:
-    """**DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
+    """
+    **DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
 
     An instance of DisciplineWrapp is in one-to-one aggregation with an instance inheriting from Discipline and
     might or might not have a SoSWrapp to supply the user-defined model run. All GEMSEO objects are instantiated during
@@ -46,6 +47,7 @@ class DisciplineWrapp:
         wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
         discipline (Discipline): aggregated GEMSEO object used for execution eventually with model run
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the Discipline (or None)
+
     """
 
     def __init__(self, name: str, logger: logging.Logger, wrapper=None, wrapping_mode: str = 'SoSTrades'):
@@ -54,8 +56,10 @@ class DisciplineWrapp:
 
         Arguments:
             name (string): name of the discipline/node
+            logger (logging.Logger): Logger to use
             wrapper (Class): class constructor of the user-defined wrapper (or None)
             wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
+
         """
         self.logger = logger
         self.name = name
@@ -75,17 +79,20 @@ class DisciplineWrapp:
 
         Returns:
             The names of the input variables.
+
         """
         return self.discipline.get_input_data_names(filtered_inputs)
 
     def get_output_data_names(self, filtered_outputs=False):
-        """Return the names of the output variables.
+        """
+        Return the names of the output variables.
 
         Arguments:
             filtered_outputs (bool): flag whether to filter the output names.
 
         Returns:
             The names of the input variables.
+
         """
         return self.discipline.get_output_data_names(filtered_outputs)
 
@@ -95,6 +102,7 @@ class DisciplineWrapp:
 
         Arguments:
             proxy (ProxyDiscipline): corresponding proxy discipline
+
         """
         if self.wrapper is not None:
             self.wrapper.setup_sos_disciplines()
@@ -105,6 +113,7 @@ class DisciplineWrapp:
 
         Arguments:
             proxy (ProxyDiscipline): corresponding proxy discipline
+
         """
         if self.wrapper is not None:
             self.wrapper.check_data_integrity()
@@ -119,6 +128,7 @@ class DisciplineWrapp:
             reduced_dm (Dict[Dict]): reduced data manager without values for i/o configuration
             cache_type (string): type of cache to be passed to the Discipline
             cache_file_path (string): file path of the pickle file to dump/load the cache [???]
+
         """
         if self.wrapping_mode == 'SoSTrades':
             self.discipline = SoSDiscipline(
@@ -147,6 +157,7 @@ class DisciplineWrapp:
 
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
+
         """
         input_names_and_defaults = proxy.get_input_data_names_and_defaults(numerical_inputs=False)
         grammar = self.discipline.input_grammar
@@ -167,6 +178,7 @@ class DisciplineWrapp:
         Arguments:
             input_dict (dict): values to store
             check_input (bool): flag to specify if inputs are checked or not to exist in input grammar
+
         """
         if input_dict is not None:
             to_update = [
@@ -184,6 +196,8 @@ class DisciplineWrapp:
             sub_disciplines (List[Discipline]): list of sub-Disciplines of the MDAChain
             proxy: proxy coupling for grammar initialisation and numericla inputs.
             input_data (dict): input data to update default values of the MDAChain with
+            reduced_dm (Dict[Dict]): reduced data manager without values for i/o configuration
+
         """
         if reduced_dm is None:
             reduced_dm = {}
@@ -232,6 +246,8 @@ class DisciplineWrapp:
             sub_disciplines (List[Discipline]): list of sub-Disciplines of the MDAChain
             proxy (ProxyDiscipline): proxy discipline for grammar initialisation
             input_data (dict): input data to update default values of the MDAChain with
+            reduced_dm (Dict[Dict]): reduced data manager without values for i/o configuration
+
         """
         if self.wrapping_mode == 'SoSTrades':
             # Pass as arguments to __init__ parameters needed for MDOScenario

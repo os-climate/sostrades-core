@@ -21,14 +21,10 @@ from sostrades_core.sos_processes.script_test_all_usecases import _test_all_usec
 
 
 class TestUseCases(unittest.TestCase):
-    """
-    Usecases test class
-    """
+    """Usecases test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.pp = pprint.PrettyPrinter(indent=4, compact=True)
         self.processes_repo = 'sostrades_core.sos_processes'
         self.maxDiff = None

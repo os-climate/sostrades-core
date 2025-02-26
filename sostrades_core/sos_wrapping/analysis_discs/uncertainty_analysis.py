@@ -133,7 +133,8 @@ class UncertaintyAnalysis(SoSWrapp):
     """The numerical parameters for the analysis."""
 
     def _pre_process_data(self) -> None:
-        """Read the input data and pre-process it for the analysis.
+        """
+        Read the input data and pre-process it for the analysis.
 
         Each inputs and outputs are split into 1D components.
         The data is stored in a IODataset that can be used for statistics and sensitivity analysis.
@@ -167,10 +168,12 @@ class UncertaintyAnalysis(SoSWrapp):
         self.store_sos_outputs_values({SoSOutputNames.OUTPUT_SAMPLES_POST: outputs_df})
 
     def _check_parameters(self) -> None:
-        """Check the numerical parameters.
+        """
+        Check the numerical parameters.
 
         Raises:
             ValueError: If one of the parameters has the wrong size.
+
         """
         param_names = (SoSInputNames.PROBABILITY_THRESHOLD,)
         self._numerical_parameters = {param: self.get_sosdisc_inputs(param) for param in param_names}
@@ -231,10 +234,12 @@ class UncertaintyAnalysis(SoSWrapp):
         self._compute_statistics()
 
     def get_chart_filter_list(self) -> list[ChartFilter]:
-        """Get the available charts.
+        """
+        Get the available charts.
 
         Returns:
             A list containing the chart filter.
+
         """
         chart_list = [f"{var_type} distributions" for var_type in ["Input", "Output"]]
         chart_list.extend((self.CHART_BOXPLOT_NAME, self.CHART_SCATTERPLOTMATRIX_NAME))
@@ -243,10 +248,12 @@ class UncertaintyAnalysis(SoSWrapp):
     def get_post_processing_list(
         self, chart_filters: list[ChartFilter] | None = None
     ) -> list[InstantiatedPlotlyNativeChart]:
-        """Create the post-processing plots.
+        """
+        Create the post-processing plots.
 
         Returns:
             The list of plots.
+
         """
         chart_filters = chart_filters or self.get_chart_filter_list()
         chart_list = []
@@ -276,7 +283,8 @@ class UncertaintyAnalysis(SoSWrapp):
         return instantiated_graphs
 
     def histogram_chart(self, data: list, var_name: str) -> InstantiatedPlotlyNativeChart:
-        """Generates a histogram chart.
+        """
+        Generates a histogram chart.
 
         The chart also shows the mean, median and tolerance bounds.
 
@@ -286,6 +294,7 @@ class UncertaintyAnalysis(SoSWrapp):
 
         Returns:
             The histogram chart.
+
         """
         fig = go.Figure()
         fig.add_trace(go.Histogram(x=data, nbinsx=30, histnorm="probability"))
@@ -342,7 +351,8 @@ class UncertaintyAnalysis(SoSWrapp):
 
     @staticmethod
     def boxplot(input_samples: DataFrame, output_samples: DataFrame) -> InstantiatedPlotlyNativeChart:
-        """Create a boxplot of the input and output samples.
+        """
+        Create a boxplot of the input and output samples.
 
         The color of the box indicates if the variable is an input or an output.
 
@@ -352,6 +362,7 @@ class UncertaintyAnalysis(SoSWrapp):
 
         Returns:
             The boxplot.
+
         """
         fig = go.Figure()
         for input_name in input_samples.columns:
@@ -379,7 +390,8 @@ class UncertaintyAnalysis(SoSWrapp):
 
     @staticmethod
     def scatterplot_matrix(input_samples: DataFrame, output_samples: DataFrame) -> InstantiatedPlotlyNativeChart:
-        """Create a scatterplot matrix.
+        """
+        Create a scatterplot matrix.
 
         Args:
             input_samples: The dataframe containing the input samples.
@@ -387,6 +399,7 @@ class UncertaintyAnalysis(SoSWrapp):
 
         Returns:
             The plot.
+
         """
         samples = concat((input_samples, output_samples), axis=1)
         dimensions = [

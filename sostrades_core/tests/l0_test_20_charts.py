@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 02/01/2024-2024/06/28 Copyright 2024 Capgemini
+Modifications on 02/01/2024-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,9 +28,7 @@ unit test for chart template
 
 
 class TestChartTemplate(unittest.TestCase):
-    """
-    Class to test template filters and charts
-    """
+    """Class to test template filters and charts"""
 
     def setUp(self):
         self.data_path = join(dirname(sostrades_core.__file__),

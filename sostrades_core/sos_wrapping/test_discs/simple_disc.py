@@ -18,16 +18,15 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class SimpleDisc(SoSWrapp):
-    """ Discipline used in Driver coupling of simple discipline output with driver subprocess input.
-    """
+    """Discipline used in Driver coupling of simple discipline output with driver subprocess input."""
+
     _maturity = 'Fake'
     DESC_IN = {'z_in': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_z'}}
 
     DESC_OUT = {'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_z'}}
 
     def run(self):
-        """ Discipline 1 execution
-        """
+        """Discipline 1 execution"""
         z_in = self.get_sosdisc_inputs(['z_in'])
         z = self.compute_z(z_in)
         z_out = {'z': z}
@@ -35,7 +34,6 @@ class SimpleDisc(SoSWrapp):
 
     @staticmethod
     def compute_z(z):
-        """ Computes the output of the simple discipline in array form
-        """
+        """Computes the output of the simple discipline in array form"""
         out = z * pow(2, -1)
         return out

@@ -27,10 +27,7 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for disc1 disc2 eval generator doe with reference
-        """
-
+        """Usecase for disc1 disc2 eval generator doe with reference"""
         ns = f'{self.study_name}'
 
         # coupling_name = 'subprocess'

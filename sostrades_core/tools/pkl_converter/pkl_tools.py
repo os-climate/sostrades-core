@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
 # -*- coding: utf-8 -*-
 
 import pickle
@@ -21,15 +20,13 @@ from bz2 import BZ2File
 
 
 def dump_compressed_pickle(fname, data):
-    ''' writes data as a compressed pickle file
-    '''
+    '''Writes data as a compressed pickle file'''
     with BZ2File(fname, 'w') as f:
         pickle.dump(data, f)
 
 
 def load_compressed_pickle(fname):
-    ''' decompress pickle and returns the data
-    '''
+    '''Decompress pickle and returns the data'''
     data = BZ2File(fname, 'rb')
 
     return pickle.load(data)

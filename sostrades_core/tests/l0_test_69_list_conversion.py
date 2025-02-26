@@ -30,9 +30,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
 
 
 class TestExtendString(unittest.TestCase):
-    """
-    Extend string type for GEMSEO test class
-    """
+    """Extend string type for GEMSEO test class"""
 
     def setUp(self):
         self.dirs_to_del = []
@@ -46,11 +44,11 @@ class TestExtendString(unittest.TestCase):
             'Disc', mod_list)
 
     def test_01_simple_list_conversion(self):
-        """ This test proves the ability to convert simple list
+        """
+        This test proves the ability to convert simple list
         {'list':'float'}, {'list':'dataframe'} ... into array and
         to reconvert it back afterward
         """
-
         builder = self.disc_builder
 
         # Set builder in factory and configure
@@ -96,11 +94,11 @@ class TestExtendString(unittest.TestCase):
                 assert_array_equal(conversion_back[i], list_array[i])
 
     def test_02_recursive_list_conversion(self):
-        """ This test proves the ability to convert recursive  list
+        """
+        This test proves the ability to convert recursive  list
         {'list':{'list':'float'}}, {'list':{'list':'dataframe'}}... into array and
                 to reconvert it back afterward
         """
-
         builder = self.disc_builder
 
         # Set builder in factory and configure
@@ -150,11 +148,11 @@ class TestExtendString(unittest.TestCase):
                                        check_dtype=False)
 
     def test_03_recursive_list_dict_conversion(self):
-        """ This test proves the ability to convert recursive  list of dict
+        """
+        This test proves the ability to convert recursive  list of dict
         {'list':{'dict':'float'}}, {'list':{'dict':'dataframe'}}... into array and
                 to reconvert it back afterward
         """
-
         builder = self.disc_builder
 
         # Set builder in factory and configure

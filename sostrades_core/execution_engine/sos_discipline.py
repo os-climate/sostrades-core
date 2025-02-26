@@ -66,6 +66,7 @@ class SoSDiscipline(Discipline):
         sos_wrapp (SoSWrapp): the user-defined wrapper of the discipline
         reduced_dm (Dict[Dict]): reduced data manager for i/o handling (NB: there is only one reduced_dm per process)
         io_full_name_map (Dict[string]): map from short names to full names of model output variables
+
     """
 
     _NEW_ATTR_TO_SERIALIZE = ['reduced_dm', 'sos_wrapp']
@@ -96,6 +97,9 @@ class SoSDiscipline(Discipline):
             cache_file_path (string): file path for the cache pickle
             sos_wrapp (SoSWrapp): user-defined wrapper of the discipline
             reduced_dm (Dict[Dict]): reduced version of datamanager for i/o handling
+            logger (logging.Logger): Logger to use
+            debug_mode (str): identifier of the debug mode to apply or empty
+
         """
         self.sos_wrapp = sos_wrapp
         self.reduced_dm = reduced_dm
@@ -115,9 +119,7 @@ class SoSDiscipline(Discipline):
         self.output_grammar.data_converter.reduced_dm = self.reduced_dm
 
     def _run(self, input_data: StrKeyMapping):
-        """
-        Call user-defined wrapper run.
-        """
+        """Call user-defined wrapper run."""
         # send local data to the wrapper for i/o
         self.sos_wrapp.local_data = input_data
         self.sos_wrapp.input_data_names = self.get_input_data_names()
@@ -161,9 +163,7 @@ class SoSDiscipline(Discipline):
         self,
         input_data,  # type:Optional[Dict[str, Any]]
     ):  # type: (...) -> Dict[str, Any]
-        """
-        Overload method in order to catch exception through a try/except
-        """
+        """Overload method in order to catch exception through a try/except"""
         try:
             self._local_data = super().execute(input_data)
         except Exception as error:
@@ -182,6 +182,7 @@ class SoSDiscipline(Discipline):
         Args:
             input_names: The input variables against which to differentiate the outputs.
                 If empty, use all the inputs.
+
         """
         input_names = input_names or self.io.input_grammar.keys()
         filtered_inputs = filter_variables_to_convert(self.reduced_dm, input_names, write_logs=True, logger=self.logger)
@@ -197,6 +198,7 @@ class SoSDiscipline(Discipline):
         Args:
             output_names: The outputs to be differentiated.
                 If empty, use all the outputs.
+
         """
         output_names = output_names or self.io.output_grammar.keys()
         filtered_outputs = filter_variables_to_convert(
@@ -221,6 +223,7 @@ class SoSDiscipline(Discipline):
             A tuple containing:
               - the filtered input names.
               - the filtered outputs names.
+
         """
         input_names = input_names or self.io.input_grammar.keys()
         output_names = output_names or self.io.output_grammar.keys()
@@ -245,6 +248,7 @@ class SoSDiscipline(Discipline):
                 with :meth:`.add_differentiated_inputs`
                 and set these output variables to differentiate
                 with :meth:`.add_differentiated_outputs`.
+
         """
         # filtered_inputs and outputs option not in GEMSEO
         if compute_all_jacobians:
@@ -276,9 +280,7 @@ class SoSDiscipline(Discipline):
         dump_jac_path=None,
         load_jac_path=None,
     ):
-        """
-        Overload check jacobian to execute the init_execution
-        """
+        """Overload check jacobian to execute the init_execution"""
         # The init execution allows to check jacobian without an execute before the check
         # however if an execute was done, we do not want to restart the model
         # and potentially loose informations to compute gradients (some
@@ -403,9 +405,7 @@ class SoSDiscipline(Discipline):
                 discipline.clear_jacobian()
 
     def set_partial_derivative(self, y_key, x_key, value):
-        """
-        Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac
-        """
+        """Set the derivative of y_key by x_key inside the jacobian of GEMS self.jac"""
         if y_key in self.jac and x_key in self.jac[y_key]:
             if isinstance(value, ndarray):
                 value = lil_matrix(value)
@@ -420,6 +420,7 @@ class SoSDiscipline(Discipline):
 
         Return:
             List[string] The names of the input variables.
+
         """
         if not filtered_inputs:
             return self.input_grammar.names
@@ -434,15 +435,14 @@ class SoSDiscipline(Discipline):
 
         Return:
             List[string] The names of the output variables.
+
         """
         if not filtered_outputs:
             return self.output_grammar.names
         return filter_variables_to_convert(self.reduced_dm, self.output_grammar.names)
 
     def _get_columns_indices(self, inputs, outputs, input_column, output_column):
-        """
-        Returns indices of input_columns and output_columns
-        """
+        """Returns indices of input_columns and output_columns"""
         # Get boundaries of the jacobian to compare
         if inputs is None:
             inputs = self.get_input_data_names()
@@ -545,6 +545,7 @@ class SoSDiscipline(Discipline):
 
         Return:
             output_error (dict): dict with mismatches spotted in comparison
+
         """
         dict_error = {}
         compare_dict(left_dict, right_dict, '', dict_error)
@@ -561,9 +562,7 @@ class SoSDiscipline(Discipline):
         return None
 
     def display_min_max_couplings(self):
-        """
-        Method to display the minimum and maximum values among a discipline's couplings
-        """
+        """Method to display the minimum and maximum values among a discipline's couplings"""
         min_coupling_dict, max_coupling_dict = {}, {}
         for key, value in self.io.data.items():
             is_coupling = self.reduced_dm[key]['coupling']

@@ -24,14 +24,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestStatusCoupling(unittest.TestCase):
-    """
-    SoSCoupling status test class
-    """
+    """SoSCoupling status test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'EETests'
         self.base_path = 'sostrades_core.sos_wrapping.test_discs'
         self.dic_status = {'CONFIGURE': False,

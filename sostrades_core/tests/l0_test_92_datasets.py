@@ -33,7 +33,6 @@ from sostrades_core.datasets.dataset_mapping import (
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     DatasetGenericException,
 )
-from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import DatasetConnectorType
 from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import DatasetsConnectorManager
 from sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset import Study
 from sostrades_core.sos_processes.test.test_disc1_disc2_coupling.usecase_coupling_2_disc_test import (
@@ -44,9 +43,7 @@ from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
 
 
 class TestDatasets(unittest.TestCase):
-    """
-    Discipline to test datasets
-    """
+    """Discipline to test datasets"""
 
     def setUp(self):
         # Set logging level to debug for datasets
@@ -58,7 +55,7 @@ class TestDatasets(unittest.TestCase):
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_datasets_connector",
-                                                    connector_type=DatasetConnectorType.get_enum_value("JSON"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.JSON_V0",
                                                     **connector_args)
 
         # create local connector
@@ -68,7 +65,7 @@ class TestDatasets(unittest.TestCase):
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V0",
                                                     **connector_args)
 
 
@@ -188,9 +185,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc2.c"), "string_2")
 
     def test_03_mapping(self):
-        """
-        Some example to work with dataset mapping
-        """
+        """Some example to work with dataset mapping"""
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         json_file_path = os.path.join(test_data_folder, "test_92_example_mapping.json")
 
@@ -208,7 +203,7 @@ class TestDatasets(unittest.TestCase):
         )
         self.assertEqual(
             set(dataset_mapping.namespace_datasets_mapping["namespace2"]),
-            set(["V0|<1connector_id>|<1dataset_id>", "V0|<2connector_id>|<2dataset_id>"]),
+            {"V0|<1connector_id>|<1dataset_id>", "V0|<2connector_id>|<2dataset_id>"},
         )
 
     def test_04_datasets_types(self):
@@ -250,9 +245,6 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value(f"{study_name}.SellarCoupling.Sellar_Problem.local_dv"), 10.0)
 
     def test_06_parameter_change_returned_in_load_data_using_both_dict_and_datasets(self):
-
-
-
         usecase_file_path = uc_dataset_dict.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -343,7 +335,7 @@ class TestDatasets(unittest.TestCase):
         }
 
         export_connector = DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_export_test",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V0",
                                                     **connector_args)
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_disc1_disc2.json")
@@ -382,18 +374,12 @@ class TestDatasets(unittest.TestCase):
         Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
         thus testing ability of LocalConnector to both write and load values.
         """
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
         connector_args = {
             "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V0",
                                                     **connector_args)
 
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
@@ -418,7 +404,7 @@ class TestDatasets(unittest.TestCase):
 
         try:
             connector_to.copy_dataset_from(connector_from=connector_json,
-                                           dataset_identifier=DatasetInfoV0(connector_json, "dataset_all_types"),
+                                           dataset_identifier=DatasetInfoV0(str(connector_json), "dataset_all_types"),
                                            data_types_dict=data_types_dict,
                                            create_if_not_exists=True)
 
@@ -440,9 +426,7 @@ class TestDatasets(unittest.TestCase):
             raise cm
 
     def test_09_dataset_error(self):
-        """
-        Some example to check datasets error
-        """
+        """Some example to check datasets error"""
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
 
         # check mapping file error
@@ -459,9 +443,7 @@ class TestDatasets(unittest.TestCase):
             study.update_data_from_dataset_mapping(mapping)
 
     def test_10_repository_dataset_connector(self):
-        """
-        Some example to check repository datasets connector
-        """
+        """Some example to check repository datasets connector"""
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
 
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
@@ -495,7 +477,6 @@ class TestDatasets(unittest.TestCase):
             - design space with lists (DataFrame with string, list, and bool columns)
             - design space with arrays (DataFrame with string, array, list and bool columns)
         """
-
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -515,19 +496,13 @@ class TestDatasets(unittest.TestCase):
         - since dict[str: dict[str: float]] is jsonifiable it will be saved in the descriptor.json, and not pickled
         - since dataframe dumping is based on GUI method, it can dump design-space-like dataframes to csv, not pickled
         """
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
         connector_args = {
             "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test_nested/",
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(
             connector_identifier="MVP0_local_datasets_connector_copy_test_nested",
-            connector_type=DatasetConnectorType.get_enum_value("Local"),
+            connector_type="sostrades_core.datasets.datasets_connectors.Local_V0",
             **connector_args)
 
 
@@ -544,7 +519,7 @@ class TestDatasets(unittest.TestCase):
 
         try:
             connector_to.copy_dataset_from(connector_from=connector_local,
-                                           dataset_identifier=DatasetInfoV0(connector_local, "dataset_nested_types"),
+                                           dataset_identifier=DatasetInfoV0(str(connector_local), "dataset_nested_types"),
                                            data_types_dict=data_types_dict,
                                            create_if_not_exists=True)
 
@@ -560,16 +535,7 @@ class TestDatasets(unittest.TestCase):
             raise cm
 
     def test_13_export_with_repository_dataset_connector(self):
-        """
-        Some example to check repository datasets connector export
-        """
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
-
+        """Some example to check repository datasets connector export"""
         # create usecase with data
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
@@ -586,7 +552,7 @@ class TestDatasets(unittest.TestCase):
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_export_test",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V0",
                                                     **connector_args)
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_repository.json")
 
@@ -626,7 +592,6 @@ class TestDatasets(unittest.TestCase):
             raise
 
     def test_14_test_import_parameter_level(self):
-
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         # this
@@ -656,16 +621,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.Disc1.linearization_mode"), "auto")
 
     def test_15_test_export_parameter_level(self):
-        """
-        Some example to check repository datasets connector export
-        """
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
-
+        """Some example to check repository datasets connector export"""
         # create usecase with data
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         mapping_repo_file_path = os.path.join(test_data_folder, "test_92_mapping_repository.json")
@@ -682,15 +638,13 @@ class TestDatasets(unittest.TestCase):
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_export_test_param",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Local"),
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V0",
                                                     **connector_args)
         export_mapping_repo_file_path = os.path.join(test_data_folder, "test_92_export_mapping_param_level.json")
+        connector_export = DatasetsConnectorManager.get_connector('MVP0_local_export_test_param')
         try:
             study.export_data_from_dataset_mapping(DatasetsMapping.from_json_file(export_mapping_repo_file_path))
-
             dm = study.execution_engine.dm
-            connector_export = DatasetsConnectorManager.get_connector('MVP0_local_export_test_param')
-
             dataset_vars = ["a",
                             "x",
                             "b",
@@ -714,119 +668,11 @@ class TestDatasets(unittest.TestCase):
             connector_export.clear_connector()
             raise
 
-    def _test_16_bigquery_plain_types_export_import(self):
-        """
-        """
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
-        connector_args = {
-            "project_id": "gcp-businessplanet"
-        }
-        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_bigquery_connector_copy_test",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Bigquery"),
-                                                    **connector_args)
-
-
-        usecase_file_path = sostrades_core.sos_processes.test.test_disc1_all_types.usecase_dataset.__file__
-        process_path = os.path.dirname(usecase_file_path)
-        study = StudyManager(file_path=usecase_file_path)
-
-        dm = study.execution_engine.dm
-        connector_to = DatasetsConnectorManager.get_connector('MVP0_bigquery_connector_copy_test')
-        connector_json = DatasetsConnectorManager.get_connector('MVP0_datasets_connector')
-
-        dataset_vars = ["a",
-                        "x",
-                        "b",
-                        "name",
-                        "x_dict",
-                        "y_array",
-                        "z_list",
-                        "b_bool",
-                        "d"]
-
-        data_types_dict = {_k: dm.get_data(f"usecase_dataset.Disc1.{_k}", "type") for _k in dataset_vars}
-
-        connector_to.copy_dataset_from(connector_from=connector_json,
-                                       dataset_identifier=DatasetInfoV0(connector_json, "dataset_all_types"),
-                                       data_types_dict=data_types_dict,
-                                       create_if_not_exists=True)
-
-        study.update_data_from_dataset_mapping(
-            DatasetsMapping.from_json_file(os.path.join(process_path, "usecase_bigquery_dataset_copy_test.json")))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.a"), 1)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x"), 4.0)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b"), 2)
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.name"), "A1")
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.x_dict"), {"test1": 1, "test2": 2})
-        self.assertTrue(np.array_equal(dm.get_value("usecase_dataset.Disc1.y_array"), np.array([1.0, 2.0, 3.0])))
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.z_list"), [1.0, 2.0, 3.0])
-        self.assertEqual(dm.get_value("usecase_dataset.Disc1.b_bool"), False)
-        self.assertTrue((dm.get_value("usecase_dataset.Disc1.d") == pd.DataFrame(
-            {"years": [2023, 2024], "x": [1.0, 10.0]})).all().all())
-
-    def _test_17_bigquery_colum_name_characters_compatibility_on_dataframe_and_dict_tables(self):
-        """
-        """
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ""
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
-        connector_args = {
-            "project_id": "gcp-businessplanet"
-        }
-        DatasetsConnectorManager.register_connector(connector_identifier="MVP0_bigquery_connector_copy_test",
-                                                    connector_type=DatasetConnectorType.get_enum_value("Bigquery"),
-                                                    **connector_args)
-
-
-        connector_to = DatasetsConnectorManager.get_connector('MVP0_bigquery_connector_copy_test')
-        connector_from = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
-
-        data_types_dict = {"WITNESS_gdp": "dataframe",
-                           "dict_strange_keys": "dict"}
-
-        connector_to.copy_dataset_from(connector_from=connector_from,
-                                       dataset_identifier=DatasetInfoV0(connector_from, "dataset_df_bq"),
-                                       data_types_dict=data_types_dict,
-                                       create_if_not_exists=True)
-
-        data_values = connector_to.get_values(DatasetInfoV0('MVP0_bigquery_connector_copy_test', "dataset_df_bq"),
-                                              data_to_get=data_types_dict)
-
-        data_name = "WITNESS_gdp"
-        ref_df = pd.read_csv(os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                           "data", "local_datasets_db", "dataset_df_bq",
-                                                           data_name + ".csv")))
-
-        self.assertTrue((ref_df == data_values[data_name]).all().all())
-
-        dict_strange_keys = data_values["dict_strange_keys"]
-        dict_strange_keys_ref = {
-            "key1 (?)": "whatever",
-            "key2 #^/": "whatever"
-        }
-        self.assertEqual(dict_strange_keys_ref, dict_strange_keys)
-
     def test_19_json_V1_import(self):
         """
         Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
         thus testing ability of LocalConnector to both write and load values.
         """
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         # this
         json_db_path = os.path.join(test_data_folder, "test_92_datasets_db_v1.json")
@@ -835,7 +681,7 @@ class TestDatasets(unittest.TestCase):
 
         }
         DatasetsConnectorManager.register_connector(connector_identifier="json_v1_connector",
-                                                    connector_type=DatasetConnectorType.JSON_V1,
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.JSON_V1",
                                                     **connector_args)
         study = Study()
         dm = study.execution_engine.dm
@@ -863,19 +709,13 @@ class TestDatasets(unittest.TestCase):
         Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
         thus testing ability of LocalConnector to both write and load values.
         """
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         json_db_path = os.path.join(test_data_folder, "test_92_datasets_db_v1_test.json")
         connector_args = {
             "file_path": json_db_path
         }
         DatasetsConnectorManager.register_connector(connector_identifier="json_v1_connector",
-                                                    connector_type=DatasetConnectorType.JSON_V1,
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.JSON_V1",
                                                     **connector_args)
 
         connector_export = DatasetsConnectorManager.get_connector("json_v1_connector")
@@ -928,12 +768,6 @@ class TestDatasets(unittest.TestCase):
         Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
         thus testing ability of LocalConnector to both write and load values.
         """
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
 
         connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
@@ -943,7 +777,7 @@ class TestDatasets(unittest.TestCase):
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="json_v1_connector",
-                                                    connector_type=DatasetConnectorType.Local_V1,
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V1",
                                                     **connector_args)
 
         connector_export = DatasetsConnectorManager.get_connector("json_v1_connector")
@@ -1033,7 +867,6 @@ class TestDatasets(unittest.TestCase):
             - design space with lists (DataFrame with string, list, and bool columns)
             - design space with arrays (DataFrame with string, array, list and bool columns)
         """
-
         usecase_file_path = sostrades_core.sos_processes.test.test_disc1_nested_types.usecase_local_dataset.__file__
         process_path = os.path.dirname(usecase_file_path)
         study = StudyManager(file_path=usecase_file_path)
@@ -1044,7 +877,7 @@ class TestDatasets(unittest.TestCase):
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="local_datasets_V1",
-                                                    connector_type=DatasetConnectorType.Local_V1,
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V1",
                                                     **connector_args)
         local_connector_v1 = DatasetsConnectorManager.get_connector("local_datasets_V1")
 
@@ -1068,16 +901,13 @@ class TestDatasets(unittest.TestCase):
         local_connector_v1.clear_connector()
 
     def test_22_compatibility_V0_V1(self):
-        """
-        check that there is an error when we try to copy a dataset from connector V0 to connector V1
-        """
-
+        """Check that there is an error when we try to copy a dataset from connector V0 to connector V1"""
         connector_args = {
             "root_directory_path": "./sostrades_core/tests/data/local_test_22_import_V1/",
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="local_datasets_V1",
-                                                    connector_type=DatasetConnectorType.Local_V1,
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_V1",
                                                     **connector_args)
 
 
@@ -1085,7 +915,7 @@ class TestDatasets(unittest.TestCase):
         connector_from = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
         with self.assertRaises(DatasetGenericException):
             connector_to.copy_dataset_from(connector_from=connector_from,
-                                           dataset_identifier=DatasetInfoV1(connector_from, "dataset_all_types",
+                                           dataset_identifier=DatasetInfoV1(str(connector_from), "dataset_all_types",
                                                                             "test"),
                                            data_types_dict={},
                                            create_if_not_exists=True)
@@ -1097,14 +927,7 @@ class TestDatasets(unittest.TestCase):
         Test checks the capacity of the multi-version LocalFileSystem connector to maintain V0 and V1 functionalities,
         using v0v1 import and export.
         """
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_factory import (
-            DatasetConnectorType,
-        )
-        from sostrades_core.datasets.datasets_connectors.datasets_connector_manager import (
-            DatasetsConnectorManager,
-        )
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
-
         # create MV connector
         connector_args_v0 = {
             "root_directory_path": "./sostrades_core/tests/data/local_test_23_V0/",
@@ -1115,7 +938,7 @@ class TestDatasets(unittest.TestCase):
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="v0v1_connector",
-                                                    connector_type=DatasetConnectorType.Local_MV,
+                                                    connector_type="sostrades_core.datasets.datasets_connectors.Local_MV",
                                                     mono_version_connector_instantiation_fields={
                                                         "V0": connector_args_v0,
                                                         "V1": connector_args_v1,

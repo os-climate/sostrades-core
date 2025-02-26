@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/06/24 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,9 +33,8 @@ class CartesianProductSampleTypeError(SampleTypeError):
 
 
 class CartesianProductSampleGenerator(AbstractSampleGenerator):
-    '''
-    Caresian Product class that generates sampling
-    '''
+    '''Caresian Product class that generates sampling'''
+
     GENERATOR_NAME = "CARTESIAN_PRODUCT_GENERATOR"
 
     DIMENSION = "dimension"
@@ -47,9 +46,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
     N_SAMPLES = "n_samples"
 
     def __init__(self, logger: logging.Logger):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         super().__init__(self.GENERATOR_NAME, logger=logger)
 
     def _check_samples(self, samples_df):
@@ -77,8 +74,8 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
         Returns:
             samples_df (dataframe) : generated samples
-        '''
 
+        '''
         variable_list = dict_of_list_values.keys()
         vect_list = [dict_of_list_values[elem]
                      for elem in variable_list]
@@ -98,7 +95,8 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
         Method that reformat eval_input_cp depending on user's selection
 
         Arguments:
-            eval_inputs_cp (dataframe):
+            eval_inputs_cp (dataframe): dataframe containing evaluated inputs and their values for the Cartesian Product
+            wrapper (SoSWrapp): object in charge of the sampling
 
         Returns:
             dict_of_list_values (dict[list]) : dictionary {'var': [var_cp_values]} ignoring empty lists

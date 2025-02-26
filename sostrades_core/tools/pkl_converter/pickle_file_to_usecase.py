@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/06/11-2024/07/03 Copyright 2024 Capgemini
+Modifications on 2024/06/11-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -72,13 +72,16 @@ class UsecaseCreator:
             inputs_from_usecase=None,
 
     ) -> None:
-        """Class to generate usecase.py file and related input and output data from a pickle file
+        """
+        Class to generate usecase.py file and related input and output data from a pickle file
 
         Args:
             pkl_path (str): path of the pickle file to convert. The usecase.py and data folder will also be created in the same folder
             usecase_name (str): name of the generated usecase
             write_default_value (bool, optional): Option to write the parameter value into the usecase even if it is the default value. Defaults to False.
             write_outputs (bool, optional): Option to write csv of selected outputs parameters. Defaults to False.
+            inputs_from_usecase (str, optional): usecase to use as input
+
         """
         self.pkl_path = pkl_path
         self.usecase_name = usecase_name
@@ -187,7 +190,8 @@ if '__main__' == __name__:
         self.short_names_list = []
 
     def get_short_name(self, ns: str) -> str:
-        """Method to generate a short name to store the parameter
+        """
+        Method to generate a short name to store the parameter
         This is useful to avoid long name and path that can be a problem on windows with path limit
 
         Args:
@@ -195,6 +199,7 @@ if '__main__' == __name__:
 
         Returns:
             str: short parameter name generated
+
         """
         ns_clean = ns.replace('<study_ph>.', '')
         for i in range(1, len(ns.split('.')) + 1):
@@ -206,7 +211,8 @@ if '__main__' == __name__:
     def convert_to_string(
             self, key: str, value, dump_dir: str, short_name: str = None
     ) -> str:
-        """function to convert any parameter value to string.
+        """
+        function to convert any parameter value to string.
         if the value is too big as a string, it will generate a file (csv or json depending on the value type)
         and return the path to the file
 
@@ -218,6 +224,7 @@ if '__main__' == __name__:
 
         Returns:
             str: String to include in the usecase.py setting the value of the parameter
+
         """
         result_string = ""
         if isinstance(value, dict):
@@ -280,13 +287,15 @@ if '__main__' == __name__:
         return result_string
 
     def isEqual(self, value1, value2) -> bool:
-        """Equality between 2 values able to handle dataframe, dict or list
+        """
+        Equality between 2 values able to handle dataframe, dict or list
 
         Raises:
             Exception: Type error if the values given are not dataframe, dict or list
 
         Returns:
             bool: True if the 2 values are identical, False otherwise
+
         """
         if isinstance(value1, pd.DataFrame):
             if value1.equals(value2):
@@ -297,7 +306,8 @@ if '__main__' == __name__:
             raise Exception(f'Unkown type to compare: {type(value1)}')
 
     def write_file(self, dirName: str, fileName: str, value) -> None:
-        """Method to write a dataframe or dict as a file with a specific directory and filename
+        """
+        Method to write a dataframe or dict as a file with a specific directory and filename
 
         Args:
             dirName (str): directory path to write the file to
@@ -306,6 +316,7 @@ if '__main__' == __name__:
 
         Raises:
             Exception: Type error is the value given is neither a dataframe or a dict
+
         """
         filePath = join(dirName, fileName)
         if isinstance(value, pd.DataFrame):
@@ -321,7 +332,8 @@ if '__main__' == __name__:
             raise Exception(f'Unkown type to write: {type(value)}')
 
     def get_same_values(self, key: str) -> list:
-        """Method to retrieve parameter keys from the parameter to write that have the same exact value
+        """
+        Method to retrieve parameter keys from the parameter to write that have the same exact value
         All the parameter keys which share the same values are stored in the result list same_value_ns_list
 
         Args:
@@ -329,6 +341,7 @@ if '__main__' == __name__:
 
         Returns:
             list: Return same_value_ns_list representing all the parameters keys that have the same exact values as the input parameter key
+
         """
         same_value_ns_list = []
         compare_value = self.dm_dict_to_write[key]
@@ -339,7 +352,8 @@ if '__main__' == __name__:
         return same_value_ns_list
 
     def generate_same_values_dict(self) -> None:
-        """Method to look for identical values used several times across the dm
+        """
+        Method to look for identical values used several times across the dm
         This is useful to avoid huge generated usecase.py or duplicated csv or json files
         This check is only happening for parameter types Dataframe, dict and list
         The results is stored in the dict self.same_value_dict.
@@ -381,7 +395,8 @@ if '__main__' == __name__:
                         already_checked.append(ns_same_value)
 
     def load_from_file(self, dirName: str, fileName: str, value, key: str) -> str:
-        """Method to save a Dataframe or dict as a file in the dirName directory
+        """
+        Method to save a Dataframe or dict as a file in the dirName directory
         with the name fileName and return the string to put into the usecase.py to
         load this file in the usecase
 
@@ -396,6 +411,7 @@ if '__main__' == __name__:
 
         Returns:
             str: string to load the relevant file to add in the usecase.py
+
         """
         already_exists = False
         filePath = join(dirName, fileName)
@@ -437,7 +453,8 @@ if '__main__' == __name__:
             return f"json.load(open(join(self.data_dir,'{fileName}')))"
 
     def get_converter_string(self, df):
-        """Method to build a string with the appropriate converter dict
+        """
+        Method to build a string with the appropriate converter dict
         For some dataframe with elements that are lists, the read_csv function
         returns a string instead of a list if a converter is not specified.
         This method checks if such a conversion is needed for a given df and
@@ -461,11 +478,11 @@ if '__main__' == __name__:
         return str_eval
 
     def filter_dm(self) -> None:
-        """Method to fill out the dict self.dm_dict_to_write from the DataManager with only the input parameters values
+        """
+        Method to fill out the dict self.dm_dict_to_write from the DataManager with only the input parameters values
         that are not in the ignore_list and the dict self.outputs_to_write with theselected output parameters
         if the option to write outputs is selected
         """
-
         for key in sorted(self.dm_data_dict.keys()):
             data_dict = self.dm_data_dict[key]
             if (
@@ -495,7 +512,8 @@ if '__main__' == __name__:
                 self.outputs_to_write[key] = data_dict['value']
 
     def filter_dm_from_other_usecase(self) -> None:
-        """Method to fill out the dict self.dm_dict_to_write from the DataManager using
+        """
+        Method to fill out the dict self.dm_dict_to_write from the DataManager using
         a list of inputs from another process
         """
         merged_setup_dict = {}
@@ -582,7 +600,6 @@ if '__main__' == __name__:
 
     def pickle_file_to_usecase(self) -> None:
         """Main method to generate the usecase.py file and the associated data"""
-
         if not self.study_to_match:
             self.filter_dm()
         else:

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/27-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/10/27-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,9 +23,7 @@ from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
 
 
 class ValueBlockDiscipline(GatherDiscipline):
-    """
-    Generic Value Block Discipline getting children outputs as inputs and gathering them as outputs
-    """
+    """Generic Value Block Discipline getting children outputs as inputs and gathering them as outputs"""
 
     # ontology information
     _ontology_data = {

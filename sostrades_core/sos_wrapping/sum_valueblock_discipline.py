@@ -23,9 +23,7 @@ from sostrades_core.tools.sumdfdict.toolboxsum import toolboxsum
 
 
 class SumValueBlockDiscipline(ValueBlockDiscipline):
-    """
-    Generic Sum Value Block Discipline to sum outputs of its children
-    """
+    """Generic Sum Value Block Discipline to sum outputs of its children"""
 
     # ontology information
     _ontology_data = {
@@ -43,9 +41,7 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
 
     def build_dynamic_io(self):
-        """
-        The sum is stored in the same name as the inputs found in the children_list
-        """
+        """The sum is stored in the same name as the inputs found in the children_list"""
         dynamic_inputs, dynamic_outputs = super().build_dynamic_io()
         self.input_to_sum = {}
 
@@ -150,7 +146,6 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
 
     def modify_df(self, df_to_modify, col_list, df_dict_to_merge):
         '''Function to take some columns from the df_gather to give them to df_ac_name'''
-
         for key, values_df in df_dict_to_merge.items():
             if len(key.split('.')) == 1:
                 for col in col_list:

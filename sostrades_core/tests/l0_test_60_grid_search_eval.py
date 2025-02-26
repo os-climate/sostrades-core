@@ -24,9 +24,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class UnitTestHandler(Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         Handler.__init__(self)
@@ -37,14 +35,10 @@ class UnitTestHandler(Handler):
 
 
 class TestGridSearchEval(unittest.TestCase):
-    """
-    SoSGridSearchEval test class
-    """
+    """SoSGridSearchEval test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         pd.set_option('display.max_columns', 10)
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
@@ -387,7 +381,8 @@ class TestGridSearchEval(unittest.TestCase):
         # graph.to_plotly().show()
 
     def test_04_grid_search_status(self):
-        """ This tests aims at proving the ability of grid search
+        """
+        This tests aims at proving the ability of grid search
         discipline to have the proper status after it has run
         """
         self.ns = f'{self.study_name}'

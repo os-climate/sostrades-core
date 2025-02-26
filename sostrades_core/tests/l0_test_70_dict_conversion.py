@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,9 +30,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
 
 
 class TestExtendString(unittest.TestCase):
-    """
-    Extend string type for GEMSEO test class
-    """
+    """Extend string type for GEMSEO test class"""
 
     def setUp(self):
         self.dirs_to_del = []
@@ -46,11 +44,11 @@ class TestExtendString(unittest.TestCase):
             'Disc', mod_list)
 
     def test_01_simple_dict_conversion(self):
-        """ This test proves the ability to convert simple dict
+        """
+        This test proves the ability to convert simple dict
         {'dict':'float'}, {'dict':'dataframe'} ... into array and
         to reconvert it back afterward
         """
-
         builder = self.disc_builder
 
         # Set builder in factory and configure
@@ -108,11 +106,11 @@ class TestExtendString(unittest.TestCase):
                 assert_array_equal(conversion_back[key_inner], dict_array[key_inner])
 
     def test_02_recursive_dict_conversion(self):
-        """ This test proves the ability to convert recursive  dict
+        """
+        This test proves the ability to convert recursive  dict
         {'dict':{'dict':'float'}}, {'dict':{'dict':'dataframe'}}... into array and
                 to reconvert it back afterward
         """
-
         builder = self.disc_builder
 
         # Set builder in factory and configure
@@ -163,11 +161,11 @@ class TestExtendString(unittest.TestCase):
                                        check_dtype=False)
 
     def test_03_recursive_dict_list_conversion(self):
-        """ This test proves the ability to convert recursive  dict of list
+        """
+        This test proves the ability to convert recursive  dict of list
         {'dict':{'list':'float'}}, {'dict':{'list':'dataframe'}}... into array and
                 to reconvert it back afterward
         """
-
         builder = self.disc_builder
 
         # Set builder in factory and configure

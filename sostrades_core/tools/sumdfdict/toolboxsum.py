@@ -23,14 +23,10 @@ import pandas as pd
 
 
 class toolboxsum(object):
-    '''
-    Tool box with sum methods
-    '''
+    '''Tool box with sum methods'''
 
     def __init__(self):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         self.sum_df = None
         self.sum_dict_dict = None
 
@@ -81,10 +77,7 @@ class toolboxsum(object):
         return sum_df, resource_percent
 
     def compute_sum_dict_dict_float(self, dict_to_sum):
-        """
-        Method to compute sum of dict of dict of float
-        """
-
+        """Method to compute sum of dict of dict of float"""
         # init the dict
         self.sum_dict_dict = {}
         for dict_1 in dict_to_sum.values():

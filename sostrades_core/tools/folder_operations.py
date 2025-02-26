@@ -22,7 +22,8 @@ from pathlib import Path
 
 
 def rmtree_safe(path: Path | str, retry: int = 100) -> None:
-    """Remove a directory tree, and wait for confirmation.
+    """
+    Remove a directory tree, and wait for confirmation.
 
     Useful to fix some issues with shutil.rmtree with network drives.
 
@@ -32,6 +33,7 @@ def rmtree_safe(path: Path | str, retry: int = 100) -> None:
 
     Raises:
         RuntimeError: If the removal fails after the maximum number of retries.
+
     """
     path = Path(path).resolve()
     shutil.rmtree(path)
@@ -47,7 +49,8 @@ def rmtree_safe(path: Path | str, retry: int = 100) -> None:
 
 
 def makedirs_safe(name: str | Path, mode: int = 511, exist_ok: bool = False, retry: int = 100) -> None:
-    """Make a directory, but wait until it is really created.
+    """
+    Make a directory, but wait until it is really created.
 
     Useful to fix some issues with Path.makedirs with network drives.
 
@@ -59,6 +62,7 @@ def makedirs_safe(name: str | Path, mode: int = 511, exist_ok: bool = False, ret
 
     Raises:
         RuntimeError: If the directory creation fails after the maximum number of retries.
+
     """
     dir_path = Path(name).resolve()
     dir_path.mkdir(mode=mode, exist_ok=exist_ok, parents=True)

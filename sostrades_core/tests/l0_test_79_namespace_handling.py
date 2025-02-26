@@ -30,9 +30,7 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestNamespaceHandling(unittest.TestCase):
-    """
-    Namespace handling test class
-    """
+    """Namespace handling test class"""
 
     def setUp(self):
         self.dirs_to_del = []

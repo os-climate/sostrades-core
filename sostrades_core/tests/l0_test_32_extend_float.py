@@ -31,9 +31,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
 
 
 class TestExtendFloat(unittest.TestCase):
-    """
-    Extend float type for GEMSEO test class
-    """
+    """Extend float type for GEMSEO test class"""
 
     def setUp(self):
         self.name = 'study'

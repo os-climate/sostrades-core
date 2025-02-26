@@ -26,13 +26,16 @@ LOGGER = logging.getLogger("gemseo.addons.grammars.sos_simple_grammar")
 
 
 class SoSSimpleGrammar(SimplerGrammar):
-    """Store the names and types of the elements as Python lists.
+    """
+    Store the names and types of the elements as Python lists.
 
     Attributes:
         data_names (List[str]): The names of the elements.
         data_types (List[type]): The types of the elements,
             stored in the same order as ``data_names``.
+
     """
+
     DATA_CONVERTER_CLASS: ClassVar[str] = "SoSTradesDataConverter"
 
     def update_defaults(self, defaults: dict):

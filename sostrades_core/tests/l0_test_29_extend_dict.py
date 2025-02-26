@@ -32,9 +32,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
 
 
 class TestExtendDict(unittest.TestCase):
-    """
-    Extend dict type for GEMSEO test class
-    """
+    """Extend dict type for GEMSEO test class"""
 
     def setUp(self):
         self.name = 'EE'

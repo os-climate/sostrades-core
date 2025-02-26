@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ Class that define a pareto front optimal chart display as post post processing
 
 
 class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
-    """ Class that define pareto front optimal chart display as post post processing
-    """
+    """Class that define pareto front optimal chart display as post post processing"""
 
     def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
                  primary_ordinate_axis_range=[], chart_name=''):
-        """ Create a new chart definition
+        """
+        Create a new chart definition
 
         :params: abscissa_axis_name : string that contains chart abscissa axis name
         :type: str
@@ -70,7 +70,8 @@ class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
         self.annotation_upper_right = {}
 
     def __add_serie_to_chart(self, serie):
-        """ Private method to add serie to current pareto chart
+        """
+        Private method to add serie to current pareto chart
 
         :params: serie, serie instance to add
         :type: InstanciatedSeries
@@ -82,7 +83,8 @@ class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
                 f'given series has the wrong type, {type(serie)} instead of InstanciatedSeries')
 
     def add_serie(self, serie):
-        """ Method to add scatter serie
+        """
+        Method to add scatter serie
 
         :params: serie, serie instance to add
         :type: InstanciatedSeries
@@ -96,7 +98,8 @@ class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
                 f' different of scatter : {serie.display_type}')
 
     def add_pareto_front_optimal(self, serie):
-        """ Method to add line serie, corresponding to pareto optimal front
+        """
+        Method to add line serie, corresponding to pareto optimal front
 
         :params: serie, serie instance to add
         :type: InstanciatedSeries
@@ -110,14 +113,14 @@ class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
                 f'different of lines : {serie.display_type}')
 
     def to_plotly(self, logger=None):
-        """ Convert current instance into a plotly object
+        """
+        Convert current instance into a plotly object
 
         @param logger: logging object to log message
         @type Logging.logger
 
         @return plotly.graph_objects.go instance
         """
-
         fig = go.Figure()
 
         # Manage series to be added into plotly object
@@ -212,7 +215,8 @@ class InstantiatedParetoFrontOptimalChart(AbstractPostProcessingPlotlyTooling):
         self.set_csv_data(csv_list)
 
     def to_plotly_dict(self, logger=None):
-        """ Method that convert current instance to plotly object and then to a dictionary
+        """
+        Method that convert current instance to plotly object and then to a dictionary
 
         @param logger: logger instance
         @type Logging.loger

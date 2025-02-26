@@ -42,9 +42,7 @@ class BFGSFDHessian():
         return H
 
     def hess_f(self, x):
-        """
-        Compute hessian BFGS approximation
-        """
+        """Compute hessian BFGS approximation"""
         self.__scheme.set_x(x)
         self.__scheme.generate_samples()
         H = np.eye(len(x))
@@ -59,9 +57,7 @@ class BFGSFDHessian():
         return H
 
     def vect_hess_f(self, x):
-        """
-        Vectorized hessian computation
-        """
+        """Vectorized hessian computation"""
         self.__scheme.set_x(x)
         self.__scheme.generate_samples()
 

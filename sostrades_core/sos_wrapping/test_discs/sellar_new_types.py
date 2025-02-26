@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ Adapted from GEMSEO examples
 
 
 class SellarProblem(SoSWrapp):
-    """ Sellar Optimization Problem functions
-    """
+    """Sellar Optimization Problem functions"""
+
     _maturity = 'Fake'
     DESC_IN = {
         'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 'visibility': SoSWrapp.SHARED_VISIBILITY,
@@ -46,8 +46,7 @@ class SellarProblem(SoSWrapp):
                 'obj': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ computes
-        """
+        """Computes"""
         x, y_1, y_2, z = self.get_sosdisc_inputs(['x', 'y_1', 'y_2', 'z'])
         local_dv = self.get_sosdisc_inputs('local_dv')
 
@@ -60,7 +59,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def obj(x, z, y_1, y_2):
-        """Objective function
+        """
+        Objective function
 
         :param x: local design variables
         :type x: numpy.array
@@ -79,7 +79,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def c_1(y_1):
-        """First constraint on system level
+        """
+        First constraint on system level
 
         :param y_1: coupling variable from discipline 1
         :type y_1: numpy.array
@@ -90,7 +91,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def c_2(y_2):
-        """Second constraint on system level
+        """
+        Second constraint on system level
 
         :param y_2: coupling variable from discipline 2
         :type y_2: numpy.array
@@ -135,8 +137,8 @@ class SellarProblem(SoSWrapp):
 
 
 class Sellar1Df(SoSWrapp):
-    """ Discipline 1
-    """
+    """Discipline 1"""
+
     _maturity = 'Fake'
     DESC_IN = {'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'y_2': {'type': 'dataframe', 'visibility': SoSWrapp.SHARED_VISIBILITY,
@@ -147,8 +149,7 @@ class Sellar1Df(SoSWrapp):
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ Discipline 1 execution
-        """
+        """Discipline 1 execution"""
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
         y1_out = {'y_1': y_1}
@@ -156,7 +157,8 @@ class Sellar1Df(SoSWrapp):
 
     @staticmethod
     def compute_y_1(x, y_2, z):
-        """Solve the first coupling equation in functional form.
+        """
+        Solve the first coupling equation in functional form.
 
         :param x: vector of design variables local to discipline 1
         :type x: numpy.array
@@ -185,7 +187,6 @@ class Sellar1Df(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         z = self.get_sosdisc_inputs('z')
 
         lines_nb = len(np.arange(1, 5))
@@ -200,8 +201,7 @@ class Sellar1Df(SoSWrapp):
 
 
 class Sellar2Df(SoSWrapp):
-    """ Discipline 2
-    """
+    """Discipline 2"""
 
     # ontology information
     _ontology_data = {
@@ -225,8 +225,7 @@ class Sellar2Df(SoSWrapp):
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ solves Discipline1
-        """
+        """Solves Discipline1"""
         y_1, z = self.get_sosdisc_inputs(['y_1', 'z'])
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': y_2}
@@ -234,7 +233,8 @@ class Sellar2Df(SoSWrapp):
 
     @staticmethod
     def compute_y_2(y_1, z):
-        """Solve the second coupling equation in functional form.
+        """
+        Solve the second coupling equation in functional form.
 
         :param z: vector of shared design variables
         :type z: numpy.array
@@ -243,7 +243,6 @@ class Sellar2Df(SoSWrapp):
         :returns: coupling variable y_2
         :rtype: float
         """
-
         out = pd.DataFrame({'years': np.arange(1, 5), 'value': 0.0})
         y_1['years'] = y_1['years'].astype('int64')
 

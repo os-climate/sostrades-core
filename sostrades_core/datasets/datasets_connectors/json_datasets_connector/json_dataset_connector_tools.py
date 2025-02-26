@@ -30,6 +30,7 @@ class JSONDatasetsConnectorTools():
         Args:
             file_path (str): The path to the JSON file.
             create_if_not_exists (bool): Whether to create the file if it does not exist.
+
         """
         self.__file_path = file_path
         # create file if not exist
@@ -47,6 +48,7 @@ class JSONDatasetsConnectorTools():
 
         Raises:
             DatasetGenericException: If the JSON file is not found.
+
         """
         json_data = {}
         db_path = self.__file_path
@@ -67,6 +69,7 @@ class JSONDatasetsConnectorTools():
 
         Raises:
             DatasetGenericException: If the JSON file is not found.
+
         """
         db_path = self.__file_path
         if not os.path.exists(db_path):

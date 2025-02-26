@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/23-2024/07/04 Copyright 2023 Capgemini
+Modifications on 2023/06/23-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -51,36 +51,42 @@ FILE_URL = "file:///"
 
 
 def strip_study_from_namespace(ns_name: str) -> str:
-    """Remove the study name from the namespace name.
+    """
+    Remove the study name from the namespace name.
 
     Args:
         ns_name: The name of the namespace.
 
     Returns:
         The name of the namespace, without the sutdy name.
+
     """
     study_name = get_study_from_namespace(ns_name)
     return ns_name.replace(study_name + NS_SEP, "")
 
 
 def get_study_from_namespace(ns_name: str) -> str:
-    """Get the study name from the namespace name.
+    """
+    Get the study name from the namespace name.
 
     Args:
         ns_name: The name of the namespace.
 
     Returns:
         The study name.
+
     """
     return ns_name.split(NS_SEP)[0]
 
 
 def generate_unique_data_csv(data_dict: dict[str, Any], csv_file_path: str | Path) -> None:
-    """Writes a data dictionary to a csv file.
+    """
+    Writes a data dictionary to a csv file.
 
     Args:
         data_dict: The dictionary to write.
         csv_file_path: The target file path.
+
     """
     # Convert data to dataframe regarding its type
     df_data = DataSerializer.convert_data_to_dataframe(data_dict)
@@ -115,13 +121,15 @@ class DataSerializer:
         self.check_db_dir()
 
     def set_strategy_method(self, rw_strat: AbstractLoadDump | None) -> None:
-        """Set load/dump strategy method.
+        """
+        Set load/dump strategy method.
 
         Args:
             rw_strat: The strategy to set.
 
         Raises:
             TypeError: If the strategy does not inherit from AbstractLoadDump.
+
         """
         if rw_strat is None:
             rw_strat = self.default_persistance_strategy()
@@ -141,68 +149,79 @@ class DataSerializer:
             makedirs_safe(self.dm_db_root_dir, exist_ok=True)
 
     def is_structured_data_type(self, data: Any) -> bool:
-        """Check whether the data is a structured type.
+        """
+        Check whether the data is a structured type.
 
         Args:
             data: The data to check.
 
         Returns:
             Whether the data is a structured type.
+
         """
         return isinstance(data, (ndarray, list, DataFrame, dict))
 
     @staticmethod
     def study_data_manager_file_path(study_to_load: Path | str) -> Path:
-        """Get the file path to the dm.pkl file.
+        """
+        Get the file path to the dm.pkl file.
 
         Args:
             study_to_load: The study directory.
 
         Returns:
             The path to the dm.pkl file.
+
         """
         return Path(study_to_load) / DataSerializer.pkl_filename
 
     @staticmethod
     def study_disciplines_status_file_path(study_to_load: Path | str):
-        """Get the file path to the disciplines_status.pkl file.
+        """
+        Get the file path to the disciplines_status.pkl file.
 
         Args:
             study_to_load: The study directory.
 
         Returns:
             The path to the discipline_status.pkl file.
+
         """
         return Path(study_to_load) / DataSerializer.disc_status_filename
 
     @staticmethod
     def study_cache_file_path(study_to_load: Path | str):
-        """Get the file path to the cache.pkl file.
+        """
+        Get the file path to the cache.pkl file.
 
         Args:
             study_to_load: The study directory.
 
         Returns:
             _description_.
+
         """
         return Path(study_to_load) / DataSerializer.cache_filename
 
     def dump_disc_status_dict(
         self, study_to_load: Path | str, rw_strategy: AbstractLoadDump, status_dict: dict[str, Any]
     ) -> None:
-        """Export disciplines status into binary file (containing disc/status info into dictionary).
+        """
+        Export disciplines status into binary file (containing disc/status info into dictionary).
 
         Args:
             study_to_load: The study directory.
             rw_strategy: The read/write strategy to use.
             status_dict: The status dictionary to write.
+
         """
         status_dict_f = Path(study_to_load) / self.disc_status_filename
 
         rw_strategy.dump(status_dict, status_dict_f)
 
     def load_cache_dict(self, study_to_load: Path | str, rw_strategy: AbstractLoadDump) -> dict[str, Any] | None:
-        """Load disciplines cache from binary file (containing disc/status info into dictionary).
+        """
+        Load disciplines cache from binary file (containing disc/status info into dictionary).
 
         Args:
             study_to_load: The study directory.
@@ -210,12 +229,14 @@ class DataSerializer:
 
         Returns:
             The discipline cache dictionary, or None if no cache pickle file is found.
+
         """
         cache_dict_f = self.get_dm_file(study_to_load=study_to_load, file_type=self.cache_filename)
         return rw_strategy.load(cache_dict_f) if cache_dict_f is not None else None
 
     def load_disc_status_dict(self, study_to_load: Path | str, rw_strategy: AbstractLoadDump):
-        """Load disciplines status from binary file (containing disc/status info into dictionary).
+        """
+        Load disciplines status from binary file (containing disc/status info into dictionary).
 
         Args:
             study_to_load: The study directory.
@@ -223,13 +244,15 @@ class DataSerializer:
 
         Returns:
             The discipline status dictionary.
+
         """
         status_dict_f = self.get_dm_file(study_to_load=study_to_load, file_type=self.disc_status_filename)
 
         return rw_strategy.load(status_dict_f)
 
     def export_data_dict_to_csv(self, origin_dict: dict[str, Any], export_dir: Path | str) -> DataFrame:
-        """Export values and units of the whole DM data_dict to a csv file.
+        """
+        Export values and units of the whole DM data_dict to a csv file.
 
         Args:
             origin_dict: The dictionary to export.
@@ -237,6 +260,7 @@ class DataSerializer:
 
         Returns:
             The dataframe created from the dictionary.
+
         """
         data_df = DataFrame(columns=["unit", "value"])
         for key, val in origin_dict.items():
@@ -250,7 +274,8 @@ class DataSerializer:
         return data_df.where(data_df.notnull(), None)
 
     def export_data_dict_and_zip(self, origin_dict: dict[str | Any], export_dir: Path | str) -> Path:
-        """Export values and units of the whole DM data_dict to csv file and zip.
+        """
+        Export values and units of the whole DM data_dict to csv file and zip.
 
         Args:
             origin_dict: The dictionary to export.
@@ -258,6 +283,7 @@ class DataSerializer:
 
         Returns:
             The path to the zip file.
+
         """
         export_dir = Path(export_dir)
         if not export_dir.is_dir():
@@ -277,7 +303,8 @@ class DataSerializer:
         rw_strategy,
         just_return_data_dict=False,
     ):
-        """Load a pickled file to a dict
+        """
+        Load a pickled file to a dict
         according to serialisation strategy (pickled dataframe or pickled raw dict data)
         and update data_dict with this data
         loop on the items of this dict
@@ -288,7 +315,8 @@ class DataSerializer:
         loaded_dict = rw_strategy.load(self.dm_pkl_file)
 
         def is_variable_wo_studyname_exists(var, a_d):
-            """Check if variable exists in data dict
+            """
+            Check if variable exists in data dict
             by ignoring the study name, i.e. the first element splitted by .
             """
             key_wo_st = strip_study_from_namespace(var)
@@ -314,7 +342,8 @@ class DataSerializer:
                 raise KeyError(msg)
 
     def get_dm_file(self, study_to_load: Path | str, file_type: str | None = None) -> Path | None:
-        """Return the path of the file containing data for a given study.
+        """
+        Return the path of the file containing data for a given study.
 
         Args:
             study_to_load: The directory of the study to load.
@@ -327,6 +356,7 @@ class DataSerializer:
 
         Returns:
             The path of the data file, or None if no file was found and the file type was `cache`.
+
         """
         if file_type is None:
             file_type = self.pkl_filename
@@ -355,30 +385,36 @@ class DataSerializer:
         return dm_files[0]
 
     def set_dm_pkl_files(self, study_to_load: Path | str) -> None:
-        """Sets the path of the study pickle file.
+        """
+        Sets the path of the study pickle file.
 
         Args:
             study_to_load: The study directory.
+
         """
         self.dm_pkl_file = self.get_dm_file(study_to_load=study_to_load)
 
     def set_dm_val_files(self, study_to_load: Path | str) -> None:
-        """Sets the path of the study value file.
+        """
+        Sets the path of the study value file.
 
         Args:
             study_to_load: The study directory.
+
         """
         self.dm_val_file = self.get_dm_file(study_to_load=study_to_load, file_type=self.val_filename)
 
     def put_dict_from_study(
         self, study_to_load: Path | str, rw_strategy: AbstractLoadDump, data_dict: dict[str, Any]
     ) -> None:
-        """Write a dictionary to a pickle file.
+        """
+        Write a dictionary to a pickle file.
 
         Args:
             study_to_load: The directory where to write the file.
             rw_strategy: The read/write strategy to use.
             data_dict: The dictionary to write.
+
         """
         study_to_load = Path(study_to_load)
         if not study_to_load.is_dir():
@@ -391,12 +427,14 @@ class DataSerializer:
         rw_strategy.dump(data_dict, self.dm_pkl_file)
 
     def put_cache_from_study(self, study_to_load: Path | str, rw_strategy: AbstractLoadDump, cache_map: dict[str, Any]):
-        """Write a cache to a pickle file.
+        """
+        Write a cache to a pickle file.
 
         Args:
             study_to_load: The directory where to write the file.
             rw_strategy: The read/write strategy to use.
             cache_map: The cache data to write.
+
         """
         study_to_load = Path(study_to_load)
         if not study_to_load.is_dir():
@@ -409,7 +447,8 @@ class DataSerializer:
         rw_strategy.dump(cache_map, self.cache_file)
 
     def get_dict_from_study(self, study_to_load: Path | str, rw_strategy: AbstractLoadDump) -> dict[str, Any]:
-        """Load a pickle file from a location and return a dictionary updated with loaded info.
+        """
+        Load a pickle file from a location and return a dictionary updated with loaded info.
 
         Args:
             study_to_load: The study directory.
@@ -420,6 +459,7 @@ class DataSerializer:
 
         Returns:
             The data dictionary.
+
         """
         self.set_dm_pkl_files(study_to_load)
         return_data_dict = {}
@@ -430,7 +470,8 @@ class DataSerializer:
         return return_data_dict
 
     def get_data_dict_from_pickle(self) -> dict[str, Any]:
-        """Read data from pickled file.
+        """
+        Read data from pickled file.
 
         No need to get the unique pickle dm file path, it should exist already.
         """
@@ -438,13 +479,15 @@ class DataSerializer:
 
     @staticmethod
     def convert_data_to_dataframe(data: DataFrame | list | ndarray | dict[str, Any] | float | int) -> DataFrame:
-        """Convert data to DataFrame.
+        """
+        Convert data to DataFrame.
 
         Args:
             data: The data to convert.
 
         Returns:
             A dataframe containing the data.
+
         """
         if isinstance(data, DataFrame):
             df_data = data
@@ -499,7 +542,8 @@ class DataSerializer:
     def convert_to_dataframe_and_bytes_io(
         self, param_values: DataFrame | list | ndarray | dict[str, Any] | float | int, param_key: str
     ) -> BytesIO:
-        """Convert a parameter to a dataframe, and then to a BytesIO object.
+        """
+        Convert a parameter to a dataframe, and then to a BytesIO object.
 
         Args:
             param_values: The parameter values.
@@ -507,12 +551,14 @@ class DataSerializer:
 
         Returns:
             A BytesIO object containing the parameter values.
+
         """
         df_data = self.convert_data_to_dataframe(param_values)
         return self.convert_to_bytes_io(df_data, param_key)
 
     def convert_model_table_to_df_and_bytes_io(self, model_table, param_key: str):
-        """Convert a model table to a dataframe, and then to a BytesIO object.
+        """
+        Convert a model table to a dataframe, and then to a BytesIO object.
 
         Args:
             model_table: The model_table to convert.
@@ -520,23 +566,27 @@ class DataSerializer:
 
         Returns:
             A BytesIO object containing the model table.
+
         """
         df_data = DataFrame(model_table[1:], columns=model_table[0])
         return self.convert_to_bytes_io(df_data, param_key)
 
     def convert_model_table_to_df(self, model_table):
-        """Convert a model table to a dataframe.
+        """
+        Convert a model table to a dataframe.
 
         Args:
             model_table: The model_table to convert.
 
         Returns:
             A dataframe containing the model table.
+
         """
         return DataFrame(model_table[1:], columns=model_table[0])
 
     def convert_to_bytes_io(self, df_data: DataFrame, data_key: str):
-        """Export data as a DataFrame using buffered I/O streams.
+        """
+        Export data as a DataFrame using buffered I/O streams.
 
         Args:
             df_data: The dataframe to export.
@@ -547,6 +597,7 @@ class DataSerializer:
 
         Returns:
             A BytesIO object containing the data.
+
         """
         try:
             df_stream = StringIO()

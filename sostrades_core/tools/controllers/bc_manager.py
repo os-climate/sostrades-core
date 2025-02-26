@@ -85,9 +85,7 @@ class BCManager(CManager):
         return info_string
 
     def add(self, BCpt, check=True):
-        """
-        add a base controller
-        """
+        """Add a base controller"""
         ERROR_MSG = self.ERROR_MSG + '.add: '
         CManager.add(self, BCpt, check=check)
         if BCpt.get_BCType() == 'DesignVariable':
@@ -101,9 +99,7 @@ class BCManager(CManager):
                                 str(BCpt.get_id()) + ', design variable already exists!')
 
     def delete(self, Id):
-        """
-        delete a base controller
-        """
+        """Delete a base controller"""
         pointer = self.get_pt(Id)
         CManager.delete(self, Id)
         if pointer.get_BCType() == 'DesignVariable':
@@ -129,9 +125,7 @@ class BCManager(CManager):
         return Dict
 
     def get_dv_pt(self, Id):
-        """
-        return pointer to element from base element id
-        """
+        """Return pointer to element from base element id"""
         ERROR_MSG = self.ERROR_MSG + 'get_dv_pt: '
         if Id in self.__DV_id:
             index = self.__DV_id.index(Id)
@@ -216,9 +210,7 @@ class BCManager(CManager):
         print(info_string)
 
     def import_from_file(self, filename, namespace=None):
-        """
-        Create base controllers from a file
-        """
+        """Create base controllers from a file"""
         ERROR_MSG = self.ERROR_MSG + 'import_from_file: '
         # - Open file and read all lines
         fid = open(filename, 'r')
@@ -264,9 +256,7 @@ class BCManager(CManager):
         del all_lines
 
     def get_variables_id_list(self):
-        """
-        Returns the list of ids of variables in BC manager
-        """
+        """Returns the list of ids of variables in BC manager"""
         var_list = [
             controller.get_id()
             for controller in self.get_list_pt()
@@ -275,9 +265,7 @@ class BCManager(CManager):
         return var_list
 
     def export_to_file(self, filename):
-        """
-        Export BaseControllers to a file
-        """
+        """Export BaseControllers to a file"""
         # lists to store controllers by type
         variable_list = []
         design_variable_list = []
@@ -340,9 +328,7 @@ class BCManager(CManager):
         fid.close()
 
     def update_from_file(self, filename):
-        """
-        update base controller from file
-        """
+        """Update base controller from file"""
         ERROR_MSG = self.ERROR_MSG + 'update_from_file: '
         # - Open file and store all lines in memory
         fid = open(filename, 'r')
@@ -422,9 +408,7 @@ class BCManager(CManager):
         self.update(check_deps=False)
 
     def update_dv_from_normalized_x_list(self, x_norm):
-        """
-        Update design variable vector from normalized x list
-        """
+        """Update design variable vector from normalized x list"""
         ERROR_MSG = self.ERROR_MSG + 'update_dv_from_normalized_x_list: '
         if len(x_norm) != self.get_ndv():
             raise Exception(
@@ -442,9 +426,7 @@ class BCManager(CManager):
         return output_grad
 
     def update_dv_from_file(self, filename, covert_to_variable=False):
-        """
-        Update design variables from a design variables file
-        """
+        """Update design variables from a design variables file"""
         ERROR_MSG = self.ERROR_MSG + 'update_dv_from_file: '
         # - Open file and store all lines in memory
         fid = open(filename, 'r')
@@ -475,9 +457,7 @@ class BCManager(CManager):
         del all_lines
 
     def export_dv_to_file(self, filename):
-        """
-        Export design variable to a file
-        """
+        """Export design variable to a file"""
         # - File object creation
         all_lines = []
         all_lines.append('# Design variables file generate from PADGE \n')

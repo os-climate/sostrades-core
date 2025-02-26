@@ -22,8 +22,7 @@ Post processing bundle model
 
 
 class PostProcessingBundle:
-    """ Class that hold filter and post processing bundle
-    """
+    """Class that hold filter and post processing bundle"""
 
     NAME = 'name'
     DISCIPLINE_NAME = 'discipline_name'
@@ -31,7 +30,8 @@ class PostProcessingBundle:
     POST_PROCESSINGS = 'post_processings'
 
     def __init__(self, name, discipline_name, filters, post_processings):
-        """ Constructor
+        """
+        Constructor
 
         :params: name, name of current post processings bundle
         :type: str
@@ -43,7 +43,6 @@ class PostProcessingBundle:
         :type: post processing*[]
 
         """
-
         self.name = name
         self.discipline_name = discipline_name
         self.filters = filters
@@ -54,9 +53,7 @@ class PostProcessingBundle:
         return len(self.filters) > 0
 
     def __repr__(self):
-        """ Overload of the class representation
-        """
-
+        """Overload of the class representation"""
         series_string = [f'\nname: {self.name}',
                          f'discipline_name: {self.discipline_name}',
                          f'filters: {self.filters}',
@@ -66,9 +63,7 @@ class PostProcessingBundle:
         return '\n'.join(series_string)
 
     def to_dict(self):
-        """ Method that serialize as dict the SeriesTemplate class
-        """
-
+        """Method that serialize as dict the SeriesTemplate class"""
         dict_obj = {}
         # Serialize name attribute
         dict_obj.update({PostProcessingBundle.NAME: self.name})
@@ -88,9 +83,7 @@ class PostProcessingBundle:
 
     @staticmethod
     def from_dict(dict_obj):
-        """ Method that initialize from dict the SeriesTemplate class
-        """
-
+        """Method that initialize from dict the SeriesTemplate class"""
         # Serialize name attribute
         name = dict_obj[PostProcessingBundle.NAME]
 

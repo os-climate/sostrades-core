@@ -20,9 +20,8 @@ from .base_controller import BaseController
 
 
 class Variable(BaseController):
-    """
-    Variable Class
-    """
+    """Variable Class"""
+
     # --Class variables
     CLASS_MSG = 'PVariable'
     ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
@@ -36,9 +35,7 @@ class Variable(BaseController):
 
     # --Private methods
     def __repr__(self):
-        """
-        display some information about the variable
-        """
+        """Display some information about the variable"""
         info_string = BaseController.__repr__(self)
         info_string += '\n   Value           :%24.16e' % self.get_value()
         info_string += '\n   Gradient        : ' + str(self.get_gradient())

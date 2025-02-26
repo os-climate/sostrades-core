@@ -1,5 +1,5 @@
 '''
-Copyright 2024 Capgemini
+Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import logging
 from typing import Any
 
@@ -30,9 +32,8 @@ from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_da
 
 
 class JSONDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):
-    """
-    Specific multi-version dataset connector for datasets in JSON format
-    """
+    """Specific multi-version dataset connector for datasets in JSON format"""
+
     __logger = logging.getLogger(__name__)
     VERSION_TO_CLASS = {VERSION_V0: JSONDatasetsConnectorV0,
                         VERSION_V1: JSONDatasetsConnectorV1}
@@ -48,8 +49,9 @@ class JSONDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):
 
         Args:
             connector_id: Connector identifier for the multiversion JSON connector
-            mono_version_connectors_instantiation_fields: keyword arguments that allow to instantiate each different
+            mono_version_connector_instantiation_fields: keyword arguments that allow to instantiate each different
                 mono-version JSON connectors (cf. mono-version classes).
+
         """
         if len({_args[self.FILE_PATH_ARG] for _args in mono_version_connector_instantiation_fields.values()}
                ) < len(mono_version_connector_instantiation_fields):

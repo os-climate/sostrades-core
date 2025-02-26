@@ -27,9 +27,8 @@ class ProxyMultiInstanceDriverException(Exception):
 
 
 class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
-    '''
-    Class for driver on multi instance mode
-    '''
+    '''Class for driver on multi instance mode'''
+
     _ontology_data = {
         'label': ' Multi-Instance Driver',
         'type': 'Research',
@@ -88,7 +87,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             driver_wrapper_cls (Class): class constructor of the driver wrapper (user-defined wrapper or SoSTrades wrapper or None)
             map_name (string): name of the map associated to the scatter builder in case of multi-instance build
             associated_namespaces(List[string]): list containing ns ids ['name__value'] for namespaces associated to builder
-            process_display_options  [dict] still keep the possibility to modify display options through the process for archibuilder
+            process_display_options (dict): still keep the possibility to modify display options through the process for archibuilder
+
         """
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces, map_name)
         self.driver_eval_mode = self.DRIVER_EVAL_MODE_MULTI
@@ -137,15 +137,11 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         self.scenarios = [disc for disc in self.scenarios if disc not in list_children]
 
     def create_discipline_wrap(self, name, wrapper, wrapping_mode, logger):
-        """
-        No need to create a DisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver
-        """
+        """No need to create a DisciplineWrap in the multi instance case , the computation is delegated to the coupling discipline above the driver"""
         pass
 
     def prepare_build(self):
-        """
-        Call the tool to build the subprocesses in multi-instance builder mode.
-        """
+        """Call the tool to build the subprocesses in multi-instance builder mode."""
         if self.get_data_in():
             self.build_tool()
             # Tool is building disciplines for the driver on behalf of the driver name
@@ -167,9 +163,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         return self.INSTANCE_REFERENCE in self.get_data_in()
 
     def add_reference_mode(self, disc_in):
-        '''
-        Add reference mode as dynamic input if we are using instance reference option
-        '''
+        '''Add reference mode as dynamic input if we are using instance reference option'''
         dynamic_inputs = {}
 
         if self.INSTANCE_REFERENCE in disc_in:
@@ -185,11 +179,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         return dynamic_inputs
 
     def add_scatter_map_inputs(self):
-        '''
-
-        Add scatter map input variables to dynamic desc_in
-
-        '''
+        '''Add scatter map input variables to dynamic desc_in'''
         dynamic_inputs = {}
         # so that eventual mono-instance outputs get clear
         if self.builder_tool is not None:
@@ -213,11 +203,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
             self.builder_tool.prepare_tool()
 
     def build_tool(self):
-        '''
-
-        Build the tool if the driver data integrity is OK
-
-        '''
+        '''Build the tool if the driver data integrity is OK'''
         if self.builder_tool is not None and self.scatter_list_validity:
             self.builder_tool.build()
 
@@ -227,6 +213,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
         Arguments:
             scenario_names (list[string]): expected names of the subproxies.
+
         """
         if self.builder_tool:
             proxies_names = self.builder_tool.get_all_built_disciplines_names()
@@ -267,10 +254,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
         return samples_df, instance_reference, trade_vars, scenario_names
 
     def configure_subprocesses_with_driver_input(self):
-        """
-        This method forces the trade variables values of the subprocesses in function of the driverevaluator input df.
-        """
-
+        """This method forces the trade variables values of the subprocesses in function of the driverevaluator input df."""
         samples_df, instance_reference, trade_vars, scenario_names = self.prepare_variables_to_propagate()
 
         if self.subprocesses_built(scenario_names):
@@ -305,8 +289,8 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
     def change_editability_state_for_trade_variables(self, scenario_names, trades_variables):
         '''
-            save trade variables editable state if it is not already saved
-            set old original editable state for variables no more trade variables
+        save trade variables editable state if it is not already saved
+        set old original editable state for variables no more trade variables
         '''
         # get variables that have not been already saved
         new_trades_variables = trades_variables - self.original_editable_dict_trade_variables.keys()
@@ -392,12 +376,11 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
     def set_variables_editability(self, scenario_names, original_editable_dict):
         '''
+        Turn Editable all the variables that needs to be editable in the original_editable_dict
 
         Args:
-            scenario_names (list) : List of scenario names
-
-        Turn Editable all the variables that needs to be editable in the original_editable_dict
-        TO DO : better explain why
+            scenario_names (list[str]) : List of scenario names
+            original_editable_dict (dict[str, bool]): dictionary with the original editability value of the variables
 
         '''
         if original_editable_dict:
@@ -408,7 +391,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                             self.ee.dm.set_data(
                                 key, 'editable', original_editable_dict[key])
                         except:
-                            self.logger.debug(f'the variable {key} could not beeing found to reset its editability')
+                            self.logger.debug(f'the variable {key} could not be found to reset its editability')
 
     # def set_reference_trade_variables_in_samples_df(self, sce_df):
     #

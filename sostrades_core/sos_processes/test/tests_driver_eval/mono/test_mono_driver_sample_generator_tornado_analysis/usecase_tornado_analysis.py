@@ -23,10 +23,7 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for lhs DoE and Eval on x variable of Sellar Problem
-        """
-
+        """Usecase for lhs DoE and Eval on x variable of Sellar Problem"""
         ns = f"{self.study_name}"
 
         input_selection_a = {

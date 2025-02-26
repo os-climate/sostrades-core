@@ -28,9 +28,8 @@ from sostrades_core.tools.compare_data_manager_tooling import (
 
 
 class TestCompareDict(unittest.TestCase):
-    """
-    Test of compare_dict method, for every data type
-    """
+    """Test of compare_dict method, for every data type"""
+
     data_dict_1 = {'int': 1,
                    'np_int32': int32(2),
                    'np_int64': int64(3),

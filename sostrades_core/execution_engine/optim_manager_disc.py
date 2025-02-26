@@ -22,9 +22,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 class OptimManagerDisc(SoSWrapp):
-    """
-    Constraints aggregation discipline
-    """
+    """Constraints aggregation discipline"""
 
     # ontology information
     _ontology_data = {
@@ -41,7 +39,5 @@ class OptimManagerDisc(SoSWrapp):
     }
 
     def __init__(self, sos_name, logger: logging.Logger):
-        '''
-        constructor
-        '''
+        '''Constructor'''
         super().__init__(sos_name=sos_name, logger=logger)

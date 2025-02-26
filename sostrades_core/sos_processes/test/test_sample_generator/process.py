@@ -33,10 +33,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
-
+        '''Default initialisation test'''
         builder = self.ee.factory.create_sample_generator('SampleGenerator')
 
         self.ee.ns_manager.add_ns_def(

@@ -23,14 +23,10 @@ from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
 
 
 class TestBuildScatter(unittest.TestCase):
-    """
-    Scatter build test class
-    """
+    """Scatter build test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'Coupling'
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
@@ -361,9 +357,7 @@ class TestBuildScatter(unittest.TestCase):
         self.assertDictEqual(z_gather, z_gather_th)
 
     def test_04_clean_autogather(self):
-        '''
-        Test autogather cleaning
-        '''
+        '''Test autogather cleaning'''
         driver_name = 'coupling_scatter'
         builder_list = self.factory.get_builder_from_process(repo=self.repo,
                                                              mod_id=self.sub_proc)

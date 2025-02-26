@@ -13,8 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict
 
 from sostrades_core.datasets.dataset import Dataset
 from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
@@ -26,11 +27,13 @@ from sostrades_core.datasets.datasets_connectors.datasets_connector_manager impo
 )
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
+if TYPE_CHECKING:
+    import logging
+
 
 class DatasetsManager:
-    """
-    Manages connections to datasets
-    """
+    """Manages connections to datasets"""
+
     VALUE = ProxyDiscipline.VALUE
     DATASET_INFO = 'dataset_info'
 
@@ -40,6 +43,7 @@ class DatasetsManager:
 
         Args:
             logger (logging.Logger): Logger instance for logging.
+
         """
         self.datasets = {}
         self.__logger = logger
@@ -55,6 +59,7 @@ class DatasetsManager:
 
         Returns:
             Dict[str, Dict[str, Any]]: Data dict of data names and retrieved values plus a DATASET_INFO field with DatasetInfo object.
+
         """
         self.__logger.debug(f"Fetching data {data_dict.keys()} from datasets {datasets_info}")
         data_retrieved = {}
@@ -97,6 +102,7 @@ class DatasetsManager:
 
         Returns:
             Dataset: Dataset instance.
+
         """
         if dataset_info not in self.datasets:
             self.datasets[dataset_info] = self.__create_dataset(dataset_info=dataset_info)
@@ -115,6 +121,7 @@ class DatasetsManager:
 
         Returns:
             Dict[str, Any]: Data dict of data names plus a DATASET_INFO field with DatasetInfo object.
+
         """
         self.__logger.debug(f"exporting data {data_dict.keys()} into dataset {dataset_info}")
 
@@ -143,6 +150,7 @@ class DatasetsManager:
 
         Returns:
             str: Path/link/URI to dataset data.
+
         """
         path_to_dataset_data = ""
         try:
@@ -166,6 +174,7 @@ class DatasetsManager:
 
         Returns:
             Dataset: Dataset instance.
+
         """
         # Gets connector
         connector = DatasetsConnectorManager.get_connector(connector_identifier=dataset_info.connector_id)

@@ -33,9 +33,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
+        '''Default initialisation test'''
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
         mods_dict = {'proc1.Disc2': disc_dir + 'disc2.Disc2',
                      'proc1.Disc1': disc_dir + 'disc1.Disc1'}

@@ -29,9 +29,7 @@ class TimeLogger(object):
     '''
 
     def __init__(self, tag, main_var='time', main_unit='(s)', out_save_dir='Outputs'):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         self.base_save_dir = out_save_dir
         self.__tag = tag
         self.__LoggerData = LoggerData(
@@ -41,47 +39,33 @@ class TimeLogger(object):
 
     # -- Setters
     def set_complex_mode(self, complex_mode):
-        '''
-        Set the complex mode in the Logger database
-        '''
+        '''Set the complex mode in the Logger database'''
         self.__LoggerData.set_complex_mode(complex_mode)
 
     # -- Accessors
     def get_full_save_dir(self, save_dir=None):
-        '''
-        Save directory from the Logger Database
-        '''
+        '''Save directory from the Logger Database'''
         return self.__LoggerData.get_full_save_dir(save_dir)
 
     def get_units(self, var_id):
-        '''
-        Get units from the Logger Database
-        '''
+        '''Get units from the Logger Database'''
         return self.__LoggerData.get_units(var_id)
 
     def get_var_ids(self):
-        '''
-        Getvariable names from the Logger Database
-        '''
+        '''Getvariable names from the Logger Database'''
         return self.__LoggerData.get_var_ids()
 
     def get_data(self, var_id):
-        '''
-        Get a specific data named var_id from the Logger Database
-        '''
+        '''Get a specific data named var_id from the Logger Database'''
         return self.__LoggerData.get_data(var_id)
 
     def get_index(self):
-        '''
-        Get the index of the logger : ?
-        '''
+        '''Get the index of the logger : ?'''
         return self.__index
 
     # -- Methods
     def add_object_to_log(self, obj):
-        '''
-        Add an object to the logger database in object_dict
-        '''
+        '''Add an object to the logger database in object_dict'''
         if obj not in self.__object_dict:
             if hasattr(obj, "OUT_DICT"):
                 self.__object_dict[obj] = obj.OUT_DICT
@@ -95,9 +79,7 @@ class TimeLogger(object):
                       "has no variable \"OUT_DICT\" ")
 
     def update_object_in_log(self, obj):
-        '''
-        Update an object to the logger database in object_dict
-        '''
+        '''Update an object to the logger database in object_dict'''
         if obj in self.__object_dict:
             if hasattr(obj, "OUT_DICT"):
                 self.__object_dict[obj] = obj.OUT_DICT
@@ -114,22 +96,16 @@ class TimeLogger(object):
 
     def add_diagram(self, name, x_axis, y_axis,
                     save_dir=None, sub_save_dir=None, y_log_scale=False):
-        '''
-        Add a diagram plot from the database into the specific directory
-        '''
+        '''Add a diagram plot from the database into the specific directory'''
         self.__LoggerData.add_diagram(
             name, x_axis, y_axis, save_dir, sub_save_dir, y_log_scale)
 
     def resize(self, new_dim=None):
-        '''
-        Resize the logger database
-        '''
+        '''Resize the logger database'''
         self.__LoggerData.resize(new_dim)
 
     def reset_index(self):
-        '''
-        Reset the index of the logger
-        '''
+        '''Reset the index of the logger'''
         self.__index = 0
 
     def initialize(self, size=0):
@@ -169,21 +145,15 @@ class TimeLogger(object):
         self.__index += 1
 
     def export_to_file(self):
-        '''
-        Export the Logger database to a file
-        '''
+        '''Export the Logger database to a file'''
         self.__LoggerData.export_to_file()
 
     def plot(self):
-        '''
-        Plot the Logger database
-        '''
+        '''Plot the Logger database'''
         self.__LoggerData.plot()
 
     def dump_logger_data(self):
-        '''
-        Dump the Logger database
-        '''
+        '''Dump the Logger database'''
         save_dir = self.get_full_save_dir()
         filename = os.path.join(save_dir, self.__tag + '_logger_data.pkl')
         fid = open(filename, 'wb')

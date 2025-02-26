@@ -25,10 +25,7 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase from test_01_multi_instance_configuration_from_df_without_reference_scenario
-        """
-
+        """Usecase from test_01_multi_instance_configuration_from_df_without_reference_scenario"""
         # reference var values
         self.x = 2.
         self.a = 3

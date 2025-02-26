@@ -29,7 +29,8 @@ class DisciplineDriverWrappException(Exception):
 
 
 class DisciplineDriverWrapp(DisciplineWrapp):
-    """**DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
+    """
+    **DisciplineWrapp** is the interface to create Discipline from SoSTrades wrappers, GEMSEO objects, etc.
 
     An instance of DisciplineWrapp is in one-to-one aggregation with an instance inheriting from Discipline and
     might or might not have a SoSWrapp to supply the user-defined model run. All GEMSEO objects are instantiated during
@@ -40,6 +41,7 @@ class DisciplineDriverWrapp(DisciplineWrapp):
         wrapping_mode (string): mode of supply of model run by user ('SoSTrades'/'GEMSEO')
         discipline (Discipline): aggregated GEMSEO object used for execution eventually with model run
         wrapper (SoSWrapp/???): wrapper instance used to supply the model run to the Discipline (or None)
+
     """
 
     def create_gemseo_discipline(
@@ -54,6 +56,7 @@ class DisciplineDriverWrapp(DisciplineWrapp):
             reduced_dm (Dict[Dict]): reduced data manager without values for i/o configuration
             cache_type (string): type of cache to be passed to the Discipline
             cache_file_path (string): file path of the pickle file to dump/load the cache [???]
+
         """
         # get all executable sub disciplines
         sub_disciplines = self.get_sub_disciplines(proxy)

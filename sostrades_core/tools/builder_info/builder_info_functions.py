@@ -25,6 +25,19 @@ from sostrades_core.execution_engine.sos_builder import SoSBuilder
 
 
 def get_ns_list_in_builder_list(builder_list):
+    """
+    Extracts a list of unique namespaces from a list of builders.
+
+    Args:
+        builder_list (list): A list of builder objects.
+
+    Returns:
+        list: A list of unique namespaces found in the builder list.
+
+    Raises:
+        Exception: If the argument is not a list.
+
+    """
     ns_list = []
     if not isinstance(builder_list, list):
         raise Exception(f'The argument of get_ns_list_in_builder_list is not a list : {builder_list}')
@@ -36,7 +49,19 @@ def get_ns_list_in_builder_list(builder_list):
 
 
 def get_ns_list_in_sub_builder(builder):
+    """
+    Extracts a list of namespaces from a single builder.
 
+    Args:
+        builder: A SoSBuilder or subclass object.
+
+    Returns:
+        list: A list of namespaces found in the builder.
+
+    Raises:
+        Exception: If the builder is not an instance of SoSBuilder.
+
+    """
     if not isinstance(builder, SoSBuilder):
         raise Exception(f'Need a builder to extract namespaces not :{type(builder)}')
     ns_list = []

@@ -37,9 +37,7 @@ unit test for optimization scenario
 
 
 class TestSoSOptimScenario(unittest.TestCase):
-    """
-    SoSOptimScenario test class
-    """
+    """SoSOptimScenario test class"""
 
     def setUp(self):
         self.study_name = 'optim'
@@ -115,9 +113,7 @@ class TestSoSOptimScenario(unittest.TestCase):
     # - open in browser http://localhost:8080/xdsm.html
 
     def _test_02_optim_scenario_execution_mdf(self):
-        '''
-        TEST COMMENTED BECAUSE MDF FORMULATION BUILD A MDACHAIN INSTEAD OF SOSCOUPLING
-        '''
+        '''TEST COMMENTED BECAUSE MDF FORMULATION BUILD A MDACHAIN INSTEAD OF SOSCOUPLING'''
         print("\n Test 2 : Sellar optim solution check with MDF formulation")
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
@@ -884,9 +880,7 @@ class TestSoSOptimScenario(unittest.TestCase):
             f'{self.ns}.{self.sc_name}.{self.c_name}.{var}' for var in ['obj', 'c_1', 'c_2']]))
 
     def _test_10_update_dspace(self):
-        '''
-        TEST COMMENTED BECAUSE MDF FORMULATION BUILD A MDACHAIN INSTEAD OF SOSCOUPLING
-        '''
+        '''TEST COMMENTED BECAUSE MDF FORMULATION BUILD A MDACHAIN INSTEAD OF SOSCOUPLING'''
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
 
@@ -1499,9 +1493,7 @@ class TestSoSOptimScenario(unittest.TestCase):
             pass
 
     def test_19_proxyoptim_data_integrity(self):
-        """
-        Checks data integrity errors are raised for dspace, ineq_constraints and objective_name variables in ProxyOptim.
-        """
+        """Checks data integrity errors are raised for dspace, ineq_constraints and objective_name variables in ProxyOptim."""
         exec_eng = ExecutionEngine(self.study_name)
         factory = exec_eng.factory
         repo_discopt = 'sostrades_core.sos_processes.test'

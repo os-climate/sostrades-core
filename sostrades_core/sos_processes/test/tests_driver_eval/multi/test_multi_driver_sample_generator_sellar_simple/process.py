@@ -26,9 +26,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
+        '''Default initialisation test'''
         repo = 'sostrades_core.sos_processes.test.tests_driver_eval.multi'
         sub_proc = 'test_multi_driver_sellar'
         eval_driver = self.ee.factory.get_builder_from_process(

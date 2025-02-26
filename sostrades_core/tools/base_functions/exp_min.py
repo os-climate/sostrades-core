@@ -55,7 +55,20 @@ def compute_func_with_exp_min(values, min_value):
 
 
 def compute_dfunc_with_exp_min(values, min_value):
+    """
+    Computes a function derivative with an exponential adjustment for values below a specified minimum.
 
+    Args:
+        values (np.array): Array of input values.
+        min_value (float): The minimum threshold value.
+
+    Raises:
+        Exception: If the min_value is negative or the values argument is not a numpy array.
+
+    Returns:
+        np.array: The computed derivative values reshaped to a column vector.
+
+    """
     if min_value < 0:
         raise Exception('The function is not suitable for negative min_value')
     if not isinstance(values, type(np.array([]))):

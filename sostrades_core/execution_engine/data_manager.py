@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/08/01 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import logging
 from copy import copy, deepcopy
 from dataclasses import dataclass
@@ -60,9 +62,8 @@ DISPLAY_NAME = ProxyDiscipline.DISPLAY_NAME
 
 @dataclass()
 class ParameterChange:
-    """
-    Dataclass used to log parameter changes when configuring the data in a study.
-    """
+    """Dataclass used to log parameter changes when configuring the data in a study."""
+
     parameter_id: str
     variable_type: str
     old_value: Any
@@ -80,9 +81,8 @@ class DataManagerException(Exception):
 
 
 class DataManager:
-    """
-    Specification: DataManager class collects inputs/outputs and disciplines
-    """
+    """Specification: DataManager class collects inputs/outputs and disciplines"""
+
     VALUE = VALUE
     DISC_REF = 'reference'
     STATUS = 'status'
@@ -93,9 +93,7 @@ class DataManager:
                  rw_object=None,
                  study_filename=None,
                  ns_manager=None):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         self.no_change = True
         self.name = name
         self.rw_object = rw_object
@@ -118,13 +116,11 @@ class DataManager:
 
     @staticmethod
     def get_an_uuid():
-        ''' generate a random UUID to make data_dict keys unique '''
+        '''Generate a random UUID to make data_dict keys unique'''
         return str(uuid4())
 
     def generate_hashed_uid(self, string_list):
-        '''
-        Generate a hashed uid based on string list containing disc infos (full disc name, class name and full data i/o)
-        '''
+        '''Generate a hashed uid based on string list containing disc infos (full disc name, class name and full data i/o)'''
         h = sha256()
         for string in string_list:
             h.update(string.encode())
@@ -135,9 +131,7 @@ class DataManager:
         self.gemseo_disciplines_id_map = {}
 
     def fill_cache_map(self, disc_info_list, disc):
-        '''
-        Fill the cache_map for the dump/load cache method
-        '''
+        '''Fill the cache_map for the dump/load cache method'''
         hashed_uid = self.generate_hashed_uid(disc_info_list)
         self.cache_map[hashed_uid] = disc.cache
         # store disc in DM map
@@ -154,9 +148,7 @@ class DataManager:
             del self.gemseo_disciplines_id_map[hashed_uid]
 
     def fill_gemseo_caches_with_unanonymized_cache_map(self, cache_map):
-        '''
-        Fill gemseo discipline cache from cache_map using gemseo_disciplines_id_map
-        '''
+        '''Fill gemseo discipline cache from cache_map using gemseo_disciplines_id_map'''
         # update cache of all gemseo disciplines with loaded cache_map
         for disc_id, serialized_cache in cache_map.items():
             if disc_id in self.gemseo_disciplines_id_map:
@@ -168,10 +160,7 @@ class DataManager:
     #                     disc.cache = disc_cache
 
     def fill_cache_with_serialized_cache(self, empty_cache, serialized_cache):
-        '''
-        Fill empty cache from prepare execution with the serialized cache (dict) found in the pickle
-        '''
-
+        '''Fill empty cache from prepare execution with the serialized cache (dict) found in the pickle'''
         if isinstance(empty_cache, SimpleCache):
 
             cached_inputs = serialized_cache[1]['inputs']
@@ -194,8 +183,7 @@ class DataManager:
         self.no_check_default_variables = []
 
     def get_data(self, var_f_name, attr=None):
-        ''' Get attr value of var_f_name or all data_dict value of var_f_name (if attr=None)
-        '''
+        '''Get attr value of var_f_name or all data_dict value of var_f_name (if attr=None)'''
         if attr is None:
             return self.data_dict[self.get_data_id(var_f_name)]
         else:
@@ -231,8 +219,7 @@ class DataManager:
         return data_in_dm
 
     def set_data(self, var_f_name, attr, val, check_value=True):
-        ''' Set attr value of var_f_name in data_dict
-        '''
+        '''Set attr value of var_f_name in data_dict'''
         if self.get_data_id(var_f_name) in self.data_dict:
             if check_value:
                 if self.data_dict[self.get_data_id(var_f_name)][attr] != val:
@@ -246,8 +233,7 @@ class DataManager:
             raise KeyError(msg)
 
     def get_io_data_of_disciplines(self, disciplines):
-        ''' get i/o value and metadata of provided disciplines
-        '''
+        '''Get i/o value and metadata of provided disciplines'''
         data = {}
         data[VALUE] = {}
         data[TYPE_METADATA] = {}
@@ -273,21 +259,18 @@ class DataManager:
         return data
 
     def get_value(self, var_f_name):
-        ''' Get value of var_f_name from data_dict
-        '''
+        '''Get value of var_f_name from data_dict'''
         return self.get_data(var_f_name, ProxyDiscipline.VALUE)
 
     def get_discipline(self, disc_id):
-        ''' Get discipline with disc_id from disciplines_dict
-        '''
+        '''Get discipline with disc_id from disciplines_dict'''
         if disc_id in self.disciplines_dict:
             return self.disciplines_dict[disc_id][self.DISC_REF]
         else:
             return None
 
     def get_disciplines_with_name(self, disc_f_name):
-        ''' Get discipline with disc_id from disciplines_dict
-        '''
+        '''Get discipline with disc_id from disciplines_dict'''
         disc_id_list = self.get_discipline_ids_list(disc_f_name)
 
         disc_list = [self.disciplines_dict[disc_id][self.DISC_REF] for disc_id in disc_id_list]
@@ -295,23 +278,19 @@ class DataManager:
         return disc_list
 
     def get_discipline_names_with_starting_name(self, starting_name):
-        '''
-        Get all disciplines that starts with starting_name in the datamanager
-        '''
+        '''Get all disciplines that starts with starting_name in the datamanager'''
         disc_list = [disc_name for disc_name in self.disciplines_id_map if disc_name.startswith(starting_name)]
 
         return disc_list
 
     def get_all_namespaces_from_var_name(self, var_name):
-        ''' Get all namespaces containing var_name in data_dict
-        '''
+        '''Get all namespaces containing var_name in data_dict'''
         namespace_list = [key for key in self.data_id_map.keys() if key.endswith(f'.{var_name}')]
 
         return namespace_list
 
     def get_all_var_name_with_ns_key(self, var_name):
-        ''' Get all namespaces containing var_name in data_dict plus their namespace key as a dict
-        '''
+        '''Get all namespaces containing var_name in data_dict plus their namespace key as a dict'''
         namespace_list = [key for key in self.data_id_map.keys() if key.endswith('.' + var_name)]
         if len(namespace_list) > 0:
             ns_dict_obj = self.get_data_dict_attr('ns_reference')
@@ -320,18 +299,15 @@ class DataManager:
             return {}
 
     def get_data_id(self, var_f_name):
-        ''' Get data id with var_f_name
-        '''
+        '''Get data id with var_f_name'''
         return self.data_id_map[var_f_name]
 
     def get_discipline_ids_list(self, disc_f_name):
-        ''' Get discipline id list with disc_f_name
-        '''
+        '''Get discipline id list with disc_f_name'''
         return self.disciplines_id_map[disc_f_name]
 
     def generate_data_id_map(self):
-        ''' Generate data_id_map with data_dict
-        '''
+        '''Generate data_id_map with data_dict'''
         self.data_id_map = {}
         data_dict = copy(self.data_dict)
         for var_id in data_dict.keys():
@@ -339,16 +315,16 @@ class DataManager:
             self.data_id_map[var_f_name] = var_id
 
     def generate_disciplines_id_map(self):
-        ''' Generate disciplines_id_map with disciplines_dict
-        '''
+        '''Generate disciplines_id_map with disciplines_dict'''
         self.disciplines_id_map = {}
         for disc_id in self.disciplines_dict.keys():
             disc_f_name = self.get_disc_full_name(disc_id)
             self.add_disc_id_to_disc_id_map(disc_f_name, disc_id)
 
     def set_values_from_dict(self, values_dict, full_ns_keys=True):
-        ''' Set values in data_dict from dict with namespaced keys
-            if full_ns_keys (not uuid), try to get its uuid correspondency through get_data_id function
+        '''
+        Set values in data_dict from dict with namespaced keys
+        if full_ns_keys (not uuid), try to get its uuid correspondency through get_data_id function
         '''
         keys_to_map = self.data_id_map.keys() if full_ns_keys else self.data_id_map.values()
         for key, value in values_dict.items():
@@ -609,8 +585,7 @@ class DataManager:
         return exported_parameters
 
     def convert_data_dict_with_full_name(self):
-        ''' Return data_dict with namespaced keys
-        '''
+        '''Return data_dict with namespaced keys'''
         return self.convert_dict_with_maps(self.data_dict, self.data_id_map, keys='full_names')
 
     def convert_data_dict_with_display_name(self, exec_display=False):
@@ -631,15 +606,11 @@ class DataManager:
         return display_data_dict
 
     def get_data_dict_values(self, excepted=[]):
-        '''
-        Return a dictionaries with all full named keys in the dm and the value of each key from the dm
-        '''
+        '''Return a dictionaries with all full named keys in the dm and the value of each key from the dm'''
         return self.get_data_dict_attr(self.VALUE, excepted)
 
     def get_data_dict_attr(self, attr, excepted=[]):
-        '''
-        Return a dictionaries with all full named keys in the dm and the value of each key from the dm
-        '''
+        '''Return a dictionaries with all full named keys in the dm and the value of each key from the dm'''
         data_dict = self.convert_data_dict_with_full_name()
         exception_list = []
         if 'numerical' in excepted:
@@ -652,8 +623,8 @@ class DataManager:
 
     def get_data_dict_list_attr(self, list_attr, excepted=[]):
         """
-         Return a dictionary of dictionary with all full named keys in the dm and the value of each key from the dm
-         output : dict[key][attr] for each attr in list_attr
+        Return a dictionary of dictionary with all full named keys in the dm and the value of each key from the dm
+        output : dict[key][attr] for each attr in list_attr
         """
         data_dict_values_dict = {}
         data_dict_values_list = [self.get_data_dict_attr(
@@ -667,15 +638,12 @@ class DataManager:
         return data_dict_values_dict
 
     def convert_data_dict_with_ids(self, dict_to_convert):
-        ''' Return data_dict with ids keys
-        '''
+        '''Return data_dict with ids keys'''
         return self.convert_dict_with_maps(dict_to_convert,
                                            self.data_id_map, keys='ids')
 
     def convert_disciplines_dict_with_full_name(self):
-        ''' Return disciplines dict with namespaced keys
-        '''
-
+        '''Return disciplines dict with namespaced keys'''
         converted_dict = {}
 
         for key, val in self.disciplines_id_map.items():
@@ -698,8 +666,9 @@ class DataManager:
              ProxyDiscipline.DF_EXCLUDED_COLUMNS, ProxyDiscipline.VAR_NAME, ProxyDiscipline.COUPLING])
 
     def convert_dict_with_maps(self, dict_to_convert, map_full_names_ids, keys='full_names'):
-        ''' Convert dict keys with ids to full_names or full_names to ids
-            keys: 'full_names' or 'ids'
+        '''
+        Convert dict keys with ids to full_names or full_names to ids
+        keys: 'full_names' or 'ids'
         '''
         converted_dict = {}
         if keys == 'full_names':
@@ -729,8 +698,7 @@ class DataManager:
         return var_f_name in self.data_id_map.keys()
 
     def update_with_discipline_dict(self, disc_id, disc_dict):
-        ''' Store and update the discipline data into the DM dictionary
-        '''
+        '''Store and update the discipline data into the DM dictionary'''
         self.logger.debug(
             f'store and update the discipline data into the DM dictionary {list(disc_dict.keys())[:10]} ...')
 
@@ -818,8 +786,7 @@ class DataManager:
             _dm_update(var_name, io_type, var_f_name)
 
     def update_disciplines_dict(self, disc_id, reference, disc_f_name):
-        ''' Store and update discipline into disciplines_dicts
-        '''
+        '''Store and update discipline into disciplines_dicts'''
         self.logger.debug(
             f'store the discipline instances as references for {disc_id}')
 
@@ -851,15 +818,11 @@ class DataManager:
             self.disciplines_id_map[disc_f_name] = [disc_id]
 
     def update_disciplines_dict_with_id(self, disc_id, reference):
-        '''
-        Update the discipline_dict of a specific disc_id with the dict reference
-        '''
+        '''Update the discipline_dict of a specific disc_id with the dict reference'''
         self.disciplines_dict[disc_id].update(reference)
 
     def update_data_dict_with_id(self, var_id, data_dict):
-        '''
-        Update the discipline_dict of a specific disc_id with the dict reference
-        '''
+        '''Update the discipline_dict of a specific disc_id with the dict reference'''
         self.no_change = False
         self.data_dict[var_id].update(data_dict)
 
@@ -896,7 +859,8 @@ class DataManager:
                                                    export_dir)
 
     def remove_keys(self, disc_id, data_d, io_type):
-        ''' Clean namespaced keys in data_dict and remove discipline dependencies
+        '''
+        Clean namespaced keys in data_dict and remove discipline dependencies
         The io_type is only here to switch the dm io_type in case we suppress an output variable which still exist as an input
         '''
         list_data_d = [data_d] if isinstance(data_d, str) else data_d
@@ -935,8 +899,7 @@ class DataManager:
                             self.data_dict[var_id][ProxyDiscipline.DISCIPLINES_DEPENDENCIES][0]
 
     def clean_from_disc(self, disc_id, clean_keys=True):
-        ''' Clean disc in disciplines_dict and data_in/data_out keys in data_dict
-        '''
+        '''Clean disc in disciplines_dict and data_in/data_out keys in data_dict'''
         disc_f_name = self.get_disc_full_name(disc_id)
         if disc_f_name not in self.disciplines_id_map:
             msg = "Discipline " + str(disc_f_name) + \
@@ -965,9 +928,7 @@ class DataManager:
         self.disciplines_dict.pop(disc_id)
 
     def clean_keys(self, disc_id):
-        '''
-        Clean data_in/out of disc_id in data_dict
-        '''
+        '''Clean data_in/out of disc_id in data_dict'''
         disc_ref = self.get_discipline(disc_id)
         # clean input keys from dm
         self.remove_keys(disc_id, list(disc_ref.apply_visibility_ns(
@@ -977,8 +938,7 @@ class DataManager:
             ProxyDiscipline.IO_TYPE_OUT)), ProxyDiscipline.IO_TYPE_OUT)
 
     def export_couplings(self, in_csv=False, f_name=None):
-        ''' Export couplings of all disciplines registered in the DM
-        '''
+        '''Export couplings of all disciplines registered in the DM'''
         d_dict = self.disciplines_dict
         # gather disciplines references
         disc_list = [d_dict[key][self.DISC_REF] for key in d_dict]
@@ -1005,7 +965,7 @@ class DataManager:
             return None
 
     def build_disc_status_dict(self, disciplines_to_keep=None):
-        ''' build a containing disc/status info into dictionary) '''
+        '''Build a containing disc/status info into dictionary)'''
         disc_status = {}
         for namespace, disciplines in self.convert_disciplines_dict_with_full_name().items():
             if namespace not in disc_status:
@@ -1023,7 +983,7 @@ class DataManager:
 
     def get_parameter_data(self, parameter_key):
         # TO DO: convert parameter_key into uid
-        ''' returns BytesIO of the data value from a namespaced key based of string table format '''
+        '''Returns BytesIO of the data value from a namespaced key based of string table format'''
         self.logger.debug(f'get BytesIO of data {parameter_key}')
         # use cache to get parameter data value
         param_data = self.convert_data_dict_with_full_name()[parameter_key]
@@ -1036,21 +996,18 @@ class DataManager:
                                                                 parameter_key)
 
     def get_var_name_from_uid(self, var_id):
-        ''' Get namespace and var_name and return namespaced variable
-        '''
+        '''Get namespace and var_name and return namespaced variable'''
         return self.data_dict[var_id][ProxyDiscipline.VAR_NAME]
 
     def get_var_full_name(self, var_id):
-        ''' Get namespace and var_name and return namespaced variable
-        '''
+        '''Get namespace and var_name and return namespaced variable'''
         var_name = self.get_var_name_from_uid(var_id)
         ns_reference = self.data_dict[var_id][ProxyDiscipline.NS_REFERENCE]
         var_f_name = self.ns_manager.compose_ns([ns_reference.value, var_name])
         return var_f_name
 
     def get_var_display_name(self, var_id):
-        ''' Get namespace and var_name and return namespaced variable
-        '''
+        '''Get namespace and var_name and return namespaced variable'''
         var_name = self.get_var_name_from_uid(var_id)
         ns_reference = self.data_dict[var_id][ProxyDiscipline.NS_REFERENCE]
         var_display_name = self.ns_manager.compose_ns(
@@ -1058,8 +1015,7 @@ class DataManager:
         return var_display_name
 
     def get_disc_full_name(self, disc_id):
-        ''' Get full discipline name
-        '''
+        '''Get full discipline name'''
         if disc_id in self.disciplines_dict:
             return self.disciplines_dict[disc_id][ProxyDiscipline.NS_REFERENCE].value
         else:
@@ -1070,7 +1026,6 @@ class DataManager:
         Check a mismatch between two dicts (which are data dict for the same input shared by two variables
         By default the model origin fills the dm, if difference in DATA_TO_CHECK then a warning is printed
         '''
-
         if self.logger.level <= logging.DEBUG:
 
             def compare_data(data_name):

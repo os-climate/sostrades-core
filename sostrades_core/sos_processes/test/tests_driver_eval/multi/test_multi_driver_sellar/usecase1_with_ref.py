@@ -29,10 +29,7 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for Eval simple on  Sellar Problem
-        """
-
+        """Usecase for Eval simple on  Sellar Problem"""
         ns = f'{self.study_name}'
 
         disc_dict = {}

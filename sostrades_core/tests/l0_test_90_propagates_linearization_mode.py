@@ -30,9 +30,7 @@ unit test for linearization mode propagation
 
 
 class UnitTestHandler(Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         Handler.__init__(self)
@@ -43,9 +41,7 @@ class UnitTestHandler(Handler):
 
 
 class TestPropagatesLinearizationMode(unittest.TestCase):
-    """
-    Test de propagation of linearization mode to children disciplines
-    """
+    """Test de propagation of linearization mode to children disciplines"""
 
     def setUp(self):
         self.study_name = 'linearization_mode_propagation'

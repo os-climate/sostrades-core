@@ -25,15 +25,12 @@ from .diagram import Diagram
 
 
 class LoggerData(object):
-    """
-    LoggerData is a pickable class used by logger and to draw plots when user requires it
-    """
+    """LoggerData is a pickable class used by logger and to draw plots when user requires it"""
+
     SPECIAL_UNITS = ['(str)', '(string)']
 
     def __init__(self, tag, main_var='time', main_unit='(s)', out_save_dir='Outputs'):
-        '''
-        Constructor for the LoggerData
-        '''
+        '''Constructor for the LoggerData'''
         self.base_save_dir = out_save_dir
         self.__tag = tag
         self.__main_var = main_var
@@ -58,9 +55,7 @@ class LoggerData(object):
 
     # -- Setters
     def set_complex_mode(self, complex_mode):
-        '''
-        Set the complex mode in the Database
-        '''
+        '''Set the complex mode in the Database'''
         self.complex_mode = complex_mode
         if complex_mode:
             self.dtype = np.complex128
@@ -69,60 +64,44 @@ class LoggerData(object):
 
     # -- Accessors
     def get_units(self, var_id):
-        '''
-        Get the units of a variable var_id
-        '''
+        '''Get the units of a variable var_id'''
         if var_id in self.__units:
             return self.__units[var_id]
         else:
             raise Exception(var_id + " is not in units")
 
     def get_var_ids(self):
-        '''
-        Get the list of all variable names in the Logger database
-        '''
+        '''Get the list of all variable names in the Logger database'''
         return list(self.__database.keys())
 
     def get_data(self, var_id):
-        '''
-        Get the data which name is var_id
-        '''
+        '''Get the data which name is var_id'''
         if var_id in self.__database:
             return self.__database[var_id]
         else:
             raise Exception(var_id + " is not in database")
 
     def get_full_save_dir(self, save_dir=None):
-        '''
-        Get the path of the saving directory
-        '''
+        '''Get the path of the saving directory'''
         if save_dir is None:
             save_dir = self.base_save_dir
         return os.path.join(save_dir, self.__tag)
 
     # -- Methods
     def add_unit(self, d_id, value):
-        '''
-        Add a unit to the units dictionary to the name d_id
-        '''
+        '''Add a unit to the units dictionary to the name d_id'''
         self.__units[d_id] = value
 
     def add_to_database(self, d_id, value):
-        '''
-        Add a value to the database with the name d_id
-        '''
+        '''Add a value to the database with the name d_id'''
         self.__database[d_id] = value
 
     def add_to_database_index(self, d_id, index, value):
-        '''
-        Add a value corresponding to a specific index (or time) in the database
-        '''
+        '''Add a value corresponding to a specific index (or time) in the database'''
         self.__database[d_id][index] = value
 
     def add_to_main_var_index(self, index, value):
-        '''
-        Add the main variable (the time by default) to the database at a specific index
-        '''
+        '''Add the main variable (the time by default) to the database at a specific index'''
         self.add_to_database_index(self.__main_var, index, value)
 
     def init_database(self, list_keys, dim):
@@ -141,9 +120,7 @@ class LoggerData(object):
             self.__database[d_id] = np.zeros(dim, dtype=dtype)
 
     def init_single_var_data(self, d_id):
-        '''
-        Initialize only one value d_id in the database to zero
-        '''
+        '''Initialize only one value d_id in the database to zero'''
         d_unit = self.get_units(d_id)
         if d_unit not in self.SPECIAL_UNITS:
             dtype = self.dtype
@@ -184,9 +161,7 @@ class LoggerData(object):
             self.__database[var_id].resize(new_dim)
 
     def export_to_file(self):
-        '''
-        Export the database to the file variable_log.csv
-        '''
+        '''Export the database to the file variable_log.csv'''
         save_dir = self.get_full_save_dir()
         filename = os.path.join(save_dir, self.__tag + '.variables_log.csv')
         fid = open(filename, 'w', newline='')
@@ -208,8 +183,6 @@ class LoggerData(object):
         fid.close()
 
     def plot(self):
-        '''
-        Plot all the diagrams added in the diagram dictionary
-        '''
+        '''Plot all the diagrams added in the diagram dictionary'''
         for diagram in list(self.__diagramm_dict.values()):
             diagram.plot()
