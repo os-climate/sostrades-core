@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/02/23-2025/02/14 Copyright 2025 Capgemini
+Modifications on 2023/02/23-2025/02/26 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1248,10 +1248,7 @@ class ProxyDiscipline:
         self._structuring_variables = {}
 
     def get_data_in(self):
-        """
-        "
-        _simple_data_in getter
-        """
+        """_simple_data_in getter"""
         return self._simple_data_in
 
     def get_io_ns_map(self, io_type):
