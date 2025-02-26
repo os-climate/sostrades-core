@@ -12,7 +12,7 @@ google-cloud-bigquery==3.25.0
 # For big query data fetch performances
 google-cloud-bigquery-storage==2.25.0
 matplotlib==3.9.2
-numpy==1.24.4
+numpy==1.26.4
 openturns==1.23
 pandas==2.2.2
 plotly==5.24.0
@@ -26,6 +26,7 @@ sympy==1.13.2
 tqdm==4.66.5
 future==1.0.0
 numpoly==1.2.14  # last version with wheel
+https://github.com/cgohlke/python-ldap-build/releases/download/v3.4.4-1/python_ldap-3.4.4-cp312-cp312-win_amd64.whl; platform_system=='Windows'
 
 # Development requirements
 # breaking change in 8.2.0 https://docs.pytest.org/en/stable/changelog.html#pytest-8-2-0-2024-04-27
