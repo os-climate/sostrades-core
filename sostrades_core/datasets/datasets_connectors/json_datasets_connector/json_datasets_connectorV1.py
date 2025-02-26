@@ -28,9 +28,8 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_dataset_connector_tools import (
     JSONDatasetsConnectorTools,
 )
-from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
-    DatasetSerializerType,
-    DatasetsSerializerFactory,
+from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
+    JSONDatasetsSerializer,
 )
 
 if TYPE_CHECKING:
@@ -42,7 +41,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
 
     COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V1]
 
-    def __init__(self, connector_id: str, file_path: str, create_if_not_exists: bool = False, serializer_type: DatasetSerializerType = DatasetSerializerType.JSON):
+    def __init__(self, connector_id: str, file_path: str, create_if_not_exists: bool = False):
         """
         Constructor for JSON data connector
 
@@ -50,14 +49,13 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
             connector_id (str): Connector identifier
             file_path (str): File path for this dataset connector
             create_if_not_exists (bool, optional): Create file if not exists. Defaults to False.
-            serializer_type (DatasetSerializerType, optional): Type of serializer to deserialize data from connector. Defaults to DatasetSerializerType.JSON.
 
         """
         super().__init__()
         self.__json_tooling = JSONDatasetsConnectorTools(file_path=file_path, create_if_not_exists=create_if_not_exists)
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug("Initializing JSON connector")
-        self._datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
+        self._datasets_serializer = JSONDatasetsSerializer()
         self.connector_id = connector_id
 
         # In json, we have to load the full file to retrieve values, so cache it
