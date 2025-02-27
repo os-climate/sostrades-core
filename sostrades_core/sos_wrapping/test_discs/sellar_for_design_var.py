@@ -27,8 +27,8 @@ Adapted from GEMSEO examples
 
 
 class SellarProblem(SoSWrapp):
-    """ Sellar Optimization Problem functions
-    """
+    """Sellar Optimization Problem functions"""
+
     _maturity = 'Fake'
     DESC_IN = {'x': {'type': 'dataframe', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar',
                      'dataframe_descriptor': {'index': ('int', None, True),
@@ -43,8 +43,7 @@ class SellarProblem(SoSWrapp):
                 'obj': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ computes
-        """
+        """Computes"""
         x, y_1, y_2, z = self.get_sosdisc_inputs(['x', 'y_1', 'y_2', 'z'])
         local_dv = self.get_sosdisc_inputs('local_dv')
 
@@ -57,7 +56,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def obj(x, z, y_1, y_2):
-        """Objective function
+        """
+        Objective function
 
         :param x: local design variables
         :type x: numpy.array
@@ -75,7 +75,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def c_1(y_1):
-        """First constraint on system level
+        """
+        First constraint on system level
 
         :param y_1: coupling variable from discipline 1
         :type y_1: numpy.array
@@ -86,7 +87,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def c_2(y_2):
-        """Second constraint on system level
+        """
+        Second constraint on system level
 
         :param y_2: coupling variable from discipline 2
         :type y_2: numpy.array
@@ -105,7 +107,6 @@ class SellarProblem(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         x, y_2 = self.get_sosdisc_inputs(['x', 'y_2'])
 
         self.set_partial_derivative('c_1', 'y_1', atleast_2d(array([-1.0])))
@@ -128,8 +129,8 @@ class SellarProblem(SoSWrapp):
 
 
 class Sellar1(SoSWrapp):
-    """ Discipline 1
-    """
+    """Discipline 1"""
+
     _maturity = 'Fake'
     DESC_IN = {'x': {'type': 'dataframe', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar',
                      'dataframe_descriptor': {'index': ('int', None, True),
@@ -142,8 +143,7 @@ class Sellar1(SoSWrapp):
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ Discipline 1 execution
-        """
+        """Discipline 1 execution"""
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
         y1_out = {'y_1': y_1}
@@ -151,7 +151,8 @@ class Sellar1(SoSWrapp):
 
     @staticmethod
     def compute_y_1(x, y_2, z):
-        """Solve the first coupling equation in functional form.
+        """
+        Solve the first coupling equation in functional form.
 
         :param x: vector of design variables local to discipline 1
         :type x: numpy.array
@@ -175,7 +176,6 @@ class Sellar1(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         z = self.get_sosdisc_inputs('z')
 
         self.set_partial_derivative_for_other_types(
@@ -189,8 +189,7 @@ class Sellar1(SoSWrapp):
 
 
 class Sellar2(SoSWrapp):
-    """ Discipline 2
-    """
+    """Discipline 2"""
 
     # ontology information
     _ontology_data = {
@@ -213,8 +212,7 @@ class Sellar2(SoSWrapp):
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ solves Discipline1
-        """
+        """Solves Discipline1"""
         y_1, z = self.get_sosdisc_inputs(['y_1', 'z'])
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': y_2}
@@ -222,7 +220,8 @@ class Sellar2(SoSWrapp):
 
     @staticmethod
     def compute_y_2(y_1, z):
-        """Solve the second coupling equation in functional form.
+        """
+        Solve the second coupling equation in functional form.
 
         :param z: vector of shared design variables
         :type z: numpy.array
@@ -244,7 +243,6 @@ class Sellar2(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         y_1 = self.get_sosdisc_inputs('y_1')
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(

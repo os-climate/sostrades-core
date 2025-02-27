@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/11/17-2023/11/21 Copyright 2023 Capgemini
+Modifications on 2023/11/17-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-model that store filter for chart
-"""
+from __future__ import annotations
 
 
 class ChartFilter:
-    """ Class that define a chart filter
-    """
+    """Class that define a chart filter"""
+
     FILTER_NAME = 'filter_name'
     FILTER_VALUES = 'filter_values'
     SELECTED_VALUES = 'selected_values'
@@ -31,7 +27,8 @@ class ChartFilter:
     MULTIPLE_SELECTION = 'multiple_selection'
 
     def __init__(self, name='', filter_values: list = [], selected_values: list = [], filter_key=None, multiple_selection=True):
-        """ Create a filter use to filter post processing building
+        """
+        Create a filter use to filter post processing building
 
         @param name : string that contains table name
         @type str
@@ -49,7 +46,6 @@ class ChartFilter:
         @param multiple_selection : unique key used to identify the current filter
         @type str
         """
-
         self.name = name
 
         # Pie chart datas
@@ -64,11 +60,11 @@ class ChartFilter:
         self.multiple_selection = multiple_selection
 
     def __repr__(self):
-        """ Overload of the class representation
+        """
+        Overload of the class representation
 
         @return str, string representation of the instance
         """
-
         series_string = [f'\nname: {self.name}',
                          f'values: {self.filter_values}',
                          f'selected values: {self.selected_values}',
@@ -79,11 +75,11 @@ class ChartFilter:
         return '\n'.join(series_string)
 
     def to_dict(self):
-        """ Method that serialize as dict the SeriesTemplate class
+        """
+        Method that serialize as dict the SeriesTemplate class
 
         @return dict
         """
-
         dict_obj = {}
         # Serialize name attribute
         dict_obj.update({ChartFilter.FILTER_NAME: self.name})
@@ -107,12 +103,12 @@ class ChartFilter:
         return dict_obj
 
     def extend(self, filter_list: list[str]):
-        """add a list of filter and keys"""
+        """Add a list of filter and keys"""
         self.filter_values.extend(filter_list)
         self.selected_values.extend(filter_list)
 
     def remove(self, list_to_remove: list[str]):
-        """removes a list of filters"""
+        """Removes a list of filters"""
         for filter_to_remove in list_to_remove:
             try:
                 self.filter_values.remove(filter_to_remove)
@@ -125,7 +121,8 @@ class ChartFilter:
 
     @staticmethod
     def from_dict(dict_obj):
-        """ Method that initialize from dict the SeriesTemplate class
+        """
+        Method that initialize from dict the SeriesTemplate class
 
         @param dictçobj: dictionary with value to initialize instance
         @type dict

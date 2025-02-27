@@ -26,9 +26,7 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestMDAPrerun(unittest.TestCase):
-    """
-    Class to test pre-run of MDAChain
-    """
+    """Class to test pre-run of MDAChain"""
 
     def setUp(self):
         self.dirs_to_del = []
@@ -41,9 +39,7 @@ class TestMDAPrerun(unittest.TestCase):
                 rmtree_safe(dir_to_del)
 
     def test_01_mda_no_init_values(self):
-        '''
-        Must raise an exception since no disciplines have input filled
-        '''
+        '''Must raise an exception since no disciplines have input filled'''
         exec_eng = ExecutionEngine(self.name)
 
         exec_eng.ns_manager.add_ns('ns_protected', self.name)

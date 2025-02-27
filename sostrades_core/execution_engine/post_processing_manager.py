@@ -30,7 +30,8 @@ Post processing manager allowing to coeespond namespace with post processing to 
 
 
 class PostProcessingManager:
-    """ Class the store couples namespace <=> list of post processing.
+    """
+    Class the store couples namespace <=> list of post processing.
     Post processing are sually stored by disciplines, but it exist namespace that are not associated to a discipline
     So this class allow to store post processing for a namespace and not a discipline
     """
@@ -39,12 +40,12 @@ class PostProcessingManager:
     POST_PROCESSING_FUNCTION_NAME = 'post_processings'
 
     def __init__(self, execution_engine: ExecutionEngine):
-        """ Constructor
-
-            :params: execution_engine, instance of execution engine that host the current PostProcessingManager instance
-            :type: ExecutionEngine
         """
+        Constructor
 
+        :params: execution_engine, instance of execution engine that host the current PostProcessingManager instance
+        :type: ExecutionEngine
+        """
         # Associated execution exengine
         self.__execution_engine = execution_engine
 
@@ -56,11 +57,11 @@ class PostProcessingManager:
 
     @property
     def namespace_post_processing(self):
-        """ Return the dict of namespace <=> post processing association
+        """
+        Return the dict of namespace <=> post processing association
 
         :return: Dictionary {namespace: PostProcessing[]}
         """
-
         return self.__namespace_postprocessing_dict
 
     def get_post_processing_functions_from_module(self, module_name: str):
@@ -85,7 +86,8 @@ class PostProcessingManager:
             raise ValueError(f'Unable to load post processing function in the module : {module_name}.{PostProcessingManager.POST_PROCESSING_FUNCTION_NAME}') from ex
 
     def add_post_processing_module_to_namespace(self, namespace_identifier: str, module_name: str):
-        """ Method that add a couple of filter+post processing function to a dedicated namespace into
+        """
+        Method that add a couple of filter+post processing function to a dedicated namespace into
         the PostProcessingManager
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -95,7 +97,6 @@ class PostProcessingManager:
                 (see PostProcessingManager.FILTER_FUNCTION_NAME and PostProcessingManager.POST_PROCESSING_FUNCTION_NAME)
         :type: string (python module like)
         """
-
         # Try to resolve post processings functions keeping in mind that filter
         # function can be optional
         filters_function, post_processing_function = self.get_post_processing_functions_from_module(module_name=module_name)
@@ -103,7 +104,8 @@ class PostProcessingManager:
         self.add_post_processing_functions_to_namespace(namespace_identifier, filters_function, post_processing_function)
 
     def remove_post_processing_module_to_namespace(self, namespace_identifier: str, module_name: str, missing_ok: bool = True):
-        """ Method that removes a couple of filter+post processing function to a dedicated namespace into
+        """
+        Method that removes a couple of filter+post processing function to a dedicated namespace into
         the PostProcessingManager
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -127,7 +129,8 @@ class PostProcessingManager:
                                                    filter_func: callable,
                                                    post_processing_func: callable,
                                                    missing_ok: bool = True):
-        """ Method that removes a couple of filter+post processing function to a dedicated namespace into
+        """
+        Method that removes a couple of filter+post processing function to a dedicated namespace into
         the PostProcessingManager
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -142,7 +145,6 @@ class PostProcessingManager:
         :params: missing_ok, if false, raises an exception if post_processing is not found.
         :type: bool
         """
-
         # Initialize the namespace placeholder in dictionary if needed
         if namespace_identifier not in self.__namespace_postprocessing_dict:
             if missing_ok:
@@ -171,7 +173,8 @@ class PostProcessingManager:
                                                    namespace_identifier: str,
                                                    filter_func: callable,
                                                    post_processing_func: callable):
-        """ Method that add a couple of filter+post processing function to a dedicated namespace into
+        """
+        Method that add a couple of filter+post processing function to a dedicated namespace into
         the PostProcessingManager
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
@@ -183,7 +186,6 @@ class PostProcessingManager:
         :params: post_processing_func, methods that generate post processing for the associated post processing
         :type: (func)(ExecutionEngine, namespace, ChartFilter[]): list (TwoAxesInstanciatedChart/InstanciatedPieChart/InstanciatedTable) or json oject list
         """
-
         # Initialize the namespace placeholder in dictionary if needed
         if namespace_identifier not in self.__namespace_postprocessing_dict:
             self.__namespace_postprocessing_dict[namespace_identifier] = []
@@ -197,25 +199,25 @@ class PostProcessingManager:
             post_processing_object)
 
     def remove_namespace(self, namespace_identifier: str):
-        """ Method remove a namespace entry from the inner dictionary
+        """
+        Method remove a namespace entry from the inner dictionary
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
         :type: string
         """
-
         # Robustness and remove dictionary key
         if namespace_identifier in self.__namespace_postprocessing_dict:
             del self.__namespace_postprocessing_dict[namespace_identifier]
 
     def get_post_processing(self, namespace_identifier: str):  # -> list["PostProcessing"]:
-        """ Method that retrieve post processing object using a given namespace
+        """
+        Method that retrieve post processing object using a given namespace
 
         :params: namespace_identifier, namespace that hold post processing given as arguments
         :type: string
 
         :returns: PostProcessing[]
         """
-
         results = []
 
         # Robustness and remove dictionary key
@@ -226,29 +228,31 @@ class PostProcessingManager:
 
 
 class PostProcessing:
-    """ This class is intended to store two functions pointer related to a post processing:
+    """
+    This class is intended to store two functions pointer related to a post processing:
     - a filter generator function
     - a post processing generator function
     """
 
     def __init__(self, filter_func: callable, post_processing_func: callable, logger: logging.Logger):
-        """ Constructor
+        """
+        Constructor
 
-            :params: filter_func, methods that generate filter for the associated post processing
-            :type: (func)(ExecutionEngine, namespace): ChartFilter[]
+        :params: filter_func, methods that generate filter for the associated post processing
+        :type: (func)(ExecutionEngine, namespace): ChartFilter[]
 
-            :params: post_processing_func, methods that generate post processing for the associated post processing
-            :type: (func)(ExecutionEngine, namespace, ChartFilter[]): list (TwoAxesInstanciatedChart/InstanciatedPieChart/InstanciatedTable) or json oject list
+        :params: post_processing_func, methods that generate post processing for the associated post processing
+        :type: (func)(ExecutionEngine, namespace, ChartFilter[]): list (TwoAxesInstanciatedChart/InstanciatedPieChart/InstanciatedTable) or json oject list
 
         """
-
         self.__filter_func = filter_func
         self.__post_processing_func = post_processing_func
         self.__logger = logger
         self.post_processing_error = ''
 
     def resolve_filters(self, execution_engine: ExecutionEngine, namespace: str):  # -> list[ChartFilter]:
-        """ Method that execute filters stored function and return the results
+        """
+        Method that execute filters stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
         :type: ExecutionEngine
@@ -277,7 +281,8 @@ class PostProcessing:
     def resolve_post_processings(self, execution_engine: ExecutionEngine, namespace: str,
                                  filters):  # list[ChartFilter])
         # -> list[Union[TwoAxesInstanciatedChart, InstanciatedPieChart, InstanciatedTable]]:
-        """ Method that execute stored function and return the results
+        """
+        Method that execute stored function and return the results
 
         :params: execution_engine, instance of execution engine that allow to resolve post processing
         :type: ExecutionEngine
@@ -310,7 +315,5 @@ class PostProcessing:
         return post_processings
 
     def matchs_functions(self, filter_func: callable, post_processing_func: callable):
-        """
-        Returns True if functions match
-        """
+        """Returns True if functions match"""
         return filter_func == self.__filter_func and post_processing_func == self.__post_processing_func

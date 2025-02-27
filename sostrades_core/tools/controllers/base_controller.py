@@ -20,9 +20,8 @@ from .controller import Controller
 
 
 class BaseController(Controller):
-    """
-    BaseController Class
-    """
+    """BaseController Class"""
+
     # --Class Variables
     ERROR_MSG = 'ERROR BaseController.'
     CLASSTYPE = 'BC'

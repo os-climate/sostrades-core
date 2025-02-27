@@ -20,9 +20,8 @@ from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 class SoSMDOScenario(MDOScenario):
-    """
-    Generic implementation of Optimization Scenario
-    """
+    """Generic implementation of Optimization Scenario"""
+
     # Default values of algorithms
 
     # ontology information
@@ -50,11 +49,7 @@ class SoSMDOScenario(MDOScenario):
                  maximize_objective,
                  logger: logging.Logger,
                  reduced_dm=None):
-
-        """
-        Constructor
-        """
-
+        """Constructor"""
         super().__init__(disciplines,
                          objective_name,
                          design_space,
@@ -77,10 +72,6 @@ class SoSMDOScenario(MDOScenario):
         self.mdo_options = {}
 
     def _execute(self):
-        '''
-
-        '''
-
         if self.eval_mode:
             self.run_eval_mode()
         else:

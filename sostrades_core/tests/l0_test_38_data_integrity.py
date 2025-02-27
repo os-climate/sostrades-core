@@ -24,9 +24,8 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class TestDataIntegrity(unittest.TestCase):
-    """
-    Scatter data discipline test class
-    """
+    """Scatter data discipline test class"""
+
     def assert_string_equal(self, string1: str, string2: str):
         string1 = string1.replace('\n', '').replace('\t', '')
         string2 = string2.replace('\n', '').replace('\t', '')
@@ -34,9 +33,7 @@ class TestDataIntegrity(unittest.TestCase):
         self.assertEqual(string1, string2, )
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'Coupling'
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
@@ -314,9 +311,7 @@ class TestDataIntegrity(unittest.TestCase):
             integrity_msg, '')
 
     def test_04_check_dataframe_descriptor(self):
-        '''
-        Check the subtypes of a dataframe
-        '''
+        '''Check the subtypes of a dataframe'''
         disc1_builder = self.exec_eng.factory.get_builder_from_module(
             'Disc1', self.mod_path_all_types)
         ns_test = self.exec_eng.ns_manager.add_ns(

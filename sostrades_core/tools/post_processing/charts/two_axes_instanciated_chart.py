@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/11/14-2024/05/17 Copyright 2023 Capgemini
+Modifications on 2023/11/14-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,18 +31,15 @@ Class that define a 2 dimensional instantiated chart
 
 
 class InstanciatedSeriesException(Exception):
-    """ Overload Exception basic type
-    """
+    """Overload Exception basic type"""
 
 
 class InstanciatedSeries (SeriesTemplate):
-    """ Class that define a series abscissa and ordinate list with a name
-    """
+    """Class that define a series abscissa and ordinate list with a name"""
 
 
 class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
-    """ Class that define a 2 dimensional chart template
-    """
+    """Class that define a 2 dimensional chart template"""
 
     CUMULATIVE_TO_ZERO_Y = 'tozeroy'
     CUMULATIVE_TO_NEXT_Y = 'tonexty'
@@ -67,7 +64,6 @@ class TwoAxesInstanciatedChart(TwoAxesChartTemplate):
 
         :return plotly.graph_objects.go instance
         """
-
         fig = go.Figure()
 
         # -- Series and cumulative surface management

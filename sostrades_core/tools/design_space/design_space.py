@@ -38,6 +38,7 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
 
     Returns:
         design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
+
     """
     names = list(dspace_df[VARIABLES])
     values = list(dspace_df[VALUES])
@@ -98,6 +99,18 @@ def create_gemseo_dspace_from_dspace_df(dspace_df):
 
 
 def check_design_space_data_integrity(design_space, possible_variables_types):
+    """
+    Checks the integrity of the design space data by validating variables and their associated properties.
+
+    Args:
+        design_space (pandas.DataFrame): The design space dataframe containing variables and their properties.
+        possible_variables_types (dict): A dictionary that maps variable names to their possible types, used for validation.
+
+    Returns:
+        list of str: A list of error messages identifying issues with the design space, such as invalid variables,
+                     inconsistent dimensions, or incorrect deactivation of variables.
+
+    """
     design_space_integrity_msg = []
     if design_space.empty or not design_space[VARIABLES].tolist():
         design_space_integrity_msg.append("The design space should contain at least one variable.")
@@ -142,6 +155,7 @@ def _check_design_space_dimensions_for_one_variable(design_space_row):
 
     Arguments:
         design_space_row (pd.Series): row of the design space dataframe to check
+
     """
     lb = design_space_row[LOWER_BOUND] if LOWER_BOUND in design_space_row.index else None
     ub = design_space_row[UPPER_BOUND] if UPPER_BOUND in design_space_row.index else None
@@ -172,6 +186,7 @@ def _check_deactivation_for_one_variable(design_space_row):
 
     Arguments:
         design_space_row (pd.Series): row of the design space dataframe to check
+
     """
     act = design_space_row[LIST_ACTIVATED_ELEM] if LIST_ACTIVATED_ELEM in design_space_row.index else None
     enabled = design_space_row[ENABLE_VARIABLE_BOOL]  # if ENABLE_VARIABLE_BOOL in design_space_row.index else True

@@ -28,14 +28,10 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestVerySimpleMultiScenario(unittest.TestCase):
-    """
-    SoSVerySimpleMultiScenario test class
-    """
+    """SoSVerySimpleMultiScenario test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
@@ -125,10 +121,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.y'), self.y2)
 
     def test_02_ns_to_update_capability(self):
-        '''
-        Check that only namespaces in ns_to_update list are updated
-        '''
-
+        '''Check that only namespaces in ns_to_update list are updated'''
         self.exec_eng.scattermap_manager.add_build_map('new_map'
                                                        , {'ns_to_update': ['ns_ac', 'ns_out_disc3']})
 
@@ -183,10 +176,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.y'), self.y2)
 
     def test_03_ns_not_to_update_capability(self):
-        '''
-        Check that only namespaces in ns_to_update list are updated
-        '''
-
+        '''Check that only namespaces in ns_to_update list are updated'''
         with self.assertRaises(Exception) as cm:
             self.exec_eng.scattermap_manager.add_build_map('new_map'
                                                            , {'ns_to_update': ['ns_ac', 'ns_out_disc3'],
@@ -249,9 +239,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.scenario_2.y'), self.y2)
 
     def test_04_scatter_list_output_capability(self):
-        '''
-        Check that the scatter_list is correctly created in output of the driver
-        '''
+        '''Check that the scatter_list is correctly created in output of the driver'''
         scatter_list_name = 'scenario_list'
         self.exec_eng.scattermap_manager.add_build_map('new_map', {'scatter_list': (scatter_list_name, 'ns_list')})
         ns_list_value = f'{self.study_name}.multi_scenarios'
@@ -279,9 +267,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
         self.assertEqual(scenario_list_value, self.scenario_list)
 
     def test_05_scatter_name_output_capability(self):
-        '''
-        Check that the scatter_list is correctly created in output of the driver
-        '''
+        '''Check that the scatter_list is correctly created in output of the driver'''
         scatter_name = 'scenario_name'
         self.exec_eng.scattermap_manager.add_build_map('new_map', {'scatter_name': scatter_name})
 

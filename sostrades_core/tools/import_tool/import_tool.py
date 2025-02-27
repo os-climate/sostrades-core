@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import inspect
 import os
 from importlib import import_module
@@ -20,9 +22,7 @@ from typing import Any
 
 
 def get_class_from_path(class_path: str) -> type[Any]:
-    """
-    Get a class object from its class path i.e. module_poth.ClassName.
-    """
+    """Get a class object from its class path i.e. module_poth.ClassName."""
     module_struct_list = class_path.split('.')
     import_name = '.'.join(module_struct_list[:-1])
     m = import_module(import_name)
@@ -34,7 +34,6 @@ def get_module_class_path(class_name, folder_list):
     Return the module path of a class in a list of directories
     Return the first found for now ..
     """
-
     module_class_path = None
     for folder in folder_list:
         # Get the module of the folder

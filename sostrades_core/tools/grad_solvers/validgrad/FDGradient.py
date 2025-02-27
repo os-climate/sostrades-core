@@ -79,8 +79,11 @@ class FDGradient(object):
     def grad_f(self, x, args=None):
         """
         Gradient calculation. Calls the numerical scheme.
+
         Args:
             x : the variables at which gradient is computed.
+            args : Args to propagate to __fpointer
+
         """
         # print('grad_f call')
 

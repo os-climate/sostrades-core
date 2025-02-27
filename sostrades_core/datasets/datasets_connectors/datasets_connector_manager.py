@@ -29,18 +29,16 @@ from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
 class DatasetConnectorNotFoundException(DatasetGenericException):
-    """
-    Exception when a dataset connector is not found
-    """
+    """Exception when a dataset connector is not found"""
+
     def __init__(self, connector_name: str):
         self.connector_name = connector_name
         super().__init__(f"Dataset connector '{connector_name}' not found")
 
 
 class DatasetsConnectorManager(metaclass=NoInstanceMeta):
-    """
-    Datasets connector manager
-    """
+    """Datasets connector manager"""
+
     CONNECTOR_TYPE_STR = "connector_type"
     CONNECTOR_IDENTIFIER_STR = AbstractDatasetsConnector.CONNECTOR_ID
     CONNECTOR_ARGS_STR = "connector_args"
@@ -63,6 +61,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
 
         Raises:
             DatasetConnectorNotFoundException: If the connector is not found
+
         """
         cls.__logger.debug(f"Getting connector {connector_identifier}")
         if connector_identifier not in cls.__registered_connectors:
@@ -91,6 +90,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
 
         Returns:
             AbstractDatasetsConnector: The registered connector
+
         """
         cls.__logger.debug(f"Registering connector {connector_identifier}")
         if connector_identifier in cls.__registered_connectors.keys():
@@ -109,6 +109,7 @@ class DatasetsConnectorManager(metaclass=NoInstanceMeta):
 
         Args:
             file_path (str): Path to the JSON file
+
         """
         with open(file=file_path, mode="r", encoding="utf-8") as file:
             json_data = json.load(file)

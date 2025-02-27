@@ -20,14 +20,10 @@ from sostrades_core.tools.scenario.scenario_generator import ScenarioGenerator
 
 
 class TestScenarioGenerator(unittest.TestCase):
-    """
-    Scenario generator test class
-    """
+    """Scenario generator test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.scenario_generator = ScenarioGenerator()
 
         dict_products = {'Airbus': [['CH19_Kero'], ['CH19_Kero', 'CH19_H2']],
@@ -50,9 +46,7 @@ class TestScenarioGenerator(unittest.TestCase):
                        {'envscenarios': '2DS', 'products': ['CH19_Kero', 'CH19_H2', 'BCH19_H2']}]
 
     def test_01_generate_scenarios(self):
-        '''
-        default initialisation test
-        '''
+        '''Default initialisation test'''
         self.generated_scenarios = self.scenario_generator.generate_scenarios(
             self.dict_parameters)
 

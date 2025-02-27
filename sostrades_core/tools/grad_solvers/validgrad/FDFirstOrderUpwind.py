@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/26 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,9 +24,7 @@ from .FDScheme import FDScheme
 
 
 class AbstractFDFirstOrderUpwind(FDScheme):
-    """"
-    Abstract class for the first order schemes.
-    """
+    """Abstract class for the first order schemes."""
 
     def __init__(self, fd_step, bounds=None):
         FDScheme.__init__(self, fd_step, bounds=bounds)
@@ -47,7 +45,6 @@ class AbstractFDFirstOrderUpwind(FDScheme):
 
 
 class FDFirstOrderUpwind(AbstractFDFirstOrderUpwind):
-
     """
     First order upwind finite differences scheme.
     grad = (f(x+fd_step)-f(x))/(fd_step)
@@ -87,7 +84,6 @@ class FDFirstOrderUpwind(AbstractFDFirstOrderUpwind):
 
 
 class FDFirstOrderUpwindComplexStep(AbstractFDFirstOrderUpwind):
-
     """
     Complex step, first order gradient calculation.
     Enables a much lower step than real finite differences,

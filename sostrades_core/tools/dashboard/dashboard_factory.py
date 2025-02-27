@@ -36,7 +36,6 @@ def generate_dashboard(execution_engine, post_processings):
 
     :return: serialized dashboard template
     """
-
     try:
 
         # Open dashboard_template file

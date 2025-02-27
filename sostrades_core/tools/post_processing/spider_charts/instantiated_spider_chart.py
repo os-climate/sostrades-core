@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ Class that define a spider chart display as post post processing
 
 
 class SpiderChartTrace:
-    """ Class that define spider chart trace
-    """
+    """Class that define spider chart trace"""
 
     def __init__(self, trace_name='', theta_values=[], radius_values=[]):
-        """  Init of the class
+        """
+        Init of the class
 
         @param trace_name, name of the trace
         @param str
@@ -42,7 +42,6 @@ class SpiderChartTrace:
         @param radius_values, values of spider chart on radius with value as text
         @type list
         """
-
         self.trace_name = trace_name
 
         if not isinstance(theta_values, list):
@@ -62,11 +61,11 @@ class SpiderChartTrace:
 
 
 class InstantiatedSpiderChart(AbstractPostProcessingPlotlyTooling):
-    """ Class that define spider chart display as post post processing
-    """
+    """Class that define spider chart display as post post processing"""
 
     def __init__(self, chart_name=''):
-        """  Init of the class
+        """
+        Init of the class
 
         @param chart_name: name of the chart
         @type str
@@ -79,7 +78,8 @@ class InstantiatedSpiderChart(AbstractPostProcessingPlotlyTooling):
         self.chart_name = chart_name
 
     def add_trace(self, trace):
-        """  Method to add trace to current spider chart
+        """
+        Method to add trace to current spider chart
 
         @param trace: trace instance to add
         @type SpiderChartTrace
@@ -90,7 +90,8 @@ class InstantiatedSpiderChart(AbstractPostProcessingPlotlyTooling):
         self.__traces.append(trace)
 
     def to_plotly(self, logger=None):
-        """ Convert current instance into a plotly object
+        """
+        Convert current instance into a plotly object
 
         @param logger: logging object to log message
         @type Logging.logger
@@ -127,7 +128,8 @@ class InstantiatedSpiderChart(AbstractPostProcessingPlotlyTooling):
         return fig
 
     def to_plotly_dict(self, logger=None):
-        """ Method that convert current instance to plotly object and then to a dictionary
+        """
+        Method that convert current instance to plotly object and then to a dictionary
 
         @param logger: logger instance
         @type Logging.loger

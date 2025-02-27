@@ -13,12 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import logging
 import os
 import pickle
-from typing import Any, Tuple
+from typing import TYPE_CHECKING, Any, Tuple
 
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 from sostrades_core.datasets.dataset_info.dataset_info_v0 import DatasetInfoV0
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
     AbstractDatasetsConnector,
@@ -26,11 +27,13 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
     DatasetNotFoundException,
 )
 
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+
 
 class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
-    """
-    Specific dataset connector for dataset in pickle format
-    """
+    """Specific dataset connector for dataset in pickle format"""
+
     VALUE_STR = "value"
     SOS_NS_SEPARATOR = "."
 
@@ -41,6 +44,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
         Args:
             connector_id (str): Identifier for the connector
             file_path (str): File path for this dataset connector
+
         """
         super().__init__()
         self.__file_path = file_path
@@ -62,6 +66,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             str: Key in pickle
+
         """
         return dataset_id + SoSPickleDatasetsConnector.SOS_NS_SEPARATOR + data_tag
 
@@ -75,6 +80,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             Tuple[str, str]: Dataset id and data name
+
         """
         spl = name_in_pickle.split(SoSPickleDatasetsConnector.SOS_NS_SEPARATOR)
         data_name = spl[-1]
@@ -94,9 +100,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
             self.__pickle_data = pickle.load(file=file)
 
     def __save_pickle_data(self) -> None:
-        """
-        Method to save data to pickle file
-        """
+        """Method to save data to pickle file"""
         db_path = self.__file_path
         if not os.path.exists(db_path):
             raise DatasetGenericException() from FileNotFoundError(f"The connector pickle file is not found at {db_path}")
@@ -113,6 +117,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             bool: True if dataset exists, False otherwise
+
         """
         return dataset_id in self.get_datasets_available()
 
@@ -126,6 +131,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: Retrieved data
+
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier.dataset_id} for connector {self}")
         # Read pickle if not read already
@@ -153,6 +159,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: Written data
+
         """
         # Read pickle if not read already
         self.__logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
@@ -179,6 +186,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: All values from the dataset
+
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier.dataset_id} for connector {self}")
         # Read pickle if not read already
@@ -203,6 +211,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             list[AbstractDatasetInfo]: List of available datasets
+
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
         # Read pickle if not read already
@@ -223,6 +232,7 @@ class SoSPickleDatasetsConnector(AbstractDatasetsConnector):
 
         Returns:
             dict[str, Any]: Written data
+
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         if not self.__has_dataset(dataset_identifier.dataset_id):

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/13-2025/01/16 Copyright 2025 Capgemini.
+Modifications on 2023/04/13-2025/02/18 Copyright 2025 Capgemini.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -296,7 +296,8 @@ class TestUncertaintyQuantification(unittest.TestCase):
         """
 
     def test_04_uncertainty_quantification_with_arrays_in_input_and_outputs(self):
-        """This tests evaluates the capacity to perform uncertainty quantification when some inputs are arrays and
+        """
+        This tests evaluates the capacity to perform uncertainty quantification when some inputs are arrays and
         some outputs are arrays.
         """
         builder = self.factory.get_builder_from_process(self.repo, self.proc_name)

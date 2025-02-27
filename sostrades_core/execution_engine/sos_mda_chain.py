@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/03/02-2024/07/04 Copyright 2023 Capgemini
+Modifications on 2023/03/02-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -53,7 +53,8 @@ def get_available_linear_solvers():
 
 
 class SoSMDAChain(MDAChain):
-    """GEMSEO Overload.
+    """
+    GEMSEO Overload.
 
     A chain of sub-MDAs. The execution sequence is provided by the :class:`.DependencyGraph`.
     """
@@ -112,13 +113,24 @@ class SoSMDAChain(MDAChain):
     ) -> None:
         """
         Args:
+            disciplines: set of disciplines in the MDA
+            logger: object logging system to use
+            reduced_dm: reduced version of datamanager for i/o handling
             inner_mda_name: The class name of the inner-MDA.
-            n_processes: The maximum simultaneous number of threads if ``use_threading``
-                is set to True, otherwise processes, used to parallelize the execution.
+            max_mda_iter: maximum of iterations of the MDA that can be conducted
+            name: name of the MDA
             chain_linearize: Whether to linearize the chain of execution. Otherwise,
                 linearize the overall MDA with base class method. This last option is
                 preferred to minimize computations in adjoint mode, while in direct
                 mode, linearizing the chain may be cheaper.
+            tolerance: target maximum residual at convergence
+            linear_solver_tolerance: tolerance for linear solver
+            use_lu_fact: whether to use LU factorization
+            grammar_type: type of grammar used
+            coupling_structure: coupling structure
+            log_convergence: Whether to log the MDA convergence, expressed in terms of normed residuals.
+            linear_solver: The type of linear solver to be used
+            linear_solver_settings: settings for linear solver
             mdachain_parallelize_tasks: Whether to parallelize the parallel tasks, if
                 any.
             mdachain_parallel_settings: The options of the MDOParallelChain instances, if
@@ -126,7 +138,9 @@ class SoSMDAChain(MDAChain):
             initialize_defaults: Whether to create a :class:`.MDOInitializationChain`
                 to compute the eventually missing :attr:`.default_input_data` at the first
                 execution.
+            scaling_method: scaling method applied for computation of residual
             **inner_mda_options: The options of the inner-MDAs.
+
         """
         self.logger = logger
         self.is_sos_coupling = True
@@ -305,7 +319,8 @@ class SoSMDAChain(MDAChain):
     # ----------------------------------------------------
 
     def _check_nan_in_data(self, data):
-        """Using entry data, check if nan value exist in data's
+        """
+        Using entry data, check if nan value exist in data's
 
         :params: data
         :type: composite data
@@ -380,6 +395,7 @@ class SoSMDAChain(MDAChain):
 
         Return:
             List[string] The names of the input variables.
+
         """
         if not filtered_inputs:
             return self.input_grammar.names
@@ -395,6 +411,7 @@ class SoSMDAChain(MDAChain):
 
         Returns:
             List[str]: The names of the output variables.
+
         """
         # Initialize the output data names from the output grammar
         output_data_names = set(self.output_grammar.names)
@@ -455,6 +472,7 @@ class SoSMDAChain(MDAChain):
 
         Args:
             input_data: the input_data to populate with outputs from the pre-run
+            driver_sub_disciplines: drivers sub disciplines
 
         Returns: Input_data populated with pre-run from subcouplings
                 The concept of pre-run works if you pre-run low level mdachain first to retrieve strong coupling values for high level ones
@@ -463,7 +481,6 @@ class SoSMDAChain(MDAChain):
                 If they are then pre-run in the order of the sub disciplines to pre-run the driver sub-coupling first before pre-run the mother coupling
 
         '''
-
         for task in self.coupling_structure.sequence:
             for component in task:
                 for disc in component:

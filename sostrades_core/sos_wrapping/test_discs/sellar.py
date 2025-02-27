@@ -31,6 +31,17 @@ Adapted from GEMSEO examples
 
 
 def sqrt_complex(y):
+    """
+    Returns the square root of a given number. If the number is non-negative and of type 'floating',
+    it computes the square root using a regular NumPy function. Otherwise, it uses a custom function for complex numbers.
+
+    Args:
+        y (float or complex): The number for which to compute the square root.
+
+    Returns:
+        float or complex: The square root of the input number.
+
+    """
     if isinstance(y, floating) and y >= 0:
         return sqrt_np(y)
     else:
@@ -38,6 +49,17 @@ def sqrt_complex(y):
 
 
 def exp_complex(y):
+    """
+    Returns the exponential of a given number. If the number is non-negative and of type 'floating',
+    it computes the exponential using a regular NumPy function. Otherwise, it uses a custom function for complex numbers.
+
+    Args:
+        y (float or complex): The number for which to compute the exponential.
+
+    Returns:
+        float or complex: The exponential of the input number.
+
+    """
     if isinstance(y, floating) and y >= 0:
         return exp_np(y)
     else:
@@ -45,8 +67,8 @@ def exp_complex(y):
 
 
 class SellarProblem(SoSWrapp):
-    """ Sellar Optimization Problem functions
-    """
+    """Sellar Optimization Problem functions"""
+
     _maturity = 'Fake'
     DESC_IN = {'x': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'y_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
@@ -59,8 +81,7 @@ class SellarProblem(SoSWrapp):
                 'obj': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ computes
-        """
+        """Computes"""
         x, y_1, y_2, z = self.get_sosdisc_inputs(['x', 'y_1', 'y_2', 'z'])
         local_dv = self.get_sosdisc_inputs('local_dv')
 
@@ -73,7 +94,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def obj(x, z, y_1, y_2):
-        """Objective function
+        """
+        Objective function
 
         :param x: local design variables
         :type x: numpy.array
@@ -92,7 +114,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def c_1(y_1):
-        """First constraint on system level
+        """
+        First constraint on system level
 
         :param y_1: coupling variable from discipline 1
         :type y_1: numpy.array
@@ -103,7 +126,8 @@ class SellarProblem(SoSWrapp):
 
     @staticmethod
     def c_2(y_2):
-        """Second constraint on system level
+        """
+        Second constraint on system level
 
         :param y_2: coupling variable from discipline 2
         :type y_2: numpy.array
@@ -122,7 +146,6 @@ class SellarProblem(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         x, y_2 = self.get_sosdisc_inputs(['x', 'y_2'])
 
         self.set_partial_derivative('c_1', 'y_1', atleast_2d(array([-1.0])))
@@ -145,8 +168,8 @@ class SellarProblem(SoSWrapp):
 
 
 class Sellar1(SoSWrapp):
-    """ Discipline 1
-    """
+    """Discipline 1"""
+
     _maturity = 'Fake'
     DESC_IN = {'x': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
                'y_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
@@ -156,8 +179,7 @@ class Sellar1(SoSWrapp):
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ Discipline 1 execution
-        """
+        """Discipline 1 execution"""
         x, y_2, z = self.get_sosdisc_inputs(['x', 'y_2', 'z'])
         y_1 = self.compute_y_1(x, y_2, z)
         y1_out = {'y_1': array([y_1])}
@@ -165,7 +187,8 @@ class Sellar1(SoSWrapp):
 
     @staticmethod
     def compute_y_1(x, y_2, z):
-        """Solve the first coupling equation in functional form.
+        """
+        Solve the first coupling equation in functional form.
 
         :param x: vector of design variables local to discipline 1
         :type x: numpy.array
@@ -189,7 +212,6 @@ class Sellar1(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         z = self.get_sosdisc_inputs('z')
 
         self.set_partial_derivative('y_1', 'x', atleast_2d(array([1.0])))
@@ -201,8 +223,7 @@ class Sellar1(SoSWrapp):
 
 
 class Sellar2(SoSWrapp):
-    """ Discipline 2
-    """
+    """Discipline 2"""
 
     # ontology information
     _ontology_data = {
@@ -227,8 +248,7 @@ class Sellar2(SoSWrapp):
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ solves Discipline1
-        """
+        """Solves Discipline1"""
         y_1, z = self.get_sosdisc_inputs(['y_1', 'z'])
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': array([y_2])}
@@ -236,7 +256,8 @@ class Sellar2(SoSWrapp):
 
     @staticmethod
     def compute_y_2(y_1, z):
-        """Solve the second coupling equation in functional form.
+        """
+        Solve the second coupling equation in functional form.
 
         :param z: vector of shared design variables
         :type z: numpy.array
@@ -258,7 +279,6 @@ class Sellar2(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         y_1, debug_mode = self.get_sosdisc_inputs(['y_1', 'debug_mode_sellar'])
 
         self.set_partial_derivative('y_2', 'y_1', atleast_2d(
@@ -273,8 +293,7 @@ class Sellar2(SoSWrapp):
 
 
 class Sellar3(SoSWrapp):
-    """ Discipline 2 but with NaN in calculation on purpose for test
-    """
+    """Discipline 2 but with NaN in calculation on purpose for test"""
 
     # ontology information
     _ontology_data = {
@@ -301,8 +320,7 @@ class Sellar3(SoSWrapp):
                         'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
-        """ computes Discipline3
-        """
+        """Computes Discipline3"""
         y_1, z = self.get_sosdisc_inputs(['y_1', 'z'])
         error_string = self.get_sosdisc_inputs('error_string')
 
@@ -318,7 +336,8 @@ class Sellar3(SoSWrapp):
 
     @staticmethod
     def compute_y_2(y_1, z):
-        """Solve the second coupling equation in functional form.
+        """
+        Solve the second coupling equation in functional form.
 
         :param z: vector of shared design variables
         :type z: numpy.array
@@ -340,7 +359,6 @@ class Sellar3(SoSWrapp):
             If None, linearization should be performed
             on all outputs (Default value = None)
         """
-
         y_1 = self.get_sosdisc_inputs('y_1')
         error_string = self.get_sosdisc_inputs('error_string')
 
@@ -361,7 +379,8 @@ class Sellar3(SoSWrapp):
                 array([1e10])))
 
     def _check_min_max_gradients(self, jac):
-        '''Override the _check_min_max_gradients method from <gemseo.core.discipline> with a raise for test purposes
+        '''
+        Override the _check_min_max_gradients method from <gemseo.core.discipline> with a raise for test purposes
         THIS METHOD MUST BE UPDATED IF THE ORIGINAL METHOD CHANGES
         '''
         from numpy import max as np_max

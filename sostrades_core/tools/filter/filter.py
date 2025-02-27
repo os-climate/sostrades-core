@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2025/02/17-2025/02/17 Copyright 2025 Capgemini
+Modifications on 2025/02/17-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
 VAR_TYPE_ID = 'type'
 VAR_SUBTYPE_ID = 'subtype_descriptor'
 VAR_NUMERICAL = 'numerical'
@@ -22,7 +21,8 @@ BASE_TYPE_TO_CONVERT = ['dataframe', 'float', 'array']
 
 
 def check_subtype(var_full_name, subtype, type_to_check):
-    """This function checks that the subtype given to a list or dictionnary is compliant
+    """
+    This function checks that the subtype given to a list or dictionnary is compliant
     with the defined standard for subtype
     """
     if type(subtype).__name__ != 'dict':
@@ -44,8 +44,7 @@ def check_subtype(var_full_name, subtype, type_to_check):
 
 
 def filter_variables_to_convert(reduced_dm, list_to_filter, write_logs=False, logger=None):
-    """  filter variables to convert
-    """
+    """Filter variables to convert"""
     filtered_keys = []
 
     for variable in list_to_filter:

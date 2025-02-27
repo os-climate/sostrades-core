@@ -24,21 +24,15 @@ from .FDScheme import FDScheme
 
 
 class FDSecondOrderCentered(FDScheme):
-    """
-    Abstract class for the second order centered scheme
-    """
+    """Abstract class for the second order centered scheme"""
 
     def __init__(self, fd_step, bounds=None):
-        """
-        Constructor
-        """
+        """Constructor"""
         FDScheme.__init__(self, fd_step, bounds=bounds)
         self.set_order(2)
 
     def generate_samples(self):
-        """
-        Generate samples necessary to compute second order finite differences
-        """
+        """Generate samples necessary to compute second order finite differences"""
         x = self.get_x()
         e = self.get_fd_step()
         x_samples = []
@@ -63,9 +57,7 @@ class FDSecondOrderCentered(FDScheme):
         self.set_samples(x_samples)
 
     def compute_grad(self, y_array):
-        """
-        Compute gradient using 2nd order finite differences
-        """
+        """Compute gradient using 2nd order finite differences"""
         if isinstance(y_array, type(zeros(1))):
             n = len(shape(y_array))
             p = self.get_grad_dim()
@@ -88,9 +80,7 @@ class FDSecondOrderCentered(FDScheme):
                             str(type(y_array[0])) + " not implemented yet.")
 
     def compute_hessian(self, dy_array):
-        """
-        Compute the Hessian matrix of a scalar function from given function gradients by finite differences
-        """
+        """Compute the Hessian matrix of a scalar function from given function gradients by finite differences"""
         if isinstance(dy_array, type(zeros(1))):
             n = len(shape(dy_array))
             if n == 2:

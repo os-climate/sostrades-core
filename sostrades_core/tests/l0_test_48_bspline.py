@@ -24,9 +24,7 @@ from sostrades_core.tools.bspline.bspline import BSpline
 
 
 class TestBSpline(unittest.TestCase):
-    """
-    Class to test BSpline tools
-    """
+    """Class to test BSpline tools"""
 
     def setUp(self):
 

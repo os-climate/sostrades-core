@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16-2024/05/17 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/02/26 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ from .base_controller import BaseController
 
 
 class DesignVariable(BaseController):
-    """
-    PDesignVariable Class
-    """
+    """DesignVariable Class"""
+
     CLASS_MSG = 'DesignVariable'
     ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
 
@@ -77,9 +76,7 @@ class DesignVariable(BaseController):
             raise Exception(ERROR_MSG + ' Lower bound greater or equal to upper bound!')
 
     def set_value(self, value, flag_updates=True, raise_error=False):
-        """
-        Set value of the PDesignVariable
-        """
+        """Set value of the PDesignVariable"""
         BaseController.set_value(self, value, flag_updates=flag_updates)
         self.check_bounds(raise_error)
         self.__norm_value()
@@ -94,9 +91,7 @@ class DesignVariable(BaseController):
 
     # --methods
     def check_bounds(self, raise_error=False):
-        """
-        Check if variable is consistent
-        """
+        """Check if variable is consistent"""
         lbnd = self.__bounds[0]
         ubnd = self.__bounds[1]
         valid = True
