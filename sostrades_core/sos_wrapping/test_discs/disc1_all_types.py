@@ -40,12 +40,12 @@ class Disc1(SoSWrapp):
         'a': {'type': 'int'},
         'b': {'type': 'int', 'possible_values': [0, 2, 5]},
         'name': {'type': 'string', 'possible_values': ['A1', 'A2', 'A3']},
-        'x_dict': {'type': 'dict', 'default': {}},
+        'x_dict_test': {'type': 'dict', 'default': {}},
 
-        'y_array': {'type': 'array', 'default': np.array([])},
-        'z_list': {'type': 'list', 'default': []},
+        'y_array_test': {'type': 'array', 'default': np.array([])},
+        'z_list_test': {'type': 'list', 'default': []},
         'b_bool': {'type': 'bool', 'default': True},
-        'd': {'type': 'dataframe',
+        'd_test': {'type': 'dataframe',
               'dataframe_descriptor': {"years": ('int', None, True), "x": ('float', None, True)},
               'default': pd.DataFrame(columns=["years", "x"])}
     }
@@ -60,7 +60,7 @@ class Disc1(SoSWrapp):
         a = self.get_sosdisc_inputs('a')
         b = self.get_sosdisc_inputs('b')
         name = self.get_sosdisc_inputs('name')
-        x_dict = self.get_sosdisc_inputs('x_dict')
+        x_dict = self.get_sosdisc_inputs('x_dict_test')
 
         y_dict = {}
         for name_i, x_i in x_dict.items():
