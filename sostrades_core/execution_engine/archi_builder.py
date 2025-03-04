@@ -350,11 +350,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         for ns in builder_dict:
             self.children_dict[ns] = []
             for ns_child in builder_dict:
-                if (
-                        ns in ns_child
-                        and ns != ns_child
-                        and len(ns.split('.')) + 1 == len(ns_child.split('.'))
-                ):
+                filtered_archi_child_df = self.architecture_df.loc[
+                    self.architecture_df.apply(lambda row: ns_child.endswith(row[self.CURRENT]), axis=1)]
+                if ns in ns_child and ns != ns_child and len(filtered_archi_child_df.loc[
+                                                                 filtered_archi_child_df.apply(
+                                                                     lambda row: ns.endswith(row[self.PARENT]),
+                                                                     axis=1)]
+                                                             ) == 1:
                     self.children_dict[ns].append(ns_child)
 
     def get_full_namespaces_from_archi(
@@ -415,10 +417,11 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             ]
         else:
             # get action of namespace splitted into current/parent
-            parent_name, current_name = namespace.split('.')[-2:]
+
             action = archi_df.loc[
-                (archi_df[self.CURRENT] == current_name)
-                & (archi_df[self.PARENT] == parent_name),
+                archi_df.apply(lambda row: namespace.endswith(row[self.PARENT] + '.' + row[self.CURRENT])
+                if row[self.PARENT] is not None
+                else False, axis=1),
                 self.ACTION,
             ].values[0]
         if isinstance(action, (str)):

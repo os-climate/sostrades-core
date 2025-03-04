@@ -869,7 +869,36 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
+    def test_13_point_in_names(self):
+        vb_builder_name = 'Business'
+        architecture_df = pd.DataFrame(
+            {'Parent': ['Business', 'Business', 'Remy.EXTRA', 'Tomato'],
+             'Current': ['Remy.EXTRA', 'Tomato', 'Opex.EXTRA', 'CAPEX'],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'ValueBlockDiscipline',
+                      'ValueBlockDiscipline'],
+             'Action': [('standard'), ('standard'), ('standard'), ('standard')],
+             'Activation': [True, True, False, False], })
 
+        builder = self.factory.create_architecture_builder(
+            vb_builder_name, architecture_df)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            builder)
+
+        self.exec_eng.load_study_from_input_dict({})
+        self.exec_eng.display_treeview_nodes()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
+                       f'|_ {self.namespace}',
+                       f'\t|_ {vb_builder_name}',
+                       '\t\t|_ Remy',
+                       '\t\t\t|_ EXTRA',
+                       '\t\t\t\t|_ Opex',
+                       '\t\t\t\t\t|_ EXTRA',
+                       '\t\t|_ Tomato',
+                       '\t\t\t|_ CAPEX', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 if '__main__' == __name__:
     cls = TestArchiBuilder()
     cls.setUp()
