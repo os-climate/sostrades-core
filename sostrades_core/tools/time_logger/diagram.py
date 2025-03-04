@@ -23,15 +23,11 @@ from sostrades_core.tools.folder_operations import makedirs_safe
 
 
 class Diagram(object):
-    '''
-    Diagram class to construct diagram for plot visualization
-    '''
+    '''Diagram class to construct diagram for plot visualization'''
 
     def __init__(self, logger, name, x_axis, y_axis,
                  save_dir=None, sub_save_dir=None, y_log_scale=False):
-        '''
-        Constructor for the Diagram class
-        '''
+        '''Constructor for the Diagram class'''
         self.__logger = logger
         self.__name = name
         self.__x_axis = x_axis
@@ -56,15 +52,11 @@ class Diagram(object):
             makedirs_safe(self.__save_dir)
 
     def add_curve(self, y_axis):
-        '''
-        Add a curve to the y_axis vector
-        '''
+        '''Add a curve to the y_axis vector'''
         self.__y_axis.append(y_axis)
 
     def plot(self, y_lim=None):
-        '''
-        Plot figures with matplotlib
-        '''
+        '''Plot figures with matplotlib'''
         x_list = self.__logger.get_data(self.__x_axis)
 
         single_curve = len(self.__y_axis) == 1

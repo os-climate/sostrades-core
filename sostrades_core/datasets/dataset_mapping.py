@@ -25,17 +25,15 @@ from sostrades_core.datasets.dataset_info.dataset_info_factory import DatasetInf
 
 
 class DatasetsMappingException(Exception):
-    """
-    Generic exception for dataset mapping
-    """
+    """Generic exception for dataset mapping"""
+
     pass
 
 
 @dataclass()
 class DatasetsMapping:
-    """
-    Stores namespace/dataset mapping
-    """
+    """Stores namespace/dataset mapping"""
+
     # Keys for parsing json
     NAMESPACE_KEY = "namespace_datasets_mapping"
     PROCESS_MODULE_PATH_KEY = "process_module_path"
@@ -82,11 +80,13 @@ class DatasetsMapping:
                 "v0|namespace3|*": path to other mapping json file
             }
         }
+
         Args:
             input_dict (dict): dict like input json object
 
-        Returns
+        Returns:
             DatasetsMapping object
+
         """
         datasets_infos = {}
         namespace_datasets_mapping = {}
@@ -174,6 +174,7 @@ class DatasetsMapping:
 
         Returns:
             dict[str, str]: A dictionary containing the extracted fields.
+
         """
         return cls.__extract_mapping_fields(mapping_key, cls.MAPPING_KEY_FIELDS, "mapping key")
 
@@ -194,6 +195,7 @@ class DatasetsMapping:
 
         Raises:
             ValueError: If the format of the mapping key or value is incorrect.
+
         """
         fields = mapping_key_or_value.split(cls.MAPPING_SEP)
         if len(fields) != len(format_fields):
@@ -214,6 +216,7 @@ class DatasetsMapping:
 
         Returns:
             DatasetsMapping: The deserialized DatasetsMapping object.
+
         """
         with open(file_path, "rb") as file:
             json_data = json.load(file)
@@ -230,6 +233,7 @@ class DatasetsMapping:
 
         Returns:
             Dict[AbstractDatasetInfo, Dict[str, str]]: A dictionary containing the datasets info.
+
         """
         datasets_mapping = {}
         anonimized_ns = namespace.replace(study_name, self.STUDY_PLACEHOLDER)
@@ -265,6 +269,7 @@ class DatasetsMapping:
 
         Returns:
             Tuple[Dict, Dict]: A tuple containing the datasets_parameters_mapping with all data to write in the datasets and mapping info + duplicated data values.
+
         """
         datasets_mapping = {}
         duplicates = {}
@@ -338,6 +343,7 @@ class DatasetsMapping:
 
         Returns:
             Dict[str, List[str]]: The updated namespace_datasets_mapping.
+
         """
         datasets_mapping = {}
         for namespace, datasets in self.namespace_datasets_mapping.items():
@@ -355,6 +361,7 @@ class DatasetsMapping:
 
         Returns:
             Dict[str, Dict[str, Dict[str, str]]]: The updated parameters_mapping.
+
         """
         parameters_mapping = {}
         for dataset_id, namespace_mapping in self.parameters_mapping.items():

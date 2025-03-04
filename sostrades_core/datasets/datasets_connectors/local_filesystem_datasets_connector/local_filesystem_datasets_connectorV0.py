@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -29,9 +31,8 @@ from sostrades_core.tools.folder_operations import makedirs_safe
 
 
 class LocalFileSystemDatasetsConnectorV0(LocalFileSystemDatasetsConnectorBase):
-    """
-    Specific dataset connector for dataset in local filesystem
-    """
+    """Specific dataset connector for dataset in local filesystem"""
+
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
 
     def __init__(self, connector_id: str, root_directory_path: str,
@@ -43,6 +44,7 @@ class LocalFileSystemDatasetsConnectorV0(LocalFileSystemDatasetsConnectorBase):
             connector_id (str): The identifier for the connector.
             root_directory_path (str): Root directory path for this dataset connector using filesystem.
             create_if_not_exists (bool, optional): Whether to create the root directory if it does not exist. Defaults to False.
+
         """
         super().__init__(connector_id=connector_id,
                          root_directory_path=root_directory_path,
@@ -60,6 +62,7 @@ class LocalFileSystemDatasetsConnectorV0(LocalFileSystemDatasetsConnectorBase):
 
         Returns:
             dict[str, Any]: Retrieved data.
+
         """
         self._logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier.dataset_id} for connector {self}")
 
@@ -97,6 +100,7 @@ class LocalFileSystemDatasetsConnectorV0(LocalFileSystemDatasetsConnectorBase):
 
         Returns:
             list[DatasetInfoV0]: List of datasets identifiers.
+
         """
         self._logger.debug(f"Getting all datasets for connector {self}")
         return [DatasetInfoV0(self.connector_id, dataset_id) for dataset_id in next(os.walk(self._root_directory_path))[1]]
@@ -112,6 +116,7 @@ class LocalFileSystemDatasetsConnectorV0(LocalFileSystemDatasetsConnectorBase):
 
         Returns:
             dict[str, Any]: Written values.
+
         """
         self._logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
 
@@ -149,6 +154,7 @@ class LocalFileSystemDatasetsConnectorV0(LocalFileSystemDatasetsConnectorBase):
 
         Returns:
             dict[str, Any]: All values from the dataset.
+
         """
         self._logger.debug(f"Getting all values for dataset {dataset_identifier.dataset_id} for connector {self}")
         dataset_directory = os.path.join(self._root_directory_path, dataset_identifier.dataset_id)
@@ -183,6 +189,7 @@ class LocalFileSystemDatasetsConnectorV0(LocalFileSystemDatasetsConnectorBase):
             data_types_dict (dict[str, str]): Dict of data types {name: type}.
             create_if_not_exists (bool, optional): Create the dataset if it does not exists (raises otherwise). Defaults to True.
             override (bool, optional): Override dataset if it exists (raises otherwise). Defaults to False.
+
         """
         self._logger.debug(f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
 

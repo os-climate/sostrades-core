@@ -29,9 +29,7 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for a coupling of Sellar Problem
-        """
+        """Usecase for a coupling of Sellar Problem"""
         ns = f'{self.study_name}'
         coupling_name = "SellarCoupling"
 
@@ -59,4 +57,3 @@ class Study(StudyManager):
         datasets_file = join(dirname(realpath(__file__)), "usecase_dataset_sellar_coupling.json")
         # Deserialize it
         return DatasetsMapping.from_json_file(datasets_file)
-

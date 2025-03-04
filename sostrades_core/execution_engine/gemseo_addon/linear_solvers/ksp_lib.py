@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/09-2024/06/24 Copyright 2023 Capgemini
+Modifications on 2023/06/09-2025/02/26 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -72,7 +72,8 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
 
 
     class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
-        """Interface to PETSC KSP.
+        """
+        Interface to PETSC KSP.
 
         For further information, please read
         https://petsc4py.readthedocs.io/en/stable/manual/ksp/
@@ -107,7 +108,8 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         }
 
         def _run(self, problem: LinearProblem, **settings: Any) -> ndarray:
-            """Run the algorithm.
+            """
+            Run the algorithm.
 
             Args:
                 problem: The linear problem to solve.
@@ -115,6 +117,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
 
             Returns:
                 The solution of the problem.
+
             """
             # Set default settings
             # TODO: move to main linear solver classes so that all solvers benefit from these default inputs definition
@@ -161,7 +164,8 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         def _run_petsc_strategy(
             self, problem: LinearProblem, solver: str, **settings
         ) -> tuple[NumberArray | None, int, Any]:
-            """Runs the solver.
+            """
+            Runs the solver.
 
             Args:
                 problem: The linear algebra problem to solve.
@@ -173,6 +177,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                   - the solution of the problem.
                   - the return code.
                   - the KSP problem.
+
             """
             # Initialize the KSP solver.
             options_cmd = settings.get("options_cmd")

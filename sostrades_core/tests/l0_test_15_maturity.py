@@ -20,9 +20,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestMaturity(unittest.TestCase):
-    """
-    Class to test the maturity of SoSDiscipline/Coupling
-    """
+    """Class to test the maturity of SoSDiscipline/Coupling"""
 
     def setUp(self):
         # Define maturities

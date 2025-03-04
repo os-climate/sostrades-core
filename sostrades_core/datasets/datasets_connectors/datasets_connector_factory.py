@@ -26,9 +26,8 @@ from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
 class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
-    """
-    Dataset connector factory
-    """
+    """Dataset connector factory"""
+
     __logger = logging.getLogger(__name__)
 
     @classmethod
@@ -49,6 +48,7 @@ class DatasetsConnectorFactory(metaclass=NoInstanceMeta):
 
         Raises:
             DatasetUnableToInitializeConnectorException: If the connector type is invalid.
+
         """
         cls.__logger.debug(f"Instantiating connector of type {connector_type}")
 

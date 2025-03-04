@@ -36,9 +36,7 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
 
 
 class TestExtendDataframe(unittest.TestCase):
-    """
-    Extend dataframe type for GEMSEO test class
-    """
+    """Extend dataframe type for GEMSEO test class"""
 
     def setUp(self):
 

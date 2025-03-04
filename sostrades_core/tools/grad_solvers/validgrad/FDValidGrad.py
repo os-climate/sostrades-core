@@ -22,9 +22,7 @@ from .FDGradient import FDGradient
 
 
 class FDValidGrad(object):
-    """
-    Finite differences gradient calculation and validation.
-    """
+    """Finite differences gradient calculation and validation."""
 
     def __init__(self, scheme_order, f_pointer, df_pointer, fd_step=1e-6, bounds=None):
         """
@@ -81,6 +79,7 @@ class FDValidGrad(object):
             ok : True if gradient is valid
             df_fd : optional finite differences gradient output
             df: optional analytical gradient output
+
         """
         df_fd = self.compute_fd_grad(x, args)
 
@@ -120,6 +119,7 @@ class FDValidGrad(object):
         Returns:
             ok : the status
             msg : message about the error
+
         """
         if len(df.shape) == 1 or not split_out:
             nfd = norm(df_fd)

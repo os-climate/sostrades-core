@@ -32,9 +32,7 @@ from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
 
 
 class TestValidGrad(unittest.TestCase):
-    """
-    Class to test gradient validation with grad_solvers tools
-    """
+    """Class to test gradient validation with grad_solvers tools"""
 
     def f_scalar(self, x):
         return np.sum(x)

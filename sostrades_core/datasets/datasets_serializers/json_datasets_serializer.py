@@ -13,6 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
 import logging
 from typing import Any
 
@@ -25,9 +27,8 @@ from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer i
 
 
 class JSONDatasetsSerializer(AbstractDatasetsSerializer):
-    """
-    Specific dataset serializer for dataset in json format
-    """
+    """Specific dataset serializer for dataset in json format"""
+
     def __init__(self):
         super().__init__()
         self.__logger = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             Any: Converted data
+
         """
         # retrieve the type of the data into the data_type_dict.
         # If the data type is not found, the data value is not converted
@@ -81,6 +83,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             Any: Converted data
+
         """
         # retrieve the type of the data into the data_type_dict.
         # If the data type is not found, the data value is not converted
@@ -100,7 +103,8 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
                     converted_data = self._serialize_array(data_value, data_name)
                 else:
                     converted_data = self._serialize_jsonifiable(data_value, data_name)
-                    self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
+            else:
+                self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
         except Exception as error:
             converted_data = data_value
             self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
@@ -116,6 +120,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             pd.DataFrame: Deserialized dataframe
+
         """
         return pd.DataFrame.from_dict(data_value)
 
@@ -128,6 +133,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             np.ndarray: Deserialized array
+
         """
         return np.array(data_value)
 
@@ -141,6 +147,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             dict: Serialized dataframe
+
         """
         return pd.DataFrame.to_dict(data_value, 'list')
 
@@ -154,6 +161,7 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             list: Serialized array
+
         """
         return data_value.tolist()
 
@@ -167,5 +175,6 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
 
         Returns:
             Any: Serialized data
+
         """
         return data_value

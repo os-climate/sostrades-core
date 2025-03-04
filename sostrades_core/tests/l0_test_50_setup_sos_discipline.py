@@ -22,14 +22,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestSetupSoSDiscipline(unittest.TestCase):
-    """
-    Class to test dynamic inputs/outputs adding in setup_sos_discipline method
-    """
+    """Class to test dynamic inputs/outputs adding in setup_sos_discipline method"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'SoSDisc'
         self.ee = ExecutionEngine('Test')
         self.ns_test = 'Test'
@@ -46,9 +42,7 @@ class TestSetupSoSDiscipline(unittest.TestCase):
         self.assertTrue(dm_assigned == expected)
 
     def test_01_setup_sos_discipline(self):
-        '''
-        check discipline execution with dynamic inputs/outputs
-        '''
+        '''Check discipline execution with dynamic inputs/outputs'''
         self.name = 'Test'
         self.ee = ExecutionEngine(self.name)
 
@@ -129,7 +123,6 @@ class TestSetupSoSDiscipline(unittest.TestCase):
         check discipline execution with dynamic inputs/outputs, with implementational checks assuring that the dynamic
         association of proxy and dm objects during configuration and de-association during run is OK
         '''
-
         self.name = 'Test'
         self.ee = ExecutionEngine(self.name)
 
@@ -230,9 +223,7 @@ class TestSetupSoSDiscipline(unittest.TestCase):
         self.check_proxy_and_dm_assigned(proxy_disc_1, expected=False)
 
     def test_03_setup_sos_disciplines_without_proxy_in_signature_demand_proxy_action_at_runtime(self):
-        '''
-        Check that requesting a proxy action during run leads to a crash confirming proxy un-assigned.
-        '''
+        '''Check that requesting a proxy action during run leads to a crash confirming proxy un-assigned.'''
         self.name = 'Test'
         self.ee = ExecutionEngine(self.name)
 

@@ -27,9 +27,8 @@ from sostrades_core.tools.grad_solvers.validgrad.FDValidGrad import FDValidGrad
 
 
 class NewtonRaphsonProblem():
-    """
-    Generic implementation of Newton Raphson Problem
-    """
+    """Generic implementation of Newton Raphson Problem"""
+
     ERROR_MSG = 'ERROR in NewtonRaphsonProblem.'
     WARNING_MSG = 'WARNING in NewtonRaphsonProblem.'
 
@@ -94,9 +93,7 @@ class NewtonRaphsonProblem():
 
     # -- Numerical parameters related methods
     def __init_numerical_parameters(self):
-        """
-        Default values for the
-        """
+        """Default values for the"""
         self.__relax_factor = 0.99
         self.__stop_residual = 1e-6
         self.__max_iterations = 100
@@ -138,9 +135,7 @@ class NewtonRaphsonProblem():
 
     # -- Newton-Raphson solver related methods
     def __init_iterations(self):
-        """
-        Initialize attributes before starting the iterations
-        """
+        """Initialize attributes before starting the iterations"""
         self.__W = deepcopy(self.__W0)
         # R0 = self.__R(self.__W0)
         # self.__Res0     = norm(R0)

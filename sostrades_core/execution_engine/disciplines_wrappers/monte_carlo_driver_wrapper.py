@@ -95,7 +95,8 @@ class StoppingCriterion(LowercaseStrEnum):
 
 
 class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
-    """A driver that performs quasi-Monte Carlo sampling on quantities of interest.
+    """
+    A driver that performs quasi-Monte Carlo sampling on quantities of interest.
 
     The sampling is a Randomized Quasi Monte Carlo of the uncertain space.
     """
@@ -171,13 +172,15 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
             self._stopping_criterion = StoppingCriterion.N_SAMPLES
 
     def _evaluate_n_samples(self, n_samples: int) -> Dataset:
-        """Sample the input distributions for a given number of samples and evaluate the outputs.
+        """
+        Sample the input distributions for a given number of samples and evaluate the outputs.
 
         Args:
             n_samples: The number of samples to evaluate.
 
         Returns:
             The dataset of input and output values.
+
         """
         formulation_settings = DisciplinaryOpt_Settings()
         mc_scenario = create_scenario(
@@ -198,13 +201,15 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         return mc_scenario.to_dataset()
 
     def _is_criterion_reached(self, dataset: Dataset) -> bool:
-        """Check whether the stopping criterion is reached.
+        """
+        Check whether the stopping criterion is reached.
 
         Args:
             dataset: The dataset containing the input and output values.
 
         Returns:
             Whether the criterion is reached.
+
         """
         n = dataset.shape[0]
         analysis = create_statistics(dataset, variable_names=["_".join(self.outputs)])
@@ -215,10 +220,12 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         return all(cv / sqrt(n) <= self._target_cv)
 
     def _compute_samples(self) -> Dataset:
-        """Compute the Monte Carlo samples until the stopping criterion is reached.
+        """
+        Compute the Monte Carlo samples until the stopping criterion is reached.
 
         Returns:
             The dataset of input and output values.
+
         """
         if self._stopping_criterion == StoppingCriterion.N_SAMPLES:
             return self._evaluate_n_samples(self._n_samples)
@@ -230,7 +237,8 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         return dataset
 
     def _process_outputs(self, evaluation_outputs: Dataset) -> None:
-        """Process and export the input and output values of the sampling.
+        """
+        Process and export the input and output values of the sampling.
 
         The output samples are gathered in a single array.
         We need to retrieve the size of each separate output
@@ -238,6 +246,7 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
 
         Args:
             evaluation_outputs: The dataset containing the input and output values.
+
         """
         n_samples = evaluation_outputs.shape[0]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
@@ -260,7 +269,8 @@ class MonteCarloDriverWrapper(DriverEvaluatorWrapper):
         self.store_sos_outputs_values({self.SoSOutputNames.OUTPUT_SAMPLES: samples_output_df})
 
     def run(self) -> None:
-        """Perform a Quasi Monte Carlo sampling of the selected output(s).
+        """
+        Perform a Quasi Monte Carlo sampling of the selected output(s).
 
         Sample the input distribution and evaluate the outputs until the stopping criterion is reached.
         This criterion can be based on the number of samples,

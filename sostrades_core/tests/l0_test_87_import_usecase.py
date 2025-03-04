@@ -73,7 +73,8 @@ class TestSoSimportUsecase(unittest.TestCase):
         self.with_modal = True
 
     def test_1_usecase_import_multi_instances_eval_simple_disc1_disc3(self):
-        """This test checks the usecase import capability in multi instance mode with eval.
+        """
+        This test checks the usecase import capability in multi instance mode with eval.
 
         It uses the test_disc1_disc3_list nested process.
         """

@@ -30,9 +30,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
-    """
-    Tornado chart Analysis class that generates sampling
-    """
+    """Tornado chart Analysis class that generates sampling"""
 
     GENERATOR_NAME = "TORNADO_CHART_ANALYSIS_GENERATOR"
 
@@ -51,9 +49,7 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
     SCENARIO_NAMES = SampleGeneratorWrapper.SCENARIO_NAME
 
     def __init__(self, logger: logging.Logger):
-        """
-        Constructor
-        """
+        """Constructor"""
         self.selected_inputs = []
         self.selected_inputs_types = {}
         self.ns_sampling = None
@@ -75,9 +71,7 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
             raise SampleTypeError(msg)
 
     def setup(self, proxy):
-        """
-        Method that setup the  method
-        """
+        """Method that setup the  method"""
         dynamic_inputs = {}
         dynamic_outputs = {}
 
@@ -150,7 +144,6 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
         generate samples: each scenario is a percentage applied to one of the variables.
         First scenario is the reference scenario (0% of variation)
         """
-
         selected_scenario_str = SampleGeneratorWrapper.SELECTED_SCENARIO
         scenario_names_str = SampleGeneratorWrapper.SCENARIO_NAME
 

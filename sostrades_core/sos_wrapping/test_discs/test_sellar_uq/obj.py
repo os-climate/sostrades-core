@@ -77,7 +77,8 @@ class SellarObj(SoSWrapp):
     """The output variables."""
 
     def run(self) -> dict[str, Any]:
-        """Run the model.
+        """
+        Run the model.
 
         Returns: The output of the model.
         """

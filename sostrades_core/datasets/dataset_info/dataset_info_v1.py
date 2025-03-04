@@ -23,9 +23,8 @@ from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V
 
 @dataclass(frozen=True)
 class DatasetInfoV1(AbstractDatasetInfo):
-    """
-    Stores the informations of a dataset V1
-    """
+    """Stores the informations of a dataset V1"""
+
     GROUP_ID_KEY = "group_id"
     MAPPING_ITEM_FIELDS = [
                         AbstractDatasetInfo.VERSION_ID_KEY,
@@ -43,6 +42,7 @@ class DatasetInfoV1(AbstractDatasetInfo):
 
         Returns:
             str: The dataset info id.
+
         """
         return self.get_mapping_id([self.version_id, self.connector_id, self.dataset_id, self.group_id])
 
@@ -53,6 +53,7 @@ class DatasetInfoV1(AbstractDatasetInfo):
 
         Returns:
             str: The version id.
+
         """
         return VERSION_V1
 
@@ -71,6 +72,7 @@ class DatasetInfoV1(AbstractDatasetInfo):
 
         Raises:
             DatasetsInfoMappingException: If the dataset name is '*'.
+
         """
         # check if the version is in the mapping key or not
         input_dict = DatasetInfoV1.extract_mapping_key_field(dataset_mapping_key, DatasetInfoV1.MAPPING_ITEM_FIELDS)
@@ -88,6 +90,7 @@ class DatasetInfoV1(AbstractDatasetInfo):
 
         Returns:
             DatasetInfoV1: Instance of DatasetInfoV1.
+
         """
         return DatasetInfoV1(
             connector_id=input_dict[DatasetInfoV1.CONNECTOR_ID_KEY],
@@ -105,6 +108,7 @@ class DatasetInfoV1(AbstractDatasetInfo):
 
         Returns:
             AbstractDatasetInfo: New DatasetInfo instance.
+
         """
         group_id = ""
         # if the group id is wildcard, the copy will have the group id as namespace

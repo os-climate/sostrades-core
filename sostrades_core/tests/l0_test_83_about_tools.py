@@ -22,14 +22,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestToolBuild(unittest.TestCase):
-    """
-    Tool building test class
-    """
+    """Tool building test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.study_name = 'MyCase'
         self.exec_eng = ExecutionEngine(self.study_name)

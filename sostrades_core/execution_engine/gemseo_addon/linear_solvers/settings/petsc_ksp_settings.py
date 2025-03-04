@@ -27,7 +27,8 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
 
 
     class SoSPreconditionerType(StrEnum):
-        """The type of the precondtioner.
+        """
+        The type of the precondtioner.
 
         See
         [https://www.mcs.anl.gov/petsc/petsc4py-current/docs/apiref/petsc4py.PETSc.PC.Type-class.html].
@@ -39,7 +40,8 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
 
 
     class BaseSoSPetscKSPSettings(BasePetscKSPSettings):
-        """The settings of the PETSc KSP algorithms.
+        """
+        The settings of the PETSc KSP algorithms.
 
         The default numerical parameters differ from gemseo_petsc.
         `_TARGET_CLASS_NAME` will be overloaded for each algorithm.

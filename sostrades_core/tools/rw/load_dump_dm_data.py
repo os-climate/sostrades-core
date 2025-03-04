@@ -68,9 +68,8 @@ class DirectLoadDump(AbstractLoadDump):
 
 
 class CryptedLoadDump(AbstractLoadDump):
-    '''
-    Encryption feature to securise load and dump of exported study data
-    '''
+    '''Encryption feature to securise load and dump of exported study data'''
+
     key_enc_basename = 'key.bin.enc'
 
     def __init__(self, private_key_file, public_key_file):

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2025/01/29 Copyright 2025 Capgemini
+Modifications on 2023/05/12-2025/02/18 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@ class SoSBuilderException(Exception):
     pass
 
 class SoSBuilder:
-    '''
-    Class that stores a class and associated attributes to be built afterwards
-    '''
+    '''Class that stores a class and associated attributes to be built afterwards'''
 
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
     SPECIFIC_PROXYS = [
@@ -84,16 +82,15 @@ class SoSBuilder:
         return list(self.__associated_namespaces_dict.values())
 
     def set_builder_info(self, key_info: str, value_info: Any):
-        '''Sets the arguments that will be needed to instantiate self.cls
+        '''
+        Sets the arguments that will be needed to instantiate self.cls
         :param args: list of arguments to instantiate the self.cls class
         :type args: list
         '''
         self.__args[key_info] = value_info
 
     def associate_namespaces(self, ns_list):
-        '''
-        Associate namespaces to a builder, rule to instantiate the disciplines
-        '''
+        '''Associate namespaces to a builder, rule to instantiate the disciplines'''
         if isinstance(ns_list, str):
             self.add_namespace_list_in_associated_namespaces([ns_list])
         elif isinstance(ns_list, list):
@@ -107,9 +104,7 @@ class SoSBuilder:
         self.__args['sos_name'] = self.__disc_name
 
     def build(self):
-        '''
-        Instantiates the class self.cls
-        '''
+        '''Instantiates the class self.cls'''
         current_ns = self.__ee.ns_manager.current_disc_ns
 
         # If we are in the builder of the high level coupling the current ns is None and
@@ -201,9 +196,11 @@ class SoSBuilder:
     def update_associated_namespaces_with_extra_name_rec(self, extra_name, after_name=None):
         """
         Recursively update_associated_namespaces_with_extra_name for builder and sub-builders.
+
         Args:
             extra_name: extra_name to add after the after name for each associated namespaces to the builder
             after_name: name after which you add the extra_name for each associated namespaces to the builder
+
         """
         # NB: no check so that a ns associated to two builders won't be updated twice.
         self.update_associated_namespaces_with_extra_name(extra_name, after_name)

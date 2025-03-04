@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/17-2024/07/04 Copyright 2023 Capgemini
+Modifications on 2023/05/17-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -103,6 +103,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         Returns:
              algo_names_list (list): list of available algo names
+
         """
         return self.__available_algo_names
 
@@ -123,7 +124,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             raise ValueError(msg)
 
     def get_options_and_default_values(self, sampling_algo_name: str) -> tuple[dict[str, Any], dict[str, Any]]:
-        """Method that provides the list of options of an algorithm with there default values (if any) and description.
+        """
+        Method that provides the list of options of an algorithm with there default values (if any) and description.
 
         Arguments:
             sampling_algo_name: The name of the numerical algorithm
@@ -194,6 +196,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         Returns:
             samples_df (dataframe) : generated samples
+
         """
         algo = self.doe_factory.create(sampling_algo_name)
         samples = algo.compute_doe(design_space, **algo_options)
@@ -217,6 +220,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
             reformated_samples (numpy matrix of arrays) : Reformated samples that takes into account variables with dim >1
                                     matrix of n raws  (each raw is an input point to be evaluated)
                                     any variable of dim m is an array of dim m in a single column of the matrix
+
         """
         selected_inputs = design_space.variable_names
 
@@ -253,6 +257,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         Returns:
             samples_df (data_frame) : dataframe of a matrix of n raws  (each raw is an input point to be evaluated)
                                       any variable of dim m is an array of dim m in a single column of the matrix
+
         """
         selected_inputs = design_space.variable_names
 
@@ -478,6 +483,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
         Returns:
              design_space (gemseo DesignSpace): gemseo Design Space with names of variables based on selected_inputs
+
         """
         design_space = None
         if dspace_df is not None:

@@ -20,14 +20,10 @@ from sostrades_core.sos_processes.processes_factory import SoSProcessFactory
 
 
 class TestSoSProcessFactory(unittest.TestCase):
-    """
-    SoSProcessFactory test class
-    """
+    """SoSProcessFactory test class"""
 
     def setUp(self):
-        '''
-        set up tests
-        '''
+        '''Set up tests'''
         # All this test are based on sostrades_core.sos_processes.test
         self.name = 'TestSoSFactory'
         self.repository_to_check = 'sostrades_core.sos_processes.test'
@@ -35,23 +31,17 @@ class TestSoSProcessFactory(unittest.TestCase):
         self.SoSPF = SoSProcessFactory([self.raw_repository], False)
 
     def test_01_instantiate_sosprocessfactory(self):
-        '''
-        Default initialisation test
-        '''
+        '''Default initialisation test'''
         self.assertIsInstance(self.SoSPF, SoSProcessFactory,
                               "'{}' is not a SoSProcessFactory".format(self.SoSPF))
 
     def test_02_list_repos(self):
-        '''
-        List repos test
-        '''
+        '''List repos test'''
         self.assertIn(self.repository_to_check, self.SoSPF.get_repo_list())
         self.assertNotIn(self.raw_repository, self.SoSPF.get_repo_list())
 
     def test_03_list_test_modules(self):
-        '''
-        Check if process factory list available tests processes
-        '''
+        '''Check if process factory list available tests processes'''
         SoSPF_process_list = self.SoSPF.get_processes_id_list(
             self.repository_to_check)
 

@@ -23,9 +23,7 @@ from sostrades_core.tools.sumdfdict.toolboxsum import toolboxsum
 
 
 class TestSumDF(unittest.TestCase):
-    """
-    Sum dataframe tool test class
-    """
+    """Sum dataframe tool test class"""
 
     def test_01_sum_df(self):
         df1 = pd.DataFrame(

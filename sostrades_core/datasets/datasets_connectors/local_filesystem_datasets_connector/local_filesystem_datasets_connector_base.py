@@ -1,5 +1,5 @@
 '''
-Copyright 2024 Capgemini
+Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ from sostrades_core.tools.folder_operations import makedirs_safe, rmtree_safe
 
 
 class LocalFileSystemDatasetsConnectorBase(AbstractDatasetsConnector, abc.ABC):
-    """
-    Specific dataset connector for dataset in local filesystem
-    """
+    """Specific dataset connector for dataset in local filesystem"""
+
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
 
     def __init__(self, connector_id: str, root_directory_path: str,
@@ -40,6 +39,7 @@ class LocalFileSystemDatasetsConnectorBase(AbstractDatasetsConnector, abc.ABC):
             connector_id (str): The identifier for the connector.
             root_directory_path (str): Root directory path for this dataset connector using filesystem.
             create_if_not_exists (bool, optional): Whether to create the root directory if it does not exist. Defaults to False.
+
         """
         super().__init__()
         self._root_directory_path = os.path.abspath(root_directory_path)
@@ -55,16 +55,16 @@ class LocalFileSystemDatasetsConnectorBase(AbstractDatasetsConnector, abc.ABC):
         self.connector_id = connector_id
 
     def clear_connector(self):
-        """
-        Removes the entire root directory of the FileSystem connector and all datasets in it.
-        """
+        """Removes the entire root directory of the FileSystem connector and all datasets in it."""
         rmtree_safe(self._root_directory_path)
 
     def clear_dataset(self, dataset_id: str) -> None:
         """
         Utility method to remove the directory corresponding to a given dataset_id within the root directory.
+
         Args:
             dataset_id (str): Identifier of the dataset to be removed.
+
         """
         dataset_pth = os.path.join(self._root_directory_path, dataset_id)
         if os.path.exists(dataset_pth):

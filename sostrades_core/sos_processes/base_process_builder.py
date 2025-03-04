@@ -37,7 +37,8 @@ class BaseProcessBuilder:
     def create_builder_list(
         self, mods_dict: dict[str, str], ns_dict: dict[str, str] = None, associate_namespace: bool = False
     ) -> list[SoSBuilder]:
-        """Define a base namespace and instantiate builders iterating over a list of module paths.
+        """
+        Define a base namespace and instantiate builders iterating over a list of module paths.
 
         Args:
             mods_dict: The dictionary containing the module path for each discipline.
@@ -46,6 +47,7 @@ class BaseProcessBuilder:
 
         Returns:
             The list of discipline builders.
+
         """
         if associate_namespace:
             clean_existing = False

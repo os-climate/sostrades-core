@@ -29,14 +29,10 @@ LOC_DIRNAME = dirname(__file__)
 
 
 class TestCouplingVariables(unittest.TestCase):
-    """
-    Coupling variables test class
-    """
+    """Coupling variables test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'EETests'
         self.repo = 'sostrades_core.sos_processes.test'
         self.file_to_del = join(dirname(__file__), 'MyCase.csv')
@@ -47,9 +43,7 @@ class TestCouplingVariables(unittest.TestCase):
             sleep(0.5)
 
     def test_01_export_sos_export_couplings(self):
-        '''
-        check export_couplings method in sos_coupling (not recursive)
-        '''
+        '''Check export_couplings method in sos_coupling (not recursive)'''
         namespace = 'MyCase'
         ee = ExecutionEngine(namespace)
         ee.select_root_process(self.repo, 'test_disc1_disc2_coupling')
@@ -89,9 +83,7 @@ class TestCouplingVariables(unittest.TestCase):
         rp.export_couplings(in_csv=True, f_name=f_name)
 
     def test_02_checktype_unit_mismatch(self):
-        '''
-        check_var_data_mismatch method in sos_coupling (not recursive)
-        '''
+        '''check_var_data_mismatch method in sos_coupling (not recursive)'''
         namespace = 'MyCase'
         ee = ExecutionEngine(namespace)
         ee.select_root_process(self.repo, 'test_disc1_disc2_coupling')

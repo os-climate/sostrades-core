@@ -27,9 +27,7 @@ DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
 
 
 def compute_len(obj, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
-    '''
-    Return len of any python object type
-    '''
+    '''Return len of any python object type'''
     if obj is None:
         return 0
     elif isinstance(obj, (int, float, bool, int32, int64, float32, float64, complex128, str)):

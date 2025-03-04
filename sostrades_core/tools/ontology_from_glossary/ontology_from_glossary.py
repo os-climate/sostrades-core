@@ -18,6 +18,7 @@ import csv
 
 
 def glossary_to_csv(obj, filename):
+    """Generates a csv file from a glossary"""
     # Create a list of dictionaries containing the variable information
     variable_list = []
     for variable_name in dir(obj):

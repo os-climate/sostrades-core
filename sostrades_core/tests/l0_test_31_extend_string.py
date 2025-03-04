@@ -30,9 +30,7 @@ from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 
 class TestExtendString(unittest.TestCase):
-    """
-    Extend string type for GEMSEO test class
-    """
+    """Extend string type for GEMSEO test class"""
 
     def setUp(self):
         self.dirs_to_del = []

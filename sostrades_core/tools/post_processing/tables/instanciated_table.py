@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 29/02/2024-2024/05/16 Copyright 2024 Capgemini
+Modifications on 29/02/2024-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,13 +34,11 @@ Class that define a table display as post post processing
 
 
 class InstanciatedTableException(Exception):
-    """ Overload Exception basic type
-    """
+    """Overload Exception basic type"""
 
 
 class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
-    """ Class that define a table display as post post processing
-    """
+    """Class that define a table display as post post processing"""
 
     TABLE_NAME = 'table_name'
     HEADER = 'header'
@@ -48,7 +46,8 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
     STYLES = 'styles'
 
     def __init__(self, table_name='', header=[], cells=[], styles={}):
-        """ Create a new table
+        """
+        Create a new table
 
         @param table_name : string that contains table name
         @type str
@@ -62,7 +61,6 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
         @param styles : dictionary of style to use to display the table
         @type dictionary
         """
-
         super().__init__()
 
         # Set the table name list
@@ -85,11 +83,11 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
         self.styles = styles
 
     def __repr__(self):
-        """ Overload of the class representation
+        """
+        Overload of the class representation
 
         @return str, string representation of the instance
         """
-
         table_string = f'\nname: {self.table_name} \n'
         table_string += f'header: {self.header} \n'
         table_string += f'cells: {self.cells} \n'
@@ -99,14 +97,14 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
         return table_string
 
     def to_plotly(self, logger=None):
-        """ Convert current instance into a plotly object
+        """
+        Convert current instance into a plotly object
 
         @param logger: logging object to log message
         @type Logging.logger
 
         @return plotly.graph_objects.go instance
         """
-
         default_font_color = 'black'
         default_background_color = 'white'
         row_colors = []
@@ -196,7 +194,8 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
         self.set_csv_data(csv_list)
 
     def to_plotly_dict(self, logger=None):
-        """ Method that convert current instance to plotly object and then to a dictionary
+        """
+        Method that convert current instance to plotly object and then to a dictionary
 
         @param logger: logger instance
         @type Logging.loger

@@ -21,9 +21,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class UnitTestHandler(Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         Handler.__init__(self)
@@ -34,14 +32,10 @@ class UnitTestHandler(Handler):
 
 
 class TestConfigDependencyDiscs(unittest.TestCase):
-    """
-    Tool building test class
-    """
+    """Tool building test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.study_name = 'MyCase'
         self.exec_eng = ExecutionEngine(self.study_name)

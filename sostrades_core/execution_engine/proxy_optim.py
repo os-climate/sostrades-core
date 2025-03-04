@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/06-2024/06/28 Copyright 2023 Capgemini
+Modifications on 2023/04/06-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -95,6 +95,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
 
         cls (Class): constructor of the model wrapper with user-defin ed run (or None)
+
     """
 
     # Default values of algorithms
@@ -642,13 +643,15 @@ class ProxyOptim(ProxyDriverEvaluator):
             self.scenario.formulation.optimization_problem.design_space = dspace
 
     def get_algo_options(self, algo_name: str):
-        """Create default dict for algo options.
+        """
+        Create default dict for algo options.
 
         Args:
             algo_name: The name of the algorithm.
 
         Returns:
             A dictionary with algo options default values.
+
         """
         # TODO : add warning and log algo options
         default_dict = {}
@@ -708,9 +711,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         pass
 
     def set_diff_mode_under_optim(self):
-        """
-        Set linearization_mode under optim with respect to differentiation_method or send a warning
-        """
+        """Set linearization_mode under optim with respect to differentiation_method or send a warning"""
         diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
 
         if diff_method in self.APPROX_MODES:
@@ -732,9 +733,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                     disc.linearization_mode = 'auto'
 
     def set_diff_method(self):
-        """
-        Set differentiation method
-        """
+        """Set differentiation method"""
         diff_method = self.get_sosdisc_inputs(self.DIFFERENTIATION_METHOD)
         fd_step = self.get_sosdisc_inputs(self.FD_STEP)
         self.scenario.set_differentiation_method(diff_method, fd_step)
@@ -913,6 +912,7 @@ class ProxyOptim(ProxyDriverEvaluator):
         Returns:
             _out_names (list[string]): output list of variable full names anonymized wrt. driver node.
             _out_errors (list[string]): list of error strings obtained from the queries for data integrity (empty if OK)
+
         """
         if io_type == self.IO_TYPE_IN:
             subpr_vars = self.eval_in_possible_types
@@ -954,6 +954,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
         Returns:
             f_names (list[string]): output list of variable full names (absolute, with study name too)
+
         """
         f_names, query_err = self._get_subprocess_var_names(var_names, io_type)
         if query_err:
