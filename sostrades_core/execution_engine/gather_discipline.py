@@ -129,7 +129,7 @@ class GatherDiscipline(SoSWrapp):
         if possible_out_values:
             # strip ns and get output names
             # the gather_names is needed to retreive output_name from full_name
-            self.gather_names = {f'{disc_namespace}.{output}': output.split('.')[-1] for output in
+            self.gather_names = {f'{disc_namespace}.{output}': output.split('.', 1)[-1] for output in
                                  possible_out_values}
             # the short name is needed to retreive the input_name from output_name
             self.short_names = {f'{output}': output.split('.')[-1] for output in set(self.gather_names.values())}
