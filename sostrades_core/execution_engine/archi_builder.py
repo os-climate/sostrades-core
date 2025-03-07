@@ -53,7 +53,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
     ACTIVATION = 'Activation'
     DISPLAY = 'Display'
     ARCHI_COLUMNS = [PARENT, CURRENT, BUILDER_TYPE, ACTION, ACTIVATION]
-    OPTINAL_COLUMNS = [DISPLAY]
+    OPTIONAL_COLUMNS = [DISPLAY]
     ROOT_NODE = '@root_node@'
     POSSIBLE_ACTIONS = {
         'standard': 'standard',
@@ -166,10 +166,10 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         """Check the architecture dataframe to see if it is possible to build it"""
         if (
             archi_df.columns.tolist() != self.ARCHI_COLUMNS
-            and archi_df.columns.tolist() != self.ARCHI_COLUMNS + self.OPTINAL_COLUMNS
+            and archi_df.columns.tolist() != self.ARCHI_COLUMNS + self.OPTIONAL_COLUMNS
         ):
             raise ArchiBuilderException(
-                f'The architecture dataframe must have 5 columns named : {self.ARCHI_COLUMNS}'
+                f'The architecture dataframe must have 5 columns named : {self.ARCHI_COLUMNS} or 6 with {self.OPTIONAL_COLUMNS}'
             )
 
         if archi_df[self.ACTIVATION].dtype != 'bool':
@@ -485,45 +485,51 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 del self.archi_disciplines[namespace]
 
         if self.DISPLAY in self.architecture_df.columns:
-            # Create parent array with empty strings instead of None
-
-            parent_names = self.architecture_df[self.PARENT].to_numpy()
-            parent_names_str = np.where(
-                self.architecture_df[self.PARENT].isna(),
-                "",
-                self.architecture_df[self.PARENT]
-            )
-            names = self.architecture_df[self.CURRENT].to_numpy()
-            display_names = self.architecture_df[self.DISPLAY].to_numpy()
-
-
-            # Create parent.child names array
-            parent_dot_names = np.where(
-                parent_names != None, # noqa: E711
-                parent_names_str + "." + names,
-                names,
-            )
-
-            for disc_list in self.archi_disciplines.values():
-                disc = disc_list[0]
-
-                # Retrieve local namespace
-                local_ns = self.ee.ns_manager.get_local_namespace(disc)
-
-                # Find index where local namespace is in the arrays
-                #idx = np.where(parent_dot_names == local_ns.name)[0]
-                # Find index where local namespace ends with strings in parent_dot_names
-                idx = np.where(np.char.endswith(local_ns.name, parent_dot_names))[0]
-
-
-                if len(idx) > 0 and display_names[idx[0]] is not None:
-                    local_ns.set_display_value(
-                        disc.get_disc_full_name().replace(names[idx[0]], display_names[idx[0]])
-                    )
+            self.add_display_names_to_children()
 
         self.activated_builders = activ_builder_dict
 
         self.send_children_to_father()
+
+    def add_display_names_to_children(self):
+        '''
+
+        The DISPLAY Columns in architecture df is used to have display_name differnt from discipline names
+        Here we set the display_name to the builder used to create the disciplines
+
+        '''
+        # Create parent array with empty strings instead of None
+        parent_names = self.architecture_df[self.PARENT].to_numpy()
+        parent_names_str = np.where(
+            self.architecture_df[self.PARENT].isna(),
+            "",
+            self.architecture_df[self.PARENT]
+        )
+        names = self.architecture_df[self.CURRENT].to_numpy()
+        display_names = self.architecture_df[self.DISPLAY].to_numpy()
+
+        # Create parent.child names array
+        parent_dot_names = np.where(
+            parent_names != None,  # noqa: E711
+            parent_names_str + "." + names,
+            names,
+        )
+
+        for disc_list in self.archi_disciplines.values():
+            disc = disc_list[0]
+
+            # Retrieve local namespace
+            local_ns = self.ee.ns_manager.get_local_namespace(disc)
+
+            # Find index where local namespace is in the arrays
+            # idx = np.where(parent_dot_names == local_ns.name)[0]
+            # Find index where local namespace ends with strings in parent_dot_names
+            idx = np.where(np.char.endswith(local_ns.name, parent_dot_names))[0]
+
+            if len(idx) > 0 and display_names[idx[0]] is not None:
+                new_display_name = disc.get_disc_full_name().replace(names[idx[0]], display_names[idx[0]])
+                local_ns.set_display_value(new_display_name)
+
 
     def clean_children(self, list_children=None):
 
