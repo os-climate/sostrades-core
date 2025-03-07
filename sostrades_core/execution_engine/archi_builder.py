@@ -486,30 +486,30 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
         if self.DISPLAY in self.architecture_df.columns:
             # Create parent array with empty strings instead of None
-            
-            parent_names = self.architecture_df[self.PARENT].to_numpy() 
+
+            parent_names = self.architecture_df[self.PARENT].to_numpy()
             parent_names_str = np.where(
-                self.architecture_df[self.PARENT].isna(), 
-                "", 
+                self.architecture_df[self.PARENT].isna(),
+                "",
                 self.architecture_df[self.PARENT]
             )
             names = self.architecture_df[self.CURRENT].to_numpy()
             display_names = self.architecture_df[self.DISPLAY].to_numpy()
 
-            
+
             # Create parent.child names array
             parent_dot_names = np.where(
-                parent_names != None,
+                parent_names != None, # noqa: E711
                 parent_names_str + "." + names,
                 names,
             )
 
             for disc_list in self.archi_disciplines.values():
                 disc = disc_list[0]
-                
+
                 # Retrieve local namespace
                 local_ns = self.ee.ns_manager.get_local_namespace(disc)
-                
+
                 # Find index where local namespace is in the arrays
                 #idx = np.where(parent_dot_names == local_ns.name)[0]
                 # Find index where local namespace ends with strings in parent_dot_names
