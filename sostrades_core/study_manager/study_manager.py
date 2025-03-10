@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/06/20-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/06/20-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ class StudyManager(BaseStudyManager):
             yield_method: The method to be executed between iterations of the configuration loop.
             logger: The sutdy's logger.
             test_post_procs: Whether to also test the post-processing when testing the study.
+
         """
         # Get the process folder name
         study_file_path = Path(file_path).resolve()
@@ -104,7 +105,8 @@ class StudyManager(BaseStudyManager):
         activated_elem: list[bool] | None = None,
         enable_variable: bool = True,
     ) -> None:
-        """Add a design variable to the design space.
+        """
+        Add a design variable to the design space.
 
         Args:
             name: The variable's name.
@@ -113,6 +115,7 @@ class StudyManager(BaseStudyManager):
             upper_bnd: The variable's upper bound(s).
             activated_elem: Whether each component of the variable is activated.
             enable_variable: Whether to enable the whole variable.
+
         """
         if not isinstance(lower_bnd, (list, np.ndarray)):
             lower_bnd = [lower_bnd] * len(value)
@@ -132,7 +135,8 @@ class StudyManager(BaseStudyManager):
         self.dspace["dspace_size"] += len(value)
 
     def merge_design_spaces(self, dspace_list: list[dict[str, Any]]) -> None:
-        """Update the design space from a list of other design spaces.
+        """
+        Update the design space from a list of other design spaces.
 
         It is necessary to use a set difference here, instead of dictionary update,
         to correctly update the design space size.
@@ -142,6 +146,7 @@ class StudyManager(BaseStudyManager):
 
         Raises:
             ValueError: If some variables are duplicated in several design spaces.
+
         """
         for dspace in dspace_list:
             dspace_size = dspace.pop("dspace_size")
@@ -157,7 +162,8 @@ class StudyManager(BaseStudyManager):
 
 
     def setup_usecase_sub_study_list(self) -> None:
-        """Instantiate sub-studies and values dictionaries from setup_usecase.
+        """
+        Instantiate sub-studies and values dictionaries from setup_usecase.
 
         To be implemented in the sub-classes.
         """
@@ -168,13 +174,15 @@ class StudyManager(BaseStudyManager):
         self.execution_engine.set_debug_mode()
 
     def test(self, force_run: bool = False) -> None:
-        """Test the usecase.
+        """
+        Test the usecase.
 
         Args:
             force_run: Whether to run the usecas with strong MDA couplings and MDO.
 
         Raises:
             Exception: If the test fails.
+
         """
         test_passed, error_msg = processed_test_one_usecase(usecase=self.study_full_path, force_run=force_run)
         if not test_passed:
@@ -186,4 +194,3 @@ class StudyManager(BaseStudyManager):
 
     def generate_gradients_test_for_disciplines(self, disciplines_names: dict[str: str], path_test_files_to_write: str):
         generate_gradients_tests_for_disciplines_of_usecases(self.study_full_path, disciplines_names, path_test_files_to_write)
-

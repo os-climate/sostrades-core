@@ -22,9 +22,7 @@ from sostrades_core.study_manager.study_manager import StudyManager
 
 
 class TestResidualVariables(unittest.TestCase):
-    """
-    Discipline to test the new function run_solves_residuals and residuals variable of Gemseo
-    """
+    """Discipline to test the new function run_solves_residuals and residuals variable of Gemseo"""
 
     def setUp(self):
         # Set logging level to debug for residual_vars

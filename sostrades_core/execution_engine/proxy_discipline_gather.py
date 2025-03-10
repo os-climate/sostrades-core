@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/04/17-2024/07/03 Copyright 2023 Capgemini
+Modifications on 2023/04/17-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,9 +25,7 @@ class SoSDisciplineException(Exception):
 
 
 class ProxyDisciplineGather(ProxyDiscipline):
-    '''
-    Class that gather output data from a scatter discipline
-    '''
+    '''Class that gather output data from a scatter discipline'''
 
     # ontology information
     _ontology_data = {
@@ -44,9 +42,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
     }
 
     def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=None):
-        '''
-        Constructor
-        '''
+        '''Constructor'''
         self.__factory = ee.factory
         self.__gather_data_map = []
         self.instance_list = []
@@ -87,9 +83,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         return var_to_gather_dict
 
     def build_inst_desc_in_with_map(self):
-        '''
-        Consult the associated scatter build map and complete the inst_desc_in
-        '''
+        '''Consult the associated scatter build map and complete the inst_desc_in'''
         input_name = self.sc_map.get_input_name()
         input_type = 'list'
         input_subtype_descriptor = {'list': 'string'}
@@ -102,9 +96,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         self.inst_desc_in.update(scatter_desc_in)
 
     def build_dynamic_inst_desc_in_gather_variables(self):
-        '''
-        Complete inst_desc_in with scatter outputs to gather
-        '''
+        '''Complete inst_desc_in with scatter outputs to gather'''
         scatter_var_name = self.sc_map.get_input_name()  # ac_name_list
 
         if scatter_var_name in self.get_data_in():
@@ -129,9 +121,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
                         new_variables, gather_ns_in)
 
     def add_new_variables_in_inst_desc_in(self, new_variables, gather_ns_in):
-        '''
-        Add a variable in the inst_desc_in with its full name and the gather_ns_in defined in the map
-        '''
+        '''Add a variable in the inst_desc_in with its full name and the gather_ns_in defined in the map'''
         for new_variable, value_dict in new_variables.items():
             full_key = self.ee.ns_manager.compose_ns(
                 [self.ee.ns_manager.get_shared_namespace_value(self, gather_ns_in), new_variable])
@@ -177,7 +167,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
         - build the inst_desc_out (variable_dict)
         - configure the discipline with completed inst_desc_in and inst_desc_out
         '''
-
         if self.sc_map.get_input_name() not in self.get_data_in():
             # update data_in/data_out with new inputs/outputs
             ProxyDiscipline.configure(self)
@@ -215,24 +204,17 @@ class ProxyDisciplineGather(ProxyDiscipline):
         return True
 
     def is_configured(self):
-        '''
-        Return False at least one builder with outputs data to gather need to be configured or structuring variables have changed, True if not
-        '''
+        '''Return False at least one builder with outputs data to gather need to be configured or structuring variables have changed, True if not'''
         return ProxyDiscipline.is_configured(self) and self.check_builders_to_gather_are_configured()
 
     def update_inputs_user_level(self):
-        '''
-        Set user level of inputs to Expert
-        '''
+        '''Set user level of inputs to Expert'''
         for key, value in self.get_data_in().items():
             if key != self.sc_map.get_input_name():
                 value[ProxyDiscipline.USER_LEVEL] = 3
 
     def update_data_io_with_modified_inst_desc_io(self):
-        '''
-        Update data_in and data_out with inst_desc_in and inst_desc_out which have been modified during a configure
-        '''
-
+        '''Update data_in and data_out with inst_desc_in and inst_desc_out which have been modified during a configure'''
         disc_in = self.get_data_in()
         disc_out = self.get_data_out()
 
@@ -281,9 +263,11 @@ class ProxyDisciplineGather(ProxyDiscipline):
         self.clean_variables(keys_to_delete, self.IO_TYPE_IN)
 
     def get_maturity(self):
-        '''FIX: solve conflicts between commits
-            709b4be "Modify the exec_engine for evaluator processes" VJ
-        and fb91c7d "maturity fixing (WIP)" CG '''
+        '''
+        FIX: solve conflicts between commits
+        709b4be "Modify the exec_engine for evaluator processes" VJ
+        and fb91c7d "maturity fixing (WIP)" CG
+        '''
         return ''
 
     def setup_sos_disciplines(self):
@@ -295,8 +279,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         pass
 
     def set_wrapper_attributes(self, wrapper):
-        """ set the attribute attributes of wrapper
-        """
+        """Set the attribute attributes of wrapper"""
         super().set_wrapper_attributes(wrapper)
         gather_attributes = {'input_name': self.get_var_full_name(self.sc_map.get_input_name(), self.get_data_in()),
                              'builder_cls': self.builder.cls,

@@ -82,7 +82,8 @@ class TestStudyManager(unittest.TestCase):
             assert study.execution_engine.dm.data_dict[var_id][DataManager.VALUE] == value
 
     def test_03_dump_and_load_into_study_with_same_name(self):
-        """Check that load and dump on file function are working when source
+        """
+        Check that load and dump on file function are working when source
         and destination study have the same process and the same name
         """
         study = BaseStudyManager(self.__repository, self.__process, self.__study_name)
@@ -103,7 +104,8 @@ class TestStudyManager(unittest.TestCase):
             )
 
     def test_04_dump_and_load_into_study_with_different_name(self):
-        """Check that load and dump on file function are working when source
+        """
+        Check that load and dump on file function are working when source
         and destination study have the same process but not the same name
         (verify that pickle dump are correctly save without study information)
         """
@@ -126,7 +128,8 @@ class TestStudyManager(unittest.TestCase):
             )
 
     def test_05_dump_and_load_into_study_with_encryption(self):
-        """All the previous test check that basic writing strategy is working.
+        """
+        All the previous test check that basic writing strategy is working.
         This test check that encryption strategy is working.
         """
         study = BaseStudyManager(self.__repository, self.__process, self.__study_name)

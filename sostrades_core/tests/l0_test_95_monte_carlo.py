@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-
 from __future__ import annotations
 
 import pytest
@@ -107,7 +106,6 @@ def test_monte_carlo_sellar(distributions, n_objectives, criterion):
     mc_disc = exec_eng.dm.get_disciplines_with_name("MC.Eval_MC")[0].discipline_wrapp.discipline.sos_wrapp
     input_samples = mc_disc.get_sosdisc_outputs(MonteCarloDriverWrapper.SoSOutputNames.INPUT_SAMPLES)
     output_samples = mc_disc.get_sosdisc_outputs(MonteCarloDriverWrapper.SoSOutputNames.OUTPUT_SAMPLES)
-
     assert list(input_samples.keys()) == list(distributions.keys())
     assert output_samples.shape[1] == n_objectives
     if criterion == "n_samples":

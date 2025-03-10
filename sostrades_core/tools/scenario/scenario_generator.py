@@ -28,14 +28,10 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 
 
 class ScenarioGenerator:
-    """
-    Class to instantiate all classes of the chosen scenario (Products, Actors...) depending on the entry
-    """
+    """Class to instantiate all classes of the chosen scenario (Products, Actors...) depending on the entry"""
 
     def __init__(self, name=None, name_manager=None):
-        """
-        Constructor
-        """
+        """Constructor"""
         self.name = name
         self.name_manager = name_manager
         self.scenario_manager = ScenarioManager(
@@ -44,7 +40,8 @@ class ScenarioGenerator:
         self.scenarios_parameter = []
 
     def generate_scenarios(self, inputs_dict):
-        """ generate scenarios for each products
+        """
+        generate scenarios for each products
         args:
             inputs_dict: dict of scenario parameters
             inputs_parameter: keys in inputs_dict

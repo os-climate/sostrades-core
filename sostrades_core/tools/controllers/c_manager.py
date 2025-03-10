@@ -24,6 +24,7 @@ class CManager:
         id = identifiers
         pt = pointer
     """
+
     ERROR_MSG = 'ERROR CManager.'
 
     # --constructor
@@ -99,15 +100,11 @@ class CManager:
         return len(self.__list_id)
 
     def display(self):
-        """
-        display information about the manager
-        """
+        """Display information about the manager"""
         print(self)
 
     def add(self, pt, check=True):
-        """
-        add an element
-        """
+        """Add an element"""
         ERROR_MSG = self.ERROR_MSG + 'add: '
         c_id = pt.get_id()
         if check:
@@ -119,18 +116,14 @@ class CManager:
         self.__list_pt.append(pt)
 
     def delete(self, Id):
-        """
-        delete an element
-        """
+        """Delete an element"""
         index = self.__list_id.index(Id)
         self.__list_pt[index].clean_dependencies()
         del self.__list_id[index]
         del self.__list_pt[index]
 
     def get_pt(self, Id, raise_error=True):
-        """
-        return pointer to element from base element id
-        """
+        """Return pointer to element from base element id"""
         ERROR_MSG = self.ERROR_MSG + 'get_pt: '
         try:
             index = self.__list_id.index(Id)
@@ -143,9 +136,7 @@ class CManager:
                 return None
 
     def get_pt_from_index(self, index):
-        """
-        return pointer to element from manager index
-        """
+        """Return pointer to element from manager index"""
         try:
             return self.__list_pt[index]
         except:

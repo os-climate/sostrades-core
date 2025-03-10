@@ -72,6 +72,18 @@ DOT_CHAR = '_00d00_'
 
 
 def my_transformation(tokens, local_dict, global_dict):
+    """
+    Transforms a list of tokens by merging dot-separated names and removing unnecessary prefixes.
+
+    Args:
+        tokens (list): A list of token tuples, where each tuple contains a token type and value.
+        local_dict (dict): A dictionary containing local variable mappings.
+        global_dict (dict): A dictionary containing global variable mappings.
+
+    Returns:
+        list: A transformed list of tokens with merged names and removed prefixes.
+
+    """
     #     print(tokens)
     original_tokens = tokens
     new_tokens = []
@@ -106,9 +118,7 @@ def my_transformation(tokens, local_dict, global_dict):
 
 
 class SympyFormula():
-    """
-    Class for mathematical interpretation of functions and their differential forms based on Sympy
-    """
+    """Class for mathematical interpretation of functions and their differential forms based on Sympy"""
 
     def __init__(self, fexpr, fgrad=True):
         """
@@ -175,7 +185,6 @@ class SympyFormula():
         Accessor for the atomic elements of the expression in the Sympy sense
         @param sympy_expr : the sympy expression
         """
-
         return sympy_expr.atoms(Symbol)
 
     # Private methods
@@ -191,9 +200,7 @@ class SympyFormula():
         return info_string
 
     def __init_expressions(self):
-        """
-        Initilizes sympy expressions
-        """
+        """Initilizes sympy expressions"""
         self.__fexpr_sympy = parse_expr(self.__fexpr, transformations=(
                                                                           my_transformation,) + standard_transformations)
         self.__fexpr_symbs = self.get_symbols(self.__fexpr_sympy)
@@ -216,10 +223,7 @@ class SympyFormula():
                 dummify=False)
 
     def str_to_sympy_argslist(self, str_dict, symbols):
-        """
-        Converts, at evaluation time, the symbols dicts of values to sympy arguments
-        """
-
+        """Converts, at evaluation time, the symbols dicts of values to sympy arguments"""
         sympy_args = []
         for atom in symbols:
             tok_name = str(atom).replace(DOT_CHAR, '.')
@@ -255,9 +259,7 @@ class SympyFormula():
             self.__init_expressions()
 
     def get_token_list(self):
-        """
-        Gets the token list for the expression
-        """
+        """Gets the token list for the expression"""
         token_list = [
             token.replace(DOT_CHAR, '.')
             for token in map(str, self.get_symbols(self.__fexpr_sympy))

@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 '''
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import List, Tuple, Union
@@ -33,9 +34,11 @@ class ArchiNode:
         action (Union[Tuple[str], str]): The action associated with the node, default is "standard".
         activation (bool): Whether the node is activated or not, default is False.
         children (List["ArchiNode"]): A list of child nodes, default is an empty list.
+
     """
 
     name: str = ""
+    display_name: str | None = None
     parent: str = None
     type: str = "ValueBlockDiscipline"
     action: Union[Tuple[str], str] = "standard"
@@ -43,9 +46,7 @@ class ArchiNode:
     children: List["ArchiNode"] = field(default_factory=list)
 
     def __post_init__(self):
-        """
-        Update the parent name in all child nodes after initialization.
-        """
+        """Update the parent name in all child nodes after initialization."""
         self.update_parent_name_in_children()
 
     def update_parent_name_in_children(self):
@@ -68,6 +69,7 @@ class ArchiNode:
 
         Returns:
             List[str]: A list of values for the specified field.
+
         """
         if skip_self:
             fields = []
@@ -86,13 +88,14 @@ class ArchiNode:
 
         Returns:
             pd.DataFrame: A pandas DataFrame containing the node information.
-        """
 
+        """
         data = {
             "Parent": self.get_field_as_list("parent", skip_self=skip_self),
             "Current": self.get_field_as_list("name", skip_self=skip_self),
             "Type": self.get_field_as_list("type", skip_self=skip_self),
             "Action": self.get_field_as_list("action", skip_self=skip_self),
             "Activation": self.get_field_as_list("activation", skip_self=skip_self),
+            "Display": self.get_field_as_list("display_name", skip_self=skip_self),
         }
         return pd.DataFrame(data)

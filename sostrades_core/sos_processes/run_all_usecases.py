@@ -24,11 +24,14 @@ from sostrades_core.tools.folder_operations import makedirs_safe
 
 
 class UseCaseFailedException(Exception):
-    """Exception if a usecase fails.
+    """
+    Exception if a usecase fails.
 
     Attributes:
         message -- explanation of the error
+
     """
+
     error_list = []
 
     def __init__(self, error_list):
@@ -40,9 +43,7 @@ class UseCaseFailedException(Exception):
 
 
 def get_all_usecases(processes_repo):
-    '''
-    return all usecases of a repository
-    '''
+    '''Return all usecases of a repository'''
     process_factory = SoSProcessFactory(additional_repository_list=[
                                         processes_repo], search_python_path=False)
     process_dict = process_factory.get_processes_dict()

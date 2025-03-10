@@ -56,7 +56,8 @@ class SellarCstr1(SoSWrapp):
     """The output variables."""
 
     def run(self) -> None:
-        """Run the model.
+        """
+        Run the model.
 
         Returns: The output of the model.
         """

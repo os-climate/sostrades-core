@@ -28,10 +28,7 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for cartesian product in stand alone
-        """
-
+        """Usecase for cartesian product in stand alone"""
         ns = f'{self.study_name}'
 
         dict_of_list_values = {

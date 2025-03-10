@@ -22,14 +22,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestConfigDependencyDiscs(unittest.TestCase):
-    """
-    Tool building test class
-    """
+    """Tool building test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.study_name = 'MyCase'
         self.exec_eng = ExecutionEngine(self.study_name)
@@ -322,9 +318,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
     def test_06_display_on_disipline_in_multi_instance(self):
-        """
-        Test to assert than the display of a builder in multi instance is updated
-        """
+        """Test to assert than the display of a builder in multi instance is updated"""
         self.repo = 'sostrades_core.sos_processes.test'
 
         # instantiate factory by getting builder from process
@@ -369,9 +363,7 @@ class TestConfigDependencyDiscs(unittest.TestCase):
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
     def test_07_display_on_disipline_in_multi_instance_2_levels(self):
-        """
-        Test to assert than the display of a builder in 2 levels multi instance is updated
-        """
+        """Test to assert than the display of a builder in 2 levels multi instance is updated"""
         self.repo = 'sostrades_core.sos_processes.test'
 
         # instantiate factory by getting builder from process

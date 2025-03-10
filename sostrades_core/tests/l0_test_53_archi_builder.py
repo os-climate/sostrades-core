@@ -28,9 +28,7 @@ from sostrades_core.tools.archi_node.archi_node import ArchiNode
 
 
 class UnitTestHandler(Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         Handler.__init__(self)
@@ -41,14 +39,10 @@ class UnitTestHandler(Handler):
 
 
 class TestArchiBuilder(unittest.TestCase):
-    """
-    Architecture Builder test class
-    """
+    """Architecture Builder test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
@@ -875,8 +869,122 @@ class TestArchiBuilder(unittest.TestCase):
         exp_tv_str = '\n'.join(exp_tv_list)
         assert exp_tv_str == self.exec_eng.display_treeview_nodes()
 
+    def test_13_point_in_names(self):
+        vb_builder_name = 'Business'
+        architecture_df = pd.DataFrame(
+            {'Parent': ['Business', 'Business', 'Remy.EXTRA', 'Tomato'],
+             'Current': ['Remy.EXTRA', 'Tomato', 'Opex.EXTRA', 'CAPEX'],
+             'Type': ['SumValueBlockDiscipline', 'SumValueBlockDiscipline', 'ValueBlockDiscipline',
+                      'ValueBlockDiscipline'],
+             'Action': [('standard'), ('standard'), ('standard'), ('standard')],
+             'Activation': [True, True, False, False], })
+
+        builder = self.factory.create_architecture_builder(
+            vb_builder_name, architecture_df)
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(
+            builder)
+
+        self.exec_eng.load_study_from_input_dict({})
+        self.exec_eng.display_treeview_nodes()
+
+        exp_tv_list = [f'Nodes representation for Treeview {self.namespace}',
+                       f'|_ {self.namespace}',
+                       f'\t|_ {vb_builder_name}',
+                       '\t\t|_ Remy',
+                       '\t\t\t|_ EXTRA',
+                       '\t\t\t\t|_ Opex',
+                       '\t\t\t\t\t|_ EXTRA',
+                       '\t\t|_ Tomato',
+                       '\t\t\t|_ CAPEX', ]
+        exp_tv_str = '\n'.join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+    def test_14_build_architecture_with_archi_node_and_display_name(self):
+        vb_builder_name = "ArchiBuilder"
+
+        architecture_nodes = ArchiNode(
+            name="Opex",
+            type="SumValueBlockDiscipline",
+            action="standard",
+            activation=False,
+            children=[
+                ArchiNode(
+                    name="Delivery",
+                    display_name="Node.Delivery",
+                    type="SumValueBlockDiscipline",
+                    action="standard",
+                    activation=False,
+                ),
+                ArchiNode(
+                    name="Manhour",
+                    display_name="Node.Manhour",
+                    type="SumValueBlockDiscipline",
+                    action="standard",
+                    activation=False,
+                ),
+                ArchiNode(
+                    name="Cooking",
+                    type="SumValueBlockDiscipline",
+                    action="standard",
+                    activation=False,
+                ),
+                ArchiNode(
+                    name="Energy",
+                    type="SumValueBlockDiscipline",
+                    action="standard",
+                    activation=False,
+                    children=[
+                        ArchiNode(
+                            name="Cooking2",
+                            display_name="Node2.Cooking2",
+                            type="SumValueBlockDiscipline",
+                            action="standard",
+                            activation=False,
+                        ),
+                        ArchiNode(
+                            name="Energy2",
+                            type="SumValueBlockDiscipline",
+                            action="standard",
+                            activation=False,
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        architecture_df = architecture_nodes.to_dataframe(skip_self=False)
+
+        builder = self.factory.create_architecture_builder(
+            vb_builder_name, architecture_df
+        )
+
+        self.exec_eng.factory.set_builders_to_coupling_builder(builder)
+
+        self.exec_eng.ns_manager.add_ns_def({"ns_public": self.study_name})
+
+        self.exec_eng.load_study_from_input_dict({})
+        exp_tv_list = [
+            f"Nodes representation for Treeview {self.namespace}",
+            f"|_ {self.namespace}",
+            f"\t|_ {vb_builder_name}",
+            "\t\t|_ Opex",
+            "\t\t\t|_ Node",
+            "\t\t\t\t|_ Delivery",
+            "\t\t\t\t|_ Manhour",
+            "\t\t\t|_ Cooking",
+            "\t\t\t|_ Energy",
+            "\t\t\t\t|_ Node2",
+            "\t\t\t\t\t|_ Cooking2",
+            "\t\t\t\t|_ Energy2",
+        ]
+
+        exp_tv_str = "\n".join(exp_tv_list)
+        assert exp_tv_str == self.exec_eng.display_treeview_nodes()
+
+
 
 if '__main__' == __name__:
     cls = TestArchiBuilder()
     cls.setUp()
-    cls.test_05_build_architecture_scatter()
+    cls.test_14_build_architecture_with_archi_node_and_display_name()

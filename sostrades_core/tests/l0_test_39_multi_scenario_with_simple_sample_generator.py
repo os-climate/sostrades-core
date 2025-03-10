@@ -25,14 +25,10 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 
 
 class TestMultiScenario(unittest.TestCase):
-    """
-    SoSMultiScenario test class
-    """
+    """SoSMultiScenario test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.dirs_to_del = []
         self.namespace = 'MyCase'
         self.study_name = f'{self.namespace}'
@@ -281,9 +277,7 @@ class TestMultiScenario(unittest.TestCase):
             'MyCase.multi_scenarios.d.o'), o4)
 
     def test_03_switch_iotype_samples_df(self):
-        """
-        Checks if switching io type for samples_df is OK in the DM and the treeview
-        """
+        """Checks if switching io type for samples_df is OK in the DM and the treeview"""
         # simple 2-disc process
         repo_name = self.repo + ".tests_driver_eval.mono"
         proc_name = 'test_mono_driver_simple'

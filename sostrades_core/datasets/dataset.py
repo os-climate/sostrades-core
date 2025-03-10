@@ -13,13 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from dataclasses import dataclass
-from typing import Any
+from __future__ import annotations
 
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
-from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
-    AbstractDatasetsConnector,
-)
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+    from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
+        AbstractDatasetsConnector,
+    )
 
 
 @dataclass()
@@ -30,6 +33,7 @@ class Dataset:
     Attributes:
         dataset_info (AbstractDatasetInfo): Information about the dataset.
         connector (AbstractDatasetsConnector): Connector to interact with the dataset.
+
     """
 
     dataset_info: AbstractDatasetInfo
@@ -44,5 +48,6 @@ class Dataset:
 
         Returns:
             dict[str, Any]: Dictionary with the retrieved data values.
+
         """
         return self.connector.get_values(dataset_identifier=self.dataset_info, data_to_get=data_dict)

@@ -25,7 +25,8 @@ Bundle of tools related to chart creation
 
 
 def format_currency_legend(currency_value, currency_symbol='€'):
-    """ Given an numeric value of currency, return the value with the correct legend to display it in short format
+    """
+    Given an numeric value of currency, return the value with the correct legend to display it in short format
         (euros, kilo euros, etc...) rounded at two digits
         ex : 8765432 € => 8.76 m€
 
@@ -37,7 +38,6 @@ def format_currency_legend(currency_value, currency_symbol='€'):
 
     :returns: string
     """
-
     value = currency_value
     legend_letter = ''
     if isinstance(currency_value, str):
@@ -58,6 +58,20 @@ def format_currency_legend(currency_value, currency_symbol='€'):
 
 # inspired from https:#github.com/VictorBezak/Plotly_Multi-Axes_Gridlines
 def align_two_y_axes(figure, GRIDLINES=4):
+    """
+    Aligns the gridlines for two Y-axes in a Plotly figure by adjusting the
+    axis ranges and tick spacing to ensure synchronization.
+
+    Args:
+        figure (plotly.graph_objs.Figure): The Plotly figure containing traces
+                                          with two Y-axes ('y' and 'y2').
+        GRIDLINES (int, optional): The number of gridlines to divide the axis range into
+                                    (default is 4).
+
+    Returns:
+        plotly.graph_objs.Figure: The updated Plotly figure with synchronized Y-axes.
+
+    """
     y1Values = []
     y2Values = []
     if len(figure.data) > 1:
@@ -82,6 +96,39 @@ def align_two_y_axes(figure, GRIDLINES=4):
 
 # inspired from https:#github.com/VictorBezak/Plotly_Multi-Axes_Gridlines
 def calculate_alignment_for_two_y_axes(y1Values, y2Values, GRIDLINES=4):
+    """
+    Calculates the optimal range and tick spacing for two Y-axes to ensure
+    aligned gridlines when plotting data with different scales.
+
+    Args:
+        y1Values (list of float): Data values for the first Y-axis.
+        y2Values (list of float): Data values for the second Y-axis.
+        GRIDLINES (int, optional): Number of gridlines to divide the axis range into (default is 4).
+
+    Returns:
+        tuple:
+            A tuple containing:
+                - ranges (dict): A dictionary containing the adjusted minimum and maximum values
+                  for both Y-axes:
+                  {'y1': [y1_min, y1_max], 'y2': [y2_min, y2_max]}.
+                - dticks (dict): A dictionary containing the calculated tick intervals for both Y-axes:
+                  {'y1': y1_dtick, 'y2': y2_dtick}.
+
+    Notes:
+        - The function determines the scaling factors required to align gridlines
+          by calculating a global tick ratio.
+        - If negative values are present, it extends the range to prevent
+          cutting off data points.
+        - The resulting tick spacing ensures both axes have synchronized gridlines,
+          improving readability in dual-axis plots.
+
+    Example:
+        >>> y1 = [1, 5, 10, 15]
+        >>> y2 = [100, 200, 300, 400]
+        >>> calculate_alignment_for_two_y_axes(y1, y2)
+        ({'y1': [0, 20], 'y2': [0, 500]}, {'y1': 5, 'y2': 100})
+
+    """
     # ************************************************************************
     # Y1 Calculations
 
@@ -227,7 +274,7 @@ def calculate_alignment_for_two_y_axes(y1Values, y2Values, GRIDLINES=4):
 
 
 def escape_str_with_comma(str_to_escape):
-
+    """Escapes string with commas"""
     str_escaped = ''
     if str_to_escape is not None:
         if ',' in str_to_escape:
@@ -239,7 +286,8 @@ def escape_str_with_comma(str_to_escape):
 
 
 def convert_nan(values):
-    """ Check if value list contains NaN values
+    """
+    Check if value list contains NaN values
     A warning is displayed is any NaN value is found into list and then converted to None
 
     @param values : list of number to check
@@ -247,7 +295,6 @@ def convert_nan(values):
 
     @return (list with converted values, nan_found)
     """
-
     result = []
     has_nan = False
     for value in values:
@@ -264,7 +311,8 @@ def convert_nan(values):
 
 
 def check_isnan(value):
-    """ Method to tried to identify Not A Number numpy value
+    """
+    Method to tried to identify Not A Number numpy value
 
     @return boolean
     """

@@ -65,7 +65,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         showlegend: bool = True,
         offsetgroup=None,
     ) -> InstantiatedPlotlyNativeChart:
-        """Generate a bar chart from data in a dataframe
+        """
+        Generate a bar chart from data in a dataframe
 
         Args:
             data_df (pd.DataFrame): dataframe containing data.
@@ -85,9 +86,11 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
             add_cumulated (bool, optional): True to add a cumulated serie for te value. Defaults to False.
             column_val_cum_sum (str, optional): Column to use as the cumulated value. Defaults to None.
             showlegend (bool, optional): Possibility to show or hide the legend. Defaults to True.
+            offsetgroup (Any): Set several traces linked to the same position axis or matching axes to the same offsetgroup where bars of the same position coordinate will line up.
 
         Returns:
             InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data
+
         """
         # Create figure
         fig = go.Figure()
@@ -190,7 +193,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         mode: str = 'lines',
         textposition: str = "top center",
     ) -> InstantiatedPlotlyNativeChart:
-        """Generate a line chart from data in a dataframe
+        """
+        Generate a line chart from data in a dataframe
 
         Args:
             data_df (pd.DataFrame): dataframe containing data.
@@ -208,6 +212,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         Returns:
             InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data
+
         """
         # Create figure
         fig = go.Figure()
@@ -384,9 +389,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         chart_name,
         ticksuffix=None,
     ):
-        """
-        data_df : dataframe with data to plot
-        """
+        """data_df : dataframe with data to plot"""
         # Create figure
         fig = go.Figure()
 
@@ -1013,29 +1016,40 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
         annotation_upper_left: dict = {},
         annotation_upper_right: dict = {},
     ):
-        """Generate a bar chart from data in a dataframe
+        """
+        Generate a bar chart from data in a dataframe
 
         Args:
-            data_df (pd.DataFrame): dataframe containing data.
-            x_axis_column (str): dataframe column name for the x-axis
-            y_axis_column_list (list): dataframe columns name for the y-axis. Each column will result in a separate serie
-            x_axis_title (str, optional): Title for x-axis. Defaults to ''.
-            y_axis_title (str, optional): Title for y-axis. Defaults to ''.
-            chart_name (str, optional): Chart name. Defaults to ''.
-            ticksuffix (str, optional): Ticksuffix to display units after the values for exemple. Defaults to ''.
-            annotation_upper_left (dict, optional): annotation to put in the upper left corner of the chart. Defaults to {}.
-            annotation_upper_right (dict, optional): annotation to put in the upper right corner of the chart.. Defaults to {}.
-            labels_dict (dict, optional): _description_. Defaults to {}.
-            annotations (list, optional): _description_. Defaults to [].
-            updatemenus (list, optional): _description_. Defaults to [].
-            barmode (str, optional): stack to have stacked bar, group to have a separate bar for each serie. Defaults to 'stack'.
-            text_inside_bar (bool, optional): _description_. Defaults to False.
-            add_cumulated (bool, optional): True to add a cumulated serie for te value. Defaults to False.
-            column_val_cum_sum (str, optional): Column to use as the cumulated value. Defaults to None.
-            showlegend (bool, optional): Possibility to show or hide the legend. Defaults to True.
+            data_df (pd.DataFrame): DataFrame containing the chart data.
+            column_with_categories (str): Column name in `data_df` that defines the different categories or groups.
+            col_pretty_list (list): List of user-friendly names for each y-axis data column. These names populate the dropdown menu.
+            x_axis_column (str): Column name in `data_df` used for x-axis values.
+            y_axis_column_list (list): List of column names in `data_df` to be plotted on the y-axis. Each column generates a separate series.
+            x_axis_title (str, optional): Title label for the x-axis. Defaults to ''.
+            y_axis_title (str, optional): Title label for the y-axis. Defaults to ''.
+            layout (str, optional): A descriptor used in the chart title to denote the layout type. Defaults to ''.
+            mode (str, optional): Display mode for the traces (e.g., 'markers+lines'). Defaults to 'markers+lines'.
+            ticksuffix (str, optional): Suffix to append to the tick labels on the y-axis (e.g., units like '%'). Defaults to ''.
+            chart_name (str, optional): Name assigned to the chart. Defaults to ''.
+            name (str, optional): Custom name for each trace. If None, the category name is used. Defaults to None.
+            textposition (str, optional): Positioning for text labels relative to markers (e.g., "top center"). Defaults to "top center".
+            fill (str, optional): Specifies the fill option for the trace (e.g., "none", "tozeroy", "tonexty"). See Plotly documentation for details. Defaults to None.
+            stackgroup (str, optional): Identifier for grouping traces to enable stacking. Defaults to None.
+            hoveron (str, optional): Determines whether hover effects apply to individual points or to filled regions. Defaults to None.
+            legend (bool or dict, optional): Configuration for displaying and styling the legend. Defaults to None.
+            fillcolor (str, optional): Color used for filling the area under the trace. Defaults to None.
+            line (dict, optional): Dictionary of line properties (e.g., color, width) for the trace. Defaults to None.
+            legendgroup (str, optional): Identifier for grouping legend entries, allowing for combined legend behavior. Defaults to None.
+            add_cumulated (bool, optional): If True, the function plots the cumulative sum of y-axis values. Defaults to False.
+            marker (dict, optional): Dictionary defining marker properties (e.g., size, color). Defaults to dict(size=12).
+            string_text (bool, optional): If True, uses the category name as the trace text; otherwise, uses y-axis values. Defaults to False.
+            annotation_upper_left (dict, optional): Dictionary of annotation properties for text displayed in the upper left corner of the chart. Defaults to {}.
+            annotation_upper_right (dict, optional): Dictionary of annotation properties for text displayed in the upper right corner of the chart. Defaults to {}.
+
 
         Returns:
         InstantiatedPlotlyNativeChart: Plotly Instanciated chart with data
+
         """
         categories_list = data_df[column_with_categories].unique()
         # Create figure
@@ -1445,7 +1459,8 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
     def generate_hexbin_chart(
         x_data: ndarray | Series, y_data: ndarray | Series, gridsize: int = 25, min_count: int = 1
     ) -> Trace:
-        """Generate a 2D hexbin chart.
+        """
+        Generate a 2D hexbin chart.
 
         The figure is created with matplolib and converted manually to plotly.
         The matplotlib figure only needs to be instanciated, its size does not matter.
@@ -1458,6 +1473,7 @@ class CommonCharts(InstantiatedPlotlyNativeChart):
 
         Returns:
             The plotly trace.
+
         """
         plt.figure(figsize=(0.05, 0.05))
         plt.axis("off")

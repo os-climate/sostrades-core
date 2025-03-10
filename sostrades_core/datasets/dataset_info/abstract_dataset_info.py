@@ -21,17 +21,15 @@ from typing import ClassVar, Dict, List
 
 
 class DatasetsInfoMappingException(Exception):
-    """
-    Generic exception for dataset info
-    """
+    """Generic exception for dataset info"""
+
     pass
 
 
 @dataclass(frozen=True)
 class AbstractDatasetInfo(abc.ABC):
-    """
-    Stores the information of a dataset
-    """
+    """Stores the information of a dataset"""
+
     # Keys for parsing json
     VERSION_ID_KEY: ClassVar[str] = "version_id"
     CONNECTOR_ID_KEY: ClassVar[str] = "connector_id"
@@ -49,9 +47,7 @@ class AbstractDatasetInfo(abc.ABC):
     @property
     @abc.abstractmethod
     def version_id(self) -> str:
-        """
-        Abstract property to be overridden in each subclass to return the version id.
-        """
+        """Abstract property to be overridden in each subclass to return the version id."""
 
     @property
     def dataset_info_id(self) -> str:
@@ -60,6 +56,7 @@ class AbstractDatasetInfo(abc.ABC):
 
         Returns:
             str: The dataset info id.
+
         """
         return self.get_mapping_id([self.version_id, self.connector_id, self.dataset_id])
 
@@ -73,6 +70,7 @@ class AbstractDatasetInfo(abc.ABC):
 
         Returns:
             str: The joined mapping id.
+
         """
         return AbstractDatasetInfo.SEPARATOR.join(ids)
 
@@ -87,6 +85,7 @@ class AbstractDatasetInfo(abc.ABC):
 
         Returns:
             Dict[str, str]: The deserialized dataset information.
+
         """
 
     @staticmethod
@@ -100,6 +99,7 @@ class AbstractDatasetInfo(abc.ABC):
 
         Returns:
             AbstractDatasetInfo: The created instance of AbstractDatasetInfo.
+
         """
 
     @abc.abstractmethod
@@ -112,6 +112,7 @@ class AbstractDatasetInfo(abc.ABC):
 
         Returns:
             AbstractDatasetInfo: The new instance of AbstractDatasetInfo with the updated namespace.
+
         """
 
     @classmethod
@@ -128,6 +129,7 @@ class AbstractDatasetInfo(abc.ABC):
 
         Raises:
             ValueError: If the number of fields in the mapping key does not match the expected number of fields.
+
         """
         fields = dataset_mapping_key.split(cls.SEPARATOR)
 

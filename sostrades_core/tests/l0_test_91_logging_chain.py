@@ -21,9 +21,7 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
 class UnitTestHandler(logging.Handler):
-    """
-    Logging handler for UnitTest
-    """
+    """Logging handler for UnitTest"""
 
     def __init__(self):
         super().__init__()
@@ -34,9 +32,8 @@ class UnitTestHandler(logging.Handler):
 
 
 class LoggingDisciplineTest(SoSWrapp):
-    """
-    Discipline to test logging
-    """
+    """Discipline to test logging"""
+
     DISC_LOGGING_MESSAGE = "Testing logger Discipline"
 
     def run(self):
@@ -44,9 +41,7 @@ class LoggingDisciplineTest(SoSWrapp):
 
 
 class TestLoggers(unittest.TestCase):
-    """
-    Test de chaine de logs
-    """
+    """Test de chaine de logs"""
 
     def setUp(self):
         self.name = 'EETestLoggers'
@@ -57,9 +52,7 @@ class TestLoggers(unittest.TestCase):
         self.ee.logger.setLevel(logging.INFO)
 
     def test_01_loggers_chain_sos_wrap(self):
-        """
-        Tests if a log made in self.logger of a SoSWrap is correctly linked to execution engine
-        """
+        """Tests if a log made in self.logger of a SoSWrap is correctly linked to execution engine"""
         self.ee.ns_manager.add_ns_def({})
         mod_path = 'sostrades_core.tests.l0_test_91_logging_chain.LoggingDisciplineTest'
         builder = self.ee.factory.get_builder_from_module(self.model_name, mod_path)

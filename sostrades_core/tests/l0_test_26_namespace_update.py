@@ -20,14 +20,10 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestNamespaceManagement(unittest.TestCase):
-    """
-    Class to test namespace management in processes
-    """
+    """Class to test namespace management in processes"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'SoSDisc'
         self.ee = ExecutionEngine('Test')
         self.ns_test = 'Test'
@@ -304,7 +300,6 @@ class TestNamespaceManagement(unittest.TestCase):
         Test cleaning when updating value of namespace with extra ns
         Test different options
         """
-
         ns_dict = {'ns_disc1': f'{self.ns_test}'}
 
         self.ee.ns_manager.add_ns_def(ns_dict)

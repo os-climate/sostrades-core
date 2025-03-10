@@ -20,9 +20,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 
 class TestStatusDM(unittest.TestCase):
-    """
-    ProxyCoupling with status in DM.disciplines_dict test class
-    """
+    """ProxyCoupling with status in DM.disciplines_dict test class"""
 
     def setUp(self):
 

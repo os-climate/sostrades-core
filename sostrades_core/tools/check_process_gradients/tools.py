@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 '''
+from __future__ import annotations
+
 import importlib
 import inspect
 import os
@@ -28,6 +30,7 @@ from sostrades_core.tests.core.abstract_jacobian_unit_test import AbstractJacobi
 GENERATED_TEST_FOLDERNAME = 'generated_jacobian_tests'
 
 def generate_gradients_tests_for_disciplines_of_usecases(usecase_path: str, disciplines_names: dict[str: str], path_test_files_to_write: str):
+    """Generates gradients tests for disciplines"""
     disciplines_dict, usecase, ee, global_data_dict, namespaces_dict, all_coupling_variables = run_study_and_get_disciplines_to_test(usecase_path=usecase_path)
     for disc_to_test, dict_test_filename in disciplines_names.items():
         corresponding_disciplines = list(filter(lambda x: disc_to_test in x, disciplines_dict.keys()))
@@ -65,6 +68,7 @@ def generate_gradients_tests_for_disciplines_of_usecases(usecase_path: str, disc
 
 
 def run_study_and_get_disciplines_to_test(usecase_path):
+    """Runs a study and get the disciplines to test"""
     name = 'jacobianIsolatedDiscTest'
     ee = ExecutionEngine(name)
 
@@ -172,6 +176,7 @@ def get_discipline_classname_from_module(module_path):
 
     Returns:
     list: A list of class objects found in the module
+
     """
     try:
         # Dynamically import the module
@@ -204,6 +209,22 @@ def one_test_gradients_discipline(test_name: str,
                                   coupling_inputs: list[str],
                                   coupling_outputs: list[str],
                                   ):
+    """
+    Tests the gradients of a discipline at the exact point of the use case's ending point.
+
+    Args:
+        test_name (str): The name of the test.
+        model_name (str): The name of the model to test.
+        discipline_class_path (str): The path to the discipline's class.
+        inputs (dict): The input parameters for the discipline.
+        namespaces (dict): The namespaces for the discipline.
+        coupling_inputs (list[str]): The list of input variables for the coupling.
+        coupling_outputs (list[str]): The list of output variables for the coupling.
+
+    Returns:
+        bool: True if the gradient test passes, False otherwise.
+
+    """
     if len(coupling_inputs) == 0 or len(coupling_outputs) == 0:
         return True
 
@@ -276,7 +297,6 @@ def handle_discipline_with_wrong_gradients(coupling_inputs: list[str],
                                            test_filename: Union[str, None] = None,
                                            test_folder: str = GENERATED_TEST_FOLDERNAME):
     """Prepares a dedicated test file to help debug the gradients"""
-
     pickle_to_dump = {
         'ns_dict': ns_dict,
         'values_dict': discipline_inputs,

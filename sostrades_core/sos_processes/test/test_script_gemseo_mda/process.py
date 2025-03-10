@@ -43,7 +43,8 @@ class ProcessBuilder(BaseProcessBuilder):
 
 
 def post_processing_filters(execution_engine, namespace):
-    """ post processing function designed to build a rc vs saleprice 2D chart
+    """
+    post processing function designed to build a rc vs saleprice 2D chart
 
     :params: execution_engine, execution engine instance that hold data
     :type: ExecutionEngine
@@ -53,13 +54,13 @@ def post_processing_filters(execution_engine, namespace):
 
     :returns: ChartFilter[]
     """
-
     filters = []
     return filters
 
 
 def post_processings(execution_engine, namespace, filters):
-    """ post processing function designed to build a rc vs saleprice 2D chart
+    """
+    post processing function designed to build a rc vs saleprice 2D chart
 
     :params: execution_engine, execution engine instance that hold data
     :type: ExecutionEngine

@@ -20,9 +20,7 @@ from sostrades_core.tools.bspline.bspline import BSpline
 
 
 def bspline_method(ctrl_pts, length):
-    '''
-    Method to use Bspline on a set of ctrl points over a length
-    '''
+    '''Method to use Bspline on a set of ctrl points over a length'''
     list_t = np.linspace(0.0, 1.0, length)
 
     bspline = BSpline(n_poles=len(ctrl_pts))

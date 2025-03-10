@@ -29,14 +29,10 @@ LOC_DIRNAME = dirname(__file__)
 
 
 class TestExecutionEngine(unittest.TestCase):
-    """
-    Execution engine test class
-    """
+    """Execution engine test class"""
 
     def setUp(self):
-        '''
-        Initialize third data needed for testing
-        '''
+        '''Initialize third data needed for testing'''
         self.name = 'EETests'
         self.repo = 'sostrades_core.sos_processes.test'
 

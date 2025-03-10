@@ -33,9 +33,7 @@ class ProcessBuilder(BaseProcessBuilder):
     }
 
     def get_builders(self):
-        '''
-        default initialisation test
-        '''
+        '''Default initialisation test'''
         # add coupling Sellar
         mda_builder = self.ee.factory.get_builder_from_process(
             'sostrades_core.sos_processes.test', 'test_sellar_coupling')

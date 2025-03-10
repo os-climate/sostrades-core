@@ -15,8 +15,7 @@ limitations under the License.
 
 
 class NoInstanceMeta(type):
-    """
-    Metaclass for a class that should not be instanciated
-    """
+    """Metaclass for a class that should not be instanciated"""
+
     def __call__(cls, *args, **kwargs):
         raise TypeError(f"{cls.__name__} cannot be instantiated")

@@ -25,9 +25,7 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for a list of Sellar Problem
-        """
+        """Usecase for a list of Sellar Problem"""
         ns = f'{self.study_name}'
 
         disc_dict = {}

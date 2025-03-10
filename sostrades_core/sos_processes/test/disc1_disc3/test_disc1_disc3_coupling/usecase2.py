@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/07/24 Copyright 2024 Capgemini
+Modifications on 2024/07/24-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ from sostrades_core.study_manager.study_manager import StudyManager
 
 
 class Study(StudyManager):
-    '''This is an example of usecase study for
+    '''
+    This is an example of usecase study for
      the test_disc1_disc3_coupling.
     This process instantiates the coupling of (disc1_scenario,disc3_scenario).
     '''
@@ -27,9 +28,7 @@ class Study(StudyManager):
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """
-        Usecase for disc1 disc2 coupling
-        """
+        """Usecase for disc1 disc2 coupling"""
         # Numerical values   ####
         x = 23.
         a = 23.

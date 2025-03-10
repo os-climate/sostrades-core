@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/01/19 Copyright 2024 Capgemini
+Modifications on 2024/01/19-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,9 +22,7 @@ class ScatterMapException(Exception):
     pass
 
 class ScatterMap:
-    '''
-    Specification: ScatterMap class allows to define parameters to build Scatter and Gather disciplines
-    '''
+    '''Specification: ScatterMap class allows to define parameters to build Scatter and Gather disciplines'''
 
     NS_TO_UPDATE = 'ns_to_update'
     NS_NOT_TO_UPDATE = 'ns_not_to_update'
@@ -58,10 +56,7 @@ class ScatterMap:
         self.builder = None  # builder associated to the scatter_map
 
     def check_map(self, map_dict):
-        '''
-        Check if the map is valid
-        '''
-
+        '''Check if the map is valid'''
         for key in map_dict.keys():
             if key not in self.POSSIBLE_KEYS:
                 raise ScatterMapException(
@@ -86,16 +81,12 @@ class ScatterMap:
                 f'The {self.SCATTER_NAME} key in scatter map {self.name} must be a string')
 
     def update_map(self, s_map):
-        '''
-        Mechanism to update value
-        '''
+        '''Mechanism to update value'''
         self.check_map(s_map)
         self.__map = s_map
 
     def get_map(self):
-        '''
-        Get the map in the ScatterMap
-        '''
+        '''Get the map in the ScatterMap'''
         return self.__map
 
     def configure_map(self, builder):
@@ -103,18 +94,14 @@ class ScatterMap:
         self.builder = builder
 
     def get_ns_to_update(self):
-        '''
-        Get dependent namespaces if ns_to_update in map
-        '''
+        '''Get dependent namespaces if ns_to_update in map'''
         if self.NS_TO_UPDATE in self.__map:
             return self.__map[self.NS_TO_UPDATE]
         else:
             return []
 
     def get_ns_not_to_update(self):
-        '''
-        Get dependent namespaces if ns_to_update in map
-        '''
+        '''Get dependent namespaces if ns_to_update in map'''
         if self.NS_NOT_TO_UPDATE in self.__map:
             return self.__map[self.NS_NOT_TO_UPDATE]
         else:
@@ -134,39 +121,29 @@ class ScatterMap:
             return None
 
     def get_scatter_list_name_and_namespace(self):
-        '''
-        Get scatter list name and namespaces for scenario_df propagation
-        '''
+        '''Get scatter list name and namespaces for scenario_df propagation'''
         if self.SCATTER_LIST_TUPLE in self.__map:
             return self.__map[self.SCATTER_LIST_TUPLE]
         else:
             return None
 
     def get_scatter_name(self):
-        '''
-        Get scatter name for scenario_name propagation
-        '''
+        '''Get scatter name for scenario_name propagation'''
         if self.SCATTER_NAME in self.__map:
             return self.__map[self.SCATTER_NAME]
         else:
             return None
 
     def get_dependency_disc_list(self):
-        '''
-        Get the list of disciplines dependent on this scatterMap
-        '''
+        '''Get the list of disciplines dependent on this scatterMap'''
         return self.dependency_disc_list
 
     def add_dependency(self, disc_id):
-        '''
-        Add scatter_map disciplinary dependency
-        '''
+        '''Add scatter_map disciplinary dependency'''
         if disc_id not in self.dependency_disc_list:
             self.dependency_disc_list.append(disc_id)
 
     def remove_dependency(self, disc_id):
-        '''
-        Remove disciplinary dependency
-        '''
+        '''Remove disciplinary dependency'''
         if disc_id in list(self.dependency_disc_list):
             self.dependency_disc_list.remove(disc_id)

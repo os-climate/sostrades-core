@@ -19,9 +19,7 @@ from sostrades_core.tools.check_headers import HeaderTools
 
 
 def main() -> None:
-    """
-    Main function to read the headers_ignore_config.json file and write headers if needed in the repository.
-    """
+    """Main function to read the headers_ignore_config.json file and write headers if needed in the repository."""
     try:
         with open("./headers_ignore_config.json", "r", encoding="utf-8") as f:
             headers_ignore_config = json.load(f)

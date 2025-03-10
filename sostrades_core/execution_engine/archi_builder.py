@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/05/12-2024/07/04 Copyright 2023 Capgemini
+Modifications on 2023/05/12-2025/02/14 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,9 +31,7 @@ class ArchiBuilderException(Exception):
 
 
 class ArchiBuilder(ProxyDisciplineBuilder):
-    """
-    Class that build several disciplines following a specific architecture
-    """
+    """Class that build several disciplines following a specific architecture"""
 
     # ontology information
     _ontology_data = {
@@ -53,7 +51,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
     BUILDER_TYPE = 'Type'
     ACTION = 'Action'
     ACTIVATION = 'Activation'
+    DISPLAY = 'Display'
     ARCHI_COLUMNS = [PARENT, CURRENT, BUILDER_TYPE, ACTION, ACTIVATION]
+    OPTIONAL_COLUMNS = [DISPLAY]
     ROOT_NODE = '@root_node@'
     POSSIBLE_ACTIONS = {
         'standard': 'standard',
@@ -74,9 +74,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
     def __init__(self, sos_name, ee, architecture_df, cls_builder=None, associated_namespaces=None,
                  custom_vb_folder_list=None):
-        """
-        Constructor
-        """
+        """Constructor"""
         super().__init__(sos_name, ee, associated_namespaces=associated_namespaces)
 
         self.children_dict = {}
@@ -119,24 +117,17 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         self.get_children_list_by_vb(self.builder_dict)
 
     def prepare_execution(self):
-        """
-        Purely a configuration discipline it does not prepare execution.
-        """
+        """Purely a configuration discipline it does not prepare execution."""
         pass
 
     @property
     def status(self):  # type: (...) -> str
-        """
-        The status of the discipline, to be retrieved from the GEMSEO object after configuration.
-        """
-
+        """The status of the discipline, to be retrieved from the GEMSEO object after configuration."""
         return self.father_executor.status
 
     @status.setter
     def status(self, status):
-        """
-        setter of status
-        """
+        """Setter of status"""
         self._update_status_dm(status)
 
     def build_architecture_df(self, arch_df):
@@ -147,7 +138,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         add the root node among current nodes and set it as the parent of current nodes
         having none as parent
         """
-
         current_nodes = list(arch_df[self.CURRENT])
 
         if self.ROOT_NODE in current_nodes:
@@ -163,9 +153,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return arch_df
 
     def builder_dict_from_architecture(self, archi_df, archi_parent):
-        """
-        Build initial builder_dict and activation_dict by reading architecture_df input
-        """
+        """Build initial builder_dict and activation_dict by reading architecture_df input"""
         self.check_architecture(archi_df)
         activation_dict = self.create_activation_df(archi_df)
         builder_dict, activation_dict = self.create_vb_disc_namespaces_and_builders(
@@ -175,12 +163,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return builder_dict, activation_dict
 
     def check_architecture(self, archi_df):
-        """
-        Check the architecture dataframe to see if it is possible to build it
-        """
-        if archi_df.columns.tolist() != self.ARCHI_COLUMNS:
+        """Check the architecture dataframe to see if it is possible to build it"""
+        if (
+            archi_df.columns.tolist() != self.ARCHI_COLUMNS
+            and archi_df.columns.tolist() != self.ARCHI_COLUMNS + self.OPTIONAL_COLUMNS
+        ):
             raise ArchiBuilderException(
-                f'The architecture dataframe must have 5 columns named : {self.ARCHI_COLUMNS}'
+                f'The architecture dataframe must have 5 columns named : {self.ARCHI_COLUMNS} or 6 with {self.OPTIONAL_COLUMNS}'
             )
 
         if archi_df[self.ACTIVATION].dtype != 'bool':
@@ -215,10 +204,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     )
 
     def check_activation_df(self):
-        """
-        Check the activation dataframe to see if possible values and types are respected
-        """
-
+        """Check the activation dataframe to see if possible values and types are respected"""
         activation_df = self.get_sosdisc_inputs(self.ACTIVATION_DF)
         # chekc if sub architectures are built and activation_df has been
         # modified
@@ -289,9 +275,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                             ] = False
 
     def get_children_names(self, parent_name, architecture):
-        """
-        Recursive method to get children names for parent name by reading architecture_df
-        """
+        """Recursive method to get children names for parent name by reading architecture_df"""
         if parent_name in architecture[self.PARENT].values.tolist():
             return architecture.loc[
                 architecture[self.PARENT] == parent_name, self.CURRENT
@@ -308,9 +292,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
     def create_vb_disc_namespaces_and_builders(
             self, archi_df, activation_dict, archi_parent
     ):
-        """
-        Create builder dict of value blocks
-        """
+        """Create builder dict of value blocks"""
         builder_dict = {}
 
         for index, row in archi_df.iterrows():
@@ -373,19 +355,19 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         for ns in builder_dict:
             self.children_dict[ns] = []
             for ns_child in builder_dict:
-                if (
-                        ns in ns_child
-                        and ns != ns_child
-                        and len(ns.split('.')) + 1 == len(ns_child.split('.'))
-                ):
+                filtered_archi_child_df = self.architecture_df.loc[
+                    self.architecture_df.apply(lambda row: ns_child.endswith(row[self.CURRENT]), axis=1)]
+                if ns in ns_child and ns != ns_child and len(filtered_archi_child_df.loc[
+                                                                 filtered_archi_child_df.apply(
+                                                                     lambda row: ns.endswith(row[self.PARENT]),
+                                                                     axis=1)]
+                                                             ) == 1:
                     self.children_dict[ns].append(ns_child)
 
     def get_full_namespaces_from_archi(
             self, namespace, activation_dict, archi_df, archi_parent
     ):
-        """
-        Get full namespaces of builder with current namespace by reading archi_df
-        """
+        """Get full namespaces of builder with current namespace by reading archi_df"""
         new_namespace_list = []
 
         if namespace == archi_parent:
@@ -432,9 +414,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return new_namespace_list, activation_dict
 
     def get_action_builder(self, namespace, archi_df):
-        """
-        Get action and args of builder_name from architecture_df
-        """
+        """Get action and args of builder_name from architecture_df"""
         if '.' not in namespace:
             # get action of namespace without parent
             action = archi_df[archi_df[self.CURRENT] == namespace][self.ACTION].values[
@@ -442,10 +422,11 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             ]
         else:
             # get action of namespace splitted into current/parent
-            parent_name, current_name = namespace.split('.')[-2:]
+
             action = archi_df.loc[
-                (archi_df[self.CURRENT] == current_name)
-                & (archi_df[self.PARENT] == parent_name),
+                archi_df.apply(lambda row: namespace.endswith(row[self.PARENT] + '.' + row[self.CURRENT])
+                if row[self.PARENT] is not None
+                else False, axis=1),
                 self.ACTION,
             ].values[0]
         if isinstance(action, (str)):
@@ -458,9 +439,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             )
 
     def check_data_integrity(self):
-        '''
-        Check the data integrity of the input variables of the driver
-        '''
+        '''Check the data integrity of the input variables of the driver'''
         # checking for duplicates
         self.check_integrity_msg_list = []
         disc_in = self.get_data_in()
@@ -474,16 +453,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 self.CHECK_INTEGRITY_MSG, data_integrity_msg)
 
     def build(self):
-        """
-        Build method to build all value blocks regarding the architecture
-        """
-
+        """Build method to build all value blocks regarding the architecture"""
         activ_builder_dict, self.builder_dict = self.build_action_from_builder_dict(
             self.builder_dict, self.architecture_df
         )
 
         # build activated builders
-        for namespace in self.builder_dict.keys():
+        for namespace in self.builder_dict:
             if namespace in activ_builder_dict:
 
                 # len(activ_builder_dict[namespace]) == 1 or
@@ -494,6 +470,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                         # builder at archi_node should have the same display than architecture builder
                         local_ns = self.ee.ns_manager.get_local_namespace(disc)
                         local_ns.set_display_value(self.get_disc_display_name())
+
                     if namespace not in self.archi_disciplines:
                         self.ee.factory.add_discipline(disc)
                         self.archi_disciplines[namespace] = [disc]
@@ -507,9 +484,52 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 self._is_configured = False
                 del self.archi_disciplines[namespace]
 
+        if self.DISPLAY in self.architecture_df.columns:
+            self.add_display_names_to_children()
+
         self.activated_builders = activ_builder_dict
 
         self.send_children_to_father()
+
+    def add_display_names_to_children(self):
+        '''
+
+        The DISPLAY Columns in architecture df is used to have display_name differnt from discipline names
+        Here we set the display_name to the builder used to create the disciplines
+
+        '''
+        # Create parent array with empty strings instead of None
+        parent_names = self.architecture_df[self.PARENT].to_numpy()
+        parent_names_str = np.where(
+            self.architecture_df[self.PARENT].isna(),
+            "",
+            self.architecture_df[self.PARENT]
+        )
+        names = self.architecture_df[self.CURRENT].to_numpy()
+        display_names = self.architecture_df[self.DISPLAY].to_numpy()
+
+        # Create parent.child names array
+        parent_dot_names = np.where(
+            parent_names != None,  # noqa: E711
+            parent_names_str + "." + names,
+            names,
+        )
+
+        for disc_list in self.archi_disciplines.values():
+            disc = disc_list[0]
+
+            # Retrieve local namespace
+            local_ns = self.ee.ns_manager.get_local_namespace(disc)
+
+            # Find index where local namespace is in the arrays
+            # idx = np.where(parent_dot_names == local_ns.name)[0]
+            # Find index where local namespace ends with strings in parent_dot_names
+            idx = np.where(np.char.endswith(local_ns.name, parent_dot_names))[0]
+
+            if len(idx) > 0 and display_names[idx[0]] is not None:
+                new_display_name = disc.get_disc_full_name().replace(names[idx[0]], display_names[idx[0]])
+                local_ns.set_display_value(new_display_name)
+
 
     def clean_children(self, list_children=None):
 
@@ -519,9 +539,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         super().clean_children(list_children)
 
     def build_value_block(self, builder):
-        """
-        Method to build discipline with builder and namespace
-        """
+        """Method to build discipline with builder and namespace"""
         # build discipline below architecture
         self.associate_namespace_to_sub_builder(builder)
         discipline = builder.build()
@@ -529,9 +547,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return discipline
 
     def build_action_from_builder_dict(self, builder_dict, archi_df):
-        """
-        Recursive method to get builder_dict and activ_builder_dict by reading archi_df
-        """
+        """Recursive method to get builder_dict and activ_builder_dict by reading archi_df"""
         activ_builder_dict = {}
         new_builder_dict_list = []
         new_activ_builder_dict_list = []
@@ -718,7 +734,6 @@ class ArchiBuilder(ProxyDisciplineBuilder):
          ex : a sumbuilder at the AC node
 
         """
-
         activ_builders = self.get_scatter_builder(
             namespace,
             scatter_list_name,
@@ -728,9 +743,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return activ_builders
 
     def is_builder_activated(self, namespace, builder_name):
-        """
-        Return True/False if builder is activated/desactivated in self.activation_df
-        """
+        """Return True/False if builder is activated/desactivated in self.activation_df"""
         if (
                 self.ACTIVATION_DF in self.get_data_in()
                 and self.get_sosdisc_inputs(self.ACTIVATION_DF) is not None
@@ -768,9 +781,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                     disc_children_list)
 
     def setup_sos_disciplines(self):
-        """
-        Set samples_df value by reading activation_df input
-        """
+        """Set samples_df value by reading activation_df input"""
         dynamic_inputs = {}
         for driver_name, input_name in self.driver_input_to_fill.items():
 
@@ -826,10 +837,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             scatter_list_name,
             builder,
     ):
-        """
-        Get builders list for scatter action at namespace node
-        """
-
+        """Get builders list for scatter action at namespace node"""
         result_builder_list = []
         # case when scatter is on archi_node or scatter on other node at root level
         if namespace == self.sos_name:
@@ -872,18 +880,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return result_builder_list
 
     def set_scatter_list_under_scatter(self, full_input_name, input_value):
-        """
-        Function to set the scatter_list und er the corresponding scatter to create children
-        """
-
+        """Function to set the scatter_list und er the corresponding scatter to create children"""
         if full_input_name in self.ee.dm.data_id_map:
             self.ee.dm.set_data(full_input_name, self.EDITABLE, False)
             self.ee.dm.set_data(full_input_name, self.VALUE, input_value)
 
     def get_subarchi_builders(self, subarchi_df, parent_namespace):
-        """
-        Build initial builder_dict and activation_dict by reading subarchi_df
-        """
+        """Build initial builder_dict and activation_dict by reading subarchi_df"""
         sub_builder_dict, sub_activation_dict = self.builder_dict_from_architecture(
             subarchi_df, parent_namespace
         )
@@ -891,9 +894,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         return sub_builder_dict, sub_activation_dict
 
     def delete_father_without_children(self, activate_dict):
-        """
-        Do not build a father which does not have children
-        """
+        """Do not build a father which does not have children"""
         new_children_dict = {}
         children_dict_size_old = len(self.children_dict)
         while children_dict_size_old != len(self.children_dict):
@@ -910,9 +911,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         }
 
     def create_activation_df(self, archi_df):
-        """
-        Create activation_df with all value blocks activated for all actor by default
-        """
+        """Create activation_df with all value blocks activated for all actor by default"""
         activation_dict = {}
         df_dict = {}
         df_descriptor = {}
@@ -1047,9 +1046,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
     def get_scatter_input_value(
             self, namespace, input_name, builder_name, condition_dict=None
     ):
-        """
-        Get product list of actor_name for builder_name
-        """
+        """Get product list of actor_name for builder_name"""
         if self.ACTIVATION_DF in self.get_data_in():
             activation_df = deepcopy(
                 self.get_sosdisc_inputs(self.ACTIVATION_DF))
@@ -1083,7 +1080,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         )
 
     def remove_discipline_list(self, disc_list):
-        """remove one discipline from coupling"""
+        """Remove one discipline from coupling"""
         for disc in disc_list:
             #             if isinstance(disc, SoSDisciplineScatter):
             #                 disc.clean_scattered_disciplines([])

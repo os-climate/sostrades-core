@@ -35,8 +35,7 @@ Factory for post processing (2 axes chart, pie chart, table)
 
 
 class PostProcessingFactory:
-    """ Class that centralized extraction of post processsing information from discipline
-    """
+    """Class that centralized extraction of post processsing information from discipline"""
 
     MODULE_CONFIGURATION_FILE_GATHER = 'chart_post_processing_gather'
     MODULE_CHART_FILTER_METHOD = 'get_chart_filter_list'
@@ -46,27 +45,27 @@ class PostProcessingFactory:
     NAMESPACED_POST_PROCESSING_NAME = 'Data'
 
     def get_all_post_processings(self, execution_engine, filters_only, as_json=True, for_test=False):
-        """ Extract all post processing filters that are defined into the execution engine
-            (using discipline and post processing manager)
+        """
+        Extract all post processing filters that are defined into the execution engine
+        (using discipline and post processing manager)
 
-            :params: execution_engine, execution engine that hold post processing data
-            :type: ExecutionEngine
+        :params: execution_engine, execution engine that hold post processing data
+        :type: ExecutionEngine
 
-            :params: filters_only,
-                     If True, only retrieve filters from the execution.
-                     If False then get associated post processing
-            :type: boolean
+        :params: filters_only,
+                 If True, only retrieve filters from the execution.
+                 If False then get associated post processing
+        :type: boolean
 
-            :params: as_json: return a jsonified object
-            :type: boolean
+        :params: as_json: return a jsonified object
+        :type: boolean
 
-            :params: for_test: specify if it is for test purpose
-            :type: boolean
+        :params: for_test: specify if it is for test purpose
+        :type: boolean
 
-            :returns: Dictionary {namespace: PostProcessingBundle[]}
+        :returns: Dictionary {namespace: PostProcessingBundle[]}
 
         """
-
         logger = execution_engine.logger.getChild("PostProcessing")
         execution_engine.clean_unused_namespaces()
         all_post_processings_bundle = {}
@@ -175,16 +174,17 @@ class PostProcessingFactory:
         return all_post_processings_bundle
 
     def get_post_processing_filters_by_namespace(self, execution_engine, namespace):
-        """ Method that retrieve post processing filter base on a namespace value
-            (using discipline and post processing manager)
+        """
+        Method that retrieve post processing filter base on a namespace value
+        (using discipline and post processing manager)
 
-            :params: execution_engine, execution engine that hold post processing data
-            :type: ExecutionEngine
+        :params: execution_engine, execution engine that hold post processing data
+        :type: ExecutionEngine
 
-            :params: namespace, namespace to use to retrieve filters
-            :type: string
+        :params: namespace, namespace to use to retrieve filters
+        :type: string
 
-            :returns: ChartFilters[]
+        :returns: ChartFilters[]
         """
         discipline_list = []
 
@@ -222,25 +222,26 @@ class PostProcessingFactory:
         return all_filters
 
     def get_post_processing_by_namespace(self, execution_engine, namespace, filters, as_json=True, for_test=False):
-        """ Method that retrieve post processing filter base on a namespace value
-            (using discipline and post processing manager)
+        """
+        Method that retrieve post processing filter base on a namespace value
+        (using discipline and post processing manager)
 
-            :params: execution_engine, execution engine that hold post processing data
-            :type: ExecutionEngine
+        :params: execution_engine, execution engine that hold post processing data
+        :type: ExecutionEngine
 
-            :params: namespace, namespace to use to retrieve filters
-            :type: string
+        :params: namespace, namespace to use to retrieve filters
+        :type: string
 
-            :params: filters: filter to apply to post processing generation
-            :type: ChartFilter[]
+        :params: filters: filter to apply to post processing generation
+        :type: ChartFilter[]
 
-            :params: as_json: return a jsonified object
-            :type: boolean
+        :params: as_json: return a jsonified object
+        :type: boolean
 
-            :params: for_test: specify if it is for test purpose
-            :type: boolean
+        :params: for_test: specify if it is for test purpose
+        :type: boolean
 
-            :returns: Post-processing list (TwoAxesInstanciatedChart/InstanciatedPieChart/InstanciatedTable) or json oject list
+        :returns: Post-processing list (TwoAxesInstanciatedChart/InstanciatedPieChart/InstanciatedTable) or json oject list
         """
         discipline_list = []
 
@@ -285,13 +286,13 @@ class PostProcessingFactory:
         return all_post_processings
 
     def get_post_processing_filters_by_discipline(self, discipline, for_test=False):
-        """ Retrieve post processing filters for a given discipline
+        """
+        Retrieve post processing filters for a given discipline
 
         :params: discipline : discipline instance to query to get associated
         post processing filters
         :type: SoSDiscipline
         """
-
         result = []
 
         # Initialize logger for the discipline
@@ -347,7 +348,8 @@ class PostProcessingFactory:
         return result
 
     def get_post_processing_by_discipline(self, discipline, filters, as_json=True, for_test=False):
-        """ Retrieve post processing for a given discipline
+        """
+        Retrieve post processing for a given discipline
 
         :params: discipline: discipline instance to query to get associated post processing
         :type: SoSDiscipline
@@ -363,7 +365,6 @@ class PostProcessingFactory:
 
         :returns: Post-processing list (TwoAxesInstanciatedChart/InstanciatedPieChart/InstanciatedTable) or json oject list
         """
-
         # Initialize logger for the discipline
         logger = discipline.logger.getChild("PostProcessing")
 
@@ -454,7 +455,8 @@ class PostProcessingFactory:
         return post_processing_results
 
     def __convert_post_processing_into_json(self, post_processings, logger=None):
-        """ Manage to get plotly object into post processing object and convert it into
+        """
+        Manage to get plotly object into post processing object and convert it into
         json with the removing of the template section
 
         @param post_processings: post processing object to convert
@@ -465,7 +467,6 @@ class PostProcessingFactory:
 
         @return json object list
         """
-
         json_objects = []
 
         for post_processing in post_processings:

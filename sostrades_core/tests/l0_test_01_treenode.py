@@ -25,9 +25,7 @@ Treenode test suite
 
 
 class TestTreenode(unittest.TestCase):
-    """
-    Treenode test class
-    """
+    """Treenode test class"""
 
     def setUp(self):
         self.repo = 'sostrades_core.sos_processes.test'
@@ -36,9 +34,7 @@ class TestTreenode(unittest.TestCase):
         pass
 
     def test_01_ordered_disc_and_recursive_tree(self):
-        '''
-        Test if the order of the disc in the tree is the ordered defined by the MDAChain
-        '''
+        '''Test if the order of the disc in the tree is the ordered defined by the MDAChain'''
         print('\nin multilevel SoSCoupling unit test03 \n')
 
         namespace = 'study'

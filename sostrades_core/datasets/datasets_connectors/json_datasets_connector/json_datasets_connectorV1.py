@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-from typing import Any
+from __future__ import annotations
 
-from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
+import logging
+from typing import TYPE_CHECKING, Any
+
 from sostrades_core.datasets.dataset_info.dataset_info_v1 import DatasetInfoV1
 from sostrades_core.datasets.dataset_info.dataset_info_versions import VERSION_V1
 from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector import (
@@ -27,19 +28,20 @@ from sostrades_core.datasets.datasets_connectors.abstract_datasets_connector imp
 from sostrades_core.datasets.datasets_connectors.json_datasets_connector.json_dataset_connector_tools import (
     JSONDatasetsConnectorTools,
 )
-from sostrades_core.datasets.datasets_serializers.datasets_serializer_factory import (
-    DatasetSerializerType,
-    DatasetsSerializerFactory,
+from sostrades_core.datasets.datasets_serializers.json_datasets_serializer import (
+    JSONDatasetsSerializer,
 )
+
+if TYPE_CHECKING:
+    from sostrades_core.datasets.dataset_info.abstract_dataset_info import AbstractDatasetInfo
 
 
 class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
-    """
-    Specific dataset connector for dataset in json format
-    """
+    """Specific dataset connector for dataset in json format"""
+
     COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V1]
 
-    def __init__(self, connector_id: str, file_path: str, create_if_not_exists: bool = False, serializer_type: DatasetSerializerType = DatasetSerializerType.JSON):
+    def __init__(self, connector_id: str, file_path: str, create_if_not_exists: bool = False):
         """
         Constructor for JSON data connector
 
@@ -47,13 +49,13 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
             connector_id (str): Connector identifier
             file_path (str): File path for this dataset connector
             create_if_not_exists (bool, optional): Create file if not exists. Defaults to False.
-            serializer_type (DatasetSerializerType, optional): Type of serializer to deserialize data from connector. Defaults to DatasetSerializerType.JSON.
+
         """
         super().__init__()
         self.__json_tooling = JSONDatasetsConnectorTools(file_path=file_path, create_if_not_exists=create_if_not_exists)
         self.__logger = logging.getLogger(__name__)
         self.__logger.debug("Initializing JSON connector")
-        self._datasets_serializer = DatasetsSerializerFactory.get_serializer(serializer_type)
+        self._datasets_serializer = JSONDatasetsSerializer()
         self.connector_id = connector_id
 
         # In json, we have to load the full file to retrieve values, so cache it
@@ -65,6 +67,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Returns:
             list[AbstractDatasetInfo]: List of available datasets
+
         """
         self.__logger.debug(f"Getting all datasets for connector {self}")
         # Read JSON if not read already
@@ -86,6 +89,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Raises:
             DatasetNotFoundException: If dataset or group is not found
+
         """
         self.__logger.debug(f"Getting values {data_to_get.keys()} for dataset {dataset_identifier} for connector {self}")
         # Read JSON if not read already
@@ -124,6 +128,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Raises:
             DatasetNotFoundException: If dataset is not found
+
         """
         # Read JSON if not read already
         self.__logger.debug(f"Writing values in dataset {dataset_identifier.dataset_id} for connector {self}")
@@ -156,6 +161,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Raises:
             DatasetNotFoundException: If dataset or group is not found
+
         """
         self.__logger.debug(f"Getting all values for dataset {dataset_identifier.dataset_id} for connector {self}")
         # Read JSON if not read already
@@ -194,6 +200,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
         Raises:
             DatasetNotFoundException: If dataset or group is not found
             DatasetGenericException: If dataset would be overridden
+
         """
         self.__logger.debug(f"Writing dataset {dataset_identifier.dataset_id} for connector {self} (override={override}, create_if_not_exists={create_if_not_exists})")
         if self.__json_data is None:
@@ -225,6 +232,7 @@ class JSONDatasetsConnectorV1(AbstractDatasetsConnector):
 
         Args:
             dataset_id (str): Identifier of the dataset to be removed
+
         """
         if self.__json_data is None:
             self.__json_data = self.__json_tooling.load_json_data()
