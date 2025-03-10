@@ -51,7 +51,9 @@ class ArchiBuilder(ProxyDisciplineBuilder):
     BUILDER_TYPE = 'Type'
     ACTION = 'Action'
     ACTIVATION = 'Activation'
+    DISPLAY = 'Display'
     ARCHI_COLUMNS = [PARENT, CURRENT, BUILDER_TYPE, ACTION, ACTIVATION]
+    OPTIONAL_COLUMNS = [DISPLAY]
     ROOT_NODE = '@root_node@'
     POSSIBLE_ACTIONS = {
         'standard': 'standard',
@@ -162,9 +164,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
 
     def check_architecture(self, archi_df):
         """Check the architecture dataframe to see if it is possible to build it"""
-        if archi_df.columns.tolist() != self.ARCHI_COLUMNS:
+        if (
+            archi_df.columns.tolist() != self.ARCHI_COLUMNS
+            and archi_df.columns.tolist() != self.ARCHI_COLUMNS + self.OPTIONAL_COLUMNS
+        ):
             raise ArchiBuilderException(
-                f'The architecture dataframe must have 5 columns named : {self.ARCHI_COLUMNS}'
+                f'The architecture dataframe must have 5 columns named : {self.ARCHI_COLUMNS} or 6 with {self.OPTIONAL_COLUMNS}'
             )
 
         if archi_df[self.ACTIVATION].dtype != 'bool':
@@ -350,11 +355,13 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         for ns in builder_dict:
             self.children_dict[ns] = []
             for ns_child in builder_dict:
-                if (
-                        ns in ns_child
-                        and ns != ns_child
-                        and len(ns.split('.')) + 1 == len(ns_child.split('.'))
-                ):
+                filtered_archi_child_df = self.architecture_df.loc[
+                    self.architecture_df.apply(lambda row: ns_child.endswith(row[self.CURRENT]), axis=1)]
+                if ns in ns_child and ns != ns_child and len(filtered_archi_child_df.loc[
+                                                                 filtered_archi_child_df.apply(
+                                                                     lambda row: ns.endswith(row[self.PARENT]),
+                                                                     axis=1)]
+                                                             ) == 1:
                     self.children_dict[ns].append(ns_child)
 
     def get_full_namespaces_from_archi(
@@ -415,10 +422,11 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             ]
         else:
             # get action of namespace splitted into current/parent
-            parent_name, current_name = namespace.split('.')[-2:]
+
             action = archi_df.loc[
-                (archi_df[self.CURRENT] == current_name)
-                & (archi_df[self.PARENT] == parent_name),
+                archi_df.apply(lambda row: namespace.endswith(row[self.PARENT] + '.' + row[self.CURRENT])
+                if row[self.PARENT] is not None
+                else False, axis=1),
                 self.ACTION,
             ].values[0]
         if isinstance(action, (str)):
@@ -451,7 +459,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
         )
 
         # build activated builders
-        for namespace in self.builder_dict.keys():
+        for namespace in self.builder_dict:
             if namespace in activ_builder_dict:
 
                 # len(activ_builder_dict[namespace]) == 1 or
@@ -462,6 +470,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                         # builder at archi_node should have the same display than architecture builder
                         local_ns = self.ee.ns_manager.get_local_namespace(disc)
                         local_ns.set_display_value(self.get_disc_display_name())
+
                     if namespace not in self.archi_disciplines:
                         self.ee.factory.add_discipline(disc)
                         self.archi_disciplines[namespace] = [disc]
@@ -475,9 +484,52 @@ class ArchiBuilder(ProxyDisciplineBuilder):
                 self._is_configured = False
                 del self.archi_disciplines[namespace]
 
+        if self.DISPLAY in self.architecture_df.columns:
+            self.add_display_names_to_children()
+
         self.activated_builders = activ_builder_dict
 
         self.send_children_to_father()
+
+    def add_display_names_to_children(self):
+        '''
+
+        The DISPLAY Columns in architecture df is used to have display_name differnt from discipline names
+        Here we set the display_name to the builder used to create the disciplines
+
+        '''
+        # Create parent array with empty strings instead of None
+        parent_names = self.architecture_df[self.PARENT].to_numpy()
+        parent_names_str = np.where(
+            self.architecture_df[self.PARENT].isna(),
+            "",
+            self.architecture_df[self.PARENT]
+        )
+        names = self.architecture_df[self.CURRENT].to_numpy()
+        display_names = self.architecture_df[self.DISPLAY].to_numpy()
+
+        # Create parent.child names array
+        parent_dot_names = np.where(
+            parent_names != None,  # noqa: E711
+            parent_names_str + "." + names,
+            names,
+        )
+
+        for disc_list in self.archi_disciplines.values():
+            disc = disc_list[0]
+
+            # Retrieve local namespace
+            local_ns = self.ee.ns_manager.get_local_namespace(disc)
+
+            # Find index where local namespace is in the arrays
+            # idx = np.where(parent_dot_names == local_ns.name)[0]
+            # Find index where local namespace ends with strings in parent_dot_names
+            idx = np.where(np.char.endswith(local_ns.name, parent_dot_names))[0]
+
+            if len(idx) > 0 and display_names[idx[0]] is not None:
+                new_display_name = disc.get_disc_full_name().replace(names[idx[0]], display_names[idx[0]])
+                local_ns.set_display_value(new_display_name)
+
 
     def clean_children(self, list_children=None):
 

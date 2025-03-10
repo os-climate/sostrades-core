@@ -38,6 +38,7 @@ class ArchiNode:
     """
 
     name: str = ""
+    display_name: str | None = None
     parent: str = None
     type: str = "ValueBlockDiscipline"
     action: Union[Tuple[str], str] = "standard"
@@ -95,5 +96,6 @@ class ArchiNode:
             "Type": self.get_field_as_list("type", skip_self=skip_self),
             "Action": self.get_field_as_list("action", skip_self=skip_self),
             "Activation": self.get_field_as_list("activation", skip_self=skip_self),
+            "Display": self.get_field_as_list("display_name", skip_self=skip_self),
         }
         return pd.DataFrame(data)

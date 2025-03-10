@@ -65,7 +65,8 @@ class JSONDatasetsSerializer(AbstractDatasetsSerializer):
                     converted_data = self._deserialize_array(data_value)
                 else:
                     converted_data = data_value
-                    self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
+            else:
+                self.__logger.warning(f"Data type {data_type} for data {data_name} not found in default type list 'string', 'int', 'float', 'bool', 'list', 'dict', 'dataframe, 'array'.")
         except Exception as error:
             converted_data = data_value
             self.__logger.warning(f"Error while trying to convert data {data_name} with value {data_value} into the type {data_type}: {error}")
