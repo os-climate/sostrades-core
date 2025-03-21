@@ -176,7 +176,7 @@ class SoSMDAChain(MDAChain):
         )
         # pass the reduced_dm to the data_converter
         self.pass_reduced_dm_to_data_converter()
-        
+
         self.residuals_history = DataFrame({})
         self.scaling = scaling_method
         if inner_mda_name == "MDAGSNewton" and tolerance_gs is not None:

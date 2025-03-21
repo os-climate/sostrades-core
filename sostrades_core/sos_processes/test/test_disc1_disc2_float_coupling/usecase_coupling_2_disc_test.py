@@ -15,9 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from sostrades_core.study_manager.study_manager import StudyManager
-from sostrades_core.tools.post_processing.post_processing_factory import (
-    PostProcessingFactory,
-)
 
 
 class Study(StudyManager):

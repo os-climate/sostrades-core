@@ -14,9 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.data_manager import DataManager
 from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
-
 
 
 class ProcessBuilder(BaseProcessBuilder):
@@ -34,6 +32,6 @@ class ProcessBuilder(BaseProcessBuilder):
         mods_dict = {'Disc1': disc_dir + 'disc1_disc2_float_coupled.Disc1',
                      'Disc2': disc_dir + 'disc1_disc2_float_coupled.Disc2', }
         builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name})
-        
+
         return builder_list
 

@@ -17,17 +17,11 @@ limitations under the License.
 
 import unittest
 
-from numpy import array, allclose
+from numpy import allclose, array
 from numpy import float64 as np_float64
 from numpy import int32 as np_int32
-from numpy import int64 as np_int64
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-from sostrades_core.tools.compare_data_manager_tooling import dict_are_equal
-from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
-    convert_array_into_new_type,
-    convert_new_type_into_array,
-)
 
 
 class TestExtendFloat(unittest.TestCase):
@@ -82,7 +76,7 @@ class TestExtendFloat(unittest.TestCase):
         inner_mda_output_data_converter = self.ee.root_process.discipline_wrapp.discipline.inner_mdas[0].output_grammar.data_converter
         keys_to_convert = ['study.x', 'study.Disc1.b', 'study.y', 'study.a']
         data_dm = {key: self.ee.dm.get_value(key) for key in keys_to_convert}
-        target = {'study.x':array([-3.571428571428573]), 
+        target = {'study.x':array([-3.571428571428573]),
                     'study.Disc1.b':array([25.]),
                     'study.y' :array([-3.571428571428573]),
                     'study.a' : array([8])}
@@ -116,7 +110,7 @@ class TestExtendFloat(unittest.TestCase):
             reconverted_data_dm['study.Disc1.b'], float))
 
         # np_int64 test has been removed because gemseo doesn't deal with int64, only int32
-        
+
         # np_float64
         x = np_float64(10.0)
         values_dict['study.x'] = x
@@ -146,14 +140,14 @@ class TestExtendFloat(unittest.TestCase):
             red_dm = {key:value}
             converted_data_dm[key] = data_converter.convert_data_to_array(red_dm.keys(),red_dm)
             red_dm[key] = converted_data_dm[key]
-            
+
             new_red_dm = data_converter.convert_array_to_data(converted_data_dm[key], {key:slice(0,1,None)})
             reconverted_data_dm[key] = new_red_dm[key]
 
         # check new_types conversion into array
         for key, value in target.items():
             allclose(value, converted_data_dm.get(key), rtol=0.0001, atol=0.0001)
-            
+
 
         # check array conversion into new_types
         for key, value in data_dm.items():
