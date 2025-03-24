@@ -102,7 +102,7 @@ class TestExtendFloat(unittest.TestCase):
         self.assertTrue(isinstance(
             reconverted_data_dm['study.x'], type(x)))
         self.assertTrue(isinstance(
-            reconverted_data_dm['study.a'], type(a)), f'the type of study.a is {type(reconverted_data_dm['study.a'])} instead of {type(a)}' )
+            reconverted_data_dm['study.a'], type(a)), f"the type of study.a is {type(reconverted_data_dm['study.a'])} instead of {type(a)}" )
         self.assertEqual(reconverted_data_dm['study.y'], reconverted_data_dm['study.a'] * reconverted_data_dm['study.x'] + reconverted_data_dm['study.Disc1.b'])
         self.assertTrue(isinstance(
             reconverted_data_dm['study.y'], type(y)))
