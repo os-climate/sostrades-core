@@ -19,7 +19,7 @@ import unittest
 
 from numpy import allclose, array
 from numpy import float64 as np_float64
-from numpy import int32 as np_int32
+from numpy import int64 as np_int64
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
@@ -89,7 +89,7 @@ class TestExtendFloat(unittest.TestCase):
             reconverted_data_dm['study.y'], type(y)))
 
         # int32
-        a = np_int32(5)
+        a = np_int64(5)
         values_dict['study.a'] = a
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
