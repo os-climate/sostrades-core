@@ -14,6 +14,7 @@ limitations under the License.
 '''
 from sostrades_core.sos_wrapping.test_discs.disc_all_types import DiscAllTypes as DaT
 
+
 class DiscAllTypes2(DaT):
     # ontology information
     _ontology_data = {
