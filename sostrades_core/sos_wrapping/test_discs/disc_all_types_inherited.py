@@ -18,7 +18,7 @@ from sostrades_core.sos_wrapping.test_discs.disc_all_types import DiscAllTypes a
 class DiscAllTypes2(DaT):
     # ontology information
     _ontology_data = {
-        'label': 'All type class with heritage',
+        'label': 'class ontology heritage',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
@@ -26,6 +26,6 @@ class DiscAllTypes2(DaT):
         'last_modification_date': '',
         'category': '',
         'definition': 'discipline used to test ontology import fix',
-        'icon': 'fa-circle-user',
+        'icon': 'fa-solid fa-circle-user',
         'version': '',
     }
