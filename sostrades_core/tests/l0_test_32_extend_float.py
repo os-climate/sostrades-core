@@ -109,7 +109,7 @@ class TestExtendFloat(unittest.TestCase):
         # self.assertTrue(isinstance(
         #     reconverted_data_dm['study.Disc1.b'], float))
 
-        # 
+        #
 
         # np_float64
         x = np_float64(10.0)
