@@ -113,7 +113,9 @@ class TestExtendFloat(unittest.TestCase):
 
         # np_float64
         x = np_float64(10.0)
+        a = int(5)
         values_dict['study.x'] = x
+        values_dict['study.a'] = a
 
         self.ee.load_study_from_input_dict(values_dict)
         self.ee.execute()
