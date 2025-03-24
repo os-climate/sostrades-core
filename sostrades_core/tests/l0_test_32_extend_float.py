@@ -19,7 +19,6 @@ import unittest
 
 from numpy import allclose, array
 from numpy import float64 as np_float64
-from numpy import int32 as np_int32
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
