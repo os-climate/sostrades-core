@@ -19,6 +19,7 @@ import unittest
 
 from numpy import allclose, array
 from numpy import float64 as np_float64
+from numpy import int32 as np_int32
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
@@ -128,7 +129,7 @@ class TestExtendFloat(unittest.TestCase):
         self.assertTrue(isinstance(
             reconverted_data_dm['study.x'], type(x)))
         self.assertTrue(isinstance(
-            reconverted_data_dm['study.a'], type(a)))
+            reconverted_data_dm['study.a'], np_int32))
         self.assertEqual(reconverted_data_dm['study.y'], reconverted_data_dm['study.a'] * reconverted_data_dm['study.x'] + reconverted_data_dm['study.Disc1.b'])
         self.assertTrue(isinstance(
             reconverted_data_dm['study.y'], type(y)))
