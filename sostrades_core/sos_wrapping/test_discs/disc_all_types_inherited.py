@@ -17,7 +17,7 @@ from sostrades_core.sos_wrapping.test_discs.disc_all_types import DiscAllTypes a
 class DiscAllTypes2(DaT):
     # ontology information
     _ontology_data = {
-        'label': 'sostrades_core.sos_wrapping.test_discs.disc_all_types_inherited',
+        'label': 'All type class with heritage',
         'type': 'Research',
         'source': 'SoSTrades Project',
         'validated': '',
