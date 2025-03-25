@@ -20,6 +20,7 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     InstanciatedSeries,
     TwoAxesInstanciatedChart,
 )
+from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import InstanciatedPieChart
 
 
 class Disc1(SoSWrapp):
@@ -58,7 +59,7 @@ class Disc1(SoSWrapp):
 
         chart_filters = []
 
-        chart_list = ['y vs x']
+        chart_list = ['y vs x', 'pie chart']
 
         chart_filters.append(ChartFilter(
             'Charts', chart_list, chart_list, 'graphs'))
@@ -90,5 +91,20 @@ class Disc1(SoSWrapp):
             new_chart.series.append(serie)
 
             instanciated_charts.append(new_chart)
+
+        if 'pie chart' in charts_list:
+            x_scatter = ['x', 'y']
+            y_scatter = [x,y]
+
+            std_chart = InstanciatedPieChart(
+                'standard pie chart', x_scatter, y_scatter)
+            instanciated_charts.append(std_chart)
+
+            x_scatter = ['x', 'y']
+            y_scatter = [x,y]
+
+            donuts_chart = InstanciatedPieChart(
+                'donuts pie chart', x_scatter, y_scatter, 0.4, "scatter")
+            instanciated_charts.append(donuts_chart)
 
         return instanciated_charts
