@@ -175,8 +175,8 @@ class SoSMDAChain(MDAChain):
             **inner_mda_options,
         )
         # pass the reduced_dm to the data_converter
-        self.input_grammar.data_converter.reduced_dm = self.reduced_dm
-        self.output_grammar.data_converter.reduced_dm = self.reduced_dm
+        self.pass_reduced_dm_to_data_converter()
+
         self.residuals_history = DataFrame({})
         self.scaling = scaling_method
         if inner_mda_name == "MDAGSNewton" and tolerance_gs is not None:
@@ -189,6 +189,17 @@ class SoSMDAChain(MDAChain):
                 if isinstance(mda, MDANewtonRaphson):
                     mda.settings.newton_linear_solver_name = linear_solver
                     mda.settings.newton_linear_solver_settings = linear_solver_settings
+
+    def pass_reduced_dm_to_data_converter(self):
+        self.input_grammar.data_converter.reduced_dm = self.reduced_dm
+        self.output_grammar.data_converter.reduced_dm = self.reduced_dm
+        self.mdo_chain.input_grammar.data_converter.reduced_dm = self.reduced_dm
+        self.mdo_chain.output_grammar.data_converter.reduced_dm = self.reduced_dm
+        for inner_mda in self.inner_mdas :
+            inner_mda.input_grammar.data_converter.reduced_dm = self.reduced_dm
+            inner_mda.output_grammar.data_converter.reduced_dm = self.reduced_dm
+
+
 
     def clear_jacobian(self):
         return SoSDiscipline.clear_jacobian(self)  # should rather be double inheritance
