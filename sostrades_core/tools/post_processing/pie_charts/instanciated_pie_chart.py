@@ -42,13 +42,15 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
     VALUES = 'values'
     STYLES = 'styles'
 
-    def __init__(self, pie_chart_name='', labels=[], values=[]):
+    def __init__(self, pie_chart_name='', labels=[], values=[], donuts_hole_size=0, text_in_donuts=None):
         """
         Create a new table
 
         @param pie_chart_name : string that contains pie chart name
         @param labels : string list that contains labels for each pie chart values
         @param values : string list of list that contains each value the pie chart
+        @param donuts_hole_size: float between 0 and 1 representing the percentage of donut hole size. Value is usually 0.4
+        @param text_in_donuts: text to be shown inside the donuts hole
         """
         super().__init__()
 
@@ -65,6 +67,13 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
             message = f'"values" argument is intended to be a list not {type(values)}'
             raise TypeError(message)
         self.values = values
+
+        # donuts shape:
+        if donuts_hole_size > 1 or donuts_hole_size < 0 :
+            message = f'"donuts_hole_size" argument is intended to be a float between 0 and 1'
+            raise InstanciatedPieChartException(message)
+        self.donuts_hole_size = donuts_hole_size
+        self.text = text_in_donuts
 
     def __repr__(self):
         """
@@ -88,7 +97,11 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
 
         @return plotly.graph_objects.go instance
         """
-        pie_chart = go.Pie(labels=self.labels, values=self.values, sort=False)
+        pie_chart = go.Pie(
+            labels=self.labels, 
+            values=self.values, 
+            sort=False, 
+            hole=self.donuts_hole_size)
 
         fig = go.Figure(data=[pie_chart])
 
@@ -105,6 +118,10 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
             pos_x=-1.2, pos_y=1.15)
         if len(upper_right_annotations.keys()) > 0:
             chart_annotations.append(upper_right_annotations)
+        
+        if self.text is not None:
+            chart_annotations.append({'text':self.text, 
+                                       'showarrow':False, 'xanchor':"center"})
 
         layout = {}
         layout.update({'width': 600})
