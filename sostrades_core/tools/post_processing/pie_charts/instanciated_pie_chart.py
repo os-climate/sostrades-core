@@ -70,7 +70,7 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
 
         # donuts shape:
         if donuts_hole_size > 1 or donuts_hole_size < 0 :
-            message = f'"donuts_hole_size" argument is intended to be a float between 0 and 1'
+            message = '"donuts_hole_size" argument is intended to be a float between 0 and 1'
             raise InstanciatedPieChartException(message)
         self.donuts_hole_size = donuts_hole_size
         self.text = text_in_donuts
@@ -98,9 +98,9 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
         @return plotly.graph_objects.go instance
         """
         pie_chart = go.Pie(
-            labels=self.labels, 
-            values=self.values, 
-            sort=False, 
+            labels=self.labels,
+            values=self.values,
+            sort=False,
             hole=self.donuts_hole_size)
 
         fig = go.Figure(data=[pie_chart])
@@ -118,9 +118,9 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
             pos_x=-1.2, pos_y=1.15)
         if len(upper_right_annotations.keys()) > 0:
             chart_annotations.append(upper_right_annotations)
-        
+
         if self.text is not None:
-            chart_annotations.append({'text':self.text, 
+            chart_annotations.append({'text':self.text,
                                        'showarrow':False, 'xanchor':"center"})
 
         layout = {}
