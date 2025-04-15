@@ -697,6 +697,23 @@ class TestChartTemplate(unittest.TestCase):
         self.assertFalse(charts[-1].post_processing_is_key_chart)
         self.assertTrue(charts[1].post_processing_is_key_chart)
 
+
+    def test_23_create_donuts_pie_chart(self):
+
+        import numpy as np
+
+        from sostrades_core.tools.post_processing.pie_charts.instanciated_pie_chart import (
+            InstanciatedPieChart,
+        )
+
+        x_scatter = [f'value {index}' for index in range(5)]
+        y_scatter = np.random.randint(50, size=5).tolist()
+
+        chart = InstanciatedPieChart(
+            'Quantity pie chart', x_scatter, y_scatter, 0.4, "text in donuts")
+        chart.to_plotly()
+
+
 if __name__=='__main__':
     test = TestChartTemplate()
-    test.test_22_check_chart_sections()
+    test.test_23_create_donuts_pie_chart()
