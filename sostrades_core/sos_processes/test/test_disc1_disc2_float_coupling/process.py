@@ -33,4 +33,3 @@ class ProcessBuilder(BaseProcessBuilder):
         builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name})
 
         return builder_list
-
