@@ -454,7 +454,7 @@ def test_post_processing_study(study: BaseStudyManager, force_run: bool) -> tupl
     if study.run_usecase or force_run:
         try:
             # study.load_data(from_path=dump_dir) # already done in multiple_configure i think
-            study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False)
+            study.run(logger_level=logging.DEBUG, dump_study=False, for_test=False, force_run=force_run)
         except Exception:
 
             error_msg_post_processing += f'\nERROR while computing the usecase {study.study_full_path}:\n' \
