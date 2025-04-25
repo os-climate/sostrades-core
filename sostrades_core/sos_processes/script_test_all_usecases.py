@@ -388,9 +388,9 @@ def test_double_run(study: BaseStudyManager, force_run: bool = False) -> tuple[b
     try:
         study_2 = BaseStudyManager(repository_name=study.repository_name,
                                    process_name=study.process_name,
-                                   study_name=study.study_name)
+                                   study_name=study.study_name, run_usecase=study.run_usecase)
         study_2.load_data(from_path=study.dump_directory)
-        study_2.run(logger_level=logging.DEBUG)
+        study_2.run(logger_level=logging.DEBUG, force_run=force_run)
         # Deepcopy dm
         dm_2 = deepcopy(
             study_2.execution_engine.get_anonimated_data_dict())
