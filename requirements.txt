@@ -7,7 +7,7 @@ chaospy==4.3.18
 cma==4.0.0
 cvxpy==1.6.4
 db-dtypes==1.4.2
-gitpython==3.1.44
+GitPython==3.1.44
 matplotlib==3.9.2
 numpy==1.26.4
 openturns==1.24
@@ -21,6 +21,7 @@ six==1.17.0
 sympy==1.13.2
 tqdm==4.66.5
 numpoly==1.2.14  # last version with wheel
+StrEnum==0.4.15
 
 # Development requirements
 pytest==8.3.5
