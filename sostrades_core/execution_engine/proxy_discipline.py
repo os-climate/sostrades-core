@@ -1728,6 +1728,7 @@ class ProxyDiscipline:
         # -- update sub-disciplines
         for discipline in self.proxy_disciplines:
             discipline.update_from_dm()
+        self.__check_all_data_integrity()
 
     # -- Ids and namespace handling
     def get_disc_full_name(self):

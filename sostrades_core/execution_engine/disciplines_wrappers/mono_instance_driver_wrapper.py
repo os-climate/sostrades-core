@@ -117,6 +117,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         # Create a DOE scenario to evaluate the samples
         ds = create_design_space()
+        #ds.transform_vect = self.normalize_vect
+        #ds.unnormalize_vect = self.unnormalize_vect
         for var in input_samples.columns:
             ds.add_variable(var, size=size(input_samples.loc[0, var]))
         doe_scenario = create_scenario(
@@ -137,7 +139,41 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         doe_scenario.execute(settings)
         return doe_scenario.to_dataset()
 
-    def process_output(self, evaluation_outputs: Dataset, scenario_names: list[str]) -> None:
+    @staticmethod
+    def normalize_vect(
+        x_vect,
+        out=None
+    ) :
+        if out is None:
+            use_out = False
+            out = x_vect.copy()
+        else:
+            use_out = True
+            out[...] = x_vect
+
+        return out
+
+    @staticmethod
+    def unnormalize_vect(
+        x_vect,
+        minus_lb: bool = True,
+        no_check: bool = False,
+        out: None = None
+    ):
+        """
+        """
+
+        if out is None:
+            out = x_vect.copy()
+        else:
+            out *= 0
+            out = x_vect
+
+
+        return out
+
+    def process_output(self, evaluation_outputs: Dataset, scenario_names: list[str],
+                       preserve_types: bool = True) -> None:
         """
         Process and store the sampling outputs.
 
@@ -148,30 +184,128 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         Args:
             evaluation_outputs: The results of the samples evaluation.
             scenario_names: The scenario names corresponding to each sample.
-
+            preserve_types: If True, attempt to preserve original output types instead of converting to DataFrame.
         """
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
-        output_array = next(iter(samples_dict["functions"].values()))
-        output_sizes = [size(self.attributes["sub_disciplines"][0].local_data[output]) for output in output_names]
-        if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
-            samples_output_df = DataFrame(output_array, columns=output_names)
-        else:  # some outputs have more than 1 component
-            df_list = []
-            output_arrays = split(output_array, cumsum(output_sizes[:-1]), axis=1)
-            for i, a in enumerate(output_arrays):
-                if output_sizes[i] == 1:
-                    df = DataFrame({output_names[i]: a.flatten()})
+
+        # Extract function values
+        function_values = next(iter(samples_dict["functions"].values()))
+
+        # Get reference outputs
+        ref_outputs = {output: self.attributes["sub_disciplines"][0].local_data[output] for output in output_names}
+
+        # Calculate output sizes correctly for all types
+        output_sizes = []
+        for output in output_names:
+            ref_output = ref_outputs[output]
+            if isinstance(ref_output, dict):
+                # For dictionaries, count the number of keys
+                output_sizes.append(len(ref_output))
+            elif hasattr(ref_output, 'shape') and hasattr(ref_output, 'to_dict'):  # Check if it's a DataFrame
+                # For DataFrames, we need to count only numeric columns
+                numeric_cols = ref_output.select_dtypes(include=['number']).columns
+                output_sizes.append(ref_output.shape[0] * len(numeric_cols))
+            else:
+                # For other types, use the size function
+                output_sizes.append(size(ref_output))
+
+        # Calculate starting indices for each output in the function_values array
+        start_indices = [0] + list(cumsum(output_sizes[:-1]))
+
+        if preserve_types:
+            # Approach that preserves original types
+            output_dict = {}
+
+            # Process each output variable
+            for i, output_name in enumerate(output_names):
+                ref_output = ref_outputs[output_name]
+                start_idx = start_indices[i]
+                end_idx = start_idx + output_sizes[i]
+
+                # Extract values for this output across all samples
+                output_values = function_values[:, start_idx:end_idx]
+
+                if isinstance(ref_output, dict):
+                    # For dictionary outputs
+                    dict_keys = list(ref_output.keys())
+                    output_dict[output_name] = []
+
+                    # For each sample, create a dictionary with the same structure as the reference
+                    for j in range(n_samples):
+                        sample_dict = {}
+                        for k, key in enumerate(dict_keys):
+                            # Assign each value to the corresponding key
+                            sample_dict[key] = output_values[j, k]
+                        output_dict[output_name].append(sample_dict)
+
+                elif hasattr(ref_output, 'shape') and hasattr(ref_output, 'to_dict'):  # Check if it's a DataFrame
+                    # For DataFrame outputs
+                    output_dict[output_name] = []
+
+                    # Get DataFrame structure
+                    all_columns = list(ref_output.columns)
+                    numeric_cols = list(ref_output.select_dtypes(include=['number']).columns)
+                    non_numeric_cols = [col for col in all_columns if col not in numeric_cols]
+
+                    # For each sample, create a copy of the reference DataFrame
+                    # and update only the numeric values
+                    for j in range(n_samples):
+                        # Start with a copy of the reference DataFrame for non-numeric columns
+                        sample_df = ref_output.copy()
+
+                        # Update numeric columns with values from output_values
+                        col_idx = 0
+                        for col in numeric_cols:
+                            for row_idx in range(ref_output.shape[0]):
+                                if col_idx < output_values.shape[1]:
+                                    sample_df.at[sample_df.index[row_idx], col] = output_values[j, col_idx]
+                                    col_idx += 1
+
+                        # Convert DataFrame to dict for storage
+                        df_dict = {
+                            'columns': all_columns,
+                            'index': list(sample_df.index),
+                            'data': sample_df.values.tolist(),
+                            'dtypes': {col: str(sample_df[col].dtype) for col in all_columns}
+                        }
+                        output_dict[output_name].append(df_dict)
+
                 else:
-                    df = DataFrame({output_names[i]: [a[j, :] for j in range(n_samples)]})
-                df_list.append(df)
-            samples_output_df = concat(df_list, axis=1)
+                    # For scalar or array outputs
+                    if output_sizes[i] == 1:
+                        # Scalar values
+                        output_dict[output_name] = output_values.flatten()
+                    else:
+                        # Array values
+                        output_dict[output_name] = [output_values[j] for j in range(n_samples)]
+
+            # Create DataFrame with preserved values
+            samples_output_df = DataFrame(output_dict)
+
+        else:
+            # Original code for standard numerical processing
+            if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
+                samples_output_df = DataFrame(function_values, columns=output_names)
+            else:  # some outputs have more than 1 component
+                df_list = []
+                output_arrays = split(function_values, cumsum(output_sizes[:-1]), axis=1)
+                for i, a in enumerate(output_arrays):
+                    if output_sizes[i] == 1:
+                        df = DataFrame({output_names[i]: a.flatten()})
+                    else:
+                        df = DataFrame({output_names[i]: [a[j] for j in range(n_samples)]})
+                    df_list.append(df)
+                samples_output_df = concat(df_list, axis=1)
+
+        # Add scenario names
         scenario_names_df = DataFrame(scenario_names, columns=[SampleGeneratorWrapper.SCENARIO_NAME])
         samples_output_df = concat((samples_output_df, scenario_names_df), axis=1)
+
         self.store_sos_outputs_values({"samples_outputs_df": samples_output_df})
 
-        # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
+        # Save data of last execution i.e. reference values
         subprocess_ref_outputs = {
             key: self.attributes["sub_disciplines"][0].io.data[key]
             for key in self.attributes["sub_disciplines"][0].output_grammar.names
