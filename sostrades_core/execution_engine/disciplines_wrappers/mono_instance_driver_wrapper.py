@@ -205,6 +205,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 output_sizes.append(len(ref_output))
             elif hasattr(ref_output, 'shape') and hasattr(ref_output, 'to_dict'):  # Check if it's a DataFrame
                 # For DataFrames, we need to count only numeric columns
+                ref_output = ref_output.reset_index(drop=True)
                 numeric_cols = ref_output.select_dtypes(include=['number']).columns
                 output_sizes.append(ref_output.shape[0] * len(numeric_cols))
             else:
@@ -220,7 +221,9 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
             # Process each output variable
             for i, output_name in enumerate(output_names):
+                print('-----', output_name)
                 ref_output = ref_outputs[output_name]
+                print(ref_output)
                 start_idx = start_indices[i]
                 end_idx = start_idx + output_sizes[i]
 
@@ -243,6 +246,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 elif hasattr(ref_output, 'shape') and hasattr(ref_output, 'to_dict'):  # Check if it's a DataFrame
                     # For DataFrame outputs
                     output_dict[output_name] = []
+                    ref_output = ref_output.reset_index(drop=True)
 
                     # Get DataFrame structure
                     all_columns = list(ref_output.columns)
