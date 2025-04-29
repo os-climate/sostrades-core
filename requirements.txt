@@ -4,20 +4,16 @@ gemseo==6.1.0
 # External libraries
 black==25.1.0
 chaospy==4.3.18
-cma==4.0.0
-cvxpy==1.6.4
-db-dtypes==1.4.2
 GitPython==3.1.44
 matplotlib==3.9.2
 numpy==1.26.4
 openturns==1.24
 pandas==2.2.2
 plotly==5.24.0
-pyarrow==16.1.0
 pycryptodome==3.22.0
+pydantic==2.9.1
 PyYAML==6.0.2
 scipy==1.13.1
-six==1.17.0
 sympy==1.13.2
 tqdm==4.66.5
 numpoly==1.2.14  # last version with wheel

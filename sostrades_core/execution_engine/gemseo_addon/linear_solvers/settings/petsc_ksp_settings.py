@@ -18,10 +18,11 @@ from __future__ import annotations
 
 from os import getenv
 
+from pydantic import Field, NonNegativeFloat
+from strenum import StrEnum
+
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
     from gemseo_petsc.linear_solvers.settings.petsc_ksp_settings import BasePetscKSPSettings
-    from pydantic import Field, NonNegativeFloat
-    from strenum import StrEnum
 
     """Settings for the SoSTrades wrapper of PETSc KSP linear solvers."""
 
