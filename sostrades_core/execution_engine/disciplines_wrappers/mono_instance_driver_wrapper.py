@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 
 from gemseo import create_design_space, create_scenario
 from gemseo.settings.doe import CustomDOE_Settings
-from numpy import atleast_1d, cumsum, hstack, size, split
+from numpy import array, atleast_1d, cumsum, hstack, size, split
 from pandas import DataFrame, concat
 
 from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapper import (
@@ -150,11 +150,20 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             scenario_names: The scenario names corresponding to each sample.
 
         """
+
+        def get_size(value):
+            if hasattr(value, 'size'):
+                return value.size
+            elif isinstance(value, dict):
+                return len(value)
+            elif hasattr(value, '__len__'):
+                return len(value)
+
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
         output_array = next(iter(samples_dict["functions"].values()))
-        output_sizes = [size(self.attributes["sub_disciplines"][0].local_data[output]) for output in output_names]
+        output_sizes = [get_size(self.attributes["sub_disciplines"][0].local_data[output]) for output in output_names]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
             samples_output_df = DataFrame(output_array, columns=output_names)
         else:  # some outputs have more than 1 component
@@ -179,9 +188,21 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         }
         self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
 
+        def convert_outputs_to_real_type(name, array_value, convert_func):
+
+            if isinstance(array_value, float):
+                array_value = array([array_value])
+
+            converted_value = convert_func(name, array_value)
+            return converted_value
+
+        convert_func = self.attributes["sub_disciplines"][0].output_grammar.data_converter.convert_array_to_value
         for dynamic_output, out_name in zip(self.attributes["eval_out_list"], self.attributes["eval_out_names"]):
             dict_output = {
-                r[SampleGeneratorWrapper.SCENARIO_NAME]: r[dynamic_output] for _, r in samples_output_df.iterrows()
+                r[SampleGeneratorWrapper.SCENARIO_NAME]: convert_outputs_to_real_type(dynamic_output, r[dynamic_output],
+                                                                                      convert_func)
+                for _, r in
+                samples_output_df.iterrows()
             }
             self.store_sos_outputs_values({out_name: dict_output})
 
