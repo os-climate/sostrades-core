@@ -42,4 +42,3 @@ class Study(StudyManager):
         datasets_file = __file__.replace(".py", ".json")
         # Deserialize it
         return DatasetsMapping.from_json_file(datasets_file)
-

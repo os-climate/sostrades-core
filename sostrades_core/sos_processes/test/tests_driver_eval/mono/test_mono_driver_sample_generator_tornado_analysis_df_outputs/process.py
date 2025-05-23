@@ -1,5 +1,5 @@
 '''
-Copyright 2025 Capgemini
+Copyright 2024 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,19 +17,23 @@ from sostrades_core.sos_processes.base_process_builder import BaseProcessBuilder
 
 
 class ProcessBuilder(BaseProcessBuilder):
-
     # ontology information
     _ontology_data = {
-        'label': 'Core Test Disc1 Disc2 float Coupling Process',
-        'description': '',
-        'category': '',
-        'version': '',
+        "label": "Core Test Disc1 Tornado Chart",
+        "description": "",
+        "category": "",
+        "version": "",
     }
 
     def get_builders(self):
-        disc_dir = 'sostrades_core.sos_wrapping.test_discs.'
-        mods_dict = {'Disc1': disc_dir + 'disc1_disc2_float_coupled.Disc1',
-                     'Disc2': disc_dir + 'disc1_disc2_float_coupled.Disc2', }
-        builder_list = self.create_builder_list(mods_dict, ns_dict={'ns_ac': self.ee.study_name})
+        disc_dir = "sostrades_core.sos_wrapping.test_discs."
+        mods_dict = {"DiscAllTypes": disc_dir + "disc_all_types.DiscAllTypes"}
+        builder_list = self.create_builder_list(
+            mods_dict,
+            ns_dict={"ns_test": f'{self.ee.study_name}.Coupling.DiscAllTypes'},
+        )
+        coupling_builder = self.ee.factory.create_builder_coupling("Coupling")
+        coupling_builder.set_builder_info("cls_builder", builder_list)
+        eval_builder = self.ee.factory.create_mono_instance_driver("Eval", coupling_builder)
 
-        return builder_list
+        return eval_builder

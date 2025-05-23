@@ -116,6 +116,13 @@ class TornadoChartAnalysis(SoSWrapp):
         return variables_list, variation_data_df
 
     def run(self):
+
+        def get_first_value(obj):
+            if isinstance(obj, dict):
+                return next(iter(obj.values()))
+            elif hasattr(obj, '__getitem__'):  # for lists, arrays, Series, etc.
+                return obj[0]
+
         dict_values = {}
         if len(self.selected_outputs_dict) > 0:
             variables_list, variation_data_df = self.__get_input_variables_list_and_df()
@@ -155,24 +162,24 @@ class TornadoChartAnalysis(SoSWrapp):
                     if reference_value is not None:
 
                         if isinstance(reference_value, dict):
-                            if len(reference_value) > 0 and reference_value.values().first() is not None:
+                            if len(reference_value) > 0 and get_first_value(reference_value.values()) is not None:
 
                                 # check subtype
-                                if isinstance(reference_value.values().first(), dict):
+                                if isinstance(get_first_value(reference_value.values()), dict):
                                     # case dict of dict
                                     computed_variations = [
                                         self._compute_dict_of_dict_outputs(reference_value, output_dict_dict)
                                         for output_dict_dict in input_variations_df[output_name].values
                                     ]
 
-                                elif isinstance(reference_value.values().first(), pd.DataFrame):
+                                elif isinstance(get_first_value(reference_value.values()), pd.DataFrame):
                                     # case dict of df
                                     computed_variations = [
                                         self._compute_dict_of_dataframe_outputs(reference_value, output_dict_df)
                                         for output_dict_df in input_variations_df[output_name].values
                                     ]
-                                elif isinstance(reference_value.values().first(), float) or isinstance(
-                                        reference_value.values().first(), int
+                                elif isinstance(get_first_value(reference_value.values()), float) or isinstance(
+                                    get_first_value(reference_value.values()), int
                                 ):
                                     # case dict
                                     computed_variations = [

@@ -23,6 +23,9 @@ import pandas as pd
 from sostrades_core.sos_processes.test.tests_driver_eval.mono.test_mono_driver_sample_generator_tornado_analysis.usecase_tornado_analysis import (
     Study,
 )
+from sostrades_core.sos_processes.test.tests_driver_eval.mono.test_mono_driver_sample_generator_tornado_analysis_df_outputs.usecase_tornado_analysis import (
+    Study as Study_alltypes,
+)
 from sostrades_core.sos_processes.test.tests_driver_eval.mono.test_mono_driver_sample_generator_tornado_analysis_sellar.usecase_tornado_analysis_sellar import (
     Study as StudySellar,
 )
@@ -151,3 +154,16 @@ class TestTornadoChartAnalysis(unittest.TestCase):
         uc_cls = StudySellar(run_usecase=True)
         uc_cls.load_data()
         uc_cls.run()
+
+    def test_04_tornado_chart_with_output_nested_types(self):
+        uc_cls = Study_alltypes(run_usecase=True)
+        uc_cls.load_data()
+        uc_cls.run()
+        output_list = ["Coupling.DiscAllTypes.df_out", "Coupling.DiscAllTypes.o", "Coupling.DiscAllTypes.dict_out"]
+        for output_name in output_list:
+            output_value = uc_cls.execution_engine.dm.get_value(f"{uc_cls.study_name}.Eval.{output_name}")
+            gather_output_value = uc_cls.execution_engine.dm.get_value(f"{uc_cls.study_name}.Eval.{output_name}_dict")
+            self.assertTrue(type(output_value) is type(gather_output_value['reference_scenario']),
+                            msg=f"output type for {output_name} is {type(output_value)} but output type in gather dict is {type(gather_output_value['reference_scenario'])}")
+            self.assertTrue(type(output_value) is type(gather_output_value['scenario_1']))
+            self.assertTrue(type(output_value) is type(gather_output_value['scenario_2']))

@@ -83,7 +83,7 @@ class DiscAllTypes(SoSWrapp):
                    0.5 * (h[-1] + 1. / (2 * key2))])
         dict_out = {'key1': ((h[0] + h[1]) / z * 100),
                     'key2': ((h[0] + h[1]) / z * 100)}
-        dict_values = {'o': z,
+        dict_values = {'o': array([z]),
                        'dict_out': dict_out}
         df_in = DataFrame(array([[(h[0] + h[1]) / 2, (h[0] + h[1]) / 2]]),
                           columns=['c1', 'c2'])
