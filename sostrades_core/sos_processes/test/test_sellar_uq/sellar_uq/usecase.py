@@ -44,7 +44,7 @@ class Study(DOEStudy):
 
 
 if __name__ == "__main__":
-    usecase = Study(log_level="DEBUG")
+    usecase = Study()
     usecase.run_usecase = True
     usecase.load_data()
     usecase.execution_engine.display_treeview_nodes(display_variables=True)

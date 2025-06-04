@@ -599,6 +599,123 @@ class UncertaintyQuantification(SoSWrapp):
 
         for each ouput, an interpolation is performed, then all the interpolations are gathered into one dataframe
         """
+        from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
+
+        # CORRECTION: Gestion spéciale pour les inputs de type array
+        # Créer une liste pour stocker les valeurs d'entrée
+        input_values_list = []
+
+        # Pour chaque nom d'entrée flottante
+        for input_name in self.float_input_names:
+            # Vérifier si l'input est un array (en vérifiant s'il existe dans all_samples_df)
+            if input_name in self.all_samples_df.columns:
+                # Input normal (non-array)
+                input_values_list.append(self.all_samples_df[input_name].values)
+            else:
+                # C'est probablement un élément d'array, chercher la colonne correspondante
+                # Solution sale mais efficace: parcourir toutes les colonnes et trouver celle qui correspond
+                found = False
+                for col in self.float_all_samples_df.columns:
+                    # Vérifier si le nom de la colonne contient le nom de l'input (avec [index])
+                    if input_name in col and '[' in col:
+                        input_values_list.append(self.float_all_samples_df[col].values)
+                        found = True
+                        break
+
+                # Si on n'a pas trouvé, essayer une correspondance plus simple
+                if not found:
+                    base_name = input_name.split('[')[0] if '[' in input_name else input_name
+                    for col in self.float_all_samples_df.columns:
+                        if base_name in col:
+                            input_values_list.append(self.float_all_samples_df[col].values)
+                            found = True
+                            break
+
+                # Si toujours pas trouvé, lever une exception
+                if not found:
+                    raise ValueError(f"Impossible de trouver les données pour l'input {input_name}")
+
+        # Créer le tableau de points d'entrée
+        input_points = np.array(input_values_list).T
+
+        # Récupération des paramètres d'entrée pour la compatibilité (mais on ne les utilise pas pour le reshape)
+        input_parameters_single_values_tuple = tuple(
+            self.float_input_distribution_parameters_df.loc[
+                self.float_input_distribution_parameters_df["parameter"] == input_name
+                ]["values"].values[0]
+            for input_name in self.float_input_names
+        )
+
+        self.output_interpolated_values_df = pd.DataFrame()
+        for output_name in self.output_names:
+            if output_name in self.float_output_names:  # output is a float
+                # Vérifier si l'output est dans all_samples_df
+                if output_name in self.all_samples_df.columns:
+                    y = np.array(self.all_samples_df[output_name])
+                else:
+                    # Chercher dans d'autres DataFrames si nécessaire
+                    raise ValueError(f"Output {output_name} introuvable dans les données")
+
+                # Utiliser LinearNDInterpolator avec fallback sur NearestNDInterpolator
+                try:
+                    f = LinearNDInterpolator(input_points, y)
+                    output_interpolated_values = f(self.composed_distrib_sample)
+
+                    # Vérifier s'il y a des NaN et les remplacer si nécessaire
+                    if np.isnan(output_interpolated_values).any():
+                        f_backup = NearestNDInterpolator(input_points, y)
+                        nan_mask = np.isnan(output_interpolated_values)
+                        output_interpolated_values[nan_mask] = f_backup(self.composed_distrib_sample)[nan_mask]
+                except Exception as e:
+                    print(f"Erreur avec LinearNDInterpolator: {e}")
+                    # Fallback complet sur NearestNDInterpolator
+                    f = NearestNDInterpolator(input_points, y)
+                    output_interpolated_values = f(self.composed_distrib_sample)
+
+                self.output_interpolated_values_df[f"{output_name}"] = output_interpolated_values
+
+            else:  # output is an array
+                output_interpolated_arrays = []
+                for float_var_name in self.dict_array_float_names[output_name]:
+                    # Récupérer les valeurs depuis float_all_samples_df
+                    if float_var_name in self.float_all_samples_df.columns:
+                        y = np.array(self.float_all_samples_df[float_var_name])
+                    else:
+                        # Chercher avec une correspondance partielle
+                        found = False
+                        for col in self.float_all_samples_df.columns:
+                            if float_var_name in col:
+                                y = np.array(self.float_all_samples_df[col])
+                                found = True
+                                break
+
+                        if not found:
+                            raise ValueError(f"Variable {float_var_name} introuvable dans les données")
+
+                    # Même logique d'interpolation que pour les floats
+                    try:
+                        f = LinearNDInterpolator(input_points, y)
+                        output_interpolated_values = f(self.composed_distrib_sample)
+
+                        if np.isnan(output_interpolated_values).any():
+                            f_backup = NearestNDInterpolator(input_points, y)
+                            nan_mask = np.isnan(output_interpolated_values)
+                            output_interpolated_values[nan_mask] = f_backup(self.composed_distrib_sample)[nan_mask]
+                    except:
+                        f = NearestNDInterpolator(input_points, y)
+                        output_interpolated_values = f(self.composed_distrib_sample)
+
+                    output_interpolated_arrays.append(output_interpolated_values)
+
+                output_interpolated_arrays = list(np.stack(output_interpolated_arrays).T)
+                self.output_interpolated_values_df[f"{output_name}"] = output_interpolated_arrays
+
+    def _compute_output_interpolation(self):
+        """
+        Perform the interpolation based on the inputs/outputs samples provided.
+
+        for each ouput, an interpolation is performed, then all the interpolations are gathered into one dataframe
+        """
         input_parameters_single_values_tuple = tuple(
             self.float_input_distribution_parameters_df.loc[
                 self.float_input_distribution_parameters_df["parameter"] == input_name

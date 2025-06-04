@@ -51,7 +51,7 @@ class Study(StudyManager):
         }
         sampling_inputs = DataFrame(sampling_inputs)
         sampling_outputs = {
-            "selected_output": [False, False, True, False, False],
+            "selected_output": [False, True, True, True, False],
             "full_name": [f"{self.COUPLING_NAME}.{v}" for v in ["g1", "g2", "f", "y1", "y2"]],
         }
         sampling_outputs = DataFrame(sampling_outputs)
