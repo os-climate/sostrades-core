@@ -148,7 +148,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         all_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].Settings.model_fields
         # Keep only the DOE-related options
         algo_options = {
-            key: value for key, value in all_options.items() if key not in BaseDriverSettings.model_fields
+            key: value for key, value in all_options.items() if key not in BaseDriverSettings.model_fields # pylint: disable=unsupported-membership-test
+            #false positive test pylint
         }
         algo_options_default = {
             option_name: option.default if not option.is_required() else None
