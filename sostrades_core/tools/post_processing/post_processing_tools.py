@@ -341,7 +341,7 @@ def get_greataxisrange(serie):
 
 def get_value_axis(value, min_or_max):
     """
-    if min: if positive returns 0, if negative returns 1.1*value
+    If min: if positive returns 0, if negative returns 1.1*value
     if max: if positive returns is 1.1*value, if negative returns 0
     """
     if min_or_max == 'min':

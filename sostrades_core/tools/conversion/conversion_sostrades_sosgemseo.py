@@ -82,7 +82,7 @@ def is_value_type_handled(val):
 
 def get_nested_val(dict_in, keys):
     '''
-    returns the value of a nested dictionary of depth len(keys)
+    Returns the value of a nested dictionary of depth len(keys)
     output : d[keys[0]][..][keys[n]]
     '''
 
@@ -238,7 +238,7 @@ def convert_array_into_df(arr_to_convert, metadata, excluded_columns=DEFAULT_EXC
 
 def convert_array_into_new_type(name, var_array, reduced_dm={}):
     '''
-    convert list in local_data into correct type in data_in
+    Convert list in local_data into correct type in data_in
     returns an updated copy of local_data
     '''
     _type = reduced_dm.get(VAR_TYPE_ID)

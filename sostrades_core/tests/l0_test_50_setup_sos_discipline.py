@@ -120,7 +120,7 @@ class TestSetupSoSDiscipline(unittest.TestCase):
 
     def test_02_setup_sos_disciplines_without_proxy_in_signature_association_dissociation(self):
         '''
-        check discipline execution with dynamic inputs/outputs, with implementational checks assuring that the dynamic
+        Check discipline execution with dynamic inputs/outputs, with implementational checks assuring that the dynamic
         association of proxy and dm objects during configuration and de-association during run is OK
         '''
         self.name = 'Test'

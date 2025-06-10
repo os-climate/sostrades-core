@@ -41,7 +41,7 @@ class ScenarioGenerator:
 
     def generate_scenarios(self, inputs_dict):
         """
-        generate scenarios for each products
+        Generate scenarios for each products
         args:
             inputs_dict: dict of scenario parameters
             inputs_parameter: keys in inputs_dict

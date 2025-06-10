@@ -64,7 +64,7 @@ class ToolFactory:
 
     def remove_tool(self, tool):
         """
-        remove one discipline from coupling
+        Remove one discipline from coupling
         :param disc: sos discipline to remove
         :type: SoSDiscipline Object
         """
