@@ -434,6 +434,16 @@ class DataManager:
                 namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY: {}, TYPE: {}})
                 namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
                 namespaced_data_dict[data_ns][TYPE][data_name] = data_type
+                #deal with variables that have point in names and  can be stored in another namespace in the dataset mapping
+                if '.' in data_name :
+                    splitted_name_list = data_name.split('.')
+                    new_data_name = splitted_name_list.pop(-1)
+                    splitted_name_list.insert(0,data_ns)
+                    new_data_ns = '.'.join(splitted_name_list)
+                    namespaced_data_dict[new_data_ns] = namespaced_data_dict.get(new_data_ns,
+                                                                             {DatasetsMapping.KEY: {}, TYPE: {}})
+                    namespaced_data_dict[new_data_ns][DatasetsMapping.KEY][new_data_name] = key
+                    namespaced_data_dict[new_data_ns][TYPE][new_data_name] = data_type
 
         # iterate on each namespace to retrieve data in this namespace
         for namespace, data_dict in namespaced_data_dict.items():
