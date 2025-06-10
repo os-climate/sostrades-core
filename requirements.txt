@@ -10,18 +10,18 @@ db-dtypes==1.4.3
 gitpython==3.1.44
 matplotlib==3.9.2
 numpy==1.26.4
-openturns==1.23
+numpoly==1.2.14  # last version with wheel
+openturns==1.24
 pandas==2.2.2
-plotly==5.24.0
-pyarrow==16.1.0
+plotly==6.1.2
+pyarrow==20.0.0
 pycryptodome==3.23.0
-PyYAML==6.0.1
+PyYAML==6.0.2
 scipy==1.13.1
 six==1.17.0
-sympy==1.13.2
-tqdm==4.66.5
+sympy==1.13.3
+tqdm==4.67.1
 future==1.0.0
-numpoly==1.2.14  # last version with wheel
 
 # Development requirements
 # breaking change in 8.2.0 https://docs.pytest.org/en/stable/changelog.html#pytest-8-2-0-2024-04-27
