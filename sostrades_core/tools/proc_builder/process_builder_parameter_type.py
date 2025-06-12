@@ -34,7 +34,7 @@ class ProcessBuilderParameterType:
     def __init__(self, process_name='', repository_name='', usecase_name='',
                  usecase_type='', usecase_identifier=-1, usecase_data={}):
         '''
-        constructor
+        Constructor
         :param process_name: name of the process
         :type process_name: str
         :param repository_name:repository name of the process

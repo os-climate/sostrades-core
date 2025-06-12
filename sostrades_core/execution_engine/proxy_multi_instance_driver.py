@@ -289,7 +289,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
 
     def change_editability_state_for_trade_variables(self, scenario_names, trades_variables):
         '''
-        save trade variables editable state if it is not already saved
+        Save trade variables editable state if it is not already saved
         set old original editable state for variables no more trade variables
         '''
         # get variables that have not been already saved

@@ -141,7 +141,7 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
 
     def generate_samples(self, variation_list, dict_of_value, proxy):
         """
-        generate samples: each scenario is a percentage applied to one of the variables.
+        Generate samples: each scenario is a percentage applied to one of the variables.
         First scenario is the reference scenario (0% of variation)
         """
         selected_scenario_str = SampleGeneratorWrapper.SELECTED_SCENARIO

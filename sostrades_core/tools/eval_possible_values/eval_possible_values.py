@@ -54,7 +54,7 @@ def find_possible_output_values(disc, prefix_name_to_delete=None, strip_first_ns
 
 def find_possible_values(disc, prefix_name_to_delete=None, io_type_in=True, io_type_out=True, strip_first_ns=False, original_editable_state_dict=None):
     '''
-        his method will find all possible output and inputs values under disc and all subdisciplines recursively
+        His method will find all possible output and inputs values under disc and all subdisciplines recursively
         Args:
         disc: disc where to find possible output values
         prefix_name_to_delete: prefix to delete before all output values name if None then prefix is disc.get_disc_full_name()

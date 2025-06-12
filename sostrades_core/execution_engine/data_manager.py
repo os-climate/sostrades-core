@@ -851,7 +851,7 @@ class DataManager:
 
     def export_data_dict_and_zip(self, export_dir):
         '''
-        method that exports the DM data dict to csv files
+        Method that exports the DM data dict to csv files
         by a treatment delegated to the TreeView class (using strategy object)
 
         :params: anonymize_function, a function that map a given key of the data

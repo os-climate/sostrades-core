@@ -863,7 +863,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_21_datasets_local_connector_nested_types_V1(self):
         """
-        for dataset V1
+        For dataset V1
         Check correctness of loaded values after loading a handcrafted local directories' dataset, testing usage of
         LocalDatasetsConnector and FileSystemDatasetsSerializer pickle-based loading for the following nested types:
             - dict[str: DataFrame]

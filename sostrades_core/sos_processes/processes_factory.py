@@ -179,7 +179,7 @@ class SoSProcessFactory:
 
     def __get_repositories_by_process(self, repository_module_name):
         """
-        retrieve the list of process name into the specified module name
+        Retrieve the list of process name into the specified module name
 
         :params: repository_module_name, module name (import like name)
         :type: list of strings

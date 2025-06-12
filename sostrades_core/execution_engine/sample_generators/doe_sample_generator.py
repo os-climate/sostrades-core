@@ -248,7 +248,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     def _put_samples_in_df_format(self, samples, design_space):
         """
-        construction of a dataframe of the generated samples
+        Construction of a dataframe of the generated samples
         # To be vectorized
 
         Arguments:
@@ -494,7 +494,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     def update_design_space(self, selected_inputs, dspace_df):
         """
-        update dspace_df (design space in Desc_in format)
+        Update dspace_df (design space in Desc_in format)
 
         Arguments:
             selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)
