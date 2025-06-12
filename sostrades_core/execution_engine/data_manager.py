@@ -162,15 +162,16 @@ class DataManager:
     def fill_cache_with_serialized_cache(self, empty_cache, serialized_cache):
         '''Fill empty cache from prepare execution with the serialized cache (dict) found in the pickle'''
         if isinstance(empty_cache, SimpleCache):
-
-            cached_inputs = serialized_cache[1]['inputs']
-            cached_outputs = serialized_cache[1]['outputs']
-            empty_cache.cache_outputs(cached_inputs,
-                                      cached_outputs)
-            #
-            if 'jacobian' in serialized_cache[1]:
-                cached_jac = serialized_cache[1]['jacobian']
-                empty_cache.cache_jacobian(cached_inputs, cached_jac)
+            if len(serialized_cache) != 0:
+                first_index = list(serialized_cache.keys())[0]
+                cached_inputs = serialized_cache[first_index]['inputs']
+                cached_outputs = serialized_cache[first_index]['outputs']
+                empty_cache.cache_outputs(cached_inputs,
+                                          cached_outputs)
+                #
+                if 'jacobian' in serialized_cache[first_index]:
+                    cached_jac = serialized_cache[first_index]['jacobian']
+                    empty_cache.cache_jacobian(cached_inputs, cached_jac)
         else:
             self.logger.error(
                 f'Only simple cache dump/load is handled for now but discipline {empty_cache.name} has a cache as {empty_cache.__class__}')
