@@ -91,22 +91,18 @@ class MultipliersWrapper(SoSWrapp):
                         orig_var_f_name = f'{self.eval_ns}.{orig_var_name}'
                         # add the multiplier to the input
                         dynamic_inputs.update({var_name: {self.TYPE: 'float',
-                                                          self.VISIBILITY: self.SHARED_VISIBILITY,
                                                           self.NAMESPACE: self.DISC_SHARED_NS,
                                                           self.UNIT: '%',
                                                           self.DEFAULT: 100}})
                         self.multiplier_variables.update({var_name: orig_var_name})
                         # add the original variable to the output
-                        self.dm.set_data(orig_var_f_name, self.VISIBILITY, self.SHARED_VISIBILITY)
                         data_dict = copy.copy(self.dm.get_data(orig_var_f_name))
                         dynamic_inputs.update({orig_var_name: {self.TYPE: data_dict[self.TYPE],
-                                                               self.VISIBILITY: self.SHARED_VISIBILITY,
                                                                self.NAMESPACE: self.DISC_SHARED_NS,
                                                                self.DATAFRAME_DESCRIPTOR: data_dict[
                                                                    self.DATAFRAME_DESCRIPTOR]}})
 
                         dynamic_outputs.update({orig_var_name: {self.TYPE: data_dict[self.TYPE],
-                                                                self.VISIBILITY: self.SHARED_VISIBILITY,
                                                                 self.NAMESPACE: self.DISC_SHARED_NS,
                                                                 self.DATAFRAME_DESCRIPTOR: data_dict[
                                                                     self.DATAFRAME_DESCRIPTOR]}})
@@ -156,7 +152,6 @@ class MultipliersWrapper(SoSWrapp):
                                                                               'full_name': ('string', None, False)},
                                                   self.DATAFRAME_EDITION_LOCKED: False,
                                                   self.STRUCTURING: True,
-                                                  self.VISIBILITY: self.SHARED_VISIBILITY,
                                                   self.NAMESPACE: self.DISC_SHARED_NS}
                                })
         # self.add_inputs(dynamic_inputs)

@@ -42,14 +42,12 @@ class SellarDisc2(SoSWrapp):
             "type": "array",
             "default": array([1, 1]),
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
         "y1": {
             "type": "array",
             "default": array([1.0]),
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
     }
@@ -59,7 +57,6 @@ class SellarDisc2(SoSWrapp):
         "y2": {
             "type": "array",
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
     }

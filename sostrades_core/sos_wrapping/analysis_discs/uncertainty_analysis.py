@@ -100,7 +100,7 @@ class UncertaintyAnalysis(SoSWrapp):
     SoSOutputNames: ClassVar[type[SoSOutputNames]] = SoSOutputNames
 
     DESC_IN: ClassVar[dict[str, Any]] = {
-        name: desc | {"namespace": _NAMESPACE_DRIVER, "visibility": SoSWrapp.SHARED_VISIBILITY}
+        name: desc | {"namespace": _NAMESPACE_DRIVER}
         for name, desc in ProxyMonteCarloDriver.DESC_OUT.items()
     }
 

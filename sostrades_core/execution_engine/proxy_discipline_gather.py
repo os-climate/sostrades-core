@@ -76,9 +76,8 @@ class ProxyDisciplineGather(ProxyDiscipline):
         for disc in self.builder.discipline_dict.values():
             for out_var, out_dict in disc.get_data_out().items():
                 if out_var not in var_to_gather_dict:
-                    # if the visibility is not defined it means that it is
-                    # Local
-                    if self.VISIBILITY in out_dict and out_dict[self.VISIBILITY] == self.SHARED_VISIBILITY:
+                    # if there is a namespace it means that it is shared
+                    if self.NAMESPACE in out_dict:
                         var_to_gather_dict[out_var] = out_dict
         return var_to_gather_dict
 
@@ -91,7 +90,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
         scatter_desc_in = {input_name: {
             ProxyDiscipline.TYPE: input_type, ProxyDiscipline.SUBTYPE: input_subtype_descriptor,
-            ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY, ProxyDiscipline.NAMESPACE: input_ns,
+            ProxyDiscipline.NAMESPACE: input_ns,
             ProxyDiscipline.STRUCTURING: True}}
         self.inst_desc_in.update(scatter_desc_in)
 
@@ -129,7 +128,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
                 var_name_dict = {new_variable: {ProxyDiscipline.TYPE: value_dict[ProxyDiscipline.TYPE],
                                                 ProxyDiscipline.IO_TYPE: ProxyDiscipline.IO_TYPE_IN,
                                                 ProxyDiscipline.VAR_NAME: new_variable,
-                                                ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
                                                 ProxyDiscipline.NAMESPACE: gather_ns_in}}
                 self.inst_desc_in.update(var_name_dict)
 
@@ -155,7 +153,6 @@ class ProxyDisciplineGather(ProxyDiscipline):
                 var_name_dict = {var_name_dict:
                                      {ProxyDiscipline.TYPE: 'dict',
                                       ProxyDiscipline.IO_TYPE: ProxyDiscipline.IO_TYPE_OUT,
-                                      ProxyDiscipline.VISIBILITY: ProxyDiscipline.SHARED_VISIBILITY,
                                       ProxyDiscipline.NAMESPACE: gather_ns_out,
                                       ProxyDiscipline.USER_LEVEL: 3}}
                 self.inst_desc_out.update(var_name_dict)

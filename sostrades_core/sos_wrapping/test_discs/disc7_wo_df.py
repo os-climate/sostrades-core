@@ -40,11 +40,11 @@ class Disc7(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
+        'h': {'type': 'array',  'namespace': 'ns_protected'},
     }
 
     DESC_OUT = {
-        'x': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'x': {'type': 'array',  'namespace': 'ns_protected'}
     }
 
     def run(self):

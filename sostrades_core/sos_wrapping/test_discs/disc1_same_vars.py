@@ -49,13 +49,13 @@ class Disc1(SoSWrapp):
         dynamic_inputs = {}
 
         dynamic_inputs.update({('x', 'ns_x1'): {'type': 'float',
-                                                'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                
                                                 'namespace': 'ns_x1'},
                                ('x', 'ns_x2'): {'type': 'float',
-                                                'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                
                                                 'namespace': 'ns_x2'},
                                ('x', 'true_x'): {'type': 'float',
-                                                 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                                                 
                                                  'namespace': 'ns_x'}}
                               )
 

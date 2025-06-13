@@ -246,7 +246,7 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
     if array is None:
         var_new_type = None
     else:
-        # check dict type in data_to_update and visibility
+        # check dict type in data_to_update
         if _type == 'dict':
 
             subtype = reduced_dm.get(VAR_SUBTYPE_ID)
@@ -265,7 +265,7 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
                 check_subtype(name, subtype, 'dict')
                 var_new_type = convert_array_into_dict(
                     var_array, deepcopy(metadata_list), subtype)
-        # check list type in data_to_update and visibility
+        # check list type in data_to_update
         elif _type == 'list':
 
             subtype = reduced_dm.get(VAR_SUBTYPE_ID)
@@ -282,7 +282,7 @@ def convert_array_into_new_type(name, var_array, reduced_dm={}):
             else:
                 var_new_type = list(var_array)
 
-        # check dataframe type in data_in and visibility
+        # check dataframe type in data_in
         elif _type == 'dataframe':
             if metadata_list is None:
                 raise ValueError(

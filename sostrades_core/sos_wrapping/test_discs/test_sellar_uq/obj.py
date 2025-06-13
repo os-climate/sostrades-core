@@ -39,28 +39,24 @@ class SellarObj(SoSWrapp):
             "type": "array",
             "default": array([1.0]),
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
         "z": {
             "type": "array",
             "default": array([0, 0]),
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
         "y1": {
             "type": "array",
             "default": array([1.0]),
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
         "y2": {
             "type": "array",
             "default": array([1.0]),
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
     }
@@ -70,7 +66,6 @@ class SellarObj(SoSWrapp):
         "f": {
             "type": "array",
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
     }
