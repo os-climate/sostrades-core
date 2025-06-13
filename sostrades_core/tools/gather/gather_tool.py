@@ -20,7 +20,7 @@ import pandas as pd
 
 def gather_selected_outputs(gather_outputs, gather_suffix):
     """
-    get selected output from the eval_output variable
+    Get selected output from the eval_output variable
     :param gather_outputs: dataframe containing the outputs with the columns:
                             - selected_output
                             - full_name

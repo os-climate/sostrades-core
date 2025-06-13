@@ -459,7 +459,7 @@ class CheckDataIntegrity():
 
     def __check_formula_dict(self):
         """
-        check if all parameter are in formula_dict. If not, fill in formula_dict
+        Check if all parameter are in formula_dict. If not, fill in formula_dict
         twin_dict is created and updated. If twin_dict is different from formula_dict, formula_dict is updated and a new check is performed
         if twin_dict and formula_dict are the same, there is no more parameter to add.
         """

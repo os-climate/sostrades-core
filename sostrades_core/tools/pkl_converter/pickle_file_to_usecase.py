@@ -212,7 +212,7 @@ if '__main__' == __name__:
             self, key: str, value, dump_dir: str, short_name: str = None
     ) -> str:
         """
-        function to convert any parameter value to string.
+        Function to convert any parameter value to string.
         if the value is too big as a string, it will generate a file (csv or json depending on the value type)
         and return the path to the file
 

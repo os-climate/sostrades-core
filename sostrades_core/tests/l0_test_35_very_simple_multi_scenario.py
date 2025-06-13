@@ -650,7 +650,7 @@ class TestVerySimpleMultiScenario(unittest.TestCase):
 
     def test_10_multi_scenario_clean_initial_ns_values(self):
         '''
-        test dev that cleans the initial namespace value of the subprocess on which the multi-scenario is built,
+        Test dev that cleans the initial namespace value of the subprocess on which the multi-scenario is built,
         ie removes 4 namespace values:
         ns_disc3 MyCase
         ns_out_disc3 MyCase

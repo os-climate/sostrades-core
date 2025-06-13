@@ -124,7 +124,7 @@ class NewtonRaphsonProblem():
     # -- Initial state
     def set_W0(self, W0):
         """
-        set W0, the initial state variables vector and initialize:
+        Set W0, the initial state variables vector and initialize:
         - N: the dimension of the problem
         - W: the state vector used during the Newton-Raphson iterations
         """

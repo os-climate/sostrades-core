@@ -222,7 +222,7 @@ class TestProxyDiscipline(unittest.TestCase):
 
     def test_09_check_factory_with_1_added_disc(self):
         """
-        check if the root of the factory is the discipline if only 1 disc is added
+        Check if the root of the factory is the discipline if only 1 disc is added
         and a coupling if two are added
         """
         ns_dict = {'ns_ac': self.ns_test}
@@ -337,7 +337,7 @@ class TestProxyDiscipline(unittest.TestCase):
 
     def test_12_execution_success_of_discipline_alone(self):
         """
-        check discipline execution only of the SoSDiscipline i.e. without executing the root process
+        Check discipline execution only of the SoSDiscipline i.e. without executing the root process
         useful test for devs that need to start at (proxy) discipline level and propagate to all other (proxy) classes
         """
         self.name = 'Test'

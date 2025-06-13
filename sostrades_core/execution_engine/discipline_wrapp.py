@@ -153,7 +153,7 @@ class DisciplineWrapp:
 
     def _init_grammar_with_keys(self, proxy):
         """
-        initialize GEMS grammar with names and type None
+        Initialize GEMS grammar with names and type None
 
         Arguments:
             proxy (ProxyDiscipline): the proxy discipline to get input and output full names from
@@ -296,7 +296,7 @@ class DisciplineWrapp:
 
     def __update_gemseo_grammar(self, proxy, coupling, mdoscenario=False):
         """
-        update GEMSEO grammar with sostrades
+        Update GEMSEO grammar with sostrades
         # NOTE: this introduces a gap between the MDAChain i/o grammar and those of the MDOChain, as attribute of MDAChain
         """
         # - retrieve all the i/o of the ProxyCoupling that are not in the GEMSEO grammar of the MDAChain

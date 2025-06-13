@@ -115,7 +115,7 @@ class SosFactory:
 
     def set_builders_to_coupling_builder(self, builders):
         """
-        add builders to builder list
+        Add builders to builder list
 
         :params: builders, list of builders to add
         :type: list
@@ -153,7 +153,7 @@ class SosFactory:
 
     def remove_discipline(self, disc):
         """
-        remove one discipline from coupling
+        Remove one discipline from coupling
         :param disc: sos discipline to remove
         :type: SoSDiscipline Object
         """
@@ -169,7 +169,7 @@ class SosFactory:
     @current_discipline.setter
     def current_discipline(self, disc):
         """
-        set current discipline on which subdiscipline will be attached to
+        Set current discipline on which subdiscipline will be attached to
         :param disc: sos discipline to remove
         :type: SoSDiscipline Object
         """
