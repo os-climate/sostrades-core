@@ -108,7 +108,7 @@ class NamespaceManager:
     # -- Data name space methods
     def add_ns_def(self, ns_info, database_infos=None, clean_existing=True):
         '''
-        add multiple namespaces to the namespace_manager
+        Add multiple namespaces to the namespace_manager
         ns_info is a dict with the key equals to the name and the value is a namespace to add
         '''
         ns_ids = []
@@ -123,7 +123,7 @@ class NamespaceManager:
     def add_ns(self, name, ns_value, display_value=None, add_in_shared_ns_dict=True, database_infos=None,
                clean_existing=True):
         '''
-        add namespace to namespace manager
+        Add namespace to namespace manager
         WARNING: Do not use to update namespace values
         '''
         # if the couple (name,value) already exists do not create another
@@ -398,7 +398,7 @@ class NamespaceManager:
 
     def get_disc_ns_info(self, disc):
         '''
-        get the disc_ns_info of a specified discipline disc
+        Get the disc_ns_info of a specified discipline disc
         The key is the signature of the instance
         '''
         return self.disc_ns_dict[disc]

@@ -23,6 +23,7 @@ ignore  = [
     "D404", # First word of the docstring should not be "This"
     "D415", # First line should end with a period, question mark, or exclamation point
     "PERF203", # `try`-`except` within a loop incurs performance overhead
+    "PLC0206", # Ignore dict iteration without .items()
 # WIP rules. To remove at some point
     "D101", # Missing docstring in public class
     "D102", # Missing docstring in public method

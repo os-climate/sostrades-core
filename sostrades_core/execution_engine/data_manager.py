@@ -162,15 +162,16 @@ class DataManager:
     def fill_cache_with_serialized_cache(self, empty_cache, serialized_cache):
         '''Fill empty cache from prepare execution with the serialized cache (dict) found in the pickle'''
         if isinstance(empty_cache, SimpleCache):
-
-            cached_inputs = serialized_cache[1]['inputs']
-            cached_outputs = serialized_cache[1]['outputs']
-            empty_cache.cache_outputs(cached_inputs,
-                                      cached_outputs)
-            #
-            if 'jacobian' in serialized_cache[1]:
-                cached_jac = serialized_cache[1]['jacobian']
-                empty_cache.cache_jacobian(cached_inputs, cached_jac)
+            if len(serialized_cache) != 0:
+                first_index = list(serialized_cache.keys())[0]
+                cached_inputs = serialized_cache[first_index]['inputs']
+                cached_outputs = serialized_cache[first_index]['outputs']
+                empty_cache.cache_outputs(cached_inputs,
+                                          cached_outputs)
+                #
+                if 'jacobian' in serialized_cache[first_index]:
+                    cached_jac = serialized_cache[first_index]['jacobian']
+                    empty_cache.cache_jacobian(cached_inputs, cached_jac)
         else:
             self.logger.error(
                 f'Only simple cache dump/load is handled for now but discipline {empty_cache.name} has a cache as {empty_cache.__class__}')
@@ -434,6 +435,16 @@ class DataManager:
                 namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns, {DatasetsMapping.KEY: {}, TYPE: {}})
                 namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
                 namespaced_data_dict[data_ns][TYPE][data_name] = data_type
+                #deal with variables that have point in names and  can be stored in another namespace in the dataset mapping
+                if '.' in data_name :
+                    splitted_name_list = data_name.split('.')
+                    new_data_name = splitted_name_list.pop(-1)
+                    splitted_name_list.insert(0,data_ns)
+                    new_data_ns = '.'.join(splitted_name_list)
+                    namespaced_data_dict[new_data_ns] = namespaced_data_dict.get(new_data_ns,
+                                                                             {DatasetsMapping.KEY: {}, TYPE: {}})
+                    namespaced_data_dict[new_data_ns][DatasetsMapping.KEY][new_data_name] = key
+                    namespaced_data_dict[new_data_ns][TYPE][new_data_name] = data_type
 
         # iterate on each namespace to retrieve data in this namespace
         for namespace, data_dict in namespaced_data_dict.items():
@@ -840,7 +851,7 @@ class DataManager:
 
     def export_data_dict_and_zip(self, export_dir):
         '''
-        method that exports the DM data dict to csv files
+        Method that exports the DM data dict to csv files
         by a treatment delegated to the TreeView class (using strategy object)
 
         :params: anonymize_function, a function that map a given key of the data

@@ -148,7 +148,8 @@ class DoeSampleGenerator(AbstractSampleGenerator):
         all_options = algo_lib.ALGORITHM_INFOS[sampling_algo_name].Settings.model_fields
         # Keep only the DOE-related options
         algo_options = {
-            key: value for key, value in all_options.items() if key not in BaseDriverSettings.model_fields
+            key: value for key, value in all_options.items() if key not in BaseDriverSettings.model_fields # pylint: disable=unsupported-membership-test
+            #false positive test pylint
         }
         algo_options_default = {
             option_name: option.default if not option.is_required() else None
@@ -247,7 +248,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     def _put_samples_in_df_format(self, samples, design_space):
         """
-        construction of a dataframe of the generated samples
+        Construction of a dataframe of the generated samples
         # To be vectorized
 
         Arguments:
@@ -493,7 +494,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
 
     def update_design_space(self, selected_inputs, dspace_df):
         """
-        update dspace_df (design space in Desc_in format)
+        Update dspace_df (design space in Desc_in format)
 
         Arguments:
             selected_inputs (list): list of selected variables (the true variables in eval_inputs Desc_in)

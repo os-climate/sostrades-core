@@ -412,7 +412,7 @@ class BaseStudyManager:
 
         self._put_disciplines_data_into_file(study_folder_path, data)
 
-    def run(self, logger_level=None, dump_study=False, for_test=False):
+    def run(self, logger_level=None, dump_study=False, for_test=False, force_run=False):
         """
         Method that run execution engine study with some additionals options.
 
@@ -446,7 +446,7 @@ class BaseStudyManager:
 
         # Execute study
         start_time = time()
-        if self._run_usecase:
+        if self._run_usecase or force_run:
             try:
                 self.execution_engine.execute(loaded_cache=self.loaded_cache)
                 message = f"Study {study_display_name} execution time : {time() - start_time} seconds"

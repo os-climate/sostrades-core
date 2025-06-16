@@ -35,7 +35,7 @@ def isevaluatable(s):
 
 def evaluate_arrays(input_str):
     """
-    convert a string into an array or a list of array
+    Convert a string into an array or a list of array
     :param input_str: the string to convert into an array
     :type string
     :return: the numpy array
@@ -68,7 +68,7 @@ def evaluate_arrays(input_str):
 
 def convert_list_to_arrays(input_list):
     """
-    convert a list into an array and if the list contains list, convert into array of arrays
+    Convert a list into an array and if the list contains list, convert into array of arrays
     :param input_list: the list to convert into an array
     :type list
     :return: the list converted into numpy array

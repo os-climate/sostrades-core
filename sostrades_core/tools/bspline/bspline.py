@@ -33,7 +33,7 @@ class BSpline(object):
 
     def set_uniform_knots_list(self):
         """
-        set uniform knots_list depending on number of poles
+        Set uniform knots_list depending on number of poles
         - n_poles : number of poles
         """
         ERROR_MSG = self.ERROR_MSG + 'set_uniform_knots_list: '

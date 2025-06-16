@@ -4,24 +4,30 @@ gemseo==6.1.0
 # External libraries
 black==25.1.0
 chaospy==4.3.18
-GitPython==3.1.44
+cma==4.2.0
+cvxpy==1.6.6
+db-dtypes==1.2.0
+gitpython==3.1.44
 matplotlib==3.9.2
 numpy==1.26.4
+numpoly==1.2.14  # last version with wheel
 openturns==1.24
 pandas==2.2.2
 plotly==5.24.0
-pycryptodome==3.22.0
-pydantic==2.9.1
+pyarrow==20.0.0
+pycryptodome==3.23.0
 PyYAML==6.0.2
 scipy==1.13.1
+six==1.17.0
 sympy==1.13.2
 tqdm==4.66.5
-numpoly==1.2.14  # last version with wheel
-StrEnum==0.4.15
+future==1.0.0
 
 # Development requirements
-pytest==8.3.5
-pytest-cov==6.1.0
-pytest-xdist==3.6.1
-pytest-durations==1.4.0
-ruff==0.6.8
+# breaking change in 8.2.0 https://docs.pytest.org/en/stable/changelog.html#pytest-8-2-0-2024-04-27
+# Will be fixed in 8.3.0 https://github.com/pytest-dev/pytest/issues/12275#issuecomment-2108348204
+pytest==8.1.2
+pytest-cov==6.2.0
+pytest-xdist==3.7.0
+pytest-durations==1.5.2
+ruff==0.11.13

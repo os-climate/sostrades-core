@@ -50,8 +50,9 @@ class TestDatasets(unittest.TestCase):
         logging.getLogger("sostrades_core.datasets").setLevel(logging.DEBUG)
 
         # create connector for test
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-             "file_path": "./sostrades_core/tests/data/test_92_datasets_db.json"
+            "file_path": os.path.join(tests_dir, "data", "test_92_datasets_db.json")
         }
 
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_datasets_connector",
@@ -59,8 +60,9 @@ class TestDatasets(unittest.TestCase):
                                                     **connector_args)
 
         # create local connector
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-             "root_directory_path": "./sostrades_core/tests/data/local_datasets_db/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_datasets_db"),
              "create_if_not_exists": True
         }
 
@@ -329,8 +331,9 @@ class TestDatasets(unittest.TestCase):
 
         # export study in another folder
         # create connector test for export
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_export_test/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_datasets_db_export_test"),
             "create_if_not_exists": True
         }
 
@@ -374,8 +377,9 @@ class TestDatasets(unittest.TestCase):
         Use a local connector to copy values from a JSON connector then load them in the study and check correctness,
         thus testing ability of LocalConnector to both write and load values.
         """
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_datasets_db_copy_test"),
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="MVP0_local_datasets_connector_copy_test",
@@ -496,8 +500,9 @@ class TestDatasets(unittest.TestCase):
         - since dict[str: dict[str: float]] is jsonifiable it will be saved in the descriptor.json, and not pickled
         - since dataframe dumping is based on GUI method, it can dump design-space-like dataframes to csv, not pickled
         """
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_copy_test_nested/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_datasets_db_copy_test_nested"),
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(
@@ -546,8 +551,9 @@ class TestDatasets(unittest.TestCase):
 
         # export study in another folder to compare the datasets
         # create connector test for export
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_datasets_db_export_test/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_datasets_db_export_test"),
             "create_if_not_exists": True
         }
 
@@ -632,8 +638,9 @@ class TestDatasets(unittest.TestCase):
 
         # export study in another folder to compare the datasets
         # create connector test for export
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_test_export_param/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_test_export_param"),
             "create_if_not_exists": True
         }
 
@@ -678,7 +685,6 @@ class TestDatasets(unittest.TestCase):
         json_db_path = os.path.join(test_data_folder, "test_92_datasets_db_v1.json")
         connector_args = {
             "file_path": json_db_path
-
         }
         DatasetsConnectorManager.register_connector(connector_identifier="json_v1_connector",
                                                     connector_type="sostrades_core.datasets.datasets_connectors.JSON_V1",
@@ -772,8 +778,9 @@ class TestDatasets(unittest.TestCase):
 
         connector_local = DatasetsConnectorManager.get_connector('MVP0_local_datasets_connector')
 
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_test_20_import_V1/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_test_20_import_V1"),
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="json_v1_connector",
@@ -856,7 +863,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_21_datasets_local_connector_nested_types_V1(self):
         """
-        for dataset V1
+        For dataset V1
         Check correctness of loaded values after loading a handcrafted local directories' dataset, testing usage of
         LocalDatasetsConnector and FileSystemDatasetsSerializer pickle-based loading for the following nested types:
             - dict[str: DataFrame]
@@ -872,8 +879,9 @@ class TestDatasets(unittest.TestCase):
         study = StudyManager(file_path=usecase_file_path)
         dm = study.execution_engine.dm
 
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_test_21_import_V1/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_test_21_import_V1"),
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="local_datasets_V1",
@@ -902,8 +910,9 @@ class TestDatasets(unittest.TestCase):
 
     def test_22_compatibility_V0_V1(self):
         """Check that there is an error when we try to copy a dataset from connector V0 to connector V1"""
+        tests_dir = os.path.dirname(__file__)
         connector_args = {
-            "root_directory_path": "./sostrades_core/tests/data/local_test_22_import_V1/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_test_22_import_V1"),
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="local_datasets_V1",
@@ -929,12 +938,13 @@ class TestDatasets(unittest.TestCase):
         """
         test_data_folder = os.path.join(os.path.dirname(__file__), "data")
         # create MV connector
+        tests_dir = os.path.dirname(__file__)
         connector_args_v0 = {
-            "root_directory_path": "./sostrades_core/tests/data/local_test_23_V0/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_test_23_V0"),
             "create_if_not_exists": True
         }
         connector_args_v1 = {
-            "root_directory_path": "./sostrades_core/tests/data/local_test_23_V1/",
+            "root_directory_path": os.path.join(tests_dir, "data", "local_test_23_V1"),
             "create_if_not_exists": True
         }
         DatasetsConnectorManager.register_connector(connector_identifier="v0v1_connector",

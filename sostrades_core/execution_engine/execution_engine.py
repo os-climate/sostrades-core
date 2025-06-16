@@ -398,7 +398,7 @@ class ExecutionEngine:
 
     def export_data_dict_and_zip(self, export_dir):
         '''
-        serialise data dict of the study keeping namespaced variables
+        Serialise data dict of the study keeping namespaced variables
         and generate csv files of whole data
         '''
         self.logger.info('exporting data from study to externalised files...')
@@ -494,7 +494,7 @@ class ExecutionEngine:
             self, dict_to_load: dict[str:Any], anonymize_function=None, update_status_configure: bool = True
     ):
         '''
-        method that imports data from dictionary to discipline tree
+        Method that imports data from dictionary to discipline tree
 
         :params: anonymize_function, a function that map a given key of the data
         dictionary using rule given by the execution engine for the saving process.
@@ -528,7 +528,7 @@ class ExecutionEngine:
 
     ):
         '''
-        method that insert data into dm and configure the process
+        Method that insert data into dm and configure the process
 
         :param set_data_in_dm_function: a function sets data in datamanager data_dict using dict_or_datasets_to_load, with signature:
         set_data_in_dm_function(dict_or_datasets_to_load:Union[dict, DatasetsMapping], already_inserted_keys: set of data name, in_vars:bool, init_coupling_vars:bool, out_vars:bool) -> None

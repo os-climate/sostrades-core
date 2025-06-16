@@ -127,7 +127,7 @@ class SeriesTemplate:
 
     def abscissa_filtered(self, logger=None):
         """
-        return abscissa values filtered on NaN and Infinite values
+        Return abscissa values filtered on NaN and Infinite values
 
         :param logger: logging system to use
         :type logger: logging.logger
@@ -146,7 +146,7 @@ class SeriesTemplate:
 
     def ordinate_filtered(self, logger=None):
         """
-        return ordinate values filtered on NaN and Infinite values
+        Return ordinate values filtered on NaN and Infinite values
 
         :param logger: logging system to use
         :type logger: logging.logger
@@ -168,7 +168,7 @@ class SeriesTemplate:
 
     def __filter_values(self, values, property_name, logger=None):
         """
-        return values filtered on NaN and Infinite values
+        Return values filtered on NaN and Infinite values
 
         :param values: values to filter
         :type values: list
