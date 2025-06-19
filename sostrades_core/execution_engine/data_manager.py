@@ -543,13 +543,19 @@ class DataManager:
             data_type = data_value[TYPE]
             data_value_loc = data_value[VALUE]
 
+            if '.' in data_name :
+                splitted_name_list = data_name.split('.')
+                data_name = splitted_name_list.pop(-1)
+                splitted_name_list.insert(0,data_ns)
+                data_ns = '.'.join(splitted_name_list)
+
             # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
             namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns,
                                                                      {DatasetsMapping.KEY: {}, DatasetsMapping.TYPE: {},
                                                                       DatasetsMapping.VALUE: {}})
             namespaced_data_dict[data_ns][DatasetsMapping.KEY][data_name] = key
-            namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
             namespaced_data_dict[data_ns][DatasetsMapping.VALUE][data_name] = data_value_loc
+            namespaced_data_dict[data_ns][DatasetsMapping.TYPE][data_name] = data_type
 
         # iterate on each datasets to export data in each dataset
         dataset_parameters_mapping, duplicates = datasets_mapping.get_datasets_namespace_mapping_for_study(self.name, namespaces_dict=namespaced_data_dict)
