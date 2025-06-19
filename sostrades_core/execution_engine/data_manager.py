@@ -542,13 +542,13 @@ class DataManager:
             data_name = data_value[VAR_NAME]
             data_type = data_value[TYPE]
             data_value_loc = data_value[VALUE]
-            
+
             if '.' in data_name :
                 splitted_name_list = data_name.split('.')
                 data_name = splitted_name_list.pop(-1)
                 splitted_name_list.insert(0,data_ns)
                 data_ns = '.'.join(splitted_name_list)
-                
+
             # create a dict with namespace, datas with keys (to fill dataset after), types (to convert in dataset), value (to fill dataset after)
             namespaced_data_dict[data_ns] = namespaced_data_dict.get(data_ns,
                                                                      {DatasetsMapping.KEY: {}, DatasetsMapping.TYPE: {},
