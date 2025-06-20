@@ -726,17 +726,18 @@ class UncertaintyQuantification(SoSWrapp):
 
         for output_name in list(output_distrib_df.columns):
             output_distrib = list(output_distrib_df[output_name])
-            output_distrib_name = output_name.split(".")[-1] + " Distribution"
+            raw_name = output_name.split(".")[-1]
+            output_distrib_name = raw_name + " Distribution"
             if output_name in float_output_names:
                 # output type is float -> histograme
                 if not all(np.isnan(output_distrib)) and output_distrib_name in graphs_list:
-                    new_chart = self.output_histogram_graph(output_distrib, output_name, confidence_interval)
+                    new_chart = self.output_histogram_graph(output_distrib, raw_name, confidence_interval)
                     instanciated_charts.append(new_chart)
             else:
                 # output type is array -> array_uncertainty plot
                 if output_distrib_name in graphs_list:
                     new_chart = self.array_uncertainty_plot(
-                        list_of_arrays=output_distrib, name=output_name, is_output=True
+                        list_of_arrays=output_distrib, name=raw_name, is_output=True
                     )
                     instanciated_charts.append(new_chart)
 

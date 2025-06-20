@@ -583,7 +583,7 @@ class SoSWrapp(object):
     # TODO: see if should generalize the get_boundary_jac method with *args, **kwargs
     def get_boundary_jac_for_design_var_columns(self, ykey, column, io_type, xkey, dataframefillmethod):
         '''
-        particular case of the design_var discipline where the design var dataframe has been filled following the
+        Particular case of the design_var discipline where the design var dataframe has been filled following the
         'one column for key, one for value' method. In this case, all the name for the assets xkey are in the first column
         of the column names and their value in the 2nd column of column names of the dataframe value
 

@@ -250,7 +250,7 @@ class SympyFormula():
 
     def set_grad(self, fgrad=True):
         """
-        set __fgrad attribute
+        Set __fgrad attribute
         @param fgrad: option to compute gradient (B{True}: gradient active, B{False}: gradient inactive)
         @type fgrad: Boolean
         """

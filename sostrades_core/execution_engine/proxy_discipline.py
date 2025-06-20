@@ -312,7 +312,7 @@ class ProxyDiscipline:
 
     def set_father_executor(self, father_executor):  #: "ProxyDiscipline"):
         """
-        set father executor
+        Set father executor
 
         Arguments:
             father_executor (ProxyDiscipline): proxy that orchestrates the execution of this proxy discipline (e.g. coupling)
@@ -408,7 +408,7 @@ class ProxyDiscipline:
 
     def create_discipline_wrap(self, name: str, wrapper, wrapping_mode: str, logger: logging.Logger):
         """
-        creation of discipline_wrapp by the proxy
+        Creation of discipline_wrapp by the proxy
         To be overloaded by proxy without DisciplineWrapp (eg scatter...)
         """
         self.discipline_wrapp = DisciplineWrapp(
@@ -1106,7 +1106,7 @@ class ProxyDiscipline:
 
     def __check_all_data_integrity(self):
         """
-        generic data integrity_check where we call different generic function to check integrity
+        Generic data integrity_check where we call different generic function to check integrity
         + specific data integrity by discipline
         """
         data_integrity = self.__generic_check_data_integrity()
@@ -1292,7 +1292,7 @@ class ProxyDiscipline:
 
     def get_data_io_with_full_name(self, io_type, as_namespaced_tuple=False):
         """
-        returns a version of the data_in/data_out of discipline with variable full names
+        Returns a version of the data_in/data_out of discipline with variable full names
 
         Arguments:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
@@ -1474,9 +1474,9 @@ class ProxyDiscipline:
 
             # store structuring variables in self._structuring_variables
             if self.STRUCTURING in data_keys and new_data[self.STRUCTURING] is True:
-                if new_data[self.IO_TYPE] == self.IO_TYPE_IN:
+                if new_data[self.IO_TYPE] == self.IO_TYPE_IN and key not in self._structuring_variables:
                     self._structuring_variables[key] = None
-                del new_data[self.STRUCTURING]
+                # del new_data[self.STRUCTURING]
             if self.CHECK_INTEGRITY_MSG not in data_keys:
                 new_data[self.CHECK_INTEGRITY_MSG] = ''
 
@@ -1728,6 +1728,7 @@ class ProxyDiscipline:
         # -- update sub-disciplines
         for discipline in self.proxy_disciplines:
             discipline.update_from_dm()
+        self.__check_all_data_integrity()
 
     # -- Ids and namespace handling
     def get_disc_full_name(self):
@@ -2160,7 +2161,7 @@ class ProxyDiscipline:
 
     def set_wrapper_attributes(self, wrapper):
         """
-        set the attribute ".attributes" of wrapper which is used to provide the wrapper with information that is
+        Set the attribute ".attributes" of wrapper which is used to provide the wrapper with information that is
         figured out at configuration time but needed at runtime. the input and output full name map allow the wrappers
         to work with short names whereas the GEMSEO objects use variable full names in their data structures.
         """

@@ -228,7 +228,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def create_discipline_wrap(self, name, wrapper, wrapping_mode, logger: logging.Logger):
         """
-        creation of discipline_wrapp by the proxy which in this case is a DisciplineDriverWrapp that will create
+        Creation of discipline_wrapp by the proxy which in this case is a DisciplineDriverWrapp that will create
         a SoSDisciplineDriver at prepare_execution, i.e. a driver node that knows its subprocesses but manipulates
         them in a different way than a coupling.
         """
@@ -372,7 +372,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
 
     def set_wrapper_attributes(self, wrapper):
         """
-        set the attribute ".attributes" of wrapper which is used to provide the wrapper with information that is
+        Set the attribute ".attributes" of wrapper which is used to provide the wrapper with information that is
         figured out at configuration time but needed at runtime. The DriverEvaluator in particular needs to provide
         its wrapper with a reference to the subprocess GEMSEO objets so they can be manipulated at runtime.
         """

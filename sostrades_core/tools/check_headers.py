@@ -113,6 +113,9 @@ class HeaderTools:
             return None
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
+        if len(content) == 0:
+            # Empty file
+            return None
 
         cartouche_match = re.search(pattern=cartouche_pattern, string=content, flags=re.DOTALL)
 
