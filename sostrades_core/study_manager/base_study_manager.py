@@ -17,6 +17,8 @@ limitations under the License.
 
 from __future__ import annotations
 
+import pandas as pd
+
 from contextlib import suppress
 from copy import deepcopy
 from importlib import import_module
@@ -773,3 +775,21 @@ class BaseStudyManager:
         loaded_dict = imported_usecase.execution_engine.get_anonimated_data_dict()
 
         return {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
+
+    def get_glossary_file_from_dm(self):
+
+        liste_vars = list(self.ee.dm.data_id_map.keys())
+        short_non_numerical_vars = []
+        for var in liste_vars:
+            if not self.ee.dm.get_data(var, 'numerical'):
+                short_non_numerical_vars.append(var.split('.')[-1])
+
+        unique_sorted = sorted(set(short_non_numerical_vars))
+
+        df = pd.DataFrame(unique_sorted, columns=['id'])
+        df['label'] = ''
+        df['unit'] = ''
+        df['description'] = ''
+
+        # Exporter en CSV
+        df.to_csv('empty_glossary.csv', index=False)
