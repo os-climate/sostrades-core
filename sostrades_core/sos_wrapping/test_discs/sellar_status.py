@@ -36,17 +36,17 @@ class SellarProblem(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'x': {'type': 'float',  'namespace': 'ns_OptimSellar'},
+        'y_1': {'type': 'float',  'namespace': 'ns_OptimSellar'},
+        'y_2': {'type': 'float',  'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array',  'namespace': 'ns_OptimSellar'},
         'local_dv': {'type': 'float', 'range': [0.0, 20.0]},
     }
 
     DESC_OUT = {
-        'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'c_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'obj': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'c_1': {'type': 'array',  'namespace': 'ns_OptimSellar'},
+        'c_2': {'type': 'array',  'namespace': 'ns_OptimSellar'},
+        'obj': {'type': 'array',  'namespace': 'ns_OptimSellar'},
     }
 
     def run(self):
@@ -133,12 +133,12 @@ class Sellar1(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'x': {'type': 'float',  'namespace': 'ns_OptimSellar'},
+        'y_2': {'type': 'float',  'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array',  'namespace': 'ns_OptimSellar'},
     }
 
-    DESC_OUT = {'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'y_1': {'type': 'float',  'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """Discipline 1 execution"""
@@ -200,17 +200,17 @@ class Sellar2(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'y_1': {'type': 'float',  'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array',  'namespace': 'ns_OptimSellar'},
         'debug_mode_sellar': {
             'type': 'bool',
             'default': False,
-            'visibility': SoSWrapp.SHARED_VISIBILITY,
+            
             'namespace': 'ns_OptimSellar',
         },
     }
 
-    DESC_OUT = {'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'y_2': {'type': 'float',  'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """Solves Discipline1"""
@@ -278,8 +278,8 @@ class Sellar3(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'y_1': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'y_1': {'type': 'float',  'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array',  'namespace': 'ns_OptimSellar'},
         'error_string': {
             'type': 'string',
             'default': '',
@@ -295,7 +295,7 @@ class Sellar3(SoSWrapp):
         },
     }
 
-    DESC_OUT = {'y_2': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'y_2': {'type': 'float',  'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """Computes Discipline3"""

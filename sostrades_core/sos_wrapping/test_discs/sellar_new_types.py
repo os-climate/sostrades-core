@@ -34,16 +34,16 @@ class SellarProblem(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+        'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 
               'namespace': 'ns_OptimSellar'},
-        'y_1': {'type': 'dataframe', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'y_2': {'type': 'dataframe', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
+        'y_1': {'type': 'dataframe',  'namespace': 'ns_OptimSellar'},
+        'y_2': {'type': 'dataframe',  'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array',  'namespace': 'ns_OptimSellar'},
         'local_dv': {'type': 'float'}}
 
-    DESC_OUT = {'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'c_2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'obj': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'c_1': {'type': 'array',  'namespace': 'ns_OptimSellar'},
+                'c_2': {'type': 'array',  'namespace': 'ns_OptimSellar'},
+                'obj': {'type': 'array',  'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """Computes"""
@@ -140,13 +140,13 @@ class Sellar1Df(SoSWrapp):
     """Discipline 1"""
 
     _maturity = 'Fake'
-    DESC_IN = {'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'dataframe', 'visibility': SoSWrapp.SHARED_VISIBILITY,
+    DESC_IN = {'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'},  'namespace': 'ns_OptimSellar'},
+               'y_2': {'type': 'dataframe', 
                        'namespace': 'ns_OptimSellar'},
-               'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+               'z': {'type': 'array',  'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_1': {'type': 'dataframe',
-                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                         'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """Discipline 1 execution"""
@@ -218,11 +218,11 @@ class Sellar2Df(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'y_1': {'type': 'dataframe', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-        'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+        'y_1': {'type': 'dataframe',  'namespace': 'ns_OptimSellar'},
+        'z': {'type': 'array',  'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'dataframe',
-                        'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+                         'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """Solves Discipline1"""

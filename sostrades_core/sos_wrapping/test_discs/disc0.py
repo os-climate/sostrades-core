@@ -39,8 +39,8 @@ class Disc0(SoSWrapp):
         'mod': {'type': 'int', 'default': 1}
     }
     DESC_OUT = {
-        'x': {'type': 'float', 'visibility': 'Shared', 'namespace': 'ns_disc1'},
-        'a': {'type': 'int', 'visibility': 'Shared', 'namespace': 'ns_disc1'}
+        'x': {'type': 'float', 'namespace': 'ns_disc1'},
+        'a': {'type': 'int', 'namespace': 'ns_disc1'}
     }
 
     def run(self):

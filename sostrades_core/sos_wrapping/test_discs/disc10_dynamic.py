@@ -36,19 +36,19 @@ class Disc10(SoSWrapp):
     DESC_IN = {
         'Model_Type': {'type': 'string', 'default': 'Linear',
                        'possible_values': ['Linear', 'Affine', 'Polynomial'],
-                       'visibility': SoSWrapp.SHARED_VISIBILITY,
+
                        'namespace': 'ns_ac', 'structuring': True},
         'x': {'type': 'float',
-              'visibility': SoSWrapp.SHARED_VISIBILITY,
+
               'namespace': 'ns_ac'},
         'a': {'type': 'float',
               'default': 1.,
-              'visibility': SoSWrapp.SHARED_VISIBILITY,
+
               'namespace': 'ns_ac'}
     }
     DESC_OUT = {
         'y': {'type': 'float',
-              'visibility': SoSWrapp.SHARED_VISIBILITY,
+
               'namespace': 'ns_ac'}
     }
     # ns_b is a new namespace defined for a dynamic variable in setup_sos_disciplines
@@ -60,13 +60,13 @@ class Disc10(SoSWrapp):
             Model_Type = self.get_sosdisc_inputs('Model_Type')
             if Model_Type == 'Affine':
                 dynamic_inputs.update({'b': {'type': 'float',
-                                             'visibility': SoSWrapp.SHARED_VISIBILITY,
+
                                              'namespace': 'ns_b'}})
             elif Model_Type == 'Polynomial':
                 dynamic_inputs.update(
-                    {'b': {'type': 'float', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_b'}})
+                    {'b': {'type': 'float', 'namespace': 'ns_b'}})
                 dynamic_inputs.update({'power': {'type': 'float', 'default': 2.,
-                                                 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}})
+                                                 'namespace': 'ns_ac'}})
         self.add_inputs(dynamic_inputs)
 
     def run(self):

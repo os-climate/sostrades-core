@@ -147,7 +147,6 @@ class ScatterTool(SosTool):
         if self.sc_map is not None and self.sc_map.get_scatter_list_name_and_namespace() is not None:
             scatter_list_name, scatter_list_ns = self.sc_map.get_scatter_list_name_and_namespace()
             dynamic_inputs = {scatter_list_name: {'type': 'list',
-                                                   'visibility': 'Shared',
                                                   'editable': False,
                                                    'namespace': scatter_list_ns,
                                                    'value': self.__scatter_list}}

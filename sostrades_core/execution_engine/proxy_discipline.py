@@ -115,11 +115,6 @@ class ProxyDiscipline:
     TYPE = SoSWrapp.TYPE
     SUBTYPE = SoSWrapp.SUBTYPE
     COUPLING = SoSWrapp.COUPLING
-    VISIBILITY = SoSWrapp.VISIBILITY
-    LOCAL_VISIBILITY = SoSWrapp.LOCAL_VISIBILITY
-    INTERNAL_VISIBILITY = SoSWrapp.INTERNAL_VISIBILITY
-    SHARED_VISIBILITY = SoSWrapp.SHARED_VISIBILITY
-    AVAILABLE_VISIBILITIES = [LOCAL_VISIBILITY, INTERNAL_VISIBILITY, SHARED_VISIBILITY]
     NAMESPACE = SoSWrapp.NAMESPACE
     NS_REFERENCE = 'ns_reference'
     REFERENCE = 'reference'
@@ -572,7 +567,7 @@ class ProxyDiscipline:
 
     def get_shared_namespace_list(self, data_dict):
         """
-        Get the list of namespaces defined in the data_in or data_out when the visibility of the variable is shared
+        Get the list of namespaces defined in the data_in or data_out
 
         Arguments:
             data_dict (Dict[dict]): data_in or data_out
@@ -587,14 +582,14 @@ class ProxyDiscipline:
 
     def __append_item_namespace(self, item, ns_list):
         """
-        Append the namespace if the visibility is shared
+        Append the namespace if it exists
 
         Arguments:
             item (dict): element to append to the ns_list
             ns_list (List[Namespace]): list of namespaces [???]
 
         """
-        if self.VISIBILITY in item and item[self.VISIBILITY] == self.SHARED_VISIBILITY:
+        if self.NAMESPACE in item:
             with contextlib.suppress(Exception):
                 ns_list.append(item[self.NAMESPACE])
 
@@ -1347,27 +1342,25 @@ class ProxyDiscipline:
         self.io.input_grammar.update_from_names(self.get_input_data_names())
         self.io.output_grammar.update_from_names(self.get_output_data_names())
 
-    def get_ns_reference(self, visibility, namespace=None):
+    def get_ns_reference(self, namespace=None):
         """
         Get namespace reference by consulting the namespace_manager
 
         Arguments:
-            visibility (string): visibility to get local or shared namespace
-            namespace (Namespace): namespace in case of shared visibility
+
+            namespace (Namespace): namespace if it exists
 
         """
         ns_manager = self.ee.ns_manager
 
-        if visibility == self.LOCAL_VISIBILITY or visibility == self.INTERNAL_VISIBILITY:
+        if namespace is None:
             return ns_manager.get_local_namespace(self)
-
-        if visibility == self.SHARED_VISIBILITY:
+        else:
             return ns_manager.get_shared_namespace(self, namespace)
-        return None
 
-    def apply_visibility_ns(self, io_type):
+    def get_namespaced_variables(self, io_type):
         """
-        Consult the namespace_manager to apply the namespace depending on the variable visibility
+        Consult the namespace_manager to get namespaced variables
 
         Arguments:
             io_type (string): IO_TYPE_IN or IO_TYPE_OUT
@@ -1424,12 +1417,8 @@ class ProxyDiscipline:
 
             if self.DISCIPLINES_FULL_PATH_LIST not in data_keys:
                 new_data[self.DISCIPLINES_FULL_PATH_LIST] = []
-            if self.VISIBILITY not in data_keys:
-                new_data[self.VISIBILITY] = self.LOCAL_VISIBILITY
+
             if self.DEFAULT not in data_keys:
-                if new_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
-                    msg = f'The variable {key} in discipline {self.sos_name} must have a default value because its visibility is Internal'
-                    raise ValueError(msg)
                 new_data[self.DEFAULT] = None
             else:
                 new_data[self.VALUE] = new_data[self.DEFAULT]
@@ -1449,28 +1438,12 @@ class ProxyDiscipline:
 
             # -- Outputs are not EDITABLE
             if self.EDITABLE not in data_keys:
-                if new_data[self.VISIBILITY] == self.INTERNAL_VISIBILITY:
-                    new_data[self.EDITABLE] = False
-                else:
-                    new_data[self.EDITABLE] = io_type == self.IO_TYPE_IN
+                new_data[self.EDITABLE] = io_type == self.IO_TYPE_IN
             # -- Add NS_REFERENCE
-            if new_data[self.VISIBILITY] not in self.AVAILABLE_VISIBILITIES:
-                var_name = new_data[self.VAR_NAME]
-                visibility = new_data[self.VISIBILITY]
-                raise ValueError(
-                    self.sos_name
-                    + '.'
-                    + var_name
-                    + ': '
-                    + self.VISIBILITY
-                    + str(visibility)
-                    + ' not in allowed visibilities: '
-                    + str(self.AVAILABLE_VISIBILITIES)
-                )
             if self.NAMESPACE in data_keys:
-                new_data[self.NS_REFERENCE] = self.get_ns_reference(new_data[self.VISIBILITY], new_data[self.NAMESPACE])
+                new_data[self.NS_REFERENCE] = self.get_ns_reference(new_data[self.NAMESPACE])
             else:
-                new_data[self.NS_REFERENCE] = self.get_ns_reference(new_data[self.VISIBILITY])
+                new_data[self.NS_REFERENCE] = self.get_ns_reference()
 
             # store structuring variables in self._structuring_variables
             if self.STRUCTURING in data_keys and new_data[self.STRUCTURING] is True:
@@ -1783,7 +1756,7 @@ class ProxyDiscipline:
         """
         Convert to namespace with coupling_namespace management
         Using a key (variables name) and reference_data (yaml in or out),
-        build the corresponding namespaced key using the visibility property
+        build the corresponding namespaced key
 
         Arguments:
             key (string): variable name

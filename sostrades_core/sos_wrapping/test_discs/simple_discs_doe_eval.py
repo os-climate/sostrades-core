@@ -27,14 +27,14 @@ class SimpleDisc1(SoSWrapp):
     """Discipline used in Driver coupling of simple discipline output with driver subprocess input."""
 
     _maturity = 'Fake'
-    DESC_IN = {'z_in': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'added_algo_options': {'type': 'dict', 'visibility': SoSWrapp.LOCAL_VISIBILITY}
+    DESC_IN = {'z_in': {'type': 'array', 'namespace': 'ns_OptimSellar'},
+               'added_algo_options': {'type': 'dict'}
                }
 
-    DESC_OUT = {'z': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-                'sampling_algo': {'type': 'string', 'visibility': SoSWrapp.SHARED_VISIBILITY,
+    DESC_OUT = {'z': {'type': 'array', 'namespace': 'ns_OptimSellar'},
+                'sampling_algo': {'type': 'string', 
                                   'namespace': 'ns_sampling_algo'},
-                'algo_options': {'type': 'dict', 'visibility': SoSWrapp.SHARED_VISIBILITY,
+                'algo_options': {'type': 'dict', 
                                  'namespace': 'ns_sampling_algo'}
                 }
 
@@ -90,12 +90,12 @@ class SimpleDisc2(SoSWrapp):
     """Discipline used in Driver coupling of simple discipline output with driver subprocess input."""
 
     _maturity = 'Fake'
-    DESC_IN = {'c_1': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'},
-               'y_1_dict': {'type': 'dict', 'unit': None, 'visibility': SoSWrapp.SHARED_VISIBILITY,
+    DESC_IN = {'c_1': {'type': 'array', 'namespace': 'ns_OptimSellar'},
+               'y_1_dict': {'type': 'dict', 'unit': None, 
                             'namespace': 'ns_OptimSellar'}
                }
 
-    DESC_OUT = {'out_simple2': {'type': 'array', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_OptimSellar'}}
+    DESC_OUT = {'out_simple2': {'type': 'array', 'namespace': 'ns_OptimSellar'}}
 
     def run(self):
         """Discipline 2 execution"""

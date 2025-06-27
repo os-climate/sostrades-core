@@ -41,14 +41,14 @@ class Disc1(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {
         'AC_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'default': [],
-                    'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac', 'structuring': True},
-        'x': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+                    'namespace': 'ns_ac', 'structuring': True},
+        'x': {'type': 'float', 'namespace': 'ns_ac'},
         'a': {'type': 'int'},
         'b': {'type': 'float'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float'},
-        'y': {'type': 'float', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'namespace': 'ns_ac'}
     }
 
     def setup_sos_disciplines(self):

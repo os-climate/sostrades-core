@@ -44,9 +44,9 @@ class DiscAllTypes(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {
         'z': {'type': 'float', 'default': 90., 'unit': 'kg', 'user_level': 1,
-              'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test', 'range': [-1e4, 1e4]},
+               'namespace': 'ns_test', 'range': [-1e4, 1e4]},
         'z_list': {'type': 'list', ProxyDiscipline.SUBTYPE: {'list': 'float'}, 'unit': 'kg', 'user_level': 1,
-                   'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test', 'range': [-1e4, 1e4]},
+                    'namespace': 'ns_test', 'range': [-1e4, 1e4]},
         'h': {'type': 'array', 'unit': 'kg', 'user_level': 1},
         'dict_in': {'type': 'dict', ProxyDiscipline.SUBTYPE: {'dict': 'float'}, 'unit': 'kg', 'user_level': 1},
         'dict_string_in': {'type': 'dict', ProxyDiscipline.SUBTYPE: {'dict': 'string'}, 'unit': 'kg', 'user_level': 1},
@@ -55,19 +55,19 @@ class DiscAllTypes(SoSWrapp):
                                                                                                'c2': ('float', None, True), 'c3': ('float', None, True), },
                   'dataframe_edition_locked': False, },
         'weather': {'type': 'string', 'default': 'cloudy, it is Toulouse ...', 'user_level': 1,
-                    'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test', 'possible_values': ['cloudy, it is Toulouse ...', 'sunny', 'rainy']},
+                     'namespace': 'ns_test', 'possible_values': ['cloudy, it is Toulouse ...', 'sunny', 'rainy']},
         'weather_list': {'type': 'list', ProxyDiscipline.SUBTYPE: {'list': 'string'}, 'default': ['cloudy, it is Toulouse ...'], 'user_level': 1,
-                         'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test', 'possible_values': ['cloudy, it is Toulouse ...', 'sunny', 'rainy']},
+                          'namespace': 'ns_test', 'possible_values': ['cloudy, it is Toulouse ...', 'sunny', 'rainy']},
         'dict_of_dict_in': {'type': 'dict', ProxyDiscipline.SUBTYPE: {'dict': {'dict': 'float'}}, 'user_level': 1},
         'dict_of_df_in': {'type': 'dict', ProxyDiscipline.SUBTYPE: {'dict': 'dataframe'}, 'user_level': 1}
     }
     DESC_OUT = {
         'df_out': {'type': 'dataframe', 'unit': 'kg', 'user_level': 1,
-                   'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+                    'namespace': 'ns_test'},
         'o': {'type': 'array', 'unit': 'kg', 'user_level': 1,
-              'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+               'namespace': 'ns_test'},
         'dict_out': {'type': 'dict', 'unit': 'kg', 'user_level': 1,
-                     'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+                      'namespace': 'ns_test'}
     }
 
     def run(self):

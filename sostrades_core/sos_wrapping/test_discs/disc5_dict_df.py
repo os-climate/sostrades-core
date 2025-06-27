@@ -38,12 +38,12 @@ class Disc5(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'z': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'z': {'type': 'array',  'namespace': 'ns_test'},
+        'dict_out': {'type': 'dict',  'namespace': 'ns_test'}
     }
 
     DESC_OUT = {
-        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'},  'namespace': 'ns_test'}
     }
 
     def run(self):
