@@ -17,8 +17,6 @@ limitations under the License.
 
 from __future__ import annotations
 
-import pandas as pd
-
 from contextlib import suppress
 from copy import deepcopy
 from importlib import import_module
@@ -26,6 +24,8 @@ from logging import DEBUG, INFO, Logger
 from pathlib import Path
 from time import time
 from typing import TYPE_CHECKING
+
+import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
@@ -779,11 +779,7 @@ class BaseStudyManager:
     def get_glossary_file_from_dm(self):
 
         liste_vars = list(self.ee.dm.data_id_map.keys())
-        short_non_numerical_vars = []
-        for var in liste_vars:
-            if not self.ee.dm.get_data(var, 'numerical'):
-                short_non_numerical_vars.append(var.split('.')[-1])
-
+        short_non_numerical_vars = [var.split('.')[-1] for var in liste_vars if not self.ee.dm.get_data(var, 'numerical')]
         unique_sorted = sorted(set(short_non_numerical_vars))
 
         df = pd.DataFrame(unique_sorted, columns=['id'])

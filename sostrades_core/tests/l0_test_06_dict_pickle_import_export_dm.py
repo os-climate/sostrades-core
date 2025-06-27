@@ -42,7 +42,7 @@ from sostrades_core.tools.tree.serializer import (
 )
 
 
-def init_dict(dtype, unit=None, value=None, st_name=None, visi=None, ns=None, var_name=None):
+def init_dict(dtype, unit=None, value=None, st_name=None, ns=None, var_name=None):
     """
     Initializes a dictionary with default and customizable values for variable metadata.
 

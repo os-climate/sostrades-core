@@ -16,7 +16,6 @@ limitations under the License.
 '''
 import time
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 

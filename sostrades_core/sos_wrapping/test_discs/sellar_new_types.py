@@ -34,7 +34,7 @@ class SellarProblem(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}, 
+        'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'},
               'namespace': 'ns_OptimSellar'},
         'y_1': {'type': 'dataframe',  'namespace': 'ns_OptimSellar'},
         'y_2': {'type': 'dataframe',  'namespace': 'ns_OptimSellar'},
@@ -141,7 +141,7 @@ class Sellar1Df(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {'x': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'},  'namespace': 'ns_OptimSellar'},
-               'y_2': {'type': 'dataframe', 
+               'y_2': {'type': 'dataframe',
                        'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array',  'namespace': 'ns_OptimSellar'}}
 

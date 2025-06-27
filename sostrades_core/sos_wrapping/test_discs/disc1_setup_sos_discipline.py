@@ -20,7 +20,6 @@ from collections.abc import Iterable
 import numpy as np
 import pandas as pd
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 

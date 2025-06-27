@@ -241,7 +241,7 @@ class Sellar2(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {'y_1': {'type': 'array',  'namespace': 'ns_OptimSellar'},
                'z': {'type': 'array',  'namespace': 'ns_OptimSellar'},
-               'debug_mode_sellar': {'type': 'bool', 'default': False, 
+               'debug_mode_sellar': {'type': 'bool', 'default': False,
                                      'namespace': 'ns_OptimSellar'}}
 
     DESC_OUT = {'y_2': {'type': 'array',

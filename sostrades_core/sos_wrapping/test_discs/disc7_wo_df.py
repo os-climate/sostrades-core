@@ -17,7 +17,6 @@ limitations under the License.
 import numpy as np
 from numpy import array
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 # Discipline with dataframe

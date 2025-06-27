@@ -205,7 +205,7 @@ class Sellar2(SoSWrapp):
         'debug_mode_sellar': {
             'type': 'bool',
             'default': False,
-            
+
             'namespace': 'ns_OptimSellar',
         },
     }

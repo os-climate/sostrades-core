@@ -1347,7 +1347,6 @@ class ProxyDiscipline:
         Get namespace reference by consulting the namespace_manager
 
         Arguments:
-
             namespace (Namespace): namespace if it exists
 
         """

@@ -17,7 +17,6 @@ limitations under the License.
 import numpy as np
 import pandas as pd
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
@@ -58,78 +57,78 @@ class Disc(SoSWrapp):
                        range(1, 6)}
 
     DESC_IN = {
-        'list_float': {'type': 'list', 
+        'list_float': {'type': 'list',
                        'default': [1.5, 2.5, 3.5, 4.5, 5], 'subtype_descriptor': {'list': 'float'}},
-        'list_array': {'type': 'list', 
+        'list_array': {'type': 'list',
                        'default': [np.array([1, 2, 3]), np.array([1, 2, 3, 4]), np.array([1, 2, 3, 4, 5]),
                                    np.array([1, 2, 3]), np.array([1, 2, 3, 4, 5, 6])],
                        'subtype_descriptor': {'list': 'array'}},
 
-        'list_dataframe': {'type': 'list', 
+        'list_dataframe': {'type': 'list',
                            'default': [df_data, df_data, df_data, df_data, df_data],
                            'subtype_descriptor': {'list': 'dataframe'}},
-        'list_dict_float': {'type': 'list', 
+        'list_dict_float': {'type': 'list',
                             'default': [dict_data, dict_data, dict_data, dict_data, dict_data],
                             'subtype_descriptor': {'list': {'dict': 'float'}}},
-        'list_list_float': {'type': 'list', 
+        'list_list_float': {'type': 'list',
                             'default': [float_list, float_list, float_list, float_list, float_list],
                             'subtype_descriptor': {'list': {'list': 'float'}}},
-        'list_list_dict_float': {'type': 'list', 
+        'list_list_dict_float': {'type': 'list',
                                  'default': [dict_list, dict_list, dict_list, dict_list, dict_list],
                                  'subtype_descriptor': {'list': {'list': {'dict': 'float'}}}},
-        'list_list_dataframe': {'type': 'list', 
+        'list_list_dataframe': {'type': 'list',
                                 'default': [df_list, df_list, df_list],
                                 'subtype_descriptor': {'list': {'list': 'dataframe'}}},
-        'list_list_list_array': {'type': 'list', 
+        'list_list_list_array': {'type': 'list',
                                  'default': [list_array_list, list_array_list, list_array_list, list_array_list,
                                              list_array_list],
                                  'subtype_descriptor': {'list': {'list': {'list': 'array'}}}},
-        'dict_float': {'type': 'dict', 
+        'dict_float': {'type': 'dict',
                        'default': {'key1': 0.5, 'key2': 0.5, 'key3': 1., 'key4': 2.5, 'key5': 1.5},
                        'subtype_descriptor': {'dict': 'float'}},
-        'dict_array': {'type': 'dict', 
+        'dict_array': {'type': 'dict',
                        'default': {'key1': np.array([1, 2, 3]), 'key2': np.array([1, 2, 3, 4]),
                                    'key3': np.array([1, 2, 3, 4, 5]),
                                    'key4': np.array([1, 2, 3]), 'key5': np.array([1, 2, 3, 4, 5, 6])},
                        'subtype_descriptor': {'dict': 'array'}},
-        'dict_dataframe': {'type': 'dict', 
+        'dict_dataframe': {'type': 'dict',
                            'default': {'key1': df_data, 'key2': df_data,
                                        'key3': df_data,
                                        'key4': df_data, 'key5': df_data},
                            'subtype_descriptor': {'dict': 'dataframe'}},
-        'dict_dataframe_array': {'type': 'dict', 
+        'dict_dataframe_array': {'type': 'dict',
                                  'default': {'key1': df_data, 'key2': df_data,
                                              'key3': df_data,
                                              'key4': df_data, 'key5': pd.DataFrame(
                                          data={'col1': [1, np.array([0.70710678, 0.70710678])]})},
                                  'subtype_descriptor': {'dict': 'dataframe'}},
-        'large_dict': {'type': 'dict', 
+        'large_dict': {'type': 'dict',
                        'default': {'key1': df_data, 'key2': df_data,
                                    'key3': df_data,
                                    'key4': df_data, 'key5': df_data},
                        'subtype_descriptor': {'dict': 'dataframe'}},
-        'dict_dict_float': {'type': 'dict', 
+        'dict_dict_float': {'type': 'dict',
                             'default': {f'key{i}': {'1': i + 1, '2': i + 2,
                                                     '3': i + 3, '4': i + 4} for i in range(500)},
                             'subtype_descriptor': {'dict': {'dict': 'float'}}},
 
-        'dict_dict_dataframe': {'type': 'dict', 
+        'dict_dict_dataframe': {'type': 'dict',
                                 'default': {
                                     f'key{i}': {f'key{i}': pd.DataFrame({'col1': [1, 2], 'col2': [3, 0.5]}) for i in
                                                 range(1, 6)} for i in range(1, 6)},
                                 'subtype_descriptor': {'dict': {'dict': 'dataframe'}}},
 
-        'dict_dict_dict_array': {'type': 'dict', 
+        'dict_dict_dict_array': {'type': 'dict',
                                  'default': {f'key{i}': {
                                      f'key{i}': {'key1': np.array([1, 2, 3]), 'key2': np.array([1, 2, 3, 4]),
                                                  'key3': np.array([1, 2, 3, 4, 5]),
                                                  'key4': np.array([1, 2, 3]), 'key5': np.array([1, 2, 3, 4, 5, 6])} for
                                      i in range(1, 6)} for i in range(1, 6)},
                                  'subtype_descriptor': {'dict': {'dict': {'dict': 'array'}}}},
-        'dict_list_float': {'type': 'dict', 
+        'dict_list_float': {'type': 'dict',
                             'default': {f'key{i}': [1.5, 2.5, 3.5, 4.5, 5] for i in range(1, 6)},
                             'subtype_descriptor': {'dict': {'list': 'float'}}},
-        'dict_list_list_dataframe': {'type': 'dict', 
+        'dict_list_list_dataframe': {'type': 'dict',
                                      'default': {'key1': [df_list, df_list, df_list],
                                                  'key2': [df_list, df_list, df_list],
                                                  'key3': [df_list, df_list, df_list],
@@ -137,10 +136,10 @@ class Disc(SoSWrapp):
                                                  'key5': [df_list, df_list, df_list]},
                                      'subtype_descriptor': {'dict': {'list': {'list': 'dataframe'}}}},
 
-        'list_dict_list_array': {'type': 'list', 
+        'list_dict_list_array': {'type': 'list',
                                  'default': list_dict_list_array,
                                  'subtype_descriptor': {'list': {'dict': {'list': 'array'}}}},
-        'dict_list_dict_dataframe': {'type': 'dict', 
+        'dict_list_dict_dataframe': {'type': 'dict',
                                      'default': dict_list_dict_df,
                                      'subtype_descriptor': {'dict': {'list': {'dict': 'dataframe'}}}},
 

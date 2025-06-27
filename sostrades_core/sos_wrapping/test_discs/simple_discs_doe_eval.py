@@ -32,9 +32,9 @@ class SimpleDisc1(SoSWrapp):
                }
 
     DESC_OUT = {'z': {'type': 'array', 'namespace': 'ns_OptimSellar'},
-                'sampling_algo': {'type': 'string', 
+                'sampling_algo': {'type': 'string',
                                   'namespace': 'ns_sampling_algo'},
-                'algo_options': {'type': 'dict', 
+                'algo_options': {'type': 'dict',
                                  'namespace': 'ns_sampling_algo'}
                 }
 
@@ -91,7 +91,7 @@ class SimpleDisc2(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {'c_1': {'type': 'array', 'namespace': 'ns_OptimSellar'},
-               'y_1_dict': {'type': 'dict', 'unit': None, 
+               'y_1_dict': {'type': 'dict', 'unit': None,
                             'namespace': 'ns_OptimSellar'}
                }
 

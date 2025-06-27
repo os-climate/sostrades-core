@@ -36,9 +36,9 @@ class SobieskiMission(SoSWrapp):
     DESC_IN = {
         'y_14': {'type': 'array', 'default': array([50606.97417114, 7306.20262124]),
                   'namespace': 'ns_OptimSobieski'},
-        'y_24': {'type': 'array', 'default': array([4.15006276]), 
+        'y_24': {'type': 'array', 'default': array([4.15006276]),
                  'namespace': 'ns_OptimSobieski'},
-        'y_34': {'type': 'array', 'default': array([1.10754577]), 
+        'y_34': {'type': 'array', 'default': array([1.10754577]),
                  'namespace': 'ns_OptimSobieski'},
         'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]),
                'namespace': 'ns_OptimSobieski'},
@@ -83,11 +83,11 @@ class SobieskiStructure(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {
-        'x_1': {'type': 'array', 'default': array([0.25, 1.0]), 
+        'x_1': {'type': 'array', 'default': array([0.25, 1.0]),
                 'namespace': 'ns_OptimSobieski'},
-        'y_21': {'type': 'array', 'default': array([50606.9741711]), 
+        'y_21': {'type': 'array', 'default': array([50606.9741711]),
                  'namespace': 'ns_OptimSobieski'},
-        'y_31': {'type': 'array', 'default': array([6354.32430691]), 
+        'y_31': {'type': 'array', 'default': array([6354.32430691]),
                  'namespace': 'ns_OptimSobieski'},
         'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]),
                'namespace': 'ns_OptimSobieski'},
@@ -144,11 +144,11 @@ class SobieskiAerodynamics(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {
-        'x_2': {'type': 'array', 'default': array([1.0]), 
+        'x_2': {'type': 'array', 'default': array([1.0]),
                 'namespace': 'ns_OptimSobieski'},
-        'y_12': {'type': 'array', 'default': array([50606.9742, 0.95]), 
+        'y_12': {'type': 'array', 'default': array([50606.9742, 0.95]),
                  'namespace': 'ns_OptimSobieski'},
-        'y_32': {'type': 'array', 'default': array([0.50279625]), 
+        'y_32': {'type': 'array', 'default': array([0.50279625]),
                  'namespace': 'ns_OptimSobieski'},
         'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]),
                'namespace': 'ns_OptimSobieski'},
@@ -206,9 +206,9 @@ class SobieskiPropulsion(SoSWrapp):
 
     _maturity = 'Fake'
     DESC_IN = {
-        'x_3': {'type': 'array', 'default': array([0.5]), 
+        'x_3': {'type': 'array', 'default': array([0.5]),
                 'namespace': 'ns_OptimSobieski'},
-        'y_23': {'type': 'array', 'default': array([12562.01206488]), 
+        'y_23': {'type': 'array', 'default': array([12562.01206488]),
                  'namespace': 'ns_OptimSobieski'},
         'z': {'type': 'array', 'default': array([0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0]),
                'namespace': 'ns_OptimSobieski'},

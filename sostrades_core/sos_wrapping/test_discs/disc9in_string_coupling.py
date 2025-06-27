@@ -37,7 +37,7 @@ class Disc9in(SoSWrapp):
 
     DESC_OUT = {
         'string': {'type': 'string',  'namespace': 'ns_test'},
-        'string_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 
+        'string_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'},
                         'namespace': 'ns_test'},
         'string_dict': {'type': 'dict', 'subtype_descriptor': {'dict': 'string'},  'namespace': 'ns_test'},
         'string_dict_of_dict': {'type': 'dict', 'subtype_descriptor': {'dict': {'dict': 'string'}},  'namespace': 'ns_test'},
