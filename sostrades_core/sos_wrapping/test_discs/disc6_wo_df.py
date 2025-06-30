@@ -39,11 +39,11 @@ class Disc6(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'array', 'visibility':  SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'x': {'type': 'array',  'namespace': 'ns_protected'}
     }
 
     DESC_OUT = {
-        'h': {'type': 'array', 'visibility':  SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'h': {'type': 'array',  'namespace': 'ns_protected'}
     }
 
     def run(self):

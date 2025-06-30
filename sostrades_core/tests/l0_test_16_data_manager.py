@@ -204,7 +204,7 @@ class TestDataManagerGenerator(unittest.TestCase):
 
         val_dict = {'default': None, 'type': 'string', 'unit': None,
                     'possible_values': None, 'range': None, 'user_level': 1,
-                    'visibility': 'Private', 'editable': True, IO_TYPE: 'IN',
+                    'editable': True, IO_TYPE: 'IN',
                     'model_origin': 'NPS.CH19_Kero.Disc1', 'value': None}
         for var_id in ['n_processes',
                        'chain_linearize', 'tolerance', 'use_lu_fact',

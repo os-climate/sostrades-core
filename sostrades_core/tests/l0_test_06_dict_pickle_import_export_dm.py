@@ -42,7 +42,7 @@ from sostrades_core.tools.tree.serializer import (
 )
 
 
-def init_dict(dtype, unit=None, value=None, st_name=None, visi=None, ns=None, var_name=None):
+def init_dict(dtype, unit=None, value=None, st_name=None, ns=None, var_name=None):
     """
     Initializes a dictionary with default and customizable values for variable metadata.
 
@@ -51,7 +51,6 @@ def init_dict(dtype, unit=None, value=None, st_name=None, visi=None, ns=None, va
         unit (str, optional): The unit of the variable, if applicable.
         value (any, optional): The initial value of the variable.
         st_name (str, optional): The name of the discipline to which the variable belongs.
-        visi (str, optional): The visibility of the variable.
         ns (str, optional): The namespace of the variable.
         var_name (str, optional): The variable name.
 
@@ -59,7 +58,7 @@ def init_dict(dtype, unit=None, value=None, st_name=None, visi=None, ns=None, va
         dict: A dictionary with keys for various metadata, initialized with the provided values.
 
     This function creates a dictionary for variable metadata, including type, value, and unit, as well as various other
-    properties such as visibility, discipline dependencies, and whether the variable is editable or optional.
+    properties such as discipline dependencies, and whether the variable is editable or optional.
 
     """
     if st_name is not None:
@@ -86,7 +85,6 @@ def init_dict(dtype, unit=None, value=None, st_name=None, visi=None, ns=None, va
     def_dict['type'] = dtype
     def_dict['unit'] = unit
     def_dict['value'] = value
-    def_dict['visibility'] = visi
     def_dict['namespace'] = ns
     def_dict['var_name'] = var_name
     return def_dict

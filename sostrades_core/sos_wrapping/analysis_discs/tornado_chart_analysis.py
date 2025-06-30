@@ -57,7 +57,6 @@ class TornadoChartAnalysis(SoSWrapp):
     GATHER_OUTPUTS = GatherDiscipline.GATHER_OUTPUTS
     GATHER_OUTPUTS_DESC = GatherDiscipline.EVAL_OUTPUTS_DESC.copy()
     GATHER_OUTPUTS_DESC[SoSWrapp.NAMESPACE] = ProxySampleGenerator.NS_SAMPLING
-    GATHER_OUTPUTS_DESC[SoSWrapp.VISIBILITY] = SoSWrapp.SHARED_VISIBILITY
 
     OUTPUT_VARIATIONS_SUFFIX = "_variations"
     INPUT_COL = "input"
@@ -94,7 +93,6 @@ class TornadoChartAnalysis(SoSWrapp):
                     dynamic_inputs[output_name] = {
                         SoSWrapp.TYPE: "dict",
                         SoSWrapp.NAMESPACE: ProxySampleGenerator.NS_SAMPLING,
-                        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
                     }
                     dynamic_outputs[f"{output_name}{self.OUTPUT_VARIATIONS_SUFFIX}"] = {
                         SoSWrapp.TYPE: "dataframe",

@@ -16,7 +16,6 @@ limitations under the License.
 '''
 import time
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
@@ -37,14 +36,14 @@ class Disc8(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'},
+        'x': {'type': 'float',  'namespace': 'ns_protected'},
         'a': {'type': 'float'},
         'b': {'type': 'float', 'default': 2.}
     }
 
     DESC_OUT = {
         'indicator': {'type': 'float'},
-        'y': {'type': 'float', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_protected'}
+        'y': {'type': 'float',  'namespace': 'ns_protected'}
     }
 
     def run(self):

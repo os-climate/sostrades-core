@@ -21,9 +21,6 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 IO_TYPE_IN = ProxyDiscipline.IO_TYPE_IN
 IO_TYPE_OUT = ProxyDiscipline.IO_TYPE_OUT
-SHARED_VISIBILITY = ProxyDiscipline.SHARED_VISIBILITY
-LOCAL_VISIBILITY = ProxyDiscipline.LOCAL_VISIBILITY
-INTERNAL_VISIBILITY = ProxyDiscipline.INTERNAL_VISIBILITY
 NS_SEP = '.'
 
 

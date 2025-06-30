@@ -51,7 +51,6 @@ IO_TYPE_OUT = ProxyDiscipline.IO_TYPE_OUT
 COMPOSED_OF = ProxyDiscipline.COMPOSED_OF
 NS_REFERENCE = ProxyDiscipline.NS_REFERENCE
 POSSIBLE_VALUES = ProxyDiscipline.POSSIBLE_VALUES
-INTERNAL_VISIBILITY = ProxyDiscipline.INTERNAL_VISIBILITY
 DISCIPLINES_DEPENDENCIES = ProxyDiscipline.DISCIPLINES_DEPENDENCIES
 VAR_NAME = ProxyDiscipline.VAR_NAME
 DATAFRAME_DESCRIPTOR = ProxyDiscipline.DATAFRAME_DESCRIPTOR
@@ -332,8 +331,6 @@ class DataManager:
             if key not in keys_to_map:
                 raise ValueError(f'{key} does not exist in data manager')
             k = self.get_data_id(key) if full_ns_keys else key
-            # if self.data_dict[k][ProxyDiscipline.VISIBILITY] == INTERNAL_VISIBILITY:
-            #     raise Exception(f'It is not possible to update the variable {k} which has a visibility Internal')
             self.data_dict[k][VALUE] = value
 
     def fill_data_dict_from_dict(self, values_dict: dict[str:Any],
@@ -948,10 +945,10 @@ class DataManager:
         '''Clean data_in/out of disc_id in data_dict'''
         disc_ref = self.get_discipline(disc_id)
         # clean input keys from dm
-        self.remove_keys(disc_id, list(disc_ref.apply_visibility_ns(
+        self.remove_keys(disc_id, list(disc_ref.get_namespaced_variables(
             ProxyDiscipline.IO_TYPE_IN)), ProxyDiscipline.IO_TYPE_IN)
         # clean output keys from dm
-        self.remove_keys(disc_id, list(disc_ref.apply_visibility_ns(
+        self.remove_keys(disc_id, list(disc_ref.get_namespaced_variables(
             ProxyDiscipline.IO_TYPE_OUT)), ProxyDiscipline.IO_TYPE_OUT)
 
     def export_couplings(self, in_csv=False, f_name=None):

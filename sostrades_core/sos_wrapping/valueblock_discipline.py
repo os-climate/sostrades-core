@@ -58,10 +58,11 @@ class ValueBlockDiscipline(GatherDiscipline):
                 # if input is shared : copy the namespace and rename it (at least two namespaces with same name but different value since it is a gather)
                 # then add it as shared namespace for the gather discipline
                 output_namespace = copy(data_in_dict[self.NS_REFERENCE])
-                if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
-                    data_in_dict[self.VISIBILITY] = self.SHARED_VISIBILITY
-                else:
-                    output_namespace.name = output_namespace.value.split('.', 1)[-1]
+                # if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
+                #     data_in_dict[self.VISIBILITY] = self.SHARED_VISIBILITY
+                # else:
+                # if data_in_dict[self.NAMESPACE] is not None :
+                output_namespace.name = output_namespace.value.split('.', 1)[-1]
 
                 output_namespace_name = output_namespace.name
 
@@ -79,7 +80,6 @@ class ValueBlockDiscipline(GatherDiscipline):
                 # if datafram then we store all the dataframes in one
                 if dynamic_outputs[output_name][self.TYPE] != 'dataframe':
                     dynamic_outputs[output_name][self.TYPE] = 'dict'
-                dynamic_outputs[output_name][self.VISIBILITY] = self.LOCAL_VISIBILITY
                 del dynamic_outputs[output_name][self.NS_REFERENCE]
                 del dynamic_outputs[output_name][self.NAMESPACE]
         return dynamic_inputs, dynamic_outputs

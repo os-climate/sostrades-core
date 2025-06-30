@@ -17,7 +17,6 @@ limitations under the License.
 from numpy import array
 from pandas import DataFrame
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
@@ -39,15 +38,15 @@ class Disc4EmptyDf(SoSWrapp):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'h': {'type': 'dict', 'subtype_descriptor': {'dict': 'dataframe'},  'namespace': 'ns_test'}
     }
 
     DESC_OUT = {
-        'z': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_empty_df': {'type': 'dict', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_empty_list': {'type': 'dict', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'empty_df': {'type': 'dataframe', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'z': {'type': 'array',  'namespace': 'ns_test'},
+        'dict_out': {'type': 'dict',  'namespace': 'ns_test'},
+        'dict_empty_df': {'type': 'dict',  'namespace': 'ns_test'},
+        'dict_empty_list': {'type': 'dict',  'namespace': 'ns_test'},
+        'empty_df': {'type': 'dataframe',  'namespace': 'ns_test'}
     }
 
     def run(self):

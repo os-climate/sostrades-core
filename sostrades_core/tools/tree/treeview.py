@@ -30,7 +30,6 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 IO_TYPE = ProxyDiscipline.IO_TYPE
 TYPE_IN = ProxyDiscipline.IO_TYPE_IN
 TYPE_OUT = ProxyDiscipline.IO_TYPE_OUT
-VISI = ProxyDiscipline.VISIBILITY
 
 
 class TreeView:
@@ -344,10 +343,10 @@ class TreeView:
                     for var, v_d in sorted(node_data.items()):
                         if v_d[IO_TYPE] == io_type:
                             str_nodes += f'\n{tabs}{io_t} '
-                            if 'visi' in str(disp_detail).lower():
-                                visi = f'[{v_d[VISI]}]'
-                                str_nodes += '%-11s' % visi
-                            # :\t{v_d["value"]}'
+                            # if 'visi' in str(disp_detail).lower():
+                            #     visi = f'[{v_d[VISI]}]'
+                            #     str_nodes += '%-11s' % visi
+                            # # :\t{v_d["value"]}'
                             str_nodes += var.split(NS_SEP)[-1]
                     return str_nodes
 
