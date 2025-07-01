@@ -1,5 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
+Modifications on 27/06/25 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,13 +35,13 @@ class Disc3(SoSWrapp):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'z': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_disc3'},
+        'z': {'type': 'float', 'unit': '-',  'namespace': 'ns_disc3'},
         'constant': {'type': 'float', 'unit': '-'},
         'power': {'type': 'int', 'unit': '-'}
     }
 
     DESC_OUT = {
-        'o': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_out_disc3'}
+        'o': {'type': 'float', 'unit': '-',  'namespace': 'ns_out_disc3'}
     }
 
     def run(self):

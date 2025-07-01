@@ -39,7 +39,6 @@ class SellarCstr2(SoSWrapp):
             "type": "array",
             "default": array([1.0]),
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
     }
@@ -49,7 +48,6 @@ class SellarCstr2(SoSWrapp):
         "g2": {
             "type": "array",
             "unit": "-",
-            "visibility": SoSWrapp.SHARED_VISIBILITY,
             "namespace": "ns_sellar",
         },
     }

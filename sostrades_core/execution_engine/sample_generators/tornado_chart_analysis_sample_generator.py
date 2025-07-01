@@ -129,7 +129,6 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
                             proxy.STRUCTURING: False,
                             proxy.EDITABLE: False,
                             proxy.DATAFRAME_DESCRIPTOR: design_scenario_mapping_descriptor,
-                            proxy.VISIBILITY: proxy.SHARED_VISIBILITY,
                             proxy.NAMESPACE: self.NS_ANALYSIS,
                         }
                     }

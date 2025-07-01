@@ -67,7 +67,6 @@ class UncertaintyQuantification(SoSWrapp):
         SoSWrapp.DATAFRAME_DESCRIPTOR: {},
         SoSWrapp.DYNAMIC_DATAFRAME_COLUMNS: True,
         SoSWrapp.UNIT: None,
-        SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
         SoSWrapp.NAMESPACE: "ns_evaluator",
     }
     DESC_IN: ClassVar = {
@@ -83,7 +82,6 @@ class UncertaintyQuantification(SoSWrapp):
                 NB_POINTS: ("int", None, True),
                 "full_name": ("string", None, False),
             },
-            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
             SoSWrapp.NAMESPACE: "ns_sample_generator",
             SoSWrapp.STRUCTURING: True,
         },
@@ -121,7 +119,6 @@ class UncertaintyQuantification(SoSWrapp):
             },
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
-            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
             SoSWrapp.NAMESPACE: "ns_sample_generator",
         },
         GATHER_OUTPUTS: {
@@ -134,7 +131,6 @@ class UncertaintyQuantification(SoSWrapp):
             },
             SoSWrapp.DATAFRAME_EDITION_LOCKED: False,
             SoSWrapp.STRUCTURING: True,
-            SoSWrapp.VISIBILITY: SoSWrapp.SHARED_VISIBILITY,
             SoSWrapp.NAMESPACE: "ns_evaluator",
         },
     }

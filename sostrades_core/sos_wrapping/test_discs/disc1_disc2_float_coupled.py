@@ -37,13 +37,13 @@ class Disc1(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'x': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
-        'a': {'type': 'int', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'x': {'type': 'float', 'unit': '-', 'namespace': 'ns_ac'},
+        'a': {'type': 'int', 'unit': '-', 'namespace': 'ns_ac'},
         'b': {'type': 'float', 'unit': '-'}
     }
     DESC_OUT = {
         'indicator': {'type': 'float', 'unit': '-'},
-        'y': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'unit': '-', 'namespace': 'ns_ac'}
     }
 
     def run(self):
@@ -111,11 +111,11 @@ class Disc2(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {
         'indicator': {'type': 'float', 'unit': '-'},
-        'y': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'y': {'type': 'float', 'unit': '-', 'namespace': 'ns_ac'}
     }
     DESC_OUT = {
-        'x': {'type': 'float', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
-        'a': {'type': 'int', 'unit': '-', 'visibility': SoSWrapp.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'x': {'type': 'float', 'unit': '-', 'namespace': 'ns_ac'},
+        'a': {'type': 'int', 'unit': '-', 'namespace': 'ns_ac'},
         'b': {'type': 'float', 'unit': '-'}
     }
 

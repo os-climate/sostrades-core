@@ -25,6 +25,8 @@ from pathlib import Path
 from time import time
 from typing import TYPE_CHECKING
 
+import pandas as pd
+
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.tools.compare_data_manager_tooling import compare_dict
@@ -773,3 +775,17 @@ class BaseStudyManager:
         loaded_dict = imported_usecase.execution_engine.get_anonimated_data_dict()
 
         return {key: value[ProxyDiscipline.VALUE] for key, value in loaded_dict.items()}
+
+    def get_glossary_file_from_dm(self):
+
+        liste_vars = list(self.ee.dm.data_id_map.keys())
+        short_non_numerical_vars = [var.split('.')[-1] for var in liste_vars if not self.ee.dm.get_data(var, 'numerical')]
+        unique_sorted = sorted(set(short_non_numerical_vars))
+
+        df = pd.DataFrame(unique_sorted, columns=['id'])
+        df['label'] = ''
+        df['unit'] = ''
+        df['description'] = ''
+
+        # Exporter en CSV
+        df.to_csv('empty_glossary.csv', index=False)

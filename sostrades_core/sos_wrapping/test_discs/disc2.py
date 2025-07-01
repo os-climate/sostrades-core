@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 
@@ -36,12 +35,12 @@ class Disc2(SoSWrapp):
     }
     _maturity = 'Fake'
     DESC_IN = {
-        'y': {'type': 'float', 'unit': '-', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'},
+        'y': {'type': 'float', 'unit': '-', 'namespace': 'ns_ac'},
         'constant': {'type': 'float', 'unit': '-'},
         'power': {'type': 'int', 'unit': '-'},
     }
     DESC_OUT = {
-        'z': {'type': 'float', 'unit': '-', 'visibility': ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_ac'}
+        'z': {'type': 'float', 'unit': '-', 'namespace': 'ns_ac'}
     }
 
     def run(self):

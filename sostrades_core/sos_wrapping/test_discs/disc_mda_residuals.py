@@ -33,12 +33,12 @@ class Disc1Residuals(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {
         'w1': {'type': 'float', 'unit': '-', 'default': 0.0},
-        'y2': {'type': 'float', 'unit': '-', 'default': 2.0, 'visibility': 'Shared', 'namespace': 'ns_coupling'},
-        'x': {'type': 'float', 'unit': '-', 'default': 3.0, 'visibility': 'Shared', 'namespace': 'ns_coupling'}
+        'y2': {'type': 'float', 'unit': '-', 'default': 2.0,  'namespace': 'ns_coupling'},
+        'x': {'type': 'float', 'unit': '-', 'default': 3.0,  'namespace': 'ns_coupling'}
     }
     DESC_OUT = {
         'w1': {'type': 'float', 'unit': '-'},
-        'y1': {'type': 'float', 'unit': '-', 'visibility': 'Shared', 'namespace': 'ns_coupling'},
+        'y1': {'type': 'float', 'unit': '-',  'namespace': 'ns_coupling'},
         'r1': {'type': 'float', 'unit': '-'}
     }
 
@@ -88,11 +88,11 @@ class Disc2Residuals(SoSWrapp):
     _maturity = 'Fake'
     DESC_IN = {
         'w2': {'type': 'float', 'unit': '-', 'default': 0.0},
-        'y1': {'type': 'float', 'unit': '-', 'default': 2.0, 'visibility': 'Shared', 'namespace': 'ns_coupling'},
-        'x': {'type': 'float', 'unit': '-', 'default': 3.0, 'visibility': 'Shared', 'namespace': 'ns_coupling'}
+        'y1': {'type': 'float', 'unit': '-', 'default': 2.0,  'namespace': 'ns_coupling'},
+        'x': {'type': 'float', 'unit': '-', 'default': 3.0,  'namespace': 'ns_coupling'}
     }
     DESC_OUT = {
-        'y2': {'type': 'float', 'unit': '-', 'visibility': 'Shared', 'namespace': 'ns_coupling'},
+        'y2': {'type': 'float', 'unit': '-',  'namespace': 'ns_coupling'},
         'w2': {'type': 'float', 'unit': '-'},
         'r2': {'type': 'float', 'unit': '-'}
     }
