@@ -93,7 +93,7 @@ class PostProcessingFactory:
                 current_bundle = found_bundles[0]
 
             try:
-                # Extract filters   
+                # Extract filters
                 filters = self.get_post_processing_filters_by_discipline(
                     discipline)
                 if filters and len(filters) > 0:
