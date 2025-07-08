@@ -1,6 +1,6 @@
 # Project libraries
 # gemseo
-gemseo==6.1.0
+gemseo[all]==6.1.0
 # External libraries
 black==25.1.0
 chaospy==4.3.18
@@ -31,4 +31,3 @@ pytest-cov==6.2.0
 pytest-xdist==3.7.0
 pytest-durations==1.5.2
 ruff==0.11.13
-pyDOE3==1.0.4
