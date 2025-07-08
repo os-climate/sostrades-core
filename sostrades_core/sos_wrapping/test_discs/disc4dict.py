@@ -16,7 +16,6 @@ limitations under the License.
 '''
 from numpy import array
 
-from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 
 
@@ -38,13 +37,13 @@ class Disc4(SoSWrapp):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'h': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
+        'h': {'type': 'array',  'namespace': 'ns_test'},
         'mydict': {'type': 'dict', 'subtype_descriptor': {'dict': 'array'}},
     }
 
     DESC_OUT = {
-        'z': {'type': 'array', 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'},
-        'dict_out': {'type': 'dict', 'subtype_descriptor': {'dict': 'float'}, 'visibility':  ProxyDiscipline.SHARED_VISIBILITY, 'namespace': 'ns_test'}
+        'z': {'type': 'array',  'namespace': 'ns_test'},
+        'dict_out': {'type': 'dict', 'subtype_descriptor': {'dict': 'float'},  'namespace': 'ns_test'}
     }
 
     def run(self):

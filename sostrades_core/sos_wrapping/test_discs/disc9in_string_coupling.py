@@ -36,15 +36,15 @@ class Disc9in(SoSWrapp):
         'x': {'type': 'float'}}
 
     DESC_OUT = {
-        'string': {'type': 'string', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'string_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'}, 'visibility': 'Shared',
+        'string': {'type': 'string',  'namespace': 'ns_test'},
+        'string_list': {'type': 'list', 'subtype_descriptor': {'list': 'string'},
                         'namespace': 'ns_test'},
-        'string_dict': {'type': 'dict', 'subtype_descriptor': {'dict': 'string'}, 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'string_dict_of_dict': {'type': 'dict', 'subtype_descriptor': {'dict': {'dict': 'string'}}, 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'dict_mix_types': {'type': 'dict', 'visibility': 'Shared', 'namespace': 'ns_test'},
-        'dict_dict_dict_list_string': {'type': 'dict', 'subtype_descriptor': {'dict': {'dict': {'dict': {'list': 'string'}}}}, 'visibility': 'Shared', 'namespace': 'ns_test'},
+        'string_dict': {'type': 'dict', 'subtype_descriptor': {'dict': 'string'},  'namespace': 'ns_test'},
+        'string_dict_of_dict': {'type': 'dict', 'subtype_descriptor': {'dict': {'dict': 'string'}},  'namespace': 'ns_test'},
+        'dict_mix_types': {'type': 'dict',  'namespace': 'ns_test'},
+        'dict_dict_dict_list_string': {'type': 'dict', 'subtype_descriptor': {'dict': {'dict': {'dict': {'list': 'string'}}}},  'namespace': 'ns_test'},
         'dict_list': {'type': 'list', 'subtype_descriptor': {'list': {'dict': {'dict': {'list': 'string'}}}},
-                      'visibility': 'Shared', 'namespace': 'ns_test'}
+                       'namespace': 'ns_test'}
     }
 
     def run(self):

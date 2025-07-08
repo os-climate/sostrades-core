@@ -55,7 +55,7 @@ class GatherDiscipline(SoSWrapp):
 
     NEEDED_DATA_KEYS = ['type', 'unit', 'user_level', 'range', 'possible_values',
                         'dataframe_descriptor', 'dataframe_edition_locked',
-                        'default', 'optional', 'numerical', SoSWrapp.VISIBILITY, SoSWrapp.NAMESPACE,
+                        'default', 'optional', 'numerical', SoSWrapp.NAMESPACE,
                         SoSWrapp.NS_REFERENCE]
     GATHER_OUTPUTS = 'gather_outputs'
     GATHER_SUFFIX = '_dict'
@@ -182,13 +182,12 @@ class GatherDiscipline(SoSWrapp):
                         data_in_dict = {key: value for key, value in output_dict.items() if
                                         key in self.NEEDED_DATA_KEYS}
 
-                        # if input is local : then put it to shared visibility and add the local namespace from child to the gather discipline as shared namespace
-                        # if input is shared : copy the namespace and rename it (at least two namespaces with same name but different value since it is a gather)
-                        # then add it as shared namespace for the gather discipline
+
                         output_namespace = copy(data_in_dict[self.NS_REFERENCE])
-                        if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
-                            data_in_dict[self.VISIBILITY] = self.SHARED_VISIBILITY
-                        else:
+                        # if data_in_dict[self.VISIBILITY] == self.LOCAL_VISIBILITY:
+                        #     data_in_dict[self.VISIBILITY] = self.SHARED_VISIBILITY
+                        # else:
+                        if self.NAMESPACE in data_in_dict:
                             output_namespace.name = output_namespace.value.split('.', 1)[-1]
 
                         output_namespace_name = output_namespace.name
@@ -207,7 +206,6 @@ class GatherDiscipline(SoSWrapp):
                         if dynamic_outputs[output_name][self.TYPE] != 'dataframe':
                             dynamic_outputs[output_name][self.TYPE] = 'dict'
 
-                        dynamic_outputs[output_name][self.VISIBILITY] = self.LOCAL_VISIBILITY
                         del dynamic_outputs[output_name][self.NAMESPACE]
                         del dynamic_outputs[output_name][self.NS_REFERENCE]
         return dynamic_inputs, dynamic_outputs

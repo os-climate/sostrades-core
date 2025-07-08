@@ -132,7 +132,7 @@ class SoSMDOScenario(MDOScenario):
                 If empty, do not evaluate functions computing Jacobians.
         '''
         output_functions, _ = self.formulation.optimization_problem.get_functions()
-        jacobian_functions = []
+        jacobian_functions = None
         if self.eval_jac:
             jacobian_functions = output_functions
 
