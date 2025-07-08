@@ -117,8 +117,6 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         # Create a DOE scenario to evaluate the samples
         ds = create_design_space()
-        #ds.transform_vect = self.normalize_vect
-        #ds.unnormalize_vect = self.unnormalize_vect
         for var in input_samples.columns:
             ds.add_variable(var, size=size(input_samples.loc[0, var]))
         doe_scenario = create_scenario(
@@ -139,41 +137,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         doe_scenario.execute(settings)
         return doe_scenario.to_dataset()
 
-    @staticmethod
-    def normalize_vect(
-        x_vect,
-        out=None
-    ) :
-        if out is None:
-            use_out = False
-            out = x_vect.copy()
-        else:
-            use_out = True
-            out[...] = x_vect
-
-        return out
-
-    @staticmethod
-    def unnormalize_vect(
-        x_vect,
-        minus_lb: bool = True,
-        no_check: bool = False,
-        out: None = None
-    ):
-        """
-        """
-
-        if out is None:
-            out = x_vect.copy()
-        else:
-            out *= 0
-            out = x_vect
-
-
-        return out
-
-    def process_output(self, evaluation_outputs: Dataset, scenario_names: list[str],
-                       preserve_types: bool = True) -> None:
+    def process_output(self, evaluation_outputs: Dataset, scenario_names: list[str]) -> None:
         """
         Process and store the sampling outputs.
 
@@ -184,7 +148,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         Args:
             evaluation_outputs: The results of the samples evaluation.
             scenario_names: The scenario names corresponding to each sample.
-            preserve_types: If True, attempt to preserve original output types instead of converting to DataFrame.
+
         """
 
         def get_size(value):
@@ -209,39 +173,14 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 if output_sizes[i] == 1:
                     df = DataFrame({output_names[i]: a.flatten()})
                 else:
-                    # For scalar or array outputs
-                    if output_sizes[i] == 1:
-                        # Scalar values
-                        output_dict[output_name] = output_values.flatten()
-                    else:
-                        # Array values
-                        output_dict[output_name] = [output_values[j] for j in range(n_samples)]
-
-            # Create DataFrame with preserved values
-            samples_output_df = DataFrame(output_dict)
-
-        else:
-            # Original code for standard numerical processing
-            if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
-                samples_output_df = DataFrame(function_values, columns=output_names)
-            else:  # some outputs have more than 1 component
-                df_list = []
-                output_arrays = split(function_values, cumsum(output_sizes[:-1]), axis=1)
-                for i, a in enumerate(output_arrays):
-                    if output_sizes[i] == 1:
-                        df = DataFrame({output_names[i]: a.flatten()})
-                    else:
-                        df = DataFrame({output_names[i]: [a[j] for j in range(n_samples)]})
-                    df_list.append(df)
-                samples_output_df = concat(df_list, axis=1)
-
-        # Add scenario names
+                    df = DataFrame({output_names[i]: [a[j, :] for j in range(n_samples)]})
+                df_list.append(df)
+            samples_output_df = concat(df_list, axis=1)
         scenario_names_df = DataFrame(scenario_names, columns=[SampleGeneratorWrapper.SCENARIO_NAME])
         samples_output_df = concat((samples_output_df, scenario_names_df), axis=1)
-
         self.store_sos_outputs_values({"samples_outputs_df": samples_output_df})
 
-        # Save data of last execution i.e. reference values
+        # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
         subprocess_ref_outputs = {
             key: self.attributes["sub_disciplines"][0].io.data[key]
             for key in self.attributes["sub_disciplines"][0].output_grammar.names
