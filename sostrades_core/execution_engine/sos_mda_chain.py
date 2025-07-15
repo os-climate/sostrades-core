@@ -183,6 +183,11 @@ class SoSMDAChain(MDAChain):
             for mda in self.inner_mdas:
                 mda.mda_sequence[0].settings.tolerance = tolerance_gs
                 mda.mda_sequence[0].settings.max_mda_iter = max_mda_iter_gs
+                mda.mda_sequence[1].settings.tolerance = tolerance
+                mda.mda_sequence[1].settings.max_mda_iter = max_mda_iter
+                for mda_sequence in mda.mda_sequence:
+                    mda_sequence.settings.linear_solver_settings=linear_solver_settings
+                    mda_sequence.settings.linear_solver_tolerance=linear_solver_tolerance
 
         if inner_mda_name in self.NEWTON_ALGO_LIST:
             for mda in self.inner_mdas:

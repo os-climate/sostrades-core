@@ -1,6 +1,6 @@
 # Project libraries
 # gemseo
-gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo@07dac5f70ad7cc3ebd65d4e5e61c835f028aec59
+gemseo[all]==6.1.0
 # External libraries
 black==25.1.0
 chaospy==4.3.18

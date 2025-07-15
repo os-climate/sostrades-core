@@ -92,19 +92,25 @@ class PostProcessingFactory:
             else:
                 current_bundle = found_bundles[0]
 
-            # Extract filters
-            filters = self.get_post_processing_filters_by_discipline(
-                discipline)
-            if filters and len(filters) > 0:
-                current_bundle.filters.extend(filters)
+            try:
+                # Extract filters
+                filters = self.get_post_processing_filters_by_discipline(
+                    discipline)
+                if filters and len(filters) > 0:
+                    current_bundle.filters.extend(filters)
 
-            # If filters only is False then generate associated post processing
-            if not filters_only:
-                post_processings = self.get_post_processing_by_discipline(
-                    discipline, filters, as_json, for_test=for_test)
+                # If filters only is False then generate associated post processing
+                if not filters_only:
+                    post_processings = self.get_post_processing_by_discipline(
+                        discipline, filters, as_json, for_test=for_test)
 
-                if post_processings and len(post_processings) > 0:
-                    current_bundle.post_processings.extend(post_processings)
+                    if post_processings and len(post_processings) > 0:
+                        current_bundle.post_processings.extend(post_processings)
+            except Exception as e:
+                logger.exception(
+                    f'An error occured when trying to load post processing for {discipline_full_name} discipline: {str(e)}')
+                if for_test:
+                    raise e
 
         # Manage filters from post processing manager (namespace filter)
         for namespace_name, post_processings in execution_engine.post_processing_manager.namespace_post_processing.items():
@@ -143,16 +149,22 @@ class PostProcessingFactory:
                     # If filters only is False then generate associated post
                     # processing
                     if not filters_only:
-                        generated_post_processings = post_processing.resolve_post_processings(
-                            execution_engine, associated_namespace.value, filters)
+                        try:
+                            generated_post_processings = post_processing.resolve_post_processings(
+                                execution_engine, associated_namespace.value, filters)
 
-                        if as_json:
-                            generated_post_processings = self.__convert_post_processing_into_json(
-                                generated_post_processings, logger=logger)
+                            if as_json:
+                                generated_post_processings = self.__convert_post_processing_into_json(
+                                    generated_post_processings, logger=logger)
 
-                        if generated_post_processings and len(generated_post_processings) > 0:
-                            current_bundle.post_processings.extend(
-                                generated_post_processings)
+                            if generated_post_processings and len(generated_post_processings) > 0:
+                                current_bundle.post_processings.extend(
+                                    generated_post_processings)
+                        except Exception as e:
+                            logger.exception(
+                                f'An error occured when trying to convert post processing for {associated_namespace.value} namespace: {str(e)}')
+                            if for_test:
+                                raise e
 
         key_to_delete = []
         # Remove disctionary key without any post processing bundle
