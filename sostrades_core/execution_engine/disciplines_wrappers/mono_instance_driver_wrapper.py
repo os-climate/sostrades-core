@@ -151,7 +151,14 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         """
 
-        def get_size(value):
+        def get_size(value, reduced_dm_variable):
+            """Get the size of a value."""
+            # For dataframes, get the computed size from the metadata
+            # Including the excluded columns
+            if reduced_dm_variable.get('type') == 'dataframe':
+                assert len(reduced_dm_variable["type_metadata"]) == 1
+                if '__size__' in reduced_dm_variable["type_metadata"][0]:
+                    return reduced_dm_variable["type_metadata"][0]['__size__']
             if hasattr(value, 'size'):
                 return value.size
             elif isinstance(value, dict):
@@ -159,11 +166,13 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             elif hasattr(value, '__len__'):
                 return len(value)
 
+        reduced_dm = self.attributes["sub_disciplines"][0].output_grammar.data_converter.reduced_dm
+
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
         output_array = next(iter(samples_dict["functions"].values()))
-        output_sizes = [get_size(self.attributes["sub_disciplines"][0].local_data[output]) for output in output_names]
+        output_sizes = [get_size(self.attributes["sub_disciplines"][0].local_data[output], reduced_dm[output]) for output in output_names]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
             samples_output_df = DataFrame(output_array, columns=output_names)
         else:  # some outputs have more than 1 component
