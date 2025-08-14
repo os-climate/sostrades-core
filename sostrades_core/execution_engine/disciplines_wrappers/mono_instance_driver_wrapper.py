@@ -251,8 +251,11 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                     # Get DataFrame structure
                     all_columns = list(ref_output.columns)
                     numeric_cols = list(ref_output.select_dtypes(include=['number']).columns)
-                    non_numeric_cols = [col for col in all_columns if col not in numeric_cols]
 
+                    non_numeric_cols = [col for col in all_columns if col not in numeric_cols]
+                    has_object = any(ref_output.dtypes == 'object')
+                    if not numeric_cols:
+                        raise Exception(f"The datraframe {output_name} has no numerical columns. Please switch to int, float, or string")
                     # For each sample, create a copy of the reference DataFrame
                     # and update only the numeric values
                     for j in range(n_samples):
