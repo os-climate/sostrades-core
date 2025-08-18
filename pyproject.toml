@@ -57,5 +57,3 @@ explicit = true
 [tool.uv]
 extra-index-url = ["https://test.pypi.org/simple/"]
 index-strategy = "unsafe-best-match"
-
-# pypi-AgENdGVzdC5weXBpLm9yZwIkNjhlNTU0YTUtYTAwNy00MGVhLTk3YzAtZGYxYjNkN2YzYjdiAAIqWzMsImI1ODdkMmRhLTQyNTEtNDc1NC1hMmQwLTUxOGRhNzAzNzVlNyJdAAAGIC1FtKZfjOp_sgAtv0uKWWupzgEu5vmcDsrR5bHr_CzX
