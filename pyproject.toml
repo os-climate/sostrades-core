@@ -1,0 +1,61 @@
+[project]
+name = "sostrades-core"
+version = "0.1.2"
+description = "Add your description here"
+readme = "README.md"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Airbus, Capgemini", email = "" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "black==25.1.0",
+    "chaospy==4.3.18",
+    "cma==4.2.0",
+    "cvxpy==1.6.6",
+    "db-dtypes==1.2.0",
+    "future==1.0.0",
+    "gemseo[all]==6.1.0",
+    "gitpython==3.1.44",
+    "matplotlib==3.9.2",
+    "numpoly==1.2.14",
+    "numpy==1.26.4",
+    "openturns==1.24",
+    "pandas==2.2.2",
+    "plotly==5.24.0",
+    "pyarrow==20.0.0",
+    "pycryptodome==3.23.0",
+    "pytest==8.1.2",
+    "pytest-cov==6.2.0",
+    "pytest-durations==1.5.2",
+    "pytest-xdist==3.7.0",
+    "pyyaml==6.0.2",
+    "ruff==0.11.13",
+    "scipy==1.13.0",
+    "six==1.17.0",
+    "sympy==1.13.2",
+    "tqdm==4.66.5",
+]
+
+[build-system]
+requires = ["uv-build>=0.8.0,<0.9"]
+build-backend = "uv_build"
+
+[project.urls]
+Homepage = "https://github.com/os-climate/sostrades-core"
+
+[tool.uv.build-backend]
+module-name = "sostrades_core"
+module-root = ""
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
+
+[tool.uv]
+extra-index-url = ["https://test.pypi.org/simple/"]
+index-strategy = "unsafe-best-match"
+
+# pypi-AgENdGVzdC5weXBpLm9yZwIkNjhlNTU0YTUtYTAwNy00MGVhLTk3YzAtZGYxYjNkN2YzYjdiAAIqWzMsImI1ODdkMmRhLTQyNTEtNDc1NC1hMmQwLTUxOGRhNzAzNzVlNyJdAAAGIC1FtKZfjOp_sgAtv0uKWWupzgEu5vmcDsrR5bHr_CzX
