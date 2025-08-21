@@ -77,4 +77,3 @@ if "__main__" == __name__:
 
             for chart in graph_list:
                 chart.to_plotly().show()
-
