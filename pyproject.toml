@@ -14,7 +14,6 @@ dependencies = [
     "cma==4.2.0",
     "cvxpy==1.6.6",
     "db-dtypes==1.2.0",
-    "future==1.0.0",
     "gemseo[all]==6.1.0",
     "gitpython==3.1.44",
     "matplotlib==3.9.2",
