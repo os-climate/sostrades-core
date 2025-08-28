@@ -31,7 +31,7 @@ class ScatterMapsManager:
     SCATTER_COLUMN_NAME = 'scatter_column_name'
     SCATTER_VAR_NAME = 'scatter_var_name'
 
-    def __init__(self, name, ee):
+    def __init__(self, name, ee) -> None:
         '''CLass to manage scatter maps'''
         self.name = name
         self.ee = ee

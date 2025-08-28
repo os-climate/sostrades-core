@@ -31,7 +31,7 @@ from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 class DatasetConnectorNotFoundException(DatasetGenericException):
     """Exception when a dataset connector is not found"""
 
-    def __init__(self, connector_name: str):
+    def __init__(self, connector_name: str) -> None:
         self.connector_name = connector_name
         super().__init__(f"Dataset connector '{connector_name}' not found")
 

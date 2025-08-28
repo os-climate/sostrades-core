@@ -32,7 +32,7 @@ load/dump - read/write feature to manage load and dump of exported study data
 
 
 class LoadDumpException(Exception):
-    def __init__(self, encryption_mode, action):
+    def __init__(self, encryption_mode, action) -> None:
         super().__init__(
             f'Error when {action} with mode {encryption_mode}. ABORTED')
 
@@ -72,7 +72,7 @@ class CryptedLoadDump(AbstractLoadDump):
 
     key_enc_basename = 'key.bin.enc'
 
-    def __init__(self, private_key_file, public_key_file):
+    def __init__(self, private_key_file, public_key_file) -> None:
         self.private_key_file = private_key_file
         self.public_key_file = public_key_file
 

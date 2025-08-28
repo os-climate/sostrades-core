@@ -52,7 +52,7 @@ class ScatterTool(SosTool):
     #             'group_scenarios_under_disciplines' : Invert the order of scenario and disciplines for display purpose
     #                                                   Scenarios will be under discipline for the display treeview
 
-    def __init__(self, sos_name, ee, cls_builder, map_name=None):
+    def __init__(self, sos_name, ee, cls_builder, map_name=None) -> None:
         '''Constructor'''
         SosTool.__init__(self, sos_name, ee, cls_builder)
 

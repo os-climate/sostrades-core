@@ -120,7 +120,7 @@ def my_transformation(tokens, local_dict, global_dict):
 class SympyFormula():
     """Class for mathematical interpretation of functions and their differential forms based on Sympy"""
 
-    def __init__(self, fexpr, fgrad=True):
+    def __init__(self, fexpr, fgrad=True) -> None:
         """
         Formula constructor
         @param fexpr : formula expression
@@ -188,7 +188,7 @@ class SympyFormula():
         return sympy_expr.atoms(Symbol)
 
     # Private methods
-    def __repr__(self):
+    def __repr__(self) -> str:
         tokenlist = self.get_symbols(self.__fexpr_sympy)
 
         info_string = '\n--o0 Formula Information 0o--'

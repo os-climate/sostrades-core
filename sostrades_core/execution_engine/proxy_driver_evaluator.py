@@ -163,7 +163,7 @@ class ProxyDriverEvaluator(ProxyDisciplineBuilder):
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
                  map_name=None,
-                 ):
+                 ) -> None:
         """
         Constructor
 

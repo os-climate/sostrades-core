@@ -67,7 +67,7 @@ class SeriesTemplate:
 
     def __init__(self, abscissa=[], ordinate=[], series_name='', display_type='lines', visible=True,
                  y_axis=Y_AXIS_PRIMARY, custom_data=[''], marker_symbol='circle', marker=None, line=None,
-                 text=None):
+                 text=None) -> None:
         """
         Create a new series to add in a chart
 
@@ -186,7 +186,7 @@ class SeriesTemplate:
 
         return filtered_series
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Overload of the class representation
 
@@ -209,7 +209,7 @@ class SeriesTemplate:
 
         return '\n'.join(series_string)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Method that serialize as dict the SeriesTemplate class
 
@@ -321,7 +321,7 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
     def __init__(self, abscissa_axis_name='', primary_ordinate_axis_name='', abscissa_axis_range=[],
                  primary_ordinate_axis_range=[], chart_name='', stacked_bar=False, bar_orientation='v',
                  cumulative_surface=False, secondary_ordinate_axis_name='', secondary_ordinate_axis_range=[],
-                 y_axis_log: bool = False, y_min_zero: bool = False, show_legend: bool = None):
+                 y_axis_log: bool = False, y_min_zero: bool = False, show_legend: bool = None) -> None:
         """
          Create a new chart definition
 
@@ -406,7 +406,7 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
             raise SeriesTemplateException(
                 f'given series has the wrong type, {type(series)} instead of SeriesTemplate')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Overload of the class representation
 
@@ -444,7 +444,7 @@ class TwoAxesChartTemplate(AbstractPostProcessingPlotlyTooling):
 
         return '\n'.join(chart_string)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Method that serialize as dict the SeriesTemplate class
 

@@ -79,14 +79,14 @@ class HeaderError:
         error_details,
         expected_header,
         current_header="None",
-    ):
+    ) -> None:
         self.concerned_file = concerned_file
         self.type_of_change = type_of_change
         self.expected_header = expected_header
         self.current_header = current_header
         self.error_details = error_details
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"-------------------\n\
 Header Error on {self.type_of_change} file : {self.concerned_file}\n\
 Details : {self.error_details}\n\
@@ -96,7 +96,7 @@ but header is\n{self.current_header}\n\
 
 
 class HeaderTools:
-    def __init__(self):
+    def __init__(self) -> None:
         self.verbose = VERBOSE
 
     def set_verbose_mode(self, val):

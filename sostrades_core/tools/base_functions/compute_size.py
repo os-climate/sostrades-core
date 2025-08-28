@@ -13,19 +13,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from __future__ import annotations
+
 import sys
+from typing import Any
 
 
-def compute_data_size_in_Mo(data_value) -> float:
-        '''
-        Compute the size of an object and convert it in Mo
-        :param data_value: value of the data to be checked
-        :type data_value: depends of the type of the variable
-        :return: the size in Mo (float)
-        '''
-        data_size = 0
-        if data_value is not None:
+def compute_data_size_in_Mo(data_value: Any) -> float:
+    """
+    Compute the size of an object and convert it to megabytes.
 
-            # test deep size of the object
-            data_size = sys.getsizeof(data_value)
-        return data_size / 1024 / 1024
+    Args:
+        data_value: Value of the data to be measured.
+
+    Returns:
+        Size in megabytes (MB).
+
+    Note:
+        Returns 0 if data_value is None.
+
+    """
+    data_size = 0
+    if data_value is not None:
+        # test deep size of the object
+        data_size = sys.getsizeof(data_value)
+    return data_size / 1024 / 1024

@@ -15,19 +15,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from __future__ import annotations
+
+from typing import Any, Sequence
+
 from numpy import complex128, float32, float64, int32, int64, ndarray, number
 from pandas.core.frame import DataFrame
 
-'''
-Exp_min function minimize an array with a min_value with a smooth decreasing exponential
-The gradient of this function can also be used
-'''
+"""Compute length utilities for various Python object types."""
 
 DEFAULT_EXCLUDED_COLUMNS = ['year', 'years']
 
 
-def compute_len(obj, excluded_columns=DEFAULT_EXCLUDED_COLUMNS):
-    '''Return len of any python object type'''
+def compute_len(obj: Any, excluded_columns: Sequence[str] = DEFAULT_EXCLUDED_COLUMNS) -> int:
+    """
+    Return length of any python object type.
+
+    Args:
+        obj: Object to compute length for.
+        excluded_columns: Column names to exclude from DataFrame length calculation.
+
+    Returns:
+        Computed length based on object type:
+        - None: 0
+        - Scalar types: 1
+        - Arrays: total size
+        - DataFrames: rows * numeric columns (excluding excluded_columns)
+        - Containers: recursive sum of contained elements
+
+    """
     if obj is None:
         return 0
     elif isinstance(obj, (int, float, bool, int32, int64, float32, float64, complex128, str)):

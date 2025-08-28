@@ -30,7 +30,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 class ScenarioGenerator:
     """Class to instantiate all classes of the chosen scenario (Products, Actors...) depending on the entry"""
 
-    def __init__(self, name=None, name_manager=None):
+    def __init__(self, name=None, name_manager=None) -> None:
         """Constructor"""
         self.name = name
         self.name_manager = name_manager

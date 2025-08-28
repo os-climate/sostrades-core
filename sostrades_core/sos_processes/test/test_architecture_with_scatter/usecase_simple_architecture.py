@@ -14,17 +14,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pandas as pd
 
 from sostrades_core.study_manager.study_manager import StudyManager
 
+if TYPE_CHECKING:
+    from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+
 
 class Study(StudyManager):
 
-    def __init__(self, execution_engine=None):
+    def __init__(self, execution_engine: ExecutionEngine | None = None) -> None:
         super().__init__(__file__, execution_engine=execution_engine)
 
-    def setup_usecase(self):
+    def setup_usecase(self) -> list[dict]:
         setup_data_list = []
 
         activation_df = pd.DataFrame(

@@ -50,7 +50,7 @@ class DisciplineWrapp:
 
     """
 
-    def __init__(self, name: str, logger: logging.Logger, wrapper=None, wrapping_mode: str = 'SoSTrades'):
+    def __init__(self, name: str, logger: logging.Logger, wrapper=None, wrapping_mode: str = 'SoSTrades') -> None:
         """
         Constructor.
 

@@ -36,7 +36,7 @@ class InstantiatedIndicatorChart(AbstractPostProcessingPlotlyTooling):
     CHART_NAME = 'chart_name'
     VALUE = 'value'
 
-    def __init__(self, chart_name='', value=[], mode='', title={}, gauge={}):
+    def __init__(self, chart_name='', value=[], mode='', title={}, gauge={}) -> None:
         """
         Create a new table
 

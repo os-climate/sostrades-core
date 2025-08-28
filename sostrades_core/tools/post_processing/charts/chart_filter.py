@@ -26,7 +26,7 @@ class ChartFilter:
     FILTER_KEY = 'filter_key'
     MULTIPLE_SELECTION = 'multiple_selection'
 
-    def __init__(self, name='', filter_values: list = [], selected_values: list = [], filter_key=None, multiple_selection=True):
+    def __init__(self, name='', filter_values: list = [], selected_values: list = [], filter_key=None, multiple_selection=True) -> None:
         """
         Create a filter use to filter post processing building
 
@@ -59,7 +59,7 @@ class ChartFilter:
         self.filter_key = filter_key or ''
         self.multiple_selection = multiple_selection
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Overload of the class representation
 
@@ -74,7 +74,7 @@ class ChartFilter:
 
         return '\n'.join(series_string)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Method that serialize as dict the SeriesTemplate class
 

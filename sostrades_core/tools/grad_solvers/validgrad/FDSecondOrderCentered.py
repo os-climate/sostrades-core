@@ -26,7 +26,7 @@ from .FDScheme import FDScheme
 class FDSecondOrderCentered(FDScheme):
     """Abstract class for the second order centered scheme"""
 
-    def __init__(self, fd_step, bounds=None):
+    def __init__(self, fd_step, bounds=None) -> None:
         """Constructor"""
         FDScheme.__init__(self, fd_step, bounds=bounds)
         self.set_order(2)
