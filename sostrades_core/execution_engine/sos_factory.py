@@ -58,7 +58,7 @@ class SosFactory:
         """
         return f'{repository}.{process_identifier}.{BUILDERS_MODULE_NAME}'
 
-    def __init__(self, execution_engine, sos_name):
+    def __init__(self, execution_engine, sos_name) -> None:
         """
         Constructor
 

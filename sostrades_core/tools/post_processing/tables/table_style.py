@@ -31,7 +31,7 @@ class TableStyles:
     BACKGROUND_COLOR = 'background_color'
     FONT_COLOR = 'font_color'
 
-    def __init__(self, background_color='white', font_color='black'):
+    def __init__(self, background_color='white', font_color='black') -> None:
         """
         Create a new table style
 
@@ -42,14 +42,14 @@ class TableStyles:
         self.background_color = background_color
         self.font_color = font_color
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Overload of the class representation"""
         table_string = f'\nbackground_color: {self.background_color} \n'
         table_string += f'font_color: {self.font_color}'
 
         return table_string
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
 
         dict_obj = {}
         # Serialize table background color attribute

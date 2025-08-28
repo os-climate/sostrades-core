@@ -26,7 +26,7 @@ class DesignVariable(BaseController):
     ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
 
     # --Constructor
-    def __init__(self, PBCManager, Id, value, bounds, complex_mode=False):
+    def __init__(self, PBCManager, Id, value, bounds, complex_mode=False) -> None:
 
         self.__bounds = None
         self.set_bounds(bounds)
@@ -37,7 +37,7 @@ class DesignVariable(BaseController):
         self.__norm_value()
 
     # --Private methods
-    def __repr__(self):
+    def __repr__(self) -> str:
         info_string = BaseController.__repr__(self)
         info_string += "\n   Value           :%24.16e" % self.get_value()
         info_string += "\n   Bounds          :%24s" % str(self.get_bounds())

@@ -31,7 +31,7 @@ class LocalFileSystemDatasetsConnectorBase(AbstractDatasetsConnector, abc.ABC):
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
 
     def __init__(self, connector_id: str, root_directory_path: str,
-                 create_if_not_exists: bool):
+                 create_if_not_exists: bool) -> None:
         """
         Constructor for Local Filesystem data connector
 
@@ -54,7 +54,7 @@ class LocalFileSystemDatasetsConnectorBase(AbstractDatasetsConnector, abc.ABC):
 
         self.connector_id = connector_id
 
-    def clear_connector(self):
+    def clear_connector(self) -> None:
         """Removes the entire root directory of the FileSystem connector and all datasets in it."""
         rmtree_safe(self._root_directory_path)
 

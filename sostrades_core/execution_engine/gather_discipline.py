@@ -72,7 +72,7 @@ class GatherDiscipline(SoSWrapp):
 
     DESC_IN = {GATHER_OUTPUTS: EVAL_OUTPUTS_DESC}
 
-    def __init__(self, sos_name, logger: logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger) -> None:
         """
         Constructor
 

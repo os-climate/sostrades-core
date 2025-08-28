@@ -20,7 +20,7 @@ import numpy as np
 
 class BFGSFDHessian():
 
-    def __init__(self, scheme, df_pointer):
+    def __init__(self, scheme, df_pointer) -> None:
         self.__scheme = scheme
         self.__dfpointer = df_pointer
 

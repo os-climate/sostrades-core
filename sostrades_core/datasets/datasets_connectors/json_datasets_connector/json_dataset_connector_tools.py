@@ -23,7 +23,7 @@ from sostrades_core.tools.folder_operations import makedirs_safe
 
 class JSONDatasetsConnectorTools():
 
-    def __init__(self, file_path: str, create_if_not_exists: bool):
+    def __init__(self, file_path: str, create_if_not_exists: bool) -> None:
         """
         Initialize the JSONDatasetsConnectorTools.
 

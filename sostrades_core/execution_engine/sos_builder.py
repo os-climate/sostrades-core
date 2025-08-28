@@ -42,7 +42,7 @@ class SoSBuilder:
         'ProxySampleGenerator',
     ]
 
-    def __init__(self, disc_name, ee, cls, is_executable=True):
+    def __init__(self, disc_name, ee, cls, is_executable=True) -> None:
         '''
         Constructor
         :param cls: class that will be instantiated by the builder

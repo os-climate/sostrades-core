@@ -26,7 +26,7 @@ class BCManager(CManager):
 
     ERROR_MSG = 'ERROR BCManager.'
 
-    def __init__(self, FatherObj=None, gradient_active=True, complex_mode=False):
+    def __init__(self, FatherObj=None, gradient_active=True, complex_mode=False) -> None:
         CManager.__init__(self, FatherObj, gradient_active=gradient_active)
         # Design variables handling
         self.__DV_id = []

@@ -48,7 +48,7 @@ class SoSMDOScenario(MDOScenario):
                  name,
                  maximize_objective,
                  logger: logging.Logger,
-                 reduced_dm=None):
+                 reduced_dm=None) -> None:
         """Constructor"""
         super().__init__(disciplines,
                          objective_name,

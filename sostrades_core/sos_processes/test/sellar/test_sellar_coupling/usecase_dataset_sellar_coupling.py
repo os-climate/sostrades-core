@@ -23,7 +23,7 @@ from sostrades_core.study_manager.study_manager import StudyManager
 
 class Study(StudyManager):
 
-    def __init__(self, execution_engine=None):
+    def __init__(self, execution_engine=None) -> None:
         super().__init__(__file__, execution_engine=execution_engine)
 
     def setup_usecase(self):

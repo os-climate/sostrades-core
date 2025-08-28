@@ -263,7 +263,7 @@ class ProxyDiscipline:
     Used by GEMSEO to create the coupling structure.
     """
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None) -> None:
         """
         Constructor
 

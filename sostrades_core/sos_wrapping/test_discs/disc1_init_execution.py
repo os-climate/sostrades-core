@@ -48,7 +48,7 @@ class Disc1InitExec(SoSWrapp):
         'y': {'type': 'float', 'unit': '-',  'namespace': 'ns_ac'}
     }
 
-    def __init__(self, sos_name, logger: logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger) -> None:
         super().__init__(sos_name=sos_name, logger=logger)
         ''' Constructor '''
         self.aplusb = None

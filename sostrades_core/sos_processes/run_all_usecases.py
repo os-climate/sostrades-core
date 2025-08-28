@@ -34,11 +34,11 @@ class UseCaseFailedException(Exception):
 
     error_list = []
 
-    def __init__(self, error_list):
+    def __init__(self, error_list) -> None:
         self.error_list = error_list
         super().__init__(self.error_list)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '\n' + '\n'.join(self.error_list)
 
 

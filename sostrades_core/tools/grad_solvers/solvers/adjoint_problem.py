@@ -26,7 +26,7 @@ class AdjointProblem(object):
     ERROR_MSG = 'ERROR in AdjointProblem.'
     WARNING_MSG = 'WARNING in AdjointProblem.'
 
-    def __init__(self, R, dpRdpW, dpRdpchi, dpFdpW, dpFdpchi):
+    def __init__(self, R, dpRdpW, dpRdpchi, dpFdpW, dpFdpchi) -> None:
         """Adjoint problem generic solver"""
         self.__R = R        # Residual of the problem for the resolved state
         self.__dpRdpW = dpRdpW   # Jacobian of the problem for the resolved state

@@ -39,7 +39,7 @@ class PostProcessingManager:
     FILTER_FUNCTION_NAME = 'post_processing_filters'
     POST_PROCESSING_FUNCTION_NAME = 'post_processings'
 
-    def __init__(self, execution_engine: ExecutionEngine):
+    def __init__(self, execution_engine: ExecutionEngine) -> None:
         """
         Constructor
 
@@ -234,7 +234,7 @@ class PostProcessing:
     - a post processing generator function
     """
 
-    def __init__(self, filter_func: callable, post_processing_func: callable, logger: logging.Logger):
+    def __init__(self, filter_func: callable, post_processing_func: callable, logger: logging.Logger) -> None:
         """
         Constructor
 

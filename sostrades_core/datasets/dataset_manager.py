@@ -37,7 +37,7 @@ class DatasetsManager:
     VALUE = ProxyDiscipline.VALUE
     DATASET_INFO = 'dataset_info'
 
-    def __init__(self, logger: logging.Logger):
+    def __init__(self, logger: logging.Logger) -> None:
         """
         Initializes the DatasetsManager.
 

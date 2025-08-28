@@ -91,7 +91,7 @@ class FileSystemDatasetsSerializer(JSONDatasetsSerializer):
     TYPE_OBJECT = 'object'
     TYPE_OBJECT_IDENTIFIER = TYPE_IN_FILESYSTEM_PARTICLE.join(("", TYPE_OBJECT, ""))
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.__logger = logging.getLogger(__name__)
         self.__current_dataset_directory = None

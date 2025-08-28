@@ -35,7 +35,7 @@ class ParallelCoordinatesTrace:
     TRACE_TEXT = 'text'
     TRACE_NUMBER = 'number'
 
-    def __init__(self, trace_name='', trace_values=[], trace_type=TRACE_NUMBER):
+    def __init__(self, trace_name='', trace_values=[], trace_type=TRACE_NUMBER) -> None:
         """
         Init of the class
 
@@ -65,7 +65,7 @@ class ParallelCoordinatesTrace:
 class InstantiatedParallelCoordinatesChart(AbstractPostProcessingPlotlyTooling):
     """Class that define parallel coordinates display as post post processing"""
 
-    def __init__(self, chart_name=''):
+    def __init__(self, chart_name='') -> None:
         """
         Init of the class
 

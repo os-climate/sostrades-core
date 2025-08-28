@@ -28,7 +28,7 @@ class TimeLogger(object):
     and gives access to these variables through the method "get_output"
     '''
 
-    def __init__(self, tag, main_var='time', main_unit='(s)', out_save_dir='Outputs'):
+    def __init__(self, tag, main_var='time', main_unit='(s)', out_save_dir='Outputs') -> None:
         '''Constructor'''
         self.base_save_dir = out_save_dir
         self.__tag = tag

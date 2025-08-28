@@ -33,7 +33,7 @@ class LocalRepositoryDatasetsConnector(LocalFileSystemDatasetsConnectorMV):
     DATASETS_FOLDER_NAME_V1 = 'datasets_V1'
     MAPPINGS_FOLDER_NAME = 'mappings'
 
-    def __init__(self, connector_id: str, module_name: str):
+    def __init__(self, connector_id: str, module_name: str) -> None:
         """
         Constructor for Local Repository Datasets Connector.
 
