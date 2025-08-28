@@ -23,7 +23,7 @@ from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 class UnitTestHandler(Handler):
     """Logging handler for UnitTest"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         Handler.__init__(self)
         self.msg_list = []
 

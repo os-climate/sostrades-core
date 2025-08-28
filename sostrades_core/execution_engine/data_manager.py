@@ -91,7 +91,7 @@ class DataManager:
                  root_dir=None,
                  rw_object=None,
                  study_filename=None,
-                 ns_manager=None):
+                 ns_manager=None) -> None:
         '''Constructor'''
         self.no_change = True
         self.name = name

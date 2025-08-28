@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 class CommonCharts(InstantiatedPlotlyNativeChart):
     """Class to host standard post post processing charts templates"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(go.Figure())
         self.default_chart = InstantiatedPlotlyNativeChart(go.Figure())
         self.default_legend = self.default_chart.get_default_legend_layout()

@@ -35,7 +35,7 @@ from sostrades_core.datasets.datasets_serializers.json_datasets_serializer impor
 class JSONDatasetsConnectorV0(AbstractDatasetsConnector):
     """Specific dataset connector for dataset in json format"""
 
-    def __init__(self, connector_id: str, file_path: str, create_if_not_exists: bool = False):
+    def __init__(self, connector_id: str, file_path: str, create_if_not_exists: bool = False) -> None:
         """
         Constructor for JSON data connector
 

@@ -58,7 +58,7 @@ class ExecutionEngine:
                  root_dir=None,
                  study_filename=None,
                  yield_method=None,
-                 logger: Optional[logging.Logger] = None):
+                 logger: Optional[logging.Logger] = None) -> None:
 
         self.study_name = study_name
         self.study_filename = study_filename or study_name

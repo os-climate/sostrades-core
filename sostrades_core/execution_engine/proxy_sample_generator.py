@@ -155,7 +155,7 @@ class ProxySampleGenerator(ProxyDiscipline):
                EVAL_INPUTS: EVAL_INPUTS_DESC.copy()
                }
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None) -> None:
         super().__init__(sos_name=sos_name,
                          ee=ee,
                          cls_builder=cls_builder,

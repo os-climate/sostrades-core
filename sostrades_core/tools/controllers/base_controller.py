@@ -28,7 +28,7 @@ class BaseController(Controller):
     USE_GRADIENT_ARRAYS = True
 
     # --Constructor
-    def __init__(self, BCManager, Id, value=0.0, BCType='Generic', complex_mode=False):
+    def __init__(self, BCManager, Id, value=0.0, BCType='Generic', complex_mode=False) -> None:
         self.complex_mode = complex_mode
         self.__BCType = BCType
         self.__value = None  # Initilizing attributes before updating the gradient in PController.handle_dv_changes
@@ -38,7 +38,7 @@ class BaseController(Controller):
         self.set_value(value)
 
     # --Private methods
-    def __repr__(self):
+    def __repr__(self) -> str:
         info_string = Controller.__repr__(self)
         info_string += '\n   BC Type         : ' + self.get_BCType()
         return info_string

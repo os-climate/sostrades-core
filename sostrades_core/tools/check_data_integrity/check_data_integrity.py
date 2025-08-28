@@ -40,7 +40,7 @@ def add_integrity_msg(integrity_msg_dict, key, error_msg):
 class CheckDataIntegrity():
     '''CheckDataIntegrity class is here to check the data integrity of a variable regarding its type or variable descriptor associated'''
 
-    def __init__(self, sos_disc_class, dm):
+    def __init__(self, sos_disc_class, dm) -> None:
         '''Constructor'''
         self.dm = dm
         self.new_check = False

@@ -35,7 +35,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
     POST_PROCESSING_SECTION_IS_OPENED = 'post_processing_section_is_opened'
     POST_PROCESSING_IS_KEY_CHART = 'post_processing_is_key_chart'
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize members variables"""
         # Initialize annotation properties
         self.annotation_upper_left = {}
@@ -111,7 +111,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
         if logo_work_in_progress:
             self.logo_work_in_progress = logo_work_in_progress
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Overload of the class representation
 
@@ -123,7 +123,7 @@ class AbstractPostProcessingPlotlyTooling(ABC):
 
         return '\n'.join(chart_string)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Convert current instance to disctonary object"""
         dict_obj = {}
 

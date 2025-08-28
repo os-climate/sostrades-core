@@ -24,7 +24,7 @@ from .FDGradient import FDGradient
 class FDValidGrad(object):
     """Finite differences gradient calculation and validation."""
 
-    def __init__(self, scheme_order, f_pointer, df_pointer, fd_step=1e-6, bounds=None):
+    def __init__(self, scheme_order, f_pointer, df_pointer, fd_step=1e-6, bounds=None) -> None:
         """
         Constructor
         Args:

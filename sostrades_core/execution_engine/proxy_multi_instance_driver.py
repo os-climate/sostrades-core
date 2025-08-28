@@ -76,7 +76,7 @@ class ProxyMultiInstanceDriver(ProxyDriverEvaluator):
                  associated_namespaces=None,
                  map_name=None,
                  process_display_options=None
-                 ):
+                 ) -> None:
         """
         Constructor
 

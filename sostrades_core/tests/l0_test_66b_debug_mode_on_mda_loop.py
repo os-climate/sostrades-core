@@ -28,7 +28,7 @@ from sostrades_core.tools.folder_operations import rmtree_safe
 class UnitTestHandler(Handler):
     """Logging handler for UnitTest"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         Handler.__init__(self)
         self.msg_list = []
 

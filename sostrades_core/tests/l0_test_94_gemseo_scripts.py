@@ -27,7 +27,7 @@ from sostrades_core.sos_processes.test.test_script_gemseo_mda.usecase import Stu
 class UnitTestHandler(Handler):
     """Logging handler for UnitTest"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         Handler.__init__(self)
         self.msg_list = []
 

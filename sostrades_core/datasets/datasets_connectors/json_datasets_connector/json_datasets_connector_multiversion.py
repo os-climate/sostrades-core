@@ -42,7 +42,7 @@ class JSONDatasetsConnectorMV(AbstractMultiVersionDatasetsConnector):
 
     def __init__(self,
                  connector_id: str,
-                 mono_version_connector_instantiation_fields: dict[str:dict[str:Any]]):
+                 mono_version_connector_instantiation_fields: dict[str:dict[str:Any]]) -> None:
         """
         Multi-version constructor with the instantiation arguments of connectors of type JSON. Note that the different
         mono-version sub-connectors should use different databases (JSON files).

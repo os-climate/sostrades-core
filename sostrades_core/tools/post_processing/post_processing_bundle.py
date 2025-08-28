@@ -15,32 +15,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Post processing bundle model
-"""
+from __future__ import annotations
+
+from typing import Any
+
+"""Post processing bundle model."""
 
 
 class PostProcessingBundle:
-    """Class that hold filter and post processing bundle"""
+    """Class that holds filter and post processing bundle data."""
 
     NAME = 'name'
     DISCIPLINE_NAME = 'discipline_name'
     FILTERS = 'filters'
     POST_PROCESSINGS = 'post_processings'
 
-    def __init__(self, name, discipline_name, filters, post_processings):
+    def __init__(self, name: str, discipline_name: str, filters: list[Any], post_processings: list[Any]) -> None:
         """
-        Constructor
+        Initialize post processing bundle.
 
-        :params: name, name of current post processings bundle
-        :type: str
-        :params: discipline_name, name of current discipline hosting the post processings bundle
-        :type: str
-        :params: filters, filter list used for this post-processings bundle
-        :type: ChartFilter[]
-        :params: post_processings, list of post-processings bundle
-        :type: post processing*[]
+        Args:
+            name: Name of current post processings bundle.
+            discipline_name: Name of discipline hosting the post processings bundle.
+            filters: Filter list used for this post-processings bundle.
+            post_processings: List of post-processings in the bundle.
 
         """
         self.name = name
@@ -49,11 +47,12 @@ class PostProcessingBundle:
         self.post_processings = post_processings
 
     @property
-    def has_post_processings(self):
+    def has_post_processings(self) -> bool:
+        """Check if bundle has any filters."""
         return len(self.filters) > 0
 
-    def __repr__(self):
-        """Overload of the class representation"""
+    def __repr__(self) -> str:
+        """Return string representation of the bundle."""
         series_string = [f'\nname: {self.name}',
                          f'discipline_name: {self.discipline_name}',
                          f'filters: {self.filters}',
@@ -62,8 +61,14 @@ class PostProcessingBundle:
 
         return '\n'.join(series_string)
 
-    def to_dict(self):
-        """Method that serialize as dict the SeriesTemplate class"""
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Serialize bundle as dictionary.
+
+        Returns:
+            Dictionary representation of the bundle.
+
+        """
         dict_obj = {}
         # Serialize name attribute
         dict_obj.update({PostProcessingBundle.NAME: self.name})
@@ -82,9 +87,18 @@ class PostProcessingBundle:
         return dict_obj
 
     @staticmethod
-    def from_dict(dict_obj):
-        """Method that initialize from dict the SeriesTemplate class"""
-        # Serialize name attribute
+    def from_dict(dict_obj: dict[str, Any]) -> PostProcessingBundle:
+        """
+        Initialize bundle from dictionary.
+
+        Args:
+            dict_obj: Dictionary containing bundle data.
+
+        Returns:
+            PostProcessingBundle instance created from dictionary.
+
+        """
+        # Deserialize name attribute
         name = dict_obj[PostProcessingBundle.NAME]
 
         # Deserialize discipline name attribute
@@ -92,10 +106,10 @@ class PostProcessingBundle:
         if PostProcessingBundle.DISCIPLINE_NAME in dict_obj:
             discipline_name = dict_obj[PostProcessingBundle.DISCIPLINE_NAME]
 
-        # Serialize filters parameter attribute
+        # Deserialize filters parameter attribute
         filters = dict_obj[PostProcessingBundle.FILTERS]
 
-        # Serialize post-processings values parameter attribute
+        # Deserialize post-processings values parameter attribute
         post_processings = dict_obj[PostProcessingBundle.POST_PROCESSINGS]
 
         return PostProcessingBundle(name, discipline_name, filters, post_processings)

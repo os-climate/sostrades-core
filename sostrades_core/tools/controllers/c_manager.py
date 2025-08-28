@@ -28,7 +28,7 @@ class CManager:
     ERROR_MSG = 'ERROR CManager.'
 
     # --constructor
-    def __init__(self, FatherObj, gradient_active=True):
+    def __init__(self, FatherObj, gradient_active=True) -> None:
         self.__FatherObj = FatherObj
         self.__list_id = []
         self.__list_pt = []
@@ -73,7 +73,7 @@ class CManager:
                 pt.set_to_update()
 
     # --private methods
-    def __repr__(self):
+    def __repr__(self) -> str:
         info_string = self.get_print_header()
         if self.get_FatherObj() is not None:
             info_string += '\n   associated to FatherObj    : ' + self.get_FatherObj().get_tag()

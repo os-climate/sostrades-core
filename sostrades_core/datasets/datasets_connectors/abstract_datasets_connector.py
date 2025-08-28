@@ -63,7 +63,7 @@ class AbstractDatasetsConnector(abc.ABC):
 
 
     @property
-    def compatible_dataset_info_version(self):
+    def compatible_dataset_info_version(self) -> set[str]:
         return set(self.COMPATIBLE_DATASET_INFO_VERSION)
 
     def check_dataset_info_version(self, dataset_identifier: AbstractDatasetInfo) -> None:
@@ -322,11 +322,11 @@ class AbstractDatasetsConnector(abc.ABC):
         """
         raise NotImplementedError
 
-    def clear_all_datasets(self):
+    def clear_all_datasets(self) -> None:
         """Optional utility method to remove all datasets in a connector."""
         map(lambda _d: self.clear_dataset(_d.dataset_id), self.get_datasets_available())
 
-    def clear_connector(self):
+    def clear_connector(self) -> None:
         """
         Optional utility method to completely clear a connector further than clearing all datasets, if it applies, e.g.
         by deleting the root directory of a local connector, or by deleting the database file of a json connector. It
@@ -447,7 +447,7 @@ class DatasetGenericException(Exception):
 class DatasetNotFoundException(DatasetGenericException):
     """Exception when a dataset is not found"""
 
-    def __init__(self, dataset_name: str):
+    def __init__(self, dataset_name: str) -> None:
         self.dataset_name = dataset_name
         super().__init__(f"Dataset '{dataset_name}' not found")
 
@@ -455,7 +455,7 @@ class DatasetNotFoundException(DatasetGenericException):
 class DatasetDeserializeException(DatasetGenericException):
     """Exception when a dataset deserializing"""
 
-    def __init__(self, dataset_name: str, error_message: str):
+    def __init__(self, dataset_name: str, error_message: str) -> None:
         self.dataset_name = dataset_name
         super().__init__(f"Error reading dataset '{dataset_name}': \n{error_message}")
 
@@ -463,6 +463,6 @@ class DatasetDeserializeException(DatasetGenericException):
 class DatasetUnableToInitializeConnectorException(DatasetGenericException):
     """Exception when an error occurs during dataset initialization"""
 
-    def __init__(self, connector_type: str):
+    def __init__(self, connector_type: str) -> None:
         self.connector_type = connector_type
         super().__init__(f"Unable to initialize connector of type {connector_type}")

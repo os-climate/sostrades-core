@@ -15,25 +15,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-from _functools import reduce
+from __future__ import annotations
+
 from copy import deepcopy
+from functools import reduce
+from typing import Dict, Optional
 
 import numpy as np
 import pandas as pd
 
 
-class toolboxsum(object):
-    '''Tool box with sum methods'''
+class toolboxsum:
+    """Toolbox with sum methods for dataframes and dictionaries."""
 
-    def __init__(self):
-        '''Constructor'''
-        self.sum_df = None
-        self.sum_dict_dict = None
+    def __init__(self) -> None:
+        """Initialize the toolbox with sum result storage."""
+        self.sum_df: Optional[pd.DataFrame] = None
+        self.sum_dict_dict: Optional[Dict[str, Dict[str, float]]] = None
 
-    def compute_sum_df(self, list_df, not_sum=None):
+    def compute_sum_df(self, list_df: list[pd.DataFrame], not_sum: Optional[list[str]] = None) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Method to compute sum of dict of dataframes
-        not_sum : column name to not sum
+        Compute sum of a list of dataframes.
+
+        Args:
+            list_df: List of dataframes to sum.
+            not_sum: Column names to exclude from summation.
+
+        Returns:
+            Tuple of (sum_df, resource_percent) where:
+            - sum_df: Sum of all dataframes
+            - resource_percent: Resource percentage breakdown
+
         """
         # initializations
         list_df_wo_columns = None
@@ -76,8 +88,17 @@ class toolboxsum(object):
 
         return sum_df, resource_percent
 
-    def compute_sum_dict_dict_float(self, dict_to_sum):
-        """Method to compute sum of dict of dict of float"""
+    def compute_sum_dict_dict_float(self, dict_to_sum: Dict[str, Dict[str, Dict[str, float]]]) -> None:
+        """
+        Compute sum of nested dictionaries containing float values.
+
+        Args:
+            dict_to_sum: Dictionary of dictionaries containing float values to sum.
+
+        Note:
+            Updates the instance's sum_dict_dict attribute with the computed sum.
+
+        """
         # init the dict
         self.sum_dict_dict = {}
         for dict_1 in dict_to_sum.values():

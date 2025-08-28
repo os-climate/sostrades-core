@@ -68,7 +68,7 @@ class DoeSampleGenerator(AbstractSampleGenerator):
     Algorithms not listed below will have input constrained to floats and arrays.
     """
 
-    def __init__(self, logger: logging.Logger | None = None):
+    def __init__(self, logger: logging.Logger | None = None) -> None:
         """Constructor"""
         logger_aux = logger
         if logger_aux is None:

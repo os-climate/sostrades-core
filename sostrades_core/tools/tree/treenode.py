@@ -45,7 +45,7 @@ class TreeNode:
                         ProxyDiscipline.COUPLING, ProxyDiscipline.VALUE, ProxyDiscipline.NUMERICAL,
                         ProxyDiscipline.OPTIONAL]
 
-    def __init__(self, name, exec_display=False):
+    def __init__(self, name, exec_display=False) -> None:
         """Class constructor"""
         self.name = name
 

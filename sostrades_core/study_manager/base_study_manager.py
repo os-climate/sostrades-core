@@ -74,7 +74,7 @@ class BaseStudyManager:
         logger: Logger | None = None,
         execution_engine: ExecutionEngine | None = None,
         test_post_procs: bool = True,
-    ):
+    ) -> None:
         """
         Constructor.
 

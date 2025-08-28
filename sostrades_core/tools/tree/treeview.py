@@ -37,7 +37,7 @@ class TreeView:
 
     PROCESS_DOCUMENTATION = 'Process documentation'
 
-    def __init__(self, name, no_data=False, read_only=False, exec_display=False):
+    def __init__(self, name, no_data=False, read_only=False, exec_display=False) -> None:
         """Class constructor"""
         self.name = name
         self.no_data = no_data
@@ -319,7 +319,7 @@ class TreeView:
         """Returns a dict representation of the object"""
         return self.root.to_dict()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns a str representation of the object"""
         return str(self.root)
 

@@ -14,16 +14,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+from __future__ import annotations
+
+from typing import Any
+
 VAR_TYPE_ID = 'type'
 VAR_SUBTYPE_ID = 'subtype_descriptor'
 VAR_NUMERICAL = 'numerical'
 BASE_TYPE_TO_CONVERT = ['dataframe', 'float', 'array']
 
 
-def check_subtype(var_full_name, subtype, type_to_check):
+def check_subtype(var_full_name: str, subtype: dict[str, Any], type_to_check: str) -> Any:
     """
-    This function checks that the subtype given to a list or dictionnary is compliant
-    with the defined standard for subtype
+    Check that subtype definition is compliant with standards.
+
+    Args:
+        var_full_name: Full name of the variable for error reporting.
+        subtype: Subtype definition dictionary to validate.
+        type_to_check: Expected type key to validate against.
+
+    Returns:
+        The validated subtype or recursively validated nested subtype.
+
+    Raises:
+        ValueError: If subtype format is invalid or doesn't match standards.
+
     """
     if type(subtype).__name__ != 'dict':
         raise ValueError(
@@ -43,8 +59,23 @@ def check_subtype(var_full_name, subtype, type_to_check):
                              list(subtype[type_to_check].keys())[0])
 
 
-def filter_variables_to_convert(reduced_dm, list_to_filter, write_logs=False, logger=None):
-    """Filter variables to convert"""
+def filter_variables_to_convert(reduced_dm: dict[str, dict[str, Any]],
+                               list_to_filter: list[str],
+                               write_logs: bool = False,
+                               logger=None) -> list[str]:
+    """
+    Filter variables that should be converted based on their types.
+
+    Args:
+        reduced_dm: Dictionary mapping variable names to their metadata.
+        list_to_filter: List of variable names to filter.
+        write_logs: Whether to log variables that won't be converted.
+        logger: Logger instance for writing logs.
+
+    Returns:
+        List of variable names that should be converted.
+
+    """
     filtered_keys = []
 
     for variable in list_to_filter:

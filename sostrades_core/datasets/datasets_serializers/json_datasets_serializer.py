@@ -29,7 +29,7 @@ from sostrades_core.datasets.datasets_serializers.abstract_datasets_serializer i
 class JSONDatasetsSerializer(AbstractDatasetsSerializer):
     """Specific dataset serializer for dataset in json format"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.__logger = logging.getLogger(__name__)
 

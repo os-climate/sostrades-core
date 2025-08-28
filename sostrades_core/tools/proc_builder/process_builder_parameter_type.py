@@ -32,7 +32,7 @@ class ProcessBuilderParameterType:
     PROCESS_REPOSITORY = 'process_repository'
 
     def __init__(self, process_name='', repository_name='', usecase_name='',
-                 usecase_type='', usecase_identifier=-1, usecase_data={}):
+                 usecase_type='', usecase_identifier=-1, usecase_data={}) -> None:
         '''
         Constructor
         :param process_name: name of the process
