@@ -23,7 +23,7 @@ from os.path import dirname, join
 logging.basicConfig(level=logging.INFO)
 
 # set-up the folder where GEMSEO will look-up for new wrapps (solvers, grammars etc)
-# logging.getLogger('gemseo').setLevel('DEBUG')
+logging.getLogger('gemseo').setLevel('DEBUG')
 # Hotfix gemseo pathsep handling
 parent_dir = re.sub(r'.\:', '', dirname(__file__))
 GEMSEO_ADDON_DIR = "gemseo_addon"
