@@ -57,7 +57,7 @@ def get_default_dashboard_in_process_repo(execution_engine):
         execution_engine.logger.exception(
             f'Exception during default dashboard loading : {str(e)}')
         return {}
-    
+
 def update_namespace_with_new_study_name(namespace_to_update, study_name):
     """
     Update the namespace to replace the old study name by the new one
@@ -126,7 +126,7 @@ def update_dashboard_charts(execution_engine, dashboard):
                         filters_objects.append(filter_obj)
                 # rebuild the charts list for this filters
                 post_processings = post_processing_factory.get_post_processings_by_discipline_name(discipline_name, module_name, execution_engine, filters_objects)
-                
+
                 # save the list of filters
                 filters_list_by_discipline[discipline_name] = filters_list_by_discipline.get(discipline_name, [])
                 filters_list_by_discipline[discipline_name].append(filters)

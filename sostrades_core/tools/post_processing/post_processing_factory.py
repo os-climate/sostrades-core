@@ -360,7 +360,7 @@ class PostProcessingFactory:
                 if for_test is True:
                     raise Exception(e)
         return result
-    
+
     def get_post_processings_by_discipline_name(self, namespace, discipline_module, execution_engine, filters, as_json=True, for_test=False):
         """
         Retrieve post processing for a given discipline name
@@ -395,7 +395,7 @@ class PostProcessingFactory:
                 post_processings = self.get_post_processing_by_discipline(
                     discipline, filters)
                 all_post_processing_data.extend(post_processings)
-            
+
             # Try fo find associated namespace object in namespace manager
             if discipline_module == PostProcessingFactory.NAMESPACED_POST_PROCESSING_NAME:
                 post_processings = self.get_post_processing_by_namespace(
