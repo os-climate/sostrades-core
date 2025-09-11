@@ -14,28 +14,51 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-import logging
-from builtins import NotImplementedError
 
-'''
-mode: python; py-indent-offset: 4; tab-width: 8; coding: utf-8
-'''
+from __future__ import annotations
+
+from abc import ABC
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import logging
+
+"""Abstract base class for sample generators."""
 
 
 class SampleTypeError(TypeError):
+    """Custom exception for sample type errors."""
+
     pass
 
 
-class AbstractSampleGenerator(object):
-    '''Abstract class that generates sampling'''
+class AbstractSampleGenerator(ABC):
+    """Abstract class that generates sampling."""
 
-    def __init__(self, generator_name, logger=logging.Logger):
-        '''Constructor'''
+    def __init__(self, generator_name: str, logger: logging.Logger) -> None:
+        """
+        Initialize sample generator.
+
+        Args:
+            generator_name: Name of the sample generator.
+            logger: Logger instance for outputting messages.
+
+        """
         self.generator_name = generator_name
         self.logger = logger
 
-    def generate_samples(self, *args, **kwargs):
-        '''Method that generate samples and checks the output formating'''
+    def generate_samples(self, *args, **kwargs) -> list:
+        """
+        Generate samples and check output formatting.
+
+        Args:
+            *args: Variable arguments for sample generation.
+            **kwargs: Keyword arguments for sample generation.
+
+        Returns:
+            List of generated samples.
+
+        """
         # check options
         self._check_options(*args, **kwargs)
         # generate the sampling by subclass
@@ -45,15 +68,34 @@ class AbstractSampleGenerator(object):
 
         return samples
 
-    def _generate_samples(self, *args, **kwargs):
-        '''
-        Method that generate samples
-        To be overloaded by subclass
-        '''
+    def _generate_samples(self, *args, **kwargs) -> list:
+        """
+        Generate samples (to be implemented by subclass).
+
+        Args:
+            *args: Variable arguments for sample generation.
+            **kwargs: Keyword arguments for sample generation.
+
+        Returns:
+            List of generated samples.
+
+        Raises:
+            NotImplementedError: Must be implemented by subclass.
+
+        """
         raise NotImplementedError
 
-    def _check_samples(self, samples):
-        '''Method that checks the sample output type'''
+    def _check_samples(self, samples: list) -> None:
+        """
+        Check the sample output type.
+
+        Args:
+            samples: Generated samples to validate.
+
+        Raises:
+            SampleTypeError: If samples is not a list.
+
+        """
         if not isinstance(samples, list):
             msg = "Expected sampling output type should be <list>, "
             msg += "however sampling type of sampling generator <%s> " % str(
@@ -69,50 +111,83 @@ class AbstractSampleGenerator(object):
     #     '''
     #     raise NotImplementedError
 
-    def _check_options(self, *args, **kwargs):
-        '''
-        Check provided options before sample generation
-        To be overloaded by subclass
-        '''
+    def _check_options(self, *args, **kwargs) -> None:
+        """
+        Check provided options before sample generation.
+
+        Args:
+            *args: Variable arguments to validate.
+            **kwargs: Keyword arguments to validate.
+
+        Note:
+            To be overloaded by subclass.
+
+        """
         pass
 
-    def setup(self, proxy):
+    def setup(self, proxy) -> tuple[dict, dict]:
         """
-        Method used in combination with the ProxySampleGenerator in order to configure a given generation method.
+        Configure sample generation method in combination with ProxySampleGenerator.
 
-        Arguments:
-            proxy (ProxySampleGenerator) : associated proxy discipline
+        Args:
+            proxy: Associated proxy discipline.
+
         Returns:
             dynamic_inputs (dict) : dynamic inputs of the sample generation method
-            dynamic_outputs (dict( : dynamic outputs of the sample generation method
+            dynamic_outputs (dict) : dynamic outputs of the sample generation method
 
         """
         return {}, {}
 
-    def sample(self, wrapper):
-        """Method that takes the wrapper as input and returns the output of generate_samples."""
+    def sample(self, wrapper) -> list:
+        """
+        Generate samples using wrapper input.
+
+        Args:
+            wrapper: Wrapper containing input data.
+
+        Returns:
+            Generated samples list.
+
+        """
         _args, _kwargs = self.get_arguments(wrapper)
         return self.generate_samples(*_args, **_kwargs)
 
-    def get_arguments(self, wrapper):
+    def get_arguments(self, wrapper) -> tuple[list, dict]:
         """
-        Returns the Sample Generator expected inputs for the algo options of the selected algorithm
-        (to be provided to proxy i/o grammars)
-        To be overloaded by subclass
+        Get expected inputs for sample generation from wrapper.
+
+        Args:
+            wrapper: Wrapper containing generation parameters.
+
+        Returns:
+            Tuple of (args, kwargs) for sample generation.
+
+        Note:
+            To be overloaded by subclass.
+
         """
         return [], {}
 
-    def is_ready_to_sample(self, proxy):
+    def is_ready_to_sample(self, proxy) -> bool:
         """
-        Method that takes the ProxySampleGenerator as input and returns whether the configuration sequence is ready for
-        sample generation, notably to avoid asking for sample generation before the corresponding inputs are added and
-        loaded in the dm.
+        Check if configuration is ready for sample generation.
+
+        Args:
+            proxy: ProxySampleGenerator instance.
+
+        Returns:
+            True if ready to generate samples, False otherwise.
+
         """
         return True
 
-    def filter_inputs(self, proxy):
+    def filter_inputs(self, proxy) -> None:
         """
-        Method that takes the ProxySampleGenerator as input and filters the possible evaluated inputs values and types
-        in order to constrain the input for specific sample generators.
+        Filter possible evaluated inputs for specific sample generators.
+
+        Args:
+            proxy: ProxySampleGenerator instance to filter inputs for.
+
         """
         pass

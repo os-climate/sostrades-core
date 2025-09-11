@@ -23,7 +23,7 @@ from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 class UnitTestHandler(logging.Handler):
     """Logging handler for UnitTest"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.msg_list = []
 

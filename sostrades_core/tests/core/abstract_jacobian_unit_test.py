@@ -38,7 +38,7 @@ class AbstractJacobianUnittest(unittest.TestCase, ABC):
     DUMP_JACOBIAN_ENV_VAR = "DUMP_JACOBIAN_UNIT_TEST"
     PICKLE_DIRECTORY = 'jacobian_pkls'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.__override_dump_jacobian = False
 

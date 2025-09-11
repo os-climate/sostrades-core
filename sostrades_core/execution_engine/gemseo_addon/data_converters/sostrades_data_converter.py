@@ -36,7 +36,7 @@ ValueTypes_Numeric = ['int', 'float']
 class SoSTradesDataConverter(SimpleGrammarDataConverter):
     """Data values to NumPy arrays and vice versa from a :class:`.SimpleGrammar`."""
 
-    def __init__(self, grammar):
+    def __init__(self, grammar) -> None:
         super().__init__(grammar)
         self.reduced_dm = defaultdict(dict)
 

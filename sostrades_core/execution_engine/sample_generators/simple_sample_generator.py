@@ -39,7 +39,7 @@ class SimpleSampleGenerator(AbstractSampleGenerator):
 
     GENERATOR_NAME = "SIMPLE_SAMPLE_GENERATOR"
 
-    def __init__(self, logger: logging.Logger):
+    def __init__(self, logger: logging.Logger) -> None:
         '''Constructor'''
         super().__init__(self.GENERATOR_NAME, logger=logger)
         self.samples_df_f_name = None

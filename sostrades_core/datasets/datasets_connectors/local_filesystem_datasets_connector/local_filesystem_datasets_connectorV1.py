@@ -39,7 +39,7 @@ class LocalFileSystemDatasetsConnectorV1(LocalFileSystemDatasetsConnectorBase):
     COMPATIBLE_DATASET_INFO_VERSION = [VERSION_V1]
 
     def __init__(self, connector_id: str, root_directory_path: str,
-                 create_if_not_exists: bool = False):
+                 create_if_not_exists: bool = False) -> None:
         """
         Constructor for Local Filesystem data connector
 

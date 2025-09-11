@@ -58,7 +58,7 @@ class SampleGeneratorWrapper(SoSWrapp):
     ALGO_OPTIONS = "algo_options"
     DESIGN_SPACE = dspace_tool.DESIGN_SPACE
 
-    def __init__(self, sos_name, logger: logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger) -> None:
         super().__init__(sos_name=sos_name, logger=logger)
         self.sample_generator = None  # sample generator tool
 

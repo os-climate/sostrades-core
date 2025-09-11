@@ -30,7 +30,7 @@ class ScatterMap:
     SCATTER_NAME = 'scatter_name'
     POSSIBLE_KEYS = [NS_TO_UPDATE, NS_NOT_TO_UPDATE, SCATTER_LIST_TUPLE, SCATTER_NAME]
 
-    def __init__(self, ee, name, s_map):
+    def __init__(self, ee, name, s_map) -> None:
         '''
         Class to describe a scatter map and manage several instances of the same scatter map
             :params: name

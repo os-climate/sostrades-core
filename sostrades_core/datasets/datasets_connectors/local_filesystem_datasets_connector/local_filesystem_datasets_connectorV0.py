@@ -36,7 +36,7 @@ class LocalFileSystemDatasetsConnectorV0(LocalFileSystemDatasetsConnectorBase):
     DESCRIPTOR_FILE_NAME = 'descriptor.json'
 
     def __init__(self, connector_id: str, root_directory_path: str,
-                 create_if_not_exists: bool = False):
+                 create_if_not_exists: bool = False) -> None:
         """
         Constructor for Local Filesystem data connector
 

@@ -15,25 +15,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from __future__ import annotations
+
+from typing import Union
+
 import numpy as np
 
-'''
-S-Curve function to be used for efficiency improvement for example
-'''
+"""S-Curve function for efficiency improvements and sigmoid calculations."""
 
 
-def s_curve(x, coeff=0.1, power=1, x0=0.0, y_min=0.0, y_max=1.0):
-    '''
-    S-Curve or Sigmoid function  between 0 and 1
+def s_curve(x: Union[float, np.ndarray],
+           coeff: float = 0.1,
+           power: float = 1.0,
+           x0: float = 0.0,
+           y_min: float = 0.0,
+           y_max: float = 1.0) -> Union[float, np.ndarray]:
+    """
+    Generate S-Curve or Sigmoid function between specified bounds.
 
-    coeff is the slope of the S-curve more the coeff is high, more the slope is steep
-    power is the curve of the S-curve near limit values, more the power is high more the curve is pronounced
+    Args:
+        x: Input value(s) for curve calculation.
+        coeff: Slope coefficient - higher values create steeper slope.
+        power: Curve power near limit values - higher values create more pronounced curves.
+        x0: Middle point of S-curve (when power=1, y[x0] = (1/2)**power).
+        y_min: Minimum value of the S-curve.
+        y_max: Maximum value of the S-curve.
 
-    x0 is the middle of the S-curve if power=1, if power != 1 y[x0] = (1/2)**power
+    Returns:
+        Calculated S-curve value(s) between y_min and y_max.
 
-    y_min is the Scurve minimum
-    y_max is the Scurve maximum
-    '''
+    """
     y = (y_max - y_min) / (1.0 + np.exp(-coeff * (x - x0)))**power + y_min
-
     return y

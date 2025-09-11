@@ -29,7 +29,7 @@ Class that define a spider chart display as post post processing
 class SpiderChartTrace:
     """Class that define spider chart trace"""
 
-    def __init__(self, trace_name='', theta_values=[], radius_values=[]):
+    def __init__(self, trace_name='', theta_values=[], radius_values=[]) -> None:
         """
         Init of the class
 
@@ -63,7 +63,7 @@ class SpiderChartTrace:
 class InstantiatedSpiderChart(AbstractPostProcessingPlotlyTooling):
     """Class that define spider chart display as post post processing"""
 
-    def __init__(self, chart_name=''):
+    def __init__(self, chart_name='') -> None:
         """
         Init of the class
 

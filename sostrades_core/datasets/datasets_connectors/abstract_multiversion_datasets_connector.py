@@ -36,14 +36,14 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
 
     COMPATIBLE_DATASET_INFO_VERSION = None  # sanity to assure variable is not used in multi-version classes
     # version to connector class mapping, overloaded in subclasses
-    VERSION_TO_CLASS: dict[str:Type[AbstractDatasetsConnector]] = {}
+    VERSION_TO_CLASS: dict[str, Type[AbstractDatasetsConnector]] = {}
 
     VERSION_SUFFIX: str = "__@"
 
     @abc.abstractmethod
     def __init__(self,
                  connector_id: str,
-                 mono_version_connectors_instantiation_fields: dict[str:dict[str:Any]]):
+                 mono_version_connectors_instantiation_fields: dict[str, dict[str, Any]]) -> None:
         """
         Abstract init method forcing to create a dedicated subclass for every type of multi-version connector (JSON,
         LocalFileSystem, etc.). These multi-version subclasses must overload the VERSION_TO_CLASS dict, specifying the
@@ -237,12 +237,12 @@ class AbstractMultiVersionDatasetsConnector(AbstractDatasetsConnector, abc.ABC):
         for _c in self.all_connectors:
             _c.clear_dataset(dataset_id)
 
-    def clear_all_datasets(self):
+    def clear_all_datasets(self) -> None:
         """Optional utility method to remove all datasets in all sub-connectors."""
         for _c in self.all_connectors:
             _c.clear_all_datasets()
 
-    def clear_connector(self):
+    def clear_connector(self) -> None:
         """
         Optional utility method to completely clear a connector further than clearing all datasets, if it applies, e.g.
         by deleting the root directory of a local connector, or by deleting the database file of a json connector. It

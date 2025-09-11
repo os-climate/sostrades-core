@@ -30,7 +30,7 @@ class Parameter(BaseController):
     ERROR_MSG = 'ERROR ' + CLASS_MSG + '.'
 
     # --Constructor
-    def __init__(self, PBCManager, Id, fexpr, AliasDict=None, namespace=None):
+    def __init__(self, PBCManager, Id, fexpr, AliasDict=None, namespace=None) -> None:
 
         BaseController.__init__(self, PBCManager, Id, value=0., BCType='Parameter')
 
@@ -44,7 +44,7 @@ class Parameter(BaseController):
 
         self.set_fexpr(fexpr, AliasDict=AliasDict)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Display some information about the variable"""
         info_string = BaseController.__repr__(self)
         info_string += "\n   Formula         : " + self.__FormulaObj.get_formula()

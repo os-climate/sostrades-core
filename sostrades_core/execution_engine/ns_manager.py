@@ -34,7 +34,7 @@ class NamespaceManager:
     NS_SEP = '.'
     NS_NAME_SEPARATOR = Namespace.NS_NAME_SEPARATOR
 
-    def __init__(self, name, ee):
+    def __init__(self, name, ee) -> None:
         '''Constructor'''
         self.name = name  # old habit
 

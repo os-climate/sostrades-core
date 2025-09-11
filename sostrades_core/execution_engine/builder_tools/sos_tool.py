@@ -35,7 +35,7 @@ class SosTool():
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, cls_builder):
+    def __init__(self, sos_name, ee, cls_builder) -> None:
         '''Constructor'''
         self.sos_name = sos_name
 

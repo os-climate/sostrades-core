@@ -88,7 +88,7 @@ class SoSWrapp(object):
     CHECK_INTEGRITY_MSG = 'check_integrity_msg'
     DYNAMIC_VAR_NAMESPACE_LIST = []
 
-    def __init__(self, sos_name, logger: logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger) -> None:
         """
         Constructor.
 
@@ -653,7 +653,7 @@ class AccessOnlyProxy:
     """Class that proxies an object providing access but avoiding its erroneous referencing. Unrelated to ProxyDiscipline."""
 
     # TODO: move to a tool?
-    def __init__(self):
+    def __init__(self) -> None:
         self.__obj = None
 
     def __getattr__(self, item):

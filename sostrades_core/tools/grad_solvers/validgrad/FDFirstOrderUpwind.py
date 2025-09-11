@@ -26,7 +26,7 @@ from .FDScheme import FDScheme
 class AbstractFDFirstOrderUpwind(FDScheme):
     """Abstract class for the first order schemes."""
 
-    def __init__(self, fd_step, bounds=None):
+    def __init__(self, fd_step, bounds=None) -> None:
         FDScheme.__init__(self, fd_step, bounds=bounds)
         self.set_order(1)
 
@@ -50,7 +50,7 @@ class FDFirstOrderUpwind(AbstractFDFirstOrderUpwind):
     grad = (f(x+fd_step)-f(x))/(fd_step)
     """
 
-    def __init__(self, fd_step, bounds=None):
+    def __init__(self, fd_step, bounds=None) -> None:
         AbstractFDFirstOrderUpwind.__init__(self, fd_step, bounds=None)
         self.set_order(1)
 
@@ -93,7 +93,7 @@ class FDFirstOrderUpwindComplexStep(AbstractFDFirstOrderUpwind):
     grad = Imaginary part(f(x+j*fd_step)/(fd_step))
     """
 
-    def __init__(self, fd_step, bounds=None):
+    def __init__(self, fd_step, bounds=None) -> None:
         AbstractFDFirstOrderUpwind.__init__(self, fd_step, bounds=None)
         self.set_order(1j)
 

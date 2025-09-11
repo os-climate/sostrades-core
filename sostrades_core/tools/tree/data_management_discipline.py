@@ -22,7 +22,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 class DataManagementDiscipline:
     """Class to store discipline data"""
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         # model of the discipline
         self.model_name_full_path = ''

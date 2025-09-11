@@ -28,7 +28,7 @@ class ToolFactory:
     EE_PATH = 'sostrades_core.execution_engine'
     TOOL_FOLDER = f'{EE_PATH}.builder_tools'
 
-    def __init__(self, execution_engine, sos_name):
+    def __init__(self, execution_engine, sos_name) -> None:
         """
         Constructor
 

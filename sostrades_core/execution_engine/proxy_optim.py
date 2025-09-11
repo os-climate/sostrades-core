@@ -350,7 +350,7 @@ class ProxyOptim(ProxyDriverEvaluator):
 
     DESC_OUT = {}
 
-    def __init__(self, sos_name, ee, cls_builder, with_data_io=True, associated_namespaces=None):
+    def __init__(self, sos_name, ee, cls_builder, with_data_io=True, associated_namespaces=None) -> None:
         """Constructor"""
         super().__init__(sos_name, ee, cls_builder, associated_namespaces=associated_namespaces)
         if cls_builder is None:
@@ -779,7 +779,7 @@ class ProxyOptim(ProxyDriverEvaluator):
                 for sub_mda in disc.discipline_wrapp.discipline.inner_mdas:
                     sub_mda.reset_history_each_run = True
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Summarize results for display
 

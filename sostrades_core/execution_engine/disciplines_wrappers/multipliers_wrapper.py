@@ -52,7 +52,7 @@ class MultipliersWrapper(SoSWrapp):
     INPUT_MULTIPLIER_TYPE = ['dict', 'dataframe', 'float']
     MULTIPLIER_PARTICULE = '__MULTIPLIER__'
 
-    def __init__(self, sos_name, logger: logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger) -> None:
         super().__init__(sos_name=sos_name, logger=logger)
         self.eval_ns = None
         self.eval_disc = None

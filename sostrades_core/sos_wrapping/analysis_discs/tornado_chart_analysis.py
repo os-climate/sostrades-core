@@ -73,7 +73,7 @@ class TornadoChartAnalysis(SoSWrapp):
 
     ACCEPTED_OUTPUT_TYPES = ProxyDiscipline.VAR_TYPE_MAP["float"]
 
-    def __init__(self, sos_name, logger: logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger) -> None:
         super().__init__(sos_name, logger)
         self.selected_outputs_dict = {}
 

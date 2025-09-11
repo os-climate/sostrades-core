@@ -25,7 +25,7 @@ mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 class ScenarioManager:
     """Class to manage all scenarios"""
 
-    def __init__(self, name):
+    def __init__(self, name) -> None:
         """Constructor"""
         self.name = name
         self.list_scenarios_ids = []

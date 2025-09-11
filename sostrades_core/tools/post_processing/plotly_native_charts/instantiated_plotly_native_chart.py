@@ -34,7 +34,7 @@ class InstantiatedPlotlyNativeChart(AbstractPostProcessingPlotlyTooling):
     """Class that define a native plotly chart display as post post processing"""
 
     def __init__(self, fig, chart_name='', default_title=True, default_legend=True,
-                 default_font=True, with_default_annotations=True):
+                 default_font=True, with_default_annotations=True) -> None:
         """
         Create a new chart definition
 

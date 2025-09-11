@@ -48,7 +48,7 @@ class TornadoChartAnalysisSampleGenerator(AbstractSampleGenerator):
     REFERENCE_SCENARIO_NAME = "reference_scenario"
     SCENARIO_NAMES = SampleGeneratorWrapper.SCENARIO_NAME
 
-    def __init__(self, logger: logging.Logger):
+    def __init__(self, logger: logging.Logger) -> None:
         """Constructor"""
         self.selected_inputs = []
         self.selected_inputs_types = {}
