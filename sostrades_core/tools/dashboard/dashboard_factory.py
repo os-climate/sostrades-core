@@ -19,14 +19,16 @@ limitations under the License.
 import json
 import os
 from importlib import import_module
+from os.path import exists
 
+from sostrades_core.tools.dashboard.dashboard import Dashboard, GraphData
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 DASHBOARD_FOLDER_NAME = "dashboard"
 DASHBOARD_FILE_NAME = "dashboard.json"
 
-def get_default_dashboard_in_process_repo(execution_engine):
+def get_default_dashboard_in_process_repo(execution_engine)-> Dashboard:
     """
     Try to get a default dashboard from template located in process repository
 
@@ -35,28 +37,36 @@ def get_default_dashboard_in_process_repo(execution_engine):
     :return: serialized dashboard template
     """
     # Open dashboard_template file
-    try:
-        repo = execution_engine.factory.repository
-        process = execution_engine.factory.process_identifier
-        dashboard_module_path = f"{repo}.{process}"
 
-        dashboard_module = import_module(dashboard_module_path)
-        # dashboard default file is in process_repository/dashboard/dashboard.json
-        dashboard_file = os.path.join(
-            os.path.dirname(dashboard_module.__file__),
-            DASHBOARD_FOLDER_NAME,
-            DASHBOARD_FILE_NAME)
+    repo = execution_engine.factory.repository
+    process = execution_engine.factory.process_identifier
+    dashboard_module_path = f"{repo}.{process}"
 
-        if not os.path.isfile(dashboard_file):
-            return {}
+    dashboard_module = import_module(dashboard_module_path)
+    # dashboard default file is in process_repository/dashboard/dashboard.json
+    dashboard_file = os.path.join(
+        os.path.dirname(dashboard_module.__file__),
+        DASHBOARD_FOLDER_NAME,
+        DASHBOARD_FILE_NAME)
 
-        with open(dashboard_file) as f:
-            return json.load(f)
-    except Exception as e:
-        # Exception should not interrupt further process
-        execution_engine.logger.exception(
-            f'Exception during default dashboard loading : {str(e)}')
-        return {}
+    return get_dashboard_from_file(dashboard_file)
+
+
+def get_dashboard_from_file(file_path:str)->Dashboard:
+    """
+    Retrieve dashboard from json file if exists
+    Args:
+        file_path (str): path to the json file
+    Returns:
+        Dashboard: dashboard object if file exists, None otherwise
+    """
+    dashboard = None
+    if exists(file_path):
+        with open(file_path) as f:
+            dashboard_json = json.load(f)
+            dashboard = Dashboard.deserialize(dashboard_json)
+    return dashboard
+
 
 def update_namespace_with_new_study_name(namespace_to_update, study_name):
     """
@@ -79,7 +89,8 @@ def update_namespace_with_new_study_name(namespace_to_update, study_name):
         return '.'.join(namespace_parts)
     return namespace_to_update
 
-def update_dashboard_charts(execution_engine, dashboard):
+
+def update_dashboard_charts(execution_engine, dashboard:Dashboard)->Dashboard:
     """
     Try to generate a dashboard from template located in process repository
 
@@ -95,49 +106,49 @@ def update_dashboard_charts(execution_engine, dashboard):
     study_name  = execution_engine.study_name
     all_charts_by_filters = {}
     filters_list_by_discipline = {}
-    data = dashboard.get("data", [])
+    new_datas = {}
+
     post_processing_factory = PostProcessingFactory()
-    for item in data.values():
-        # if it is a chart
-        if 'graphData' in item and \
-        'postProcessingFilters' in item and \
-        'disciplineName' in item and \
-        'name' in item and \
-        'plotIndex' in item:
-            item['graphData'] = {}
-            discipline_name = update_namespace_with_new_study_name(item['disciplineName'], study_name)
-            module_name = item['name']
-            filters = item['postProcessingFilters']
-            if discipline_name not in filters_list_by_discipline or filters not in filters_list_by_discipline[discipline_name]:
+    for key, item in dashboard.data.items():
+        if isinstance(item, GraphData):
+            item.disciplineName = update_namespace_with_new_study_name(item.disciplineName, study_name)
+            module_name = item.name
+            filters = item.postProcessingFilters
+            if item.disciplineName not in filters_list_by_discipline or filters not in filters_list_by_discipline[item.disciplineName]:
                 # build the filters object
                 filters_objects = []
                 for filter in filters:
-                    if 'filterName' in filter and \
-                        'filterValues' in filter and \
-                        'selectedValues' in filter and \
-                        'filterKey' in filter and \
-                        'multipleSelection' in filter:
-                        filter_obj = ChartFilter(name=filter.get('filterName', ''),
-                                             filter_values=filter.get('filterValues', []),
-                                             selected_values=filter.get('selectedValues', []),
-                                             filter_key=filter.get('filterKey', ''),
-                                             multiple_selection=filter.get('multipleSelection', False))
+                    filter_obj = ChartFilter(name=filter['filterName'],
+                                             filter_values=filter['filterValues'],
+                                             selected_values=filter['selectedValues'],
+                                             filter_key=filter['filterKey'],
+                                             multiple_selection=filter['multipleSelection'])
 
-                        filters_objects.append(filter_obj)
+                    filters_objects.append(filter_obj)
                 # rebuild the charts list for this filters
-                post_processings = post_processing_factory.get_post_processings_by_discipline_name(discipline_name, module_name, execution_engine, filters_objects)
+                post_processings = post_processing_factory.get_post_processings_by_discipline_name(item.disciplineName, module_name, execution_engine, filters_objects)
 
                 # save the list of filters
-                filters_list_by_discipline[discipline_name] = filters_list_by_discipline.get(discipline_name, [])
-                filters_list_by_discipline[discipline_name].append(filters)
-                filter_index = filters_list_by_discipline[discipline_name].index(filters)
+                filters_list_by_discipline[item.disciplineName] = filters_list_by_discipline.get(item.disciplineName, [])
+                filters_list_by_discipline[item.disciplineName].append(filters)
+                filter_index = filters_list_by_discipline[item.disciplineName].index(filters)
                 # save the charts list for this filter
-                all_charts_by_filters[discipline_name] = all_charts_by_filters.get(discipline_name, {})
-                all_charts_by_filters[discipline_name][filter_index] = post_processings
+                all_charts_by_filters[item.disciplineName] = all_charts_by_filters.get(item.disciplineName, {})
+                all_charts_by_filters[item.disciplineName][filter_index] = post_processings
             #if the charts exists, set the data
-            filter_index = filters_list_by_discipline[discipline_name].index(filters)
-            if len(all_charts_by_filters.get(discipline_name,{}).get(filter_index,[])) > item['plotIndex']:
-                item['graphData'] = all_charts_by_filters[discipline_name][filter_index][item['plotIndex']]
-    if len(data) > 0:
-        dashboard['data'] = data
+            filter_index = filters_list_by_discipline[item.disciplineName].index(filters)
+            if len(all_charts_by_filters.get(item.disciplineName,{}).get(filter_index,[])) > item.plotIndex:
+                item.graphData = all_charts_by_filters[item.disciplineName][filter_index][item.plotIndex]
+
+            #update the new_data dict
+            new_datas[item.id()] = item
+            # update layout if id has changed
+            if item.id() != key:
+                dashboard.layout[item.id()] = dashboard.layout[key]
+                dashboard.layout[item.id()].item_id = item.id()
+                del dashboard.layout[key]
+        else:
+            new_datas[key] = item
+
+    dashboard.data = new_datas
     return dashboard
