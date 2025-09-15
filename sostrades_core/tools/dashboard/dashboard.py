@@ -201,6 +201,9 @@ class Dashboard:
         Returns:
             Dashboard: deserialized Dashboard object
         """
+        if json_data is None or len(json_data) == 0:
+            return None
+
         structure_type = detect_dashboard_structure(json_data)
         if structure_type == 'old':
             json_data = migrate_from_old_format(json_data)
