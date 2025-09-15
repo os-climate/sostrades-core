@@ -32,6 +32,7 @@ class DisplayableItemType(str, Enum):
     TEXT = 'text'
     GRAPH = 'graph'
     SECTION = 'section'
+    VALUE_DATA = 'value_data'
 
 class ItemLayout:
     def __init__(
@@ -120,7 +121,27 @@ class GraphData:
             'postProcessingFilters': self.postProcessingFilters
         })
 
+class ValueData:
+    def __init__(
+            self,
+            nodeData: Dict = None,
+            namespace: str = None,
+            discipline: str = None
+    ):
+        self.nodeData = nodeData if nodeData is not None else {}
+        self.namespace = namespace
+        self.discipline = discipline
 
+    def serialize(self) -> dict:
+        return {
+            "nodeData": self.nodeData,
+            "namespace": self.namespace,
+            "discipline": self.discipline
+        }
+    
+    def id(self):
+        return self.nodeData['identifier']
+    
 class SectionData:
     def __init__(
             self,
@@ -220,6 +241,12 @@ class Dashboard:
                         graphData=item_data.get('graphData', {}),
                         title=item_data.get('title')
                     )
+                elif item_type == DisplayableItemType.VALUE_DATA:
+                    data[key] = ValueData(
+                        nodeData=item_data.get('nodeData', {}),
+                        namespace=item_data.get('namespace', ''),
+                        discipline=item_data.get('discipline', '')
+                    )
                 elif item_type == DisplayableItemType.SECTION:
                     data[key] = SectionData(
                         title=item_data.get('title', ''),
@@ -232,7 +259,7 @@ class Dashboard:
                 item_data = data_data[data_key]
                 if 'content' in item_data:
                     data[data_key] = TextData(content=item_data.get('content', ''))
-                else:
+                elif 'graphData' in item_data:
                     data[data_key] = GraphData(
                         disciplineName=item_data.get('disciplineName', ''),
                         name=item_data.get('name', ''),
@@ -240,6 +267,12 @@ class Dashboard:
                         postProcessingFilters=item_data.get('postProcessingFilters', []),
                         graphData=item_data.get('graphData', {}),
                         title=item_data.get('title')
+                    )
+                elif 'nodeData' in item_data:
+                    data[data_key] = ValueData(
+                        nodeData=item_data.get('nodeData', {}),
+                        namespace=item_data.get('namespace', ''),
+                        discipline=item_data.get('discipline', '')
                     )
 
         return cls(study_case_id=study_case_id, layout=layout, data=data)
