@@ -21,7 +21,9 @@ import os
 from importlib import import_module
 from os.path import exists
 
-from sostrades_core.tools.dashboard.dashboard import Dashboard, GraphData
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
+from sostrades_core.tools.dashboard.dashboard import Dashboard, GraphData, ValueData
+from sostrades_core.tools.ontology_variables.ontology_variable_key import create_data_key
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
@@ -147,8 +149,45 @@ def update_dashboard_charts(execution_engine, dashboard:Dashboard)->Dashboard:
                 dashboard.layout[item.id()] = dashboard.layout[key]
                 dashboard.layout[item.id()].item_id = item.id()
                 del dashboard.layout[key]
+        elif isinstance(item, ValueData):
+            item.namespace = update_namespace_with_new_study_name(item.namespace, study_name)
+            if execution_engine.dm.check_data_in_dm(key):
+                item.nodeData = update_node_data_with_data(study_name, key, execution_engine.dm.get_data(key), item.nodeData)
+            new_datas[item.id()] = item
+            # update layout if id has changed
+            if item.id() != key:
+                dashboard.layout[item.id()] = dashboard.layout[key]
+                dashboard.layout[item.id()].item_id = item.id()
+                del dashboard.layout[key]
         else:
             new_datas[key] = item
 
     dashboard.data = new_datas
     return dashboard
+
+def update_node_data_with_data(study_name, key, dm_data, node_data):
+        """
+        Update the node data with the data from the data manager
+        """
+        node_data['identifier'] = key
+        node_data['defaultValue'] = dm_data[ProxyDiscipline.VALUE]
+        node_data['type'] = dm_data[ProxyDiscipline.TYPE]
+        node_data['unit'] = dm_data.get(ProxyDiscipline.UNIT, '')
+        node_data['userLevel'] = dm_data[ProxyDiscipline.USER_LEVEL]
+        node_data['ioType'] = dm_data[ProxyDiscipline.IO_TYPE]
+        node_data['modelOrigin'] = dm_data[ProxyDiscipline.ORIGIN]
+        node_data['coupling'] = dm_data[ProxyDiscipline.COUPLING]
+        node_data['oldValue'] = dm_data[ProxyDiscipline.VALUE]
+        node_data['editable'] = dm_data[ProxyDiscipline.EDITABLE]
+        node_data['numerical'] = dm_data[ProxyDiscipline.NUMERICAL]
+        node_data['metaInput'] = dm_data[ProxyDiscipline.META_INPUT]
+        node_data['optional'] = dm_data[ProxyDiscipline.OPTIONAL]
+        node_data['dataframeDescriptor'] = dm_data.get(ProxyDiscipline.DATAFRAME_DESCRIPTOR, {})
+        node_data['disciplineFullPathList'] = dm_data[ProxyDiscipline.DISCIPLINES_FULL_PATH_LIST]
+        node_data['variableKey'] = create_data_key(node_data['parent']['modelNameFullPath'],dm_data[ProxyDiscipline.IO_TYPE], dm_data[ProxyDiscipline.VAR_NAME])
+        node_data['parent']['fullNamespace'] = update_namespace_with_new_study_name(node_data['parent']['fullNamespace'], study_name)
+
+        return node_data
+
+
+
