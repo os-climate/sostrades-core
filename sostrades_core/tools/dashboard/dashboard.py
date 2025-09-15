@@ -138,10 +138,10 @@ class ValueData:
             "namespace": self.namespace,
             "discipline": self.discipline
         }
-    
+
     def id(self):
         return self.nodeData['identifier']
-    
+
 class SectionData:
     def __init__(
             self,

@@ -166,9 +166,7 @@ def update_dashboard_charts(execution_engine, dashboard:Dashboard)->Dashboard:
     return dashboard
 
 def update_node_data_with_data(study_name, key, dm_data, node_data):
-        """
-        Update the node data with the data from the data manager
-        """
+        """Update the node data with the data from the data manager"""
         node_data['identifier'] = key
         node_data['defaultValue'] = dm_data[ProxyDiscipline.VALUE]
         node_data['type'] = dm_data[ProxyDiscipline.TYPE]
