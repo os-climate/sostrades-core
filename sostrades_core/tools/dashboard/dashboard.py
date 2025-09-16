@@ -114,12 +114,12 @@ class GraphData:
             "title": self.title
         }
     def id(self):
-        return str({
-            'disciplineName': self.disciplineName,
-            'name': self.name,
-            'plotIndex': self.plotIndex,
-            'postProcessingFilters': self.postProcessingFilters
-        })
+        return json.dumps({
+            "disciplineName": self.disciplineName,
+            "name": self.name,
+            "plotIndex": self.plotIndex,
+            "postProcessingFilters": self.postProcessingFilters
+        }, separators=(',', ':'))
 
 class ValueData:
     def __init__(
