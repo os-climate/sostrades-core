@@ -124,16 +124,19 @@ class GraphData:
 class ValueData:
     def __init__(
             self,
+            key: str = None,
             nodeData: Dict = None,
             namespace: str = None,
             discipline: str = None
     ):
+        self.key = key
         self.nodeData = nodeData if nodeData is not None else {}
         self.namespace = namespace
         self.discipline = discipline
 
     def serialize(self) -> dict:
         return {
+            "key": self.key,
             "nodeData": self.nodeData,
             "namespace": self.namespace,
             "discipline": self.discipline
@@ -246,6 +249,7 @@ class Dashboard:
                     )
                 elif item_type == DisplayableItemType.VALUE_DATA:
                     data[key] = ValueData(
+                        key=item_data.get('key', ''),
                         nodeData=item_data.get('nodeData', {}),
                         namespace=item_data.get('namespace', ''),
                         discipline=item_data.get('discipline', '')
@@ -273,6 +277,7 @@ class Dashboard:
                     )
                 elif 'nodeData' in item_data:
                     data[data_key] = ValueData(
+                        key=item_data.get('key', ''),
                         nodeData=item_data.get('nodeData', {}),
                         namespace=item_data.get('namespace', ''),
                         discipline=item_data.get('discipline', '')
