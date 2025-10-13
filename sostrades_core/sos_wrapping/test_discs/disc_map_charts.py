@@ -15,27 +15,13 @@ limitations under the License.
 '''
 import traceback
 
-import plotly.graph_objects as go
-
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
     InstanciatedSeries,
     TwoAxesInstanciatedChart,
 )
-
-
-class MapChart(TwoAxesInstanciatedChart):
-    """Custom chart class for map visualization"""
-
-    def __init__(self, fig, chart_name="Test Map Chart"):
-        # Initialize with dummy data since we'll override to_plotly
-        super().__init__('', '', chart_name=chart_name)
-        self.geographic_fig = fig
-
-    def to_plotly(self, logger=None):
-        """Override to return our custom geographic figure"""
-        return self.geographic_fig
+from sostrades_core.tools.post_processing.map_charts.map_chart import MapChart
 
 
 class DiscMapCharts(SoSWrapp):
@@ -148,162 +134,11 @@ class DiscMapCharts(SoSWrapp):
             network_stats = self.get_sosdisc_outputs('network_stats')
 
             # Create the Plotly figure
-            fig = go.Figure()
+            map_chart = MapChart('map chart')
 
             # Add connection lines first (so they appear behind markers)
-            if not connections_df.empty:
-                for _, conn_row in connections_df.iterrows():
-                    origin_id = conn_row['origin_id']
-                    dest_id = conn_row['destination_id']
-                    distance = conn_row['distance']
-                    weight = conn_row['weight']
+            map_chart.add_trace(locations_df, connections_df)
 
-                    # Find origin and destination coordinates
-                    origin_loc = locations_df[locations_df['id'] == origin_id]
-                    dest_loc = locations_df[locations_df['id'] == dest_id]
-
-                    if not origin_loc.empty and not dest_loc.empty:
-                        origin_lat = origin_loc.iloc[0]['lat']
-                        origin_lon = origin_loc.iloc[0]['lon']
-                        dest_lat = dest_loc.iloc[0]['lat']
-                        dest_lon = dest_loc.iloc[0]['lon']
-
-                        # Line width based on weight
-                        line_width = max(1, min(10, weight / 10))
-
-                        # Add connection line
-                        fig.add_trace(go.Scattermap(
-                            mode="lines",
-                            lon=[origin_lon, dest_lon],
-                            lat=[origin_lat, dest_lat],
-                            line=dict(width=line_width, color='rgba(52, 152, 219, 0.6)'),
-                            name=f"Connection {origin_id}->{dest_id}",
-                            hoverinfo="skip",
-                            showlegend=False
-                        ))
-
-                        # Add midpoint marker for connection info
-                        mid_lon = (origin_lon + dest_lon) / 2
-                        mid_lat = (origin_lat + dest_lat) / 2
-                        hover_text = (
-                            f"<b>Connection</b><br>"
-                            f"From: {origin_loc.iloc[0]['name']}<br>"
-                            f"To: {dest_loc.iloc[0]['name']}<br>"
-                            f"Distance: {distance:.1f} km<br>"
-                            f"Weight: {weight:.1f}"
-                        )
-
-                        fig.add_trace(go.Scattermap(
-                            mode="markers",
-                            lon=[mid_lon],
-                            lat=[mid_lat],
-                            marker=dict(size=4, color='rgba(52, 152, 219, 0.8)', symbol='triangle'),
-                            hovertemplate='%{customdata}<extra></extra>',
-                            customdata=[hover_text],
-                            showlegend=False
-                        ))
-
-            # Add location markers
-            if not locations_df.empty:
-                for _, loc_row in locations_df.iterrows():
-                    location_id = loc_row['id']
-                    name = loc_row['name']
-                    lat = loc_row['lat']
-                    lon = loc_row['lon']
-                    loc_type = loc_row['type']
-                    value = loc_row['value']
-
-                    # Get processed value if available
-                    processed_value = value
-                    if processed_locations is not None and not processed_locations.empty:
-                        proc_loc = processed_locations[processed_locations['id'] == location_id]
-                        if not proc_loc.empty:
-                            processed_value = proc_loc.iloc[0]['computed_value']
-
-                    # Marker properties based on type
-                    if loc_type == 'hub':
-                        marker_color = 'red'
-                        marker_size = 15
-                        marker_symbol = 'star'
-                    elif loc_type == 'factory':
-                        marker_color = 'orange'
-                        marker_size = 12
-                        marker_symbol = 'square'
-                    else:
-                        marker_color = 'blue'
-                        marker_size = 10
-                        marker_symbol = 'circle'
-
-                    hover_text = (
-                        f"<b>{name}</b><br>"
-                        f"Type: {loc_type}<br>"
-                        f"Original Value: {value:.2f}<br>"
-                        f"Processed Value: {processed_value:.2f}<br>"
-                        f"Coordinates: ({lat:.3f}, {lon:.3f})"
-                    )
-
-                    fig.add_trace(go.Scattermap(
-                        mode="markers+text",
-                        lon=[lon],
-                        lat=[lat],
-                        text=[name],
-                        textposition='top center',
-                        textfont=dict(size=10, color=marker_color, family='Arial Black'),
-                        marker=dict(size=marker_size, color=marker_color, symbol=marker_symbol),
-                        hovertemplate='%{customdata}<extra></extra>',
-                        customdata=[hover_text],
-                        name=f"{loc_type.title()} Locations",
-                        showlegend=True
-                    ))
-
-            # Update layout
-            fig.update_layout(
-                mapbox_style="open-street-map",
-                mapbox=dict(
-                    center=dict(
-                        lat=locations_df['lat'].mean() if not locations_df.empty else 0,
-                        lon=locations_df['lon'].mean() if not locations_df.empty else 0
-                    ),
-                    zoom=5
-                ),
-                title=dict(
-                    text='Test Geographic Network Map',
-                    x=0.5,
-                    font=dict(size=18, color='#2C3E50'),
-                    pad=dict(t=20)
-                ),
-                height=600,
-                width=1000,
-                margin=dict(l=20, r=20, t=60, b=20),
-                paper_bgcolor='#FFFFFF'
-            )
-
-            # Add summary statistics annotation
-            if network_stats:
-                summary_text = (
-                    f"<b>Network Summary</b><br>"
-                    f"Locations: {network_stats.get('total_locations', 0)}<br>"
-                    f"Connections: {network_stats.get('total_connections', 0)}<br>"
-                    f"Avg Value: {network_stats.get('avg_location_value', 0):.2f}<br>"
-                    f"Total Distance: {self.get_sosdisc_outputs('total_distance'):.1f} km"
-                )
-
-                fig.add_annotation(
-                    text=summary_text,
-                    showarrow=False,
-                    xref="paper", yref="paper",
-                    x=0.98, y=0.98,
-                    xanchor='right', yanchor='top',
-                    font=dict(size=11, color='#2C3E50'),
-                    bgcolor='rgba(255, 255, 255, 0.95)',
-                    bordercolor='#3498DB',
-                    borderwidth=2,
-                    borderpad=10
-                )
-
-            # Create chart object
-            map_chart = MapChart(fig, "Test Geographic Network Map")
-            self.logger.info("Test map created successfully")
             return map_chart
 
         except Exception as e:
