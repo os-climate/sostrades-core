@@ -28,7 +28,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
     """
 
     def __init__(self,
-                 chart_name="Geographic Network Map", 
+                 chart_name="Geographic Network Map",
                  locations_df = None,
                  connections_df = None,
                  marker_config=None,
@@ -107,7 +107,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         if self.connections_df is not None:
             self._add_connections_to_figure(fig, self.locations_df, self.connections_df)
 
-        
+
         return fig
 
 
@@ -167,20 +167,20 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
     def _add_locations_to_figure(self, fig, locations_df):
         """Add location markers to the map"""
         location_types = locations_df['type'].unique()
-    
+
         for loc_type in location_types:
             # Filtrer les données pour ce type
             type_data = locations_df[locations_df['type'] == loc_type]
-            
+
             # Marker properties based on type
             marker_config = self._get_marker_config(loc_type)
-            
+
             # Préparer les listes pour tous les points de ce type
             lons = type_data['lon'].tolist()
             lats = type_data['lat'].tolist()
             names = type_data['name'].tolist()
             values = type_data['value'].tolist()
-            
+
             # Créer le texte de hover pour tous les points de ce type
             hover_texts = [(
                     f"<b>{loc_row['name']}</b><br>"
@@ -188,7 +188,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
                     f"Value: {loc_row['value']:.2f}<br>"
                     f"Coordinates: ({loc_row['lat']:.3f}, {loc_row['lon']:.3f})"
                 ) for _, loc_row in type_data.iterrows()]
-            
+
             # Créer une seule trace pour tous les points de ce type
             fig.add_trace(go.Scattermap(
                 mode="markers+text",  # Retirer "+text" pour éviter le problème des images
@@ -271,7 +271,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
             paper_bgcolor='#FFFFFF'
         )
 
-        
+
     def __to_csv(self):
         global_list = []
         header = []
