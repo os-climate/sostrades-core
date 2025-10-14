@@ -100,12 +100,13 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
     def to_plotly(self, app_logger=None):
         fig = go.Figure()
         """Convert the map chart to a Plotly figure"""
+        self._configure_map_layout(fig, self.locations_df)
         if self.locations_df is not None:
             self._add_locations_to_figure(fig, self.locations_df)
         if self.connections_df is not None:
             self._add_connections_to_figure(fig, self.locations_df, self.connections_df)
 
-        self._configure_map_layout(fig, self.locations_df)
+        
         return fig
 
 
@@ -187,12 +188,6 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
                 lat=[lat],
                 text=[name],
                 textposition='top center',
-                textfont=dict(size=10, color=marker_config['color'], family='Arial Black'),
-                marker=dict(
-                    size=marker_config['size'],
-                    color=marker_config['color'],
-                    symbol=marker_config['symbol']
-                ),
                 hovertemplate='%{customdata}<extra></extra>',
                 customdata=[hover_text],
                 name=f"{loc_type.title()} Locations",
