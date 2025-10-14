@@ -6,7 +6,7 @@ Display pyDecision plotly graphs in SoSTrades
 """
 
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import InstanciatedSeries, TwoAxesInstanciatedChart
 
 
 def post_processing_filters(execution_engine, namespace):
@@ -52,7 +52,11 @@ def post_processings(execution_engine, namespace, chart_filters):
 
                 for method in mcda_rankings.columns:
                     rankings = [float(v) for v in mcda_rankings[method].values]
-                    ranking_chart.add_series(alternatives, rankings, f'{method.upper()} Rankings', 'lines+markers')
+                    new_serie = InstanciatedSeries(list(alternatives),
+                                                   list(rankings),
+                                                   f'{method.upper()} Rankings', 'lines+markers')
+
+                    ranking_chart.add_series(new_serie)
 
                 instanciated_charts.append(ranking_chart)
 
@@ -65,7 +69,11 @@ def post_processings(execution_engine, namespace, chart_filters):
 
                 for method in ranking_scores.columns:
                     scores = [float(v) for v in ranking_scores[method].values]
-                    scores_chart.add_series(alternatives, scores, f'{method.upper()} Scores', 'bar')
+                    new_serie = InstanciatedSeries(list(alternatives),
+                                                   list(scores),
+                                                   f'{method.upper()} Scores', 'bar')
+
+                    scores_chart.add_series(new_serie)
 
                 instanciated_charts.append(scores_chart)
 
@@ -85,8 +93,11 @@ def post_processings(execution_engine, namespace, chart_filters):
                             best_indices.append(int(best_idx))
                         else:
                             best_indices.append(0)
+                    new_serie = InstanciatedSeries(list(methods),
+                                                   list(best_indices),
+                                                   'Best Alternative Index', 'bar')
 
-                    summary_chart.add_series(methods, best_indices, 'Best Alternative Index', 'bar')
+                    summary_chart.add_series(new_serie)
                     instanciated_charts.append(summary_chart)
 
     except Exception as e:
