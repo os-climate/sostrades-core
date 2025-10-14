@@ -19,6 +19,7 @@ from pandas import DataFrame
 
 from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
 
+
 class MapChart(AbstractPostProcessingPlotlyTooling):
     """
     Specialized chart class for geographic map visualization in SOSTrades.
