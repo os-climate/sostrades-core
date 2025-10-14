@@ -157,7 +157,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
                     mode="markers",
                     lon=[mid_lon],
                     lat=[mid_lat],
-                    marker=dict(size=4, color='rgba(52, 152, 219, 0.8)', symbol='triangle'),
+                    marker=dict(size=4, color='rgba(52, 152, 219, 0.8)'),
                     hovertemplate='%{customdata}<extra></extra>',
                     customdata=[hover_text],
                     showlegend=False
@@ -187,6 +187,11 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
                 lon=[lon],
                 lat=[lat],
                 text=[name],
+                marker=dict(
+                    size=marker_config['size'],
+                    color=marker_config['color'],
+                    symbol=marker_config['symbol']
+                ),
                 textposition='top center',
                 hovertemplate='%{customdata}<extra></extra>',
                 customdata=[hover_text],
@@ -208,11 +213,9 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
 
         custom_style = {
             'version': 8,
-            'glyphs': 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',  # Ajout de la propriété glyphs
             'sources': {
                 'osm-tiles': {
                     'type': 'raster',
-                    "below": "traces",
                     'tiles': [tiles_url],  # Placeholder URL
                     'tileSize': 256,
                     'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -241,19 +244,23 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
                 text=self.chart_name
             ),
             legend=dict(
-            orientation="h",           # horizontal
-            x=0.5,                    # centré horizontalement
-            y=-0.05,                  # en dessous de la carte
-            xanchor="center",         # ancrage centré
-            yanchor="top",            # ancrage en haut de la légende
-            bgcolor="rgba(255, 255, 255, 0.9)",  # fond blanc semi-transparent
-            bordercolor="rgba(0, 0, 0, 0.2)",    # bordure grise
-            borderwidth=1,
-            font=dict(size=10),       # taille de police réduite
-            itemsizing="constant",    # taille constante des items
-            itemwidth=30,             # largeur des items réduite
-            tracegroupgap=10          # espacement entre les groupes
-        )
+                orientation="h",           # horizontal
+                x=0.5,                    # centré horizontalement
+                y=-0.05,                  # en dessous de la carte
+                xanchor="center",         # ancrage centré
+                yanchor="top",            # ancrage en haut de la légende
+                bgcolor="rgba(255, 255, 255, 0.9)",  # fond blanc semi-transparent
+                bordercolor="rgba(0, 0, 0, 0.2)",    # bordure grise
+                borderwidth=1,
+                font=dict(size=10),       # taille de police réduite
+                itemsizing="constant",    # taille constante des items
+                itemwidth=30,             # largeur des items réduite
+                tracegroupgap=10          # espacement entre les groupes
+            ),
+            height=600,
+            width= 1000,
+            margin=dict(l=20, r=20, t=60, b=20),
+            paper_bgcolor='#FFFFFF'
         )
 
         
