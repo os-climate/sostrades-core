@@ -21,7 +21,7 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     InstanciatedSeries,
     TwoAxesInstanciatedChart,
 )
-from sostrades_core.tools.post_processing.map_charts.map_chart import MapChart
+from sostrades_core.tools.post_processing.map_charts.instanciated_map_chart import InstanciatedMapChart
 
 
 class DiscMapCharts(SoSWrapp):
@@ -134,7 +134,7 @@ class DiscMapCharts(SoSWrapp):
             network_stats = self.get_sosdisc_outputs('network_stats')
 
             # Create the Plotly figure
-            map_chart = MapChart('map chart')
+            map_chart = InstanciatedMapChart('map chart')
 
             # Add connection lines first (so they appear behind markers)
             map_chart.add_trace(locations_df, connections_df)

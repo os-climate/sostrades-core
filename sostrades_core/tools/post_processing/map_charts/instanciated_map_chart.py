@@ -20,7 +20,7 @@ from pandas import DataFrame
 from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
 
 
-class MapChart(AbstractPostProcessingPlotlyTooling):
+class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
     """
     Specialized chart class for geographic map visualization in SOSTrades.
     This chart uses a placeholder URL for tiles that will be replaced by the
@@ -28,23 +28,40 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
     """
 
     def __init__(self,
-                 chart_name="Geographic Network Map", **kwargs):
+                 chart_name="Geographic Network Map", 
+                 locations_df = None,
+                 connections_df = None,
+                 marker_config=None,
+                 initial_zoom = 2
+                 ):
         """
         Initialize map chart
         Args:
-            locations_data: DataFrame with columns ['id', 'name', 'lat', 'lon', 'type', 'value']
-            connections_data: DataFrame with columns ['origin_id', 'destination_id', 'distance', 'weight']
             chart_name: Name of the chart
-            **kwargs: Additional chart parameters
+            locations_df: DataFrame with columns ['id', 'name', 'lat', 'lon', 'type', 'value']
+            connections_df: DataFrame with columns ['origin_id', 'destination_id', 'distance', 'weight']
+            marker_config: Configuration for the markers on the map, dict with location type as keys, values as dict with 'color', 'size', 'symbol'
+            initial_zoom: Initial zoom level for the map
 
         """
         super().__init__()
         self.locations_df = None
         self.connections_df = None
+        self.add_trace(locations_df, connections_df)
         self.chart_name = chart_name
+        self.initial_zoom = initial_zoom
 
         # Store map-specific data
-        self.map_config = kwargs
+        if marker_config is None:
+            self.marker_config = {
+                'hub': {'color': 'red', 'size': 15, 'symbol': 'circle'},
+                'factory': {'color': 'orange', 'size': 12, 'symbol': 'circle'},
+                'warehouse': {'color': 'blue', 'size': 10, 'symbol': 'circle'},
+                'distribution': {'color': 'green', 'size': 10, 'symbol': 'circle'},
+                'port': {'color': 'purple', 'size': 12, 'symbol': 'circle'}
+            }
+        else:
+            self.marker_config = marker_config
 
         # Placeholder tile URL - will be replaced by post-processing server
         self.tile_url_placeholder = "https://tile.openstreetmap.org"
@@ -184,14 +201,7 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
 
     def _get_marker_config(self, loc_type):
         """Get marker configuration based on location type"""
-        configs = {
-            'hub': {'color': 'red', 'size': 15, 'symbol': 'circle'},
-            'factory': {'color': 'orange', 'size': 12, 'symbol': 'circle'},
-            'warehouse': {'color': 'blue', 'size': 10, 'symbol': 'circle'},
-            'distribution': {'color': 'green', 'size': 10, 'symbol': 'circle'},
-            'port': {'color': 'purple', 'size': 12, 'symbol': 'circle'}
-        }
-        return configs.get(loc_type, {'color': 'gray', 'size': 8, 'symbol': 'circle'})
+        return self.marker_config.get(loc_type, {'color': 'gray', 'size': 8, 'symbol': 'circle'})
 
     def _configure_map_layout(self, fig, location_df):
         """Configure the map layout with placeholder tile URL"""
@@ -207,6 +217,7 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
             'sources': {
                 'osm-tiles': {
                     'type': 'raster',
+                    "below": "traces",
                     'tiles': [tiles_url],  # Placeholder URL
                     'tileSize': 256,
                     'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -219,12 +230,7 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
                     'source': 'osm-tiles',
                     'minzoom': 0,
                     'maxzoom': 18,
-                    'layout': {
-                    'visibility': 'visible'
-                    },
-                    'paint': {
-                        'raster-opacity': 1
-                    }
+                    "below": "traces"
                 }
             ]
         }
@@ -233,13 +239,11 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
             map=dict(
                 style=custom_style,
                 center=dict(lat=center_lat, lon=center_lon),
-                zoom=self.map_config.get('zoom', 2)
+                zoom=self.initial_zoom,
+
             ),
             title=dict(
-                text=self.chart_name,
-                x=0.5,
-                font=dict(size=18, color='#2C3E50'),
-                pad=dict(t=20)
+                text=self.chart_name
             ),
             legend=dict(
             orientation="h",           # horizontal
@@ -254,29 +258,10 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
             itemsizing="constant",    # taille constante des items
             itemwidth=30,             # largeur des items réduite
             tracegroupgap=10          # espacement entre les groupes
-        ),
-            height=self.map_config.get('height', 600),
-            width=self.map_config.get('width', 1000),
-            margin=dict(l=20, r=20, t=60, b=20),
-            paper_bgcolor='#FFFFFF'
+        )
         )
 
-        # Add summary if provided
-        summary = self.map_config.get('summary')
-        if summary:
-            fig.add_annotation(
-                text=summary,
-                showarrow=False,
-                xref="paper", yref="paper",
-                x=0.98, y=0.98,
-                xanchor='right', yanchor='top',
-                font=dict(size=11, color='#2C3E50'),
-                bgcolor='rgba(255, 255, 255, 0.95)',
-                bordercolor='#3498DB',
-                borderwidth=2,
-                borderpad=10
-            )
-
+        
     def __to_csv(self):
         global_list = []
         header = []
