@@ -40,7 +40,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
             chart_name: Name of the chart
             locations_df: DataFrame with columns ['id', 'name', 'lat', 'lon', 'type', 'value']
             connections_df: DataFrame with columns ['origin_id', 'destination_id', 'distance', 'weight']
-            marker_config: Configuration for the markers on the map, dict with location type as keys, values as dict with 'color', 'size', 'symbol'
+            marker_config: Configuration for the markers on the map, dict with location type as keys, values as dict with 'color', 'size'
             initial_zoom: Initial zoom level for the map
 
         """
@@ -54,17 +54,18 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         # Store map-specific data
         if marker_config is None:
             self.marker_config = {
-                'hub': {'color': 'red', 'size': 15, 'symbol': 'circle'},
-                'factory': {'color': 'orange', 'size': 12, 'symbol': 'circle'},
-                'warehouse': {'color': 'blue', 'size': 10, 'symbol': 'circle'},
-                'distribution': {'color': 'green', 'size': 10, 'symbol': 'circle'},
-                'port': {'color': 'purple', 'size': 12, 'symbol': 'circle'}
+                'hub': {'color': 'red', 'size': 15},
+                'factory': {'color': 'orange', 'size': 12},
+                'warehouse': {'color': 'blue', 'size': 10},
+                'distribution': {'color': 'green', 'size': 10},
+                'port': {'color': 'purple', 'size': 12}
             }
         else:
             self.marker_config = marker_config
 
         # Placeholder tile URL - will be replaced by post-processing server
         self.tile_url_placeholder = "https://tile.openstreetmap.org"
+        self.font_url_placeholder = "https://fonts.openmaptiles.org"
 
         # Chart type identifier for post-processing
         self.chart_type = "geographic_map"
@@ -165,36 +166,42 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
 
     def _add_locations_to_figure(self, fig, locations_df):
         """Add location markers to the map"""
-        for _, loc_row in locations_df.iterrows():
-            name = loc_row['name']
-            lat = loc_row['lat']
-            lon = loc_row['lon']
-            loc_type = loc_row.get('type', 'default')
-            value = loc_row.get('value', 0)
-
+        location_types = locations_df['type'].unique()
+    
+        for loc_type in location_types:
+            # Filtrer les données pour ce type
+            type_data = locations_df[locations_df['type'] == loc_type]
+            
             # Marker properties based on type
             marker_config = self._get_marker_config(loc_type)
-
-            hover_text = (
-                f"<b>{name}</b><br>"
-                f"Type: {loc_type}<br>"
-                f"Value: {value:.2f}<br>"
-                f"Coordinates: ({lat:.3f}, {lon:.3f})"
-            )
-
+            
+            # Préparer les listes pour tous les points de ce type
+            lons = type_data['lon'].tolist()
+            lats = type_data['lat'].tolist()
+            names = type_data['name'].tolist()
+            values = type_data['value'].tolist()
+            
+            # Créer le texte de hover pour tous les points de ce type
+            hover_texts = [(
+                    f"<b>{loc_row['name']}</b><br>"
+                    f"Type: {loc_row['type']}<br>"
+                    f"Value: {loc_row['value']:.2f}<br>"
+                    f"Coordinates: ({loc_row['lat']:.3f}, {loc_row['lon']:.3f})"
+                ) for _, loc_row in type_data.iterrows()]
+            
+            # Créer une seule trace pour tous les points de ce type
             fig.add_trace(go.Scattermap(
-                mode="markers+text",
-                lon=[lon],
-                lat=[lat],
-                text=[name],
+                mode="markers+text",  # Retirer "+text" pour éviter le problème des images
+                lon=lons,
+                lat=lats,
+                text=names,
                 marker=dict(
                     size=marker_config['size'],
                     color=marker_config['color'],
-                    symbol=marker_config['symbol']
+                    symbol='circle'
                 ),
-                textposition='top center',
                 hovertemplate='%{customdata}<extra></extra>',
-                customdata=[hover_text],
+                customdata=hover_texts,
                 name=f"{loc_type.title()} Locations",
                 showlegend=True
             ))
@@ -213,6 +220,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
 
         custom_style = {
             'version': 8,
+            'glyphs': self.font_url_placeholder + "/{fontstack}/{range}.pbf",
             'sources': {
                 'osm-tiles': {
                     'type': 'raster',
@@ -312,5 +320,6 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         #add chart metadata as watermarks or sections
         json.update(self.get_metadata_dict())
         json.update({'tile_url_placeholder': self.tile_url_placeholder})
+        json.update({'font_url_placeholder': self.font_url_placeholder})
 
         return json
