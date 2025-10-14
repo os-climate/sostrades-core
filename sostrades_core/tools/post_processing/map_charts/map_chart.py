@@ -209,8 +209,7 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
                     'type': 'raster',
                     'tiles': [tiles_url],  # Placeholder URL
                     'tileSize': 256,
-                    'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    "below": 'traces'
+                    'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }
             },
             'layers': [
@@ -219,12 +218,18 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
                     'type': 'raster',
                     'source': 'osm-tiles',
                     'minzoom': 0,
-                    'maxzoom': 18
+                    'maxzoom': 18,
+                    'layout': {
+                    'visibility': 'visible'
+                    },
+                    'paint': {
+                        'raster-opacity': 1
+                    }
                 }
             ]
         }
 
-        fig.update_layout(map_style="open-street-map",
+        fig.update_layout(
             map=dict(
                 style=custom_style,
                 center=dict(lat=center_lat, lon=center_lon),
@@ -236,6 +241,20 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
                 font=dict(size=18, color='#2C3E50'),
                 pad=dict(t=20)
             ),
+            legend=dict(
+            orientation="h",           # horizontal
+            x=0.5,                    # centré horizontalement
+            y=-0.05,                  # en dessous de la carte
+            xanchor="center",         # ancrage centré
+            yanchor="top",            # ancrage en haut de la légende
+            bgcolor="rgba(255, 255, 255, 0.9)",  # fond blanc semi-transparent
+            bordercolor="rgba(0, 0, 0, 0.2)",    # bordure grise
+            borderwidth=1,
+            font=dict(size=10),       # taille de police réduite
+            itemsizing="constant",    # taille constante des items
+            itemwidth=30,             # largeur des items réduite
+            tracegroupgap=10          # espacement entre les groupes
+        ),
             height=self.map_config.get('height', 600),
             width=self.map_config.get('width', 1000),
             margin=dict(l=20, r=20, t=60, b=20),
