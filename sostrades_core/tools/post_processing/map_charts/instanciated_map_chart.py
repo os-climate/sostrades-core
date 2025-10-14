@@ -169,19 +169,19 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         location_types = locations_df['type'].unique()
 
         for loc_type in location_types:
-            # Filtrer les données pour ce type
+            # filter data by location type
             type_data = locations_df[locations_df['type'] == loc_type]
 
             # Marker properties based on type
             marker_config = self._get_marker_config(loc_type)
 
-            # Préparer les listes pour tous les points de ce type
+            # Prepare lists for all points of this type
             lons = type_data['lon'].tolist()
             lats = type_data['lat'].tolist()
             names = type_data['name'].tolist()
-            values = type_data['value'].tolist()
+            
 
-            # Créer le texte de hover pour tous les points de ce type
+            # Create hover text for all points of this type
             hover_texts = [(
                     f"<b>{loc_row['name']}</b><br>"
                     f"Type: {loc_row['type']}<br>"
@@ -189,9 +189,9 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
                     f"Coordinates: ({loc_row['lat']:.3f}, {loc_row['lon']:.3f})"
                 ) for _, loc_row in type_data.iterrows()]
 
-            # Créer une seule trace pour tous les points de ce type
+            # Create a single trace for all points of this type
             fig.add_trace(go.Scattermap(
-                mode="markers+text",  # Retirer "+text" pour éviter le problème des images
+                mode="markers+text", 
                 lon=lons,
                 lat=lats,
                 text=names,
@@ -253,17 +253,17 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
             ),
             legend=dict(
                 orientation="h",           # horizontal
-                x=0.5,                    # centré horizontalement
-                y=-0.05,                  # en dessous de la carte
-                xanchor="center",         # ancrage centré
-                yanchor="top",            # ancrage en haut de la légende
-                bgcolor="rgba(255, 255, 255, 0.9)",  # fond blanc semi-transparent
-                bordercolor="rgba(0, 0, 0, 0.2)",    # bordure grise
+                x=0.5,                    # centered horizontally
+                y=-0.05,                  # below the map
+                xanchor="center",         # centered anchor
+                yanchor="top",            # top anchor
+                bgcolor="rgba(255, 255, 255, 0.9)",  # semi-transparent white background
+                bordercolor="rgba(0, 0, 0, 0.2)",    # gray border
                 borderwidth=1,
-                font=dict(size=10),       # taille de police réduite
-                itemsizing="constant",    # taille constante des items
-                itemwidth=30,             # largeur des items réduite
-                tracegroupgap=10          # espacement entre les groupes
+                font=dict(size=10),       # reduced font size
+                itemsizing="constant",    # constant item size
+                itemwidth=30,             # reduced item width
+                tracegroupgap=10          # spacing between groups
             ),
             height=600,
             width= 1000,
