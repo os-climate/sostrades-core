@@ -208,7 +208,8 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
                     'type': 'raster',
                     'tiles': [tiles_url],  # Placeholder URL
                     'tileSize': 256,
-                    'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    "below": 'traces'
                 }
             },
             'layers': [
