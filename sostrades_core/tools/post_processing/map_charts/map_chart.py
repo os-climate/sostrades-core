@@ -203,6 +203,7 @@ class MapChart(AbstractPostProcessingPlotlyTooling):
 
         custom_style = {
             'version': 8,
+            'glyphs': 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',  # Ajout de la propriété glyphs
             'sources': {
                 'osm-tiles': {
                     'type': 'raster',
