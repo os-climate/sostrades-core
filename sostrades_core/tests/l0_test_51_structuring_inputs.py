@@ -188,7 +188,7 @@ class TestStructuringInputs(unittest.TestCase):
                            'acceleration_method': {'type': 'string', 'default': 'Alternate2Delta',
                                                    'possible_values': ['Alternate2Delta', 'secant', 'none']},
 
-                           'n_subcouplings_parallel': {'type': 'int', 'default': 1, 'possible_values': None},
+                           'mdachain_parallelize_tasks': {'type': 'bool', 'default': False, 'possible_values': [True, False]},
                            'tolerance_gs': {'type': 'float', 'default': 10.0, 'possible_values': None},
                            'over_relaxation_factor': {'type': 'float', 'default': 0.99, 'possible_values': None},
                            'epsilon0': {'type': 'float', 'default': 1e-06, 'possible_values': None},
