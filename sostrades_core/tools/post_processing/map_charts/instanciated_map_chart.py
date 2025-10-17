@@ -179,7 +179,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
             lons = type_data['lon'].tolist()
             lats = type_data['lat'].tolist()
             names = type_data['name'].tolist()
-            
+
 
             # Create hover text for all points of this type
             hover_texts = [(
@@ -191,7 +191,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
 
             # Create a single trace for all points of this type
             fig.add_trace(go.Scattermap(
-                mode="markers+text", 
+                mode="markers+text",
                 lon=lons,
                 lat=lats,
                 text=names,
@@ -272,41 +272,6 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         )
 
 
-    def __to_csv(self):
-        global_list = []
-        header = []
-        max_len = 0
-
-        for serie in self.__traces:
-            if serie.series_name is not None and len(serie.series_name) > 0:
-                header.append(f'{serie.series_name} {self.abscissa_axis_name}')
-                header.append(
-                    f'{serie.series_name} {self.primary_ordinate_axis_name}')
-            else:
-                header.append(f'{self.abscissa_axis_name}')
-                header.append(f'{self.primary_ordinate_axis_name}')
-
-            global_list.append(serie.abscissa)
-            if len(serie.abscissa) > max_len:
-                max_len = len(serie.abscissa)
-
-            global_list.append(serie.ordinate)
-            if len(serie.ordinate) > max_len:
-                max_len = len(serie.ordinate)
-
-        csv_list = [','.join(header)]
-
-        for i in range(max_len):
-            csv_line = []
-            for gl in global_list:
-                if i < len(gl):
-                    csv_line.append(f'{gl[i]}')
-                else:
-                    csv_line.append('')
-            csv_list.append(','.join(csv_line))
-
-        self.set_csv_data(csv_list)
-
     def to_plotly_dict(self, logger=None):
         """
         Method that convert current instance to plotly object and then to a dictionary
@@ -315,7 +280,6 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         @type Logging.loger
         """
         json = self.to_plotly(logger).to_dict()
-        #json[self.CSV_DATA] = self._plot_csv_data
 
         #add chart metadata as watermarks or sections
         json.update(self.get_metadata_dict())
