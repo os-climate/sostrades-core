@@ -172,7 +172,12 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         output_names = self.attributes["eval_out_list"]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
         output_array = next(iter(samples_dict["functions"].values()))
-        output_sizes = [get_size(self.attributes["sub_disciplines"][0].local_data[output], reduced_dm[output]) for output in output_names]
+        self.logger.info(f'Output array shape: {output_array}')
+        self.logger.info(f'Output names: {output_names}')
+        self.logger.info(f'sub_disciplines local_data: {self.attributes["sub_disciplines"][0].local_data.keys()}')
+        self.logger.info(f'reduced_dm: {reduced_dm.keys()}')
+        output_sizes = [get_size(self.attributes["sub_disciplines"][0].local_data[output], reduced_dm[output]) for output in output_names 
+                        if (output in self.attributes["sub_disciplines"][0].local_data and output in reduced_dm)]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
             samples_output_df = DataFrame(output_array, columns=output_names)
         else:  # some outputs have more than 1 component
