@@ -14,12 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-"""
-Post-processing charts for ValueAnalysis discipline
-
-Display pyDecision plotly graphs in SoSTrades
-(not using SoSTrades predefined graphs but directly as fior the map in LogisticsNetworkOptimizer)
-"""
 
 from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
 from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
@@ -27,6 +21,12 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     TwoAxesInstanciatedChart,
 )
 
+"""
+Post-processing charts for ValueAnalysis discipline
+
+Display pyDecision plotly graphs in SoSTrades
+(not using SoSTrades predefined graphs but directly as fior the map in LogisticsNetworkOptimizer)
+"""
 
 def post_processing_filters(execution_engine, namespace):
     """Return chart filters for ValueAnalysis"""
