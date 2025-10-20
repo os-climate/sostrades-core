@@ -161,7 +161,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             elif hasattr(value, '__len__'):
                 return len(value)
 
-        reduced_dm = self.attributes["sub_disciplines"][0].output_grammar.data_converter.reduced_dm
+        reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
 
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
@@ -190,8 +190,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
         subprocess_ref_outputs = {
-            key: self.attributes["sub_disciplines"][0].io.data[key]
-            for key in self.attributes["sub_disciplines"][0].output_grammar.names
+            key: doe_scenario.disciplines[0].io.data[key]
+            for key in doe_scenario.disciplines[0].output_grammar.names
             if not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM)
         }
         self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
@@ -204,7 +204,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             converted_value = convert_func(name, array_value)
             return converted_value
 
-        convert_func = self.attributes["sub_disciplines"][0].output_grammar.data_converter.convert_array_to_value
+        convert_func = doe_scenario.disciplines[0].output_grammar.data_converter.convert_array_to_value
         for dynamic_output, out_name in zip(self.attributes["eval_out_list"], self.attributes["eval_out_names"]):
             dict_output = {
                 r[SampleGeneratorWrapper.SCENARIO_NAME]: convert_outputs_to_real_type(dynamic_output, r[dynamic_output],
