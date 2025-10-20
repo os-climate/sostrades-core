@@ -341,6 +341,7 @@ class ExecutionEngine:
     def get_treeview(self, no_data=False, read_only=False, exec_display=False):
         '''Returns the treenode build based on datamanager'''
         if self.dm.treeview is None or self.dm.treeview.exec_display != exec_display:
+            self.clean_unused_namespaces()
             self.dm.create_treeview(
                 self.root_process, self.__factory.process_module, no_data, read_only, exec_display=exec_display)
 

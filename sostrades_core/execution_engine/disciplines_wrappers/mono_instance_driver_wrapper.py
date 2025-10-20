@@ -16,8 +16,6 @@ limitations under the License.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from gemseo import create_design_space, create_scenario
 from gemseo.settings.doe import CustomDOE_Settings
 from numpy import array, atleast_1d, cumsum, hstack, size, split
@@ -29,10 +27,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapp
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
     SampleGeneratorWrapper,
 )
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-
-if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+from sostrades_core.execution_engine.proxy_coupling import BaseScenario, ProxyCoupling
 
 
 class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
@@ -96,7 +91,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         scenario_names = samples.pop(SampleGeneratorWrapper.SCENARIO_NAME).to_list()
         return samples, scenario_names
 
-    def evaluate_samples(self, input_samples: DataFrame) -> Dataset:
+    def evaluate_samples(self, input_samples: DataFrame) -> BaseScenario:
         """
         Evaluate the samples.
 
@@ -135,9 +130,9 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             wait_time_between_samples=wait_time_between_samples,
         )
         doe_scenario.execute(settings)
-        return doe_scenario.to_dataset()
+        return doe_scenario
 
-    def process_output(self, evaluation_outputs: Dataset, scenario_names: list[str]) -> None:
+    def process_output(self, doe_scenario: BaseScenario, scenario_names: list[str]) -> None:
         """
         Process and store the sampling outputs.
 
@@ -146,11 +141,11 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         and split the array into the sub-array corresponding to each output.
 
         Args:
-            evaluation_outputs: The results of the samples evaluation.
+            doe_scenario: the samples evaluation scenario.
             scenario_names: The scenario names corresponding to each sample.
 
         """
-
+        evaluation_outputs = doe_scenario.to_dataset()
         def get_size(value, reduced_dm_variable):
             """Get the size of a value."""
             # For dataframes, get the computed size from the metadata
@@ -174,10 +169,9 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         output_array = next(iter(samples_dict["functions"].values()))
         print(f'Output array shape: {output_array}')
         print(f'Output names: {output_names}')
-        print(f'sub_disciplines local_data: {self.attributes["sub_disciplines"][0].local_data.keys()}')
-        print(f'reduced_dm: {reduced_dm.keys()}')
-        output_sizes = [get_size(self.attributes["sub_disciplines"][0].local_data[output], reduced_dm[output]) for output in output_names
-                        if (output in self.attributes["sub_disciplines"][0].local_data and output in reduced_dm)]
+        print(f'sub_disciplines local_data: {doe_scenario.disciplines[0].local_data.keys()}')
+        output_sizes = [get_size(doe_scenario.disciplines[0].local_data[output], reduced_dm[output]) for output in output_names
+                        if (output in doe_scenario.disciplines[0].local_data and output in reduced_dm)]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
             samples_output_df = DataFrame(output_array, columns=output_names)
         else:  # some outputs have more than 1 component
