@@ -169,11 +169,16 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         output_array = next(iter(samples_dict["functions"].values()))
         print(f'Output array shape: {output_array}')
         print(f'Output names: {output_names}')
-        print(f'doe_scenario.disciplines[0].local_data: {doe_scenario.disciplines[0].local_data.keys()}')
-        print(f'doe_scenario.disciplines[0].io: {[f'{key}:{value}' for key, value in doe_scenario.disciplines[0].io.data.items() if key in output_names]}')
+        print(f'doe_scenario.formulation.disciplines[0].local_data: {doe_scenario.formulation.disciplines[0].local_data.keys()}')
+        print(f'doe_scenario.formulation.disciplines[0].io: {[f'{key}:{value}' for key, value in doe_scenario.formulation.disciplines[0].io.data.items() if key in output_names]}')
+        for discipline in doe_scenario.formulation.disciplines[0].disciplines:
+            print(f'doe_scenario.formulation.disciplines[0].{discipline.name}: {[f'{key}:{value}' for key, value in discipline.io.data.items() if key in output_names]}')
+            print(f'doe_scenario.formulation.disciplines[0].{discipline.name}.local_data: {discipline.local_data.keys()}')
+        
         for discipline in doe_scenario.disciplines[0].disciplines:
             print(f'doe_scenario.disciplines[0].{discipline.name}: {[f'{key}:{value}' for key, value in discipline.io.data.items() if key in output_names]}')
             print(f'doe_scenario.disciplines[0].{discipline.name}.local_data: {discipline.local_data.keys()}')
+        
         output_sizes = [get_size(doe_scenario.disciplines[0].io.data[output], reduced_dm[output]) for output in output_names
                         if (output in doe_scenario.disciplines[0].io.data and output in reduced_dm)]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
