@@ -167,20 +167,21 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         output_names = self.attributes["eval_out_list"]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
         output_array = next(iter(samples_dict["functions"].values()))
-        print(f'Output array shape: {output_array}')
-        print(f'Output names: {output_names}')
-        print(f'doe_scenario.formulation.disciplines[0].local_data: {doe_scenario.formulation.disciplines[0].local_data.keys()}')
-        print(f'doe_scenario.formulation.disciplines[0].io: {[f'{key}:{value}' for key, value in doe_scenario.formulation.disciplines[0].io.data.items() if key in output_names]}')
-        for discipline in doe_scenario.formulation.disciplines[0].disciplines:
-            print(f'doe_scenario.formulation.disciplines[0].{discipline.name}: {[f'{key}:{value}' for key, value in discipline.io.data.items() if key in output_names]}')
-            print(f'doe_scenario.formulation.disciplines[0].{discipline.name}.local_data: {discipline.local_data.keys()}')
+
+        # search for discipline output values in local_data
         
-        for discipline in doe_scenario.disciplines[0].disciplines:
-            print(f'doe_scenario.disciplines[0].{discipline.name}: {[f'{key}:{value}' for key, value in discipline.io.data.items() if key in output_names]}')
-            print(f'doe_scenario.disciplines[0].{discipline.name}.local_data: {discipline.local_data.keys()}')
+
+        local_data_dict = {}
+        if doe_scenario.disciplines[0].local_data:
+            local_data_dict = doe_scenario.disciplines[0].local_data
+        else:
+            for discipline in doe_scenario.disciplines[0].disciplines:
+                local_data_dict.update({key:value for key, value in discipline.local_data.items() if key in output_names})
         
-        output_sizes = [get_size(doe_scenario.disciplines[0].io.data[output], reduced_dm[output]) for output in output_names
-                        if (output in doe_scenario.disciplines[0].io.data and output in reduced_dm)]
+        print('output local_data_dict:', local_data_dict)
+        
+        output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
+                        if (output in local_data_dict and output in reduced_dm)]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
             samples_output_df = DataFrame(output_array, columns=output_names)
         else:  # some outputs have more than 1 component
@@ -199,7 +200,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
         subprocess_ref_outputs = {
-            key: doe_scenario.disciplines[0].io.data[key]
+            key: local_data_dict[key]
             for key in doe_scenario.disciplines[0].output_grammar.names
             if not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM)
         }
