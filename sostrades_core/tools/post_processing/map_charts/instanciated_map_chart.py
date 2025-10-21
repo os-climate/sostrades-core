@@ -14,12 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+import enum
+
 import plotly.graph_objects as go
 from pandas import DataFrame
 
 from sostrades_core.tools.post_processing.post_processing_plotly_tooling import AbstractPostProcessingPlotlyTooling
 
 
+class MapStyle(enum.Enum):
+    OPEN_STREET_MAP = "open-street-map"
+    USGS_HYDROGRAPHY = "USGSHydroCached"
+    USGS_TOPO = "USGSTopo"
+    USGS_IMAGERY = "USGSImageryOnly"
+    USGS_IMAGERY_TOPO = "USGSImageryTopo"
+    USGS_SHADED_RELIEF = "USGSShadedReliefOnly"
 class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
     """
     Specialized chart class for geographic map visualization in SOSTrades.
@@ -32,7 +41,8 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
                  locations_df = None,
                  connections_df = None,
                  marker_config=None,
-                 initial_zoom = 2
+                 initial_zoom = 2,
+                 map_style=MapStyle.OPEN_STREET_MAP
                  ):
         """
         Initialize map chart
@@ -42,6 +52,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
             connections_df: DataFrame with columns ['origin_id', 'destination_id', 'distance', 'weight']
             marker_config: Configuration for the markers on the map, dict with location type as keys, values as dict with 'color', 'size'
             initial_zoom: Initial zoom level for the map
+            map_style: Map style to use (available styles: "open-street-map", "usgs-hydrography", "usgs-topo", "usgs-imagery", "usgs-imagery-topo", "usgs-shaded-relief")
 
         """
         super().__init__()
@@ -50,6 +61,7 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         self.add_trace(locations_df, connections_df)
         self.chart_name = chart_name
         self.initial_zoom = initial_zoom
+        self.map_style = map_style
 
         # Store map-specific data
         if marker_config is None:
@@ -63,13 +75,18 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         else:
             self.marker_config = marker_config
 
-        # Placeholder tile URL - will be replaced by post-processing server
-        self.tile_url_placeholder = "https://tile.openstreetmap.org"
-        self.font_url_placeholder = "https://fonts.openmaptiles.org"
-
         # Chart type identifier for post-processing
         self.chart_type = "geographic_map"
 
+    def set_map_style(self, map_style):
+        """
+        Set the map style for the chart
+
+        Args:
+            map_style: Map style to use (available styles: "open-street-map", "usgs-hydrography", "usgs-topo", "usgs-imagery", "usgs-imagery-topo", "usgs-shaded-relief")
+
+        """
+        self.map_style = map_style
 
     def add_trace(self, locations_df, connections_df):
         """
@@ -215,35 +232,13 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
         center_lat = location_df['lat'].mean() if location_df is not None and not location_df.empty else 0
         center_lon = location_df['lon'].mean() if location_df is not None and not location_df.empty else 0
 
-        # Custom mapbox style with placeholder URL
-        tiles_url = self.tile_url_placeholder + "/{z}/{x}/{y}.png"
-
-        custom_style = {
-            'version': 8,
-            'glyphs': self.font_url_placeholder + "/{fontstack}/{range}.pbf",
-            'sources': {
-                'osm-tiles': {
-                    'type': 'raster',
-                    'tiles': [tiles_url],  # Placeholder URL
-                    'tileSize': 256,
-                    'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }
-            },
-            'layers': [
-                {
-                    'id': 'osm-layer',
-                    'type': 'raster',
-                    'source': 'osm-tiles',
-                    'minzoom': 0,
-                    'maxzoom': 18,
-                    "below": "traces"
-                }
-            ]
-        }
+        map_style = "white-bg"
+        if self.map_style == MapStyle.OPEN_STREET_MAP:
+            map_style = "open-street-map"
 
         fig.update_layout(
             map=dict(
-                style=custom_style,
+                style=map_style,
                 center=dict(lat=center_lat, lon=center_lon),
                 zoom=self.initial_zoom,
 
@@ -271,6 +266,21 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
             paper_bgcolor='#FFFFFF'
         )
 
+        if self.map_style != MapStyle.OPEN_STREET_MAP:
+            fig.update_layout(
+                map_layers=[
+                    {
+                        "below": 'traces',
+                        "sourcetype": "raster",
+                        "sourceattribution": "United States Geological Survey",
+                        "source": [
+                            f"https://basemap.nationalmap.gov/arcgis/rest/services/{self.map_style.value}/MapServer/tile/{{z}}/{{y}}/{{x}}"
+                        ]
+                    }
+                ]
+            )
+
+
 
     def to_plotly_dict(self, logger=None):
         """
@@ -283,7 +293,5 @@ class InstanciatedMapChart(AbstractPostProcessingPlotlyTooling):
 
         #add chart metadata as watermarks or sections
         json.update(self.get_metadata_dict())
-        json.update({'tile_url_placeholder': self.tile_url_placeholder})
-        json.update({'font_url_placeholder': self.font_url_placeholder})
 
         return json
