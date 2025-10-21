@@ -175,10 +175,9 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         if doe_scenario.disciplines[0].local_data:
             local_data_dict = doe_scenario.disciplines[0].local_data
         else:
+            # in parallel case, local_data are in each discipline of the coupling
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
-
-        print('output local_data_dict:', local_data_dict)
 
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
