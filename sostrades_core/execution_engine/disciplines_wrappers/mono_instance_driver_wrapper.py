@@ -169,17 +169,17 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         output_array = next(iter(samples_dict["functions"].values()))
 
         # search for discipline output values in local_data
-        
+
 
         local_data_dict = {}
         if doe_scenario.disciplines[0].local_data:
             local_data_dict = doe_scenario.disciplines[0].local_data
         else:
             for discipline in doe_scenario.disciplines[0].disciplines:
-                local_data_dict.update({key:value for key, value in discipline.local_data.items() if key in output_names})
-        
+                local_data_dict.update(discipline.local_data)
+
         print('output local_data_dict:', local_data_dict)
-        
+
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
