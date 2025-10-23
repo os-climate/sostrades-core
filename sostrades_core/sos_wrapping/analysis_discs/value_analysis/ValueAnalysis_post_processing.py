@@ -1,13 +1,32 @@
+'''
+Copyright 2025 Capgemini
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+'''
+
+
+from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
+from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import (
+    InstanciatedSeries,
+    TwoAxesInstanciatedChart,
+)
+
 """
 Post-processing charts for ValueAnalysis discipline
 
 Display pyDecision plotly graphs in SoSTrades
 (not using SoSTrades predefined graphs but directly as fior the map in LogisticsNetworkOptimizer)
 """
-
-from sostrades_core.tools.post_processing.charts.chart_filter import ChartFilter
-from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart import TwoAxesInstanciatedChart
-
 
 def post_processing_filters(execution_engine, namespace):
     """Return chart filters for ValueAnalysis"""
@@ -52,7 +71,11 @@ def post_processings(execution_engine, namespace, chart_filters):
 
                 for method in mcda_rankings.columns:
                     rankings = [float(v) for v in mcda_rankings[method].values]
-                    ranking_chart.add_series(alternatives, rankings, f'{method.upper()} Rankings', 'lines+markers')
+                    new_serie = InstanciatedSeries(list(alternatives),
+                                                   list(rankings),
+                                                   f'{method.upper()} Rankings', 'lines+markers')
+
+                    ranking_chart.add_series(new_serie)
 
                 instanciated_charts.append(ranking_chart)
 
@@ -65,7 +88,11 @@ def post_processings(execution_engine, namespace, chart_filters):
 
                 for method in ranking_scores.columns:
                     scores = [float(v) for v in ranking_scores[method].values]
-                    scores_chart.add_series(alternatives, scores, f'{method.upper()} Scores', 'bar')
+                    new_serie = InstanciatedSeries(list(alternatives),
+                                                   list(scores),
+                                                   f'{method.upper()} Scores', 'bar')
+
+                    scores_chart.add_series(new_serie)
 
                 instanciated_charts.append(scores_chart)
 
@@ -85,8 +112,11 @@ def post_processings(execution_engine, namespace, chart_filters):
                             best_indices.append(int(best_idx))
                         else:
                             best_indices.append(0)
+                    new_serie = InstanciatedSeries(list(methods),
+                                                   list(best_indices),
+                                                   'Best Alternative Index', 'bar')
 
-                    summary_chart.add_series(methods, best_indices, 'Best Alternative Index', 'bar')
+                    summary_chart.add_series(new_serie)
                     instanciated_charts.append(summary_chart)
 
     except Exception as e:

@@ -662,6 +662,8 @@ class TestMDALoop(unittest.TestCase):
         values_dict['EE.use_lu_fact'] = True
         values_dict['EE.tolerance'] = 1.e-20
         values_dict['EE.n_processes'] = 2
+        values_dict['EE.use_threading'] = False
+        values_dict['EE.mdachain_parallelize_tasks'] = True
         values_dict['EE.max_mda_iter'] = 100
         values_dict['EE.inner_mda_name'] = 'MDANewtonRaphson'
         values_dict['EE.linear_solver_MDA_options'] = {
@@ -676,8 +678,10 @@ class TestMDALoop(unittest.TestCase):
         inner_mda = mda.inner_mdas[0]
         assert values_dict['EE.use_lu_fact'] == inner_mda.settings.use_lu_fact
         assert values_dict['EE.tolerance'] == inner_mda.settings.tolerance
-        # TODO Need to check how to pass parallel options in a separate US
-        # assert values_dict['EE.n_processes'] == inner_mda._parallel_execution.n_processes
+
+        assert values_dict['EE.mdachain_parallelize_tasks'] == mda.settings.mdachain_parallelize_tasks
+        assert values_dict['EE.n_processes'] == mda.settings.mdachain_parallel_settings['n_processes']
+        assert values_dict['EE.use_threading'] == mda.settings.mdachain_parallel_settings['use_threading']
         assert values_dict['EE.max_mda_iter'] == inner_mda.settings.max_mda_iter
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.settings.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.settings.linear_solver_settings[
@@ -1451,7 +1455,68 @@ class TestMDALoop(unittest.TestCase):
                 self.assertAlmostEqual(_v, out_p[_k])
 
 
+    def test_23_mda_parallel(self):
+        from gemseo.core.chains.parallel_chain import MDOParallelChain
+
+        exec_eng = ExecutionEngine(self.name)
+
+        exec_eng.ns_manager.add_ns('ns_protected', self.name)
+        exec_eng.ns_manager.add_ns('ns_ac', self.name)
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc7_wo_df.Disc7'
+        disc7_builder = exec_eng.factory.get_builder_from_module(
+            'Disc7', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2_copy.Disc2Copy'
+        disc1_builder = exec_eng.factory.get_builder_from_module(
+            'Disc2Copy', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc2.Disc2'
+        disc2_builder = exec_eng.factory.get_builder_from_module(
+            'Disc2', mod_list)
+
+        mod_list = 'sostrades_core.sos_wrapping.test_discs.disc6_wo_df.Disc6'
+        disc6_builder = exec_eng.factory.get_builder_from_module(
+            'Disc6', mod_list)
+
+        exec_eng.factory.set_builders_to_coupling_builder(
+            [disc6_builder, disc1_builder, disc2_builder, disc7_builder])
+
+        exec_eng.configure()
+
+        values_dict = {}
+        values_dict['EE.h'] = array([8., 9.])
+        values_dict['EE.x'] = array([5., 3.])
+        values_dict['EE.y'] = 5.0
+        values_dict['EE.Disc2.constant'] = 3.0
+        values_dict['EE.Disc2.power'] = 1
+        values_dict['EE.z'] = 10.0
+        values_dict['EE.Disc2Copy.constant'] = -3.0
+        values_dict['EE.Disc2Copy.power'] = 4
+
+        values_dict['EE.n_processes'] = 2
+        values_dict['EE.use_threading'] = True
+        values_dict['EE.mdachain_parallelize_tasks'] = True
+        values_dict['EE.use_lu_fact'] = True
+        values_dict['EE.tolerance'] = 1.e-15
+        values_dict['EE.max_mda_iter'] = 50
+        values_dict['EE.inner_mda_name'] = 'MDANewtonRaphson'
+        values_dict['EE.linear_solver_MDA_options'] = {
+            'max_iter': 2000,
+            'tol': 1.0e-10}
+
+        exec_eng.load_study_from_input_dict(values_dict)
+
+        exec_eng.prepare_execution()
+        mda = exec_eng.root_process.discipline_wrapp.discipline
+
+        assert mda.settings.mdachain_parallelize_tasks is True
+        assert isinstance(mda.mdo_chain.disciplines[0], MDOParallelChain)
+        assert len(mda.mdo_chain.disciplines[0].disciplines) == 2
+
+        exec_eng.execute()
 if __name__ == '__main__':
+    from gemseo.mda.base_mda import BaseMDA
+
     cls = TestMDALoop()
     cls.setUp()
-    cls.test_20_check_linearization_mode_propagation()
+    cls.test_08_mda_numerical_options_NR()
