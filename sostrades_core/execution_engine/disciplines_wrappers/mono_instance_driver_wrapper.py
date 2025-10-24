@@ -159,10 +159,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             elif isinstance(value, dict):
                 return len(value)
             elif hasattr(value, '__len__'):
-                return len(value)
-
-        reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
-        
+                return len(value)     
 
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
@@ -172,17 +169,18 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         
 
         # search for discipline output values in local_data
-
-
         local_data_dict = {}
+        reduced_dm = {}
         if doe_scenario.disciplines[0].local_data:
             local_data_dict = doe_scenario.disciplines[0].local_data
+            reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
         else:
             # in parallel case, local_data are in each discipline of the coupling
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
+                reduced_dm.update(discipline.output_grammar.data_converter.reduced_dm)
         
-        print("reduced_dm", reduced_dm)
+        print("reduced_dm", {key:value for key, value in reduced_dm.items() if key in output_names})
         print("grammar names", doe_scenario.disciplines[0].output_grammar.names)
         print("output_names", output_names)
         print("local_data_dict keys", local_data_dict.keys())
