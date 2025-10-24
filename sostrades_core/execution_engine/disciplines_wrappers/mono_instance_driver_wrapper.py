@@ -162,7 +162,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 return len(value)
 
         reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
-
+        print(reduced_dm)
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
