@@ -116,7 +116,7 @@ class HeaderTools:
         if len(content) == 0:
             # Empty file
             return None
-        
+
         # Remove BOM and other potential encoding artifacts from the beginning
         content = content.lstrip('\ufeff\ufffe')  # Remove common BOMs
 
@@ -156,7 +156,7 @@ class HeaderTools:
         """
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
-        
+
         # Remove BOM and other potential encoding artifacts from the beginning
         content = content.lstrip('\ufeff\ufffe')  # Remove common BOMs
 
@@ -199,7 +199,7 @@ class HeaderTools:
         # Read the content of the file
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
-        
+
         # Remove BOM and other potential encoding artifacts from the beginning
         content = content.lstrip('\ufeff\ufffe')  # Remove common BOMs
 
@@ -236,7 +236,7 @@ class HeaderTools:
         # Read the content of the file
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
-        
+
         # Remove BOM and other potential encoding artifacts from the beginning
         content = content.lstrip('\ufeff\ufffe')  # Remove common BOMs
 
