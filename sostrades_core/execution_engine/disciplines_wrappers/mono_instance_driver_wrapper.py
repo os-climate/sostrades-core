@@ -162,11 +162,14 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 return len(value)
 
         reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
-        print(reduced_dm)
+        
+
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
         output_array = next(iter(samples_dict["functions"].values()))
+
+        
 
         # search for discipline output values in local_data
 
@@ -178,6 +181,11 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             # in parallel case, local_data are in each discipline of the coupling
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
+        
+        print("reduced_dm", reduced_dm)
+        print("grammar names", doe_scenario.disciplines[0].output_grammar.names)
+        print("output_names", output_names)
+        print("local_data_dict keys", local_data_dict.keys())
 
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
@@ -201,7 +209,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         subprocess_ref_outputs = {
             key: local_data_dict[key]
             for key in doe_scenario.disciplines[0].output_grammar.names
-            if not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM)
+            if not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM) and key in local_data_dict
         }
         self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
 
