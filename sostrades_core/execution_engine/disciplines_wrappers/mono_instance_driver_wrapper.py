@@ -161,7 +161,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             elif hasattr(value, '__len__'):
                 return len(value)
 
-        reduced_dm = self.attributes["reduced_dm"]
+        reduced_dm = self.attributes["sub_disciplines"][0].output_grammar.data_converter.reduced_dm
         
 
         n_samples = evaluation_outputs.shape[0]
@@ -172,25 +172,16 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         # search for discipline output values in local_data
 
         local_data_dict = {}
-        disc_reduced_dm ={}
-        output_grammar_disc_reduced_dm = {}
         if doe_scenario.disciplines[0].local_data:
             local_data_dict = doe_scenario.disciplines[0].local_data
         else:
             # in parallel case, local_data are in each discipline of the coupling
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
-                disc_reduced_dm[discipline.name] = discipline.reduced_dm
-                output_grammar_disc_reduced_dm[discipline.name] = discipline.output_grammar.data_converter.reduced_dm
-
-        print("attribute reduced_dm", {key:value for key, value in reduced_dm.items() if key in output_names})
-        print("discipline[0] reduced_dm", {key:value for key, value in doe_scenario.disciplines[0].reduced_dm.items() if key in output_names})
-        print("discipline[0].output_grammar reduced_dm", {key:value for key, value in doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm.items() if key in output_names})
-        print("disciplines.output_grammar reduced_dm", {key:value for key, value in output_grammar_disc_reduced_dm.items() if key in output_names})
-        print("disciplines reduced_dm", {key:value for key, value in disc_reduced_dm.items() if key in output_names})
+                
         print("grammar names", doe_scenario.disciplines[0].output_grammar.names)
         print("output_names", output_names)
-        print("local_data_dict keys", local_data_dict.keys())
+        print("local_data_dict keys", {key:value for key, value in local_data_dict.items() if key in output_names})
 
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
