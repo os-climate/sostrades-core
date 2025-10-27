@@ -161,7 +161,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             elif hasattr(value, '__len__'):
                 return len(value)
 
-        reduced_dm = self.attributes["sub_disciplines"][0].output_grammar.data_converter.reduced_dm
+        reduced_dm = self.attributes["reduced_dm"]
         
 
         n_samples = evaluation_outputs.shape[0]
@@ -169,20 +169,24 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         samples_dict = evaluation_outputs.to_dict_of_arrays()
         output_array = next(iter(samples_dict["functions"].values()))
 
-        
-
         # search for discipline output values in local_data
 
-
         local_data_dict = {}
+        disc_reduced_dm ={}
+        output_grammar_disc_reduced_dm = {}
         if doe_scenario.disciplines[0].local_data:
             local_data_dict = doe_scenario.disciplines[0].local_data
         else:
             # in parallel case, local_data are in each discipline of the coupling
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
+                disc_reduced_dm[discipline.name] = discipline.reduced_dm
+                output_grammar_disc_reduced_dm[discipline.name] = discipline.output_grammar.reduced_dm
 
-        print("reduced_dm", {key:value for key, value in reduced_dm.items() if key in output_names})
+        print("attribute reduced_dm", {key:value for key, value in reduced_dm.items() if key in output_names})
+        print("discipline[0] reduced_dm", {key:value for key, value in doe_scenario.disciplines[0].reduced_dm.items() if key in output_names})
+        print("disciplines.output_grammar reduced_dm", {key:value for key, value in output_grammar_disc_reduced_dm.items() if key in output_names})
+        print("disciplines reduced_dm", {key:value for key, value in disc_reduced_dm.items() if key in output_names})
         print("grammar names", doe_scenario.disciplines[0].output_grammar.names)
         print("output_names", output_names)
         print("local_data_dict keys", local_data_dict.keys())
@@ -209,7 +213,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         subprocess_ref_outputs = {
             key: local_data_dict[key]
             for key in doe_scenario.disciplines[0].output_grammar.names
-            if not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM) and key in local_data_dict
+            if not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM)
         }
         self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
 
