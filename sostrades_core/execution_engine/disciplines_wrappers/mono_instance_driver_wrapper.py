@@ -181,10 +181,11 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
                 disc_reduced_dm[discipline.name] = discipline.reduced_dm
-                output_grammar_disc_reduced_dm[discipline.name] = discipline.output_grammar.reduced_dm
+                output_grammar_disc_reduced_dm[discipline.name] = discipline.output_grammar.data_converter.reduced_dm
 
         print("attribute reduced_dm", {key:value for key, value in reduced_dm.items() if key in output_names})
         print("discipline[0] reduced_dm", {key:value for key, value in doe_scenario.disciplines[0].reduced_dm.items() if key in output_names})
+        print("discipline[0].output_grammar reduced_dm", {key:value for key, value in doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm.items() if key in output_names})
         print("disciplines.output_grammar reduced_dm", {key:value for key, value in output_grammar_disc_reduced_dm.items() if key in output_names})
         print("disciplines reduced_dm", {key:value for key, value in disc_reduced_dm.items() if key in output_names})
         print("grammar names", doe_scenario.disciplines[0].output_grammar.names)
