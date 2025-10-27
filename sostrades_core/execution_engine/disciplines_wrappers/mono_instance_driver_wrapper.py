@@ -151,9 +151,10 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             # For dataframes, get the computed size from the metadata
             # Including the excluded columns
             if reduced_dm_variable.get('type') == 'dataframe':
-                assert len(reduced_dm_variable["type_metadata"]) == 1
-                if '__size__' in reduced_dm_variable["type_metadata"][0]:
-                    return reduced_dm_variable["type_metadata"][0]['__size__']
+                if reduced_dm_variable["type_metadata"] is not None:
+                    assert len(reduced_dm_variable["type_metadata"]) == 1
+                    if '__size__' in reduced_dm_variable["type_metadata"][0]:
+                        return reduced_dm_variable["type_metadata"][0]['__size__']
             if hasattr(value, 'size'):
                 return value.size
             elif isinstance(value, dict):
@@ -179,10 +180,6 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
                 
-        print("grammar names", doe_scenario.disciplines[0].output_grammar.names)
-        print("output_names", output_names)
-        print("local_data_dict keys", {key:value for key, value in local_data_dict.items() if key in output_names})
-
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
