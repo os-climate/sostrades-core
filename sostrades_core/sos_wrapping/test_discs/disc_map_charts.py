@@ -21,7 +21,7 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     InstanciatedSeries,
     TwoAxesInstanciatedChart,
 )
-from sostrades_core.tools.post_processing.map_charts.instanciated_map_chart import InstanciatedMapChart
+from sostrades_core.tools.post_processing.map_charts.instanciated_map_chart import InstanciatedMapChart, MapStyle
 
 
 class DiscMapCharts(SoSWrapp):
@@ -222,5 +222,30 @@ class DiscMapCharts(SoSWrapp):
             map_chart = self._create_test_map()
             if map_chart:
                 instanciated_charts.append(map_chart)
+
+            other_map_chart = self._create_test_map()
+            other_map_chart.chart_name = 'Alternate Map View: USGS Topo'
+            other_map_chart.set_map_style(MapStyle.USGS_TOPO)
+            instanciated_charts.append(other_map_chart)
+
+            other_map_chart = self._create_test_map()
+            other_map_chart.chart_name = 'Alternate Map View: USGS Hydrography'
+            other_map_chart.set_map_style(MapStyle.USGS_HYDROGRAPHY)
+            instanciated_charts.append(other_map_chart)
+
+            other_map_chart = self._create_test_map()
+            other_map_chart.chart_name = 'Alternate Map View: USGS Imagery'
+            other_map_chart.set_map_style(MapStyle.USGS_IMAGERY)
+            instanciated_charts.append(other_map_chart)
+
+            other_map_chart = self._create_test_map()
+            other_map_chart.chart_name = 'Alternate Map View: USGS Imagery Topo'
+            other_map_chart.set_map_style(MapStyle.USGS_IMAGERY_TOPO)
+            instanciated_charts.append(other_map_chart)
+
+            other_map_chart = self._create_test_map()
+            other_map_chart.chart_name = 'Alternate Map View: USGS Shadded Relief'
+            other_map_chart.set_map_style(MapStyle.USGS_SHADED_RELIEF)
+            instanciated_charts.append(other_map_chart)
 
         return instanciated_charts
