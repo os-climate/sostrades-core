@@ -34,7 +34,7 @@ class NewtonRaphsonProblem():
 
     POSMETH = ['inhouse', 'scipy']
 
-    def __init__(self, W0, R, dRdW, verbose=1):
+    def __init__(self, W0, R, dRdW, verbose=1) -> None:
         """
         Newton-Raphson (Multi-Variate) generic solver
         Documentation to be built from http://fourier.eng.hmc.edu/e161/lectures/ica/node13.html

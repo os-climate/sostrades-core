@@ -79,14 +79,14 @@ class HeaderError:
         error_details,
         expected_header,
         current_header="None",
-    ):
+    ) -> None:
         self.concerned_file = concerned_file
         self.type_of_change = type_of_change
         self.expected_header = expected_header
         self.current_header = current_header
         self.error_details = error_details
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"-------------------\n\
 Header Error on {self.type_of_change} file : {self.concerned_file}\n\
 Details : {self.error_details}\n\
@@ -96,7 +96,7 @@ but header is\n{self.current_header}\n\
 
 
 class HeaderTools:
-    def __init__(self):
+    def __init__(self) -> None:
         self.verbose = VERBOSE
 
     def set_verbose_mode(self, val):
@@ -116,6 +116,9 @@ class HeaderTools:
         if len(content) == 0:
             # Empty file
             return None
+
+        # Remove BOM and other potential encoding artifacts from the beginning
+        content = content.lstrip('\ufeff\ufffe')  # Remove common BOMs
 
         cartouche_match = re.search(pattern=cartouche_pattern, string=content, flags=re.DOTALL)
 
@@ -153,6 +156,9 @@ class HeaderTools:
         """
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
+
+        # Remove BOM and other potential encoding artifacts from the beginning
+        content = content.lstrip('\ufeff\ufffe')  # Remove common BOMs
 
         cartouche_match = re.search(pattern=cartouche_pattern, string=content, flags=re.DOTALL)
         if cartouche_match:
@@ -194,6 +200,9 @@ class HeaderTools:
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
 
+        # Remove BOM and other potential encoding artifacts from the beginning
+        content = content.lstrip('\ufeff\ufffe')  # Remove common BOMs
+
         # Search for the cartouche at the start of the content
         cartouche_match = re.search(pattern=cartouche_pattern, string=content, flags=re.DOTALL)
 
@@ -227,6 +236,9 @@ class HeaderTools:
         # Read the content of the file
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
+
+        # Remove BOM and other potential encoding artifacts from the beginning
+        content = content.lstrip('\ufeff\ufffe')  # Remove common BOMs
 
         # Search for the cartouche at the start of the content
         cartouche_match = re.search(pattern=cartouche_pattern, string=content, flags=re.DOTALL)

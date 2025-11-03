@@ -15,20 +15,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+
 import numpy as np
 
-'''
-Exp_min function minimize an array with a min_value with a smooth decreasing exponential
-The gradient of this function can also be used
-'''
+"""Exp_min function minimize an array with a min_value with a smooth decreasing exponential.
+
+The gradient of this function can also be used.
+"""
 
 
-def compute_func_with_exp_min(values, min_value):
-    '''
-    Minimize the values by min_value with an exp function
-    If min value is negative we need another function (present in carbonemissiosn model of climateeconomics
-    will be soon in this file
-    '''
+def compute_func_with_exp_min(values: np.ndarray, min_value: float) -> np.ndarray:
+    """
+    Minimize values using an exponential function with a smooth transition.
+
+    Args:
+        values: Input array values to minimize.
+        min_value: Minimum threshold value (must be positive).
+
+    Returns:
+        Array with values smoothly adjusted using exponential minimization.
+
+    Raises:
+        Exception: If min_value is negative or values is not a numpy array.
+
+    Note:
+        For negative min_value, use function in carbonemissions model of climateeconomics.
+
+    """
     if min_value < 0:
         raise Exception('The function is not suitable for negative min_value')
 
@@ -54,19 +67,19 @@ def compute_func_with_exp_min(values, min_value):
     return values_new
 
 
-def compute_dfunc_with_exp_min(values, min_value):
+def compute_dfunc_with_exp_min(values: np.ndarray, min_value: float) -> np.ndarray:
     """
-    Computes a function derivative with an exponential adjustment for values below a specified minimum.
+    Compute derivative of exponential minimization function.
 
     Args:
-        values (np.array): Array of input values.
-        min_value (float): The minimum threshold value.
-
-    Raises:
-        Exception: If the min_value is negative or the values argument is not a numpy array.
+        values: Array of input values.
+        min_value: The minimum threshold value (must be positive).
 
     Returns:
-        np.array: The computed derivative values reshaped to a column vector.
+        Computed derivative values reshaped to a column vector.
+
+    Raises:
+        Exception: If min_value is negative or values is not a numpy array.
 
     """
     if min_value < 0:

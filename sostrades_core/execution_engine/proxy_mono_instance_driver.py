@@ -84,7 +84,7 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         driver_wrapper_cls: type | None = None,
         associated_namespaces: list[str] | None = None,
         map_name: str | None = None,
-    ):
+    ) -> None:
         """
         Args:
             sos_name: The name of the discipline/node.

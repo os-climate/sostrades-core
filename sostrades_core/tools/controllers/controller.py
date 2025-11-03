@@ -14,13 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
-"""
-Controller class: Can be variables, parameters, design variables, ...
-"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from typing import Any
+
+"""Controller class: Can be variables, parameters, design variables, ..."""
 
 
 class Controller:
-    """Controller class: Can be variables, parameters, design variables, .."""
+    """Controller class: Can be variables, parameters, design variables, etc."""
 
     # --Class variables
     CLASS_MSG = 'Controller'
@@ -29,7 +35,20 @@ class Controller:
     USE_GRADIENT_ARRAYS = True  # Declares if the class uses grad arrays that must be updated when design variables are created dynamically
 
     # --Constructor
-    def __init__(self, Manager, Type, Id, check_add=True):
+    def __init__(self, Manager: Any, Type: str, Id: str, check_add: bool = True) -> None:
+        """
+        Initialize controller with manager, type and identifier.
+
+        Args:
+            Manager: Controller manager instance.
+            Type: Type of controller.
+            Id: Identifier of the controller.
+            check_add: Whether to check before adding to manager.
+
+        Raises:
+            Exception: If controller ID is not a string.
+
+        """
         ERROR_MSG = self.ERROR_MSG + '__init__: '
         self.__manager = Manager    # a controller is linked to a Controller Manager
         self.__type = Type       # type of controller
@@ -49,45 +68,57 @@ class Controller:
         self.specific_init()
         self.handle_dv_changes()
 
-    def specific_init(self):
+    def specific_init(self) -> None:
+        """Specific initialization for subclasses."""
         pass
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return string representation of the controller."""
         info_string = '\n----------------------------------------------'
         info_string += '\n   ID              : ' + self.get_id()
         info_string += '\n   Type            : ' + self.get_type()
         return info_string
 
     # --Accessors
-    def get_manager(self):
+    def get_manager(self) -> Any:
+        """Get the controller manager."""
         return self.__manager
 
-    def is_gradient_active(self):
+    def is_gradient_active(self) -> bool:
+        """Check if gradient computation is active."""
         return self.get_manager().is_gradient_active()
 
-    def get_type(self):
+    def get_type(self) -> str:
+        """Get the controller type."""
         return self.__type
 
-    def get_id(self):
+    def get_id(self) -> str:
+        """Get the controller identifier."""
         return self.__id
 
-    def get_ndv(self):
+    def get_ndv(self) -> int:
+        """Get the number of design variables."""
         return self.__ndv
 
     # Dependancies / Influencies management
-    def get_dependances(self):
+    def get_dependances(self) -> list[Controller]:
+        """Get list of controller dependencies."""
         return self.__dependances
 
-    def get_dependances_id(self):
+    def get_dependances_id(self) -> list[str]:
+        """Get list of dependency identifiers."""
         return self.__dependances_id
 
-    def get_influences(self):
+    def get_influences(self) -> list[Controller]:
+        """Get list of influenced controllers."""
         return self.__influences
 
-    def is_influent(self):
+    def is_influent(self) -> bool:
+        """Check if controller influences others."""
         return len(self.__influences) > 0
 
-    def get_influences_id(self):
+    def get_influences_id(self) -> list[str]:
+        """Get list of influenced controller identifiers."""
         return self.__influences_id
 
     def _add_influence(self, controller):

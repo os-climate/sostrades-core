@@ -26,7 +26,7 @@ class Diagram(object):
     '''Diagram class to construct diagram for plot visualization'''
 
     def __init__(self, logger, name, x_axis, y_axis,
-                 save_dir=None, sub_save_dir=None, y_log_scale=False):
+                 save_dir=None, sub_save_dir=None, y_log_scale=False) -> None:
         '''Constructor for the Diagram class'''
         self.__logger = logger
         self.__name = name

@@ -31,7 +31,7 @@ class FDGradient(object):
     Computes the gradient by finite differences for a given scheme order.
     """
 
-    def __init__(self, scheme_order, f_pointer, df_pointer=None, fd_step=1.e-8, bounds=None):
+    def __init__(self, scheme_order, f_pointer, df_pointer=None, fd_step=1.e-8, bounds=None) -> None:
         """
         Constructor.
         Args :

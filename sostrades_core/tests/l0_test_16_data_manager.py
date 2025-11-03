@@ -194,7 +194,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     ns_2 + '.max_mda_iter_gs': init_dict('int'),
                     ns_2 + '.epsilon0': init_dict('float'),
                     ns_2 + '.residuals_history': init_dict('dataframe'),
-                    ns_2 + '.n_subcouplings_parallel': init_dict('int'),
+                    ns_2 + '.mdachain_parallelize_tasks': init_dict('bool'),
                     ns_2 + '.group_mda_disciplines': init_dict('bool'),
                     ns_2 + '.propagate_cache_to_children': init_dict('bool'),
                     ns_2 + '.tolerance_gs': init_dict('float'),
@@ -206,7 +206,7 @@ class TestDataManagerGenerator(unittest.TestCase):
                     'possible_values': None, 'range': None, 'user_level': 1,
                     'editable': True, IO_TYPE: 'IN',
                     'model_origin': 'NPS.CH19_Kero.Disc1', 'value': None}
-        for var_id in ['n_processes',
+        for var_id in ['n_processes','use_threading', 'mdachain_parallelize_tasks',
                        'chain_linearize', 'tolerance', 'use_lu_fact',
                        'linearization_mode', 'cache_type', 'cache_file_path', 'debug_mode', "scaling_method"]:
             var_n = ns_2 + '.' + var_id

@@ -152,7 +152,7 @@ class SoSMDAChain(MDAChain):
         # Gauss seidel cannot be launched in parallel by construction (one discipline is launched with the results of the last one)
 
         mdachain_parallel_settings['n_processes'] = inner_mda_options['n_processes']
-        # mdachain_parallel_settings['use_threading'] = inner_mda_options.pop('use_threading', True)
+        mdachain_parallel_settings['use_threading'] = inner_mda_options.pop('use_threading', False)
         if inner_mda_name == 'MDAGaussSeidel':
             inner_mda_options.pop('n_processes')
         self.default_grammar_type = grammar_type

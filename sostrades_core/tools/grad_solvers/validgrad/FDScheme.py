@@ -21,7 +21,7 @@ import numpy as np
 class FDScheme(object):
     """Abstract class for finite differences numerical scheme."""
 
-    def __init__(self, fd_step, bounds=None):
+    def __init__(self, fd_step, bounds=None) -> None:
         """
         Constructor.
         Args :

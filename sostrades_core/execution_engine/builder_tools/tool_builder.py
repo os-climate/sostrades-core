@@ -23,7 +23,7 @@ class ToolBuilder(SoSBuilder):
 
     NS_NAME_SEPARATOR = NamespaceManager.NS_NAME_SEPARATOR
 
-    def __init__(self, tool_name, ee, cls):
+    def __init__(self, tool_name, ee, cls) -> None:
         '''
         Constructor
         :param cls: class that will be instantiated by the builder

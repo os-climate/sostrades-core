@@ -14,35 +14,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+
+from __future__ import annotations
+
 import math
+import numbers
+from typing import Union
 
 import numpy as np
 
-"""
-mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
-Bundle of tools related to chart creation
-"""
+"""Bundle of tools related to chart creation."""
 
 
-def format_currency_legend(currency_value, currency_symbol='€'):
+def format_currency_legend(currency_value: Union[str, float], currency_symbol: str = '€') -> str:
     """
-    Given an numeric value of currency, return the value with the correct legend to display it in short format
-        (euros, kilo euros, etc...) rounded at two digits
-        ex : 8765432 € => 8.76 m€
+    Format numeric currency value with appropriate scale and symbol.
 
-    :params: currency_value, numeric currency values
-    :type: float
+    Args:
+        currency_value: Numeric currency value to format or string to return as-is.
+        currency_symbol: Currency symbol to use (default '€').
 
-    :params: currency_symbol, symbol of the currency (default = '€')
-    :type: string
+    Returns:
+        Formatted currency string with scale indicator (B, M, k).
 
-    :returns: string
+    Example:
+        >>> format_currency_legend(8765432)
+        '8.76 M€'
+
     """
-    value = currency_value
-    legend_letter = ''
     if isinstance(currency_value, str):
         return currency_value
     else:
+        value = currency_value
+        legend_letter = ''
         if abs(currency_value) >= 1.0e9:
             value = currency_value / 1.0e9
             legend_letter = 'B'
@@ -52,24 +56,20 @@ def format_currency_legend(currency_value, currency_symbol='€'):
         elif 1.0e6 > abs(currency_value) >= 1.0e3:
             value = currency_value / 1.0e3
             legend_letter = 'k'
-
         return f'{round(value, 2)} {legend_letter}{currency_symbol}'
 
 
 # inspired from https:#github.com/VictorBezak/Plotly_Multi-Axes_Gridlines
-def align_two_y_axes(figure, GRIDLINES=4):
+def align_two_y_axes(figure, GRIDLINES: int = 4):
     """
-    Aligns the gridlines for two Y-axes in a Plotly figure by adjusting the
-    axis ranges and tick spacing to ensure synchronization.
+    Align gridlines for two Y-axes in a Plotly figure.
 
     Args:
-        figure (plotly.graph_objs.Figure): The Plotly figure containing traces
-                                          with two Y-axes ('y' and 'y2').
-        GRIDLINES (int, optional): The number of gridlines to divide the axis range into
-                                    (default is 4).
+        figure: The Plotly figure containing traces with two Y-axes ('y' and 'y2').
+        GRIDLINES: Number of gridlines to divide the axis range into.
 
     Returns:
-        plotly.graph_objs.Figure: The updated Plotly figure with synchronized Y-axes.
+        Updated Plotly figure with synchronized Y-axes.
 
     """
     y1Values = []
@@ -95,7 +95,7 @@ def align_two_y_axes(figure, GRIDLINES=4):
 
 
 # inspired from https:#github.com/VictorBezak/Plotly_Multi-Axes_Gridlines
-def calculate_alignment_for_two_y_axes(y1Values, y2Values, GRIDLINES=4):
+def calculate_alignment_for_two_y_axes(y1Values: list[float], y2Values: list[float], GRIDLINES: int = 4) -> tuple[dict, dict]:
     """
     Calculates the optimal range and tick spacing for two Y-axes to ensure
     aligned gridlines when plotting data with different scales.
@@ -273,8 +273,17 @@ def calculate_alignment_for_two_y_axes(y1Values, y2Values, GRIDLINES=4):
     return ranges, dticks
 
 
-def escape_str_with_comma(str_to_escape):
-    """Escapes string with commas"""
+def escape_str_with_comma(str_to_escape: str | None) -> str:
+    """
+    Escape strings containing commas by wrapping in quotes.
+
+    Args:
+        str_to_escape: String to escape, can be None.
+
+    Returns:
+        Escaped string or empty string if input is None.
+
+    """
     str_escaped = ''
     if str_to_escape is not None:
         if ',' in str_to_escape:
@@ -285,15 +294,18 @@ def escape_str_with_comma(str_to_escape):
     return str_escaped
 
 
-def convert_nan(values):
+def convert_nan(values: list) -> tuple[list, bool]:
     """
-    Check if value list contains NaN values
-    A warning is displayed is any NaN value is found into list and then converted to None
+    Check and convert NaN values in a list to None.
 
-    @param values : list of number to check
-    @type list of number
+    Args:
+        values: List of numbers to check for NaN values.
 
-    @return (list with converted values, nan_found)
+    Returns:
+        Tuple containing:
+        - List with NaN values converted to None
+        - Boolean indicating if any NaN values were found
+
     """
     result = []
     has_nan = False
@@ -310,14 +322,18 @@ def convert_nan(values):
     return result, has_nan
 
 
-def check_isnan(value):
-    """
-    Method to tried to identify Not A Number numpy value
 
-    @return boolean
+def check_isnan(value) -> bool:
     """
-    import numbers
+    Check if a value is NaN or infinity.
 
+    Args:
+        value: Value to check.
+
+    Returns:
+        True if value is NaN or infinity, False otherwise.
+
+    """
     result = False
     if isinstance(value, numbers.Number) and (np.isnan(value).any() or np.isinf(value).any()):
         result = True
@@ -325,11 +341,16 @@ def check_isnan(value):
     return result
 
 
-def get_greataxisrange(serie):
+def get_greataxisrange(serie) -> tuple[float, float]:
     """
-    Get the lower and upper bound of axis for graphs
-    min_value: lower bound
-    max_value: upper bound
+    Get the lower and upper bound of axis for graphs.
+
+    Args:
+        serie: Series containing values for axis range calculation.
+
+    Returns:
+        Tuple of (min_range, max_range) for axis bounds.
+
     """
     min_value = serie.values.min()
     max_value = serie.values.max()
@@ -339,10 +360,24 @@ def get_greataxisrange(serie):
     return min_range, max_range
 
 
-def get_value_axis(value, min_or_max):
+def get_value_axis(value: float, min_or_max: str) -> float:
     """
-    If min: if positive returns 0, if negative returns 1.1*value
-    if max: if positive returns is 1.1*value, if negative returns 0
+    Calculate axis boundary value with margin.
+
+    Args:
+        value: Input value to calculate boundary for.
+        min_or_max: Either 'min' or 'max' to determine calculation type.
+
+    Returns:
+        Calculated boundary value with appropriate margin.
+
+    Raises:
+        Exception: If min_or_max is not 'min' or 'max'.
+
+    Note:
+        For 'min': returns 0 if positive, 1.1*value if negative.
+        For 'max': returns 1.1*value if positive, 0 if negative.
+
     """
     if min_or_max == 'min':
         if value >= 0:

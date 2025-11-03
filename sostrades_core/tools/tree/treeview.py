@@ -37,7 +37,7 @@ class TreeView:
 
     PROCESS_DOCUMENTATION = 'Process documentation'
 
-    def __init__(self, name, no_data=False, read_only=False, exec_display=False):
+    def __init__(self, name, no_data=False, read_only=False, exec_display=False) -> None:
         """Class constructor"""
         self.name = name
         self.no_data = no_data
@@ -45,7 +45,7 @@ class TreeView:
         self.root = None
         self.exec_display = exec_display
 
-    def create_tree_node(self, data_manager, root_process, ns_manager, process_module=''):
+    def create_tree_node(self, data_manager, root_process, ns_manager, process_module='',post_proc_ns=[]):
         """
         Function that builds a composite structure (tree view  of tree nodes)
         regarding the DataManager stored through disciplines references and data dictionary
@@ -125,10 +125,8 @@ class TreeView:
         # the treenodes
         for namespace in ns_manager.ee.post_processing_manager.namespace_post_processing:
             try:
-                ns_list = ns_manager.get_all_namespace_with_name(namespace).get_value(
-                )
-                for ns in ns_list:
-                    ns_value = ns.get_value()
+                ns_list = [ns.get_value() for ns in ns_manager.get_all_namespace_with_name(namespace) if not ns_manager.unused_namespace(post_proc_ns)]
+                for ns_value in ns_list:
                     if ns_value not in treenodes.keys():
                         treenode = self.add_treenode(
                             None, ns_value.split(NS_SEP))
@@ -319,7 +317,7 @@ class TreeView:
         """Returns a dict representation of the object"""
         return self.root.to_dict()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns a str representation of the object"""
         return str(self.root)
 

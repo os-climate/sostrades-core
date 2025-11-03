@@ -45,7 +45,7 @@ class CartesianProductSampleGenerator(AbstractSampleGenerator):
 
     N_SAMPLES = "n_samples"
 
-    def __init__(self, logger: logging.Logger):
+    def __init__(self, logger: logging.Logger) -> None:
         '''Constructor'''
         super().__init__(self.GENERATOR_NAME, logger=logger)
 

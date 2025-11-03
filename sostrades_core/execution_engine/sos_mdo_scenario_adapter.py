@@ -64,7 +64,7 @@ class SoSMDOScenarioAdapter(MDOScenarioAdapter):
         logger: logging.Logger,
         reduced_dm=None,
         mdo_options=None,
-    ):
+    ) -> None:
         """Constructor"""
         if mdo_options is None:
             mdo_options = {}

@@ -54,7 +54,7 @@ class DriverEvaluatorWrapper(SoSWrapp):
     SUB_PROCESS_INPUTS = 'sub_process_inputs'
     USECASE_DATA = 'usecase_data'
 
-    def __init__(self, sos_name, logger: logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger) -> None:
         """
         Constructor.
 

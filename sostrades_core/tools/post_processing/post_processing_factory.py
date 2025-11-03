@@ -44,6 +44,8 @@ class PostProcessingFactory:
     NAMESPACED_POST_PROCESSING = 'namespaced_post_processing'
     NAMESPACED_POST_PROCESSING_NAME = 'Data'
 
+
+
     def get_all_post_processings(self, execution_engine, filters_only, as_json=True, for_test=False):
         """
         Extract all post processing filters that are defined into the execution engine
@@ -358,6 +360,52 @@ class PostProcessingFactory:
                 if for_test is True:
                     raise Exception(e)
         return result
+
+    def get_post_processings_by_discipline_name(self, namespace, discipline_module, execution_engine, filters, as_json=True, for_test=False):
+        """
+        Retrieve post processing for a given discipline name
+
+        :params: discipline_name: name of the discipline to query to get associated post processing
+        :type: string
+
+        :params: execution_engine, execution engine that hold post processing data
+        :type: ExecutionEngine
+        :params: filters: filter to apply to post processing generation
+        :type: ChartFilter[]
+        :params: as_json: return a jesonified object
+        :type: boolean
+        :params: for_test: specify if it is for test purpose
+        :type: boolean
+        """
+        all_post_processing_data = []
+        try:
+            discipline_list = execution_engine.dm.get_disciplines_with_name(namespace)
+
+            # Check if discipline of the node has to be filtered
+            if discipline_module != "":
+                match_discipline = list(filter(
+                    lambda d: d.get_module() == discipline_module, discipline_list))
+
+                if len(match_discipline) > 0:
+                    discipline_list = match_discipline
+                else:
+                    discipline_list = []
+
+            for discipline in discipline_list:
+                post_processings = self.get_post_processing_by_discipline(
+                    discipline, filters)
+                all_post_processing_data.extend(post_processings)
+
+            # Try fo find associated namespace object in namespace manager
+            if discipline_module == PostProcessingFactory.NAMESPACED_POST_PROCESSING_NAME:
+                post_processings = self.get_post_processing_by_namespace(
+                    execution_engine, namespace, filters)
+
+                all_post_processing_data.extend(post_processings)
+        except KeyError:
+            pass
+            # Discipline not found
+        return all_post_processing_data
 
     def get_post_processing_by_discipline(self, discipline, filters, as_json=True, for_test=False):
         """

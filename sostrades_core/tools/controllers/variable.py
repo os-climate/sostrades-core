@@ -28,13 +28,13 @@ class Variable(BaseController):
     GRAD = None
 
     # --constructor
-    def __init__(self, PBCManager, ID, value=0.0, bounds=None, complex_mode=False):
+    def __init__(self, PBCManager, ID, value=0.0, bounds=None, complex_mode=False) -> None:
         BaseController.__init__(self, PBCManager, ID, value=value, BCType='Variable', complex_mode=complex_mode)
         self.__bounds = None
         self.set_bounds(bounds)
 
     # --Private methods
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Display some information about the variable"""
         info_string = BaseController.__repr__(self)
         info_string += '\n   Value           :%24.16e' % self.get_value()

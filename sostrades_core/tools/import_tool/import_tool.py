@@ -18,21 +18,43 @@ from __future__ import annotations
 import inspect
 import os
 from importlib import import_module
-from typing import Any
+from typing import Any, Optional
 
 
 def get_class_from_path(class_path: str) -> type[Any]:
-    """Get a class object from its class path i.e. module_poth.ClassName."""
+    """
+    Get a class object from its class path.
+
+    Args:
+        class_path: Module path with class name (e.g., 'module.path.ClassName').
+
+    Returns:
+        The class object.
+
+    """
     module_struct_list = class_path.split('.')
     import_name = '.'.join(module_struct_list[:-1])
     m = import_module(import_name)
     return getattr(m, module_struct_list[-1])
 
 
-def get_module_class_path(class_name, folder_list):
+def get_module_class_path(class_name: str, folder_list: list[str]) -> Optional[str]:
     """
-    Return the module path of a class in a list of directories
-    Return the first found for now ..
+    Find module path of a class in a list of directories.
+
+    Args:
+        class_name: Name of the class to find.
+        folder_list: List of folder paths to search in.
+
+    Returns:
+        Module path of the class if found, None otherwise.
+
+    Raises:
+        Warning: If a folder in folder_list is not a module.
+
+    Note:
+        Returns the first match found.
+
     """
     module_class_path = None
     for folder in folder_list:

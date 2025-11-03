@@ -37,7 +37,7 @@ GROUP_NAME = 'group-name'
 class SoSProcessFactory:
     '''Class to manager processes'''
 
-    def __init__(self, additional_repository_list=None, search_python_path=True, logger: Optional[logging.Logger] = None):
+    def __init__(self, additional_repository_list=None, search_python_path=True, logger: Optional[logging.Logger] = None) -> None:
         """
         SoSProcessFactory constructor
 

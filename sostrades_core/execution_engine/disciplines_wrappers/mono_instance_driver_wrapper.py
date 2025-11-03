@@ -16,8 +16,6 @@ limitations under the License.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from gemseo import create_design_space, create_scenario
 from gemseo.settings.doe import CustomDOE_Settings
 from numpy import array, atleast_1d, cumsum, hstack, size, split
@@ -29,10 +27,7 @@ from sostrades_core.execution_engine.disciplines_wrappers.driver_evaluator_wrapp
 from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapper import (
     SampleGeneratorWrapper,
 )
-from sostrades_core.execution_engine.proxy_coupling import ProxyCoupling
-
-if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+from sostrades_core.execution_engine.proxy_coupling import BaseScenario, ProxyCoupling
 
 
 class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
@@ -96,7 +91,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         scenario_names = samples.pop(SampleGeneratorWrapper.SCENARIO_NAME).to_list()
         return samples, scenario_names
 
-    def evaluate_samples(self, input_samples: DataFrame) -> Dataset:
+    def evaluate_samples(self, input_samples: DataFrame) -> BaseScenario:
         """
         Evaluate the samples.
 
@@ -135,9 +130,9 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             wait_time_between_samples=wait_time_between_samples,
         )
         doe_scenario.execute(settings)
-        return doe_scenario.to_dataset()
+        return doe_scenario
 
-    def process_output(self, evaluation_outputs: Dataset, scenario_names: list[str]) -> None:
+    def process_output(self, doe_scenario: BaseScenario, scenario_names: list[str]) -> None:
         """
         Process and store the sampling outputs.
 
@@ -146,11 +141,11 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         and split the array into the sub-array corresponding to each output.
 
         Args:
-            evaluation_outputs: The results of the samples evaluation.
+            doe_scenario: the samples evaluation scenario.
             scenario_names: The scenario names corresponding to each sample.
 
         """
-
+        evaluation_outputs = doe_scenario.to_dataset()
         def get_size(value, reduced_dm_variable):
             """Get the size of a value."""
             # For dataframes, get the computed size from the metadata
@@ -166,13 +161,26 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             elif hasattr(value, '__len__'):
                 return len(value)
 
-        reduced_dm = self.attributes["sub_disciplines"][0].output_grammar.data_converter.reduced_dm
+        reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
 
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
         samples_dict = evaluation_outputs.to_dict_of_arrays()
         output_array = next(iter(samples_dict["functions"].values()))
-        output_sizes = [get_size(self.attributes["sub_disciplines"][0].local_data[output], reduced_dm[output]) for output in output_names]
+
+        # search for discipline output values in local_data
+
+
+        local_data_dict = {}
+        if doe_scenario.disciplines[0].local_data:
+            local_data_dict = doe_scenario.disciplines[0].local_data
+        else:
+            # in parallel case, local_data are in each discipline of the coupling
+            for discipline in doe_scenario.disciplines[0].disciplines:
+                local_data_dict.update(discipline.local_data)
+
+        output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
+                        if (output in local_data_dict and output in reduced_dm)]
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
             samples_output_df = DataFrame(output_array, columns=output_names)
         else:  # some outputs have more than 1 component
@@ -191,8 +199,8 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         # save data of last execution i.e. reference values # TODO: do this  better in refacto doe
         subprocess_ref_outputs = {
-            key: self.attributes["sub_disciplines"][0].io.data[key]
-            for key in self.attributes["sub_disciplines"][0].output_grammar.names
+            key: local_data_dict[key]
+            for key in doe_scenario.disciplines[0].output_grammar.names
             if not key.endswith(ProxyCoupling.NORMALIZED_RESIDUAL_NORM)
         }
         self.store_sos_outputs_values(subprocess_ref_outputs, full_name_keys=True)
@@ -205,7 +213,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             converted_value = convert_func(name, array_value)
             return converted_value
 
-        convert_func = self.attributes["sub_disciplines"][0].output_grammar.data_converter.convert_array_to_value
+        convert_func = doe_scenario.disciplines[0].output_grammar.data_converter.convert_array_to_value
         for dynamic_output, out_name in zip(self.attributes["eval_out_list"], self.attributes["eval_out_names"]):
             dict_output = {
                 r[SampleGeneratorWrapper.SCENARIO_NAME]: convert_outputs_to_real_type(dynamic_output, r[dynamic_output],

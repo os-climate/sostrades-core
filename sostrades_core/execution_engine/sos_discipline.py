@@ -86,7 +86,7 @@ class SoSDiscipline(Discipline):
         reduced_dm: dict,
         logger: logging.Logger,
         debug_mode='',
-    ):
+    ) -> None:
         """
         Constructor
 

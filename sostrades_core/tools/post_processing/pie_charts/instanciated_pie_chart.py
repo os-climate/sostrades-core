@@ -42,7 +42,7 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
     VALUES = 'values'
     STYLES = 'styles'
 
-    def __init__(self, pie_chart_name='', labels=[], values=[], donuts_hole_size=0, text_in_donuts=None):
+    def __init__(self, pie_chart_name='', labels=[], values=[], donuts_hole_size=0, text_in_donuts=None) -> None:
         """
         Create a new table
 
@@ -75,7 +75,7 @@ class InstanciatedPieChart(AbstractPostProcessingPlotlyTooling):
         self.donuts_hole_size = donuts_hole_size
         self.text = text_in_donuts
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Overload of the class representation
 

@@ -1,0 +1,304 @@
+{
+    "study_case_id": 108,
+    "layout": {
+        "{\"disciplineName\":\"test_dashboard_simple.Disc1\",\"name\":\"sostrades_core.sos_wrapping.test_discs.disc1\",\"plotIndex\":1,\"postProcessingFilters\":[{\"filterName\":\"Charts\",\"filterValues\":[\"y vs x\",\"pie chart\"],\"selectedValues\":[\"y vs x\",\"pie chart\"],\"filterKey\":\"graphs\",\"filteredValues\":[\"y vs x\",\"pie chart\"],\"multipleSelection\":true}]}": {
+            "item_id": "{\"disciplineName\":\"test_dashboard_simple.Disc1\",\"name\":\"sostrades_core.sos_wrapping.test_discs.disc1\",\"plotIndex\":1,\"postProcessingFilters\":[{\"filterName\":\"Charts\",\"filterValues\":[\"y vs x\",\"pie chart\"],\"selectedValues\":[\"y vs x\",\"pie chart\"],\"filterKey\":\"graphs\",\"filteredValues\":[\"y vs x\",\"pie chart\"],\"multipleSelection\":true}]}",
+            "item_type": "graph",
+            "x": 0,
+            "y": 0,
+            "cols": 16,
+            "rows": 12,
+            "minCols": 12,
+            "minRows": 8
+        },
+        "{\"disciplineName\":\"test_dashboard_simple.Disc1\",\"name\":\"sostrades_core.sos_wrapping.test_discs.disc1\",\"plotIndex\":2,\"postProcessingFilters\":[{\"filterName\":\"Charts\",\"filterValues\":[\"y vs x\",\"pie chart\"],\"selectedValues\":[\"y vs x\",\"pie chart\"],\"filterKey\":\"graphs\",\"filteredValues\":[\"y vs x\",\"pie chart\"],\"multipleSelection\":true}]}": {
+            "item_id": "{\"disciplineName\":\"test_dashboard_simple.Disc1\",\"name\":\"sostrades_core.sos_wrapping.test_discs.disc1\",\"plotIndex\":2,\"postProcessingFilters\":[{\"filterName\":\"Charts\",\"filterValues\":[\"y vs x\",\"pie chart\"],\"selectedValues\":[\"y vs x\",\"pie chart\"],\"filterKey\":\"graphs\",\"filteredValues\":[\"y vs x\",\"pie chart\"],\"multipleSelection\":true}]}",
+            "item_type": "graph",
+            "x": 16,
+            "y": 0,
+            "cols": 16,
+            "rows": 12,
+            "minCols": 12,
+            "minRows": 8
+        },
+        "{\"disciplineName\":\"test_dashboard_simple\",\"name\":\"Data\",\"plotIndex\":0,\"postProcessingFilters\":[{\"filterName\":\"Selected charts\",\"filterValues\":[\"X versus Y\"],\"selectedValues\":[\"X versus Y\"],\"filterKey\":\"x_vs_y\",\"filteredValues\":[\"X versus Y\"],\"multipleSelection\":true},{\"filterName\":\"Selected module charts\",\"filterValues\":[\"Y versus X\"],\"selectedValues\":[\"Y versus X\"],\"filterKey\":\"y_vs_x\",\"filteredValues\":[\"Y versus X\"],\"multipleSelection\":true}]}": {
+            "item_id": "{\"disciplineName\":\"test_dashboard_simple\",\"name\":\"Data\",\"plotIndex\":0,\"postProcessingFilters\":[{\"filterName\":\"Selected charts\",\"filterValues\":[\"X versus Y\"],\"selectedValues\":[\"X versus Y\"],\"filterKey\":\"x_vs_y\",\"filteredValues\":[\"X versus Y\"],\"multipleSelection\":true},{\"filterName\":\"Selected module charts\",\"filterValues\":[\"Y versus X\"],\"selectedValues\":[\"Y versus X\"],\"filterKey\":\"y_vs_x\",\"filteredValues\":[\"Y versus X\"],\"multipleSelection\":true}]}",
+            "item_type": "graph",
+            "x": 0,
+            "y": 12,
+            "cols": 16,
+            "rows": 12,
+            "minCols": 12,
+            "minRows": 8
+        }
+    },
+    "data": {
+        "{\"disciplineName\":\"test_dashboard_simple.Disc1\",\"name\":\"sostrades_core.sos_wrapping.test_discs.disc1\",\"plotIndex\":1,\"postProcessingFilters\":[{\"filterName\":\"Charts\",\"filterValues\":[\"y vs x\",\"pie chart\"],\"selectedValues\":[\"y vs x\",\"pie chart\"],\"filterKey\":\"graphs\",\"filteredValues\":[\"y vs x\",\"pie chart\"],\"multipleSelection\":true}]}": {
+            "disciplineName": "test_dashboard_simple.Disc1",
+            "name": "sostrades_core.sos_wrapping.test_discs.disc1",
+            "plotIndex": 1,
+            "postProcessingFilters": [
+                {
+                    "filterName": "Charts",
+                    "filterValues": [
+                        "y vs x",
+                        "pie chart"
+                    ],
+                    "selectedValues": [
+                        "y vs x",
+                        "pie chart"
+                    ],
+                    "filterKey": "graphs",
+                    "filteredValues": [
+                        "y vs x",
+                        "pie chart"
+                    ],
+                    "multipleSelection": true
+                }
+            ],
+            "graphData": {
+                "data": [
+                    {
+                        "hole": 0,
+                        "labels": [
+                            "x",
+                            "y"
+                        ],
+                        "sort": false,
+                        "values": [
+                            10,
+                            263
+                        ],
+                        "type": "pie"
+                    }
+                ],
+                "layout": {
+                    "title": {
+                        "text": "<b>standard pie chart</b>",
+                        "y": 0.9,
+                        "x": 0.5,
+                        "xanchor": "center",
+                        "yanchor": "top"
+                    },
+                    "font": {
+                        "family": "Arial",
+                        "size": 10,
+                        "color": "#7f7f7f"
+                    },
+                    "width": 600,
+                    "height": 450,
+                    "autosize": false
+                },
+                "csv_data": [
+                    "x,y",
+                    "10,263"
+                ],
+                "logo_notofficial": false,
+                "logo_official": false,
+                "logo_work_in_progress": false,
+                "post_processing_section_name": "",
+                "post_processing_section_is_opened": false,
+                "post_processing_is_key_chart": false,
+                "is_pareto_trade_chart": false
+            },
+            "title": "standard pie chart"
+        },
+        "{\"disciplineName\":\"test_dashboard_simple.Disc1\",\"name\":\"sostrades_core.sos_wrapping.test_discs.disc1\",\"plotIndex\":2,\"postProcessingFilters\":[{\"filterName\":\"Charts\",\"filterValues\":[\"y vs x\",\"pie chart\"],\"selectedValues\":[\"y vs x\",\"pie chart\"],\"filterKey\":\"graphs\",\"filteredValues\":[\"y vs x\",\"pie chart\"],\"multipleSelection\":true}]}": {
+            "disciplineName": "test_dashboard_simple.Disc1",
+            "name": "sostrades_core.sos_wrapping.test_discs.disc1",
+            "plotIndex": 2,
+            "postProcessingFilters": [
+                {
+                    "filterName": "Charts",
+                    "filterValues": [
+                        "y vs x",
+                        "pie chart"
+                    ],
+                    "selectedValues": [
+                        "y vs x",
+                        "pie chart"
+                    ],
+                    "filterKey": "graphs",
+                    "filteredValues": [
+                        "y vs x",
+                        "pie chart"
+                    ],
+                    "multipleSelection": true
+                }
+            ],
+            "graphData": {
+                "data": [
+                    {
+                        "hole": 0.4,
+                        "labels": [
+                            "x",
+                            "y"
+                        ],
+                        "sort": false,
+                        "values": [
+                            10,
+                            263
+                        ],
+                        "type": "pie"
+                    }
+                ],
+                "layout": {
+                    "title": {
+                        "text": "<b>donuts pie chart</b>",
+                        "y": 0.9,
+                        "x": 0.5,
+                        "xanchor": "center",
+                        "yanchor": "top"
+                    },
+                    "font": {
+                        "family": "Arial",
+                        "size": 10,
+                        "color": "#7f7f7f"
+                    },
+                    "width": 600,
+                    "height": 450,
+                    "autosize": false,
+                    "annotations": [
+                        {
+                            "showarrow": false,
+                            "text": "scatter",
+                            "xanchor": "center"
+                        }
+                    ]
+                },
+                "csv_data": [
+                    "x,y",
+                    "10,263"
+                ],
+                "logo_notofficial": false,
+                "logo_official": false,
+                "logo_work_in_progress": false,
+                "post_processing_section_name": "",
+                "post_processing_section_is_opened": false,
+                "post_processing_is_key_chart": false,
+                "is_pareto_trade_chart": false
+            },
+            "title": "donuts pie chart"
+        },
+        "{\"disciplineName\":\"test_dashboard_simple\",\"name\":\"Data\",\"plotIndex\":0,\"postProcessingFilters\":[{\"filterName\":\"Selected charts\",\"filterValues\":[\"X versus Y\"],\"selectedValues\":[\"X versus Y\"],\"filterKey\":\"x_vs_y\",\"filteredValues\":[\"X versus Y\"],\"multipleSelection\":true},{\"filterName\":\"Selected module charts\",\"filterValues\":[\"Y versus X\"],\"selectedValues\":[\"Y versus X\"],\"filterKey\":\"y_vs_x\",\"filteredValues\":[\"Y versus X\"],\"multipleSelection\":true}]}": {
+            "disciplineName": "test_dashboard_simple",
+            "name": "Data",
+            "plotIndex": 0,
+            "postProcessingFilters": [
+                {
+                    "filterName": "Selected charts",
+                    "filterValues": [
+                        "X versus Y"
+                    ],
+                    "selectedValues": [
+                        "X versus Y"
+                    ],
+                    "filterKey": "x_vs_y",
+                    "filteredValues": [
+                        "X versus Y"
+                    ],
+                    "multipleSelection": true
+                },
+                {
+                    "filterName": "Selected module charts",
+                    "filterValues": [
+                        "Y versus X"
+                    ],
+                    "selectedValues": [
+                        "Y versus X"
+                    ],
+                    "filterKey": "y_vs_x",
+                    "filteredValues": [
+                        "Y versus X"
+                    ],
+                    "multipleSelection": true
+                }
+            ],
+            "graphData": {
+                "data": [
+                    {
+                        "mode": "lines",
+                        "name": "X vs Y",
+                        "visible": true,
+                        "x": [
+                            10
+                        ],
+                        "y": [
+                            263
+                        ],
+                        "yaxis": "y",
+                        "type": "scatter"
+                    }
+                ],
+                "layout": {
+                    "title": {
+                        "text": "<b>X versus Y</b>",
+                        "y": 0.9,
+                        "x": 0.5,
+                        "xanchor": "center",
+                        "yanchor": "top"
+                    },
+                    "xaxis": {
+                        "range": [
+                            10,
+                            10
+                        ],
+                        "title": {
+                            "text": "x (-)"
+                        },
+                        "automargin": true
+                    },
+                    "yaxis": {
+                        "range": [
+                            263,
+                            263
+                        ],
+                        "title": {
+                            "text": "y (-)"
+                        },
+                        "automargin": true
+                    },
+                    "yaxis2": {
+                        "title": {
+                            "text": ""
+                        },
+                        "automargin": true,
+                        "anchor": "x",
+                        "overlaying": "y",
+                        "side": "right"
+                    },
+                    "legend": {
+                        "orientation": "h",
+                        "xanchor": "left",
+                        "yanchor": "top",
+                        "bgcolor": "rgba(255, 255, 255, 0)",
+                        "bordercolor": "rgba(255, 255, 255, 0)",
+                        "y": -0.2,
+                        "x": 0
+                    },
+                    "font": {
+                        "family": "Arial",
+                        "size": 10,
+                        "color": "#7f7f7f"
+                    },
+                    "barmode": "relative",
+                    "width": 600,
+                    "height": 450,
+                    "autosize": false
+                },
+                "csv_data": [
+                    "X vs Y x (-),X vs Y y (-)",
+                    "10,263"
+                ],
+                "logo_notofficial": false,
+                "logo_official": false,
+                "logo_work_in_progress": false,
+                "post_processing_section_name": "",
+                "post_processing_section_is_opened": false,
+                "post_processing_is_key_chart": false,
+                "is_pareto_trade_chart": false
+            },
+            "title": "X versus Y"
+        }
+    }
+}

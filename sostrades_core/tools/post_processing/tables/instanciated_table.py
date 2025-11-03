@@ -45,7 +45,7 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
     CELLS = 'cells'
     STYLES = 'styles'
 
-    def __init__(self, table_name='', header=[], cells=[], styles={}):
+    def __init__(self, table_name='', header=[], cells=[], styles={}) -> None:
         """
         Create a new table
 
@@ -82,7 +82,7 @@ class InstanciatedTable(AbstractPostProcessingPlotlyTooling):
             raise TypeError(message)
         self.styles = styles
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Overload of the class representation
 

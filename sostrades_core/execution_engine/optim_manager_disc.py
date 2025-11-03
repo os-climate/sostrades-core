@@ -38,6 +38,6 @@ class OptimManagerDisc(SoSWrapp):
         'version': '',
     }
 
-    def __init__(self, sos_name, logger: logging.Logger):
+    def __init__(self, sos_name, logger: logging.Logger) -> None:
         '''Constructor'''
         super().__init__(sos_name=sos_name, logger=logger)

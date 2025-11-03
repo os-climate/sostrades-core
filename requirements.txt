@@ -21,8 +21,9 @@ scipy==1.13.0
 six==1.17.0
 sympy==1.13.2
 tqdm==4.66.5
-future==1.0.0
-
+pyDecision==4.7.9
+seaborn==0.13.2
+scikit-learn==1.5.2
 # Development requirements
 # breaking change in 8.2.0 https://docs.pytest.org/en/stable/changelog.html#pytest-8-2-0-2024-04-27
 # Will be fixed in 8.3.0 https://github.com/pytest-dev/pytest/issues/12275#issuecomment-2108348204
@@ -31,3 +32,7 @@ pytest-cov==6.2.0
 pytest-xdist==3.7.0
 pytest-durations==1.5.2
 ruff==0.11.13
+
+
+
+

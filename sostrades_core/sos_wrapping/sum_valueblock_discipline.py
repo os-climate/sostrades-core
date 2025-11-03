@@ -39,7 +39,7 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
         'version': '',
     }
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
-
+    NOT_SUM_LIST = ['years', 'Quarters']
     def build_dynamic_io(self):
         """The sum is stored in the same name as the inputs found in the children_list"""
         dynamic_inputs, dynamic_outputs = super().build_dynamic_io()
@@ -124,7 +124,7 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
                                     sub_input_dict[input_key]
                                     for input_key in sub_input_dict
                                 ],
-                                not_sum=['years', 'Quarters'],
+                                not_sum=self.NOT_SUM_LIST,
                             )
                             output_dict[input_to_sum] = sum_df
 

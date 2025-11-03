@@ -21,7 +21,7 @@ class Namespace:
 
     NS_NAME_SEPARATOR = '__'
 
-    def __init__(self, name, value, display_value=None, database_infos=None):
+    def __init__(self, name, value, display_value=None, database_infos=None) -> None:
         '''Class to describe a namespace and manage several instance of the same namespace'''
         self.name = name
         self.value = value
@@ -29,7 +29,7 @@ class Namespace:
         self.dependency_disc_list = []  # list of dependency disciplines
         self.database_infos = database_infos
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         '''Method that serialize as dict a Namespace object'''
         return self.__dict__
 

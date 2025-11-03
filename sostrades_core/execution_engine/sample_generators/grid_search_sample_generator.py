@@ -38,7 +38,7 @@ class GridSearchSampleGenerator(DoeSampleGenerator):
 
     GENERATOR_NAME = "GRID_SEARCH_GENERATOR"
 
-    def __init__(self, logger: logging.Logger):
+    def __init__(self, logger: logging.Logger) -> None:
         """Constructor"""
         super().__init__(logger=logger)
         self.cp_generator = CartesianProductSampleGenerator(logger=logger)

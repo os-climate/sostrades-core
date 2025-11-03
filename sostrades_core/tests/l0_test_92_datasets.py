@@ -144,7 +144,7 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(dm.get_value("usecase_dataset.use_lu_fact"), False)
         self.assertEqual(dm.get_value("usecase_dataset.warm_start"), False)
         self.assertEqual(dm.get_value("usecase_dataset.acceleration_method"), "Alternate2Delta")
-        self.assertEqual(dm.get_value("usecase_dataset.n_subcouplings_parallel"), 1)
+        self.assertEqual(dm.get_value("usecase_dataset.mdachain_parallelize_tasks"), False)
         self.assertEqual(dm.get_value("usecase_dataset.tolerance_gs"), 10.0)
         self.assertEqual(dm.get_value("usecase_dataset.over_relaxation_factor"), 0.99)
         self.assertEqual(dm.get_value("usecase_dataset.epsilon0"), 1.0e-6)

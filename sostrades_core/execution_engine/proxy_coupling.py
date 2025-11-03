@@ -144,6 +144,20 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ProxyDiscipline.STRUCTURING: True,
             ProxyDiscipline.UNIT: '-',
         },
+        'use_threading': {
+            ProxyDiscipline.TYPE: 'bool',
+            ProxyDiscipline.DEFAULT: True,
+            ProxyDiscipline.NUMERICAL: True,
+            ProxyDiscipline.STRUCTURING: True,
+            ProxyDiscipline.UNIT: '-',
+        },
+        'mdachain_parallelize_tasks': {
+            ProxyDiscipline.TYPE: 'bool',
+            ProxyDiscipline.DEFAULT: False,
+            ProxyDiscipline.NUMERICAL: True,
+            ProxyDiscipline.STRUCTURING: True,
+            ProxyDiscipline.UNIT: '-',
+        },
         'chain_linearize': {
             ProxyDiscipline.TYPE: 'bool',
             ProxyDiscipline.POSSIBLE_VALUES: [True, False],
@@ -185,14 +199,6 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             ProxyDiscipline.DEFAULT: BaseMDA.ResidualScaling.N_COUPLING_VARIABLES,
             ProxyDiscipline.NUMERICAL: True,
             ProxyDiscipline.STRUCTURING: True,
-        },
-        # parallel sub couplings execution
-        'n_subcouplings_parallel': {
-            ProxyDiscipline.TYPE: 'int',
-            ProxyDiscipline.DEFAULT: 1,
-            ProxyDiscipline.NUMERICAL: True,
-            ProxyDiscipline.STRUCTURING: True,
-            ProxyDiscipline.UNIT: '-',
         },
         'max_mda_iter_gs': {
             ProxyDiscipline.TYPE: 'int',
@@ -303,7 +309,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     has_chart = False
     NUMERICAL_VAR_LIST = list(DESC_IN.keys()) + list(ProxyDisciplineBuilder.NUM_DESC_IN.keys())
 
-    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None):
+    def __init__(self, sos_name, ee, cls_builder=None, associated_namespaces=None) -> None:
         """
         Constructor
 
@@ -804,6 +810,8 @@ class ProxyCoupling(ProxyDisciplineBuilder):
             'use_lu_fact',
             'warm_start',
             'n_processes',
+            'use_threading',
+            'mdachain_parallelize_tasks',
             "scaling_method",
         ]
         num_data = self.get_sosdisc_inputs(needed_numerical_param, in_dict=True)

@@ -34,7 +34,7 @@ class NamespaceManager:
     NS_SEP = '.'
     NS_NAME_SEPARATOR = Namespace.NS_NAME_SEPARATOR
 
-    def __init__(self, name, ee):
+    def __init__(self, name, ee) -> None:
         '''Constructor'''
         self.name = name  # old habit
 
@@ -626,7 +626,7 @@ class NamespaceManager:
         ]
         post_proc_ns_wo_dependency = [ns_name for ns_name in post_proc_ns_list if ns_name not in list(set(post_proc_ns_w_dependency))]
 
-        # clean nampespaces except post-pro namespaces without dependencies
+        # clean namespaces except post-pro namespaces without dependencies
         for ns in full_ns_list:
             if self.unused_namespace(ns, post_proc_ns_list=post_proc_ns_wo_dependency):
                 self.__clean_namespace(ns)
