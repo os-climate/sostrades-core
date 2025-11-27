@@ -161,7 +161,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             elif hasattr(value, '__len__'):
                 return len(value)
 
-        
+
 
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
@@ -179,9 +179,9 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             # in parallel case, local_data are in each discipline of the coupling
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
-        
+
             # convert outputs to their array type to get metadata updated
-            {output:doe_scenario.disciplines[0].output_grammar.data_converter.convert_value_to_array(output, local_data_dict[output]) 
+            {output:doe_scenario.disciplines[0].output_grammar.data_converter.convert_value_to_array(output, local_data_dict[output])
              for output in output_names
              if output in local_data_dict
              }
@@ -189,10 +189,10 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
-        
+
         print("output_sizes", output_sizes)
         print('reduced_dm', reduced_dm)
-        
+
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
             samples_output_df = DataFrame(output_array, columns=output_names)
         else:  # some outputs have more than 1 component
