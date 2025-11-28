@@ -145,6 +145,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             scenario_names: The scenario names corresponding to each sample.
 
         """
+        print('start process_output')
         evaluation_outputs = doe_scenario.to_dataset()
         def get_size(value, reduced_dm_variable):
             """Get the size of a value."""
