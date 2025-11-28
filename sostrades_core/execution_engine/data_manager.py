@@ -840,7 +840,7 @@ class DataManager:
         self.no_change = False
         self.data_dict[var_id].update(data_dict)
 
-    def create_treeview(self, root_process, process_module, no_data=False, read_only=False, exec_display=False):
+    def create_treeview(self, root_process, process_module,post_proc_ns=[], no_data=False, read_only=False, exec_display=False):
         '''
         Function that builds a composite structure
         regarding the DataManager stored data
@@ -850,7 +850,8 @@ class DataManager:
         self.treeview.create_tree_node(data_manager=self,
                                        root_process=root_process,
                                        process_module=process_module,
-                                       ns_manager=self.ns_manager)
+                                       ns_manager=self.ns_manager,
+                                       post_proc_ns=post_proc_ns)
 
     def export_data_dict_and_zip(self, export_dir):
         '''
