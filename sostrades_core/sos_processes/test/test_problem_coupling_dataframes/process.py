@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16 Copyright 2024 Capgemini
+Modifications on 2024/05/16-2025/11/28 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ class ProcessBuilder(BaseProcessBuilder):
 
     def get_builders(self):
         '''Default initialisation test'''
-        # add disciplines 
+        # add disciplines
         disc_dir = 'sostrades_core.sos_wrapping.test_discs.problem_with_dataframes.'
         mods_dict = {'cost_problem': disc_dir + 'CarCostProblem',
                      'ManufacturingDisc': disc_dir + 'ManufacturingDisc',

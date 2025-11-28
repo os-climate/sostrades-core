@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2024/05/16-2025/02/14 Copyright 2025 Capgemini
+Modifications on 2024/05/16-2025/11/28 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,12 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-import numpy as np
 import pandas as pd
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.execution_engine.sos_wrapp import SoSWrapp
-
 
 
 class CarCostProblem(SoSWrapp):
@@ -84,8 +82,8 @@ class CarCostProblem(SoSWrapp):
         """
         out = pd.DataFrame({'years': manufacturing_cost['years'], 'value': [0]*len(manufacturing_cost)})
         # Simple formula: base cost + engine cost + material cost + weight penalty + maintenance
-        out['value'] = (engine_power['value'][0] * 100 + material_specs[1] * 50 + 
-                       manufacturing_cost['value'] * weight_factor + 
+        out['value'] = (engine_power['value'][0] * 100 + material_specs[1] * 50 +
+                       manufacturing_cost['value'] * weight_factor +
                        maintenance_cost['value'] * 1.2)
         return out
 
@@ -154,7 +152,7 @@ class ManufacturingDisc(SoSWrapp):
         out = pd.DataFrame({'years': maintenance_cost['years'], 'value': 0.0})
 
         # Manufacturing cost = base material cost + engine complexity cost + maintenance influence
-        out['value'] = (int(material_specs[0]) * 200 + float(engine_power['value'][0]) * 80 + 
+        out['value'] = (int(material_specs[0]) * 200 + float(engine_power['value'][0]) * 80 +
                        float(material_specs[1]) * 150 + 0.1 * maintenance_cost['value'])
 
         return out
@@ -214,7 +212,7 @@ class MaintenanceDisc(SoSWrapp):
 
         # Maintenance cost = base maintenance + quality factor + manufacturing cost influence
         # Higher manufacturing cost leads to lower maintenance (better quality)
-        out['value'] = (int(material_specs[0]) * 300 + float(material_specs[1]) * 200 + 
+        out['value'] = (int(material_specs[0]) * 300 + float(material_specs[1]) * 200 +
                        manufacturing_cost['value'] * 0.05)
 
         return out

@@ -1,6 +1,6 @@
 '''
 Copyright 2022 Airbus SAS
-Modifications on 2023/10/10-2024/05/16 Copyright 2023 Capgemini
+Modifications on 2023/10/10-2025/11/28 Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class Study(StudyManager):
                        'lower_bnd': [0.8],
                        'upper_bnd': [2.0],
                        }
-                       
+
 
         dspace = pd.DataFrame(dspace_dict)
 
@@ -84,15 +84,15 @@ class Study(StudyManager):
 
         # Car cost computation inputs - same values as other usecase
         weight_factor = 1.2
-        
+
         # Initialize dataframes for car cost computation over years 2025-2030
         manufacturing_cost_df = pd.DataFrame({
-            'years': np.arange(2025, 2031), 
+            'years': np.arange(2025, 2031),
             'value': [8000.0, 8200.0, 8400.0, 8600.0, 8800.0, 9000.0]  # Increasing manufacturing costs
         })
-        
+
         maintenance_cost_df = pd.DataFrame({
-            'years': np.arange(2025, 2031), 
+            'years': np.arange(2025, 2031),
             'value': [2000.0, 2500.0, 3000.0, 3500.0, 4000.0, 4500.0]  # Increasing maintenance costs over time
         })
 
