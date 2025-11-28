@@ -189,9 +189,6 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
 
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
-        print('local_data_dict', {key: value for key, value in local_data_dict.items() if key in output_names})
-        print("output_sizes", output_sizes)
-        print('reduced_dm', {key:value for key, value in reduced_dm.items() if key in output_names})
 
         if all(atleast_1d(output_sizes) == 1):  # all outputs have only 1 component
             samples_output_df = DataFrame(output_array, columns=output_names)
