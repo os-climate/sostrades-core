@@ -181,11 +181,15 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
                 local_data_dict.update(discipline.local_data)
 
             # convert outputs to their array type to get metadata updated
-            {output:doe_scenario.disciplines[0].output_grammar.data_converter.convert_value_to_array(output, local_data_dict[output])
-             for output in output_names
-             if output in local_data_dict
-             }
-            reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
+            try:
+                {output:doe_scenario.disciplines[0].output_grammar.data_converter.convert_value_to_array(output, local_data_dict[output])
+                for output in output_names
+                if output in local_data_dict
+                }
+                reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
+            except Exception as e:
+                print('Error during conversion of outputs to array type to get metadata updated:', e)
+                reduced_dm = {}
 
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
