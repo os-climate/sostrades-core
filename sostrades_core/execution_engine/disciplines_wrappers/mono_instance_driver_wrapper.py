@@ -161,7 +161,7 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
             elif hasattr(value, '__len__'):
                 return len(value)
 
-        reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
+        #reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
 
         n_samples = evaluation_outputs.shape[0]
         output_names = self.attributes["eval_out_list"]
@@ -174,18 +174,18 @@ class MonoInstanceDriverWrapper(DriverEvaluatorWrapper):
         local_data_dict = {}
         if doe_scenario.disciplines[0].local_data:
             local_data_dict = doe_scenario.disciplines[0].local_data
-            #reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
+            reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
         else:
             # in parallel case, local_data are in each discipline of the coupling
             for discipline in doe_scenario.disciplines[0].disciplines:
                 local_data_dict.update(discipline.local_data)
 
             # convert outputs to their array type to get metadata updated
-            # {output:doe_scenario.disciplines[0].output_grammar.data_converter.convert_value_to_array(output, local_data_dict[output])
-            #  for output in output_names
-            #  if output in local_data_dict
-            #  }
-            # reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
+            {output:doe_scenario.disciplines[0].output_grammar.data_converter.convert_value_to_array(output, local_data_dict[output])
+             for output in output_names
+             if output in local_data_dict
+             }
+            reduced_dm = doe_scenario.disciplines[0].output_grammar.data_converter.reduced_dm
 
         output_sizes = [get_size(local_data_dict[output], reduced_dm[output]) for output in output_names
                         if (output in local_data_dict and output in reduced_dm)]
