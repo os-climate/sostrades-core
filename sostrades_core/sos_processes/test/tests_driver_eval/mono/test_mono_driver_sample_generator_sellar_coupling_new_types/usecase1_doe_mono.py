@@ -1,7 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
-Modifications on 2023/10/10-2024/05/16 Copyright 2023 Capgemini
-
+Copyright 2023 Capgemini
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -13,9 +11,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
 '''
+import numpy as np
 import pandas as pd
-from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import (
@@ -34,14 +33,14 @@ class Study(StudyManager):
 
         ns = f'{self.study_name}'
 
-        dspace_dict = {'variable': [f'{coupling_name}.x'],
+        dspace_dict = {'variable': [f'{coupling_name}.Sellar_Problem.local_dv'],
                        'lower_bnd': [0.],
                        'upper_bnd': [10.],
                        }
 
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_x = {'selected_input': [False, True, False, False, False],
+        input_selection_x = {'selected_input': [True, False, False, False, False],
                              'full_name': [f'{coupling_name}.Sellar_Problem.local_dv', f'{coupling_name}.x', f'{coupling_name}.y_1',
                                            f'{coupling_name}.y_2',
                                            f'{coupling_name}.z']}
@@ -83,11 +82,15 @@ class Study(StudyManager):
 
         # Sellar inputs
         local_dv = 10.
+        df = pd.DataFrame({'years': np.arange(1, 5)})
+        df['value'] = 1.0
 
-        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = array([2.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = array([1.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = array([1.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = array([1., 1.])
+        dict_x = {'years': np.arange(1, 5), 'value': np.ones(4)}
+
+        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = dict_x
+        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = df
+        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = df
+        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = np.array([1., 1.])
         disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
 
         return [disc_dict]

@@ -53,25 +53,24 @@ class toolboxsum:
         # infer not summable columns in dataframe
         not_summable = list_df[0].convert_dtypes().select_dtypes(
             exclude=[np.number, 'datetime']).columns.to_list()
+        not_sum_new=[]
         if len(not_summable):
-            if not_sum is None:
-                not_sum = not_summable
-            else:
-                not_sum.extend(not_summable)
-                not_sum = list(set(not_sum))
+            not_sum_new.extend(not_summable)
 
         if not_sum is not None:
+            not_sum_new.extend(not_sum)
+        not_sum_new = list(set(not_sum_new))
 
             # existing columns in dataframe
-            in_columns = [
-                col for col in not_sum if col in list(list_df[0].columns)]
-            restored_df = list_df[0][in_columns]
-            list_df_copy = deepcopy(list_df)
-            list_df_wo_columns = [df.drop(columns=in_columns)
-                                  for df in list_df_copy]
+        in_columns = [
+            col for col in not_sum_new if col in list(list_df[0].columns)]
+        restored_df = list_df[0][in_columns]
+        list_df_copy = deepcopy(list_df)
+        list_df_wo_columns = [df.drop(columns=in_columns)
+                              for df in list_df_copy]
         sum_df = reduce(lambda x, y: x.add(
             y, fill_value=0), list_df_wo_columns)
-        if not_sum is not None:
+        if not_sum_new is not None:
             # sum_df = sum_df.join(restored_df)
             sum_df = restored_df.join(sum_df)
 

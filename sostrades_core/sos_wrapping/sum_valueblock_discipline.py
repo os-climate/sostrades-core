@@ -39,7 +39,7 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
         'version': '',
     }
     STANDARD_TYPES = [int, float, np_int32, np_int64, np_float64, bool]
-    NOT_SUM_LIST = ['years', 'Quarters']
+    NOT_SUM_LIST = ['years', 'Quarters', 'Year']
     def build_dynamic_io(self):
         """The sum is stored in the same name as the inputs found in the children_list"""
         dynamic_inputs, dynamic_outputs = super().build_dynamic_io()
@@ -118,22 +118,14 @@ class SumValueBlockDiscipline(ValueBlockDiscipline):
 
                     elif type_input == 'dataframe':
 
-                        if input_to_sum != 'percentage_resource':
-                            sum_df, percent = toolbox.compute_sum_df(
-                                [
-                                    sub_input_dict[input_key]
-                                    for input_key in sub_input_dict
-                                ],
-                                not_sum=self.NOT_SUM_LIST,
-                            )
-                            output_dict[input_to_sum] = sum_df
-
-                            if 'percentage_resource' in self.input_to_sum.keys():
-                                tmp_list = list(sub_input_dict.keys())
-                                percent.columns = ['years'] + [
-                                    tmp.split(".", 1)[0] for tmp in tmp_list
-                                ]
-                                output_dict['percentage_resource'] = percent
+                        sum_df, percent = toolbox.compute_sum_df(
+                            [
+                                sub_input_dict[input_key]
+                                for input_key in sub_input_dict
+                            ],
+                            not_sum=self.NOT_SUM_LIST,
+                        )
+                        output_dict[input_to_sum] = sum_df
 
                 elif len(sub_input_dict) == 1:
                     output_dict[input_to_sum] = list(

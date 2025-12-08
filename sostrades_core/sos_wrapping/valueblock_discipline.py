@@ -20,6 +20,7 @@ from copy import copy
 import pandas as pd
 
 from sostrades_core.execution_engine.gather_discipline import GatherDiscipline
+from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 
 
 class ValueBlockDiscipline(GatherDiscipline):
@@ -107,8 +108,10 @@ class ValueBlockDiscipline(GatherDiscipline):
                             df_copy = self.add_key_column_to_df(df_copy, key_column, input_key[1])
 
                             output_df_list.append(df_copy)
-                        else:
+                        elif isinstance(input_dict[input_key], ProxyDiscipline.VAR_TYPE_MAP['float']) :
                             output_dict[out_key][input_key[1]] = input_dict[input_key]
+                        else :
+                            output_dict[out_key][input_key[1]] = input_dict[input_key].copy()
                 if output_df_list != []:
                     # concat the list of dataframes to get the full dataframe
                     output_dict[out_key] = pd.concat(output_df_list, ignore_index=True)
