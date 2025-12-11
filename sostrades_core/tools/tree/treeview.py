@@ -88,8 +88,11 @@ class TreeView:
         # the full view of the tree (keeping the discipline with dotted name
         # Correct treenode built need to have nemaspace ordered in alphebetical
         # order
-
-        self.create_treenode_rec(self.root, treenodes, disc_dict)
+        if len(self.root.full_namespace) == 0:
+            # special case when there is a coupling of coupling at root level
+            self.create_treenode_rec(treenode, treenodes, disc_dict)
+        else:
+            self.create_treenode_rec(self.root, treenodes, disc_dict)
 
         data_dict = data_manager.convert_data_dict_with_display_name(
             self.exec_display)
