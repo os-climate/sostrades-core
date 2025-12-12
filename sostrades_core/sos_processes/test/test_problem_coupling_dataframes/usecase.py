@@ -1,6 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
-Modifications on 2024/05/16-2025/11/28 Copyright 2025 Capgemini
+Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,7 +48,7 @@ class Study(StudyManager):
         disc_dict[f'{ns}.{coupling_name}.manufacturing_cost'] = manufacturing_cost_df
         disc_dict[f'{ns}.{coupling_name}.maintenance_cost'] = maintenance_cost_df
         disc_dict[f'{ns}.{coupling_name}.material_specs'] = np.array([3.0, 2.5])  # [quality_factor, durability_factor]
-        disc_dict[f'{ns}.{coupling_name}.CostCoupling.weight_factor'] = 1.2  # Vehicle weight factor for DOE
+        disc_dict[f'{ns}.{coupling_name}.cost_problem.weight_factor'] = 1.2  # Vehicle weight factor for DOE
         disc_dict[f'{ns}.{coupling_name}.max_mda_iter'] = 100
         disc_dict[f'{ns}.{coupling_name}.tolerance'] = 1e-12
 
