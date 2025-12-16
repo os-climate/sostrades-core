@@ -30,7 +30,7 @@ from sostrades_core.sos_processes.test.test_disc1_all_types.usecase import (
 from sostrades_core.sos_processes.test.test_sellar_coupling.usecase import (
     Study as Study_sellar_coupling,
 )
-from sostrades_core.sos_processes.test.test_sellar_coupling_new_types._usecase import (
+from sostrades_core.sos_processes.test.test_sellar_coupling_new_types.usecase import (
     Study as Study_sellar_coupling_new_types,
 )
 from sostrades_core.tools.folder_operations import rmtree_safe
