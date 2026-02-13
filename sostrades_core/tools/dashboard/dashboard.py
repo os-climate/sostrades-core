@@ -320,7 +320,8 @@ def migrate_from_old_format(dashboard_json):
         if item_type == DisplayableItemType.SECTION:
             old_section_items = old_item.get('data', {}).get('items', [])
             for child_item in old_section_items:
-                if item_type == DisplayableItemType.GRAPH:
+                child_type = child_item.get('type')
+                if child_type == DisplayableItemType.GRAPH:
                     # not possible to migrate graph item -> lacking filters to create the new item_id
                     continue
                 child_layout, child_data = migrate_item_by_type(child_item)

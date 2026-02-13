@@ -125,7 +125,6 @@ class ProxyOptim(ProxyDriverEvaluator):
     default_parallel_options = {
         'parallel': False,
         'n_processes': cpu_count(),
-        'use_threading': False,
         'wait_time_between_fork': 0,
     }
     USER_GRAD = 'user'

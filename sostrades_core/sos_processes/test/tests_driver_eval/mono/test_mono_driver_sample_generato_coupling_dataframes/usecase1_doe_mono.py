@@ -1,6 +1,5 @@
 '''
-Copyright 2022 Airbus SAS
-Modifications on 2023/10/10-2024/05/16 Copyright 2023 Capgemini
+Copyright 2025 Capgemini
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 '''
+import numpy as np
 import pandas as pd
-from numpy import array
 
 from sostrades_core.study_manager.study_manager import StudyManager
 from sostrades_core.tools.proc_builder.process_builder_parameter_type import (
@@ -29,28 +28,29 @@ class Study(StudyManager):
         super().__init__(__file__, run_usecase=run_usecase, execution_engine=execution_engine)
 
     def setup_usecase(self):
-        """Usecase for lhs DoE and Eval on x variable of Sellar Problem"""
-        coupling_name = 'SellarCoupling'
+        """Usecase for lhs DoE and Eval on x variable of a Problem"""
+        coupling_name = 'CostCoupling'
 
         ns = f'{self.study_name}'
 
-        dspace_dict = {'variable': [f'{coupling_name}.x'],
-                       'lower_bnd': [0.],
-                       'upper_bnd': [10.],
+        dspace_dict = {'variable': [f'{coupling_name}.cost_problem.weight_factor'],
+                       'lower_bnd': [0.8],
+                       'upper_bnd': [2.0],
                        }
+
 
         dspace = pd.DataFrame(dspace_dict)
 
-        input_selection_x = {'selected_input': [False, True, False, False, False],
-                             'full_name': [f'{coupling_name}.Sellar_Problem.local_dv', f'{coupling_name}.x', f'{coupling_name}.y_1',
-                                           f'{coupling_name}.y_2',
-                                           f'{coupling_name}.z']}
+        input_selection_x = {'selected_input': [True, False, False, False, False],
+                             'full_name': [f'{coupling_name}.cost_problem.weight_factor', f'{coupling_name}.engine_power', f'{coupling_name}.manufacturing_cost',
+                                           f'{coupling_name}.maintenance_cost',
+                                           f'{coupling_name}.material_specs']}
 
         input_selection_x = pd.DataFrame(input_selection_x)
 
         output_selection_obj_y1_y2 = {'selected_output': [False, False, True, True, True],
-                                      'full_name': [f'{coupling_name}.c_1', f'{coupling_name}.c_2', f'{coupling_name}.obj',
-                                                    f'{coupling_name}.y_1', f'{coupling_name}.y_2']}
+                                      'full_name': [f'{coupling_name}.quality_constraint', f'{coupling_name}.budget_constraint', f'{coupling_name}.total_cost',
+                                                    f'{coupling_name}.manufacturing_cost', f'{coupling_name}.maintenance_cost']}
 
         output_selection_obj_y1_y2 = pd.DataFrame(output_selection_obj_y1_y2)
 
@@ -71,8 +71,8 @@ class Study(StudyManager):
         with_modal = True
         anonymize_input_dict_from_usecase = {}
         if with_modal:
-            repo = 'sostrades_core.sos_processes.test.sellar'
-            mod_id = 'test_sellar_coupling'
+            repo = 'sostrades_core.sos_processes.test'
+            mod_id = 'test_problem_coupling_dataframes'
             my_usecase = 'Empty'
             process_builder_parameter_type = ProcessBuilderParameterType(
                 mod_id, repo, my_usecase)
@@ -81,14 +81,28 @@ class Study(StudyManager):
         else:
             disc_dict[f'{ns}.Eval.usecase_data'] = anonymize_input_dict_from_usecase
 
-        # Sellar inputs
-        local_dv = 10.
+        # Car cost computation inputs - same values as other usecase
+        weight_factor = 1.2
 
-        disc_dict[f'{ns}.Eval.{coupling_name}.x'] = array([2.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_1'] = array([1.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.y_2'] = array([1.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.z'] = array([1., 1.])
-        disc_dict[f'{ns}.Eval.{coupling_name}.Sellar_Problem.local_dv'] = local_dv
+        # Initialize dataframes for car cost computation over years 2025-2030
+        manufacturing_cost_df = pd.DataFrame({
+            'years': np.arange(2025, 2031),
+            'value': [8000.0, 8200.0, 8400.0, 8600.0, 8800.0, 9000.0]  # Increasing manufacturing costs
+        })
+
+        maintenance_cost_df = pd.DataFrame({
+            'years': np.arange(2025, 2031),
+            'value': [2000.0, 2500.0, 3000.0, 3500.0, 4000.0, 4500.0]  # Increasing maintenance costs over time
+        })
+
+        # Engine power specifications (different engine sizes for DOE)
+        engine_power_dict = {'years': np.arange(1, 5), 'value': np.array([150.0, 200.0, 250.0, 300.0])}  # HP values
+
+        disc_dict[f'{ns}.Eval.{coupling_name}.engine_power'] = engine_power_dict
+        disc_dict[f'{ns}.Eval.{coupling_name}.manufacturing_cost'] = manufacturing_cost_df
+        disc_dict[f'{ns}.Eval.{coupling_name}.maintenance_cost'] = maintenance_cost_df
+        disc_dict[f'{ns}.Eval.{coupling_name}.material_specs'] = np.array([3.0, 2.5])  # [quality_factor, durability_factor]
+        disc_dict[f'{ns}.Eval.{coupling_name}.cost_problem.weight_factor'] = weight_factor
 
         return [disc_dict]
 
