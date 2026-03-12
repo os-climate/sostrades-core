@@ -15,7 +15,7 @@ This discipline is built on top of the **pyDecision** library, a powerful Python
 
 The ValueAnalysis discipline is designed to:
 1. **Process multi-criteria data** from any source (Design of Experiments, simulations, real data)
-2. **Apply MCDA methods** to rank alternatives and identify optimal solutions  
+2. **Apply MCDA methods** to rank alternatives and identify optimal solutions
 3. **Generate advanced visualizations** including correlation matrices, ranking comparisons, and GAIA analysis
 4. **Support decision-making** through comprehensive multi-criteria analysis
 
@@ -110,7 +110,7 @@ The ValueAnalysis discipline provides 7 different chart types through a mixed vi
 
 ### Method Selection
 1. **TOPSIS**: Best for balanced analysis with clear ideal and anti-ideal solutions
-2. **SAW**: Suitable for simple weighted sum approaches with linear preferences  
+2. **SAW**: Suitable for simple weighted sum approaches with linear preferences
 3. **VIKOR**: Ideal for compromise solutions with group utility considerations
 4. **Multiple Methods**: Use several methods for robust decision support and comparison
 
@@ -251,8 +251,8 @@ The discipline provides comprehensive debug logging (using ASCII characters only
 
 ---
 
-**Discipline**: ValueAnalysis  
-**Version**: 1.1  
-**Author**: SoSTrades Development Team  
-**Last Updated**: September 2025  
+**Discipline**: ValueAnalysis
+**Version**: 1.1
+**Author**: SoSTrades Development Team
+**Last Updated**: September 2025
 **Dependencies**: pyDecision (GNU GPL v3.0), plotly, scikit-learn, pandas, numpy
