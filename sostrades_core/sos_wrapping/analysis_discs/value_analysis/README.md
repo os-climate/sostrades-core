@@ -30,7 +30,7 @@ The discipline can be used in a process that includes:
 
 - `doe_results`: DataFrame containing DoE results with input variables and output criteria
 - `input_criteria_names`: List of input criteria/variable names
-- `output_criteria_names`: List of output criteria/objective names  
+- `output_criteria_names`: List of output criteria/objective names
 - `criteria_types`: List specifying "max" for benefit criteria, "min" for cost criteria
 - `criteria_weights`: Optional weights for each criterion
 - `mcda_methods`: MCDA methods to apply (default: ['topsis', 'saw', 'vikor'])
