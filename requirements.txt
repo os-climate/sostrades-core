@@ -21,7 +21,6 @@ scipy==1.13.0
 six==1.17.0
 sympy==1.13.2
 tqdm==4.66.5
-pyDecision==4.7.9
 seaborn==0.13.2
 scikit-learn==1.5.2
 # Development requirements
