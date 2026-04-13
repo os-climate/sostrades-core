@@ -24,7 +24,7 @@ dependencies = [
     "plotly==5.24.0",
     "pyarrow==20.0.0",
     "pycryptodome==3.23.0",
-    "pytest==8.1.2",
+    "pytest==9.0.3",
     "pytest-cov==6.2.0",
     "pytest-durations==1.5.2",
     "pytest-xdist==3.7.0",
