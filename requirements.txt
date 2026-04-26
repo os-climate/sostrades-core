@@ -7,7 +7,7 @@ chaospy==4.3.18
 cma==4.2.0
 cvxpy==1.6.6
 db-dtypes==1.2.0
-gitpython==3.1.44
+gitpython==3.1.47
 matplotlib==3.9.2
 numpy==1.26.4
 numpoly==1.2.14  # last version with wheel
