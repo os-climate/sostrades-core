@@ -186,6 +186,3 @@ def update_node_data_with_data(study_name, key, dm_data, node_data):
         node_data['parent']['fullNamespace'] = update_namespace_with_new_study_name(node_data['parent']['fullNamespace'], study_name)
 
         return node_data
-
-
-
