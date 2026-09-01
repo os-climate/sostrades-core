@@ -531,12 +531,12 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             # Find index where local namespace is in the arrays
             # idx = np.where(parent_dot_names == local_ns.name)[0]
             # Find index where local namespace ends with strings in parent_dot_names
-            idx = np.where(np.char.endswith(local_ns.name, parent_dot_names))[0]
+            idx = np.where([local_ns.name.endswith(x) for x in parent_dot_names])[0]
 
             # Try another strategy for some cases where the local namespace does not have
             # the name of the parent
             if len(idx) == 0 and "." not in local_ns.name:
-                idx = np.where(np.char.endswith(local_ns.name, names))[0]
+                idx = np.where([local_ns.name.endswith(x) for x in names])[0]
 
             if len(idx) > 0 and display_names[idx[0]] is not None:
                 new_display_name = disc.get_disc_full_name().replace(names[idx[0]], display_names[idx[0]])

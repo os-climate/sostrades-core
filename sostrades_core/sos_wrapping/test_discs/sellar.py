@@ -17,7 +17,7 @@ limitations under the License.
 from cmath import exp as exp_cp
 from cmath import sqrt as sqrt_cp
 
-from numpy import NaN, array, atleast_2d, floating
+from numpy import array, atleast_2d, floating
 from numpy import exp as exp_np
 from numpy import sqrt as sqrt_np
 
@@ -327,7 +327,7 @@ class Sellar3(SoSWrapp):
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': array([y_2])}
         if error_string == 'nan':
-            y1_out['y_2'] = array([NaN])
+            y1_out['y_2'] = array([np.nan])
             raise Exception('error test')
         elif error_string == 'input_change':
             y_1 = self.get_sosdisc_inputs('y_1')

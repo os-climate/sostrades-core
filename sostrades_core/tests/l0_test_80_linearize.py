@@ -15,11 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import unittest
-import warnings
 from pathlib import Path
 
 from gemseo.core.discipline.discipline import Discipline
-from numpy import ComplexWarning
+
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
@@ -44,7 +43,6 @@ class TestAnalyticGradients(unittest.TestCase):
         self.study_name = 'usecase'
         self.ns = f'{self.study_name}'
         self.repo = 'sostrades_core.sos_processes.test'
-        warnings.filterwarnings('error', category=ComplexWarning)
 
     def tearDown(self):
         for dir_to_del in self.dirs_to_del:

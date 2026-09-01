@@ -16,11 +16,13 @@ limitations under the License.
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Final
+from typing import Any, Final,TYPE_CHECKING
 
 from gemseo.core.data_converters.simple import SimpleGrammarDataConverter
 from numpy import complex128 as np_complex128
 from numpy import ndarray
+from numpy import concatenate
+from numpy import array as np_array
 
 from sostrades_core.tools.base_functions.compute_len import compute_len
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
@@ -32,6 +34,13 @@ from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
 ValueTypes: Final[tuple[type]] = tuple(STANDARD_TYPES + [complex, ndarray, np_complex128])
 ValueTypes_Numeric = ['int', 'float']
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from gemseo.typing import NumberArray
+    from gemseo.typing import StrKeyMapping
+
+    ValueType = int | float | complex | NumberArray
 
 class SoSTradesDataConverter(SimpleGrammarDataConverter):
     """Data values to NumPy arrays and vice versa from a :class:`.SimpleGrammar`."""
@@ -46,7 +55,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
                 issubclass(element_type, ndarray) or element_type in self._NON_ARRAY_TYPES
         )
 
-    def _convert_array_to_value(self, name: str, array: ndarray) -> Any:  # noqa: D102
+    def convert_array_to_value(self, name: str, array: ndarray) -> Any:  # noqa: D102
 
         if name not in self.reduced_dm or self.reduced_dm[name]['type'] == 'array':
             return array
@@ -54,6 +63,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
             return array[0]
         else:
             return convert_array_into_new_type(name, array, self.reduced_dm.get(name, {}))
+
 
     def convert_value_to_array(
             self,
@@ -98,3 +108,46 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
             return 1
         else:
             return compute_len(value)
+
+    def convert_array_to_data(
+        self,
+        array: NumberArray,
+        names_to_slices: Mapping[str, slice],
+    ) -> dict[str, ValueType]:
+        """Convert a NumPy array to a data structure.
+
+        .. seealso:: :meth:`.convert_array_to_value`
+
+        Args:
+            array: The NumPy array to slice.
+            names_to_slices: The mapping from the data names to the array slices.
+
+        Returns:
+            The mapping from the data names to the array slices.
+        """
+        to_value = self.convert_array_to_value
+        return {
+            name: to_value(name, array[..., slice_])
+            for name, slice_ in names_to_slices.items()
+        }
+
+    def convert_data_to_array(
+        self,
+        names: Iterable[str],
+        data: StrKeyMapping,
+    ) -> NumberArray:
+        """Convert a part of a data structure to a NumPy array.
+
+        .. seealso:: :meth:`.convert_value_to_array`
+
+        Args:
+            data: The data structure.
+            names: The data names which values will be concatenated.
+
+        Returns:
+            The concatenated NumPy array.
+        """
+        if not names:
+            return np_array([])
+        to_array = self.convert_value_to_array
+        return concatenate(tuple(to_array(name, data[name]) for name in names), axis=-1)

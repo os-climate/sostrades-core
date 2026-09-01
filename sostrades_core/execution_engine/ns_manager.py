@@ -200,6 +200,14 @@ class NamespaceManager:
         else:
             return self.shared_ns_dict[ns_name]
 
+    def get_ns_in_associated_ns_dict(self,disc, ns_name):
+        '''Get a deepcopy of the shared_ns_dict'''
+        associated_ns_dict = self.get_associated_ns(disc)
+        if ns_name not in associated_ns_dict:
+            raise NamespaceManagerException(
+                f'The namespace {ns_name} is not defined in the namespace manager')
+        else:
+            return self.shared_ns_dict[ns_name]
     def get_ns_from_id(self, ns_id):
         '''Get namespace object from namespace id'''
         if ns_id in self.all_ns_dict.keys():
@@ -418,6 +426,7 @@ class NamespaceManager:
     def get_shared_namespace(self, disc, var_ns):
         '''Return the shared_namespace linked to var_ns for the discipline disc'''
         if not self.check_namespace_name_in_ns_manager(disc, var_ns):
+            print(self.all_ns_dict)
             raise NamespaceManagerException(
                 f'The namespace {var_ns} is missing for the discipline {disc.sos_name}')
         return self.get_disc_others_ns(disc)[var_ns]

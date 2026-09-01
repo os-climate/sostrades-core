@@ -377,7 +377,7 @@ class TestSerializeDF(unittest.TestCase):
         This test is based on the pickle of test5 dumped in pandas1 and loaded using current pandas version to validate
         retro-compatibility.
         """
-        self.assertTrue(pd.__version__.startswith("2.2"))
+        self.assertTrue(pd.__version__.startswith("2.3.2"))
         dump_dir = join(dirname(realpath(__file__)), 'dm_df_pandas1')
         # load process in GUI
         self.name = 'dm_w_df_pandas1'

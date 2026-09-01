@@ -31,6 +31,9 @@ from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
 from sostrades_core.execution_engine.scattermaps_manager import ScatterMapsManager
 from sostrades_core.execution_engine.sos_factory import SosFactory
 
+from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.core.execution_status import ExecutionStatus
+
 if TYPE_CHECKING:
     from sostrades_core.datasets.dataset_mapping import DatasetsMapping
 
@@ -679,6 +682,9 @@ class ExecutionEngine:
 
     def execute(self, loaded_cache=None):
         '''Execution of the execution engine'''
+
+        ExecutionStatistics.is_enabled = True
+        ExecutionStatus.is_enabled = True
         self.logger.info('PROCESS EXECUTION %s STARTS...', self.root_process.get_disc_full_name())
         #         self.root_process.clear_cache()
         self.update_from_dm()

@@ -41,7 +41,7 @@ class Study(StudyManager):
         disc_dict = {}
         # Optim inputs
         disc_dict[f'{ns}.SellarOptimScenario.max_iter'] = 100
-        # SLSQP, NLOPT_SLSQP
+        # SLSQP, SLSQP
         disc_dict[f'{ns}.SellarOptimScenario.algo'] = "SLSQP"
         disc_dict[f'{ns}.SellarOptimScenario.design_space'] = dspace
         # TODO: what's wrong with IDF

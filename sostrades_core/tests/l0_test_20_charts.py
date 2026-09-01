@@ -502,7 +502,7 @@ class TestChartTemplate(unittest.TestCase):
             InstanciatedSeries,
         )
 
-        x_bar = [1.0, 'test', 40, np.nan, None, np.Infinity]
+        x_bar = [1.0, 'test', 40, np.nan, None, np.inf]
         y_bar = np.random.randint(100, size=5).tolist()
 
         serie_bar = InstanciatedSeries(

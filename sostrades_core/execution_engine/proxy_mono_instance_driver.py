@@ -187,15 +187,20 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         after_name = self.father_executor.get_disc_full_name()
 
         for ns_name in self.sub_builder_namespaces:
-            old_ns = self.ee.ns_manager.get_ns_in_shared_ns_dict(ns_name)
-            updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
-                old_ns.get_value(), extra_name, after_name=after_name
-            )
-            display_value = old_ns.get_display_value_if_exists()
-            ns_id = self.ee.ns_manager.add_ns(
-                ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False
-            )
-            ns_ids_list.append(ns_id)
+            old_ns_list = self.ee.ns_manager.get_all_namespace_with_name(ns_name)
+            for old_ns in old_ns_list :
+                updated_value = self.ee.ns_manager.update_ns_value_with_extra_ns(
+                    old_ns.get_value(), extra_name, after_name=after_name
+                )
+                display_value = old_ns.get_display_value_if_exists()
+
+                ns_id = self.ee.ns_manager.add_ns(
+                    ns_name, updated_value, display_value=display_value, add_in_shared_ns_dict=False
+                )
+                for sub_builder in self.cls_builder:
+                    if old_ns.get_ns_id() in sub_builder.associated_namespaces :
+                        sub_builder.associated_namespaces.append(ns_id)
+                ns_ids_list.append(ns_id)
 
         return ns_ids_list
 

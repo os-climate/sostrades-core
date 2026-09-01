@@ -932,7 +932,7 @@ class TestCache(unittest.TestCase):
     #     disc_dict = {}
     #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.inner_mda_name'] = 'MDAGaussSeidel'
     #     disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
-    #     disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
+    #     disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "SLSQP"
     #     disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
     #     disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
     #     disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
@@ -998,7 +998,7 @@ class TestCache(unittest.TestCase):
     #     disc_dict = {}
     #     disc_dict[f'{self.ns}.SellarOptimScenario.{self.c_name}.inner_mda_name'] = 'MDAGaussSeidel'
     #     disc_dict[f'{self.ns}.SellarOptimScenario.max_iter'] = 2
-    #     disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "NLOPT_SLSQP"
+    #     disc_dict[f'{self.ns}.SellarOptimScenario.algo'] = "SLSQP"
     #     disc_dict[f'{self.ns}.SellarOptimScenario.design_space'] = dspace
     #     disc_dict[f'{self.ns}.SellarOptimScenario.formulation'] = 'DisciplinaryOpt'
     #     disc_dict[f'{self.ns}.SellarOptimScenario.objective_name'] = 'obj'
