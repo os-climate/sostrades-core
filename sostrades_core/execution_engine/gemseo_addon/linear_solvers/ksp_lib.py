@@ -107,7 +107,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             for solver_name in AVAILABLE_LINEAR_SOLVERS
         }
 
-        def _run(self, problem: LinearProblem, **settings: Any) -> ndarray:
+        def _run(self, problem: LinearProblem) -> ndarray:
             """
             Run the algorithm.
 
@@ -124,22 +124,22 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             solver = self.ALGORITHM_INFOS[self.algo_name].internal_algorithm_name
             b = problem.rhs
             a = problem.lhs
-            if 'maxiter' not in settings:
-                settings['maxiter'] = 50 * b.shape[0]
+            if 'maxiter' not in self._settings:
+                self._settings['maxiter'] = 50 * b.shape[0]
             else:
-                settings['maxiter'] = min(settings['maxiter'], 50 * a.shape[0])
+                self._settings['maxiter'] = min(self._settings['maxiter'], 50 * a.shape[0])
 
             # first run
-            settings["old_sol"] = None
+            self._settings["old_sol"] = None
 
-            sol, info, ksp = self._run_petsc_strategy(problem, solver, **settings)
+            sol, info, ksp = self._run_petsc_strategy(problem, solver,self._settings)
 
             if info < 0:
-                settings['preconditioner_type'] = 'gasm'
-                settings['old_sol'] = sol
+                self._settings['preconditioner_type'] = 'gasm'
+                self._settings['old_sol'] = sol
 
                 # second run with bcgs
-                sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", **settings)
+                sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", self._settings)
                 if info >= 0:
                     LOGGER.warning(
                         "The second try with GASM preconditioner and bi CG stabilized linear solver has converged at %s",
@@ -150,19 +150,19 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                     LOGGER.warning(
                         "DIVERGED_ITS error : the number of iterations of the solver is %s with a max iter of %s, running again with 10*maxiter",
                         len(ksp.getConvergenceHistory()),
-                        settings['maxiter'],
+                        self._settings['maxiter'],
                     )
-                    settings['maxiter'] = 10 * settings['maxiter']
-                    settings['preconditioner_type'] = 'gasm'
-                    settings['old_sol'] = sol
+                    self._settings['maxiter'] = 10 * self._settings['maxiter']
+                    self._settings['preconditioner_type'] = 'gasm'
+                    self._settings['old_sol'] = sol
 
                     # third run with bcgs and larger maxiter
-                    sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", **settings)
+                    sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", self._settings)
 
             return problem.solution
 
         def _run_petsc_strategy(
-            self, problem: LinearProblem, solver: str, **settings
+            self, problem: LinearProblem, solver: str, settings
         ) -> tuple[NumberArray | None, int, Any]:
             """
             Runs the solver.
@@ -190,6 +190,8 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             ksp = PETSc.KSP().create()
             # Set all solver settings
             ksp.setType(solver)
+
+
             ksp.setTolerances(settings["rtol"], settings["atol"], settings["dtol"], settings["maxiter"])
             ksp.setConvergenceHistory()
 
