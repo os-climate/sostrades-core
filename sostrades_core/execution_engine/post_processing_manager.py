@@ -262,6 +262,7 @@ class PostProcessing:
 
         :returns: ChartFilter[]
         """
+        from sostrades_core.execution_engine.execution_engine import ExecutionEngine  # noqa: PLC0415
         if not isinstance(execution_engine, ExecutionEngine):
             raise ValueError(
                 f'"execution_engine" argument must be of type "ExecutionEngine" and not "{type(execution_engine)}"')
