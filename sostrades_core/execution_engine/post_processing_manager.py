@@ -19,12 +19,10 @@ from __future__ import annotations
 from importlib import import_module
 from typing import TYPE_CHECKING
 
-from sostrades_core.execution_engine.execution_engine import ExecutionEngine
-
 if TYPE_CHECKING:
     import logging
 
-
+    from sostrades_core.execution_engine.execution_engine import ExecutionEngine  # noqa: TC004
 
 """
 Post processing manager allowing to coeespond namespace with post processing to execute
@@ -296,6 +294,7 @@ class PostProcessing:
 
         :returns: list (TwoAxesInstanciatedChart/InstanciatedPieChart/InstanciatedTable) or json oject list
         """
+        from sostrades_core.execution_engine.execution_engine import ExecutionEngine  # noqa: PLC0415
         if not isinstance(execution_engine, ExecutionEngine):
             raise ValueError(
                 f'"execution_engine" argument must be of type "ExecutionEngine" and not "{type(execution_engine)}"')
