@@ -16,13 +16,12 @@ limitations under the License.
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Final,TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Final
 
 from gemseo.core.data_converters.simple import SimpleGrammarDataConverter
-from numpy import complex128 as np_complex128
-from numpy import ndarray
-from numpy import concatenate
 from numpy import array as np_array
+from numpy import complex128 as np_complex128
+from numpy import concatenate, ndarray
 
 from sostrades_core.tools.base_functions.compute_len import compute_len
 from sostrades_core.tools.conversion.conversion_sostrades_sosgemseo import (
@@ -35,10 +34,9 @@ ValueTypes: Final[tuple[type]] = tuple(STANDARD_TYPES + [complex, ndarray, np_co
 ValueTypes_Numeric = ['int', 'float']
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-    from collections.abc import Mapping
-    from gemseo.typing import NumberArray
-    from gemseo.typing import StrKeyMapping
+    from collections.abc import Iterable, Mapping
+
+    from gemseo.typing import NumberArray, StrKeyMapping
 
     ValueType = int | float | complex | NumberArray
 
@@ -114,7 +112,8 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
         array: NumberArray,
         names_to_slices: Mapping[str, slice],
     ) -> dict[str, ValueType]:
-        """Convert a NumPy array to a data structure.
+        """
+        Convert a NumPy array to a data structure.
 
         .. seealso:: :meth:`.convert_array_to_value`
 
@@ -124,6 +123,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
 
         Returns:
             The mapping from the data names to the array slices.
+
         """
         to_value = self.convert_array_to_value
         return {
@@ -136,7 +136,8 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
         names: Iterable[str],
         data: StrKeyMapping,
     ) -> NumberArray:
-        """Convert a part of a data structure to a NumPy array.
+        """
+        Convert a part of a data structure to a NumPy array.
 
         .. seealso:: :meth:`.convert_value_to_array`
 
@@ -146,6 +147,7 @@ class SoSTradesDataConverter(SimpleGrammarDataConverter):
 
         Returns:
             The concatenated NumPy array.
+
         """
         if not names:
             return np_array([])

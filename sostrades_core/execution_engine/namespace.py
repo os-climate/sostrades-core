@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
-
 class Namespace:
     '''Specification: Namespace class describes name, value and dependencies of namespace object'''
 
@@ -95,3 +94,6 @@ class Namespace:
         same_name = self.name == other.name
         same_value = self.value == other.value
         return same_name and same_value
+
+    def __hash__(self):
+        return hash((self.name, self.value))

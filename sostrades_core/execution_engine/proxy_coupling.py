@@ -48,6 +48,10 @@ from sostrades_core.tools.post_processing.charts.two_axes_instanciated_chart imp
     TwoAxesInstanciatedChart,
 )
 
+# set default value of linear solver according to the operating system
+if getenv("USE_PETSC", "").lower() in ("true", "1"):
+    from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import SoSPetscKSPAlgos
+
 N_CPUS = cpu_count()
 
 
@@ -96,10 +100,7 @@ class ProxyCoupling(ProxyDisciplineBuilder):
     AVAILABLE_LINEAR_SOLVERS = get_available_linear_solvers()
     NEWTON_ALGO_LIST = ('MDANewtonRaphson', 'MDAGSNewton')
 
-    # set default value of linear solver according to the operating system
     if getenv("USE_PETSC", "").lower() in ("true", "1"):
-        from sostrades_core.execution_engine.gemseo_addon.linear_solvers.ksp_lib import SoSPetscKSPAlgos
-
         PETSC_AVAILABLE_LINEAR_SOLVER = (algo for algo in SoSPetscKSPAlgos.ALGORITHM_INFOS)
         PETSC_AVAILABLE_PRECONDITIONER = SoSPetscKSPAlgos.AVAILABLE_PRECONDITIONERS
         DEFAULT_LINEAR_SOLVER = 'GMRES_PETSC'

@@ -19,7 +19,6 @@ from pathlib import Path
 
 from gemseo.core.discipline.discipline import Discipline
 
-
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 
 # IMPORT USECASES

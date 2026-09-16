@@ -76,7 +76,7 @@ def get_study_from_namespace(ns_name: str) -> str:
         The study name.
 
     """
-    return ns_name.split(NS_SEP)[0]
+    return ns_name.split(NS_SEP, maxsplit=1)[0]
 
 
 def generate_unique_data_csv(data_dict: dict[str, Any], csv_file_path: str | Path) -> None:

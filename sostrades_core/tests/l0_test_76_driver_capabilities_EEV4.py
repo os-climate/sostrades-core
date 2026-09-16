@@ -27,6 +27,18 @@ from sostrades_core.execution_engine.disciplines_wrappers.sample_generator_wrapp
     SampleGeneratorWrapper,
 )
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import (
+    Study as Study_withref,
+)
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref_2 import (
+    Study as Study_withref2,
+)
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver.usecase_without_ref import (
+    Study as Study_withoutref,
+)
+from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver_archibuilder.usecase import (
+    Study as Study_archibuilder,
+)
 
 """
 unit test for doe scenario
@@ -906,9 +918,7 @@ class TestSoSDOEScenario(unittest.TestCase):
         # assert x_all_nan == True
 
     def test_9_nested_very_simple_multi_scenarios(self):
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver.usecase_without_ref import (
-            Study,
-        )
+
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -923,7 +933,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        usecase = Study(execution_engine=exec_eng)
+        usecase = Study_withoutref(execution_engine=exec_eng)
         usecase.study_name = ns
         values_dict = usecase.setup_usecase()
 
@@ -991,9 +1001,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         whereas the inner multi scenario driver represents scenarios on the Production process. The test is load from a
         usecase and it checks only the treeviews both for namespaces and for proxy objects.
         """
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver_archibuilder.usecase import (
-            Study,
-        )
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1007,7 +1014,7 @@ class TestSoSDOEScenario(unittest.TestCase):
             eval_builder)
 
         exec_eng.configure()
-        usecase = Study(execution_engine=exec_eng)
+        usecase = Study_archibuilder(execution_engine=exec_eng)
         usecase.study_name = ns
         values_dict = usecase.setup_usecase()
 
@@ -1196,9 +1203,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
         are non-trade variables.
         '''
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref import (
-            Study,
-        )
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1213,7 +1217,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        usecase = Study(execution_engine=exec_eng)
+        usecase = Study_withref(execution_engine=exec_eng)
         usecase.study_name = ns
         values_dict = usecase.setup_usecase()
 
@@ -1555,9 +1559,6 @@ class TestSoSDOEScenario(unittest.TestCase):
         Same as test 11 of nested very simple multi scenario but with reference. Let it be noted that all variables
         are non-trade variables.
         '''
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_of_multi_driver._usecase_with_ref_2 import (
-            Study,
-        )
         study_name = 'root'
         ns = study_name
         exec_eng = ExecutionEngine(study_name)
@@ -1572,7 +1573,7 @@ class TestSoSDOEScenario(unittest.TestCase):
 
         exec_eng.configure()
 
-        usecase = Study(execution_engine=exec_eng)
+        usecase = Study_withref2(execution_engine=exec_eng)
         usecase.study_name = ns
         values_dict = usecase.setup_usecase()
         exec_eng.load_study_from_input_dict(values_dict[0])

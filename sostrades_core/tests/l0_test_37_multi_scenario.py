@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import unittest
-from os.path import join
+from os.path import dirname, join
 from pathlib import Path
 from tempfile import gettempdir
 
@@ -272,9 +272,7 @@ class TestMultiScenario(unittest.TestCase):
     def test_03_multiscenario_with_sample_generator_cp_sellar_study(self):
         # # simple 2-disc process NOT USING nested scatters
 
-        from os.path import dirname, join
 
-        from sostrades_core.study_manager.base_study_manager import BaseStudyManager
         ref_dir = join(dirname(__file__), 'data')
         dump_dir = join(ref_dir, 'dump_load_cache')
 
@@ -392,9 +390,6 @@ class TestMultiScenario(unittest.TestCase):
 
     def test_05_multi_scenario_from_process_with_basic_config_from_usecase_and_with_ref(self):
         # FIXME: there seems to be a problem with reference instance + flatten_subprocess
-        from sostrades_core.sos_processes.test.tests_driver_eval.multi.test_multi_driver_sample_generator_simple.usecase_without_ref import (
-            Study,
-        )
 
         repo_name = self.repo + ".tests_driver_eval.multi"
         proc_name = 'test_multi_driver_sample_generator_simple'

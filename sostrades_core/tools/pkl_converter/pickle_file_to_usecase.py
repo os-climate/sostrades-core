@@ -416,7 +416,7 @@ if '__main__' == __name__:
         """
         already_exists = False
         filePath = join(dirName, fileName)
-        paramName = key.split('.')[-1]
+        paramName = key.rsplit('.', maxsplit=1)[-1]
         # check if value already saved into file
         if paramName in self.values_to_file_dict:
             # check if values are identical

@@ -71,17 +71,17 @@ class TreeView:
         treenode = self.add_treenode(root_process)
         treenodes[self.root.full_namespace] = self.root
 
-        documentation_folder = ''
-        try:
-            from importlib import import_module
-            documentation_folder = import_module(process_module).__file__
-
-            # if documentation_folder != '':
-
-            #     self.root.add_markdown_documentation(TreeNode.get_markdown_documentation(
-            #         documentation_folder), TreeView.PROCESS_DOCUMENTATION)
-        except:
-            pass
+        # documentation_folder = ''
+        # try:
+        #     from importlib import import_module
+        #     documentation_folder = import_module(process_module).__file__
+        #
+        #     # if documentation_folder != '':
+        #
+        #     #     self.root.add_markdown_documentation(TreeNode.get_markdown_documentation(
+        #     #         documentation_folder), TreeView.PROCESS_DOCUMENTATION)
+        # except:
+        #     pass
 
         # First create the tree structure regarding the hosted process
         # Getting the key of the discipline dictionary and order them allow to have

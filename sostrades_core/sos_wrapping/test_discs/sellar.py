@@ -19,6 +19,9 @@ from cmath import sqrt as sqrt_cp
 
 from numpy import array, atleast_2d, floating
 from numpy import exp as exp_np
+from numpy import max as np_max
+from numpy import min as np_min
+from numpy import nan as np_nan
 from numpy import sqrt as sqrt_np
 
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
@@ -327,7 +330,7 @@ class Sellar3(SoSWrapp):
         y_2 = self.compute_y_2(y_1, z)
         y1_out = {'y_2': array([y_2])}
         if error_string == 'nan':
-            y1_out['y_2'] = array([np.nan])
+            y1_out['y_2'] = array([np_nan])
             raise Exception('error test')
         elif error_string == 'input_change':
             y_1 = self.get_sosdisc_inputs('y_1')
@@ -383,9 +386,6 @@ class Sellar3(SoSWrapp):
         Override the _check_min_max_gradients method from <gemseo.core.discipline> with a raise for test purposes
         THIS METHOD MUST BE UPDATED IF THE ORIGINAL METHOD CHANGES
         '''
-        from numpy import max as np_max
-        from numpy import min as np_min
-
         for out in jac:
             for inp in self.jac[out]:
                 grad = self.jac[out][inp]

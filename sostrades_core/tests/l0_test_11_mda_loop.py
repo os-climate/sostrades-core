@@ -16,6 +16,7 @@ limitations under the License.
 '''
 from __future__ import annotations
 
+import tracemalloc
 import unittest
 from os import getenv
 from os.path import join
@@ -23,6 +24,7 @@ from pathlib import Path
 from tempfile import gettempdir
 
 import numpy as np
+from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.mda.base_mda import BaseMDA
 from numpy import array, ndarray
 from numpy.testing import assert_allclose
@@ -30,6 +32,9 @@ from numpy.testing import assert_allclose
 from sostrades_core.execution_engine.execution_engine import ExecutionEngine
 from sostrades_core.study_manager.base_study_manager import BaseStudyManager
 from sostrades_core.tools.folder_operations import rmtree_safe
+from sostrades_core.tools.post_processing.post_processing_factory import (
+    PostProcessingFactory,
+)
 from sostrades_core.tools.rw.load_dump_dm_data import DirectLoadDump
 
 """
@@ -1031,7 +1036,6 @@ class TestMDALoop(unittest.TestCase):
         assert values_dict['EE.linear_solver_MDA_options']['tol'] == inner_mda.settings.linear_solver_tolerance
         assert values_dict['EE.linear_solver_MDA_options']['max_iter'] == inner_mda.settings.linear_solver_settings.maxiter
 
-        import tracemalloc
         tracemalloc.start()
 
         exec_eng.execute()
@@ -1353,9 +1357,7 @@ class TestMDALoop(unittest.TestCase):
             0]
 
         # Testing the post-processing module through filters
-        from sostrades_core.tools.post_processing.post_processing_factory import (
-            PostProcessingFactory,
-        )
+
         ppf = PostProcessingFactory()
 
         disc = exec_eng.dm.get_disciplines_with_name(
@@ -1447,7 +1449,7 @@ class TestMDALoop(unittest.TestCase):
 
 
     def test_23_mda_parallel(self):
-        from gemseo.core.chains.parallel_chain import MDOParallelChain
+
 
         exec_eng = ExecutionEngine(self.name)
 
@@ -1506,7 +1508,6 @@ class TestMDALoop(unittest.TestCase):
 
         exec_eng.execute()
 if __name__ == '__main__':
-    from gemseo.mda.base_mda import BaseMDA
 
     cls = TestMDALoop()
     cls.setUp()

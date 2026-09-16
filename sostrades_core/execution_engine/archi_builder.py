@@ -382,7 +382,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             # block at first node of architecture
             new_namespace_list.append(namespace)
         else:
-            parent_name = archi_parent.split('.')[-1]
+            parent_name = archi_parent.rsplit('.', maxsplit=1)[-1]
             # if namaspace starts with parent_name,
             # namespace does not have parents
             if namespace.startswith(f'{parent_name}.'):
@@ -392,7 +392,7 @@ class ArchiBuilder(ProxyDisciplineBuilder):
             else:
                 # get parents of namespace
                 vb_father = archi_df.loc[
-                    (archi_df[self.CURRENT] == namespace.split('.')[0])
+                    (archi_df[self.CURRENT] == namespace.split('.', maxsplit=1)[0])
                     & (~archi_df[self.PARENT].isna())
                     ]
                 # if no parents and architecture name not in architecture_df,
