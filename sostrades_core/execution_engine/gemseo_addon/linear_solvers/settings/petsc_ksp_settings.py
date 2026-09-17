@@ -17,16 +17,16 @@ limitations under the License.
 from __future__ import annotations
 
 from os import getenv
-from typing import TYPE_CHECKING
+from typing import Annotated, Callable, TypeAlias
 
 from pydantic import AliasChoices, Field, NonNegativeFloat, PositiveInt, WithJsonSchema
 from strenum import StrEnum
 
-if TYPE_CHECKING:
-    from collections.abc import Callable
-    from typing import Annotated
+try:
+    from gemseo.typing import StrKeyMapping
+except ImportError:  # pragma: no cover
+    StrKeyMapping: TypeAlias = dict[str, str]
 
-    from gemseo.typing import StrKeyMapping  # noqa: TC002
 
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
     from gemseo_petsc.linear_solvers.settings.petsc_ksp_settings import BasePetscKSPSettings
@@ -145,4 +145,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
 
         Configuration is viewed by calling ksp.view().""",
             )
+
+
+    BaseSoSPetscKSPSettings.model_rebuild()
 

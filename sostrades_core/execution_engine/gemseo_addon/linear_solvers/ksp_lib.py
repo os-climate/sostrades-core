@@ -103,22 +103,23 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         AVAILABLE_PRECONDITIONERS: tuple[str] = ('jacobi', 'ilu', 'gasm')
         """The available preconditioners."""
 
-        ALGORITHM_INFOS: ClassVar[dict[str, SoSPetscKSPAlgorithmDescription]] = {
-            f"{solver_name}_PETSC": SoSPetscKSPAlgorithmDescription(
+        ALGORITHM_INFOS: ClassVar[dict[str, SoSPetscKSPAlgorithmDescription]] = {}
+        for solver_name in AVAILABLE_LINEAR_SOLVERS:
+            settings_model = type(
+                f"Petsc_{solver_name}_Settings",
+                (BaseSoSPetscKSPSettings,),
+                {"_TARGET_CLASS_NAME": f"{solver_name}_PETSC"},
+            )
+            settings_model.model_rebuild()
+            ALGORITHM_INFOS[f"{solver_name}_PETSC"] = SoSPetscKSPAlgorithmDescription(
                 algorithm_name=solver_name,
                 description=f"Linear solver {solver_name}",
                 internal_algorithm_name=solver_name.lower(),
                 lhs_must_be_linear_operator=True,
                 library_name="PETSC_KSP",
                 website="https://petsc.org/release/docs/manualpages/KSP/KSP.html#KSP",
-                Settings=type(
-                    f"Petsc_{solver_name}_Settings",
-                    (BaseSoSPetscKSPSettings,),
-                    {"_TARGET_CLASS_NAME": f"{solver_name}_PETSC"},
-                ),
+                Settings=settings_model,
             )
-            for solver_name in AVAILABLE_LINEAR_SOLVERS
-        }
 
         def _run(self, problem: LinearProblem) -> ndarray:
             """
