@@ -24,8 +24,6 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
     from dataclasses import dataclass
     from typing import TYPE_CHECKING, Any, ClassVar
 
-    from scipy.sparse.base import issparse
-
     import petsc4py
     from gemseo.algos.linear_solvers.base_linear_solver_library import (
         BaseLinearSolverLibrary,
@@ -35,6 +33,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         _convert_ndarray_to_mat_or_vec,
     )
     from numpy import isnan, ndarray
+    from scipy.sparse.base import issparse
 
     from sostrades_core.execution_engine.gemseo_addon.linear_solvers.settings.petsc_ksp_settings import (
         BaseSoSPetscKSPSettings,
@@ -97,7 +96,6 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         KSP example here:
         https://fossies.org/linux/petsc/src/binding/petsc4py/demo/petsc-examples/ksp/ex2.py
         """
-
 
         AVAILABLE_LINEAR_SOLVERS: tuple[str] = ('GMRES', 'LGMRES', 'BICG', 'BCGS')
         """The available linear solvers."""
@@ -194,7 +192,6 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                   - the KSP problem.
 
             """
-
             rhs = problem.rhs
             if issparse(rhs):
                 rhs = problem.rhs.toarray()
