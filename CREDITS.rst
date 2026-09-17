@@ -42,9 +42,6 @@ sostrades-core depends on software with compatible licenses that are listed belo
 `petsc4py (3.21.3) <https://gitlab.com/petsc/petsc>`_
     BSD-2-Clause
 
-`pyarrow (16.1.0) <https://arrow.apache.org/>`_
-    Apache License, Version 2.0
-
 `plotly (5.3.0) <https://plotly.com/python/>`_
     MIT
 
