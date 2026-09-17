@@ -138,22 +138,24 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             solver = self.ALGORITHM_INFOS[self.algo_name].internal_algorithm_name
             b = problem.rhs
             a = problem.lhs
-            if 'maxiter' not in self._settings:
-                self._settings['maxiter'] = 50 * b.shape[0]
+            settings = self._settings
+
+            if not hasattr(settings, "maxiter"):
+                settings.maxiter = 50 * b.shape[0]
             else:
-                self._settings['maxiter'] = min(self._settings['maxiter'], 50 * a.shape[0])
+                settings.maxiter = min(settings.maxiter, 50 * a.shape[0])
 
             # first run
-            self._settings["old_sol"] = None
+            settings.old_sol = None
 
-            sol, info, ksp = self._run_petsc_strategy(problem, solver,self._settings)
+            sol, info, ksp = self._run_petsc_strategy(problem, solver, settings)
 
             if info < 0:
-                self._settings['preconditioner_type'] = 'gasm'
-                self._settings['old_sol'] = sol
+                settings.preconditioner_type = 'gasm'
+                settings.old_sol = sol
 
                 # second run with bcgs
-                sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", self._settings)
+                sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", settings)
                 if info >= 0:
                     LOGGER.warning(
                         "The second try with GASM preconditioner and bi CG stabilized linear solver has converged at %s",
@@ -164,14 +166,14 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                     LOGGER.warning(
                         "DIVERGED_ITS error : the number of iterations of the solver is %s with a max iter of %s, running again with 10*maxiter",
                         len(ksp.getConvergenceHistory()),
-                        self._settings['maxiter'],
+                        settings.maxiter,
                     )
-                    self._settings['maxiter'] = 10 * self._settings['maxiter']
-                    self._settings['preconditioner_type'] = 'gasm'
-                    self._settings['old_sol'] = sol
+                    settings.maxiter = 10 * settings.maxiter
+                    settings.preconditioner_type = 'gasm'
+                    settings.old_sol = sol
 
                     # third run with bcgs and larger maxiter
-                    sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", self._settings)
+                    sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", settings)
 
             return problem.solution
 
@@ -197,9 +199,8 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             if issparse(rhs):
                 rhs = problem.rhs.toarray()
 
-
             # Initialize the KSP solver.
-            options_cmd = settings.get("options_cmd")
+            options_cmd = getattr(settings, "options_cmd", None)
             if options_cmd is not None:
                 petsc4py.init(options_cmd)
             else:
@@ -210,8 +211,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             # Set all solver settings
             ksp.setType(solver)
 
-
-            ksp.setTolerances(settings["rtol"], settings["atol"], settings["dtol"], settings["maxiter"])
+            ksp.setTolerances(settings.rtol, settings.atol, settings.dtol, settings.maxiter)
             ksp.setConvergenceHistory()
 
             b = problem.rhs
@@ -225,7 +225,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             # Set the matrix in the solver
             ksp.setOperators(a_mat)
             # the chosen preconditioner
-            prec_type = settings.get("preconditioner_type")
+            prec_type = getattr(settings, "preconditioner_type", None)
             if prec_type is not None:
                 pc = ksp.getPC()
                 pc.setType(prec_type)
@@ -234,13 +234,13 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             # transform the b array in petsc vector
             b_mat = _convert_ndarray_to_mat_or_vec(b)
             # Use b as first solution (same size)
-            old_sol = settings.get("old_sol")
+            old_sol = getattr(settings, "old_sol", None)
             if old_sol is not None:
                 solution = _convert_ndarray_to_mat_or_vec(old_sol)
             else:
                 solution = b_mat.duplicate()
                 solution.set(0)
-            if settings["view_config"]:
+            if getattr(settings, "view_config", False):
                 ksp.view()
             # Solve the ksp petsc solver
             ksp.solve(b_mat, solution)
@@ -253,13 +253,13 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                 if problem.convergence_info in (1, 2):
                     LOGGER.warning(
                         'The PETSc linear solver has converged with relative tolerance %s, the final residual norm is %s ; check your linear problem',
-                        settings["rtol"],
+                        settings.rtol,
                         ksp.getResidualNorm(),
                     )
                 elif problem.convergence_info == 4:
                     LOGGER.warning(
                         'The PETSc linear solver has converged after max iterations %s, the final residual norm is %s ; check your linear problem',
-                        settings["maxiter"],
+                        settings.maxiter,
                         ksp.getResidualNorm(),
                     )
                 elif problem.convergence_info in (3, 9):
@@ -268,7 +268,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                     LOGGER.warning(
                         'The PETSc linear solver has converged with %s, the tolerance is %s, the final residual norm is %s ; check your linear problem',
                         KSP_CONVERGED_REASON[problem.convergence_info],
-                        settings["atol"],
+                        settings.atol,
                         ksp.getResidualNorm(),
                     )
             elif problem.convergence_info == 0:
