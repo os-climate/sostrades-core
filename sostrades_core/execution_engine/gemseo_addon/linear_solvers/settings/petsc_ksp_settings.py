@@ -68,6 +68,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         The default numerical parameters differ from gemseo_petsc.
         `_TARGET_CLASS_NAME` will be overloaded for each algorithm.
         """
+        _TARGET_CLASS_NAME = ""
 
         atol: NonNegativeFloat = Field(
             default=1e-200,

@@ -21,7 +21,10 @@ from os import getenv
 
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
     import logging
+    from dataclasses import dataclass
     from typing import TYPE_CHECKING, Any, ClassVar
+
+    from scipy.sparse.base import issparse
 
     import petsc4py
     from gemseo.algos.linear_solvers.base_linear_solver_library import (
@@ -38,7 +41,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
     )
 
     # Must be done before from petsc4py import PETSc, this loads the options from command args in the options database.
-    petsc4py.init([])
+    petsc4py.init()
     from petsc4py import PETSc  # noqa: E402
 
     if TYPE_CHECKING:
@@ -71,7 +74,18 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
     }
 
 
-    class SoSPetscKSPAlgos(BaseLinearSolverLibrary):
+    @dataclass
+    class SoSPetscKSPAlgorithmDescription(LinearSolverDescription):
+        """The description of the PETSc KSP linear algebra library."""
+
+        library_name: str = "SoS PETSc KSP"
+        """The library name."""
+
+        lhs_must_be_linear_operator: bool = True
+        """Whether the left-hand side matrix must be a linear operator."""
+
+
+    class SoSPetscKSPAlgos(BaseLinearSolverLibrary[BaseSoSPetscKSPSettings]):
         """
         Interface to PETSC KSP.
 
@@ -84,14 +98,15 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
         https://fossies.org/linux/petsc/src/binding/petsc4py/demo/petsc-examples/ksp/ex2.py
         """
 
+
         AVAILABLE_LINEAR_SOLVERS: tuple[str] = ('GMRES', 'LGMRES', 'BICG', 'BCGS')
         """The available linear solvers."""
 
         AVAILABLE_PRECONDITIONERS: tuple[str] = ('jacobi', 'ilu', 'gasm')
         """The available preconditioners."""
 
-        ALGORITHM_INFOS: ClassVar[dict[str, LinearSolverDescription]] = {
-            f"{solver_name}_PETSC": LinearSolverDescription(
+        ALGORITHM_INFOS: ClassVar[dict[str, SoSPetscKSPAlgorithmDescription]] = {
+            f"{solver_name}_PETSC": SoSPetscKSPAlgorithmDescription(
                 algorithm_name=solver_name,
                 description=f"Linear solver {solver_name}",
                 internal_algorithm_name=solver_name.lower(),
@@ -99,7 +114,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                 library_name="PETSC_KSP",
                 website="https://petsc.org/release/docs/manualpages/KSP/KSP.html#KSP",
                 Settings=type(
-                    f"Petsc{solver_name}Settings",
+                    f"Petsc_{solver_name}_Settings",
                     (BaseSoSPetscKSPSettings,),
                     {"_TARGET_CLASS_NAME": f"{solver_name}_PETSC"},
                 ),
@@ -179,6 +194,12 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                   - the KSP problem.
 
             """
+
+            rhs = problem.rhs
+            if issparse(rhs):
+                rhs = problem.rhs.toarray()
+
+
             # Initialize the KSP solver.
             options_cmd = settings.get("options_cmd")
             if options_cmd is not None:
