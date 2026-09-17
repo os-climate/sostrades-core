@@ -170,7 +170,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             Args:
                 problem: The linear algebra problem to solve.
                 solver: The solver name.
-                **settings: The solver settings.
+                settings: The solver settings.
 
             Returns:
                 A tuple containing:

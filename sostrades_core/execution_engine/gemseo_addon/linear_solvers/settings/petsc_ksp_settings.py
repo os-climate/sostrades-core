@@ -17,11 +17,16 @@ limitations under the License.
 from __future__ import annotations
 
 from os import getenv
-from collections.abc import Callable
-from pydantic import Field, NonNegativeFloat,AliasChoices,PositiveInt,WithJsonSchema
+from typing import TYPE_CHECKING
+
+from pydantic import AliasChoices, Field, NonNegativeFloat, PositiveInt, WithJsonSchema
 from strenum import StrEnum
-from gemseo.typing import StrKeyMapping  # noqa: TC002
-from typing import Annotated
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Annotated
+
+    from gemseo.typing import StrKeyMapping  # noqa: TC002
 
 if getenv("USE_PETSC", "").lower() in ("true", "1"):
     from gemseo_petsc.linear_solvers.settings.petsc_ksp_settings import BasePetscKSPSettings
