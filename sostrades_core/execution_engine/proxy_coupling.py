@@ -829,20 +829,11 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         # linear solver options MDA
         num_data['linear_solver'] = copy(self.get_sosdisc_inputs('linear_solver_MDA'))
-        linear_solver_settings_MDA = deepcopy(self.get_sosdisc_inputs('linear_solver_MDA_options'))
-
-        if num_data['linear_solver'].endswith('_PETSC'):
-            # PETSc case
-            preconditioner = copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner'))
-            linear_solver_settings_MDA['preconditioner_type'] = (preconditioner != 'None') * preconditioner or None
-        else:
-            # Scipy case / gmres
-            linear_solver_settings_MDA['use_ilu_precond'] = (
-                copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')) == 'ilu'
-            )
-
-        num_data['linear_solver_tolerance'] = linear_solver_settings_MDA.pop('tol')
-        num_data['linear_solver_settings'] = linear_solver_settings_MDA
+        num_data['linear_solver_tolerance'], num_data['linear_solver_settings'] = self._build_linear_solver_settings(
+            num_data['linear_solver'],
+            self.get_sosdisc_inputs('linear_solver_MDA_options'),
+            copy(self.get_sosdisc_inputs('linear_solver_MDA_preconditioner')),
+        )
 
         self.linear_solver_MDA = num_data['linear_solver']
         self.linear_solver_tolerance_MDA = num_data['linear_solver_tolerance']
@@ -850,24 +841,67 @@ class ProxyCoupling(ProxyDisciplineBuilder):
 
         # linear solver options MDO
         self.linear_solver_MDO = self.get_sosdisc_inputs('linear_solver_MDO')
-        linear_solver_settings_MDO = deepcopy(self.get_sosdisc_inputs('linear_solver_MDO_options'))
-
-        if self.linear_solver_MDO.endswith('_PETSC'):
-            preconditioner = self.get_sosdisc_inputs('linear_solver_MDO_preconditioner')
-            linear_solver_settings_MDO['preconditioner_type'] = (preconditioner != 'None') * preconditioner or None
-        else:
-            linear_solver_settings_MDO['use_ilu_precond'] = (
-                self.get_sosdisc_inputs('linear_solver_MDO_preconditioner') == 'ilu'
-            )
-
-        self.linear_solver_tolerance_MDO = linear_solver_settings_MDO.pop('tol')
-        self.linear_solver_settings_MDO = linear_solver_settings_MDO
+        self.linear_solver_tolerance_MDO, self.linear_solver_settings_MDO = self._build_linear_solver_settings(
+            self.linear_solver_MDO,
+            self.get_sosdisc_inputs('linear_solver_MDO_options'),
+            self.get_sosdisc_inputs('linear_solver_MDO_preconditioner'),
+        )
 
         # FIXME: temporary fix
         if self.all_strong_couplings_in_sub_mda():
             num_data["max_mda_iter"] = 0
 
         return num_data
+
+    @staticmethod
+    def _sanitize_linear_solver_settings(linear_solver: str, linear_solver_settings: dict[str, Any]) -> dict[str, Any]:
+        """Keep only the settings supported by the selected linear solver."""
+        factory = LinearSolverLibraryFactory()
+        library_name = factory.algo_names_to_libraries.get(linear_solver)
+        if library_name is None:
+            return linear_solver_settings
+
+        settings_model = factory.get_class(library_name).ALGORITHM_INFOS[linear_solver].Settings
+        allowed_keys = set()
+        for field_name, field_info in settings_model.model_fields.items():
+            allowed_keys.add(field_name)
+            if field_info.alias is not None:
+                allowed_keys.add(field_info.alias)
+
+            validation_alias = field_info.validation_alias
+            if isinstance(validation_alias, str):
+                allowed_keys.add(validation_alias)
+            elif validation_alias is not None and hasattr(validation_alias, 'choices'):
+                allowed_keys.update(
+                    choice for choice in validation_alias.choices if isinstance(choice, str)
+                )
+
+        return {
+            key: value for key, value in linear_solver_settings.items() if key in allowed_keys
+        }
+
+    @classmethod
+    def _build_linear_solver_settings(
+        cls,
+        linear_solver: str,
+        linear_solver_settings: dict[str, Any],
+        preconditioner: str,
+    ) -> tuple[float, dict[str, Any]]:
+        """Build linear solver settings compatible with the selected solver."""
+        sanitized_settings = deepcopy(linear_solver_settings)
+        linear_solver_tolerance = sanitized_settings.pop('tol')
+
+        if linear_solver.endswith('_PETSC'):
+            sanitized_settings['preconditioner_type'] = (
+                (preconditioner != 'None') * preconditioner or None
+            )
+        else:
+            sanitized_settings['use_ilu_precond'] = preconditioner == 'ilu'
+
+        return (
+            linear_solver_tolerance,
+            cls._sanitize_linear_solver_settings(linear_solver, sanitized_settings),
+        )
 
     def get_sub_mdas(self):
         sub_mdas = []
