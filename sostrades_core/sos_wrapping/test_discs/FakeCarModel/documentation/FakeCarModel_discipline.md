@@ -177,7 +177,7 @@ For DoE studies, the continuous parameters can be used as design variables:
 # DoE variables (typically 5-6 continuous parameters)
 doe_variables = [
     'battery_capacity',     # 0-100 kWh
-    'vehicle_weight',       # 1000-3000 kg  
+    'vehicle_weight',       # 1000-3000 kg
     'aerodynamic_coefficient',  # 0.2-0.5
     'engine_power',         # 80-300 kW
     'wheel_diameter'        # 15-21 inches
@@ -314,6 +314,6 @@ The discipline uses modular calculation methods that can be easily modified:
 
 ---
 
-**Authors**: TCh Project Team  
-**License**: Apache License 2.0  
+**Authors**: TCh Project Team
+**License**: Apache License 2.0
 **Contact**: For questions or contributions, please refer to the project documentation.
