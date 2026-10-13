@@ -14,7 +14,7 @@ numpoly==1.2.14  # last version with wheel
 openturns==1.24
 pandas==2.2.2
 plotly==5.24.0
-pyarrow==20.0.0
+pyarrow==23.0.1
 pycryptodome==3.23.0
 PyYAML==6.0.2
 scipy==1.13.0

@@ -22,7 +22,7 @@ dependencies = [
     "openturns==1.24",
     "pandas==2.2.2",
     "plotly==5.24.0",
-    "pyarrow==20.0.0",
+    "pyarrow==23.0.1",
     "pycryptodome==3.23.0",
     "pytest==8.1.2",
     "pytest-cov==6.2.0",
