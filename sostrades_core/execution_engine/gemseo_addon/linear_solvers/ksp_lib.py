@@ -146,16 +146,16 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                 settings.maxiter = min(settings.maxiter, 50 * a.shape[0])
 
             # first run
-            settings.old_sol = None
+            old_sol = None
 
-            sol, info, ksp = self._run_petsc_strategy(problem, solver, settings)
+            sol, info, ksp = self._run_petsc_strategy(problem, solver,old_sol, settings)
 
             if info < 0:
                 settings.preconditioner_type = 'gasm'
-                settings.old_sol = sol
+                old_sol = sol
 
                 # second run with bcgs
-                sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", settings)
+                sol, info, ksp = self._run_petsc_strategy(problem, "bcgs",old_sol, settings)
                 if info >= 0:
                     LOGGER.warning(
                         "The second try with GASM preconditioner and bi CG stabilized linear solver has converged at %s",
@@ -170,15 +170,15 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
                     )
                     settings.maxiter = 10 * settings.maxiter
                     settings.preconditioner_type = 'gasm'
-                    settings.old_sol = sol
+                    old_sol = sol
 
                     # third run with bcgs and larger maxiter
-                    sol, info, ksp = self._run_petsc_strategy(problem, "bcgs", settings)
+                    sol, info, ksp = self._run_petsc_strategy(problem, "bcgs",old_sol, settings)
 
             return problem.solution
 
         def _run_petsc_strategy(
-            self, problem: LinearProblem, solver: str, settings
+            self, problem: LinearProblem, solver: str,old_sol, settings
         ) -> tuple[NumberArray | None, int, Any]:
             """
             Runs the solver.
@@ -234,7 +234,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             # transform the b array in petsc vector
             b_mat = _convert_ndarray_to_mat_or_vec(b)
             # Use b as first solution (same size)
-            old_sol = getattr(settings, "old_sol", None)
+
             if old_sol is not None:
                 solution = _convert_ndarray_to_mat_or_vec(old_sol)
             else:
