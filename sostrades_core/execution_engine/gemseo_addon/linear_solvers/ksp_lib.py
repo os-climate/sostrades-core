@@ -186,6 +186,7 @@ if getenv("USE_PETSC", "").lower() in ("true", "1"):
             Args:
                 problem: The linear algebra problem to solve.
                 solver: The solver name.
+                old_sol : old solution
                 settings: The solver settings.
 
             Returns:
