@@ -328,7 +328,42 @@ class SoSMDAChain(MDAChain):
         for disc in self.coupling_structure.disciplines:
             disc.linearization_mode = self.linearization_mode
 
-        MDAChain._compute_jacobian(self, inputs, outputs)
+        if self.settings.chain_linearize:
+            MDAChain._compute_jacobian(self, inputs, outputs)
+            return
+
+        factory = LinearSolverLibraryFactory()
+        library_name = factory.algo_names_to_libraries[self.linear_solver]
+        settings_model = factory.get_class(library_name).ALGORITHM_INFOS[self.linear_solver].Settings
+        linear_solver_settings = settings_model(**(self.linear_solver_settings or {})).model_dump()
+        linear_solver_settings['rtol'] = self.linear_solver_tolerance
+
+        residual_variables = {}
+        for disc in self.disciplines:
+            residual_variables.update(disc.io.residual_to_state_variable)
+
+        couplings_adjoint = sorted(
+            set(self.coupling_structure.all_couplings).difference(self._non_numeric_array_variables)
+            - residual_variables.keys()
+            - set(residual_variables.values())
+        )
+        input_names = list(set(inputs or ()).difference(self._non_numeric_array_variables))
+        output_names = list(set(outputs or ()).difference(self._non_numeric_array_variables))
+        exec_cache_tol = self.lin_cache_tol_fact * self.settings.tolerance
+        self.jac = self.assembly.total_derivatives(
+            self.io.data,
+            output_names,
+            input_names,
+            couplings_adjoint,
+            linear_solver=self.linear_solver,
+            mode=self.linearization_mode,
+            matrix_type=self.matrix_type,
+            use_lu_fact=self.settings.use_lu_fact,
+            exec_cache_tol=exec_cache_tol,
+            execute=exec_cache_tol == 0.0,
+            residual_variables=residual_variables,
+            **linear_solver_settings,
+        )
 
     #  METHODS TO DEBUG MDA CHAIN (NEEDED FOR LINEARIZE)
     # ----------------------------------------------------

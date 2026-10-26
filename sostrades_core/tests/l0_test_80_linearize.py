@@ -16,6 +16,7 @@ limitations under the License.
 '''
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gemseo.core.discipline.discipline import Discipline
 
@@ -209,6 +210,36 @@ class TestAnalyticGradients(unittest.TestCase):
         assert (exec_eng.root_process.discipline_wrapp.discipline.check_jacobian(
             values_dict, derr_approx='complex_step', step=1e-15, threshold=1e-8, linearization_mode='adjoint'))
         print('CHECK_JACOBIAN performed for ', exec_eng.root_process.get_disc_full_name())
+
+    def test_adjoint_uses_selected_linear_solver(self):
+        exec_eng = ExecutionEngine(self.study_name)
+        builder = exec_eng.factory.get_builder_from_process(
+            repo=self.repo, mod_id='test_sellar_coupling'
+        )
+        exec_eng.factory.set_builders_to_coupling_builder(builder)
+        exec_eng.configure()
+        values_dict = Study_sellar_coupling.setup_usecase(self)[0]
+        values_dict[f'{self.ns}.SellarCoupling.inner_mda_name'] = 'MDAGaussSeidel'
+        exec_eng.load_study_from_input_dict(values_dict)
+        exec_eng.prepare_execution()
+        discipline = exec_eng.root_process.discipline_wrapp.discipline
+        discipline.linear_solver_MDO = 'GMRES'
+        discipline.linear_solver_settings_MDO = {'max_iter': 1000, 'use_ilu_precond': False}
+        original_settings = discipline.settings.linear_solver_settings
+        original_solver = discipline.settings.linear_solver
+        original_tolerance = discipline.settings.linear_solver_tolerance
+
+        with patch.object(
+            discipline.assembly, 'total_derivatives', wraps=discipline.assembly.total_derivatives
+        ) as total_derivatives:
+            self.assertTrue(discipline.check_jacobian(
+                values_dict, derr_approx='complex_step', step=1e-15,
+                threshold=1e-8, linearization_mode='adjoint',
+            ))
+        self.assertEqual(total_derivatives.call_args.kwargs.get('linear_solver'), 'GMRES')
+        self.assertIs(discipline.settings.linear_solver_settings, original_settings)
+        self.assertEqual(discipline.settings.linear_solver, original_solver)
+        self.assertEqual(discipline.settings.linear_solver_tolerance, original_tolerance)
 
     def test_06_check_jacobian_specified_inputs_outputs(self):
 
